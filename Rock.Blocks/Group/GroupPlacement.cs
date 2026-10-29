@@ -988,9 +988,7 @@ namespace Rock.Blocks.Group
             if ( registrationInstanceId.HasValue )
             {
                 var registrationInstance = new RegistrationInstanceService( RockContext ).Get( registrationInstanceId.Value );
-                return registrationInstance != null
-                    && ( registrationInstance.IsAuthorized( Authorization.VIEW, currentPerson )
-                        || registrationInstance.IsAuthorized( Authorization.EDIT, currentPerson ) );
+                return CanViewRegistrationSource( registrationInstance );
             }
 
             var registrationTemplateService = new RegistrationTemplateService( RockContext );
@@ -1010,9 +1008,22 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            return registrationTemplate != null
-                && ( registrationTemplate.IsAuthorized( Authorization.VIEW, currentPerson )
-                    || registrationTemplate.IsAuthorized( Authorization.EDIT, currentPerson ) );
+            return CanViewRegistrationSource( registrationTemplate );
+        }
+
+        /// <summary>
+        /// Determines whether the current person can view the registration instance or
+        /// template. VIEW or EDIT is allowed, so people who manage it can open its placement.
+        /// </summary>
+        /// <param name="registrationSource">The registration instance or template.</param>
+        /// <returns><c>true</c> if the source exists and the current person can view or edit it; otherwise <c>false</c>.</returns>
+        private bool CanViewRegistrationSource( ISecured registrationSource )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            return registrationSource != null
+                && ( registrationSource.IsAuthorized( Authorization.VIEW, currentPerson )
+                    || registrationSource.IsAuthorized( Authorization.EDIT, currentPerson ) );
         }
 
         /// <summary>
@@ -1248,18 +1259,31 @@ namespace Rock.Blocks.Group
                     return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
                 }
                 await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberChannelForGroup( group.Guid ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetGroupMemberDeletedChannel() );
             }
 
             if ( realTimeConnectionKeysBag.RegistrationInstanceGuid.HasValue )
             {
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationInstance( realTimeConnectionKeysBag.RegistrationInstanceGuid.Value ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+                var registrationInstance = new RegistrationInstanceService( RockContext ).Get( realTimeConnectionKeysBag.RegistrationInstanceGuid.Value );
+
+                // Authorize the current user.
+                if ( !CanViewRegistrationSource( registrationInstance ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationInstance( registrationInstance.Guid ) );
             }
             else if ( realTimeConnectionKeysBag.RegistrationTemplateGuid.HasValue )
             {
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationTemplate( realTimeConnectionKeysBag.RegistrationTemplateGuid.Value ) );
-                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantDeletedChannel() );
+                var registrationTemplate = new RegistrationTemplateService( RockContext ).Get( realTimeConnectionKeysBag.RegistrationTemplateGuid.Value );
+
+                // Authorize the current user.
+                if ( !CanViewRegistrationSource( registrationTemplate ) )
+                {
+                    return ActionStatusCode( System.Net.HttpStatusCode.Forbidden );
+                }
+
+                await topicChannels.AddToChannelAsync( realTimeConnectionKeysBag.ConnectionId, GroupPlacementTopic.GetRegistrantChannelForRegistrationTemplate( registrationTemplate.Guid ) );
             }
 
             return ActionOk();

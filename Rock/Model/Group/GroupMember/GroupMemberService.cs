@@ -1290,7 +1290,6 @@ namespace Rock.Model
         {
             var bags = GetGroupMemberUpdatedMessageBags( rockContext, items );
             var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
-            var channel = GroupPlacementTopic.GetGroupMemberDeletedChannel();
 
             foreach ( var item in items )
             {
@@ -1298,7 +1297,21 @@ namespace Rock.Model
                 {
                     var bag = bags.FirstOrDefault( b => b.GroupMemberGuid == item.Guid );
 
-                    await topicClients.Channel( channel ).GroupMemberDeleted( item.Guid, bag );
+                    if ( bag == null )
+                    {
+                        continue;
+                    }
+
+                    // Send only on this group member's group channel, the same
+                    // channel updates use.
+                    var channels = GroupPlacementTopic.GetGroupMemberChannelsForBag( bag );
+
+                    if ( !channels.Any() )
+                    {
+                        continue;
+                    }
+
+                    await topicClients.Channels( channels ).GroupMemberDeleted( item.Guid, bag );
                 }
                 catch ( Exception ex )
                 {
