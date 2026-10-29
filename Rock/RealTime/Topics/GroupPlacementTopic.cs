@@ -81,15 +81,6 @@ namespace Rock.RealTime.Topics
             return $"Registrant:RegistrationInstance:{guid}";
         }
 
-        /// <summary>
-        /// Gets the channel for monitoring registrant deleted notifications.
-        /// </summary>
-        /// <returns>A string that represents the channel name.</returns>
-        public static string GetRegistrantDeletedChannel()
-        {
-            return "Registrant:Deleted";
-        }
-
         #endregion
 
         #region Group Member Methods
@@ -121,15 +112,6 @@ namespace Rock.RealTime.Topics
         public static string GetGroupMemberChannelForGroup( Guid guid )
         {
             return $"GroupMember:Group:{guid}";
-        }
-
-        /// <summary>
-        /// Gets the channel for monitoring group member deleted notifications.
-        /// </summary>
-        /// <returns>A string that represents the channel name.</returns>
-        public static string GetGroupMemberDeletedChannel()
-        {
-            return "GroupMember:Deleted";
         }
 
         #endregion
