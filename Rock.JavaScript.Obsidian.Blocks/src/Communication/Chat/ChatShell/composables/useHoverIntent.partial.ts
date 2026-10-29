@@ -36,7 +36,11 @@ export type HoverIntent<TKey> = {
     /** Whether the control shows. */
     isShown: Ref<boolean>;
 
-    /** Whether the last show, move or hide skips the fade. */
+    /**
+     * Whether the last show, move or hide skips the fade. A move does; the pointer withdrawing
+     * always fades, however the control got to where it is, and only an owner's own hide can ask
+     * for none.
+     */
     isInstant: Ref<boolean>;
 
     /**
