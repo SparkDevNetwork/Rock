@@ -19,7 +19,8 @@
 // carries, which the card draws as they are, and the full list behind See all.
 //
 // A toggle is drawn at once and then replaced by the platform's answer, which is the message's
-// whole list as the server counts it. The reader's own reaction reaches them twice, in that answer
+// whole list as the server counts it. One call per emoji of a message is out at a time, so a
+// double tap's add and remove never cross on the way to the server. The reader's own reaction reaches them twice, in that answer
 // and as the event every viewer hears, so an event under the reader's alias moves the chip only
 // when it would change their mark; whichever arrives first, the reaction counts once. Every change
 // to the conversation's copy is recorded with the timelines, so a page read before it does not
@@ -160,6 +161,15 @@ export type WhoReacted = {
     people: CardPerson[];
     rest: number;
     isMoreShown: boolean;
+};
+
+/** One emoji's presses on a message while a call for them is out. */
+type Press = {
+    /** Whether the person last asked for their reaction to be there. */
+    wanted: boolean;
+
+    /** Whether the server last answered that it is. */
+    confirmed: boolean;
 };
 
 /** One message's presses still out, and what has happened to it since the first was made. */
@@ -389,13 +399,12 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     // The one fetch of the catalog still out, which every open while it is out shares.
     let catalogLoad: Promise<CatalogEmoji[] | null> | null = null;
 
-    // Each press takes the next number, kept by message and emoji; its answer counts only while
-    // its number is still the newest for that emoji, so a late answer never undoes a press of it
-    // made since, and a press of another emoji is neither overtaken nor taken back by it. With
-    // each, whether the reader's reaction is there as the server last answered, which a refused
-    // newest press puts back.
-    const presses = new Map<string, { turn: number, out: number, confirmed: boolean }>();
-    let toggleTurn = 0;
+    // Each emoji's presses on a message while a call for them is out, by message and emoji: what
+    // the person last asked for, and whether the reader's reaction is there as the server last
+    // answered. A press made while a call is out is drawn and only noted; once the call is
+    // answered the newest wish is sent if the server does not hold it yet, so the calls of one
+    // emoji reach the server in the order they were made, and a press of another emoji goes at once.
+    const presses = new Map<string, Press>();
 
     // The presses of each message still out, whether two were ever out at once, and whether an
     // event for the message landed while one was. An answer lists the message as the server
@@ -577,40 +586,58 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         }
     }
 
-    /** Adds or removes the reader's reaction with an emoji, drawn at once and replaced by the answer. */
+    /**
+     * Adds or removes the reader's reaction with an emoji, drawn at once and replaced by the
+     * answer. While a call for the emoji is out the press is only drawn and noted; the call out
+     * sends it once it is answered.
+     */
     async function toggle(channelId: string, messageId: number, emoji: EmojiGlyph): Promise<void> {
         if (isStopped) {
             return;
         }
 
         const isMine = copiesOf(channelId, messageId)[0]?.reactions?.find(reaction => reaction.code === emoji.code)?.mine ?? false;
-        const turn = ++toggleTurn;
         const key = `${messageId}/${emoji.code}`;
-        const press = presses.get(key) ?? { turn, out: 0, confirmed: isMine };
-        press.turn = turn;
-        press.out++;
+
+        // Drawn at once, the mark and the count together, before the platform answers.
+        change(channelId, messageId, copy => setOwnReaction(copy, emoji, !isMine, placeOf));
+
+        const out = presses.get(key);
+        if (out) {
+            out.wanted = !isMine;
+            return;
+        }
+
+        const press: Press = { wanted: !isMine, confirmed: isMine };
         presses.set(key, press);
+        try {
+            // each answer that leaves the newest wish unsaved sends it
+            let isSending = true;
+            while (isSending && press.wanted !== press.confirmed) {
+                isSending = await sendNewest(channelId, messageId, emoji, press);
+            }
+        }
+        finally {
+            presses.delete(key);
+        }
+    }
+
+    /**
+     * Sends a press's newest wish and lays the answer when it is still what the person wants.
+     * Answers false when nothing more should be sent: the call was refused, or the reactions stopped.
+     */
+    async function sendNewest(channelId: string, messageId: number, emoji: EmojiGlyph, press: Press): Promise<boolean> {
+        const isAdding = press.wanted;
         const pending = outstanding.get(messageId) ?? { count: 0, isCrossed: false, isMoved: false };
         pending.isCrossed ||= pending.count > 0;
         pending.count++;
         outstanding.set(messageId, pending);
 
-        // Drawn at once, the mark and the count together, before the platform answers.
-        change(channelId, messageId, copy => setOwnReaction(copy, emoji, !isMine, placeOf));
-
-        const result = await dependencies.call(isMine ? "chat_remove_reaction" : "chat_add_reaction", { p_message_id: messageId, p_reaction: emoji.code });
+        const result = await dependencies.call(isAdding ? "chat_add_reaction" : "chat_remove_reaction", { p_message_id: messageId, p_reaction: emoji.code });
         if (isStopped) {
-            return;
+            return false;
         }
 
-        const isNewest = press.turn === turn;
-        if (result.ok) {
-            press.confirmed = !isMine;
-        }
-        press.out -= 1;
-        if (press.out === 0) {
-            presses.delete(key);
-        }
         const scope: AnswerScope = pending.isMoved ? "mark" : pending.isCrossed ? "chip" : "whole";
         pending.count -= 1;
         if (pending.count === 0) {
@@ -621,18 +648,19 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             dependencies.notify({ code: result.error.code, text: messageForError(result.error), icon: "alert" });
 
             // Only the press is taken back, to where the server last left the reader's reaction,
-            // so a reaction someone else made meanwhile stays. A newer press of the same emoji
-            // answers for its chip itself.
-            if (isNewest) {
-                change(channelId, messageId, copy => setOwnReaction(copy, emoji, press.confirmed, placeOf));
-            }
-            return;
+            // so a reaction someone else made meanwhile stays; a press noted meanwhile was never
+            // sent, so it goes with it.
+            press.wanted = press.confirmed;
+            change(channelId, messageId, copy => setOwnReaction(copy, emoji, press.confirmed, placeOf));
+            return false;
         }
 
+        press.confirmed = isAdding;
         const answer = result.data as Partial<ReactionAnswer> | null;
-        if (isNewest && Array.isArray(answer?.reactions)) {
+        if (press.wanted === isAdding && Array.isArray(answer?.reactions)) {
             applyAnswer(channelId, messageId, emoji.code, answer.reactions, scope);
         }
+        return true;
     }
 
     return {

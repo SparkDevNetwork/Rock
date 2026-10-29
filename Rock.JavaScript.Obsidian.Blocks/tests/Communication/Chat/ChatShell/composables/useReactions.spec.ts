@@ -799,6 +799,40 @@ describe("presses whose answers cross", () => {
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
     });
 
+    test("a double tap sends the remove only once the add is answered, so the server never sees them cross", async () => {
+        const first = deferred<CallResult>();
+        const second = deferred<CallResult>();
+        const { reactions, timelines, calls } = await setup([message(42, [rx("heart", 4)])], [first, second]);
+
+        const adding = reactions.toggle(channel, 42, glyph("heart"));
+        const removing = reactions.toggle(channel, 42, glyph("heart"));
+        await flush();
+        expect(calls.map(c => c.name)).toEqual(["chat_add_reaction"]);
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+
+        first.resolve(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
+        await flush();
+        expect(calls.map(c => c.name)).toEqual(["chat_add_reaction", "chat_remove_reaction"]);
+        // the add's answer is not what the person last asked for, so it is not drawn
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+
+        second.resolve(ok({ message_id: 42, reactions: [rx("heart", 4)] }));
+        await Promise.all([adding, removing]);
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+    });
+
+    test("three taps while the first is out send nothing more once it is answered, the reaction then as asked", async () => {
+        const first = deferred<CallResult>();
+        const { reactions, timelines, calls } = await setup([message(42, [rx("heart", 4)])], [first]);
+
+        const pressing = [1, 2, 3].map(() => reactions.toggle(channel, 42, glyph("heart")));
+        first.resolve(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
+        await Promise.all(pressing);
+
+        expect(calls.map(c => c.name)).toEqual(["chat_add_reaction"]);
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
+    });
+
     test("two emoji on one message, answered out of order: neither answer wipes the other press", async () => {
         const thumbs = deferred<CallResult>();
         const heart = deferred<CallResult>();
