@@ -1,10 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Transition name="chat-veil">
+    <Transition name="chat-veil" @beforeLeave="onBeforeLeave">
         <!--
             The first load's stand-in for a region: opaque over it until the region is revealed, so
             the frame is at its final layout from mount and the real content crossfades in under
-            it. The marks wait (the caller's) so a quick load never flashes them.
+            it. The marks wait (the caller's) so a quick load never flashes them. The region under
+            it is out of reach until then, and once revealed the leaving veil takes no input, so no
+            click or key is ever lost between the two.
         -->
         <div v-if="!isRevealed"
              class="chat-veil"
@@ -236,5 +238,13 @@
 
     /** The widths of a list's rows, as the sidebar's own loading rows vary them. */
     const sidebarWidths = [58, 44, 66, 50, 40, 62, 48];
+
+    /**
+     * The region is revealed and the veil fades out over it: inert from that moment, to pointer
+     * and focus alike, so the first click on what it uncovers reaches it rather than the veil.
+     */
+    function onBeforeLeave(element: Element): void {
+        element.setAttribute("inert", "");
+    }
 
 </script>
