@@ -677,6 +677,22 @@ describe("a row's actions follow the pointer as the message action bar does", ()
         expect(isInstant(w)).toBe(false);
     });
 
+    test("leaving the panel with a rest or a grace pending leaves no timer behind", async () => {
+        const w = draw();
+
+        w.findAll("[data-testid='member-who']")[1].element.dispatchEvent(new Event("pointerover", { bubbles: true }));
+        expect(jest.getTimerCount()).toBeGreaterThan(0);
+        w.unmount();
+        expect(jest.getTimerCount()).toBe(0);
+
+        const shown = draw();
+        await over(shown, 1);
+        shown.get("[data-testid='members-panel']").element.dispatchEvent(new Event("pointerleave"));
+        expect(jest.getTimerCount()).toBeGreaterThan(0);
+        shown.unmount();
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
     test("a touch shows nothing, since a phone's actions are always there", async () => {
         const w = draw();
         const touch = Object.assign(new Event("pointerover", { bubbles: true }), { pointerType: "touch" });
