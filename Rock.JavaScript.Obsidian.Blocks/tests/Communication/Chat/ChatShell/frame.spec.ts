@@ -1711,7 +1711,7 @@ describe("the thread drawer", () => {
         const sub = w.get("[data-testid='thread-row'] .chat-ls-sub");
         expect(team.is_public).toBe(false);
         // The same shape as the sidebar row's icon; only its size differs.
-        const sidebarIcon = w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}'] .chat-cs-slot svg`);
+        const sidebarIcon = w.get(`[data-testid='channel-row'][data-channel-id='${team.channel_id}'] [data-testid='row-lock']`);
         expect(sub.get("svg").element.innerHTML).toBe(sidebarIcon.element.innerHTML);
     });
 

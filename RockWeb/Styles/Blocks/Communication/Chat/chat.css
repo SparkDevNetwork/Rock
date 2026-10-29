@@ -107,6 +107,11 @@
     --chat-av-l: 90%;
     --chat-av-tsat: 42%;
     --chat-av-tl: 31%;
+    /* A channel's letter tile: the same hue rule on a slightly more saturated tint, so a square reads as a channel beside the round faces. */
+    --chat-tile-sat: 62%;
+    --chat-tile-l: 88%;
+    --chat-tile-tsat: 45%;
+    --chat-tile-tl: 30%;
     /*
         A badge's pill on a profile card: how much of the church's pale fill shows over the card,
         and how far its icon and edge lean to the badge's dark ink rather than to that fill. A dark
@@ -248,7 +253,7 @@
     --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
     --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
-    --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
+    --chat-badge-quiet: var(--chat-brand-tint);
     --chat-current-line: var(--chat-current-line-dark, #64402A);
     --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
     --chat-composer-line: var(--chat-composer-line-dark, #A75824);
@@ -289,6 +294,10 @@
     --chat-av-l: 23%;
     --chat-av-tsat: 75%;
     --chat-av-tl: 82%;
+    --chat-tile-sat: 32%;
+    --chat-tile-l: 24%;
+    --chat-tile-tsat: 70%;
+    --chat-tile-tl: 80%;
     --chat-badge-fill-mix: 14%;
     --chat-badge-ink-mix: 0%;
     --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
@@ -320,7 +329,7 @@
         --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
         --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
-        --chat-badge-quiet: var(--chat-badge-quiet-dark, #2C1B12);
+        --chat-badge-quiet: var(--chat-brand-tint);
         --chat-current-line: var(--chat-current-line-dark, #64402A);
         --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
         --chat-composer-line: var(--chat-composer-line-dark, #A75824);
@@ -361,6 +370,10 @@
         --chat-av-l: 23%;
         --chat-av-tsat: 75%;
         --chat-av-tl: 82%;
+        --chat-tile-sat: 32%;
+        --chat-tile-l: 24%;
+        --chat-tile-tsat: 70%;
+        --chat-tile-tl: 80%;
         --chat-badge-fill-mix: 14%;
         --chat-badge-ink-mix: 0%;
         --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
@@ -528,6 +541,16 @@
     border-radius: 50%;
 }
 
+/* A channel's letter tile: its first letter on a tint of its name's hue, as an avatar's initials are. */
+.chat-channel-mark.is-letter {
+    font-size: 14px;
+    font-weight: 650;
+    line-height: 1;
+    color: hsl(var(--chat-av-hue) var(--chat-tile-tsat) var(--chat-tile-tl));
+    user-select: none;
+    background: hsl(var(--chat-av-hue) var(--chat-tile-sat) var(--chat-tile-l));
+}
+
 .chat-av-photo {
     width: 100%;
     height: 100%;
@@ -563,25 +586,32 @@
     background: var(--chat-announcement-pill);
 }
 
-/* A mention count: the mentions icon and the number, springing in as it appears. */
+/*
+    A mention count: the mentions icon and the number on a soft tint of the church color, springing
+    in as it appears. No text sits on the church's fill, so no church color can make it unreadable.
+    The pop is a transform, which puts the badge in its own layer while it runs; a layer dropped when
+    it ends repaints its text snapped to the pixel grid and the digit visibly shifts, so the badge
+    keeps its layer for its whole life and every edge is a whole pixel (the line is the pill's height).
+*/
 .chat-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 3px;
-    min-width: 20px;
+    gap: 2px;
+    min-width: 22px;
     height: 20px;
-    padding: 0 7px 0 5px;
-    font-size: 11px;
+    padding: 0 7px 0 6px;
+    font-size: 12px;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
-    line-height: 1;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
+    line-height: 20px;
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
     border-radius: var(--chat-r-full);
+    will-change: transform;
     animation: chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring);
     --chat-ic-size: 12px;
-    --chat-ic-stroke: 2.2;
+    --chat-ic-stroke: 2.3;
 }
 
 /* A muted room's count, there but not calling for attention. */

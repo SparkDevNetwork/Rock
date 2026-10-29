@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span class="chat-channel-mark" :class="{ 'has-image': isImageShown }" aria-hidden="true">
+    <span class="chat-channel-mark" :class="{ 'has-image': isImageShown, 'is-letter': isLetterShown }" :style="isLetterShown ? { '--chat-av-hue': String(avatarHue(tileName!)) } : undefined" aria-hidden="true">
         <!-- Decorative: the channel's name is always drawn beside its mark. -->
         <img v-if="isImageShown"
              class="chat-channel-mark-image"
@@ -8,6 +8,7 @@
              :src="imageUrl!"
              alt=""
              @error="failedUrl = imageUrl" />
+        <span v-else-if="isLetterShown" class="chat-channel-mark-letter" data-testid="channel-mark-letter">{{ letter }}</span>
         <Icon v-else :name="isPublic ? 'hash' : 'lock'" :size="iconSize" />
     </span>
 </template>
@@ -25,6 +26,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
+    import { avatarHue } from "./brand.partial";
     import Icon from "./icon.partial.obs";
 
     const props = defineProps({
@@ -44,13 +46,23 @@
         iconSize: {
             type: String as PropType<"md" | "sm" | "xs">,
             default: "md"
+        },
+
+        /**
+         * The channel's name, which turns the mark into a letter tile: with no image, its first
+         * letter on the color of its name's hue rather than the hash or lock. Off by default, so
+         * the header, the intro and the details keep the glyph.
+         */
+        tileName: {
+            type: String as PropType<string | null>,
+            default: null
         }
     });
 
     // #region Values
 
     /**
-     * The image that failed to load, so a broken one gives way to the hash or lock; kept by its
+     * The image that failed to load, so a broken one gives way to the letter, hash or lock; kept by its
      * address so a new image is tried again rather than staying on the glyph.
      */
     const failedUrl = ref<string | null>(null);
@@ -60,6 +72,12 @@
     // #region Computed Values
 
     const isImageShown = computed((): boolean => !!props.imageUrl && props.imageUrl !== failedUrl.value);
+
+    /** A tile with no image to show draws a letter; a mark without a tile name draws the glyph. */
+    const isLetterShown = computed((): boolean => !isImageShown.value && !!props.tileName && letter.value !== "");
+
+    /** The name's first letter, upper case, kept whole outside the basic plane. */
+    const letter = computed((): string => (Array.from((props.tileName ?? "").trim())[0] ?? "").toUpperCase());
 
     // #endregion Computed Values
 </script>

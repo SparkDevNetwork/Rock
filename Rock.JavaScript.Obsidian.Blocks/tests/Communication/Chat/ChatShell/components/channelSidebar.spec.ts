@@ -25,6 +25,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
@@ -136,7 +137,6 @@ function mountSidebar(props: Record<string, unknown> = {}): VueWrapper {
             rows: allRows,
             activeChannelId: null,
             isNewMessageShown: true,
-            organizationName: "Sun Valley Church",
             ...props
         },
         attachTo: document.body
@@ -167,11 +167,22 @@ afterEach(() => {
 });
 
 describe("the sidebar's top", () => {
-    test("shows the church's name and its initial in the mark", () => {
+    // The page above the block already names the church and Rock's rail shows its logo, so the head
+    // is one row for finding a conversation and starting one.
+    test("draws no church name or mark: the head is the search beside the compose button", () => {
         const w = mountSidebar();
+        const top = w.get("[data-testid='sidebar-top']");
 
-        expect(w.get("[data-testid='sidebar-org-name']").text()).toBe("Sun Valley Church");
-        expect(w.get("[data-testid='sidebar-org-mark']").text()).toBe("S");
+        expect(w.find("[data-testid='sidebar-org-name']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-org-mark']").exists()).toBe(false);
+        expect(top.find("[data-testid='sidebar-search']").exists()).toBe(true);
+        expect(top.find("[data-testid='new-message']").exists()).toBe(true);
+        expect(w.findAll(".chat-side-search")).toHaveLength(1);
+        expect(top.get(".chat-side-search").classes()).toContain("chat-field");
+    });
+
+    test("is not given the church's name at all", () => {
+        expect((ChannelSidebar as unknown as { props: Record<string, unknown> }).props).not.toHaveProperty("organizationName");
     });
 
     test("offers New message as a labelled icon button only with DM Access", async () => {
@@ -241,7 +252,8 @@ describe("Find a conversation", () => {
         const w = mountSidebar();
         const search = w.get("[data-testid='sidebar-search']");
 
-        expect(search.attributes("placeholder")).toBe("Find a conversation");
+        expect(search.attributes("placeholder")).toBe("Search");
+        expect(search.attributes("aria-label")).toBe("Find a conversation");
 
         await search.setValue("wor");
         expect(visibleRowIds(w)).toEqual([team.channel_id]);
@@ -472,14 +484,49 @@ describe("a row's look, by the room's kind", () => {
     });
 });
 
-describe("a channel's mark", () => {
-    test("shows the channel's own image in place of the hash or lock, and the lock again without one", () => {
-        const pictured = row({ channel_id: "c0000010-0000-4000-8000-000000000000", name: "Greeters", is_public: true, icon_url: "https://church.example/GetImage.ashx?guid=team" });
-        const w = mountSidebar({ rows: [pictured, team] });
+describe("a channel's tile", () => {
+    const pictured = row({ channel_id: "c0000010-0000-4000-8000-000000000000", name: "Greeters", is_public: true, icon_url: "https://church.example/GetImage.ashx?guid=team" });
 
-        expect(rowOf(w, pictured.channel_id).get(".chat-cs-slot [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
-        expect(rowOf(w, team.channel_id).find("[data-testid='channel-mark-image']").exists()).toBe(false);
-        expect(rowOf(w, team.channel_id).find(".chat-cs-slot svg").exists()).toBe(true);
+    test("shows the channel's own image as its tile", () => {
+        const w = mountSidebar({ rows: [pictured, team] });
+        const image = rowOf(w, pictured.channel_id).get(".chat-ch-tile [data-testid='channel-mark-image']");
+
+        expect(image.attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
+        expect(rowOf(w, pictured.channel_id).find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+    });
+
+    test("shows its first letter on the colour of its name's hue when it has no image", () => {
+        const w = mountSidebar({ rows: [pictured, team] });
+        const tile = rowOf(w, team.channel_id).get(".chat-ch-tile");
+
+        expect(tile.get("[data-testid='channel-mark-letter']").text()).toBe("W");
+        expect(tile.find("[data-testid='channel-mark-image']").exists()).toBe(false);
+        // the people avatar's hash, so a channel and a person of one name share a hue
+        expect((tile.element as HTMLElement).style.getPropertyValue("--chat-av-hue")).toBe(String(avatarHue("Worship Team")));
+    });
+
+    test("keeps a letter when the image fails to load", async () => {
+        const w = mountSidebar({ rows: [pictured] });
+
+        await w.get("[data-testid='channel-mark-image']").trigger("error");
+
+        expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
+    });
+
+    test("a private channel shows a lock after its name, a public one none", () => {
+        const w = mountSidebar({ rows: [pictured, team] });
+        const title = rowOf(w, team.channel_id).get(".chat-row-title");
+
+        expect(rowOf(w, pictured.channel_id).find("[data-testid='row-lock']").exists()).toBe(false);
+        expect(title.element.children[0].getAttribute("data-testid")).toBe("row-name");
+        expect(title.element.children[1].getAttribute("data-testid")).toBe("row-lock");
+    });
+
+    test("sits in the column a direct message's face does, in Starred beside one", () => {
+        const w = mountSidebar({ rows: [starred, { ...dmRead, is_favorite: true }] });
+
+        expect(rowOf(w, starred.channel_id).find(".chat-row-face .chat-ch-tile").exists()).toBe(true);
+        expect(rowOf(w, dmRead.channel_id).find(".chat-row-face").exists()).toBe(true);
     });
 });
 
@@ -557,14 +604,20 @@ describe("the empty sidebar", () => {
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
     });
 
-    test("offers Browse channels beside New message, a line button after the filled one", async () => {
+    // Centred and calm: a glyph with no box, the line, one solid button and one link.
+    test("offers New message as the one solid button and Browse channels as a link after it", async () => {
         const w = mountSidebar({ rows: [] });
-        const actions = w.get("[data-testid='sidebar-empty'] .chat-side-empty-actions");
+        const empty = w.get("[data-testid='sidebar-empty']");
 
-        const buttons = actions.findAll("button");
+        expect(empty.find(".chat-side-empty-ic").exists()).toBe(false);
+        expect(empty.find(".chat-side-empty-glyph svg").exists()).toBe(true);
+        const buttons = empty.get(".chat-side-empty-actions").findAll("button");
         expect(buttons.map(button => button.text())).toEqual(["New message", "Browse channels"]);
+        expect(buttons[0].attributes("data-testid")).toBe("empty-new-message");
+        expect(buttons[0].classes()).toContain("is-solid");
         expect(buttons[1].attributes("data-testid")).toBe("empty-browse");
-        expect(buttons[1].classes()).toContain("is-line");
+        expect(buttons[1].classes()).toContain("is-link");
+        expect(buttons[1].classes()).not.toContain("is-solid");
 
         await buttons[1].trigger("click");
         expect(w.emitted("browse")).toHaveLength(1);
@@ -574,6 +627,13 @@ describe("the empty sidebar", () => {
         const w = mountSidebar({ rows: [], isNewMessageShown: false });
 
         expect(w.get("[data-testid='empty-browse']").text()).toBe("Browse channels");
+    });
+
+    // With no New message beside it, the way in is the one thing to press, so it is the solid one.
+    test("makes Browse channels the solid button when it is the only way in", () => {
+        const w = mountSidebar({ rows: [], isNewMessageShown: false });
+
+        expect(w.get("[data-testid='empty-browse']").classes()).toContain("is-solid");
     });
 });
 
@@ -650,6 +710,8 @@ describe("Browse channels", () => {
         expect(rows[rows.length - 1].compareDocumentPosition(browse.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
         expect(browse.text()).toBe("Browse channels");
         expect(browse.classes()).toEqual(expect.arrayContaining(["chat-row", "is-cs", "is-browse"]));
+        // a dashed tile in the channels' column, as every room above it has a tile
+        expect(browse.find(".chat-row-face .chat-ch-tile.is-browse svg").exists()).toBe(true);
     });
 
     test("opens the directory from its row, and is current while the directory is open", async () => {

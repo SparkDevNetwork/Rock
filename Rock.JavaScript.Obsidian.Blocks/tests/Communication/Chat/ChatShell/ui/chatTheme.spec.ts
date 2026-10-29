@@ -216,6 +216,12 @@ const tokens: Token[] = [
     { name: "av-l", light: "90%", dark: "23%" },
     { name: "av-tsat", light: "42%", dark: "75%" },
     { name: "av-tl", light: "31%", dark: "82%" },
+    // A channel's letter tile: the same hue rule on a slightly more saturated tint, so a square
+    // reads as a channel beside the round faces.
+    { name: "tile-sat", light: "62%", dark: "32%" },
+    { name: "tile-l", light: "88%", dark: "24%" },
+    { name: "tile-tsat", light: "45%", dark: "70%" },
+    { name: "tile-tl", light: "30%", dark: "80%" },
 
     // Radii.
     { name: "r-xs", light: "4px", rock: "rounded-xsmall" },
@@ -831,5 +837,78 @@ describe("the components' own styles", () => {
             expect(declarationOf(resolve(components, file), selector, "display")).toBe("");
             expect(declarationOf(resolve(components, file), selector, "vertical-align")).toBe("");
         }
+    });
+
+    // A mention badge is a soft tint with the church's ink, never text on the church's fill, so no
+    // church color can leave it unreadable. It is its own compositor layer for its whole life: the
+    // pop is a transform, and a layer that is dropped when the pop ends repaints its text snapped to
+    // the pixel grid, so the digit visibly shifted. Every edge is a whole pixel for the same reason.
+    describe("the mention badge", () => {
+        const sidebarPath = resolve(components, "channelSidebar.partial.obs");
+        const sheetRule = (selector: string, property: string): string => declarationOf(sheetPath, selector, property);
+
+        test("is a soft tint with the church's ink and no filled brand color", () => {
+            expect(sheetRule(".chat-badge", "background")).toBe(normalize("var(--chat-brand-tint)"));
+            expect(sheetRule(".chat-badge", "color")).toBe(normalize("var(--chat-brand-ink)"));
+
+            const rules = readSheet(sheetPath).rules.filter(r => r.selector.includes(".chat-badge"));
+            for (const rule of rules) {
+                for (const property of ["background", "background-color", "color"]) {
+                    expect(rule.declarations.get(property) ?? "").not.toMatch(/brand-fill|on-brand/);
+                }
+            }
+        });
+
+        test("stays in its own layer for its whole life, on whole pixels", () => {
+            expect(sheetRule(".chat-badge", "will-change")).toBe("transform");
+            expect(sheetRule(".chat-badge", "height")).toBe("20px");
+            expect(sheetRule(".chat-badge", "line-height")).toBe("20px");
+            expect(sheetRule(".chat-badge", "min-width")).toBe("22px");
+            expect(sheetRule(".chat-badge", "font-size")).toBe("12px");
+        });
+
+        test("a muted room's badge stays visible in dark, on the church tint", () => {
+            for (const condition of [isDarkExplicit, isDarkUnthemed, isDarkFollowingSystem]) {
+                expect(valuesOf(readSheet(sheetPath), "--chat-badge-quiet", condition)).toEqual([normalize("var(--chat-brand-tint)")]);
+            }
+        });
+
+        test("the threads list's badge, which skips the pop, sits on a pinned line too", () => {
+            expect(declarationOf(resolve(components, "threadsPanel.partial.obs"), ".chat-ls-foot", "line-height")).toBe("20px");
+        });
+
+        test("the sidebar's headings and rows have pinned whole-pixel lines and heights", () => {
+            expect(declarationOf(sidebarPath, ".chat-sec h3", "line-height")).toBe("16px");
+            expect(declarationOf(sidebarPath, ".chat-row-name", "line-height")).toBe("20px");
+            expect(declarationOf(sidebarPath, ".chat-row-prev", "line-height")).toBe("18px");
+            expect(declarationOf(sidebarPath, ".chat-row", "height")).toBe("52px");
+            expect(declarationOf(sidebarPath, ".chat-row.is-cs", "height")).toBe("44px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-row", "height")).toBe("56px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-row.is-cs", "height")).toBe("48px");
+        });
+    });
+
+    describe("the sidebar's head and tiles", () => {
+        const sidebarPath = resolve(components, "channelSidebar.partial.obs");
+
+        test("the search and compose are 38px with radius 10, in one 64px row", () => {
+            expect(declarationOf(sidebarPath, ".chat-side-top", "height")).toBe("64px");
+            expect(declarationOf(sidebarPath, ".chat-side-search", "height")).toBe("38px");
+            expect(declarationOf(sidebarPath, ".chat-side-search", "border-radius")).toBe(normalize("var(--chat-r-org)"));
+            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("38px");
+            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-org)"));
+        });
+
+        test("a channel's tile is 32px with radius 9", () => {
+            expect(declarationOf(sidebarPath, ".chat-ch-tile", "width")).toBe("32px");
+            expect(declarationOf(sidebarPath, ".chat-ch-tile", "height")).toBe("32px");
+            expect(declarationOf(sidebarPath, ".chat-ch-tile", "border-radius")).toBe("9px");
+        });
+
+        test("the empty state's solid button is the church fill with its text color, and its link the church ink", () => {
+            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "background")).toBe(normalize("var(--chat-brand-fill)"));
+            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "color")).toBe(normalize("var(--chat-on-brand)"));
+            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-link", "color")).toBe(normalize("var(--chat-brand-ink)"));
+        });
     });
 });
