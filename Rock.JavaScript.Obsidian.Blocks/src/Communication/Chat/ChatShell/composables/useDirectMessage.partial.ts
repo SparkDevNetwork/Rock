@@ -102,6 +102,13 @@ export type DirectMessageDraft = {
      * is refused, since a refusal leaves only the text.
      */
     phase?: DraftPhase;
+
+    /**
+     * When the first message's send began, in milliseconds, stamped as its phase leaves idle for
+     * asking, waiting or trying, so New message times its quiet second before Sending… from the
+     * send's start as a conversation does.
+     */
+    startedAt?: number;
 };
 
 /** The part of a first message's phase a draft draws. */
@@ -360,11 +367,20 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         return phase === "sent" || phase === "refused" ? null : phase;
     }
 
+    /** Moves a draft to a phase, stamping when a send begins: the phase leaves idle (none or failed) for a busy one. */
+    function drawPhase(draft: DirectMessageDraft, phase: DraftPhase): void {
+        const isBusy = (p: DraftPhase | undefined): boolean => p === "asking" || p === "waiting" || p === "trying";
+        if (isBusy(phase) && !isBusy(draft.phase)) {
+            draft.startedAt = Date.now();
+        }
+        draft.phase = phase;
+    }
+
     /** Moves a first message to a phase, and its draft with it, so the draft always draws where it is. */
     function setPhase(message: FirstMessage, phase: FirstMessagePhase): void {
         message.phase = phase;
         if (message.draft) {
-            message.draft.phase = drawnPhase(phase);
+            drawPhase(message.draft, drawnPhase(phase));
         }
     }
 
@@ -372,7 +388,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
     function carry(draft: DirectMessageDraft, message: FirstMessage): void {
         carriedBy.set(toRaw(draft), message);
         message.draft = draft;
-        draft.phase = drawnPhase(message.phase);
+        drawPhase(draft, drawnPhase(message.phase));
     }
 
     /** Keeps a first message's text for the next draft to its people. */
@@ -561,7 +577,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             const message = queued[0];
             message.phase = "trying";
             // The queued message has no draft of its own, so the draft sending it draws its try.
-            draft.phase = "trying";
+            drawPhase(draft, "trying");
             const isSent = await sendTry(message, true);
             if (isStopped) {
                 return false;

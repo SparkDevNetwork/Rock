@@ -67,7 +67,7 @@ describe("createSender", () => {
         const sending = sender.send(channel, "hello");
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "hello", status: "sending", errorCode: null }
+            { localId: "local-1", channelId: channel, body: "hello", status: "sending", errorCode: null, startedAt: expect.any(Number) }
         ]);
         expect(timelines.state(channel).messages).toEqual([]);
 
@@ -87,7 +87,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", startedAt: expect.any(Number), reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
         ]);
         expect(timelines.state(channel).messages).toEqual([]);
     });
@@ -105,7 +105,7 @@ describe("createSender", () => {
         expect(await sender.send(channel, "keep me")).toBe(false);
 
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
+            { localId: "local-1", channelId: channel, body: "keep me", status: "failed", errorCode: "rpc.transport", startedAt: expect.any(Number), reason: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } }
         ]);
         sender.discard("local-1");
         expect(sender.pending(channel)).toEqual([]);
@@ -392,6 +392,7 @@ describe("a send into a room the person has not joined", () => {
                 body: "hello room",
                 status: "failed",
                 errorCode: "door.not_allowed",
+                startedAt: expect.any(Number),
                 refusal: { code: "door.not_allowed", severity: "permission", text: "You can't join this channel." },
                 reason: { alone: "You can't join this channel.", besideRetry: "You can't join this channel.", canRetry: false }
             }
@@ -1303,6 +1304,26 @@ describe("retryAll", () => {
         expect(sender.pending(channel)).toEqual([]);
     });
 
+    test("a send is stamped with when it started, and a retry with when its own try started", async () => {
+        jest.useFakeTimers({ doNotFake: ["setTimeout", "setImmediate", "nextTick"] });
+        try {
+            const started = Date.now();
+            const { sender } = await threeFailed([deferred<SendResult>()]);
+            expect(sender.pending(channel).map(r => r.startedAt)).toEqual([started, started, started]);
+
+            jest.setSystemTime(started + 5000);
+            void sender.retryAll(["local-1"]);
+            await turn();
+
+            const [one, two] = sender.pending(channel);
+            expect(one.startedAt).toBe(started + 5000);
+            expect(two.startedAt).toBe(started);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("stops at a failure: the ones after it are not sent and stay failed as they were", async () => {
         const { sender, sent } = await threeFailed([{ ok: true, id: 51, createdAt: "2026-10-27T10:00:00Z" }, offline]);
 
@@ -1442,7 +1463,7 @@ describe("a send with files", () => {
 
         expect(sent).toEqual([{ body: "", attachments: [photo, pdf] }]);
         expect(sender.pending(channel)).toEqual([
-            { localId: "local-1", channelId: channel, body: "", status: "sending", errorCode: null, attachments: [photo, pdf] }
+            { localId: "local-1", channelId: channel, body: "", status: "sending", errorCode: null, startedAt: expect.any(Number), attachments: [photo, pdf] }
         ]);
 
         const stored = [{ ...photo, size: 880 }, pdf];
@@ -1584,6 +1605,45 @@ describe("useSlowSend: a send says Sending… only once it has taken a second", 
         expect(slow.has("c")).toBe(false);
         jest.advanceTimersByTime(600);
         expect(slow.has("b")).toBe(true);
+    });
+
+    test("the second is timed from the send's start, so a view mounted late agrees with one that was open", () => {
+        const rows = reactive([{ ...row("a"), startedAt: Date.now() }]);
+
+        jest.advanceTimersByTime(600);
+        const { slow } = watchRows(rows);
+
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(399);
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(1);
+        expect(slow.has("a")).toBe(true);
+    });
+
+    test("a view mounted on a send already older than a second says Sending… at once", () => {
+        const rows = reactive([{ ...row("a"), startedAt: Date.now() }]);
+
+        jest.advanceTimersByTime(4000);
+        const { slow } = watchRows(rows);
+
+        expect(slow.has("a")).toBe(true);
+    });
+
+    test("a retry stamped afresh is quiet for its own second", () => {
+        const rows = reactive([{ ...row("a"), startedAt: Date.now() }]);
+        const { slow } = watchRows(rows);
+
+        jest.advanceTimersByTime(3000);
+        rows[0].status = "failed";
+        jest.advanceTimersByTime(500);
+        rows[0].startedAt = Date.now();
+        rows[0].status = "sending";
+
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(999);
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(1);
+        expect(slow.has("a")).toBe(true);
     });
 
     test("leaving the view stops the waits", () => {

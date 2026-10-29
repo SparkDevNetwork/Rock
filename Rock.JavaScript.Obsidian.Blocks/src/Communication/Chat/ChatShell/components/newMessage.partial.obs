@@ -106,7 +106,7 @@
                     <div v-if="pendingPhase" class="chat-nd-pend" data-testid="nd-pending">
                         <div class="chat-nd-bubble">{{ pendingText }}</div>
                         <!-- Not sent where Sending… was; what to do about it waits over the composer. -->
-                        <div class="chat-nd-meta" :class="{ 'is-failed': pendingPhase === 'failed' }" data-testid="nd-phase">
+                        <div v-if="isPhaseShown" class="chat-nd-meta" :class="{ 'is-failed': pendingPhase === 'failed' }" data-testid="nd-phase">
                             <template v-if="pendingPhase === 'failed'"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>Not sent</template>
                             <template v-else-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
                             <template v-else-if="pendingPhase === 'waiting'"><Icon name="clock" size="xs" />Still setting it up…</template>
@@ -556,7 +556,7 @@
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
-    import { SendFailure, SendFailureNews } from "../composables/useSend.partial";
+    import { SendFailure, SendFailureNews, useSlowSend } from "../composables/useSend.partial";
     import { failedWords } from "../errors.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
@@ -795,6 +795,11 @@
     });
 
     const pendingPhase = computed(() => props.draft?.phase ?? null);
+
+    // The send itself, trying, is the one a conversation holds quiet for its first second, timed
+    // from the send's start the draft carries; the phases before it already say what they wait for.
+    const slowKeys = useSlowSend(() => [{ localId: "first-message", status: pendingPhase.value === "trying" ? "sending" : "failed", startedAt: props.draft?.startedAt }]);
+    const isPhaseShown = computed(() => pendingPhase.value !== null && (pendingPhase.value !== "trying" || slowKeys.has("first-message")));
 
     const pendingText = computed((): string => sentText.value ?? props.draft?.body ?? "");
 

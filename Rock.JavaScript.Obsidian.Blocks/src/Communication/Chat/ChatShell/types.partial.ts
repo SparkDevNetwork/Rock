@@ -806,6 +806,12 @@ export type PendingMessage = {
     status: "sending" | "failed";
     errorCode: string | null;
 
+    /**
+     * When the try now sending began, in milliseconds, stamped where the sender sets the row to
+     * sending so every view of it times the quiet second from the same moment.
+     */
+    startedAt?: number;
+
     /** The root a reply answers, so the thread draws the row and the conversation does not. */
     parentId?: number | null;
 

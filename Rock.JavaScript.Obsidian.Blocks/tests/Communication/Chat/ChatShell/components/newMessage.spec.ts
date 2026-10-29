@@ -537,11 +537,45 @@ describe("the first message", () => {
         ["waiting", "Still setting it up…"],
         ["trying", "Sending…"]
     ] as const)("draws its phase on the pending message: %s", (phase, words) => {
-        const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase }) });
+        // started long enough ago that Sending… is no longer held back
+        const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase, startedAt: Date.now() - 5000 }) });
 
         const pending = w.get("[data-testid='nd-pending']");
         expect(pending.text()).toContain("hello");
         expect(plain(pending.get("[data-testid='nd-phase']").text())).toBe(words);
+    });
+
+    // As in a conversation, timed from the send's start and not from the view's mount.
+    describe("Sending… waits a quiet second from the send's start", () => {
+        beforeEach(() => jest.useFakeTimers());
+        afterEach(() => jest.useRealTimers());
+
+        test("a send that began 600 ms ago says nothing until 1000 ms after it began", async () => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying", startedAt: Date.now() - 600 }) });
+
+            expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
+            expect(w.get("[data-testid='nd-pending']").text()).toContain("hello");
+
+            jest.advanceTimersByTime(399);
+            await nextTick();
+            expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
+
+            jest.advanceTimersByTime(1);
+            await nextTick();
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Sending…");
+        });
+
+        test("a send older than a second says Sending… as the view opens", () => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying", startedAt: Date.now() - 2500 }) });
+
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Sending…");
+        });
+
+        test("asking is not held back", () => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "asking", startedAt: Date.now() }) });
+
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Starting your conversation…");
+        });
     });
 
     test("locks the To field and its chips while it is on its way, and says why", () => {
