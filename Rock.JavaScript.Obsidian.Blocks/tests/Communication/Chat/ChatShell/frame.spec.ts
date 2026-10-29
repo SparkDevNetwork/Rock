@@ -1078,17 +1078,20 @@ describe("with nothing open", () => {
             expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
         });
 
-        test("ends the column's reveal on the feed's own lift or on a cancelled animation, never depending on one event", async () => {
-            const ended = (name: string, type = "animationend"): AnimationEvent => Object.assign(new Event(type, { bubbles: true }), { animationName: name }) as AnimationEvent;
+        // The feed owns its rise: under the veil it stays still, and it rises once the column is revealed.
+        test("the first room's feed, mounted before its page, rises once the column is revealed and not under the veil", async () => {
             const w = await mountLoading();
+            timelineOf(team.channel_id).isLoaded = false;
+            (mockShell!.state as { activeChannelId: string | null }).activeChannelId = team.channel_id;
+            await settle();
+
+            timelineOf(team.channel_id).isLoaded = true;
+            await settle();
+            expect(w.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
             revealOf().isMainRevealed = true;
             await settle();
-            expect(w.get("[data-testid='frame-conversation']").classes()).toContain("is-revealing");
-
-            // the feed is the one child the reveal lifts, and it may be the only one that ends
-            w.get("[data-testid='frame-conversation']").element.dispatchEvent(ended("chat-reveal-lift"));
-            await settle();
-            expect(w.get("[data-testid='frame-conversation']").classes()).not.toContain("is-revealing");
+            expect(w.get("[data-testid='message-feed']").classes()).toContain("is-entering");
         });
 
         test("ends the column's reveal when its animations are cancelled", async () => {

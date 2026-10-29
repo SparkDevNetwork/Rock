@@ -633,17 +633,12 @@
 }
 
 /*
-    The first screen's reveal: the column's parts fade in as the veil fades out, and the feed
-    lifts a little as a room switch lifts it, one animation that does both so the more specific
-    rule never drops the fade. Only while the reveal runs, so a feed drawn for a later room keeps
-    its own rise.
+    The first screen's reveal: the column's parts fade in as the veil fades out. The feed's rise
+    is the feed's own, played when the column is revealed, so nothing here animates the feed
+    itself: a second animation on it would restart its own when this one ended.
 */
 .chat-frame-under.is-revealing > * {
     animation: chat-reveal-in var(--chat-d-reveal) var(--chat-ease-in) both;
-}
-
-.chat-frame-under.is-revealing :deep(.chat-feed) {
-    animation: chat-reveal-lift var(--chat-d-reveal) var(--chat-ease-in) both;
 }
 
 /* A full view over the conversation, which stays laid out and inert underneath. */
@@ -1147,9 +1142,9 @@
     }
 
     /**
-     * The column's reveal is under way until one of its animations ends or is cancelled, which is
-     * what the feed's lift runs on. It also ends with the room it revealed, so no later room's
-     * feed can take the reveal's lift in place of its own rise, whatever the browser fired.
+     * The column's reveal is under way until its fade ends or is cancelled. It also ends with the
+     * room it revealed, so no later room's parts take the reveal's fade in place of their own
+     * rise, whatever the browser fired.
      */
     const isRevealing = ref(false);
 
@@ -1165,7 +1160,7 @@
 
     /** A reveal animation has ended or been cancelled; a row's own animation ending inside the column says nothing about it. */
     function onRevealAnimationEnd(event: AnimationEvent): void {
-        if (event.animationName === "chat-reveal-in" || event.animationName === "chat-reveal-lift") {
+        if (event.animationName === "chat-reveal-in") {
             isRevealing.value = false;
         }
     }

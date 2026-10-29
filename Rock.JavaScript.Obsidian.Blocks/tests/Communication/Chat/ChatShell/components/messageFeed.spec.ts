@@ -31,6 +31,7 @@ import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/compone
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -156,8 +157,9 @@ type FeedProps = {
     isCovered?: boolean;
 };
 
-function draw(props: FeedProps): VueWrapper {
-    return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, ...props } });
+function draw(props: FeedProps, reveal?: { isMainRevealed: boolean }): VueWrapper {
+    const provide = reveal ? { [pageRevealKey as symbol]: { state: reveal, holdFace: () => undefined } } : {};
+    return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, ...props }, global: { provide } });
 }
 
 /**
@@ -330,6 +332,52 @@ describe("the feed's entrance", () => {
         await nextTick();
 
         expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    // The page's reveal fades the column in over the veil; a feed that rose under it would rise
+    // again from nothing when the reveal ended, so the first load's entrance is the reveal's moment.
+    test("a feed on the first load holds its entrance until the page reveals the column", async () => {
+        const state = timeline([], { isLoaded: false });
+        const reveal = reactive({ isMainRevealed: false });
+        const wrapper = draw({ timeline: state }, reveal);
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+        expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+
+        reveal.isMainRevealed = true;
+        await nextTick();
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("a feed whose first page lands after the page revealed the column enters as the page is drawn", async () => {
+        const state = timeline([], { isLoaded: false });
+        const reveal = reactive({ isMainRevealed: true });
+        const wrapper = draw({ timeline: state }, reveal);
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='message-feed']").classes()).toContain("is-entering");
+    });
+
+    test("a revealed column does not replay a feed's entrance that already played", async () => {
+        const state = timeline([], { isLoaded: false });
+        const reveal = reactive({ isMainRevealed: true });
+        const wrapper = draw({ timeline: state }, reveal);
+        state.isLoaded = true;
+        await nextTick();
+
+        const classes: boolean[] = [];
+        const element = wrapper.get("[data-testid='message-feed']").element;
+        new MutationObserver(() => classes.push(element.classList.contains("is-entering"))).observe(element, { attributes: true, attributeFilter: ["class"] });
+        reveal.isMainRevealed = false;
+        reveal.isMainRevealed = true;
+        await nextTick();
+
+        expect(classes).not.toContain(false);
     });
 
     test("a feed mounted with its page never enters later, even if its timeline reports loaded again", async () => {

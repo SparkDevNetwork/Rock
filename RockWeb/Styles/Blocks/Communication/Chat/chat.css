@@ -225,7 +225,6 @@
     --chat-d-skel-out: 160ms;
     --chat-d-skel-wait: 150ms;
     --chat-d-reveal-ceiling: 2.5s;
-    --chat-reveal-lift: 6px;
     --chat-d-tip-delay: 500ms;
     --chat-d-tip-delay-rx: 350ms;
     --chat-d-long-press: 450ms;
@@ -423,7 +422,6 @@
         --chat-d-fd-pop: 0ms;
         --chat-d-img-in: 140ms;
         --chat-d-reveal: 140ms;
-        --chat-reveal-lift: 0px;
     }
 
     .chat-shell .chat-skeleton,
@@ -555,17 +553,10 @@
     }
 }
 
-/* The first load's reveal: content fades in, and the feed fades and lifts into place as a room switch does. */
+/* The first load's reveal: the column's parts fade in; the feed's own rise plays beside it. */
 @keyframes chat-reveal-in {
     from {
         opacity: 0;
-    }
-}
-
-@keyframes chat-reveal-lift {
-    from {
-        opacity: 0;
-        transform: translateY(var(--chat-reveal-lift));
     }
 }
 

@@ -944,15 +944,13 @@ describe("the components' own styles", () => {
         });
     });
 
-    // The feed is lifted by the reveal, and a rule with more weight than the one fading the column's
-    // other parts would otherwise leave it lifting without fading: one animation does both.
-    test("the first load's reveal gives the feed one animation that both fades and lifts", () => {
+    // The feed owns its rise (it plays when the column is revealed), so the reveal only fades the
+    // column's parts: a second, lifting animation on the feed would restart its own when it ended.
+    test("the first load's reveal only fades the column's parts and leaves the feed's rise to the feed", () => {
         const shellPath = resolve(components, "../../chatShell.obs");
-        const frames = normalize(keyframesBody(sheetPath, "chat-reveal-lift") ?? "");
 
-        expect(frames).toContain("opacity:0");
-        expect(frames).toContain(normalize("transform: translateY(var(--chat-reveal-lift))"));
-        expect(declarationOf(shellPath, ".chat-frame-under.is-revealing :deep(.chat-feed)", "animation")).toBe(normalize("chat-reveal-lift var(--chat-d-reveal) var(--chat-ease-in) both"));
         expect(declarationOf(shellPath, ".chat-frame-under.is-revealing > *", "animation")).toBe(normalize("chat-reveal-in var(--chat-d-reveal) var(--chat-ease-in) both"));
+        expect(declarationOf(shellPath, ".chat-frame-under.is-revealing :deep(.chat-feed)", "animation")).toBe("");
+        expect(keyframesBody(sheetPath, "chat-reveal-lift")).toBeNull();
     });
 });

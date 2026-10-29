@@ -636,13 +636,14 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, inject, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import ActionBar from "./actionBar.partial.obs";
     import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
+    import { pageRevealKey } from "../pageLoad.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
@@ -871,6 +872,13 @@
 
     /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
     let isEntrancePending = !props.timeline.isLoaded;
+
+    /**
+     * The first load's reveal, absent where the feed is drawn alone. While it has not revealed
+     * the column the feed's entrance waits for it, so the rise plays once, in the reveal, and not
+     * once under the veil and again when the reveal ends.
+     */
+    const page = inject(pageRevealKey, null);
 
     // #endregion Values
 
@@ -1265,15 +1273,22 @@
         isEnteringDrawn.value = true;
     });
 
+    /** Plays the entrance a feed mounted before its page was holding, once the page is drawn and the column revealed. */
+    function playPendingEntrance(): void {
+        if (isEntrancePending && props.timeline.isLoaded && (!page || page.state.isMainRevealed)) {
+            isEntrancePending = false;
+            isEnteringDrawn.value = true;
+        }
+    }
+
+    watch(() => page?.state.isMainRevealed, playPendingEntrance);
+
     watch(() => props.timeline.isLoaded, isLoaded => {
         if (!isLoaded) {
             return;
         }
 
-        if (isEntrancePending) {
-            isEntrancePending = false;
-            isEnteringDrawn.value = true;
-        }
+        playPendingEntrance();
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
             skeletonTimer = null;
