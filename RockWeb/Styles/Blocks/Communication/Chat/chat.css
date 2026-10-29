@@ -179,7 +179,6 @@
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
     --chat-d-row-flash: 1.2s;
-    --chat-d-rx-pop: 340ms;
     --chat-d-roll: 220ms;
     --chat-d-badge-in: 260ms;
     --chat-d-pop-remove: 130ms;

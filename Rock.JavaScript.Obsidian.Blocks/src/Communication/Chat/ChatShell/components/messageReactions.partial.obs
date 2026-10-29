@@ -115,7 +115,6 @@
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-full);
-    box-shadow: 0 0 0 2px var(--chat-surface);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
 }
 
@@ -177,7 +176,7 @@
 
 /* Your new reaction pops from small, springing past full size, the one place a chip moves on its own. */
 .chat-rx.is-popping {
-    animation: chat-rx-pop var(--chat-d-rx-pop) var(--chat-ease-spring);
+    animation: chat-rx-pop var(--chat-t-base) var(--chat-ease-spring);
 }
 
 @keyframes chat-rx-pop {
@@ -230,10 +229,9 @@
     color: var(--chat-text);
 }
 
-/* A channel's flat look: a smaller chip with no ring, the add chip in the row's flow. */
+/* A channel's flat look: a smaller chip, the add chip in the row's flow. */
 .is-community .chat-rx {
     height: 24px;
-    box-shadow: none;
 }
 
 .is-community .chat-rx.is-add {
