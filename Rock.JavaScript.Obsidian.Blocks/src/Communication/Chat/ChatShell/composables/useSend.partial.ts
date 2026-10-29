@@ -28,7 +28,9 @@
 // live copy and each page, so the feeds draw the row and whichever copy arrives as one message,
 // and whichever copy lands first settles the send: its row goes and the send resolves, even when
 // the answer is lost. A key stands for one text from its first try, since that try may have been
-// stored with its answer lost; changed words are a new message under a new key.
+// stored with its answer lost; changed words are a new message under a new key. Once stopped,
+// nothing more is sent, a wait to send again sends nothing, and no answer still on its way
+// reaches the screen.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { AttachmentItem, ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
@@ -49,6 +51,9 @@ const joinRequiredCode = "authz.join_required";
 
 /** The refusal of a send naming an upload the platform no longer holds. */
 const attachmentMissingCode = "rpc.attachment_missing";
+
+/** A try that reached nothing: a call that threw, or one a stopped sender never made. */
+const notSent: SendResult = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
 
 /**
  * How many times a send waits and tries again while a join is still reaching the platform, after
@@ -387,6 +392,9 @@ export type Sender = {
      * under a key of this session settles that send.
      */
     landed: (message: Pick<TimelineMessage, "id" | "client_key">) => void;
+
+    /** Ends every send for good: nothing more goes out, and nothing still on its way is written. */
+    stop: () => void;
 };
 
 /**
@@ -414,8 +422,14 @@ export function createSender(dependencies: SenderDependencies): Sender {
     const waitBeforeResend = dependencies.waitBeforeResend
         ?? ((attempt: number): Promise<void> => new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt)));
 
-    /** Sends a row's text once, under its key. */
+    let isStopped = false;
+
+    /** Sends a row's text once, under its key; a stopped sender sends nothing. */
     async function sendOnce(row: PendingMessage): Promise<SendResult> {
+        if (isStopped) {
+            return notSent;
+        }
+
         // A send that rejects is a failure like any other, so its row ends failed with a Retry
         // and a Discard rather than sending for good.
         try {
@@ -429,7 +443,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 : await dependencies.send(row.channelId, row.body, row.localId, reply);
         }
         catch {
-            return { ok: false, error: { code: "rpc.transport", severity: "failed" } };
+            return notSent;
         }
     }
 
@@ -489,6 +503,10 @@ export function createSender(dependencies: SenderDependencies): Sender {
      * it carries, the server's notice, reaches the message.
      */
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
+        if (isStopped) {
+            return false;
+        }
+
         markSending(row);
         row.errorCode = null;
         delete row.refusal;
@@ -516,6 +534,11 @@ export function createSender(dependencies: SenderDependencies): Sender {
             result = await joinAndResend(row, dependencies.join);
         }
 
+        // Stopped while a try or a wait was out: whatever it answered, nothing more is sent or written.
+        if (isStopped) {
+            return false;
+        }
+
         // The platform no longer holds an upload, so nothing was stored: the files go up again
         // from the copies kept, and the message goes once more under its key with the new ones.
         if (!result.ok && result.error.code === attachmentMissingCode && row.attachments?.length && dependencies.reupload) {
@@ -524,6 +547,10 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 row.attachments = renewed;
                 result = await sendOnce(row);
             }
+        }
+
+        if (isStopped) {
+            return false;
         }
 
         if (!result.ok) {
@@ -589,7 +616,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
     /** A copy of a message reached the page; one of this session's sends settles. */
     function landed(message: Pick<TimelineMessage, "id" | "client_key">): void {
         const key = sendKey(message.client_key);
-        if (!key || !sentKeys.has(key)) {
+        if (isStopped || !key || !sentKeys.has(key)) {
             return;
         }
 
@@ -608,7 +635,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
         send: async (channelId: string, body: string, attempt?: SendTry, reply?: ReplyTarget, quotedMessageId?: number, attachments?: AttachmentItem[]): Promise<boolean> => {
             // files alone are a message; blank text alone is nothing
-            if (body.trim() === "" && !attachments?.length) {
+            if (isStopped || (body.trim() === "" && !attachments?.length)) {
                 return false;
             }
 
@@ -664,7 +691,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             // read in the rows' own order, which is the order they were written
             const keys = new Set(localIds.map(sendKey));
             const queue = rows.filter(r => keys.has(r.localId) && r.status === "failed" && !r.refusal);
-            if (queue.length === 0) {
+            if (isStopped || queue.length === 0) {
                 return false;
             }
 
@@ -680,6 +707,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
                     }
 
                     if (!await deliver(row)) {
+                        if (isStopped) {
+                            return false;
+                        }
                         queue.slice(index + 1).filter(r => rows.includes(r)).forEach(r => r.status = "failed");
                         return false;
                     }
@@ -712,7 +742,11 @@ export function createSender(dependencies: SenderDependencies): Sender {
         },
 
         sentKeys,
-        landed
+        landed,
+
+        stop: (): void => {
+            isStopped = true;
+        }
     };
 }
 

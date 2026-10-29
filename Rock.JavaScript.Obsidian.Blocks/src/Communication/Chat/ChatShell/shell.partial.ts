@@ -1212,7 +1212,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
      */
     async function runOpen(channelId: string, isPageLoad: boolean): Promise<OpenOutcome> {
         const thisOpen = ++openCount;
-        const isCurrent = (): boolean => thisOpen === openCount;
+        // a stopped shell's open touches nothing more, however its answers land
+        const isCurrent = (): boolean => thisOpen === openCount && !isStopped;
 
         // The first screen's column waits for the room now on screen: an answer of the room this
         // one replaces, or a refused room's, must not complete its gates.
@@ -1591,6 +1592,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             cancelRecheck();
             cancelSidebarWait();
             timelines.stop();
+            sender.stop();
             directMessages.stop();
 
             // The thread's save leaves before the threads stop, so it still goes out; nothing it

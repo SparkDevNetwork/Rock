@@ -2166,6 +2166,38 @@ describe("a page's report after the shell stops", () => {
         expect(isSent).toBe(false);
         expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
     });
+
+    test("a send's answer still on its way writes nothing, and no send goes out after", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const sending = h.shell.send("on my way");
+        await settle();
+        expect(h.sent).toHaveLength(1);
+
+        await h.shell.stop();
+        h.heldSends.value[0].resolve();
+        await sending;
+        await settle();
+        void h.shell.send("too late");
+        await settle();
+
+        expect(h.sent).toHaveLength(1);
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
+        expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
+    });
+
+    test("an open answered after the shell stops remembers nothing and puts nothing on screen", async () => {
+        const h = await started();
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+
+        await h.shell.stop();
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+
+        expect(h.stored[rememberedChannelKey(tenant, person)]).toBe(channelA);
+    });
 });
 
 // The editor and the delete confirm belong to the conversation they were opened in: a switch to
