@@ -43,9 +43,9 @@ namespace Rock.Model
 
         /// <summary>
         /// Determines whether the specified action is authorized. If the Snippet is personal and
-        /// owned by the person, it returns true, but if it's personal and NOT owned by the person
-        /// it returns false -- otherwise (not a personal Snippet) it returns what the chain of authority
-        ///  determines.
+        /// owned by the person, it returns true, but if it's personal and NOT owned by the person,
+        /// or no person is given, it returns false -- otherwise (not a personal Snippet) it returns
+        /// what the chain of authority determines.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="person">The person.</param>
@@ -57,9 +57,9 @@ namespace Rock.Model
                 // always allow people to do anything with their own snippets
                 return true;
             }
-            else if ( OwnerPersonAlias != null && person != null && OwnerPersonAlias.PersonId != person.Id )
+            else if ( OwnerPersonAliasId.HasValue )
             {
-                // always prevent people from doing anything with someone else's snippets
+                // always prevent anyone but the owner, including a missing person, from doing anything with a personal snippet
                 return false;
             }
             else
