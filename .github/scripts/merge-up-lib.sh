@@ -25,6 +25,13 @@
 #      branch: resolutions people made in earlier merges on public, and AI
 #      proposals a person approved. A step is only finished when EVERY
 #      conflicted file is covered and no conflict markers are left.
+#   3. Kept deletions, also on `rerere-cache` (deletions.json). A file the
+#      branch being merged into deleted (usually a WebForms block replaced by
+#      its Obsidian version) and the other side changed. rerere can only
+#      record conflicting lines, so these are recorded here instead: the same
+#      file, with the same change coming in, stays deleted. Learned from merges
+#      on public that kept the file deleted, and from AI proposals a person
+#      approved.
 #
 # Requires: GH_TOKEN (the mirror), RUNNER_TEMP, GITHUB_REPOSITORY. For the
 # public branches, TOKEN (the Ship Bot token).
@@ -40,6 +47,7 @@ mu_init() {
   MU_PUBLIC="https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git"
   MU_CACHE="$RUNNER_TEMP/rerere"
   MU_META="$MU_CACHE/resolutions.json"
+  MU_DELETIONS="$MU_CACHE/deletions.json"
   MU_LOG_URL="${GITHUB_SERVER_URL:-https://github.com}/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
 }
 
@@ -65,8 +73,10 @@ mu_setup() {
     echo "No rerere-cache branch yet. Starting with no recorded resolutions."
   fi
   [ -f "$MU_META" ] || echo '{}' > "$MU_META"
+  [ -f "$MU_DELETIONS" ] || echo '{}' > "$MU_DELETIONS"
   [ -f "$MU_CACHE/trained.json" ] || echo '{}' > "$MU_CACHE/trained.json"
   echo "Recorded resolutions: $(ls "$MU_GITDIR/rr-cache" | wc -l)"
+  echo "Recorded kept deletions: $(jq 'length' "$MU_DELETIONS")"
 
   mu_install_version_driver
 }
@@ -156,6 +166,7 @@ mu_save_cache() {
       git -C "$out" checkout -q --orphan rerere-cache
     fi
     [ -f "$out/resolutions.json" ] || echo '{}' > "$out/resolutions.json"
+    [ -f "$out/deletions.json" ] || echo '{}' > "$out/deletions.json"
 
     "$apply" "$out"
 
@@ -167,10 +178,11 @@ mu_save_cache() {
       echo
       echo "- rr-cache/: git rerere's recordings, one folder per conflict."
       echo "- resolutions.json: for each recording, the file, where it was learned from, and the PR."
+      echo "- deletions.json: files kept deleted when a merge-up brings in a change to them, by the file and the change (see the helpers file)."
       echo "- trained.json: the last commit learned from, per branch."
       echo "- proposed/pr-N/: AI-proposed resolutions waiting for a person to approve them."
       echo
-      echo "To drop a bad recording, delete its rr-cache folder and its resolutions.json entry."
+      echo "To drop a bad recording, delete its rr-cache folder and its resolutions.json entry, or its deletions.json entry."
     } > "$out/README.md"
 
     git -C "$out" add -A
@@ -263,6 +275,7 @@ mu_merge_step() {
   fi
   unset MERGE_DRIVER_LOG
   cat "$dir/merge.log"
+  mu_keep_recorded_deletions "$dir"
 
   conflicted=$(git diff --name-only --diff-filter=U)
   unresolved=$(git rerere remaining)
@@ -270,14 +283,18 @@ mu_merge_step() {
     unresolved=$(printf '%s\n' "$conflicted" | xargs -d '\n' grep -lE '^(<<<<<<<|>>>>>>>) ' 2> /dev/null || true)
   fi
 
-  if [ -n "$conflicted" ] && [ -z "$unresolved" ]; then
-    printf '%s\n' "$conflicted" | xargs -d '\n' git add --
+  # Finished when nothing is left unresolved, and something was resolved: a
+  # recorded resolution (still marked as conflicted) or a kept deletion.
+  if { [ -n "$conflicted" ] || [ -s "$dir/kept-deleted" ]; } && [ -z "$unresolved" ]; then
+    if [ -n "$conflicted" ]; then
+      printf '%s\n' "$conflicted" | xargs -d '\n' git add --
+    fi
     git commit -q --no-edit
     git rev-parse HEAD > "$dir/commit"
-    printf '%s\n' "$conflicted" > "$dir/files"
+    printf '%s\n' "$conflicted" | sed '/^$/d' > "$dir/files"
     find "$MU_GITDIR/rr-cache" -type f -name 'postimage*' -newermt 2001-01-01 \
       | sed -E 's#.*/rr-cache/([^/]+)/postimage#\1#' > "$dir/ids"
-    echo "Resolved automatically: $(echo $conflicted)"
+    echo "Resolved automatically: $(echo $conflicted $(cut -f2 "$dir/kept-deleted" 2> /dev/null))"
     STEP=resolved
     return 0
   fi
@@ -291,6 +308,9 @@ mu_merge_step() {
   fi
   if [ -d "$dir/driver" ]; then
     cat "$dir/driver/"*.path >> "$dir/resolved"
+  fi
+  if [ -s "$dir/kept-deleted" ]; then
+    cut -f2 "$dir/kept-deleted" >> "$dir/resolved"
   fi
 
   # For each file: its conflict as a diff for the comment, and each
@@ -309,12 +329,14 @@ mu_merge_step() {
   mu_classify_conflicts "$from" "$into" "$dir"
 
   # rerere's ids for the conflicts it couldn't resolve, and a key made from
-  # them. The same conflict has the same key on any PR (leftover drift hits
-  # several at once), so Claude is only asked once per conflict. An id is
-  # "<hash of the conflict>" or "<hash>.<variant>"; the variant only counts
-  # earlier unresolved tries in this job, so the key leaves it out.
+  # them and the ids of files deleted on the side merged into. The same
+  # conflict has the same key on any PR (leftover drift hits several at once),
+  # so Claude is only asked once per conflict. A rerere id is "<hash of the
+  # conflict>" or "<hash>.<variant>"; the variant only counts earlier
+  # unresolved tries in this job, so the key leaves it out.
   tr '\0' '\n' < "$MU_GITDIR/MERGE_RR" > "$dir/merge-rr" 2> /dev/null || true
-  cut -f1 "$dir/merge-rr" | sed 's/\..*$//' | sort | git hash-object --stdin > "$dir/key"
+  { cut -f1 "$dir/merge-rr" | sed 's/\..*$//'; cut -f1 "$dir/deleted" 2> /dev/null; } \
+    | sort | git hash-object --stdin > "$dir/key"
 
   case "${MU_ON_CONFLICT:-abort}" in
     keep) ;;
@@ -342,9 +364,12 @@ mu_merge_step() {
 #                 binary file, or a file where the other side has a folder).
 # Only "content" conflicts can be recorded by rerere, so only they can be
 # resolved automatically or by an AI proposal.
+#
+# Also writes $3/deleted: one mu_deletion_info line per deleted-into file.
 mu_classify_conflicts() {
   local from=$1 into=$2 dir=$3 f stages deleted_by
   : > "$dir/kinds"
+  : > "$dir/deleted"
   while IFS= read -r f; do
     [ -n "$f" ] || continue
     stages=$(git ls-files -u -- "$f" | awk '{print $3}' | sort -u | tr -d '\n')
@@ -355,9 +380,14 @@ mu_classify_conflicts() {
         else
           printf '%s\tother\t\n' "$f" >> "$dir/kinds"
         fi ;;
-      *3*)
+      13)
+        # Exactly a base and the incoming side, the same test replay and
+        # learning use. Stage 3 alone (for example, a file renamed out of the
+        # way of a folder) is "other", so a proposal for it can't be approved
+        # and then never replay.
         deleted_by=$(git log -1 --diff-filter=D --format='%h%x09%s' "$into" -- "$f" 2> /dev/null || true)
-        printf '%s\tdeleted-into\t%s\n' "$f" "$deleted_by" >> "$dir/kinds" ;;
+        printf '%s\tdeleted-into\t%s\n' "$f" "$deleted_by" >> "$dir/kinds"
+        mu_deletion_info "$f" >> "$dir/deleted" ;;
       *2*)
         deleted_by=$(git log -1 --diff-filter=D --format='%h%x09%s' "$from" -- "$f" 2> /dev/null || true)
         printf '%s\tdeleted-from\t%s\n' "$f" "$deleted_by" >> "$dir/kinds" ;;
@@ -367,19 +397,90 @@ mu_classify_conflicts() {
   done < "$dir/files"
 }
 
-# True when every conflicted file in the step folder $1 is a "content"
-# conflict, the only kind a recorded or AI-proposed resolution can cover.
-mu_all_content_conflicts() {
-  [ -s "$1/kinds" ] && ! cut -f2 "$1/kinds" | grep -qvx content
+# For file $1, deleted by the branch being merged into and changed by the
+# other side, in a merge still in progress: prints
+# "<id><TAB><path><TAB><base blob><TAB><incoming blob>". The id is the same
+# whenever the same file is deleted while the same change comes in, which is
+# what makes two of these conflicts identical (like rerere's ids for lines).
+mu_deletion_info() {
+  local f=$1 base theirs
+  base=$(git ls-files -u -- "$f" | awk '$3 == 1 { print $2 }')
+  theirs=$(git ls-files -u -- "$f" | awk '$3 == 3 { print $2 }')
+  printf '%s\t%s\t%s\t%s\n' "$(printf '%s\n%s\n%s\n' "$f" "$base" "$theirs" | git hash-object --stdin)" "$f" "$base" "$theirs"
+}
+
+# In a merge still in progress, keeps deleted every file the branch being
+# merged into deleted when a recorded kept deletion (MU_DELETIONS) covers that
+# exact change, and lists them in $1/kept-deleted (mu_deletion_info lines).
+mu_keep_recorded_deletions() {
+  local dir=$1 f stages info
+  : > "$dir/kept-deleted"
+  git diff --name-only --diff-filter=U | while IFS= read -r f; do
+    stages=$(git ls-files -u -- "$f" | awk '{print $3}' | sort -u | tr -d '\n')
+    [ "$stages" = "13" ] || continue
+    info=$(mu_deletion_info "$f")
+    jq -e --arg id "$(printf '%s' "$info" | cut -f1)" 'has($id)' "$MU_DELETIONS" > /dev/null 2>&1 || continue
+    git rm -q --cached -- "$f" > /dev/null
+    rm -f -- "$f"
+    printf '%s\n' "$info" >> "$dir/kept-deleted"
+  done
+}
+
+# Says where the kept deletion with id $1 came from.
+mu_deletion_source() {
+  local entry pr commit
+  entry=$(jq -c --arg id "$1" '.[$id] // empty' "$MU_DELETIONS")
+  pr=$(printf '%s' "$entry" | jq -r '.pr // empty')
+  commit=$(printf '%s' "$entry" | jq -r '.commit // empty')
+  if [ "$(printf '%s' "$entry" | jq -r '.source // empty')" = "ai" ]; then
+    echo "as the AI-proposed resolution that \`$(printf '%s' "$entry" | jq -r '.approvedBy')\` approved on #$pr says"
+  elif [ -n "$pr" ]; then
+    echo "as #$pr did (in [\`${commit:0:7}\`]($MU_PUBLIC_COMMIT_URL$commit))"
+  elif [ -n "$commit" ]; then
+    echo "as public commit [\`${commit:0:7}\`]($MU_PUBLIC_COMMIT_URL$commit) did"
+  else
+    echo "as a recorded resolution says (where it was learned from wasn't recorded)"
+  fi
+}
+
+# The incoming change to a file kept deleted, from mu_deletion_info line $1,
+# as a collapsed diff for a comment: what didn't come along into the branch.
+mu_render_dropped_change() {
+  local id path base theirs
+  IFS="$(printf '\t')" read -r id path base theirs <<< "$1"
+  echo
+  echo "<details><summary><code>$path</code>: the change that was not carried over</summary>"
+  echo
+  echo '````diff'
+  echo "--- a/$path"
+  echo "+++ b/$path"
+  if [ -n "$base" ]; then
+    git diff --no-color "$base" "$theirs" | sed -n '/^@@/,$p' | head -n 300 || true
+  else
+    git show "$theirs" | head -n 300 | sed 's/^/+/'
+  fi
+  echo '````'
+  echo
+  echo "</details>"
+}
+
+# True when every conflicted file in the step folder $1 is a kind a recorded
+# or AI-proposed resolution can cover: a conflict between lines ("content"),
+# or a file the branch merged into deleted ("deleted-into", kept deleted).
+mu_all_recordable_conflicts() {
+  [ -s "$1/kinds" ] && ! cut -f2 "$1/kinds" | grep -qvxE 'content|deleted-into'
 }
 
 # True when Claude can propose a resolution for the conflicting step folder
-# $1: every file is a conflict between lines, and rerere is tracking each one,
-# so an approved proposal can be recorded and replayed.
+# $1: every file is recordable, and rerere is tracking each conflict between
+# lines, so an approved proposal can be recorded and replayed.
 mu_can_propose() {
-  mu_all_content_conflicts "$1" || return 1
+  local content
+  mu_all_recordable_conflicts "$1" || return 1
   ! mu_has_protected_file "$1" || return 1
-  [ -z "$(cut -f2 "$1/merge-rr" 2> /dev/null | grep -vxF -f - "$1/files" || true)" ]
+  content=$(awk -F'\t' '$2 == "content" { print $1 }' "$1/kinds")
+  [ -z "$content" ] && return 0
+  [ -z "$(printf '%s\n' "$content" | grep -vxF -f <(cut -f2 "$1/merge-rr" 2> /dev/null) || true)" ]
 }
 
 # Prints "<pr> <status>" for the proposal that covers conflict key $1, if
@@ -527,6 +628,9 @@ mu_render_resolutions() {
     for n in $(ls "$d/driver" 2> /dev/null | sed -n 's/\.path$//p'); do
       echo "- \`$(cat "$d/driver/$n.path")\`: only version lines conflicted, so \`$into\` kept its own version"
     done
+    while IFS="$(printf '\t')" read -r id f _; do
+      echo "- \`$f\`: deleted in \`$into\` but changed in \`$from\`, so it was kept deleted, $(mu_deletion_source "$id"). Make sure the change isn't also needed in whatever replaced it."
+    done < <(cat "$d/kept-deleted" 2> /dev/null)
 
     while IFS= read -r f; do
       echo
@@ -551,6 +655,9 @@ mu_render_resolutions() {
       echo
       echo "</details>"
     done
+    while IFS= read -r line; do
+      mu_render_dropped_change "$line"
+    done < <(cat "$d/kept-deleted" 2> /dev/null)
   done
 }
 
@@ -726,15 +833,11 @@ mu_render_ways_forward() {
   from=$(cat "$d/from") into=$(cat "$d/into")
   ai_pr=${MU_AI_STATUS%% *}
   ai_status=${MU_AI_STATUS#* }
-  if cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-into'; then
-    echo "- **A file this PR changes no longer exists in \`$into\`.** It was usually replaced there (for example, a WebForms block converted to Obsidian), so the change has to be made again in its replacement: open a PR into \`$into\` with the same change. Claude can't propose a resolution and none can be recorded, because git can only record conflicting lines, not a choice to keep a file deleted."
-    echo "- Then ship this PR with \`ship-only\`, and merge it up by hand in SmartGit, keeping the file deleted when merging into \`$into\`."
-    return 0
-  elif cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-from'; then
+  if cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-from'; then
     echo "- **\`$from\` deletes a file that \`$into\` still changes.** Decide by hand whether \`$into\` should keep it. Claude can't propose a resolution for that choice, and none can be recorded."
     echo "- Then ship with \`ship-only\`, and do the merge-up by hand in SmartGit."
     return 0
-  elif ! mu_all_content_conflicts "$d"; then
+  elif ! mu_all_recordable_conflicts "$d"; then
     echo "- Ship with \`ship-only\`, then do the merge-up by hand in SmartGit. These conflicts have no conflicting lines git can record, so Claude can't propose a resolution and none can be recorded."
     return 0
   elif mu_has_protected_file "$d"; then
@@ -742,6 +845,9 @@ mu_render_ways_forward() {
     return 0
   fi
 
+  if cut -f2 "$d/kinds" 2> /dev/null | grep -qx 'deleted-into'; then
+    echo "- **A file this PR changes no longer exists in \`$into\`.** It was usually replaced there (for example, a WebForms block converted to Obsidian). The merge-up keeps it deleted, and Claude checks the replacement to say whether the same change still has to be made there. If it does, open a PR into \`$into\` with that change."
+  fi
   mu_ai_status_line "$pr" "$ai_pr" "$ai_status"
   echo "- Or add \`ship-only\` to ship to \`$base\` without merging up, then do the merge-up by hand in SmartGit. When that merge reaches public, its resolution is recorded, and Ship it replays it if the identical conflict comes up again."
 }
@@ -796,6 +902,86 @@ mu_refresh_check_comment() {
 # same PR never replaces an earlier one (or its approval).
 mu_ai_marker() {
   echo "<!-- ai-resolution key=$1 -->"
+}
+
+# How every failed-proposal comment starts, so mu_clear_stale_ai_failures can
+# find them again (comments posted before it existed start the same way).
+MU_AI_FAILED_HEADING="**Claude couldn't propose a resolution"
+
+# Writes the comment for a failed AI proposal for conflict key $1 to $4: the
+# conflict it was for (from the dry run in $2), why it failed ($3), and what to
+# do now. When none of the conflicted files are ones the PR changes, the
+# conflict is leftover drift from changes already on public, and the comment
+# names them, so nobody goes looking for a problem in the PR.
+mu_render_ai_failure() {
+  local key=$1 work=$2 reason=$3 out=$4 c="$2/run/conflict" from into f i notes drift=true conflicted
+  {
+    mu_ai_marker "$key"
+    if [ ! -f "$c/from" ]; then
+      echo "$MU_AI_FAILED_HEADING for this merge-up conflict.** $reason"
+      echo
+      echo "It won't try again for this same conflict. Ship with \`ship-only\` and do the merge-up by hand in SmartGit; once that merge reaches public, its resolution is recorded."
+      echo
+      echo "[Workflow log]($MU_LOG_URL)"
+      return 0
+    fi
+    from=$(cat "$c/from") into=$(cat "$c/into")
+
+    echo "$MU_AI_FAILED_HEADING for the conflict merging \`$from\` into \`$into\`.** $reason"
+    echo
+    echo "Conflicts in:"
+    while IFS= read -r f; do
+      notes=$(mu_kind_note "$c" "$f")
+      if grep -qxF -- "$f" "$work/pr-files" 2> /dev/null; then
+        drift=false
+      else
+        notes="${notes:+$notes; }this PR doesn't change this file"
+      fi
+      echo "- \`$f\`${notes:+ ($notes)}"
+    done < "$c/files"
+    echo
+
+    if [ "$drift" = true ]; then
+      echo "**Leftover drift, not this PR.** This PR doesn't change any of these files, so the conflict comes from changes already on public that were never merged up from \`$from\` to \`$into\`:"
+      # Subjects start with Rock's "+ " or "- ", which would read as a list.
+      mapfile -t conflicted < "$c/files"
+      git log --no-merges --format="- [\`%h\`]($MU_PUBLIC_COMMIT_URL%H) %s" "$into..$from" -- "${conflicted[@]}" 2> /dev/null \
+        | sed -E 's/\) [-+] /) /' | head -n 10 || true
+      echo
+      echo "Nothing in this PR needs to change, but \`ship\` stops at this merge until someone merges \`$from\` into \`$into\` by hand on public. This check then runs again by itself, and this comment goes away once the conflict does."
+    else
+      echo "It won't try again for this same conflict. Ship with \`ship-only\` and do the merge-up by hand in SmartGit; once that merge reaches public, its resolution is recorded."
+    fi
+
+    # Only ordinary conflicts have lines worth showing (see the check comment).
+    i=0
+    while IFS= read -r f; do
+      i=$((i + 1))
+      [ -s "$c/diff-$i" ] || continue
+      [ -z "$(mu_kind_note "$c" "$f")" ] || continue
+      echo
+      echo "<details><summary><code>$f</code>: the conflict</summary>"
+      echo
+      echo '````diff'
+      cat "$c/diff-$i"
+      echo '````'
+      echo
+      echo "</details>"
+    done < "$c/files"
+    echo
+    echo "[Workflow log]($MU_LOG_URL)"
+  } > "$out"
+}
+
+# Deletes the failed-proposal comments on PR $1 for any conflict other than
+# key $2 (empty: the PR has no conflict Claude could take). Once its conflict
+# is gone, a failure comment only misleads. Proposals and approvals are kept.
+mu_clear_stale_ai_failures() {
+  local pr=$1 key=$2 id
+  for id in $(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" \
+      -q ".[] | select((.body | contains(\"<!-- ai-resolution key=\")) and (.body | contains(\"$MU_AI_FAILED_HEADING\")) and ((.body | contains(\"key=$key -->\")) | not)) | .id"); do
+    gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/comments/$id" > /dev/null
+  done
 }
 
 # Files that claude-code-action replaces, before Claude runs, with their
@@ -1001,8 +1187,13 @@ mu_train() {
   git merge --no-ff --no-commit "$m^2" > /dev/null 2>&1 || true
 
   git diff --name-only --diff-filter=U | while IFS= read -r f; do
-    # Deleted as the resolution: rerere can't record that.
-    git cat-file -e "$m:$f" 2> /dev/null || continue
+    # Deleted as the resolution: rerere can't record that. When the branch
+    # merged into had deleted it, that's a kept deletion (see the top of this
+    # file), recorded in MU_DELETIONS instead.
+    if ! git cat-file -e "$m:$f" 2> /dev/null; then
+      mu_learn_deletion "$m" "$f"
+      continue
+    fi
     [ -f "$f" ] || continue
     if ! grep -qE '^<<<<<<< ' "$f"; then
       # rerere already replayed a recording here. Same result as the merge
@@ -1034,6 +1225,21 @@ mu_train() {
     done
   fi
   git reset -q --hard
+}
+
+# Records that merge commit $1 kept file $2 deleted, when its first parent
+# (the branch merged into) had deleted it and the second parent changed it.
+mu_learn_deletion() {
+  local m=$1 f=$2 info pr
+  [ "$(git ls-files -u -- "$f" | awk '{print $3}' | sort -u | tr -d '\n')" = "13" ] || return 0
+  info=$(mu_deletion_info "$f")
+  pr=$(mu_pr_for_merge "$m")
+  echo "Recorded that $f stays deleted, from ${m:0:10}${pr:+ (PR #$pr)}."
+  jq --arg id "$(printf '%s' "$info" | cut -f1)" --arg path "$f" --arg commit "$m" --arg pr "$pr" \
+    --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    '.[$id] = {path: $path, commit: $commit, pr: (if $pr == "" then null else ($pr | tonumber) end), recordedAt: $at}' \
+    "$MU_DELETIONS" > "$MU_DELETIONS.tmp"
+  mv "$MU_DELETIONS.tmp" "$MU_DELETIONS"
 }
 
 # True when the recording $1 ("<folder>" or "<folder>.<variant>") has a resolution.
@@ -1085,6 +1291,8 @@ mu_apply_recordings() {
   done
   jq -s '.[0] * .[1]' "$out/resolutions.json" "$MU_META" > "$out/resolutions.tmp"
   mv "$out/resolutions.tmp" "$out/resolutions.json"
+  jq -s '.[0] * .[1]' "$out/deletions.json" "$MU_DELETIONS" > "$out/deletions.tmp"
+  mv "$out/deletions.tmp" "$out/deletions.json"
   [ -f "$out/trained.json" ] || echo '{}' > "$out/trained.json"
   jq -s '.[0] * .[1]' "$out/trained.json" "$MU_CACHE/trained.json" > "$out/trained.tmp"
   mv "$out/trained.tmp" "$out/trained.json"
@@ -1098,6 +1306,7 @@ mu_check_pr() {
   if [ "$DRY_RUN" = "skipped" ]; then
     mu_set_label "$pr" merge-up-conflict false
     mu_set_comment "$pr" "$MU_CHECK_MARKER" ""
+    mu_clear_stale_ai_failures "$pr" ""
     return 0
   fi
 
@@ -1110,8 +1319,17 @@ mu_check_pr() {
   # approval, or failed), whether on this PR or another. Queued PRs are
   # written to propose.txt for the `propose` job.
   MU_AI_STATUS=""
-  if [ -d "$work/run/conflict" ] && mu_can_propose "$work/run/conflict"; then
+  key=""
+  if [ -d "$work/run/conflict" ]; then
     key=$(cat "$work/run/conflict/key")
+  fi
+  # Only a merge-up that was actually run can show a conflict is gone. Not
+  # when the PR conflicts with its own target, or MERGE_CHAIN isn't set: the
+  # failure stays recorded, so its comment must stay too.
+  if [ -f "$work/plan.txt" ] && [ ! -s "$work/update-conflicts" ]; then
+    mu_clear_stale_ai_failures "$pr" "$key"
+  fi
+  if [ -d "$work/run/conflict" ] && mu_can_propose "$work/run/conflict"; then
     MU_AI_STATUS=$(mu_find_proposal "$key")
     if [ -z "$MU_AI_STATUS" ]; then
       echo "$pr $base $head" >> "$RUNNER_TEMP/propose.txt"
