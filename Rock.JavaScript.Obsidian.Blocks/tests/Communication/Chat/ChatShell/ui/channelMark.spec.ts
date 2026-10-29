@@ -20,6 +20,7 @@
 // changes size between the two.
 import { mount } from "@vue/test-utils";
 import ChannelMark from "../../../../../src/Communication/Chat/ChatShell/ui/channelMark.partial.obs";
+import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 
 const picture = "https://church.example/GetImage.ashx?guid=team";
@@ -64,5 +65,34 @@ describe("a channel's mark", () => {
 
         expect(w.classes()).toContain("chat-header-ic");
         expect(w.classes()).toContain("has-image");
+    });
+
+    // A tile is how the sidebar draws a channel: its image, else its first letter on its name's hue.
+    // Off unless asked for, so the header, the intro and the details keep the hash and the lock.
+    test("draws no letter unless given a tile name", () => {
+        const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: null } });
+
+        expect(w.find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+        expect(w.classes()).not.toContain("is-letter");
+    });
+
+    test("with a tile name and no image, draws its first letter, upper case and whole, on its hue", () => {
+        const w = mount(ChannelMark, { props: { isPublic: false, imageUrl: null, tileName: "  \u{1F600}smile team" } });
+
+        expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("\u{1F600}");
+        expect(w.findAllComponents(Icon)).toHaveLength(0);
+        expect(w.classes()).toContain("is-letter");
+        expect((w.element as HTMLElement).style.getPropertyValue("--chat-av-hue")).toBe(String(avatarHue("  \u{1F600}smile team")));
+
+        const plain = mount(ChannelMark, { props: { isPublic: true, imageUrl: null, tileName: "worship" } });
+        expect(plain.get("[data-testid='channel-mark-letter']").text()).toBe("W");
+    });
+
+    test("with a tile name and an image, shows the image, and the letter once it fails", async () => {
+        const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: picture, tileName: "Greeters" } });
+
+        expect(w.find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+        await w.get("[data-testid='channel-mark-image']").trigger("error");
+        expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
     });
 });

@@ -31,7 +31,6 @@
                                 :sidebarReads="shell.channels.sidebarReads"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
-                                :organizationName="organizationName"
                                 :isPhone="isPhone"
                                 :loadState="shell.channels.loadState"
                                 :isBrowseOpen="mainView === 'directory'"

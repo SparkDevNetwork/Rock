@@ -1,9 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-side" :class="{ 'is-phone': isPhone }" data-testid="channel-sidebar">
+        <!-- One row to find a conversation or start one; the page above already names the church. -->
         <div class="chat-side-top" data-testid="sidebar-top">
-            <span class="chat-org-mark" data-testid="sidebar-org-mark" aria-hidden="true">{{ organizationInitial }}</span>
-            <span class="chat-org-name" data-testid="sidebar-org-name">{{ organizationName }}</span>
+            <label class="chat-side-search chat-field">
+                <Icon name="search" size="sm" />
+                <input v-model="query"
+                       class="chat-field-input"
+                       type="text"
+                       placeholder="Search"
+                       aria-label="Find a conversation"
+                       autocomplete="off"
+                       data-testid="sidebar-search" />
+            </label>
             <IconButton v-if="isNewMessageShown"
                         class="chat-side-new"
                         icon="compose"
@@ -12,17 +21,6 @@
                         :aria-pressed="isNewMessageOpen ? 'true' : 'false'"
                         @click="emit('newMessage')" />
         </div>
-
-        <label class="chat-side-search chat-field">
-            <Icon name="search" size="sm" />
-            <input v-model="query"
-                   class="chat-field-input"
-                   type="text"
-                   placeholder="Find a conversation"
-                   aria-label="Find a conversation"
-                   autocomplete="off"
-                   data-testid="sidebar-search" />
-        </label>
 
         <nav class="chat-side-list" aria-label="Conversations" :aria-busy="loadState === 'loading' ? 'true' : undefined">
             <!--
@@ -44,12 +42,15 @@
             </div>
 
             <div v-else-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
-                <span class="chat-side-empty-ic"><Icon name="message" /></span>
+                <span class="chat-side-empty-glyph" aria-hidden="true"><Icon name="message" /></span>
                 <b>No conversations yet</b>
                 <span>Message someone from your groups, or browse channels to join.</span>
                 <div class="chat-side-empty-actions">
-                    <button v-if="isNewMessageShown" type="button" class="chat-side-empty-btn" data-testid="empty-new-message" @click="emit('newMessage')">New message</button>
-                    <button type="button" class="chat-side-empty-btn is-line" data-testid="empty-browse" @click="emit('browse')">Browse channels</button>
+                    <button v-if="isNewMessageShown" type="button" class="chat-side-empty-btn is-solid" data-testid="empty-new-message" @click="emit('newMessage')">
+                        <Icon name="compose" size="sm" />New message
+                    </button>
+                    <!-- With no New message beside it, this is the one way in, so it is the solid one. -->
+                    <button type="button" class="chat-side-empty-btn" :class="isNewMessageShown ? 'is-link' : 'is-solid'" data-testid="empty-browse" @click="emit('browse')">Browse channels</button>
                 </div>
             </div>
 
@@ -92,9 +93,14 @@
                             @animationend.self="onFlashEnd(row.channel_id)">
                         <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
                         <template v-if="lookOf(row) === 'community'">
-                            <ChannelMark class="chat-cs-slot" :isPublic="row.is_public" :imageUrl="row.icon_url" iconSize="sm" />
-                            <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
-                            <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
+                            <span class="chat-row-face" aria-hidden="true">
+                                <ChannelMark class="chat-ch-tile" :isPublic="row.is_public" :imageUrl="row.icon_url" :tileName="row.title" />
+                            </span>
+                            <span class="chat-row-title">
+                                <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
+                                <Icon v-if="!row.is_public" name="lock" class="chat-row-lock" data-testid="row-lock" />
+                                <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
+                            </span>
                         </template>
 
                         <!-- A direct message: the face, the name and time over the preview and the end mark. -->
@@ -139,8 +145,10 @@
                             data-layout="community"
                             :aria-current="isBrowseOpen ? 'true' : undefined"
                             @click="emit('browse')">
-                        <span class="chat-cs-slot" aria-hidden="true"><Icon name="search" size="sm" /></span>
-                        <span class="chat-row-name">Browse channels</span>
+                        <span class="chat-row-face" aria-hidden="true">
+                            <span class="chat-ch-tile is-browse"><Icon name="search" size="sm" /></span>
+                        </span>
+                        <span class="chat-row-title"><span class="chat-row-name">Browse channels</span></span>
                     </button>
                 </div>
             </template>
@@ -166,7 +174,7 @@
 </template>
 
 <style scoped>
-/* The sidebar column, ported from the design: the church's line, the search, then the rooms. */
+/* The sidebar column, ported from the design: the search and compose in one head, then the rooms. */
 .chat-side {
     display: flex;
     flex-direction: column;
@@ -185,62 +193,60 @@
 .chat-side-top {
     display: flex;
     flex: none;
-    gap: 10px;
+    gap: 8px;
     align-items: center;
-    min-height: 64px;
-    padding: 0 14px 0 16px;
-}
-
-.chat-org-mark {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 32px;
-    height: 32px;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-    border-radius: var(--chat-r-org);
-}
-
-.chat-org-name {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: -.01em;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-/* The New message button wears a ring, so it reads as the top's one action. */
-.chat-side-top :deep(.chat-side-new) {
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-}
-
-/* The ring keeps its fill on hover, as the design's ring rule outranks the plain button's. */
-.chat-side-top :deep(.chat-side-new.chat-icon-btn:hover) {
-    background: var(--chat-surface);
-    border-color: var(--chat-line-strong);
+    height: 64px;
+    padding: 0 12px;
 }
 
 .chat-side-search {
     display: flex;
-    flex: none;
+    flex: 1;
     gap: 8px;
     align-items: center;
-    height: 36px;
+    min-width: 0;
+    height: 38px;
     padding: 0 12px;
-    margin: 0 14px 8px;
+    margin: 0;
+    font-size: 14px;
     /* Rock's theme bolds a label, and the field inside takes its face from this one. */
     font-weight: 400;
     color: var(--chat-muted);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-org);
+}
+
+.chat-side-search :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+/* The compose button is a ring square beside the search, so the head reads as one row. */
+.chat-side-top :deep(.chat-side-new) {
+    --chat-ic-size: 18px;
+    width: 38px;
+    height: 38px;
+    color: var(--chat-text-2);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-org);
+}
+
+/* The ring keeps its fill on hover, as the design's ring rule outranks the plain button's. */
+.chat-side-top :deep(.chat-side-new.chat-icon-btn:hover) {
+    color: var(--chat-text-2);
+    background: var(--chat-surface);
+    border-color: var(--chat-line-strong);
+}
+
+/* A touch target of 40px on a phone. */
+.is-phone .chat-side-search {
+    height: 40px;
+}
+
+.is-phone .chat-side-top :deep(.chat-side-new) {
+    width: 40px;
+    height: 40px;
 }
 
 .chat-side-list {
@@ -342,7 +348,8 @@
     font-family: inherit;
     font-size: 11px;
     font-weight: 700;
-    line-height: inherit;
+    /* A whole-pixel line, so nothing below it sits on a fraction. */
+    line-height: 16px;
     color: var(--chat-muted);
     text-transform: uppercase;
     letter-spacing: .07em;
@@ -354,8 +361,9 @@
 }
 
 /*
-    A direct message's room: its face beside the name and time over the preview and the end mark.
-    Its left padding is a channel row's, so faces and channel icons start on one edge.
+    A room: a 36px column first, a direct message's face or a channel's tile centred in it, so
+    every row starts on one edge. Heights and lines are whole pixels, so the badge's layer and the
+    text in it land on the pixel grid.
 */
 .chat-row {
     /*
@@ -371,13 +379,14 @@
     gap: 10px;
     align-items: center;
     width: 100%;
-    padding: 7px 8px 7px 10px;
+    height: 52px;
+    padding: 0 8px;
     font: inherit;
     color: inherit;
     text-align: left;
     background: var(--chat-row-fill);
     border: 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-org);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -389,7 +398,7 @@
     --chat-row-fill: var(--chat-brand-wash);
 }
 
-/* A person's face, or a group's mark, centred in 36px. */
+/* A person's face, a group's mark or a channel's tile, centred in 36px. */
 .chat-row-face {
     display: grid;
     flex: none;
@@ -401,7 +410,6 @@
     display: flex;
     flex: 1;
     flex-direction: column;
-    gap: 1px;
     min-width: 0;
 }
 
@@ -415,7 +423,9 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
+    font-size: 14px;
     font-weight: 450;
+    line-height: 20px;
     color: var(--chat-row-name);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -424,6 +434,7 @@
 .chat-row-time {
     flex: none;
     font-size: 11.5px;
+    line-height: 20px;
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
 }
@@ -440,6 +451,7 @@
     min-width: 0;
     overflow: hidden;
     font-size: 12.5px;
+    line-height: 18px;
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -511,42 +523,58 @@
     }
 }
 
-/* A channel's room: one dense line, a 20px mark before its name. */
+.is-phone .chat-row {
+    height: 56px;
+}
+
+/* A channel's room: one line, 44px (48px on a phone), a 32px tile in the face column. */
 .chat-row.is-cs {
-    min-height: 32px;
-    padding: 5px 10px;
-    border-radius: var(--chat-r-md);
+    height: 44px;
 }
 
 .is-phone .chat-row.is-cs {
-    min-height: 44px;
+    height: 48px;
 }
 
-.chat-cs-slot {
-    --chat-ic-size: 16px;
+/*
+    The tile is the channel's image, or its first letter on its own color, in a square a little
+    tighter than a face's circle. The room's state never changes its color.
+*/
+.chat-ch-tile {
     display: grid;
     flex: none;
     place-items: center;
-    width: 20px;
-    height: 20px;
+    box-sizing: border-box;
+    width: 32px;
+    height: 32px;
+    overflow: hidden;
     color: var(--chat-icon);
-    border-radius: var(--chat-r-sm);
+    border-radius: 9px;
 }
 
-.chat-row.is-cs .chat-row-name {
-    font-size: 14px;
+/* The name, then the private lock and the muted mark, which stay beside it however long it is. */
+.chat-row-title {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+    align-items: center;
+    min-width: 0;
+}
+
+.chat-row-title .chat-row-name {
+    flex: 0 1 auto;
+}
+
+.chat-row .chat-row-lock {
+    --chat-ic-size: 12px;
+    --chat-ic-stroke: 2;
+    flex: none;
+    color: var(--chat-icon);
 }
 
 .chat-row.is-cs .chat-row-end {
     min-width: 0;
-}
-
-.chat-row.is-cs.is-unread .chat-cs-slot {
-    color: var(--chat-text);
-}
-
-.chat-row.is-cs[aria-current="true"] .chat-cs-slot {
-    color: var(--chat-brand-ink);
+    height: 20px;
 }
 
 .chat-row.is-cs[aria-current="true"] .chat-row-name {
@@ -558,16 +586,15 @@
     color: var(--chat-muted);
 }
 
-/* Browse channels reads as a way on rather than a room: its name quiet, as a room not joined is. */
+/* Browse channels reads as a way on rather than a room: a dashed tile, its name quiet, as a room not joined is. */
 .chat-row.is-browse .chat-row-name,
 .chat-row.is-browse[aria-current="true"] .chat-row-name {
     font-weight: 500;
     color: var(--chat-muted);
 }
 
-/* Its search mark is the small icon in the channel's 20px slot, not a channel's 16px one. */
-.chat-row.is-browse .chat-cs-slot {
-    --chat-ic-size: 15px;
+.chat-ch-tile.is-browse {
+    border: 1.5px dashed var(--chat-line-strong);
 }
 
 /*
@@ -578,7 +605,12 @@
     display: flex;
     gap: 10px;
     align-items: center;
-    padding: 7px 8px 7px 10px;
+    height: 52px;
+    padding: 0 8px;
+}
+
+.is-phone .chat-side-skel {
+    height: 56px;
 }
 
 .chat-side-skel i {
@@ -608,81 +640,80 @@
     height: 8px;
 }
 
-/* A new person with nothing to list yet. */
+/* A new person with nothing to list yet: centred and calm, one solid button and one link. */
 .chat-side-empty {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
-    padding: 18px 20px 4px;
+    padding: 36px 24px 28px;
     text-align: center;
 }
 
-.chat-side-empty-ic {
-    --chat-ic-size: 26px;
-    display: grid;
-    place-items: center;
-    width: 48px;
-    height: 48px;
-    color: var(--chat-muted);
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-empty);
+.chat-side-empty-glyph {
+    --chat-ic-size: 30px;
+    --chat-ic-stroke: 1.5;
+    display: inline-grid;
+    margin-bottom: 6px;
+    color: var(--chat-icon);
 }
 
 .chat-side-empty b {
     font-size: 15px;
+    font-weight: 650;
 }
 
-.chat-side-empty > span:not(.chat-side-empty-ic) {
-    max-width: 34ch;
+.chat-side-empty > span:not(.chat-side-empty-glyph) {
+    max-width: 30ch;
     font-size: 13px;
     color: var(--chat-muted);
 }
 
-/*
-    Side by side where the column has the room; in a narrower one the second button goes under
-    the first rather than either breaking its words inside its 30px.
-*/
 .chat-side-empty-actions {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     gap: 8px;
-    justify-content: center;
-    margin-top: 6px;
+    align-items: center;
+    margin-top: 12px;
 }
 
 .chat-side-empty-btn {
     display: inline-flex;
     flex: none;
-    gap: 6px;
+    gap: 7px;
     align-items: center;
-    height: 30px;
-    white-space: nowrap;
-    padding: 0 14px;
-    font-size: 13px;
+    height: 28px;
+    padding: 0 8px;
+    font-size: 13.5px;
     font-weight: 600;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
+    color: var(--chat-brand-ink);
+    white-space: nowrap;
+    background: transparent;
     border: 0;
-    border-radius: var(--chat-r-full);
-    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
+    border-radius: var(--chat-r-org);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
 .chat-side-empty-btn:hover {
+    background: var(--chat-hover);
+}
+
+/* The one filled button: the church fill with the text color chosen to read on it. */
+.chat-side-empty-btn.is-solid {
+    --chat-ic-size: 16px;
+    height: 34px;
+    padding: 0 16px;
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+.chat-side-empty-btn.is-solid:hover {
+    background: var(--chat-brand-fill);
     box-shadow: inset 0 0 0 999px var(--chat-press);
 }
 
-/* The second way out, drawn as the design's line button beside the filled one. */
-.chat-side-empty-btn.is-line {
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-side-empty-btn.is-line:hover {
-    border-color: var(--chat-icon);
-    box-shadow: none;
+.chat-side-empty-btn.is-link {
+    color: var(--chat-brand-ink);
 }
 </style>
 
@@ -730,12 +761,6 @@
         isNewMessageShown: {
             type: Boolean,
             default: false
-        },
-
-        /** The church's name, drawn at the top with its initial in the mark. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
         },
 
         /** The person's own name, photo and campus by its name, drawn in the foot. */
@@ -812,9 +837,6 @@
     // #endregion Values
 
     // #region Computed Values
-
-    /** The first letter of the church's name, kept whole outside the basic plane. */
-    const organizationInitial = computed((): string => (Array.from(props.organizationName.trim())[0] ?? "").toUpperCase());
 
     /**
      * The rooms by section, filtered by the search over the names they are drawn under. Starred

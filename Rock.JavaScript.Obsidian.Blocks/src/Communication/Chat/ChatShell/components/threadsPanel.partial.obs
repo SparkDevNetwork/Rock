@@ -224,6 +224,8 @@
     min-height: 20px;
     margin-top: 7px;
     font-size: 12px;
+    /* A whole-pixel line, so the badge's layer sits on the pixel grid. */
+    line-height: 20px;
     color: var(--chat-muted);
     white-space: nowrap;
 }
