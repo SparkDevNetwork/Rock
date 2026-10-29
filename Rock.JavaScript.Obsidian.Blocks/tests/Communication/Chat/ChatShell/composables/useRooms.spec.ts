@@ -643,7 +643,7 @@ describe("a previewed room", () => {
 
         s.rooms.previewRoom(volunteers);
 
-        expect(s.channels.rows).toEqual([expect.objectContaining({ channel_id: volunteers, name: "Volunteers", is_member: false })]);
+        expect(s.channels.rows).toEqual([expect.objectContaining({ channel_id: volunteers, name: "Volunteers", is_member: false, description: "About Volunteers" })]);
 
         // a room the person is in has a row of its own to come, so it is not previewed
         s.rooms.previewRoom(team);

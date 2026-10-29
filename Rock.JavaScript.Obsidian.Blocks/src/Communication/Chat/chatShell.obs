@@ -922,9 +922,13 @@
 
     /**
      * The header's line until the room's facts are read, which the header then takes its subtitle
-     * from: an unnamed group's head count.
+     * from: a channel's description, as its sidebar row carries it, or an unnamed group's head count.
      */
     const activeSubtitle = computed((): string | null => {
+        if (activeKind.value === "channel") {
+            return activeRow.value?.description?.trim() || null;
+        }
+
         if (activeKind.value !== "group") {
             return null;
         }

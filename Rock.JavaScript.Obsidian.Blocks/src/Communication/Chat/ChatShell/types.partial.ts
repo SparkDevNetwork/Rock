@@ -116,6 +116,12 @@ export type SidebarRow = {
     max_length?: number;
 
     /**
+     * The room's description, which the header's line shows from the first frame; absent from a
+     * platform older than this field, and null for a room with none.
+     */
+    description?: string | null;
+
+    /**
      * Whether the person hid the room from this screen. The platform's sidebar leaves a hidden room
      * out, so only a row the person hid here, while it is open, carries it.
      */
