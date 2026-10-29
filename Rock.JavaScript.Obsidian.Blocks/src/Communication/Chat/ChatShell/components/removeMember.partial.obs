@@ -25,9 +25,10 @@
                 :body="leaderBody"
                 isWide
                 @close="emit('close')">
-            <label class="chat-mb-search chat-rm-search">
+            <label class="chat-mb-search chat-rm-search chat-field">
                 <Icon name="search" size="sm" />
                 <input type="search"
+                       class="chat-field-input"
                        placeholder="Find a member"
                        aria-label="Find a member to lead"
                        autocomplete="off"

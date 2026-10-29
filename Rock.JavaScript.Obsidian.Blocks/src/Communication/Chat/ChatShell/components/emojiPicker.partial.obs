@@ -42,9 +42,10 @@
 
             <template v-else>
                 <div class="chat-picker-head">
-                    <label class="chat-picker-search">
+                    <label class="chat-picker-search chat-field">
                         <Icon name="search" size="sm" />
                         <input ref="searchElement"
+                               class="chat-field-input"
                                type="text"
                                placeholder="Search emoji"
                                autocomplete="off"
@@ -231,23 +232,6 @@
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
     border-radius: 10px;
-}
-
-/* The composer's own focus ring, so a text box reads the same wherever it is. */
-.chat-picker-search:focus-within {
-    border-color: var(--chat-composer-line);
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
-}
-
-.chat-picker-search input {
-    flex: 1;
-    min-width: 0;
-    padding: 0;
-    font: inherit;
-    color: var(--chat-text);
-    background: none;
-    border: 0;
-    outline: 0;
 }
 
 /*

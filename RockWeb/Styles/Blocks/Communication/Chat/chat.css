@@ -446,6 +446,58 @@
     }
 }
 
+/*
+    The text box: a wrapper that draws the focus ring and a bare input inside it, the one look for
+    every search and name field. Rock's page styles give a focused text input a border and glow of
+    its own, as input[type="text"]:focus, which weighs the same as a component's own one-input rule
+    and so drew a second ring inside the wrapper's wherever the load order let it. The :focus rule
+    below outweighs it, so the input stays bare however it loads, and the wrapper's ring is the
+    focus mark; it rides a transparent outline too, which is what forced colors keeps drawing.
+    A box sets its own size, colors and corner; a field that has no box of its own, such as the
+    rename field in its group, has the group draw the ring.
+*/
+.chat-shell .chat-field {
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-field:focus-within,
+.chat-shell .chat-rn-grp .chat-sg:focus-within {
+    border-color: var(--chat-focus-line);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-shell .chat-field-input {
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    font: inherit;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.chat-shell .chat-field-input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.chat-shell .chat-field-input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+/* A search field never draws the browser's own clear button; a box that clears draws its own. */
+.chat-shell .chat-field-input::-webkit-search-cancel-button,
+.chat-shell .chat-field-input::-webkit-search-decoration {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
 @keyframes chat-spin {
     to {
         transform: rotate(360deg);
@@ -1036,12 +1088,6 @@
     background: var(--chat-surface);
     border: 1px solid var(--chat-line-strong);
     border-radius: var(--chat-r-lg);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-shell .chat-pk-field:focus-within {
-    border-color: var(--chat-focus-line);
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
 }
 
 .chat-shell .chat-pk-label {
@@ -1111,30 +1157,12 @@
     opacity: .4;
 }
 
-/*
-    The field shows focus, so the input inside it draws no outline of its own. It keeps the
-    browser's own 1px by 2px inset, and focus rounds it as focus rounds anything else.
-*/
+/* The field is a text box, so the input keeps the browser's own 1px by 2px inset and a width to type in. */
 .chat-shell .chat-pk-input {
-    flex: 1;
     min-width: 120px;
     height: 30px;
     padding: 1px 2px;
-    font: inherit;
     font-size: 14.5px;
-    color: var(--chat-text);
-    background: none;
-    border: 0;
-    outline: 0;
-}
-
-.chat-shell .chat-pk-input:focus-visible {
-    border-radius: var(--chat-r-sm);
-}
-
-.chat-shell .chat-pk-input::placeholder {
-    color: var(--chat-muted);
-    opacity: 1;
 }
 
 .chat-shell .chat-pk-input:disabled {
@@ -1328,38 +1356,8 @@
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-full);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-shell .chat-mb-search:focus-within {
-    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
 }
 
 .chat-shell .chat-mb-search input {
-    flex: 1;
-    min-width: 0;
-    font: inherit;
     font-size: 13.5px;
-    color: var(--chat-text);
-    background: none;
-    border: 0;
-    outline: 0;
-}
-
-/* The field draws no ring of its own, the pill does, but it keeps the design's focus corner. */
-.chat-shell .chat-mb-search input:focus-visible {
-    border-radius: var(--chat-r-sm);
-}
-
-.chat-shell .chat-mb-search input::placeholder {
-    color: var(--chat-muted);
-}
-
-/* The pill draws its own clear button where it has one, never the browser's. */
-.chat-shell .chat-mb-search input::-webkit-search-cancel-button,
-.chat-shell .chat-mb-search input::-webkit-search-decoration {
-    display: none;
-    -webkit-appearance: none;
-    appearance: none;
 }

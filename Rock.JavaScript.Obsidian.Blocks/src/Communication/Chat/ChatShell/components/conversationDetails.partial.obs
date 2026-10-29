@@ -64,7 +64,7 @@
                 <input :id="renameId"
                        ref="renameElement"
                        v-model="draftName"
-                       class="chat-rn-in"
+                       class="chat-rn-in chat-field-input"
                        data-testid="rename-input"
                        :maxlength="nameMaxLength"
                        autocomplete="off"
@@ -428,26 +428,8 @@
 }
 
 .chat-rn-in {
-    flex: 1;
-    min-width: 0;
     height: 32px;
-    padding: 0;
-    font: inherit;
     font-size: 13.5px;
-    color: var(--chat-text);
-    background: transparent;
-    border: 0;
-    outline: 0;
-}
-
-/* The group draws the field's focus, since the field has no box of its own. */
-.chat-rn-grp :deep(.chat-sg:focus-within) {
-    border-color: color-mix(in srgb, var(--chat-brand) 55%, var(--chat-line));
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
-}
-
-.chat-rn-in::placeholder {
-    color: var(--chat-muted);
 }
 
 /* A note under a control outside a row: a refusal, or the name's character count. */
