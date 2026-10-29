@@ -252,6 +252,9 @@
     The theme attribute set to dark always flips the chat.
 */
 [theme=dark] .chat-shell {
+    --chat-brand-fill: var(--chat-brand-fill-dark, #CD4B00);
+    --chat-on-brand: var(--chat-on-brand-dark, #FFFFFF);
+    --chat-brand-ring: var(--chat-brand-ring-dark, rgba(255, 121, 29, .32));
     --chat-brand-ink: var(--chat-brand-ink-dark, #FFAC73);
     --chat-brand-tint: var(--chat-brand-tint-dark, #503A35);
     --chat-brand-wash: var(--chat-brand-wash-dark, #2F1C12);
@@ -327,6 +330,9 @@
 @media (prefers-color-scheme: dark) {
     :root:not([theme]) .chat-shell[data-rock-theme="v2"],
     [theme=system] .chat-shell[data-rock-theme="v2"] {
+        --chat-brand-fill: var(--chat-brand-fill-dark, #CD4B00);
+        --chat-on-brand: var(--chat-on-brand-dark, #FFFFFF);
+        --chat-brand-ring: var(--chat-brand-ring-dark, rgba(255, 121, 29, .32));
         --chat-brand-ink: var(--chat-brand-ink-dark, #FFAC73);
         --chat-brand-tint: var(--chat-brand-tint-dark, #503A35);
         --chat-brand-wash: var(--chat-brand-wash-dark, #2F1C12);

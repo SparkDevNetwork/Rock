@@ -23,6 +23,7 @@
 // no theme or asks to follow the system.
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 
 // A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
 const sheetPath = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
@@ -417,6 +418,19 @@ describe("the chat token sheet", () => {
             }
         }
     });
+
+    // The brand tokens are set per theme as `-light` and `-dark`; a token the dark blocks do not
+    // map keeps reading its light twin, however the dark value was worked out.
+    const darkBrandTokens = Object.keys(brandTokens("#0A2A5E").dark);
+
+    test.each([["dark theme", isDarkExplicit], ["system dark, no theme", isDarkUnthemed], ["system dark, following the system", isDarkFollowingSystem]] as const)(
+        "reads every brand token from its dark twin under %s", (_label, condition) => {
+            for (const name of darkBrandTokens) {
+                const values = valuesOf(sheet, `--chat-${name}`, condition);
+
+                expect(`${name}: ${values.join(" | ")}`).toContain(`var(--chat-${name}-dark,`);
+            }
+        });
 
     test.each(reducedMotion)("sets --chat-%s to %s when reduced motion is asked for", (name, value) => {
         const values = valuesOf(sheet, `--chat-${name}`, isReducedMotion);
