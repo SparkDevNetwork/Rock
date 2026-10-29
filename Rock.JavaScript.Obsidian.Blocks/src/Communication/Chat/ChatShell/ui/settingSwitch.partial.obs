@@ -9,7 +9,6 @@
                 @click="onRowClick"
                 @retry="switchElement?.focus()">
         <template #default="{ ids }">
-            <!-- The words beside a switch toggle it too, as a label would. -->
             <Switch ref="switchElement"
                     :isOn="isOn"
                     :aria-labelledby="ids.title ?? undefined"

@@ -5,7 +5,10 @@
 // and its script, where a style object, a style property or an animation can carry the same
 // literal by another road. It also refuses a comment beside a template's root: the built block
 // keeps template comments, so one there makes the component a fragment, and the classes, test ids
-// and scoped rules its parent gives it are dropped, which the test renderer never shows. The keywords transparent, currentColor and inherit are not colors, and
+// and scoped rules its parent gives it are dropped, which the test renderer never shows. For the
+// same reason it refuses a comment kept directly in a component's slot content or a Teleport,
+// which Vue's production runtime loses track of once patched, so the next render that empties the
+// slot throws and leaves the slot's old content in the page. The keywords transparent, currentColor and inherit are not colors, and
 // a color-mix() of tokens is allowed; a color-mix() with a literal in it is caught by the literal.
 //
 // Two places are exempt, because they are where the values live: the token sheet, chat.css, which
@@ -53,6 +56,12 @@ const ICON_CLASS = /\.chat-ic(?![\w-])/;
 const ICON_ATTRIBUTE = /\[\s*class\s*~=\s*(["']?)chat-ic\1\s*\]/;
 const ICON_TYPE = /^(?:[\w*-]*\|)?svg(?![\w-])/i;
 const ICON_SIZE = /^((min-|max-)?(width|height|inline-size|block-size)|stroke-width)$/;
+
+/** A tag whose children are slot content or teleported: a component, a dynamic one, or a Teleport. */
+const SLOT_OWNER = /^<(?:[A-Z][\w]*|component|teleport|transition|transition-group|keep-alive)(?![\w-])/;
+
+/** A template that is slot content: `#name`, `#[name]` or `v-slot`. */
+const SLOT_DIRECTIVE = /\s(?:#|v-slot)/;
 
 /** Functional pseudo-classes whose arguments are the element itself, as opposed to :has() and :not(). */
 const SAME_ELEMENT = /^(?::deep|::v-deep|:slotted|:global|:is|:where|:matches|:-webkit-any)$/i;
@@ -302,7 +311,10 @@ function scanScript(file, text, start, end, hits) {
   }
 }
 
-/** Reads a template's style attributes, a static one as CSS and a bound one as script, and its root comments. */
+/**
+ * Reads a template's style attributes, a static one as CSS and a bound one as script, and the
+ * comments the built block keeps where they change what renders.
+ */
 function scanTemplate(file, text, start, end, hits) {
   const template = text.slice(start, end);
   // The root's own indent is the first element's; a comment at that indent sits beside it.
@@ -314,6 +326,43 @@ function scanTemplate(file, text, start, end, hits) {
       }
     }
   }
+
+  // Vue's production runtime patches slot content and a Teleport's children without the element
+  // of a comment the built block keeps, so a later render that empties the slot or moves the
+  // Teleport throws removing it, stops halfway, and leaves the old content in the page. A
+  // comment's parent is the nearest open tag above it at a lesser indent. The compiler drops a
+  // comment written straight inside a component beside its `<template #name>` slots, so only one
+  // among implicit default content, in a slot template, or in a Teleport is kept.
+  const lines = template.split('\n');
+  const lineStarts = [];
+  lines.reduce((at, line) => {
+    lineStarts.push(at);
+    return at + line.length + 1;
+  }, 0);
+  const indentOf = (line) => /^[ \t]*/.exec(line)[0].length;
+  const openTagAt = (index) => template.slice(lineStarts[index], template.indexOf('>', lineStarts[index]) + 1);
+  const isSlotTemplate = (index) => /^<template(?![\w-])/.test(lines[index].trimStart()) && SLOT_DIRECTIVE.test(openTagAt(index));
+  /** Whether the component opened on a line has `<template #name>` slots, which make its other comments dropped. */
+  const hasSlotTemplates = (parent, childIndent) => {
+    for (let down = parent + 1; down < lines.length; down++) {
+      const indent = indentOf(lines[down]);
+      if (indent <= indentOf(lines[parent]) && lines[down].trimStart().startsWith('</')) return false;
+      if (indent === childIndent && isSlotTemplate(down)) return true;
+    }
+    return false;
+  };
+  lines.forEach((line, index) => {
+    if (!line.trimStart().startsWith('<!--')) return;
+    const indent = indentOf(line);
+    for (let up = index - 1; up >= 0; up--) {
+      const above = lines[up].trimStart();
+      if (indentOf(lines[up]) >= indent || !above.startsWith('<') || above.startsWith('</') || above.startsWith('<!--')) continue;
+      if ((SLOT_OWNER.test(above) && !hasSlotTemplates(up, indent)) || isSlotTemplate(up)) {
+        hits.push(`${file}:${lineAt(text, start + lineStarts[index])}: a comment directly in slot content or a Teleport, which the production runtime cannot remove once patched; put it above the component or inside an element`);
+      }
+      return;
+    }
+  });
 
   // Either quote may wrap an attribute, so the value runs to the quote that opened it.
   for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
@@ -414,9 +463,9 @@ if (invokedDirectly) {
   }
 
   if (hits.length > 0) {
-    console.error('style literals, root comments or icon sizes in chat components:');
+    console.error('style literals, kept comments or icon sizes in chat components:');
     for (const hit of hits) console.error(`  ${hit}`);
-    console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root; size an icon with --chat-ic-size and --chat-ic-stroke on what holds it.');
+    console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root and a slot comment above its component or into an element; size an icon with --chat-ic-size and --chat-ic-stroke on what holds it.');
     process.exit(1);
   }
 

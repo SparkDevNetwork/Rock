@@ -226,6 +226,50 @@ test('it refuses a comment beside a template root and passes one inside it', () 
   assert.match(hits[0], /comment beside the template's root/);
 });
 
+// A comment the built block keeps as a child of a component's slot content, or of a Teleport, is
+// patched in place by Vue's production runtime without its element; when the slot then empties
+// to nothing but comments, removing it throws, the render stops halfway, and every reload after
+// leaves another copy of the slot's content in the page. The test renderer runs the development
+// runtime, which keeps the element, so only this gate sees it.
+test('it refuses a comment directly in slot content or a Teleport and passes one in an element, a conditional, or beside slot templates', () => {
+  const planted = [
+    '<template>',
+    '    <PanelHost title="Thread">',
+    '        <!-- beside slot templates, which the compiler drops -->',
+    '        <template #actions>',
+    '            <!-- in a named slot -->',
+    '            <template v-if="isShown">',
+    '                <!-- in a conditional inside the slot -->',
+    '                <button type="button"',
+    '                        class="chat-th-follow">',
+    '                    <!-- in an element -->',
+    '                </button>',
+    '                <Teleport to="body">',
+    '                    <!-- in a teleport -->',
+    '                    <div v-if="isTipShown"></div>',
+    '                </Teleport>',
+    '            </template>',
+    '        </template>',
+    '        <div class="chat-body">',
+    '            <!-- in an element of the default slot -->',
+    '            <component :is="tag">',
+    '                <!-- in a dynamic component -->',
+    '            </component>',
+    '            <SettingGroup>',
+    '                <!-- in a default slot written straight inside -->',
+    '                <SettingRow title="Members" />',
+    '            </SettingGroup>',
+    '        </div>',
+    '    </PanelHost>',
+    '</template>',
+  ].join('\n');
+
+  const hits = scan(`${shell}/components/example.partial.obs`, planted);
+
+  assert.deepEqual(linesOf(hits), [5, 13, 21, 24], hits.join(' | '));
+  assert.match(hits[0], /comment directly in slot content/);
+});
+
 test('it refuses an icon sized by a rule of its caller, in a component or the token sheet', () => {
   // Two rules of one specificity fight by the order the built styles load in, which no test sees:
   // the icon's own size won that fight once and drew a group mark's glyph too large. A caller

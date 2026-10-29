@@ -72,9 +72,11 @@
         </SettingGroup>
         <p class="chat-ms-foot" data-testid="settings-foot">Each conversation sets its own, from its name at the top.</p>
 
-        <!-- The settings' news said while the dialog is open, keyed by count so the same words are
-             read twice; a save that failed is said at once. -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="settings-announcement"><span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
+        <span class="chat-sr-only" aria-live="polite" data-testid="settings-announcement">
+            <!-- The settings' news said while the dialog is open, keyed by count so the same words
+                 are read twice; a save that failed is said at once. -->
+            <span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span>
+        </span>
         <span class="chat-sr-only" aria-live="assertive" data-testid="settings-alert"><span v-if="shownAnnouncement?.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
     </Dialog>
 </template>

@@ -4,9 +4,6 @@
                :type="isButton ? 'button' : undefined"
                class="chat-sg-row"
                :class="{ 'is-button': isButton, 'is-danger': isDanger }">
-        <!-- One row of a settings group: its icon, its short label with at most a line under it,
-             a note under them, and its control or value at the end. Kept inside the root,
-             since a comment beside it makes a fragment that drops the caller's attributes. -->
         <Icon v-if="icon" :name="icon" class="chat-sg-ic" />
         <span class="chat-sg-txt">
             <!-- Spaced apart in words, so a reader never hears the label and its line as one. -->
@@ -107,6 +104,9 @@
 </style>
 
 <script setup lang="ts">
+    // One row of a settings group: its icon, its short label with at most a line under it, a note
+    // under them, and its control or value at the end.
+
     import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";

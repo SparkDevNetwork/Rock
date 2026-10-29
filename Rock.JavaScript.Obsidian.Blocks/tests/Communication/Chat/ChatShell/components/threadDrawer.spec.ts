@@ -398,6 +398,46 @@ describe("the Follow toggle", () => {
         expect(plain(w.get("[data-testid='thread-follow']").text())).toBe("Following");
     });
 
+    test("is one toggle however often the thread loads again, in the production runtime the block ships with", async () => {
+        // The built block keeps template comments and runs Vue's production runtime, which keeps
+        // no element for a comment it patches in place; the test renderer runs the development
+        // runtime, which does. So this mounts the drawer in a module registry of its own, with
+        // Vue's production build, where a comment in the header's slot once broke the next reload.
+        const previousEnvironment = process.env.NODE_ENV;
+        process.env.NODE_ENV = "production";
+        let production!: { mount: typeof mount, nextTick: typeof nextTick, drawer: typeof ThreadDrawer };
+        jest.isolateModules(() => {
+            production = {
+                mount: jest.requireActual("@vue/test-utils").mount,
+                nextTick: jest.requireActual("vue").nextTick,
+                drawer: jest.requireActual("../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs").default
+            };
+        });
+        process.env.NODE_ENV = previousEnvironment;
+
+        // The production runtime logs a render that threw rather than rethrowing it.
+        const logged = jest.spyOn(console, "error");
+        const w = production.mount(production.drawer, {
+            props: { root: null, replies: [], isLoading: true, personAliasGuid: me, draft: { text: "", mentions: [] } },
+            attachTo: document.body
+        });
+        wrapper = w;
+
+        for (let load = 0; load < 3; load++) {
+            await w.setProps({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: false });
+            // The answer redrawn in place, as a follow change does, before the thread loads again.
+            await w.setProps({ isFollowing: true });
+            await production.nextTick();
+            await w.setProps({ isLoading: true });
+        }
+        await w.setProps({ isLoading: false });
+
+        const loggedErrors = logged.mock.calls.length;
+        logged.mockRestore();
+        expect(loggedErrors).toBe(0);
+        expect(document.querySelectorAll("[data-testid='thread-follow']")).toHaveLength(1);
+    });
+
     test("is not offered after the first page failed, since whether the reader follows is still not known", async () => {
         const w = draw({ root: null, replies: [], isLoading: true });
         await w.setProps({ isLoading: false, error: { code: "net.offline", severity: "degraded", text: null } });

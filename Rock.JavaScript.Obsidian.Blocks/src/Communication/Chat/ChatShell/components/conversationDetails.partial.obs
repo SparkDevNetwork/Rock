@@ -29,8 +29,8 @@
         <template v-if="kind === 'channel'">
             <p v-if="description" class="chat-rd-desc" data-testid="details-description">{{ description }}</p>
 
+            <!-- Members is a way to the members panel for whoever may see who is here; a plain count for anyone else. -->
             <SettingGroup data-testid="details-facts">
-                <!-- A way to the members panel for whoever may see who is here; a plain count for anyone else. -->
                 <SettingRow icon="users"
                             title="Members"
                             :isButton="canSeeRoster"
@@ -93,8 +93,8 @@
             </SettingRow>
         </SettingGroup>
 
-        <!-- The person's own settings for the room, each saved at once. -->
         <template v-if="facts.is_member">
+            <!-- The person's own settings for the room, each saved at once. -->
             <SettingGroup label="Notifications" isBare data-testid="details-notify">
                 <template #default="{ labelId }">
                     <div class="chat-seg"
@@ -115,10 +115,10 @@
                                 :data-value="option.value"
                                 :aria-describedby="`${renameId}-notify-${option.value}`"
                                 @click="onNotify(option.value)">
+                            <!-- Described by its mode's own line below, read as the arrows reach it, since arrowing chooses and saves at once. -->
                             <Icon :name="option.icon" size="sm" />{{ option.label }}
                         </button>
                     </div>
-                    <!-- Each mode's own line, read as the arrows reach it, since arrowing chooses and saves at once. -->
                     <span v-for="option in notifyOptions" :id="`${renameId}-notify-${option.value}`" :key="option.value" class="chat-sr-only">{{ option.caption }}</span>
                     <p class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
                     <SettingNote v-if="prefsNotes.notify"
@@ -196,8 +196,10 @@
             </SettingGroup>
         </template>
 
-        <!-- The news said while the dialog is open, the rooms' or the settings', keyed so the same words are read twice. -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="details-announcement"><span v-if="said && !said.isAssertive" :key="said.key">{{ said.text }}</span></span>
+        <span class="chat-sr-only" aria-live="polite" data-testid="details-announcement">
+            <!-- The news said while the dialog is open, the rooms' or the settings', keyed so the same words are read twice. -->
+            <span v-if="said && !said.isAssertive" :key="said.key">{{ said.text }}</span>
+        </span>
         <span class="chat-sr-only" aria-live="assertive" data-testid="details-alert"><span v-if="said && said.isAssertive" :key="said.key">{{ said.text }}</span></span>
     </Dialog>
 </template>

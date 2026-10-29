@@ -1,17 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Transition name="chat-veil">
-        <!--
-            The first load's stand-in for a region: opaque over it until the region is revealed, so
-            the frame is at its final layout from mount and the real content crossfades in under
-            it. The marks wait (the caller's) so a quick load never flashes them.
-        -->
         <div v-if="!isRevealed"
              class="chat-veil"
              :class="`is-${region}`"
              data-testid="page-veil"
              :data-region="region"
              :data-look="kind">
+            <!--
+                The first load's stand-in for a region: opaque over it until the region is revealed, so
+                the frame is at its final layout from mount and the real content crossfades in under
+                it. The marks wait (the caller's) so a quick load never flashes them.
+            -->
             <span class="chat-sr-only">{{ region === "sidebar" ? "Loading conversations" : "Loading the conversation" }}</span>
 
             <template v-if="region === 'sidebar'">

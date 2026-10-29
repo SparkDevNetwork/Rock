@@ -9,8 +9,8 @@
                @close="emit('close')"
                @back="emit('back')">
         <template #actions>
-            <!-- Whether the reader follows arrives with the first page, so until it has answered there is nothing true to offer. -->
             <template v-if="!isLoading && root && !error">
+                <!-- Whether the reader follows arrives with the first page, so until it has answered there is nothing true to offer. -->
                 <button ref="followElement"
                         type="button"
                         class="chat-th-follow"
