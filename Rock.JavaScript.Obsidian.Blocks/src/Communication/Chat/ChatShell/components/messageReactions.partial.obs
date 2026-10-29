@@ -262,7 +262,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, useSlots, watch } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, useSlots, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "../ui/icon.partial.obs";
     import ReactionCard from "./reactionCard.partial.obs";
@@ -577,4 +577,11 @@
     });
 
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // A chip held as its row goes, as when the feed switches room, opens nothing on a row that is gone.
+    onBeforeUnmount(cancelLongPress);
+
+    // #endregion Lifecycle Hooks
 </script>

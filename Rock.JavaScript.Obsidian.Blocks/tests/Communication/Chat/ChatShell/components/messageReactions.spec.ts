@@ -502,6 +502,19 @@ describe("the full list", () => {
         expect(w.emitted("toggle")).toBeUndefined();
     });
 
+    test("held as its row goes, as when the feed switches room, leaves no wait behind to open the list", async () => {
+        jest.useFakeTimers();
+        const w = mountRow({ message: message([pray(2, true, [person(anna, "Anna", "Reyes")])]) });
+        const chip = chips(w)[0];
+        await chip.trigger("pointerdown", { pointerType: "touch", clientX: 10, clientY: 10 });
+        const waiting = jest.getTimerCount();
+
+        w.unmount();
+
+        expect(waiting).toBeGreaterThan(0);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
     test("a short tap toggles and opens nothing", async () => {
         jest.useFakeTimers();
         const w = mountRow({ message: message([pray(2)]) });
