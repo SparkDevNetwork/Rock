@@ -164,6 +164,17 @@ namespace Rock.Jobs
             // Add job observability if this is a legacy job.
             if ( !( context.JobInstance is RockJob ) )
             {
+                /*
+                    10/29/2026 - MSE
+
+                    Start legacy job activities as the root of their own trace. See the
+                    note in RockJob.ExecuteInternal. JobWasExecuted disposes this activity
+                    on the same Quartz thread, which leaves Current null again.
+
+                    Reason: Keep job traces separate from the startup trace.
+                */
+                Activity.Current = null;
+
                 var activity = ObservabilityHelper.StartActivity( $"JOB: {job.Class.Replace( "Rock.Jobs.", "" )} - {job.Name}" );
                 activity?.AddTag( "rock.otel_type", "rock-job" );
                 activity?.AddTag( "rock.job.id", job.Id );

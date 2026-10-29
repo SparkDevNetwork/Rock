@@ -177,6 +177,25 @@ namespace Rock.Jobs
         /// <param name="context"></param>
         internal void ExecuteInternal( IJobExecutionContext context )
         {
+            /*
+                10/29/2026 - MSE
+
+                Every job run must be the root of its own trace. Quartz creates its
+                threads while the "Startup: Application Startup Stage 1" activity is
+                current, and Thread.Start captures that ExecutionContext, so
+                Activity.Current is the startup activity on every Quartz thread (Run
+                Now jobs inherit the web request's activity instead). Left alone, the
+                job span becomes a descendant of that trace: it is suppressed at the
+                Minimal trace level and burns the startup trace's span limit at Full.
+
+                Current is not restored afterwards (unlike RockConsumer.Consume) because
+                this runs on a dedicated Quartz thread. When the activity below is
+                disposed, Current becomes its parent, which is now null.
+
+                Reason: Keep job traces separate from the startup trace.
+            */
+            System.Diagnostics.Activity.Current = null;
+
             using ( var activity = ObservabilityHelper.StartActivity( $"JOB: {GetType().FullName.Replace( "Rock.Jobs.", "" )} - {context.JobDetail.Key?.Group}" ) )
             {
                 InitializeFromJobContext( context );
