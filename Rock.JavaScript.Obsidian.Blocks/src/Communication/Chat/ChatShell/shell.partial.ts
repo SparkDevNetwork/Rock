@@ -42,12 +42,16 @@ import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest,
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import {
+    createPageReveal,
     openChannel,
     OpenOutcome,
+    PageReveal,
     readRememberedChannel,
+    readRememberedKind,
     rememberedChannelKey,
     startPageLoad,
-    writeRememberedChannel
+    writeRememberedChannel,
+    writeRememberedKind
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
@@ -229,6 +233,9 @@ export type ShellState = {
 /** The shell a block holds. */
 export type ChatShell = {
     state: ShellState;
+
+    /** What the first load shows: the skeleton, then one reveal of every region. */
+    reveal: PageReveal;
     channels: ChannelStore;
     timelines: Timelines;
     sender: Sender;
@@ -517,6 +524,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      */
     async function end(): Promise<void> {
         isStopped = true;
+        reveal.stop();
         cancelRecheck();
         cancelSidebarWait();
         timelines.stop();
@@ -972,12 +980,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         state.isOpening = true;
         try {
-            await startPageLoad({
+            const opened = await startPageLoad({
                 linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
                 rememberedChannelId: readRememberedChannel(options.storage, storageKey),
                 loadSidebar,
                 open
             });
+
+            // Nothing opened and nothing failed to: the column has nothing more to wait for. A
+            // failed open has already revealed what had arrived.
+            if (opened === null) {
+                reveal.nothingToOpen();
+            }
         }
         finally {
             state.isOpening = false;
@@ -1038,6 +1052,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         options.mark("chat:sidebar");
 
         if (!result.ok) {
+            // The list's own line tells the failure, so the first load does not wait on it.
+            reveal.sidebarAnswered();
+            reveal.failed();
+
             // Before the first sidebar has landed, the list's own line with Try again tells the
             // failure, so the toast is kept for a session that ended, which the line cannot mend,
             // and for a later read's failure, which nothing else shows.
@@ -1078,6 +1096,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         // a join still settling is settled by the reload that shows the room as the person's
         rooms.sidebarLoaded();
+        reveal.sidebarAnswered();
         return channels.rows;
     }
 
@@ -1130,6 +1149,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
+
+    // From the shell's creation, which is the block's mount: the skeleton's wait and the ceiling run
+    // from here. It draws the look of the room opened last, as nothing else is known yet.
+    const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
     /**
@@ -1183,14 +1206,25 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
         showChannel(channelId);
 
-        // The room's facts are read beside its history, so neither waits for the other.
-        void rooms.channelOpened(channelId);
+        // The room's facts are read beside its history, so neither waits for the other. Both
+        // answers, a refusal too, are what the first load waits on.
+        void rooms.channelOpened(channelId).then(() => {
+            if (isCurrent()) {
+                // The look is the room's own, so the next load's skeleton has its shape.
+                const facts = rooms.factsOf(channelId);
+                if (facts) {
+                    writeRememberedKind(options.storage, storageKey, facts.channel_type === "dm" ? "direct" : "channel");
+                }
+                reveal.factsAnswered();
+            }
+        });
 
         const outcome = await openChannel({
             join: id => hub?.openChannel(id),
             loadNewest: async id => {
                 await timelines.loadNewest(id);
                 if (isCurrent()) {
+                    reveal.historyAnswered();
                     options.mark("chat:history");
                     tracker.open(id, timelines.state(id).readCursor);
                 }
@@ -1209,6 +1243,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         if (outcome !== "opened") {
             showChannel(null);
+
+            // A room that failed or refused has nothing more to load; what has arrived shows now.
+            reveal.nothingToOpen();
+            reveal.failed();
         }
 
         return outcome;
@@ -1216,6 +1254,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     return {
         state,
+        reveal,
         channels,
         timelines,
         sender,
@@ -1517,6 +1556,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         stop: async (): Promise<void> => {
             isStopped = true;
+            reveal.stop();
             push?.stop();
             state.isPushOffered = false;
             cancelRecheck();

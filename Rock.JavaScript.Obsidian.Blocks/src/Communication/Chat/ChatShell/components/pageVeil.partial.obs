@@ -1,0 +1,240 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Transition name="chat-veil">
+        <!--
+            The first load's stand-in for a region: opaque over it until the region is revealed, so
+            the frame is at its final layout from mount and the real content crossfades in under
+            it. The marks wait (the caller's) so a quick load never flashes them.
+        -->
+        <div v-if="!isRevealed"
+             class="chat-veil"
+             :class="`is-${region}`"
+             data-testid="page-veil"
+             :data-region="region"
+             :data-look="kind">
+            <span class="chat-sr-only">{{ region === "sidebar" ? "Loading conversations" : "Loading the conversation" }}</span>
+
+            <template v-if="region === 'sidebar'">
+                <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
+                    <div v-for="width in sidebarWidths" :key="width" class="chat-veil-side-row">
+                        <i class="chat-skeleton chat-veil-face"></i>
+                        <span class="chat-veil-lines"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
+                    </div>
+                </div>
+            </template>
+
+            <template v-else>
+                <!-- The header's rule and the composer's box are the frame's own, so they stand from mount. -->
+                <div class="chat-veil-header" aria-hidden="true" data-testid="veil-header">
+                    <template v-if="isMarksShown">
+                        <i v-if="kind === 'channel'" class="chat-skeleton chat-veil-mark"></i>
+                        <i v-else class="chat-skeleton chat-veil-face"></i>
+                        <span class="chat-veil-lines">
+                            <i class="chat-skeleton chat-veil-name"></i>
+                            <i v-if="kind === 'channel'" class="chat-skeleton chat-veil-desc"></i>
+                        </span>
+                    </template>
+                </div>
+
+                <div class="chat-veil-feed" aria-hidden="true">
+                    <template v-if="isMarksShown">
+                        <template v-if="kind === 'channel'">
+                            <div v-for="index in 5" :key="index" class="chat-veil-row" data-testid="veil-row">
+                                <i class="chat-skeleton chat-veil-face"></i>
+                                <span class="chat-veil-lines">
+                                    <i class="chat-skeleton chat-veil-name"></i>
+                                    <i class="chat-skeleton chat-veil-text"></i>
+                                </span>
+                            </div>
+                        </template>
+                        <template v-else>
+                            <div v-for="index in 5" :key="index" class="chat-veil-bubble-row" :class="{ 'is-own': index % 3 === 0 }" data-testid="veil-row">
+                                <i class="chat-skeleton chat-veil-bubble"></i>
+                            </div>
+                        </template>
+                    </template>
+                </div>
+
+                <div class="chat-veil-composer" aria-hidden="true"></div>
+            </template>
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+.chat-veil {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--chat-surface);
+    cursor: progress;
+}
+
+/* The list's own ground, since the veil lies over rows that sit on it. */
+.chat-veil.is-sidebar {
+    padding: 4px 8px 12px;
+    background: var(--chat-sidebar);
+}
+
+/* The marks fade in once they are due, so they never pop. */
+.chat-veil-marks,
+.chat-veil-header > *,
+.chat-veil-feed > * {
+    animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
+}
+
+.chat-veil-side-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+}
+
+.chat-veil i {
+    display: block;
+}
+
+.chat-veil-face {
+    flex: none;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--chat-r-full);
+}
+
+.chat-veil-lines {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.chat-veil-side-row .chat-veil-lines i:first-child {
+    height: 10px;
+}
+
+.chat-veil-side-row .chat-veil-lines i:last-child {
+    width: 32%;
+    height: 8px;
+}
+
+.chat-veil-header {
+    display: flex;
+    flex: none;
+    gap: 12px;
+    align-items: center;
+    height: 64px;
+    padding: 0 12px 0 20px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-veil-mark {
+    flex: none;
+    width: 36px;
+    height: 36px;
+}
+
+.chat-veil-header .chat-veil-lines {
+    gap: 6px;
+}
+
+.chat-veil-name {
+    width: 22%;
+    height: 12px;
+}
+
+.chat-veil-desc {
+    width: 40%;
+    height: 9px;
+}
+
+.chat-veil-feed {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 18px;
+    justify-content: flex-end;
+    min-height: 0;
+    padding: 28px 0 38px;
+    overflow: hidden;
+}
+
+.chat-veil-row {
+    display: flex;
+    gap: 12px;
+    padding: 2px 20px;
+}
+
+.chat-veil-text {
+    width: 64%;
+    height: 12px;
+}
+
+.chat-veil-row:nth-child(2n) .chat-veil-text {
+    width: 46%;
+}
+
+.chat-veil-bubble-row {
+    display: flex;
+    padding: 0 20px;
+}
+
+.chat-veil-bubble-row.is-own {
+    justify-content: flex-end;
+}
+
+.chat-veil-bubble {
+    width: 44%;
+    height: 34px;
+    border-radius: var(--chat-r-bubble);
+}
+
+.chat-veil-bubble-row:nth-child(2n) .chat-veil-bubble {
+    width: 62%;
+    height: 54px;
+}
+
+/* The composer's box, which the real one takes over: same margins, same rule. */
+.chat-veil-composer {
+    flex: none;
+    height: 52px;
+    margin: 0 20px 14px;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-composer);
+    box-shadow: var(--chat-shadow-composer);
+}
+
+/* The veil goes as the content under it comes in. */
+.chat-veil-leave-active {
+    transition: opacity var(--chat-d-skel-out) var(--chat-ease-out);
+}
+
+.chat-veil-leave-to {
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { RoomLook } from "../pageLoad.partial";
+
+    defineProps<{
+        /** The part of the frame this stands in for. */
+        region: "sidebar" | "main";
+
+        /** Whether the region has been revealed, which takes the veil away. */
+        isRevealed: boolean;
+
+        /** Whether the marks are due; the frame draws without them first. */
+        isMarksShown: boolean;
+
+        /** The room the column's marks are shaped for. */
+        kind: RoomLook;
+    }>();
+
+    /** The widths of a list's rows, as the sidebar's own loading rows vary them. */
+    const sidebarWidths = [58, 44, 66, 50, 40, 62, 48];
+
+</script>

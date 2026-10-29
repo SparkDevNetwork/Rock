@@ -23,6 +23,8 @@
         </div>
 
         <nav class="chat-side-list" aria-label="Conversations" :aria-busy="loadState === 'loading' ? 'true' : undefined">
+            <!-- The first load's veil over the list, which the frame supplies. -->
+            <slot name="veil" />
             <!--
                 Still loading, not empty: rows of a conversation's size, so nothing jumps when they
                 land. Read from the load alone, as a previewed room may hold a row before the rest.
