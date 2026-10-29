@@ -1704,7 +1704,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
             // Update the transaction frequency with the new value.
             scheduledTransaction.TransactionFrequencyValueId = DefinedValueCache.Get( options.FrequencyValueId, !this.PageCache.Layout.Site.DisablePredictableIds )?.Id
                 ?? scheduledTransaction.TransactionFrequencyValueId;
-            scheduledTransaction.StartDate = options.NextProcessDate;
+
+            // NextProcessDate arrives bound to the host server's clock, the same as
+            // ProcessDate in GetSchedule, so normalize it to a Rock date before storing it.
+            scheduledTransaction.StartDate = RockDateTime.ConvertLocalDateTimeToRockDateTime( options.NextProcessDate ).Date;
 
             // If we are using the existing payment method, DO NOT clear out the FinancialPaymentDetail record.
             if ( !useExistingPaymentMethod )
