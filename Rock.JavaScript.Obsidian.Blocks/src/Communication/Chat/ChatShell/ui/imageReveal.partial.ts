@@ -18,10 +18,17 @@
 // The one owner of how a photo or a face arrives. An image stays hidden until the browser has
 // decoded it, so a half-painted photo is never seen, then fades in; the images drawn together
 // reveal together, once all are decoded or a short wait after the first, whichever is sooner; an
-// image already in the cache shows at once. The avatar, the group mark, the profile card's photo
-// and a message's photos all draw through here.
-import { Directive, inject, InjectionKey, onBeforeUnmount, Ref, watch } from "vue";
+// image already in the cache shows at once. The avatar, the group mark, the profile card's photo,
+// a mention's photo and a message's photos all draw through here.
+//
+// On the first load the page's reveal is the one owner of when the first screen appears: until it
+// has released, every image waits for it, each one still to decode is reported to it so it can
+// wait a short grace for them, and what has decoded by the release shows with it, with no fade of
+// its own, since the page's crossfade is the fade. After the release the batch and the image's
+// own fade apply as usual.
+import { computed, Directive, inject, onBeforeUnmount, Ref, watch } from "vue";
 import { tokenDuration } from "./brand.partial";
+import { pageRevealKey } from "../pageLoad.partial";
 
 /**
  * The class that keeps an image invisible until it is revealed. The box it sits in is already held
@@ -31,13 +38,6 @@ export const imageHoldClass = "chat-img-hold";
 
 /** The class that fades a revealed image in; a cached image is revealed without it. */
 export const imageInClass = "chat-img-in";
-
-/**
- * A page-level signal that images should wait: true until the page's own reveal has run. The
- * shell provides it on a first load so the first screen's faces join that reveal; without it
- * images reveal as soon as they are ready.
- */
-export const imageRevealHoldKey: InjectionKey<Ref<boolean>> = Symbol("chat-image-reveal-hold");
 
 /** How long the first decoded image of a batch waits for the rest when the sheet names no value. */
 const fallbackBatchMs = 300;
@@ -49,12 +49,14 @@ type Member = {
     img: HTMLImageElement;
     owner: Reveal;
     batch: Batch | null;
-    /** Decoded and ready to show, but the batch or the page signal has not let it through. */
+    /** Decoded (or cached or broken) and ready to show, but the batch or the page has not let it through. */
     isReady: boolean;
     /** Shown without a fade, because it was already in the cache. */
     isCached: boolean;
     isRevealed: boolean;
     cleanup: (() => void) | null;
+    /** Settles the decode reported to the page; null when none was reported or it has settled. */
+    settle: (() => void) | null;
 };
 
 /** The images that start loading together: they wait for each other, up to a cap. */
@@ -119,16 +121,27 @@ function sharedBatch(): Batch {
  * @param options.isShared True for faces, which batch with every other face drawn in the same
  * frame; false for a set of images that belong together, such as one message's photos.
  * @param options.hold The signal to wait on, or null to reveal as soon as images are ready.
+ * @param options.reportDecode Called, while the hold is on, with the decode of each image that is
+ * not already cached, so the page can wait for it; the promise settles on decode or on breaking.
  */
-export function createImageReveal(options: { isShared?: boolean, hold?: Ref<boolean> | null } = {}): ImageReveal {
+export function createImageReveal(options: {
+    isShared?: boolean,
+    hold?: Readonly<Ref<boolean>> | null,
+    reportDecode?: ((decoded: Promise<void>) => void) | null
+} = {}): ImageReveal {
     const members = new Map<HTMLImageElement, Member>();
     let ownBatch: Batch | null = null;
     let isStopped = false;
 
     const isHeld = (): boolean => options.hold?.value === true;
 
-    /** Shows one member now if nothing holds it; otherwise it waits for the hold to release. */
-    function show(member: Member): void {
+    /**
+     * Shows one member now if nothing holds it; otherwise it waits for the hold to release.
+     *
+     * @param hasFade Whether the image fades in; the release of the page's hold shows with no
+     * fade, since the page's own crossfade is the fade.
+     */
+    function show(member: Member, hasFade: boolean = !member.isCached): void {
         if (isStopped || member.isRevealed) {
             return;
         }
@@ -142,7 +155,7 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
         member.isRevealed = true;
         member.img.classList.remove(imageHoldClass);
 
-        if (!member.isCached) {
+        if (hasFade) {
             member.img.classList.add(imageInClass);
         }
     }
@@ -184,6 +197,15 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
 
     /** The member's image is decoded: it waits for its batch, or shows alone if the batch already went. */
     function onDecoded(member: Member): void {
+        member.settle?.();
+
+        // While the page holds, a decode is marked at once and never waits on the batch: the
+        // release shows every decoded image together, which is the first screen's reveal.
+        if (isHeld()) {
+            member.isReady = true;
+            return;
+        }
+
         const batch = member.batch;
 
         if (!batch || batch.isFired) {
@@ -203,6 +225,7 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
 
     /** A broken image is shown at once, as the browser draws one, and never holds the others. */
     function onBroken(member: Member): void {
+        member.settle?.();
         leave(member);
         show(member);
     }
@@ -258,7 +281,7 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
                 return;
             }
 
-            const member: Member = { img, owner: reveal, batch: null, isReady: false, isCached: false, isRevealed: false, cleanup: null };
+            const member: Member = { img, owner: reveal, batch: null, isReady: false, isCached: false, isRevealed: false, cleanup: null, settle: null };
             members.set(img, member);
             img.classList.add(imageHoldClass);
 
@@ -278,6 +301,17 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
             }
 
             member.batch.members.add(member);
+
+            // The page waits for what is still decoding, up to its grace.
+            if (isHeld() && options.reportDecode) {
+                options.reportDecode(new Promise<void>(resolve => {
+                    member.settle = (): void => {
+                        member.settle = null;
+                        resolve();
+                    };
+                }));
+            }
+
             watchLoad(member);
         },
 
@@ -285,6 +319,7 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
             const member = members.get(img);
 
             if (member) {
+                member.settle?.();
                 member.cleanup?.();
                 leave(member);
                 members.delete(img);
@@ -301,13 +336,15 @@ export function createImageReveal(options: { isShared?: boolean, hold?: Ref<bool
         }
     };
 
-    // When the page's reveal runs, whatever was ready and waiting shows.
+    // When the page's reveal runs, whatever was ready and waiting shows with it and with no fade of
+    // its own, and no longer waits on its batch.
     const stopHold = options.hold
         ? watch(options.hold, held => {
             if (!held) {
                 for (const member of members.values()) {
                     if (member.isReady) {
-                        show(member);
+                        leave(member);
+                        show(member, false);
                     }
                 }
             }
@@ -327,7 +364,13 @@ type Reveal = ImageReveal & { showMember(member: Member): void };
  * @param options.isShared True for faces, which reveal with every face drawn in the same frame.
  */
 export function useImageReveal(options: { isShared?: boolean } = {}): ImageReveal {
-    const reveal = createImageReveal({ isShared: options.isShared, hold: inject(imageRevealHoldKey, null) });
+    // The page's reveal is read through its getter, so a rebuilt shell is followed.
+    const page = inject(pageRevealKey, null);
+    const reveal = createImageReveal({
+        isShared: options.isShared,
+        hold: page ? computed(() => !page.state.isReleased) : null,
+        reportDecode: page ? decoded => page.holdFace(decoded) : null
+    });
 
     onBeforeUnmount(() => reveal.stop());
 

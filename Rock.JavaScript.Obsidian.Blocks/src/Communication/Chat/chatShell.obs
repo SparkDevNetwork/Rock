@@ -796,10 +796,9 @@
     // session a fresh page load would have had.
     const shell = shallowRef(buildShell(config.session ?? {}));
 
-    // Every row's files read the session's local copies and links through this, which follows the
-    // shell when it is built again, so a row never holds a session that has gone.
-    // Faces drawn on the first screen join its reveal. The shell is rebuilt after a birthdate answer,
-    // so the reveal is read through it each time.
+    // Every photo and face joins the first screen's reveal: it reads when the page releases and
+    // reports what it is still decoding through this. The shell is rebuilt after a birthdate
+    // answer, so the reveal is read through it each time.
     provide(pageRevealKey, {
         get state() {
             return shell.value.reveal.state;
@@ -807,6 +806,8 @@
         holdFace: decoded => shell.value.reveal.holdFace(decoded)
     });
 
+    // Every row's files read the session's local copies and links through this, which follows the
+    // shell when it is built again, so a row never holds a session that has gone.
     provide(attachmentViewsKey, {
         previewOf: id => shell.value.attachments.previewOf(id),
         links: {

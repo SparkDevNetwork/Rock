@@ -17,6 +17,7 @@
 // The page load: the first channel's history, its live join and the sidebar start at once,
 // never history after the sidebar. A link wins; else the channel this browser last opened for
 // this person; else, only on a first visit, the sidebar's first row.
+import { nextTick } from "vue";
 import {
     createPageReveal,
     faceGraceMs,
@@ -251,23 +252,29 @@ describe("the page reveal", () => {
         reveal.factsAnswered();
     }
 
-    test("shows nothing revealed before the sidebar, the first page and the facts have all answered", () => {
+    /** The render the last answer caused, where the faces it brought mount and report themselves. */
+    const rendered = (): Promise<void> => nextTick();
+
+    test("shows nothing revealed before the sidebar, the first page and the facts have all answered", async () => {
         const reveal = createPageReveal({ kind: "channel" });
 
         reveal.historyAnswered();
         reveal.factsAnswered();
+        await rendered();
         jest.advanceTimersByTime(revealCeilingMs - 1);
 
         expect(reveal.state.isSidebarRevealed).toBe(false);
         expect(reveal.state.isMainRevealed).toBe(false);
 
         reveal.sidebarAnswered();
+        await rendered();
 
         expect(reveal.state.isSidebarRevealed).toBe(true);
         expect(reveal.state.isMainRevealed).toBe(true);
+        expect(reveal.state.isReleased).toBe(true);
     });
 
-    test("reveals every region in the same tick once the first screen is ready", () => {
+    test("reveals every region in the same tick once the first screen is ready", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.sidebarAnswered();
         reveal.historyAnswered();
@@ -276,15 +283,17 @@ describe("the page reveal", () => {
         expect(reveal.state.isMainRevealed).toBe(false);
 
         reveal.factsAnswered();
+        await rendered();
 
         expect(reveal.state.isSidebarRevealed).toBe(true);
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("holds the reveal for a first-screen face still decoding, but no longer than the grace", () => {
+    test("holds the reveal for a first-screen face still decoding, but no longer than the grace", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.holdFace(new Promise(() => undefined));
         answerAll(reveal);
+        await rendered();
 
         jest.advanceTimersByTime(faceGraceMs - 1);
         expect(reveal.state.isMainRevealed).toBe(false);
@@ -294,6 +303,33 @@ describe("the page reveal", () => {
         expect(reveal.state.isSidebarRevealed).toBe(true);
     });
 
+    test("holds the reveal for a face that mounts after the last answer, which renders on the next tick", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        // The data that arrived with the last answer queued its render first: the region's faces
+        // mount in it and report themselves, after the answer was called.
+        void nextTick(() => reveal.holdFace(new Promise(() => undefined)));
+        answerAll(reveal);
+        await rendered();
+
+        expect(reveal.state.isReleased).toBe(false);
+        jest.advanceTimersByTime(faceGraceMs - 1);
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("releases on the next tick when no face is held, with no timer", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        answerAll(reveal);
+
+        await rendered();
+
+        expect(reveal.state.isReleased).toBe(true);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
     test("reveals at once when the held faces decode inside the grace", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         let decoded: () => void = () => undefined;
@@ -301,6 +337,7 @@ describe("the page reveal", () => {
             decoded = resolve;
         }));
         answerAll(reveal);
+        await rendered();
         expect(reveal.state.isMainRevealed).toBe(false);
 
         decoded();
@@ -310,23 +347,53 @@ describe("the page reveal", () => {
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("at the ceiling reveals what has arrived and lets a late region reveal itself on landing", () => {
+    test("a face that decodes before the last answer does not release the page early", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        let decoded: () => void = () => undefined;
+        reveal.holdFace(new Promise<void>(resolve => {
+            decoded = resolve;
+        }));
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+        decoded();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        void nextTick(() => reveal.holdFace(new Promise(() => undefined)));
+        reveal.factsAnswered();
+        await rendered();
+
+        expect(reveal.state.isReleased).toBe(false);
+    });
+
+    test("at the ceiling reveals every region, so a call that never answers cannot lock the column", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.sidebarAnswered();
 
         jest.advanceTimersByTime(revealCeilingMs);
 
+        expect(reveal.state.isReleased).toBe(true);
         expect(reveal.state.isSidebarRevealed).toBe(true);
-        expect(reveal.state.isMainRevealed).toBe(false);
+        expect(reveal.state.isMainRevealed).toBe(true);
+        expect(reveal.state.isSkeletonShown).toBe(false);
+        expect(jest.getTimerCount()).toBe(0);
 
+        // A late answer changes nothing and throws nothing.
         reveal.historyAnswered();
-        expect(reveal.state.isMainRevealed).toBe(false);
-
         reveal.factsAnswered();
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("a failure reveals what has arrived at once, without the face grace", () => {
+    test("at the ceiling reveals even a sidebar that never answered, which draws its own loading rows", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        jest.advanceTimersByTime(revealCeilingMs);
+
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a failure reveals what has arrived at once, without the face grace, and a region still waiting reveals when it lands", () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.holdFace(new Promise(() => undefined));
         reveal.sidebarAnswered();
@@ -335,13 +402,18 @@ describe("the page reveal", () => {
 
         expect(reveal.state.isSidebarRevealed).toBe(true);
         expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+        expect(reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("nothing to open answers the first page and the facts together", () => {
+    test("nothing to open answers the first page and the facts together", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.sidebarAnswered();
 
         reveal.nothingToOpen();
+        await rendered();
 
         expect(reveal.state.isMainRevealed).toBe(true);
     });
@@ -356,9 +428,10 @@ describe("the page reveal", () => {
         expect(reveal.state.isSkeletonShown).toBe(true);
     });
 
-    test("a load that is ready inside the wait never draws the marks", () => {
+    test("a load that is ready inside the wait never draws the marks", async () => {
         const reveal = createPageReveal({ kind: "channel" });
         answerAll(reveal);
+        await rendered();
 
         jest.advanceTimersByTime(skeletonWaitMs * 2);
 
@@ -402,6 +475,17 @@ describe("the page reveal", () => {
 
         reveal.stop();
 
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("stopped while the render after the last answer is pending starts no grace and releases nothing", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        answerAll(reveal);
+
+        reveal.stop();
+        await rendered();
+
+        expect(reveal.state.isReleased).toBe(false);
         expect(jest.getTimerCount()).toBe(0);
     });
 });

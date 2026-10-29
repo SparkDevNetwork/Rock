@@ -774,7 +774,7 @@ describe("the page load's reveal", () => {
         expect(h.shell.reveal.state.isMainRevealed).toBe(true);
     });
 
-    test("at the ceiling reveals the sidebar that arrived, and the column when its first page lands", async () => {
+    test("at the ceiling reveals the sidebar that arrived and the column too, which draws its own loading state until its first page lands", async () => {
         jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
         const h = build();
         const starting = h.shell.start();
@@ -783,7 +783,7 @@ describe("the page load's reveal", () => {
         jest.advanceTimersByTime(revealCeilingMs);
 
         expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
-        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
 
         answerHistory(h, channelA, 10);
         await starting;
@@ -810,6 +810,80 @@ describe("the page load's reveal", () => {
         await starting;
 
         expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a remembered room the person can no longer read falls back to the first row without revealing the column empty", async () => {
+        const key = rememberedChannelKey(tenant, person);
+        const h = build({ linkedChannelId: null, stored: { [key]: channelB } });
+        h.bootstrap.value = { channels: [{ channel_id: channelA } as SidebarRow] };
+        const starting = h.shell.start();
+        await settle();
+
+        h.history[channelB][0].resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
+        await settle();
+
+        // The fallback room is what the first screen shows, so nothing is revealed before it answers.
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+        expect(h.shell.reveal.state.isReleased).toBe(false);
+
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+    });
+
+    test("a remembered room that is refused with no row to fall back to reveals the column", async () => {
+        const key = rememberedChannelKey(tenant, person);
+        const h = build({ linkedChannelId: null, stored: { [key]: channelB } });
+        const starting = h.shell.start();
+        await settle();
+
+        h.history[channelB][0].resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
+        await starting;
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a room the person clicks mid-load answers the column's history and facts, not the superseded page load", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        // The load's own room has answered but was superseded: the column still waits for B.
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+        expect(h.shell.reveal.state.isReleased).toBe(false);
+
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a room the person clicks mid-load that is refused reveals the column at once", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        h.history[channelB][0].resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
+        await toB;
+        await settle();
+
         expect(h.shell.reveal.state.isMainRevealed).toBe(true);
     });
 

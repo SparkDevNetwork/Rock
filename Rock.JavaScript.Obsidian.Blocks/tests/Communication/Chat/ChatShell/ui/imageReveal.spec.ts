@@ -259,5 +259,98 @@ describe("the image reveal", () => {
         expect(isHidden(cached.img)).toBe(false);
         expect(isFading(cached.img)).toBe(false);
         expect(isHidden(loaded.img)).toBe(false);
+        // The page's own crossfade is the fade, so a decoded face does not fade a second time.
+        expect(isFading(loaded.img)).toBe(false);
+    });
+
+    test("while the page holds, a face decoded before the release shows at once on release, whatever its batch is waiting on", async () => {
+        const hold = ref(true);
+        const reveal = createImageReveal({ hold, isShared: true });
+        const early = makeImage();
+        const slow = makeImage();
+
+        reveal.track(early.img);
+        reveal.track(slow.img);
+        early.decode.resolve();
+        await settle();
+
+        hold.value = false;
+
+        expect(isHidden(early.img)).toBe(false);
+        expect(isFading(early.img)).toBe(false);
+        expect(isHidden(slow.img)).toBe(true);
+
+        // Nothing is left waiting on the early face: the slow one shows alone, with its own fade.
+        slow.decode.resolve();
+        await settle();
+        expect(isHidden(slow.img)).toBe(false);
+        expect(isFading(slow.img)).toBe(true);
+    });
+
+    test("after the release, the batch and the image's own fade apply as usual", async () => {
+        const hold = ref(false);
+        const reveal = createImageReveal({ hold });
+        const first = makeImage();
+        const second = makeImage();
+
+        reveal.track(first.img);
+        reveal.track(second.img);
+        first.decode.resolve();
+        await settle();
+        expect(isHidden(first.img)).toBe(true);
+
+        jest.advanceTimersByTime(300);
+        expect(isHidden(first.img)).toBe(false);
+        expect(isFading(first.img)).toBe(true);
+    });
+
+    test("reports each image still to decode to the page while it holds, and settles on decode or on breaking", async () => {
+        const hold = ref(true);
+        const reported: Array<Promise<unknown>> = [];
+        const reveal = createImageReveal({ hold, reportDecode: decoded => reported.push(decoded) });
+        const good = makeImage();
+        const broken = makeImage();
+        const cached = makeImage({ cached: true });
+        let settled = 0;
+
+        reveal.track(good.img);
+        reveal.track(broken.img);
+        reveal.track(cached.img);
+
+        expect(reported).toHaveLength(2);
+        reported.forEach(promise => void promise.then(() => settled++));
+
+        good.decode.resolve();
+        await settle();
+        expect(settled).toBe(1);
+
+        broken.decode.reject();
+        await settle();
+        broken.img.dispatchEvent(new Event("error"));
+        await settle();
+        expect(settled).toBe(2);
+    });
+
+    test("reports nothing once the page has released", () => {
+        const reported: Array<Promise<unknown>> = [];
+        const reveal = createImageReveal({ hold: ref(false), reportDecode: decoded => reported.push(decoded) });
+
+        reveal.track(makeImage().img);
+
+        expect(reported).toHaveLength(0);
+    });
+
+    test("an image that leaves while the page holds settles its report, so nothing waits on it", async () => {
+        const reported: Array<Promise<unknown>> = [];
+        const reveal = createImageReveal({ hold: ref(true), reportDecode: decoded => reported.push(decoded) });
+        const gone = makeImage();
+        let settled = false;
+
+        reveal.track(gone.img);
+        void reported[0].then(() => (settled = true));
+        reveal.untrack(gone.img);
+        await settle();
+
+        expect(settled).toBe(true);
     });
 });

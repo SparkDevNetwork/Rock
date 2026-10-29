@@ -23,7 +23,7 @@
 // What the person sees meanwhile is one thing, owned here: the frame stands at mount, and its
 // regions crossfade in together once the first screen is ready, rather than each popping in as
 // its own answer lands.
-import { InjectionKey, reactive } from "vue";
+import { InjectionKey, nextTick, reactive } from "vue";
 import { SidebarRow } from "./types.partial";
 
 /** The part of browser storage the shell uses. */
@@ -141,8 +141,9 @@ export const skeletonWaitMs = 150;
 
 /**
  * How long the faces of the first screen get to decode once its data is in, before the reveal
- * goes without them. An estimate to measure on the sandbox; a face later than this fades in on
- * its own.
+ * goes without them. An estimate to measure on the sandbox. Faces held for the reveal show with
+ * it as soon as they decode, never waiting on the image batch's own cap, so this one figure
+ * governs the first load; a face later than it fades in on its own, through the batch.
  */
 export const faceGraceMs = 250;
 
@@ -166,14 +167,22 @@ export type PageRevealState = {
 
     /** Whether the conversation's column (header, feed and composer) has been revealed. */
     isMainRevealed: boolean;
+
+    /**
+     * Whether the first screen's reveal has been released. Until then every photo and face waits,
+     * and from then on they draw as they arrive; the page's reveal is their one owner.
+     */
+    isReleased: boolean;
 };
 
 /**
  * The first load's reveal. The block is ready when the sidebar has answered, the opening room's
  * first page has answered and its facts have answered (or there is nothing to open), after which
  * the faces on the first screen get a short grace to decode; then every region is revealed in
- * one tick, which the frame draws as one crossfade. The ceiling and a failure release it early:
- * what has arrived is revealed, and a region still waiting is revealed on its own when it lands.
+ * one tick, which the frame draws as one crossfade. A failure releases it early: what has arrived
+ * is revealed, and a region still waiting is revealed on its own when it lands. The ceiling
+ * releases it and reveals every region: one still waiting hands over to its own loading state, so
+ * a call that never answers cannot lock the column.
  * Sign-in comes first without being tracked: nothing here can answer before it.
  *
  * Once stopped, every timer is gone and every later answer is refused, so a load that outlives
@@ -233,12 +242,13 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         kind: options.kind,
         isSkeletonShown: false,
         isSidebarRevealed: false,
-        isMainRevealed: false
+        isMainRevealed: false,
+        isReleased: false
     });
 
     const answered = { sidebar: false, history: false, facts: false };
     let isStopped = false;
-    let isReleased = false;
+    let isGraceStarted = false;
     let isGraceOn = false;
     let heldFaces = 0;
     let graceTimer: ReturnType<typeof setTimeout> | null = null;
@@ -256,14 +266,17 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         state.isSkeletonShown = !(state.isSidebarRevealed && state.isMainRevealed);
     }, skeletonWaitMs);
 
+    // Past the ceiling nothing more is waited for: a region whose data has not come is revealed
+    // all the same and shows its own loading state, so no call can keep the column veiled.
     let ceilingTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
         ceilingTimer = null;
+        answered.sidebar = answered.history = answered.facts = true;
         release();
     }, revealCeilingMs);
 
     /** Reveals every region that has its data, once the reveal is released. */
     function reveal(): void {
-        if (!isReleased) {
+        if (!state.isReleased) {
             return;
         }
 
@@ -280,13 +293,25 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
 
     function release(): void {
         graceTimer = clearTimer(graceTimer);
-        isReleased = true;
+        state.isReleased = true;
         reveal();
     }
 
-    /** With every answer in, releases once the held faces have decoded or the grace is spent. */
-    function startGrace(): void {
-        if (isGraceOn || isReleased) {
+    /**
+     * With every answer in, releases once the held faces have decoded or the grace is spent. The
+     * faces of the region that answered last mount in the render its answer caused, so they are
+     * counted after it, not before: counting at once would find none and skip the grace.
+     */
+    async function startGrace(): Promise<void> {
+        if (isGraceStarted || state.isReleased) {
+            return;
+        }
+
+        isGraceStarted = true;
+        await nextTick();
+
+        // Stopped, or released by a failure or the ceiling, while the render was pending.
+        if (isStopped || state.isReleased) {
             return;
         }
 
@@ -308,11 +333,11 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         }
 
         answered[gate] = true;
-        if (isReleased) {
+        if (state.isReleased) {
             reveal();
         }
         else if (answered.sidebar && answered.history && answered.facts) {
-            startGrace();
+            void startGrace();
         }
     }
 
@@ -331,7 +356,7 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
             }
         },
         holdFace: (decoded: Promise<unknown>): void => {
-            if (isStopped || isReleased) {
+            if (isStopped || state.isReleased) {
                 return;
             }
 

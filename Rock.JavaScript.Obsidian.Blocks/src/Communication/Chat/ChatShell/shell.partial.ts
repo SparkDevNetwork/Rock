@@ -980,17 +980,27 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         state.isOpening = true;
         try {
+            const last: { outcome: OpenOutcome | null } = { outcome: null };
             const opened = await startPageLoad({
                 linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
                 rememberedChannelId: readRememberedChannel(options.storage, storageKey),
                 loadSidebar,
-                open
+                // The load decides the opening room, so one it opens answers nothing to the reveal
+                // when it is refused: the next row may still open, and the column must not reveal
+                // empty and then fill.
+                open: async id => (last.outcome = await open(id, true))
             });
 
-            // Nothing opened and nothing failed to: the column has nothing more to wait for. A
-            // failed open has already revealed what had arrived.
-            if (opened === null) {
-                reveal.nothingToOpen();
+            // The person opened a room themselves meanwhile, and that open answers the column.
+            if (opened !== null || last.outcome === "superseded") {
+                return;
+            }
+
+            // Nothing could open: the column has nothing more to wait for, and a room that failed
+            // or was refused shows what has arrived now.
+            reveal.nothingToOpen();
+            if (last.outcome !== null) {
+                reveal.failed();
             }
         }
         finally {
@@ -1190,8 +1200,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * then joins and fetches together. A person can open channels faster than the platform
      * answers; whatever an earlier open was waiting on, the channel chosen last is the one on
      * screen, joined, tracked and remembered.
+     *
+     * @param isPageLoad Whether the first load is opening this room, which then decides what a
+     * refusal means for the reveal; a room the person chose answers it for itself.
      */
-    async function open(channelId: string): Promise<OpenOutcome> {
+    async function open(channelId: string, isPageLoad: boolean = false): Promise<OpenOutcome> {
         const thisOpen = ++openCount;
         const isCurrent = (): boolean => thisOpen === openCount;
 
@@ -1244,9 +1257,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         if (outcome !== "opened") {
             showChannel(null);
 
-            // A room that failed or refused has nothing more to load; what has arrived shows now.
-            reveal.nothingToOpen();
-            reveal.failed();
+            // A room the person chose that failed or refused has nothing more to load; what has
+            // arrived shows now. The first load's own room leaves that to the load.
+            if (!isPageLoad) {
+                reveal.nothingToOpen();
+                reveal.failed();
+            }
         }
 
         return outcome;

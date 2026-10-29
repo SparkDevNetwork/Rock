@@ -22,6 +22,9 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import { nextTick } from "vue";
+import { createPageReveal, pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
+import { imageHoldClass, imageInClass } from "../../../../../src/Communication/Chat/ChatShell/ui/imageReveal.partial";
 
 type Person = { name: string, photoUrl?: string | null };
 
@@ -259,5 +262,87 @@ describe("every face the chat builds", () => {
         expect(facesWithoutPhoto(source)).toEqual([2, 3]);
         expect(facesWithoutPhoto("const icon = { name: \"users\" };")).toEqual([]);
         expect(facesWithoutPhoto("<Avatar :people=\"faces\" /><h2>{{ name }}</h2>")).toEqual([]);
+    });
+});
+
+// On the first load the page's reveal owns when a face appears: it waits for the faces still
+// decoding, and what has decoded shows with it, under the page's own crossfade and with no fade of
+// its own.
+describe("a photo avatar on the first load", () => {
+    const photo = "https://church.example/GetImage.ashx?id=12";
+
+    function mountOnPage(reveal: ReturnType<typeof createPageReveal>): VueWrapper {
+        return mount(Avatar, {
+            props: { people: [{ name: "Anna Lee", photoUrl: photo }] },
+            global: { provide: { [pageRevealKey as symbol]: { state: reveal.state, holdFace: reveal.holdFace } } }
+        });
+    }
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("a face decoded before the page releases shows with it and does not fade a second time", async () => {
+        jest.useFakeTimers();
+        const reveal = createPageReveal({ kind: "channel" });
+        const wrapper = mountOnPage(reveal);
+        const image = wrapper.get("img").element as HTMLImageElement;
+
+        expect(image.classList.contains(imageHoldClass)).toBe(true);
+
+        image.dispatchEvent(new Event("load"));
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+
+        // The face decoded, so the page has no grace to wait out and releases on the next tick.
+        expect(image.classList.contains(imageHoldClass)).toBe(true);
+        await nextTick();
+
+        expect(reveal.state.isReleased).toBe(true);
+        expect(image.classList.contains(imageHoldClass)).toBe(false);
+        expect(image.classList.contains(imageInClass)).toBe(false);
+
+        reveal.stop();
+        wrapper.unmount();
+    });
+
+    test("holds the page for a face still decoding, then shows it with the release", async () => {
+        jest.useFakeTimers();
+        const reveal = createPageReveal({ kind: "channel" });
+        const wrapper = mountOnPage(reveal);
+        const image = wrapper.get("img").element as HTMLImageElement;
+
+        reveal.sidebarAnswered();
+        reveal.historyAnswered();
+        reveal.factsAnswered();
+        await nextTick();
+        expect(reveal.state.isReleased).toBe(false);
+
+        image.dispatchEvent(new Event("load"));
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(reveal.state.isReleased).toBe(true);
+        expect(image.classList.contains(imageHoldClass)).toBe(false);
+        expect(image.classList.contains(imageInClass)).toBe(false);
+
+        reveal.stop();
+        wrapper.unmount();
+    });
+
+    test("a face drawn after the release fades in on its own", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.failed();
+        const wrapper = mountOnPage(reveal);
+        const image = wrapper.get("img").element as HTMLImageElement;
+
+        image.dispatchEvent(new Event("load"));
+
+        expect(image.classList.contains(imageHoldClass)).toBe(false);
+        expect(image.classList.contains(imageInClass)).toBe(true);
+
+        reveal.stop();
+        wrapper.unmount();
     });
 });

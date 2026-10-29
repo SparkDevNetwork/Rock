@@ -189,7 +189,7 @@ function fakeShell(): Record<string, unknown> {
         state,
         // revealed from the start, so a test that is not about the first load sees the frame as it is after it
         reveal: {
-            state: reactive({ kind: "channel", isSkeletonShown: false, isSidebarRevealed: true, isMainRevealed: true }),
+            state: reactive({ kind: "channel", isSkeletonShown: false, isSidebarRevealed: true, isMainRevealed: true, isReleased: true }),
             holdFace: jest.fn(),
             stop: jest.fn()
         },
