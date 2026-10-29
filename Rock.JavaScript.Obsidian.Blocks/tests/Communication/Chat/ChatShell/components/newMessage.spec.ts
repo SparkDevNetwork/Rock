@@ -571,10 +571,55 @@ describe("the first message", () => {
             expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Sending…");
         });
 
-        test("asking is not held back", () => {
-            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "asking", startedAt: Date.now() }) });
+        test.each(["asking", "waiting", "trying"] as const)("%s shows nothing and announces nothing until 1000 ms after the send began", async phase => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase, startedAt: Date.now() }) });
 
-            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Starting your conversation…");
+            jest.advanceTimersByTime(999);
+            await settle();
+            expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
+            expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
+
+            jest.advanceTimersByTime(1);
+            await settle();
+            const words = { asking: "Starting your conversation…", waiting: "Still setting it up…", trying: "Sending…" }[phase];
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe(words);
+            expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
+        });
+
+        test("a phase change after the quiet second shows and is announced at once", async () => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "asking", startedAt: Date.now() }) });
+            jest.advanceTimersByTime(1000);
+            await settle();
+
+            await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "starting", phase: "waiting", startedAt: Date.now() - 1000 }) });
+            await settle();
+
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Still setting it up…");
+            expect(w.get("[data-testid='nd-announcement']").text()).toBe("Still setting it up…");
+        });
+
+        test("a phase change inside the quiet second stays quiet, then says the current phase", async () => {
+            const startedAt = Date.now();
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "asking", startedAt }) });
+            jest.advanceTimersByTime(500);
+            await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying", startedAt }) });
+            await settle();
+            expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
+            expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
+
+            jest.advanceTimersByTime(500);
+            await settle();
+            expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Sending…");
+            expect(w.get("[data-testid='nd-announcement']").text()).toBe("Sending…");
+        });
+
+        test("a failure inside the quiet second shows at once", async () => {
+            const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying", startedAt: Date.now() }) });
+            jest.advanceTimersByTime(200);
+            await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
+            await settle();
+
+            expect(w.get("[data-testid='nd-phase']").text()).toBe("Not sent");
         });
     });
 
@@ -709,7 +754,8 @@ describe("what a screen reader is told", () => {
     ] as const)("each phase of the first message is told as it comes: %s", async (phase, words) => {
         const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello" }) });
 
-        await w.setProps({ draft: draftFor([caleb], { body: "hello", status: phase === "failed" ? "draft" : "starting", phase }) });
+        // The phase is told once it is shown, a quiet second after the send began.
+        await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "starting", phase, startedAt: Date.now() - 5000 }) });
         await settle();
 
         expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
