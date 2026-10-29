@@ -58,6 +58,7 @@
                         @click="openViewer(index)">
                     <span v-if="linkOf(item)?.isUnavailable && !imageSource(item)" class="chat-attach-unavailable"><Icon name="eye-off" size="sm" />Unavailable</span>
                     <img v-else-if="imageSource(item)"
+                         v-reveal="reveal"
                          :src="imageSource(item) ?? undefined"
                          :alt="item.name"
                          :width="item.width ?? undefined"
@@ -475,6 +476,7 @@ a.chat-attach-file:focus-visible {
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
 
     const props = defineProps({
@@ -510,6 +512,9 @@ a.chat-attach-file:focus-visible {
 
     /** The session's local copies and links, provided once by the chat; none outside it. */
     const views = inject(attachmentViewsKey, null);
+
+    // One message's photos hide until decoded and reveal together.
+    const reveal = useImageReveal();
 
     /** The photo the viewer shows, by its place among the message's photos; null while closed. */
     const viewerIndex = ref<number | null>(null);

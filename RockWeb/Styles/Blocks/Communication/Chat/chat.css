@@ -213,6 +213,9 @@
     --chat-d-spin: .7s;
     --chat-d-refresh-spin: .8s;
     --chat-d-skeleton: 1.6s;
+    /* A photo or face fading in once decoded, and how long the first decoded one of a batch waits for the rest. */
+    --chat-d-img-in: 220ms;
+    --chat-d-img-batch: 300ms;
     --chat-d-tip-delay: 500ms;
     --chat-d-tip-delay-rx: 350ms;
     --chat-d-long-press: 450ms;
@@ -404,9 +407,11 @@
         --chat-d-stagger: 0ms;
         --chat-d-row-collapse: 0ms;
         --chat-d-fd-pop: 0ms;
+        --chat-d-img-in: 140ms;
     }
 
-    .chat-shell .chat-skeleton {
+    .chat-shell .chat-skeleton,
+    .chat-shell .chat-attach-tile:has(> .chat-img-hold) {
         animation: none;
     }
 }
@@ -575,6 +580,33 @@
     object-fit: cover;
 }
 
+/* A person with a photo shows a neutral disc, never their hue, until the photo is revealed. */
+.chat-av.is-photo {
+    background: var(--chat-line-strong);
+}
+
+/*
+    The image reveal's two states: hidden until decoded, then faded in. A cached image is revealed
+    by dropping the hold alone, so it shows at once.
+*/
+.chat-img-hold {
+    opacity: 0;
+}
+
+.chat-img-in {
+    animation: chat-img-in var(--chat-d-img-in) var(--chat-ease-state) both;
+}
+
+@keyframes chat-img-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
 .chat-pile {
     display: inline-flex;
 }
@@ -686,6 +718,11 @@
 .chat-skeleton {
     background: var(--chat-bubble);
     border-radius: var(--chat-r-md);
+    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+}
+
+/* A photo's held box is a skeleton too while its image waits to be decoded: the same pulse as every other. */
+.chat-attach-tile:has(> .chat-img-hold) {
     animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
