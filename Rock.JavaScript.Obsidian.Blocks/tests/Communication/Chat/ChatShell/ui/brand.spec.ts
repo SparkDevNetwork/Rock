@@ -15,8 +15,8 @@
 // </copyright>
 //
 // The church color, worked out once per page load. A church picks any color it likes, so the chat
-// uses it as a fill only where the text on it can be read: the color itself with dark ink when ink
-// reads and beats white, else the color darkened in small steps until white reads. The tints and
+// uses it as a fill only where the text on it can be read: always white text, on the color darkened
+// in small oklab lightness steps only until white reads at 4.5 to 1. The tints and
 // washes drawn from it are computed here too, because the browsers Rock supports have no
 // color-mix, and each is set on the chat's root in a light and a dark form so the sheet can pick
 // one under whichever theme is in force without running script again.
@@ -75,43 +75,79 @@ function contrast(a: string, b: string): number {
     return (high + 0.05) / (low + 0.05);
 }
 
-const ink = "#0D1117";
 const white = "#FFFFFF";
 
+/** Oklab lightness and a copy of the color with a different lightness, written out so the minimal-darkening check is independent of the code under test. */
+function oklab(color: string): [number, number, number] {
+    const [r, g, b] = parse(color).slice(0, 3).map(c => c / 255).map(c => c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
+    const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+    const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+    const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+
+    return [
+        0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
+        1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
+        0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
+    ];
+}
+
+function hexFromOklab([lightness, a, b]: [number, number, number]): string {
+    const l = Math.pow(lightness + 0.3963377774 * a + 0.2158037573 * b, 3);
+    const m = Math.pow(lightness - 0.1055613458 * a - 0.0638541728 * b, 3);
+    const s = Math.pow(lightness - 0.0894841775 * a - 1.2914855480 * b, 3);
+    const encode = (c: number): string => {
+        const value = 255 * (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
+        return Math.round(Math.min(255, Math.max(0, value))).toString(16).padStart(2, "0");
+    };
+
+    return "#" + encode(4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s)
+        + encode(-1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s)
+        + encode(-0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s);
+}
+
 describe("the brand fill", () => {
-    // The five swatches the design was drawn against. The expected fills are what the design's own
-    // rule gives for each, run from the prototype: only Forest is too light for white as it stands,
-    // and one 5% darkening step brings it to 4.76:1.
-    const swatches: Array<[string, string, string, string]> = [
-        ["Rock orange", "#FF791D", "#FF791D", ink],
-        ["Ocean", "#1F6FEB", "#1F6FEB", white],
-        ["Forest", "#1E8A54", "#1D8350", white],
-        ["Plum", "#7A4FD1", "#7A4FD1", white],
-        ["Crimson", "#C8283F", "#C8283F", white]
+    // Text on the church color is always white; the fill is darkened only as far as white needs.
+    // Teal, orange, gold and a very light color start below 4.5 to 1; the dark blue and plum already pass.
+    const swatches: Array<[string, string]> = [
+        ["Sandbox teal", "#0092B8"],
+        ["Rock orange", "#FF791D"],
+        ["Gold", "#F4C430"],
+        ["A very light color", "#E8F5C8"],
+        ["Ocean", "#1F6FEB"],
+        ["Plum", "#7A4FD1"],
+        ["An already dark color", "#1A3A5C"]
     ];
 
-    test.each(swatches)("%s %s fills with %s and %s text", (_name, church, fill, onBrand) => {
+    test.each(swatches)("%s %s gets white text on a fill that reads at 4.5 to 1", (_name, church) => {
         const result = brandFill(church);
 
-        expectColor(result.fill, fill, "fill");
-        expectColor(result.onBrand, onBrand, "on-brand");
+        expectColor(result.onBrand, white, "on-brand");
+        expect(contrast(result.fill, white)).toBeGreaterThanOrEqual(4.5);
     });
 
-    test.each(swatches)("%s's fill and its text reach 4.5 to 1", (_name, church) => {
+    test.each(swatches)("%s %s is darkened no further than white needs", (_name, church) => {
         const result = brandFill(church);
 
-        expect(contrast(result.fill, result.onBrand)).toBeGreaterThanOrEqual(4.5);
+        if (contrast(church, white) >= 4.5) {
+            expectColor(result.fill, church, "fill");
+            return;
+        }
+
+        // One 0.01 step of lightness back toward the church color must fail, or the fill went too far.
+        const [lightness, a, b] = oklab(result.fill);
+        expect(contrast(hexFromOklab([lightness + 0.01, a, b]), white)).toBeLessThan(4.5);
     });
 
-    test("Rock orange keeps itself because ink reads on it and white does not", () => {
-        // 7.21 to 1 for ink against 2.62 for white: the case the rule's first branch exists for.
-        expect(contrast("#FF791D", ink)).toBeGreaterThan(contrast("#FF791D", white));
-        expectColor(brandFill("#FF791D").fill, "#FF791D", "fill");
+    test("the sandbox teal deepens to about the design's value", () => {
+        expectColor(brandFill("#0092B8").fill, "#0080A5", "fill");
+    });
+
+    test("a color that already reads with white is unchanged", () => {
+        expectColor(brandFill("#1A3A5C").fill, "#1A3A5C", "fill");
     });
 
     test("a church color written in lower case gives the same fill", () => {
-        expectColor(brandFill("#1e8a54").fill, "#1D8350", "fill");
-        expectColor(brandFill("#1e8a54").onBrand, white, "on-brand");
+        expect(brandFill("#0092b8")).toEqual(brandFill("#0092B8"));
     });
 });
 
@@ -119,8 +155,8 @@ describe("the tokens drawn from the church color", () => {
     // The design's fallback column: what each token resolves to for Rock orange.
     const rockOrange = {
         light: {
-            "brand-fill": "#FF791D",
-            "on-brand": ink,
+            "brand-fill": "#CD4B00",
+            "on-brand": white,
             "brand-ink": "#7A3608",
             "brand-tint": "#FDECE0",
             "brand-wash": "#F9EBE6",
@@ -143,8 +179,8 @@ describe("the tokens drawn from the church color", () => {
             "composer-glow": "rgba(255, 121, 29, 0.6)"
         },
         dark: {
-            "brand-fill": "#FF791D",
-            "on-brand": ink,
+            "brand-fill": "#CD4B00",
+            "on-brand": white,
             "brand-ink": "#FFAC73",
             "brand-tint": "#503A35",
             "brand-wash": "#2F1C12",
@@ -182,7 +218,7 @@ describe("the tokens drawn from the church color", () => {
     // pill's border is the church color at 45% alpha, over whatever is under it.
     const forest = {
         light: {
-            "brand-fill": "#1D8350",
+            "brand-fill": "#198751",
             "on-brand": white,
             "brand-ink": "#083F24",
             "brand-tint": "#E0EEE7",
@@ -206,7 +242,7 @@ describe("the tokens drawn from the church color", () => {
             "composer-glow": "rgba(30, 138, 84, 0.6)"
         },
         dark: {
-            "brand-fill": "#1D8350",
+            "brand-fill": "#198751",
             "on-brand": white,
             "brand-ink": "#74B695",
             "brand-tint": "#233B38",

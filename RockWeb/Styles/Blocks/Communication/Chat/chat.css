@@ -12,8 +12,8 @@
 .chat-shell {
     /* The church color and what is drawn from it. */
     --chat-brand: var(--color-primary, #FF791D);
-    --chat-brand-fill: var(--chat-brand-fill-light, #FF791D);
-    --chat-on-brand: var(--chat-on-brand-light, #0D1117);
+    --chat-brand-fill: var(--chat-brand-fill-light, #CD4B00);
+    --chat-on-brand: var(--chat-on-brand-light, #FFFFFF);
     --chat-brand-ink: var(--chat-brand-ink-light, #7A3608);
     --chat-brand-tint: var(--chat-brand-tint-light, #FDECE0);
     --chat-brand-wash: var(--chat-brand-wash-light, #F9EBE6);
