@@ -712,16 +712,26 @@ describe("the components' own styles", () => {
         for (const [file, selector] of [["messageReactions.partial.obs", ".chat-rx"], ["threadSummary.partial.obs", ".chat-tsum"]]) {
             expect(declarationOf(resolve(components, file), selector, "box-shadow")).toBe("");
         }
+
+        // The unread dot keeps its ring: it cuts the dot out of the pill's border it sits on.
+        expect(declarationOf(resolve(components, "threadSummary.partial.obs"), ".chat-tsum-dot", "box-shadow")).toBe(normalize("0 0 0 2px var(--chat-surface)"));
     });
 
-    // The work surface pads its zone by the medium spacing on every side, and the block lives
-    // inside the zone's own clipped panel, so it cannot reach past that padding itself: it asks the
-    // padding off pages that hold it, and then gives back only the spacing that remains.
-    test("the chat shell takes the work surface's padding off and fills the room it leaves", () => {
-        const source = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/chatShell.obs"), "utf8");
-        expect(normalize(source)).toContain(normalize(":global(.full-work-surface:has(.chat-shell)) {\n    padding: 0;"));
-        expect(normalize(source)).toContain(normalize("- 2 * var(--spacing-medium, 16px) - 1px"));
-        expect(source).not.toMatch(/border-radius|box-shadow/);
+    // The Full Worksurface page pads its zone, keeps an empty Feature row and shows a margined
+    // main content area under the block, which left a gap and a scrolling page. The chat's sheet
+    // takes them off pages that hold the chat, so the shell's height subtracts only the header and
+    // the slicer; the shell itself draws no card.
+    test("a page holding the chat gives up its padding, empty row and main content area, and the shell subtracts only the header and slicer", () => {
+        const holder = ".full-work-surface:has(.chat-shell)";
+        expect(declarationOf(sheetPath, holder, "padding")).toBe("0");
+        expect(declarationOf(sheetPath, `${holder} > .row:not(:has(.block-instance))`, "display")).toBe("none");
+        expect(declarationOf(sheetPath, `#content-wrapper ${holder} > .main-content`, "display")).toBe("none");
+
+        const shellPath = resolve(components, "../../chatShell.obs");
+        expect(declarationOf(shellPath, ".chat-shell", "height")).toBe(normalize("calc(100vh - var(--top-header-height, 80px) - var(--context-slicer-height, 0px))"));
+        expect(declarationOf(shellPath, ".chat-shell", "border-radius")).toBe("");
+        expect(declarationOf(shellPath, ".chat-shell", "box-shadow")).toBe("");
+        expect(readFileSync(shellPath, "utf8")).not.toContain(":global(.full-work-surface");
     });
 
     // The one list entrance, written once in the sheet: a row the panel host marks rises from the

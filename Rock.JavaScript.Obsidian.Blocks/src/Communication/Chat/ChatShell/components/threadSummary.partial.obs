@@ -121,6 +121,8 @@
     height: 7px;
     background: var(--chat-brand-fill);
     border-radius: 50%;
+    /* Cuts the dot out of the pill's border it sits on; the pill itself draws no ring. */
+    box-shadow: 0 0 0 2px var(--chat-surface);
 }
 </style>
 
