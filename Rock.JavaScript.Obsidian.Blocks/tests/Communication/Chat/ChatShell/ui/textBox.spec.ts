@@ -48,6 +48,33 @@ function specificity(selector: string): [number, number, number] {
     return [0, classes, types];
 }
 
+/**
+ * Every input in a template with the class lists of the elements around it, outermost first. The
+ * tags are read with their quoted attributes whole, since a binding can hold a ">".
+ */
+function inputsOf(template: string): { tag: string, holders: string[] }[] {
+    const inputs: { tag: string, holders: string[] }[] = [];
+    const stack: string[] = [];
+    const tags = /<(\/?)([A-Za-z][\w.-]*)((?:[^>"']|"[^"]*"|'[^']*')*?)(\/?)>/g;
+    const voids = ["input", "img", "br", "hr"];
+    let match: RegExpExecArray | null;
+
+    while ((match = tags.exec(template)) !== null) {
+        const classes = /(?:^|\s)class="([^"]*)"/.exec(match[3])?.[1] ?? "";
+        if (match[1]) {
+            stack.pop();
+        }
+        else if (match[2].toLowerCase() === "input") {
+            inputs.push({ tag: match[0], holders: [...stack] });
+        }
+        else if (!match[4] && !voids.includes(match[2].toLowerCase())) {
+            stack.push(classes);
+        }
+    }
+
+    return inputs;
+}
+
 describe("the chat's text boxes", () => {
     const sheet = readFileSync(sheetPath, "utf8");
 
@@ -82,7 +109,7 @@ describe("the chat's text boxes", () => {
             const text = readFileSync(path, "utf8");
             const template = text.slice(0, text.indexOf("<style") === -1 ? undefined : text.indexOf("<style"));
 
-            for (const tag of template.match(/<input\b[^>]*>/gs) ?? []) {
+            for (const { tag, holders } of inputsOf(template)) {
                 const type = /\btype="([^"]*)"/.exec(tag)?.[1] ?? "text";
                 // A file picker, a radio and a checkbox are not text boxes, and the people picker's
                 // input is the one a combobox role marks, drawn inside its field.
@@ -91,7 +118,11 @@ describe("the chat's text boxes", () => {
                 }
 
                 found++;
-                if (!/\bchat-field-input\b/.test(tag)) {
+                // The ring is drawn by a wrapper: a chat-field box, or the rename field's setting
+                // group, whose inner box the sheet rings by its own selector. A bare input has none.
+                const isRename = /\bchat-rn-in\b/.test(tag);
+                const isRinged = holders.some(classes => isRename ? /\bchat-rn-grp\b/.test(classes) : /\bchat-field\b/.test(classes));
+                if (!/\bchat-field-input\b/.test(tag) || !isRinged) {
                     offenders.push(path);
                 }
             }
@@ -100,6 +131,9 @@ describe("the chat's text boxes", () => {
         // The sidebar's search, the directory's, the emoji picker's, the members filter, the
         // leader search, the people picker's field and the rename field.
         expect(found).toBe(7);
+        // The rename field's ring is the sheet's second selector in the wrapper's rule.
+        expect(ruleBody(sheet, ".chat-shell .chat-field:focus-within")).not.toBeNull();
+        expect(sheet).toMatch(/\.chat-shell \.chat-rn-grp \.chat-sg:focus-within\s*\{/);
         expect(offenders).toEqual([]);
     });
 
