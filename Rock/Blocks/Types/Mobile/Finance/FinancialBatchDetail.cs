@@ -508,7 +508,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
-        /// Adds a financial transaction detail for each account in the provided accounts box list.
+        /// Adds a financial transaction detail for each account in the provided accounts box list
+        /// that has an amount greater than zero. Accounts left blank or at zero are skipped so they
+        /// do not show up as $0.00 lines in giving data and statements, matching the Check Scanner
+        /// Utility.
         /// </summary>
         /// <param name="financialTransaction"></param>
         /// <param name="accountsBoxList"></param>
@@ -516,6 +519,12 @@ namespace Rock.Blocks.Types.Mobile.Finance
         {
             foreach ( var accountBox in accountsBoxList )
             {
+                var amount = accountBox.Value.AsDecimalOrNull();
+                if ( !amount.HasValue || amount.Value <= 0 )
+                {
+                    continue;
+                }
+
                 var accountIdKey = accountBox.Text;
                 FinancialAccountCache account = FinancialAccountCache.GetByIdKey( accountIdKey );
                 if ( account == null )
@@ -526,14 +535,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 var financialTransactionDetail = new FinancialTransactionDetail
                 {
                     AccountId = account.Id,
+                    Amount = amount.Value,
                     Guid = Guid.NewGuid()
                 };
-
-                var amount = accountBox.Value.AsDecimalOrNull();
-                if ( amount.HasValue )
-                {
-                    financialTransactionDetail.Amount = amount.Value;
-                }
 
                 financialTransaction.TransactionDetails.Add( financialTransactionDetail );
             }
