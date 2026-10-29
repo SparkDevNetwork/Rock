@@ -36,7 +36,11 @@ name: Merge-up Check
 #      a key (from rerere's ids for it), and a conflict that already has a
 #      proposal, waiting or failed, isn't proposed again. Leftover drift that
 #      hits several PRs gets one proposal, on the first PR, and approving it
-#      there covers the others.
+#      there covers the others. claude-code-action refuses push events, so a
+#      check started by a branch move proposes nothing itself: it starts a
+#      dispatched run of this workflow, which does. A failed proposal's comment
+#      shows the conflict, says when it's leftover drift, and is deleted once
+#      that conflict is gone from the PR.
 #   4. By hand: `ship-only`, then the merge-up in SmartGit. `learn` records
 #      that resolution once it reaches public.
 #
@@ -217,7 +221,8 @@ jobs:
               return 0
             fi
             mkdir -p "$out/rr-cache"
-            cp -R "$proposal/rr-cache/." "$out/rr-cache/"
+            # Missing when the proposal only keeps files deleted.
+            if [ -d "$proposal/rr-cache" ]; then cp -R "$proposal/rr-cache/." "$out/rr-cache/"; fi
             now=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             jq -r '.files[] | "\(.id)\t\(.path)"' "$proposal/proposal.json" > "$RUNNER_TEMP/approved.txt"
             while IFS="$(printf '\t')" read -r id path; do
@@ -226,6 +231,14 @@ jobs:
                 "$out/resolutions.json" > "$out/resolutions.tmp"
               mv "$out/resolutions.tmp" "$out/resolutions.json"
             done < "$RUNNER_TEMP/approved.txt"
+            [ -f "$out/deletions.json" ] || echo '{}' > "$out/deletions.json"
+            jq -r '(.deletions // [])[] | "\(.id)\t\(.path)"' "$proposal/proposal.json" > "$RUNNER_TEMP/approved-deletions.txt"
+            while IFS="$(printf '\t')" read -r id path; do
+              jq --arg id "$id" --arg path "$path" --arg pr "$PR" --arg by "$APPROVER" --arg at "$now" \
+                '.[$id] = {path: $path, commit: null, pr: ($pr | tonumber), source: "ai", approvedBy: $by, recordedAt: $at}' \
+                "$out/deletions.json" > "$out/deletions.tmp"
+              mv "$out/deletions.tmp" "$out/deletions.json"
+            done < "$RUNNER_TEMP/approved-deletions.txt"
             jq -r '.key // empty' "$proposal/proposal.json" > "$RUNNER_TEMP/approved-key"
             rm -rf "$proposal"
           }
@@ -252,8 +265,11 @@ jobs:
     # merge-up conflict on a PR that nothing resolves, is between lines, and
     # has no proposal yet.
     needs: check
+    # Never on a push: claude-code-action refuses push events, so `check`
+    # starts a dispatched run to propose instead (see "Check each PR").
     if: >-
       !cancelled()
+      && github.event_name != 'push'
       && needs.check.outputs.propose != ''
       && needs.check.outputs.propose != '[]'
     strategy:
@@ -345,7 +361,15 @@ jobs:
           # Context for Claude, and a copy of each conflicted file to diff
           # against afterwards.
           mkdir -p .ai-resolve "$ai/conflicted"
-          cp "$c/files" .ai-resolve/conflicts.txt
+          awk -F'\t' '$2 == "content" { print $1 }' "$c/kinds" > .ai-resolve/conflicts.txt
+          # Files the branch merged into deleted. They stay deleted; Claude
+          # only says whether the change has to be made again in whatever
+          # replaced them.
+          : > .ai-resolve/deleted.txt
+          while IFS="$(printf '\t')" read -r f kind sha subject; do
+            [ "$kind" = "deleted-into" ] || continue
+            echo "$f (deleted in \`$(cat "$c/into")\` by $sha: $subject)" >> .ai-resolve/deleted.txt
+          done < "$c/kinds"
           i=0
           while IFS= read -r f; do
             i=$((i + 1))
@@ -368,6 +392,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Propose a resolution
+        id: claude
         if: steps.prepare.outputs.ready == 'true'
         uses: anthropics/claude-code-action@v1
         with:
@@ -378,19 +403,34 @@ jobs:
             merge: `${{ steps.prepare.outputs.from }}` is being merged into
             `${{ steps.prepare.outputs.into }}` (git merge was run on `${{ steps.prepare.outputs.into }}`).
             This merge is part of merging up PR #${{ matrix.pr }}.
-            The files with conflicts are listed in `.ai-resolve/conflicts.txt`.
+            The files with conflicts between lines are listed in `.ai-resolve/conflicts.txt`.
+            The files `${{ steps.prepare.outputs.into }}` deleted, but that
+            `${{ steps.prepare.outputs.from }}` changed, are listed in `.ai-resolve/deleted.txt`.
+            Either list can be empty.
 
-            1. In each listed file, resolve every conflict between `<<<<<<<` and `>>>>>>>`
-               so the result keeps what both sides meant to do. Use `git log`, `git show`
-               and `git diff` on both branches and their merge base to see why each side
-               changed. When both can't be kept, keep `${{ steps.prepare.outputs.into }}`'s
-               behavior and say so.
-            2. Change nothing outside the conflicts, and edit no other file.
-            3. Run no git command that changes anything (no add, commit, checkout, merge,
+            1. In each file in `conflicts.txt`, resolve every conflict between `<<<<<<<` and
+               `>>>>>>>` so the result keeps what both sides meant to do. Use `git log`,
+               `git show` and `git diff` on both branches and their merge base to see why
+               each side changed. When both can't be kept, keep
+               `${{ steps.prepare.outputs.into }}`'s behavior and say so.
+            2. Each file in `deleted.txt` stays deleted; don't edit it. These are usually
+               WebForms blocks that `${{ steps.prepare.outputs.into }}` replaced with an
+               Obsidian block (a `Rock.Blocks` class and a `.obs` file). Find what replaced
+               it, from the deleting commit and the rest of `${{ steps.prepare.outputs.into }}`.
+               Read the change `${{ steps.prepare.outputs.from }}` made to the file (diff it
+               against the merge base), and decide whether the replacement already does the
+               same thing or still needs the same change.
+            3. Change nothing outside the conflicts, and edit no other file. That includes
+               the replacement: if it needs the change, say so, and a person makes it in a
+               separate PR.
+            4. Run no git command that changes anything (no add, commit, checkout, merge,
                reset, stash or push).
-            4. Write `.ai-resolve/explanation.md`: for each file, a line with the file name
-               in backticks, then two to four plain sentences on what each side changed and
-               what you kept. No headings. Never @-mention anyone. Don't use em dashes.
+            5. Write `.ai-resolve/explanation.md`: for each file, a line with the file name
+               in backticks, then two to four plain sentences. For a conflict, what each
+               side changed and what you kept. For a deleted file, what replaced it (with
+               its path), and then either "**Needs the same change:**" with what to change
+               and where, or "**No change needed:**" with why the replacement already does
+               it. No headings. Never @-mention anyone. Don't use em dashes.
           claude_args: |
             --model claude-opus-5-5
             --allowedTools "Read,Edit,Write,Grep,Glob,Bash(git log:*),Bash(git show:*),Bash(git diff:*)"
@@ -413,12 +453,31 @@ jobs:
           # claude-code-action skips itself (and still reports success) when
           # this workflow file differs from develop's copy, which is the case
           # on any PR that changes this workflow.
+          # Files that stay deleted must be untouched; with only those, the
+          # explanation is the whole proposal.
           changed=false
+          edited_deleted=""
           i=0
           while IFS= read -r f; do
             i=$((i + 1))
-            if ! cmp -s "$ai/conflicted/$i" "$f"; then changed=true; fi
+            cmp -s "$ai/conflicted/$i" "$f" && continue
+            if grep -qxF -- "$f" .ai-resolve/conflicts.txt; then
+              changed=true
+            else
+              edited_deleted="$edited_deleted $f"
+            fi
           done < "$c/files"
+          if [ -n "$edited_deleted" ]; then
+            echo "AI_FAIL=The proposal edited files that stay deleted, so it was thrown away:$edited_deleted" >> "$GITHUB_ENV"
+            exit 1
+          fi
+          if [ ! -s .ai-resolve/conflicts.txt ]; then
+            if [ ! -s .ai-resolve/explanation.md ]; then
+              echo "AI_FAIL=Claude didn't write an explanation, so there's no proposal. If the \"Propose a resolution\" step in the log says the action was skipped because of workflow validation, this PR changes this workflow file, and Claude can't run on it until that change reaches \`develop\`." >> "$GITHUB_ENV"
+              exit 1
+            fi
+            changed=true
+          fi
           if [ "$changed" = "false" ]; then
             echo "AI_FAIL=Claude didn't change any of the conflicted files, so there's no proposal. If the \"Propose a resolution\" step in the log says the action was skipped because of workflow validation, this PR changes this workflow file, and Claude can't run on it until that change reaches \`develop\`." >> "$GITHUB_ENV"
             exit 1
@@ -436,7 +495,9 @@ jobs:
           fi
           touched=""
           while IFS="$(printf '\t')" read -r hash f; do
-            if [ "$(git hash-object -- "$f" 2> /dev/null)" != "$hash" ]; then
+            # Same fallback as when the hashes were taken: a file kept deleted
+            # automatically is still missing, which is unchanged.
+            if [ "$(git hash-object -- "$f" 2> /dev/null || echo missing)" != "$hash" ]; then
               touched="$touched $f"
             fi
           done < "$ai/resolved-hashes"
@@ -444,7 +505,7 @@ jobs:
             echo "AI_FAIL=The proposal changed files that were already resolved automatically, so it was thrown away:$touched" >> "$GITHUB_ENV"
             exit 1
           fi
-          left=$(xargs -d '\n' grep -lE '^(<<<<<<<|>>>>>>>)( |$)' < "$c/files" || true)
+          left=$(xargs -r -d '\n' grep -lE '^(<<<<<<<|>>>>>>>)( |$)' < .ai-resolve/conflicts.txt || true)
           if [ -n "$left" ]; then
             echo "AI_FAIL=The proposal left conflict markers in: $(echo $left)" >> "$GITHUB_ENV"
             exit 1
@@ -469,6 +530,11 @@ jobs:
             jq --arg id "$id" --arg path "$path" '.files += [{path: $path, id: $id}]' "$proposal/proposal.json" > "$proposal/p.tmp"
             mv "$proposal/p.tmp" "$proposal/proposal.json"
           done < "$ai/merge-rr"
+          # And the files that stay deleted (see mu_deletion_info).
+          while IFS="$(printf '\t')" read -r id path _; do
+            jq --arg id "$id" --arg path "$path" '.deletions += [{path: $path, id: $id}]' "$proposal/proposal.json" > "$proposal/p.tmp"
+            mv "$proposal/p.tmp" "$proposal/proposal.json"
+          done < "$c/deleted"
 
           save_proposal() {
             rm -rf "$1/proposed/pr-$PR"
@@ -490,10 +556,17 @@ jobs:
               sed 's/@\([A-Za-z0-9]\)/@\&#8203;\1/g' .ai-resolve/explanation.md
               echo
             fi
-            echo "In each diff, the \`-\` lines between \`<<<<<<<\` and \`>>>>>>>\` are both sides of the conflict (first \`$into\`, then \`$from\`), and the \`+\` lines are what was chosen."
+            if [ -s "$c/deleted" ]; then
+              echo "The files \`$into\` deleted stay deleted. Where Claude says their replacement **needs the same change**, approving this still merges up without it, so also open a PR into \`$into\` with that change."
+              echo
+            fi
+            if [ -s .ai-resolve/conflicts.txt ]; then
+              echo "In each diff, the \`-\` lines between \`<<<<<<<\` and \`>>>>>>>\` are both sides of the conflict (first \`$into\`, then \`$from\`), and the \`+\` lines are what was chosen."
+            fi
             i=0
             while IFS= read -r f; do
               i=$((i + 1))
+              grep -qxF -- "$f" .ai-resolve/conflicts.txt || continue
               echo
               echo "<details><summary><code>$f</code>: both sides and what was chosen</summary>"
               echo
@@ -505,6 +578,9 @@ jobs:
               echo
               echo "</details>"
             done < "$c/files"
+            while IFS= read -r line; do
+              mu_render_dropped_change "$line"
+            done < "$c/deleted"
             echo
             echo "<sub>It only applies while the conflict stays exactly the same. If this PR or a public branch changes the conflict, Claude proposes again for the new one. [Workflow log]($MU_LOG_URL)</sub>"
           } > "$body"
@@ -517,10 +593,16 @@ jobs:
         if: failure() && steps.prepare.outputs.key != ''
         env:
           KEY: ${{ steps.prepare.outputs.key }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
         run: |
           . "$RUNNER_TEMP/merge-up-lib.sh"
           mu_init
-          reason="${AI_FAIL:-Something unexpected failed. See the workflow log.}"
+          if [ "$CLAUDE_OUTCOME" = "failure" ]; then
+            fallback="The \"Propose a resolution\" step failed before Claude finished. Its error is in the workflow log."
+          else
+            fallback="Something unexpected failed. See the workflow log."
+          fi
+          reason="${AI_FAIL:-$fallback}"
 
           record_failure() {
             rm -rf "$1/proposed/pr-$PR"
@@ -531,22 +613,9 @@ jobs:
           }
           mu_save_cache "- Recorded a failed AI conflict resolution for PR #$PR." record_failure || true
 
-          c="$RUNNER_TEMP/ai/work/run/conflict"
-          marker=$(mu_ai_marker "$KEY")
           body="$RUNNER_TEMP/ai-failed.md"
-          {
-            echo "$marker"
-            if [ -f "$c/from" ]; then
-              echo "**Claude couldn't propose a resolution for the conflict merging \`$(cat "$c/from")\` into \`$(cat "$c/into")\`.** $reason"
-            else
-              echo "**Claude couldn't propose a resolution for this merge-up conflict.** $reason"
-            fi
-            echo
-            echo "It won't try again for this same conflict. Ship with \`ship-only\` and do the merge-up by hand in SmartGit; once that merge reaches public, its resolution is recorded."
-            echo
-            echo "[Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
-          } > "$body"
-          mu_set_comment "$PR" "$marker" "$body"
+          mu_render_ai_failure "$KEY" "$RUNNER_TEMP/ai/work" "$reason" "$body"
+          mu_set_comment "$PR" "$(mu_ai_marker "$KEY")" "$body"
           mu_refresh_check_comment "$PR" failed
 
   check:
@@ -576,6 +645,8 @@ jobs:
       contents: read
       pull-requests: write
       issues: write
+      # Only to start a dispatched run when a push finds a conflict to propose.
+      actions: write
     outputs:
       propose: ${{ steps.check.outputs.propose }}
     env:
@@ -650,6 +721,16 @@ jobs:
           propose=$(jq -R -s -c 'split("\n") | map(select(length > 0) | split(" ") | {pr: .[0], base: .[1], head: .[2]})' "$RUNNER_TEMP/propose.txt")
           echo "Claude will propose resolutions for: $propose"
           echo "propose=$propose" >> "$GITHUB_OUTPUT"
+
+          # claude-code-action refuses push events, so a push can't propose.
+          # A dispatched run of this workflow (on develop) checks every PR
+          # again and proposes from there. Nothing was saved for these
+          # conflicts, so that run queues them again. Last, because that run's
+          # check cancels this one if it's still going.
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$propose" != "[]" ]; then
+            gh workflow run private-merge-up-check.yml -R "$GITHUB_REPOSITORY"
+            echo "Started a dispatched run to propose them."
+          fi
 
           if [ -n "$failed" ]; then
             echo "Couldn't check:$failed"
