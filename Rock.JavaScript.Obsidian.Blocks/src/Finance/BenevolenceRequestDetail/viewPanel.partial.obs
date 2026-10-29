@@ -150,6 +150,7 @@
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { isNotNullish } from "@Obsidian/Utility/util";
     import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { BenevolenceRequestWorkflowBag } from "@Obsidian/ViewModels/Blocks/Finance/BenevolenceRequestDetail/benevolenceRequestWorkflowBag";
 
@@ -205,12 +206,13 @@
 
         if (hasEmail.value) {
             const requesterIdKey = entity.requester?.personIdKey;
+            const email = escapeHtml(entity.requester?.email ?? "");
             if (requesterIdKey !== "" && requesterIdKey !== "0" && requesterIdKey !== null && requesterIdKey !== undefined) {
-                valueBuilder.addHtmlValue("Email", `<a href="${window.location.origin}/Communication/?person=${requesterIdKey}">${entity.requester?.email ?? ""}</a>`);
+                valueBuilder.addHtmlValue("Email", `<a href="${window.location.origin}/Communication/?person=${requesterIdKey}">${email}</a>`);
             }
             else {
                 const subject = `Benevolence Request - ${props.options.benevolenceRequestTypes?.find(type => Number(type.id) === entity.benevolenceTypeId)?.name ?? ""}`;
-                valueBuilder.addHtmlValue("Email", `<a href="mailto:${entity.requester?.email ?? ""}?subject=${encodeURIComponent(subject)}">${entity.requester?.email ?? ""}</a>`);
+                valueBuilder.addHtmlValue("Email", `<a href="mailto:${email}?subject=${encodeURIComponent(subject)}">${email}</a>`);
             }
         }
 
