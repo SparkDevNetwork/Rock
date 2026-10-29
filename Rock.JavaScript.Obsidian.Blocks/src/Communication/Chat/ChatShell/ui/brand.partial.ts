@@ -36,7 +36,6 @@ type Rgb = [number, number, number];
 
 /** Rock's own orange, used when the page states no primary color. */
 const rockOrange = "#FF791D";
-const ink = "#0D1117";
 const white = "#FFFFFF";
 
 // The backgrounds the tints are mixed over, as the sheet gives them: the light surface and
@@ -95,11 +94,6 @@ function contrast(a: Rgb, b: Rgb): number {
     return (high + 0.05) / (low + 0.05);
 }
 
-/** Each channel scaled toward black, rounded to a whole channel as the design's rule does. */
-function darken(rgb: Rgb, fraction: number): Rgb {
-    return rgb.map(c => Math.round(c * (1 - fraction))) as Rgb;
-}
-
 /** The share of the first color mixed over the second, channel by channel in sRGB. */
 function mixSrgb(a: Rgb, b: Rgb, share: number): Rgb {
     return a.map((c, i) => c * share + b[i] * (1 - share)) as Rgb;
@@ -147,9 +141,9 @@ function withAlpha(rgb: Rgb, alpha: number): string {
 // #region Brand
 
 /**
- * The church color as a fill, and the text drawn on it. The color keeps itself with dark ink when
- * ink reads on it at 4.5 to 1 and beats white; otherwise it is darkened 5% at a time until white
- * reads, and past ten steps it is halved with white.
+ * The church color as a fill, and the text drawn on it. Text on the church color is always white,
+ * so the fill is darkened in oklab lightness, 0.01 at a time, only until white reads on it at 4.5
+ * to 1; a color that already reads is kept as it is. The hue and chroma stay the church's own.
  *
  * @param color The church color, as hex or rgb().
  *
@@ -157,23 +151,21 @@ function withAlpha(rgb: Rgb, alpha: number): string {
  */
 export function brandFill(color: string): { fill: string, onBrand: string } {
     const church = parseColor(color) ?? parseColor(rockOrange)!;
-    const inkRgb = parseColor(ink)!;
     const whiteRgb = parseColor(white)!;
+    const [lightness, a, b] = toOklab(church);
 
-    for (let step = 0; step <= 10; step++) {
-        const candidate = darken(church, step * 0.05);
-        const onWhite = contrast(candidate, whiteRgb);
-        const onInk = contrast(candidate, inkRgb);
+    // Contrast is read on the rounded channels the sheet will draw, not on the exact oklab value.
+    // The loop ends well before lightness 0, where the fill is black and white reads at 21 to 1.
+    for (let step = 0; step * 0.01 < lightness; step++) {
+        const candidate = step === 0 ? church : fromOklab([lightness - step * 0.01, a, b]);
+        const rounded = parseColor(toHex(candidate))!;
 
-        if (step === 0 && onInk >= 4.5 && onInk >= onWhite) {
-            return { fill: toHex(candidate), onBrand: ink };
-        }
-        if (onWhite >= 4.5) {
-            return { fill: toHex(candidate), onBrand: white };
+        if (contrast(rounded, whiteRgb) >= 4.5) {
+            return { fill: toHex(rounded), onBrand: white };
         }
     }
 
-    return { fill: toHex(darken(church, 0.5)), onBrand: white };
+    return { fill: toHex([0, 0, 0]), onBrand: white };
 }
 
 /**

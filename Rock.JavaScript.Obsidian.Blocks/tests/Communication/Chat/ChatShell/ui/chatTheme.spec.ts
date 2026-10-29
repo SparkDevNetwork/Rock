@@ -167,8 +167,8 @@ const tokens: Token[] = [
     // The church color and what is drawn from it. The script works these out once per load and
     // sets a light and a dark form of each; the sheet picks one and holds Rock orange's behind it.
     { name: "brand", light: "#FF791D", rock: "color-primary" },
-    { name: "brand-fill", light: "#FF791D", computed: true },
-    { name: "on-brand", light: "#0D1117", computed: true },
+    { name: "brand-fill", light: "#CD4B00", computed: true },
+    { name: "on-brand", light: "#FFFFFF", computed: true },
     { name: "brand-ink", light: "#7A3608", dark: "#FFAC73", computed: true },
     { name: "brand-tint", light: "#FDECE0", dark: "#503A35", computed: true },
     { name: "brand-wash", light: "#F9EBE6", dark: "#2F1C12", computed: true },
