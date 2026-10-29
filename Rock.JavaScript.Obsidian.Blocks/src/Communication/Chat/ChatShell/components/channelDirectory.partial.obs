@@ -28,9 +28,10 @@
         </header>
 
         <div class="chat-fd-tools">
-            <div class="chat-fd-search">
+            <div class="chat-fd-search chat-field">
                 <Icon name="search" size="sm" />
                 <input ref="searchInput"
+                       class="chat-field-input"
                        type="search"
                        placeholder="Search channels by name"
                        aria-label="Search channels"
@@ -283,36 +284,11 @@
     background: var(--chat-surface);
     border: 1px solid var(--chat-line-strong);
     border-radius: var(--chat-r-lg);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-fd-search:focus-within {
-    border-color: var(--chat-focus-line);
-    box-shadow: 0 0 0 3px var(--chat-brand-ring);
-}
-
-/* The box shows focus, so the field inside it draws no outline or cancel button of its own. */
 .chat-fd-search input {
-    flex: 1;
-    min-width: 0;
     height: 100%;
-    padding: 0;
-    font: inherit;
     font-size: 15px;
-    color: var(--chat-text);
-    background: none;
-    border: 0;
-    outline: 0;
-}
-
-.chat-fd-search input::placeholder {
-    color: var(--chat-muted);
-    opacity: 1;
-}
-
-.chat-fd-search input::-webkit-search-cancel-button {
-    display: none;
-    -webkit-appearance: none;
 }
 
 .chat-fd-search :deep(.chat-fd-clear) {

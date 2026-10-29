@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="chat-pk" :class="{ 'is-inline': isInline }">
-        <div class="chat-pk-field" @mousedown="onFieldMousedown">
+        <div class="chat-pk-field chat-field" @mousedown="onFieldMousedown">
             <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
             <span class="chat-pk-chips" role="list" aria-label="Chosen people">
                 <span v-for="person in chosen"
@@ -23,7 +23,7 @@
                 </span>
             </span>
             <input ref="inputElement"
-                   class="chat-pk-input"
+                   class="chat-pk-input chat-field-input"
                    type="text"
                    role="combobox"
                    aria-autocomplete="list"

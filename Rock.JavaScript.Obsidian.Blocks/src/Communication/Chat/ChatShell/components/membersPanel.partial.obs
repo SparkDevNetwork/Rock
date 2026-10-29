@@ -7,9 +7,10 @@
                @close="emit('close')">
         <template v-if="!refusal" #top>
             <div class="chat-mb-top">
-                <label class="chat-mb-search">
+                <label class="chat-mb-search chat-field">
                     <Icon name="search" size="sm" />
                     <input ref="filterElement"
+                           class="chat-field-input"
                            type="search"
                            placeholder="Filter members"
                            aria-label="Filter members"
