@@ -91,6 +91,20 @@ namespace Rock.Web.UI
         private const string ImpersonatedByUserTokenSessionKey = "ImpersonatedByUserToken";
 
         /// <summary>
+        /// The query string parameter added to the one time reload that follows signing in
+        /// with an impersonation token. Its value is the Unix time in seconds when the
+        /// reload was issued.
+        /// </summary>
+        internal const string ImpersonationRedirectParameterName = "ImpersonationRedirect";
+
+        /// <summary>
+        /// How far an impersonation redirect marker may be from the current time, in either
+        /// direction, and still be treated as part of the reload that just happened. The
+        /// allowance in the future direction covers clock differences between web farm nodes.
+        /// </summary>
+        private static readonly TimeSpan ImpersonationRedirectFreshWindow = TimeSpan.FromSeconds( 60 );
+
+        /// <summary>
         /// Will be <c>true</c> if the page has anything on it that requires
         /// Obsidian libraries to be loaded.
         /// </summary>
@@ -2156,6 +2170,90 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Adds an impersonation redirect marker stamped with the specified time to the URL.
+        /// Any marker already in the URL is replaced. The rest of the URL, including the
+        /// encoding of other values, is kept as is.
+        /// </summary>
+        /// <param name="url">The URL, usually the raw URL of the current request.</param>
+        /// <param name="now">The current time.</param>
+        /// <returns>The URL with a fresh marker.</returns>
+        internal static string AddImpersonationRedirectMarker( string url, DateTimeOffset now )
+        {
+            var urlWithoutMarker = RemoveImpersonationRedirectMarker( url ?? string.Empty );
+            var separator = urlWithoutMarker.Contains( "?" ) ? "&" : "?";
+
+            return $"{urlWithoutMarker}{separator}{ImpersonationRedirectParameterName}={now.ToUnixTimeSeconds()}";
+        }
+
+        /// <summary>
+        /// Determines whether an impersonation redirect marker value was issued close enough
+        /// to the specified time to belong to the reload that just happened. Missing, malformed,
+        /// stale and far future values are not fresh.
+        /// </summary>
+        /// <param name="markerValue">The marker value from the page parameters.</param>
+        /// <param name="now">The current time.</param>
+        /// <returns><c>true</c> if the marker is fresh; otherwise <c>false</c>.</returns>
+        internal static bool IsImpersonationRedirectMarkerFresh( string markerValue, DateTimeOffset now )
+        {
+            if ( !long.TryParse( markerValue?.Trim(), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var markerSeconds ) )
+            {
+                return false;
+            }
+
+            var ageInSeconds = now.ToUnixTimeSeconds() - markerSeconds;
+            var windowInSeconds = ( long ) ImpersonationRedirectFreshWindow.TotalSeconds;
+
+            return ageInSeconds >= -windowInSeconds && ageInSeconds <= windowInSeconds;
+        }
+
+        /// <summary>
+        /// Removes every impersonation redirect marker from the query string of the URL.
+        /// Other parameters keep their order and original encoding. The URL is expected to be
+        /// a request raw URL, which never contains a fragment.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns>The URL without the marker.</returns>
+        internal static string RemoveImpersonationRedirectMarker( string url )
+        {
+            if ( string.IsNullOrEmpty( url ) )
+            {
+                return url;
+            }
+
+            var queryStart = url.IndexOf( '?' );
+            if ( queryStart < 0 )
+            {
+                return url;
+            }
+
+            var path = url.Substring( 0, queryStart );
+            var keptParts = url.Substring( queryStart + 1 )
+                .Split( '&' )
+                .Where( part => !IsImpersonationRedirectMarkerPart( part ) )
+                .ToList();
+
+            var query = string.Join( "&", keptParts );
+
+            return query.Length > 0 ? $"{path}?{query}" : path;
+        }
+
+        /// <summary>
+        /// Determines whether a single "key=value" part of a query string is an
+        /// impersonation redirect marker. The key is compared without regard to case,
+        /// in both raw and URL decoded form.
+        /// </summary>
+        /// <param name="queryPart">The query string part.</param>
+        /// <returns><c>true</c> if the part is a marker; otherwise <c>false</c>.</returns>
+        private static bool IsImpersonationRedirectMarkerPart( string queryPart )
+        {
+            var equalsIndex = queryPart.IndexOf( '=' );
+            var key = equalsIndex >= 0 ? queryPart.Substring( 0, equalsIndex ) : queryPart;
+
+            return string.Equals( key, ImpersonationRedirectParameterName, StringComparison.OrdinalIgnoreCase )
+                || string.Equals( HttpUtility.UrlDecode( key ), ImpersonationRedirectParameterName, StringComparison.OrdinalIgnoreCase );
+        }
+
+        /// <summary>
         /// Checks for and processes any impersonation parameters
         /// Returns False if an invalid token was specified
         /// </summary>
@@ -2188,6 +2286,57 @@ namespace Rock.Web.UI
             if ( Session[ImpersonatedByUserSessionKey] != null && isImpersonatedByUserStale )
             {
                 ClearImpersonatedByUser();
+            }
+
+            /*
+                10/29/2026 - MSE
+
+                After signing in with an rckipid token we reload the page so the whole page
+                lifecycle runs as the person. A client that does not return the auth cookie
+                (SMS link scanners, cookies disabled) came back with the token and no matching
+                identity, was signed in again and redirected again, forever. Each pass also
+                counted a token use and wrote a login history row, so one scanner visit could
+                use up a limited token before the person ever opened the link.
+
+                The reload now carries a short lived ImpersonationRedirect marker. When the
+                marker is fresh and the cookie came back, the marker is removed with one more
+                redirect so the address bar matches the original link. When the marker is fresh
+                and the request has no authenticated identity at all (the cookie did not come
+                back), the token is not processed again (no usage, no sign in, no redirect) and
+                the page renders without the token person signed in. A stale or missing marker
+                keeps the old behavior, so bookmarked or forwarded links still work. The marker
+                can only skip token processing; it never signs anyone in.
+
+                Anyone can forge a fresh marker, so the skip is limited to requests with no
+                authenticated identity. A request signed in as someone else (a normal login or a
+                different rckipid ticket) goes through the normal path: a valid token switches
+                to the token person, so the URL token and the current person never disagree, and
+                an invalid token still signs out and sets InvalidPersonToken.
+
+                The token itself stays in the URL because blocks, Lava and routes may read
+                rckipid from the page parameters.
+
+                Reason: Prevent endless impersonation redirects for clients without cookies (#7068).
+            */
+            var isImpersonationRedirectMarkerFresh = IsImpersonationRedirectMarkerFresh( PageParameter( ImpersonationRedirectParameterName ), DateTimeOffset.UtcNow );
+
+            if ( isImpersonationRedirectMarkerFresh && !string.IsNullOrEmpty( impersonatedPersonKeyParam ) )
+            {
+                var isTokenSignedIn = impersonatedPersonKeyParam == impersonatedPersonKeyIdentity;
+                var isAnonymousRequest = HttpContext.Current?.User?.Identity?.IsAuthenticated != true;
+
+                if ( isTokenSignedIn && !this.IsPostBack )
+                {
+                    Response.Redirect( RemoveImpersonationRedirectMarker( Request.RawUrl ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                    return false;
+                }
+
+                if ( !isTokenSignedIn && isAnonymousRequest )
+                {
+                    // The client did not keep the auth cookie, so do not process the token again.
+                    impersonatedPersonKeyParam = string.Empty;
+                }
             }
 
             // if there is a impersonatedPersonKeyParam specified, and it isn't already associated with the current HttpContext.Current.User.Identity,
@@ -2262,8 +2411,10 @@ namespace Rock.Web.UI
                     UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
 
 
-                    // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
-                    Response.Redirect( Request.RawUrl, false );
+                    // Reload the page once as the impersonated user. The token stays in the URL because blocks
+                    // might be looking for rckipid in the PageParameters. The marker stops the reload from
+                    // repeating for clients that do not keep the auth cookie.
+                    Response.Redirect( AddImpersonationRedirectMarker( Request.RawUrl, DateTimeOffset.UtcNow ), false );
                     Context.ApplicationInstance.CompleteRequest();
                 }
                 else
