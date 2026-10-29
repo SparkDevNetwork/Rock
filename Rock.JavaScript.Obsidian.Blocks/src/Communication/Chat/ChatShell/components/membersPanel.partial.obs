@@ -33,7 +33,12 @@
             </div>
         </template>
 
-        <div ref="listElement" data-testid="members-panel" :aria-busy="isLoading ? 'true' : 'false'">
+        <div ref="listElement"
+             data-testid="members-panel"
+             :class="{ 'is-instant': hover.isInstant.value }"
+             :aria-busy="isLoading ? 'true' : 'false'"
+             @pointerover="onPointerOver"
+             @pointerleave="onPointerLeave">
             <div v-if="refusal === 'not_member'" class="chat-mb-state" data-testid="members-state" data-state="not_member">
                 <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="users" /></span>
                 <h4>Join to see who's here</h4>
@@ -83,7 +88,8 @@
                         <li v-for="row in section.rows"
                             :key="row.guid"
                             class="chat-mb-row chat-enter"
-                            :class="{ 'is-busy': row.isRemoving }"
+                            :class="{ 'is-busy': row.isRemoving, 'is-hot': hover.isShown.value && hover.shownKey.value === row.guid }"
+                            :data-hot-id="row.guid"
                             :style="{ '--chat-enter-i': entranceOrder.get(row.guid) }"
                             data-testid="member-row">
                             <button type="button"
@@ -311,7 +317,11 @@
     color: var(--chat-muted);
 }
 
-/* A row's actions show on hover or focus, and always where there is no hover, as on a phone. */
+/*
+    A row's actions show on the row the pointer rests on, or on focus, and always where there is no
+    hover, as on a phone. They fade in and out as the pointer arrives and leaves, but pass from row
+    to row at once, which the panel marks as is-instant.
+*/
 .chat-mb-acts {
     display: flex;
     gap: 2px;
@@ -321,7 +331,11 @@
     transition: opacity var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-mb-row:hover .chat-mb-acts,
+.is-instant .chat-mb-acts {
+    transition: none;
+}
+
+.chat-mb-row.is-hot .chat-mb-acts,
 .chat-mb-row:focus-within .chat-mb-acts,
 .chat-mb-row.is-busy .chat-mb-acts,
 .chat-mb-row:has([aria-expanded="true"]) .chat-mb-acts,
@@ -647,13 +661,14 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import { MemberRemoval } from "../composables/useMembers.partial";
+    import { useHoverIntent } from "../composables/useHoverIntent.partial";
     import { ChatError, RosterMember } from "../types.partial";
 
     // #region Types
@@ -817,6 +832,10 @@
     const listElement = ref<HTMLElement>();
     const filterElement = ref<HTMLInputElement>();
 
+    // A row's actions show as the message action bar does: faded in once the pointer rests on a
+    // row, passing from row to row at once, faded out a moment after the pointer leaves them.
+    const hover = useHoverIntent<string>(() => listElement.value);
+
     const announcement = ref("");
 
     /** How many rows were drawn when a later page was asked for, until it lands. */
@@ -961,6 +980,19 @@
         }
     }
 
+    /** The pointer reached a row, or a gap between them. */
+    function onPointerOver(event: PointerEvent): void {
+        if (event.pointerType === "touch") {
+            return;
+        }
+
+        hover.follow(event.target instanceof Element ? event.target.closest<HTMLElement>("[data-hot-id]")?.dataset.hotId ?? null : null);
+    }
+
+    function onPointerLeave(): void {
+        hover.follow(null);
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
@@ -1097,4 +1129,10 @@
     });
 
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(hover.stop);
+
+    // #endregion Lifecycle Hooks
 </script>

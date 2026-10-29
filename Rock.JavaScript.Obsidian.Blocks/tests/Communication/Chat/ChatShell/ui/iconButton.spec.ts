@@ -96,4 +96,59 @@ describe("the icon button", () => {
         expect(tooltip()).toBeNull();
         expect(wrapped.emitted("click")).toHaveLength(1);
     });
+
+    describe("on focus", () => {
+        // jsdom cannot match :focus-visible, so a browser's answer is stood in for.
+        function focusVisibleIs(isVisible: boolean | "unsupported"): void {
+            const real = Element.prototype.matches;
+            jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string): boolean {
+                if (selector === ":focus-visible") {
+                    if (isVisible === "unsupported") {
+                        throw new SyntaxError("not a valid selector");
+                    }
+
+                    return isVisible;
+                }
+
+                return real.call(this, selector);
+            });
+        }
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        test("shows no tooltip for a focus the page moved, as a closing panel returns to its opener", async () => {
+            focusVisibleIs(false);
+            const button = draw().get("button");
+
+            await button.trigger("focus");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+
+            expect(tooltip()).toBeNull();
+        });
+
+        test("shows the tooltip for a keyboard focus", async () => {
+            focusVisibleIs(true);
+            const button = draw().get("button");
+
+            await button.trigger("focus");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+
+            expect(tooltip()?.textContent?.trim()).toBe("Turn on notifications");
+        });
+
+        test("shows the tooltip where the browser cannot tell a keyboard focus", async () => {
+            focusVisibleIs("unsupported");
+            const button = draw().get("button");
+
+            await button.trigger("focus");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+
+            expect(tooltip()).not.toBeNull();
+        });
+    });
 });

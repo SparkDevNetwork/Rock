@@ -114,6 +114,7 @@
                                  :isDirectMessage="isActiveDirectMessage"
                                  :isPhone="isPhone"
                                  :isEntering="isFeedEntering"
+                                 :isCovered="!!mainView"
                                  :isPreviewing="!!activeRow && !activeRow.is_member"
                                  :isJoinRefused="shell.rooms.joinOf(activeChannelId).kind === 'refused'"
                                  :facts="activeKind === 'channel' ? activeFacts : null"

@@ -3281,6 +3281,19 @@ describe("New message", () => {
         expect(w.get("[data-testid='frame-conversation']").attributes("inert")).toBeUndefined();
     });
 
+    test("closing a full view enters the conversation it gives back, as a switch does", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        const feed = (): Element => w.get("[data-testid='message-feed']").element;
+        expect(feed().classList.contains("is-entering")).toBe(false);
+
+        await openNewMessage(w);
+        expect(feed().classList.contains("is-entering")).toBe(false);
+        await w.get("[data-testid='nd-close']").trigger("click");
+        await settle();
+        expect(feed().classList.contains("is-entering")).toBe(true);
+    });
+
     test("hands a chip's remove and the message sent to the direct messages", async () => {
         const w = await mountBlock(1200);
         await openNewMessage(w);

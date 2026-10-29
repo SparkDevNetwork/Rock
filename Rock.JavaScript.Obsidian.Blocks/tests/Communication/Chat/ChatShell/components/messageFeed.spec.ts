@@ -22,7 +22,7 @@
 //
 // jsdom lays nothing out, so the tests stand in for the browser twice: an IntersectionObserver
 // that the test reports through, and the feed's scroll sizes set by hand.
-import { mount, VueWrapper } from "@vue/test-utils";
+import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { defineComponent, h, nextTick, reactive } from "vue";
@@ -153,6 +153,7 @@ type FeedProps = {
     isChannel?: boolean;
     isDirectMessage?: boolean;
     isEntering?: boolean;
+    isCovered?: boolean;
 };
 
 function draw(props: FeedProps): VueWrapper {
@@ -359,6 +360,60 @@ describe("the feed's entrance", () => {
 
         await wrapper.setProps({ isEntering: true });
         expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+    });
+
+    // A full view over the conversation leaves the feed laid out, so its place survives; the feed
+    // enters again as the view gives it back, the same rise a switch plays.
+    describe("when a full view that covered it closes", () => {
+        function recordEntrances(wrapper: VueWrapper): { seen: boolean[], stop: () => void } {
+            const element = wrapper.get("[data-testid='message-feed']").element;
+            const seen: boolean[] = [];
+            const observer = new MutationObserver(() => seen.push(element.classList.contains("is-entering")));
+            observer.observe(element, { attributes: true, attributeFilter: ["class"] });
+            return { seen, stop: () => observer.disconnect() };
+        }
+
+        test("a feed that had not entered enters", async () => {
+            const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isCovered: true });
+            const feed = wrapper.get("[data-testid='message-feed']");
+            expect(feed.classes()).not.toContain("is-entering");
+
+            await wrapper.setProps({ isCovered: false });
+            await flushPromises();
+
+            expect(feed.classes()).toContain("is-entering");
+        });
+
+        test("a feed that had entered starts its entrance over", async () => {
+            const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isEntering: true, isCovered: true });
+            const { seen, stop } = recordEntrances(wrapper);
+
+            await wrapper.setProps({ isCovered: false });
+            await flushPromises();
+            stop();
+
+            // The class leaves and returns, which is what restarts a CSS animation.
+            expect(seen).toEqual([false, true]);
+        });
+
+        test("opening the view does not play it", async () => {
+            const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]) });
+
+            await wrapper.setProps({ isCovered: true });
+            await flushPromises();
+
+            expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+        });
+
+        test("a feed whose page has not landed waits for the page, as every entrance does", async () => {
+            const state = timeline([], { isLoaded: false });
+            const wrapper = draw({ timeline: state, isCovered: true });
+
+            await wrapper.setProps({ isCovered: false });
+            await flushPromises();
+
+            expect(wrapper.get("[data-testid='message-feed']").classes()).not.toContain("is-entering");
+        });
     });
 });
 
