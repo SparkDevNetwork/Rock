@@ -124,6 +124,43 @@ describe("a photo avatar", () => {
         expect(parseFloat(face.style.width)).toBe(34);
     });
 
+    // A neutral disc stands in while the photo loads, so a hue never flashes before a face; the
+    // photo stays hidden until its decode lands.
+    test("holds a neutral disc and a hidden photo until the photo is decoded", async () => {
+        const decodes: Array<() => void> = [];
+        const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
+        HTMLImageElement.prototype.decode = () => new Promise<void>(resolve => decodes.push(resolve));
+
+        try {
+            const [face] = faces(mount(Avatar, { props: { people: [{ name: "Anna Lee", photoUrl: "https://church.example/a.jpg" }] }, attachTo: document.body }));
+            const image = face.querySelector("img")!;
+
+            expect(face.classList.contains("is-photo")).toBe(true);
+            expect(image.classList.contains("chat-img-hold")).toBe(true);
+
+            decodes.forEach(resolve => resolve());
+            await Promise.resolve();
+            await Promise.resolve();
+
+            expect(image.classList.contains("chat-img-hold")).toBe(false);
+        }
+        finally {
+            if (original) {
+                Object.defineProperty(HTMLImageElement.prototype, "decode", original);
+            }
+            else {
+                delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
+            }
+        }
+    });
+
+    test("draws initials on the hue at once, with no neutral disc, for a person with no photo", () => {
+        const [face] = faces(draw([{ name: "Anna Lee", photoUrl: null }]));
+
+        expect(face.classList.contains("is-photo")).toBe(false);
+        expect(face.textContent!.trim()).toBe("AL");
+    });
+
     test("falls back to initials when the person has no photo", () => {
         const [face] = faces(draw([{ name: "Anna Lee", photoUrl: null }]));
 

@@ -4,9 +4,10 @@
         <span v-for="(person, index) in people"
               :key="index"
               class="chat-av"
+              :class="{ 'is-photo': !!person.photoUrl }"
               data-testid="avatar"
               :style="faceStyle(person, index)">
-            <img v-if="person.photoUrl" class="chat-av-photo" :src="person.photoUrl" alt="" />
+            <img v-if="person.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="person.photoUrl" alt="" />
             <template v-else-if="initialsOf(person.name)">{{ initialsOf(person.name) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
@@ -17,6 +18,7 @@
     import { PropType } from "vue";
     import Icon from "./icon.partial.obs";
     import { avatarHue } from "./brand.partial";
+    import { useImageReveal, vReveal } from "./imageReveal.partial";
 
     // #region Types
 
@@ -55,6 +57,9 @@
     });
 
     // #region Values
+
+    // Faces drawn in the same frame fade in together once decoded, over a neutral disc.
+    const reveal = useImageReveal({ isShared: true });
 
     /** At this size and below two letters do not fit, so one is drawn. */
     const largestOneInitialSize = 22;

@@ -93,6 +93,39 @@ describe("the photo grid", () => {
         expect(img.attributes("alt")).toBe("photo-1.jpg");
     });
 
+    // The image waits, hidden, in its held box until the browser has decoded it; one message's
+    // photos reveal together.
+    test("a message's photos stay hidden until all are decoded, then show together", async () => {
+        const decodes: Array<() => void> = [];
+        const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
+        HTMLImageElement.prototype.decode = () => new Promise<void>(resolve => decodes.push(resolve));
+
+        try {
+            const { wrapper } = await mountFiles([image(1), image(2)]);
+            const images = wrapper.findAll("[data-testid='attachment-image'] img");
+
+            expect(images).toHaveLength(2);
+            expect(images.every(img => img.classes("chat-img-hold"))).toBe(true);
+
+            decodes[0]();
+            await settle();
+            expect(images.every(img => img.classes("chat-img-hold"))).toBe(true);
+
+            decodes[1]();
+            await settle();
+            expect(images.some(img => img.classes("chat-img-hold"))).toBe(false);
+            expect(images.every(img => img.classes("chat-img-in"))).toBe(true);
+        }
+        finally {
+            if (original) {
+                Object.defineProperty(HTMLImageElement.prototype, "decode", original);
+            }
+            else {
+                delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
+            }
+        }
+    });
+
     test("every photo on screen is linked in one batch, drawn from its signed link", async () => {
         const { wrapper, h } = await mountFiles([image(1), image(2)]);
 
