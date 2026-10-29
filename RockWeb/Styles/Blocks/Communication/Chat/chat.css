@@ -399,6 +399,24 @@
 }
 
 /*
+    The page the chat fills. A Full Worksurface page holds the block in a zone with the theme's
+    padding on every side, an empty Feature row one pixel tall above it, and the main content area
+    the layout means to hide but the theme's more specific rule shows with a margin, so the block
+    sat inside a gap that scrolled the page. On a page that holds the chat only, the surface gives
+    up that padding, the empty row and the main content area, so the block fills the surface edge
+    to edge and its own height (the header and slicer subtracted) is all the page holds. The
+    main content rule carries the theme's id to outrank the theme's own display rule.
+*/
+.full-work-surface:has(.chat-shell) {
+    padding: 0;
+}
+
+.full-work-surface:has(.chat-shell) > .row:not(:has(.block-instance)),
+#content-wrapper .full-work-surface:has(.chat-shell) > .main-content {
+    display: none;
+}
+
+/*
     The reset. Rock's Bootstrap styles reach into any block, so the chat sets how its boxes measure
     and how focus shows. Form controls take the chat's font, since a browser draws a text area in
     its own monospace face. The control reset sits at no specificity, so a Bootstrap class still
