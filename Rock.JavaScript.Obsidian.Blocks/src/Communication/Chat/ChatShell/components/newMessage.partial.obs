@@ -796,10 +796,11 @@
 
     const pendingPhase = computed(() => props.draft?.phase ?? null);
 
-    // The send itself, trying, is the one a conversation holds quiet for its first second, timed
-    // from the send's start the draft carries; the phases before it already say what they wait for.
-    const slowKeys = useSlowSend(() => [{ localId: "first-message", status: pendingPhase.value === "trying" ? "sending" : "failed", startedAt: props.draft?.startedAt }]);
-    const isPhaseShown = computed(() => pendingPhase.value !== null && (pendingPhase.value !== "trying" || slowKeys.has("first-message")));
+    // The whole busy span of a first send (asking, waiting, trying) is quiet for its first second,
+    // timed from the send's start the draft carries, as a conversation's Sending… is; after that
+    // whichever phase is current is drawn and told. A failure is shown at once.
+    const slowKeys = useSlowSend(() => [{ localId: "first-message", status: pendingPhase.value && pendingPhase.value !== "failed" ? "sending" : "failed", startedAt: props.draft?.startedAt }]);
+    const isPhaseShown = computed(() => pendingPhase.value === "failed" || (pendingPhase.value !== null && slowKeys.has("first-message")));
 
     const pendingText = computed((): string => sentText.value ?? props.draft?.body ?? "");
 
@@ -978,18 +979,20 @@
     }, { immediate: true });
 
     // A first message that is over, sent or refused, takes its text off the pending message; a
-    // refusal puts it back in the box through the draft. Each phase it moves to is told, since it
-    // is drawn under a message the person is not looking at.
+    // refusal puts it back in the box through the draft.
     watch(pendingPhase, phase => {
         if (!phase) {
             sentText.value = null;
-            return;
         }
-
-        if (phase === "failed") {
+        else if (phase === "failed") {
             failedCount.value++;
         }
-        else {
+    });
+
+    // Each phase it is drawn in is told, since it is drawn under a message the person is not
+    // looking at; the same rule as the drawing, so sound and screen agree.
+    watch(() => isPhaseShown.value && pendingPhase.value !== "failed" ? pendingPhase.value : null, phase => {
+        if (phase) {
             announce(phaseWords[phase]);
         }
     });
