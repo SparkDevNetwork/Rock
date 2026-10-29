@@ -575,13 +575,32 @@ namespace Rock.Communication
 
             if ( safeSenderResult.IsUnsafeDomain && safeSenderResult.ReplyToAddress != null )
             {
+                // Use only the bare address. MailAddress.ToString() returns the display-name
+                // form ("Name" <address>), which is not valid inside a comma-separated list.
+                var senderAddress = safeSenderResult.ReplyToAddress.Address;
+
                 if ( replyToAddress.IsNullOrWhiteSpace() )
                 {
-                    replyToAddress = safeSenderResult.ReplyToAddress.ToString();
+                    replyToAddress = senderAddress;
                 }
                 else
                 {
-                    replyToAddress += $",{safeSenderResult.ReplyToAddress.ToString()}";
+                    var alreadyListed = false;
+                    try
+                    {
+                        var existingAddresses = new MailAddressCollection();
+                        existingAddresses.Add( replyToAddress );
+                        alreadyListed = existingAddresses.Any( a => a.Address.Equals( senderAddress, StringComparison.OrdinalIgnoreCase ) );
+                    }
+                    catch ( FormatException )
+                    {
+                        alreadyListed = replyToAddress.IndexOf( senderAddress, StringComparison.OrdinalIgnoreCase ) >= 0;
+                    }
+
+                    if ( !alreadyListed )
+                    {
+                        replyToAddress += $",{senderAddress}";
+                    }
                 }
             }
 
@@ -1287,7 +1306,14 @@ namespace Rock.Communication
                     var replyToEmail = recipientEmailMessage.ReplyToEmail;
                     try
                     {
-                        replyToEmail = new System.Net.Mail.MailAddress( replyToEmail ).Address;
+                        // Reply-To can be a comma-separated list, so parse it as one and
+                        // store only the bare, de-duplicated addresses.
+                        var replyToAddresses = new MailAddressCollection();
+                        replyToAddresses.Add( replyToEmail );
+
+                        replyToEmail = string.Join( ",", replyToAddresses
+                            .Select( a => a.Address )
+                            .Distinct( StringComparer.OrdinalIgnoreCase ) );
                     }
                     catch ( Exception ex )
                     {
