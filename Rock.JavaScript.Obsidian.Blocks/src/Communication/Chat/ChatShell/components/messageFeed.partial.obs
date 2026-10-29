@@ -711,6 +711,12 @@
             default: false
         },
 
+        /** Whether a full view lies over this conversation, which stays laid out under it; it enters again when the view closes. */
+        isCovered: {
+            type: Boolean,
+            default: false
+        },
+
         /** Every key this session sent under; a message carrying one already rose as its pending row. */
         sentKeys: {
             type: Object as PropType<ReadonlySet<string>>,
@@ -1242,6 +1248,19 @@
         if (id !== null) {
             void land(id);
         }
+    });
+
+    // The conversation coming back into view is a switch's entrance too. The class goes and
+    // returns across a render, since an animation only restarts when its class is added anew.
+    watch(() => props.isCovered, async isCovered => {
+        if (isCovered || !props.timeline.isLoaded) {
+            return;
+        }
+
+        isEnteringDrawn.value = false;
+        await nextTick();
+        feed.value?.getBoundingClientRect();
+        isEnteringDrawn.value = true;
     });
 
     watch(() => props.timeline.isLoaded, isLoaded => {
