@@ -303,7 +303,8 @@
                 title="Foreign Key"
                 field="foreignKey"
                 :hideOnScreen="true" />
-        <ButtonColumn name="showModal"
+        <ButtonColumn v-if="config.isAddEnabled"
+                      name="showModal"
                       iconClass="fa fa-user"
                       @click="onShowModal"
                       :excludeFromExport="true" />
