@@ -95,6 +95,25 @@ function isDrawn(element: HTMLElement): boolean {
     return true;
 }
 
+/**
+ * Whether the browser calls a focus a keyboard's. A focus the page moved, as a closing panel
+ * returning to the button that opened it, is not, so it shows no tip or bar for a pointer that is
+ * nowhere near. The oldest Safari Rock supports cannot match :focus-visible and throws; there
+ * every focus counts as the keyboard's.
+ *
+ * @param target The focused element.
+ *
+ * @returns True for a keyboard's focus.
+ */
+export function isKeyboardFocus(target: EventTarget | null | undefined): boolean {
+    try {
+        return target instanceof Element && target.matches(":focus-visible");
+    }
+    catch {
+        return true;
+    }
+}
+
 /** Set only while focusQuietly moves focus, which a browser reports at once. */
 let isQuietFocus = false;
 
@@ -206,12 +225,9 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
         next?.focus();
     }
 
-    /**
-     * Only a keyboard focus shows the tip. Told apart by the press before it rather than by
-     * :focus-visible, which the oldest Safari Rock supports cannot match from script.
-     */
+    /** Only a keyboard focus shows the tip. */
     function onFocus(): void {
-        if (!isPointerFocus && !isQuietFocus) {
+        if (!isPointerFocus && !isQuietFocus && isKeyboardFocus(anchor.value)) {
             scheduleTip();
         }
     }
