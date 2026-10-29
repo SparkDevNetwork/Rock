@@ -473,12 +473,23 @@ export function createSender(dependencies: SenderDependencies): Sender {
     }
 
     /**
+     * Sets a row to sending, stamping when. A row already sending keeps its stamp, since a retry
+     * queue marks every row at once and each then waits its turn to be delivered.
+     */
+    function markSending(row: PendingMessage): void {
+        if (row.status !== "sending" || row.startedAt === undefined) {
+            row.startedAt = Date.now();
+        }
+        row.status = "sending";
+    }
+
+    /**
      * Sends a row's text and settles the row at whichever comes first: the answer, or a copy of
      * its message landing. The answer still goes on after a copy settled the row, so what only
      * it carries, the server's notice, reaches the message.
      */
     async function deliver(row: PendingMessage, isLast = true): Promise<boolean> {
-        row.status = "sending";
+        markSending(row);
         row.errorCode = null;
         delete row.refusal;
         delete row.reason;
@@ -631,6 +642,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 body,
                 status: "sending",
                 errorCode: null,
+                startedAt: Date.now(),
                 // only a direct message's first message is sent with a try of its own
                 ...(attempt ? { isFirstMessage: true } : {}),
                 ...(reply ? { parentId: reply.parentId, isShownInChannel: reply.isShownInChannel } : {}),
@@ -657,7 +669,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
 
             // Each waiting row keeps its last reason until its own try clears it.
-            queue.forEach(row => row.status = "sending");
+            queue.forEach(markSending);
             const drain = (async (): Promise<boolean> => {
                 for (let index = 0; index < queue.length; index++) {
                     const row = queue[index];
@@ -746,20 +758,23 @@ export function useSentHold(pending: () => PendingMessage[], element: Ref<HTMLEl
  * The keys of the person's sends that have been pending for a full quiet second, the only ones
  * whose row says "Sending…". By key, over the rows a view draws, as the Sent hold is: a send
  * answered inside the second never shows the word, and a retry is quiet again for its own second
- * since the wait is measured from each try's start. A row that fails or settles drops out at once.
+ * since the wait is measured from each try's stamped start, not from when a view saw the row, so
+ * the conversation and the thread drawer agree and a view opened late says it at once for a send
+ * already a second old. A row that fails or settles drops out at once.
  *
- * @param pending The view's pending rows, read again as they change.
+ * @param pending The view's rows, read again as they change; each needs a key and a status, and
+ * the start of its try where it has one (a row without one is timed from when it was first seen).
  *
  * @returns The keys saying "Sending…" now.
  */
-export function useSlowSend(pending: () => PendingMessage[]): ReadonlySet<string> {
+export function useSlowSend(pending: () => Array<Pick<PendingMessage, "localId" | "status" | "startedAt">>): ReadonlySet<string> {
     const slow = reactive(new Set<string>());
     const timers = new Map<string, ReturnType<typeof setTimeout>>();
 
-    // Read as the keys of the rows sending now: a row going to failed and back to sending changes
-    // it, so every try gets its own wait.
-    watch(() => pending().filter(row => row.status === "sending").map(row => row.localId).join(","), () => {
-        const sending = new Set(pending().filter(row => row.status === "sending").map(row => row.localId));
+    // Read as the keys and starts of the rows sending now: a row going to failed and back to
+    // sending carries a new start, so every try gets its own wait.
+    watch(() => pending().filter(row => row.status === "sending").map(row => `${row.localId}@${row.startedAt}`).join(","), () => {
+        const sending = new Map(pending().filter(row => row.status === "sending").map(row => [row.localId, row.startedAt ?? Date.now()] as const));
 
         for (const [key, timer] of timers) {
             if (!sending.has(key)) {
@@ -772,13 +787,20 @@ export function useSlowSend(pending: () => PendingMessage[]): ReadonlySet<string
                 slow.delete(key);
             }
         }
-        for (const key of sending) {
-            if (!timers.has(key) && !slow.has(key)) {
-                timers.set(key, setTimeout(() => {
-                    timers.delete(key);
-                    slow.add(key);
-                }, sendingQuietMs));
+        for (const [key, startedAt] of sending) {
+            if (timers.has(key) || slow.has(key)) {
+                continue;
             }
+
+            const wait = startedAt + sendingQuietMs - Date.now();
+            if (wait <= 0) {
+                slow.add(key);
+                continue;
+            }
+            timers.set(key, setTimeout(() => {
+                timers.delete(key);
+                slow.add(key);
+            }, wait));
         }
     }, { flush: "sync", immediate: true });
 

@@ -1699,6 +1699,25 @@ describe("the first message's phase, as New message draws it on the draft", () =
         expect(dm.draft?.phase).toBe("waiting");
     });
 
+    test("is stamped with when the send began, and keeps it as the phase moves on", async () => {
+        const answer = deferred<DoorResult>();
+        const { dependencies } = setup({ ...waits(), startConversation: () => answer.promise });
+        const dm = await newDraft(dependencies);
+        expect(dm.draft?.startedAt).toBeUndefined();
+
+        const before = Date.now();
+        void dm.sendFirst("hello");
+        await settle();
+        const started = dm.draft?.startedAt as number;
+        expect(started).toBeGreaterThanOrEqual(before);
+        expect(started).toBeLessThanOrEqual(Date.now());
+
+        answer.resolve({ code: "ok", channelGuid: created, isPending: true, message: null, personAliasGuid: null });
+        await settle();
+        expect(dm.draft?.phase).toBe("waiting");
+        expect(dm.draft?.startedAt).toBe(started);
+    });
+
     test("is trying while a send is on its way into a conversation not yet shown", async () => {
         const sending = deferred<boolean>();
         const { calls, dependencies } = setup({ ...waits(), send: () => sending.promise });
