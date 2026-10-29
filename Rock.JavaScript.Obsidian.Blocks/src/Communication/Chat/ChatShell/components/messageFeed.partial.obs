@@ -104,6 +104,7 @@
                                     :isPhone="isPhone"
                                     :isDirectMessage="isDirectMessage"
                                     :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
+                                    :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
                                     :isArriving="isRowArriving(row.key, row.message)"
                                     :isFlashing="!!row.message && row.message.id === flashingId"
                                     :senderNames="senderNames"
@@ -645,7 +646,7 @@
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { isInConversation, useSentHold } from "../composables/useSend.partial";
+    import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -890,6 +891,7 @@
 
     /** The keys of the person's sends that settled while the feed was open, each showing "Sent" for a moment. */
     const justSentKeys = useSentHold(() => channelPending.value, feed);
+    const slowSendKeys = useSlowSend(() => channelPending.value);
 
     const sections = computed((): FeedSection[] => layoutFeed({
         messages: props.timeline.messages,

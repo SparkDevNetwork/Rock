@@ -79,6 +79,7 @@ type RowProps = {
     isChannel?: boolean;
     position?: "single" | "first" | "middle" | "last";
     isDirectMessage?: boolean;
+    isSendingSlow?: boolean;
     isJustSent?: boolean;
     isArriving?: boolean;
     senderNames?: ReadonlyMap<string, string>;
@@ -182,12 +183,25 @@ describe("the look, by the conversation's kind", () => {
 });
 
 describe("the states, in Conversational", () => {
-    test("sending: the row says Sending… and is marked sending", () => {
-        const wrapper = draw({ pending: pendingRow(), isOwn: true });
+    test("sending: a send gone quiet says Sending… and is marked sending", () => {
+        const wrapper = draw({ pending: pendingRow(), isOwn: true, isSendingSlow: true });
 
         expect(root(wrapper).getAttribute("data-state")).toBe("sending");
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Sending…");
         expect(wrapper.text()).toContain("On my way");
+    });
+
+    test("a fresh send says nothing yet, in either look, but is still marked sending", () => {
+        const direct = draw({ pending: pendingRow(), isOwn: true });
+        const channel = draw({ pending: pendingRow(), isOwn: true, isChannel: true });
+
+        expect(root(direct).getAttribute("data-state")).toBe("sending");
+        expect(direct.find("[data-testid='message-state']").exists()).toBe(false);
+        // the time sits where Sent will join it, so the row does not grow when Sending… or Sent comes
+        expect(plain(direct.get("[data-testid='message-meta']").text())).not.toContain("Sending");
+        expect(direct.text()).not.toContain("Sending");
+        expect(channel.find("[data-testid='message-state']").exists()).toBe(false);
+        expect(channel.text()).not.toContain("Sending");
     });
 
     test("a pending row keeps the test ids the end-to-end runs and older tests read", () => {
@@ -408,7 +422,7 @@ describe("Community, in a channel", () => {
     });
 
     test("Sending… and Sent ride inline after the text", () => {
-        const sending = draw({ pending: pendingRow(), isOwn: true, isChannel: true });
+        const sending = draw({ pending: pendingRow(), isOwn: true, isChannel: true, isSendingSlow: true });
         const sent = draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true });
 
         expect(sending.get("[data-testid='message-state']").text()).toBe("Sending…");
@@ -899,7 +913,7 @@ describe("a failed send's row", () => {
         expect(rule(".chat-cm-state-words")).toMatch(/align-self:\s*baseline/);
 
         const states = [
-            draw({ pending: pendingRow(), isOwn: true, isChannel: true }),
+            draw({ pending: pendingRow(), isOwn: true, isChannel: true, isSendingSlow: true }),
             draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true }),
             draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true })
         ];
@@ -1524,7 +1538,7 @@ describe("a message's files", () => {
     });
 
     test("a send still going draws its files from what was picked", () => {
-        const wrapper = draw({ pending: pendingRow({ body: "", attachments: [photo] }), isOwn: true });
+        const wrapper = draw({ pending: pendingRow({ body: "", attachments: [photo] }), isOwn: true, isSendingSlow: true });
 
         expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
         expect(wrapper.find(".chat-bubble").exists()).toBe(false);

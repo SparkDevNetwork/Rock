@@ -92,7 +92,7 @@
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
-                    <span v-if="state === 'sending'" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                    <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
                     <span v-else-if="state === 'failed'" class="chat-cm-state is-failed" :title="failedReason ?? undefined"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span><span class="chat-cm-state-words" data-testid="message-state">Not sent</span><span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span></span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
@@ -173,7 +173,7 @@
                     <span data-testid="message-state">Not sent</span>
                     <span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span>
                 </template>
-                <template v-else-if="state === 'sending'">
+                <template v-else-if="isSendingShown">
                     <Icon name="clock" size="xs" />
                     <span data-testid="message-state">Sending…</span>
                 </template>
@@ -1090,6 +1090,12 @@
             default: false
         },
 
+        /** A send still going has taken long enough to say "Sending…"; before that it says nothing. */
+        isSendingSlow: {
+            type: Boolean,
+            default: false
+        },
+
         /** The message arrived while the feed was open, so it rises in. */
         isArriving: {
             type: Boolean,
@@ -1300,8 +1306,11 @@
     /** Bubbles name another person's group once, over its first message, and never in a direct message. */
     const isNameShown = computed((): boolean => !props.isOwn && !props.isDirectMessage && isHead.value);
 
-    /** The meta sits under a group's last bubble, and under any send still going or failed. */
-    const isMetaShown = computed((): boolean => isLastOfGroup.value || !!props.pending);
+    /** A send says "Sending…" only once it has gone quiet; a quick one goes straight to "Sent". */
+    const isSendingShown = computed((): boolean => state.value === "sending" && props.isSendingSlow);
+
+    /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
+    const isMetaShown = computed((): boolean => isLastOfGroup.value || state.value === "failed" || isSendingShown.value);
 
     const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
 

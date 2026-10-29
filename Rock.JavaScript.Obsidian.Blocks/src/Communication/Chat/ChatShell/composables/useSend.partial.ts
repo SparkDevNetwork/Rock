@@ -31,7 +31,7 @@
 // stored with its answer lost; changed words are a new message under a new key.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { AttachmentItem, ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
-import { sentHoldMs } from "../feedLayout.partial";
+import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
@@ -740,4 +740,49 @@ export function useSentHold(pending: () => PendingMessage[], element: Ref<HTMLEl
     onBeforeUnmount(() => timers.forEach(timer => clearTimeout(timer)));
 
     return keys;
+}
+
+/**
+ * The keys of the person's sends that have been pending for a full quiet second, the only ones
+ * whose row says "Sending…". By key, over the rows a view draws, as the Sent hold is: a send
+ * answered inside the second never shows the word, and a retry is quiet again for its own second
+ * since the wait is measured from each try's start. A row that fails or settles drops out at once.
+ *
+ * @param pending The view's pending rows, read again as they change.
+ *
+ * @returns The keys saying "Sending…" now.
+ */
+export function useSlowSend(pending: () => PendingMessage[]): ReadonlySet<string> {
+    const slow = reactive(new Set<string>());
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+    // Read as the keys of the rows sending now: a row going to failed and back to sending changes
+    // it, so every try gets its own wait.
+    watch(() => pending().filter(row => row.status === "sending").map(row => row.localId).join(","), () => {
+        const sending = new Set(pending().filter(row => row.status === "sending").map(row => row.localId));
+
+        for (const [key, timer] of timers) {
+            if (!sending.has(key)) {
+                clearTimeout(timer);
+                timers.delete(key);
+            }
+        }
+        for (const key of slow) {
+            if (!sending.has(key)) {
+                slow.delete(key);
+            }
+        }
+        for (const key of sending) {
+            if (!timers.has(key) && !slow.has(key)) {
+                timers.set(key, setTimeout(() => {
+                    timers.delete(key);
+                    slow.add(key);
+                }, sendingQuietMs));
+            }
+        }
+    }, { flush: "sync", immediate: true });
+
+    onBeforeUnmount(() => timers.forEach(timer => clearTimeout(timer)));
+
+    return slow;
 }
