@@ -405,7 +405,7 @@ namespace RockWeb.Blocks.CheckIn
         {{ Person.Age }} yrs old ({{ Person.BirthDate | Date:'M/d/yyyy' }}) <br />
         {%- endif -%}
         {%- if Person.Email != '' -%}
-		<a href='mailto:{{ Person.Email }}'>{{ Person.Email }}</a>
+		<a href='mailto:{{ Person.Email | Escape }}'>{{ Person.Email | Escape }}</a>
         {%- endif -%}
 		{% if Person.RecordStatusValue.Value != empty and Person.RecordStatusValue.Value == 'Inactive' -%}
 		    <br/>

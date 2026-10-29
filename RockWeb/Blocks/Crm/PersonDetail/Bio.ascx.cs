@@ -786,7 +786,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             var emailButtonTitle = Person.EmailPreference == EmailPreference.NoMassEmails ? @"Email Preference is set to ""No Mass Emails""" : "Send an email";
 
-            lEmailButton.Text = $@"<a href='{emailLink}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
+            lEmailButton.Text = $@"<a href='{emailLink.EncodeHtml()}' class='btn btn-default btn-go btn-square stretched-link' title='{emailButtonTitle}' aria-label='{emailButtonTitle}'><i class='fa fa-envelope'></i></a><span>Email</span>";
         }
 
         /// <summary>

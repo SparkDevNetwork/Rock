@@ -1624,7 +1624,7 @@ namespace RockWeb.Blocks.Finance
                     rptViewPhones.DataBind();
                 }
 
-                lViewEmail.Text = $"<a href='mailto:{benevolenceRequest?.Email}?subject=Benevolence Request - {UrlEncoder.Default.Encode( benevolenceRequest.BenevolenceType.Name )}'>{benevolenceRequest?.Email}</a>";
+                lViewEmail.Text = $"<a href='mailto:{benevolenceRequest?.Email.EncodeHtml()}?subject=Benevolence Request - {UrlEncoder.Default.Encode( benevolenceRequest.BenevolenceType.Name )}'>{benevolenceRequest?.Email.EncodeHtml()}</a>";
                 lViewAddress.Text = benevolenceRequest.Location?.FormattedHtmlAddress;
             }
             else
