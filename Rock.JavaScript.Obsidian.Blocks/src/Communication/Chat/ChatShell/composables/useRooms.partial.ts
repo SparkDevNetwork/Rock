@@ -373,7 +373,7 @@ export type Rooms = {
  *
  * @returns The row.
  */
-function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url" | "is_member"> & Partial<Pick<ChannelFacts, "channel_type" | "is_public">>): SidebarRow {
+function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url" | "is_member"> & Partial<Pick<ChannelFacts, "channel_type" | "is_public" | "description">>): SidebarRow {
     return {
         channel_id: source.channel_id,
         name: source.name,
@@ -408,7 +408,9 @@ function previewRow(source: Pick<ChannelFacts, "channel_id" | "name" | "icon_url
         // only a channel is ever previewed, and a channel's row draws its name and no line under it
         room_kind: "channel",
         title: source.name ?? "",
-        preview_line: ""
+        preview_line: "",
+        // the directory row and the facts both carry it, so the header has it as the room opens
+        description: source.description ?? null
     };
 }
 

@@ -3153,6 +3153,17 @@ describe("the header's subtitle, from the room's facts", () => {
         expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Sunday teams");
     });
 
+    test("is the channel's description from its sidebar row on the first frame, before its facts are read", async () => {
+        const w = await mountBlock(1200);
+        const described = sidebarRow({ channel_id: "c0000041-0000-4000-8000-000000000000", name: "Greeters", title: "Greeters", description: "Sunday teams" });
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(described);
+        await settle();
+        await openRow(w, described.channel_id);
+
+        expect(roomsOf().factsOf(described.channel_id)).toBeNull();
+        expect(w.get("[data-testid='frame-main'] [data-testid='header-subtitle']").text()).toBe("Sunday teams");
+    });
+
     test("is left out for a conversation of two, whose facts carry no campus: only a person's card names it", async () => {
         mockConfig.campuses = [{ guid: "d0000001-0000-4000-8000-000000000000", name: "Downtown Campus", shortCode: "DT" }];
         const w = await mountBlock(1200);
