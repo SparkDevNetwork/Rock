@@ -15,9 +15,11 @@
 // </copyright>
 //
 // Landing on one message that may not be drawn yet: a reply a push's tap or a link names, opened
-// in its thread, and the original a quote jumps to, in the drawer or the conversation's feed. All
-// of them fetch at most a few older pages through one loop, and each look checks the view it
-// started in is still there, so a view replaced meanwhile is never landed in.
+// in its thread, the original a quote jumps to, in the drawer or the conversation's feed, and a
+// mention the inbox opens in its conversation. All of them fetch at most a few older pages through
+// one loop, and each look checks the view it started in is still there and that no landing has
+// been asked for since, so only the newest lands: one still fetching when the person asks for
+// another never scrolls or flashes after it.
 //
 // The block's frame owns the panes, so it hands in how to open and close the thread drawer and
 // how many times a thread has been opened or left; this owns only which message to land on. The
@@ -65,6 +67,13 @@ export type Jump = {
     landOnReply: (landing: ReplyLanding, origin?: ThreadOrigin) => Promise<void>;
 
     onJump: (messageId: number, isFromThread: boolean) => Promise<void>;
+
+    /**
+     * Opens a conversation, as a sidebar row does, and lands on a message in it. Answers "more"
+     * when the pages a landing fetches ran out still looking, so the caller can say the message
+     * is too far back; "held" once it landed; "stop" when it did not and is not still looking.
+     */
+    landInConversation: (channelId: string, messageId: number) => Promise<LandingCheck>;
 };
 
 /** A landing fetches at most this many older pages before it stays at the newest. */
@@ -77,11 +86,17 @@ const maxLandingOlderPages = 2;
  *
  * @param check Looks once and says where the landing stands.
  * @param loadOlder Fetches the next older page.
+ *
+ * @returns The last look's answer: "more" when the pages ran out still looking.
  */
-export async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<void> {
-    for (let olderPages = 0; check() === "more" && olderPages < maxLandingOlderPages; olderPages++) {
+async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<LandingCheck> {
+    let last = check();
+    for (let olderPages = 0; last === "more" && olderPages < maxLandingOlderPages; olderPages++) {
         await loadOlder();
+        last = check();
     }
+
+    return last;
 }
 
 /**
@@ -97,6 +112,9 @@ export function useJump(dependencies: JumpDependencies): Jump {
     const landingReplyId = ref<number | null>(null);
     const landingMessageId = ref<number | null>(null);
 
+    /** Counts every landing asked for, so one a newer landing replaced stops looking. */
+    let landingCount = 0;
+
     /**
      * Opens a thread at a reply. A push or a link is about a recent reply, so the newest page
      * nearly always holds it; when not, a few older pages are fetched before the drawer simply
@@ -105,14 +123,19 @@ export function useJump(dependencies: JumpDependencies): Jump {
      * a list keeps the list to go back to.
      */
     async function landOnReply(landing: ReplyLanding, origin: ThreadOrigin = null): Promise<void> {
+        const thisLanding = ++landingCount;
+        // Let go first, and let the drawer see it before landing, so a landing on the reply it
+        // last landed on lands again, in the thread already open as in one newly opened.
+        landingReplyId.value = null;
         const opened = dependencies.openThreadDrawer(landing.channelId, landing.rootId, origin);
         const thisOpen = dependencies.threadOpenCount();
         await opened;
+        await nextTick();
 
         const threads = shell.value.threads;
         await loadUntilHeld(() => {
             const thread = threads.state.thread;
-            if (thisOpen !== dependencies.threadOpenCount() || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
+            if (thisLanding !== landingCount || thisOpen !== dependencies.threadOpenCount() || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
                 return "stop";
             }
 
@@ -127,18 +150,55 @@ export function useJump(dependencies: JumpDependencies): Jump {
     }
 
     /**
+     * Looks for a message in the conversation on screen, fetching a few older pages while it may
+     * be further back, and lands on it once held. Stops when the person has left the conversation
+     * or asked for another landing meanwhile.
+     *
+     * @param thisLanding The landing's number, which must still be the newest at every look.
+     */
+    async function landInFeed(channelId: string, messageId: number, thisLanding: number): Promise<LandingCheck> {
+        // Let go first, so a second landing on the message the feed last landed on lands again.
+        landingMessageId.value = null;
+        await nextTick();
+
+        let oldestSeen: number | undefined;
+        return loadUntilHeld(() => {
+            const timeline = shell.value.timelines.state(channelId);
+            const oldest = timeline.messages[0]?.id;
+            if (thisLanding !== landingCount || activeChannelId.value !== channelId || oldest === undefined) {
+                return "stop";
+            }
+
+            if (timeline.messages.some(message => message.id === messageId)) {
+                landingMessageId.value = messageId;
+                return "held";
+            }
+
+            // An older page that failed or was dropped moved nothing, and one past the message
+            // without it means the conversation does not show it, as a reply kept to its thread
+            // or a message since deleted: neither is too far back.
+            const isStuck = oldest === oldestSeen || oldest < messageId;
+            oldestSeen = oldest;
+            return isStuck || !timeline.hasMore ? "stop" : "more";
+        }, () => shell.value.loadOlder());
+    }
+
+    /**
      * A quote asked to jump to the message it quotes. In a thread, a reply the drawer holds is
      * landed on there; anything else is in the conversation, which a phone brings back to the
      * front. The original is usually recent, so the timeline nearly always holds it; when not, a
      * few older pages are fetched, as for a reply a push opened, and past them the jump does nothing.
      */
     async function onJump(messageId: number, isFromThread: boolean): Promise<void> {
+        const thisLanding = ++landingCount;
         const thread = shell.value.threads.state.thread;
         if (isFromThread && thread?.replies.some(reply => reply.id === messageId)) {
             // Let go first, so a second jump to the reply the drawer last landed on lands again.
             landingReplyId.value = null;
             await nextTick();
-            landingReplyId.value = messageId;
+            if (thisLanding === landingCount) {
+                landingReplyId.value = messageId;
+            }
             return;
         }
 
@@ -151,29 +211,19 @@ export function useJump(dependencies: JumpDependencies): Jump {
             dependencies.closeThreadDrawer();
         }
 
-        landingMessageId.value = null;
-        await nextTick();
-
-        let oldestSeen: number | undefined;
-        await loadUntilHeld(() => {
-            const timeline = shell.value.timelines.state(channelId);
-            const oldest = timeline.messages[0]?.id;
-            if (activeChannelId.value !== channelId || oldest === undefined) {
-                return "stop";
-            }
-
-            if (timeline.messages.some(message => message.id === messageId)) {
-                landingMessageId.value = messageId;
-                return "held";
-            }
-
-            // An older page that failed or was dropped moved nothing, and one past the original
-            // without it means the conversation does not show it, as a reply kept to its thread.
-            const isStuck = oldest === oldestSeen || oldest < messageId;
-            oldestSeen = oldest;
-            return isStuck || !timeline.hasMore ? "stop" : "more";
-        }, () => shell.value.loadOlder());
+        await landInFeed(channelId, messageId, thisLanding);
     }
 
-    return { landingReplyId, landingMessageId, landOnReply, onJump };
+    /**
+     * Opens a conversation as a sidebar row does, waiting for an open of it already under way,
+     * then lands on a message in it. The landing is numbered as it is asked, before the open, so
+     * one asked for later is never overtaken by this one's open finishing after it.
+     */
+    async function landInConversation(channelId: string, messageId: number): Promise<LandingCheck> {
+        const thisLanding = ++landingCount;
+        await shell.value.selectChannel(channelId);
+        return thisLanding === landingCount ? landInFeed(channelId, messageId, thisLanding) : "stop";
+    }
+
+    return { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation };
 }

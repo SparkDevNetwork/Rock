@@ -399,6 +399,12 @@ type ChannelSync = {
     /** Whether a newest page is being read; a join confirmed meanwhile is caught up after it. */
     isLoading: boolean;
     isJoinPending: boolean;
+
+    /**
+     * The older page on its way: the message it is read before and the epoch it was asked in, so
+     * a second ask for the same page, the button's and the top of the feed's, ends with it.
+     */
+    olderLoad: { beforeId: number, epoch: number, done: Promise<void> } | null;
 };
 
 /**
@@ -454,7 +460,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null };
             syncs.set(channelId, channelSync);
         }
 
@@ -880,20 +886,38 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
         },
 
-        loadOlder: async (channelId: string): Promise<void> => {
+        loadOlder: (channelId: string): Promise<void> => {
             const timeline = state(channelId);
             const oldest = timeline.messages[0];
             if (!oldest) {
-                return;
+                return Promise.resolve();
             }
 
-            const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size, beforeId: oldest.id });
-            // dropped when what is held changed underneath it, or another older page got there first
-            if (!answer || timeline.messages[0]?.id !== oldest.id) {
-                return;
+            const channelSync = sync(channelId);
+            const asked = channelSync.olderLoad;
+            if (asked && asked.beforeId === oldest.id && asked.epoch === channelSync.epoch) {
+                return asked.done;
             }
-            mergePage(channelId, answer.page, answer.readAt);
-            timeline.hasMore = answer.page.has_more;
+
+            const load = { beforeId: oldest.id, epoch: channelSync.epoch, done: Promise.resolve() };
+            channelSync.olderLoad = load;
+            load.done = (async (): Promise<void> => {
+                try {
+                    const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size, beforeId: oldest.id });
+                    // dropped when what is held changed underneath it, or another older page got there first
+                    if (!answer || timeline.messages[0]?.id !== oldest.id) {
+                        return;
+                    }
+                    mergePage(channelId, answer.page, answer.readAt);
+                    timeline.hasMore = answer.page.has_more;
+                }
+                finally {
+                    if (channelSync.olderLoad === load) {
+                        channelSync.olderLoad = null;
+                    }
+                }
+            })();
+            return load.done;
         },
 
         onJoined: async (channelId: string): Promise<void> => {

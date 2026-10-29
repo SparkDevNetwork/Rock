@@ -66,7 +66,7 @@ function drawPicker(props: Record<string, unknown> = {}): { w: VueWrapper, targe
     target.setAttribute("contenteditable", "true");
     document.body.append(target);
     wrapper = mount(MentionPicker, {
-        props: { target, people: [annaPerson, benPerson], isAllOffered: false, ...props },
+        props: { isOpen: true, target, people: [annaPerson, benPerson], isAllOffered: false, ...props },
         attachTo: document.body
     });
     return { w: wrapper, target };
@@ -601,6 +601,30 @@ describe("the picker in the composer", () => {
 
         await press(editorOf(w), "Enter");
         expect(w.emitted("send")).toEqual([["Hi @an"]]);
+    });
+
+    test("closed and opened again at once, draws one picker: the last one's way out never lies over the new one", async () => {
+        // a browser that animates, with Vue's own transitions running as they do on a page
+        const animations = Element.prototype.getAnimations;
+        Element.prototype.getAnimations = () => [];
+        try {
+            const w: VueWrapper = mount(Composer, {
+                props: { text: "", mentionSource: people, "onUpdate:text": (text: string) => w.setProps({ text }) },
+                attachTo: document.body,
+                global: { stubs: { transition: false } }
+            });
+            wrapper = w;
+            await typeNodes(w, ["Hi @an"]);
+            await press(editorOf(w), "Escape");
+
+            await typeNodes(w, ["Hi @a"]);
+
+            expect(document.querySelectorAll(".chat-mention-pop")).toHaveLength(1);
+            expect(picker()).not.toBeNull();
+        }
+        finally {
+            Element.prototype.getAnimations = animations;
+        }
     });
 
     test("is not offered where the person may not see who is in the room and holds no @all right", async () => {

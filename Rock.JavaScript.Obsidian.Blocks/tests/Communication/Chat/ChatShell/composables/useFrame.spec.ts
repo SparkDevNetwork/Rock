@@ -223,7 +223,8 @@ describe("the panel column", () => {
         expect(frame.panelKind.value).toBe("threads");
     });
 
-    // A thread pill pressed again, or a push for a reply of the thread on screen, opens what is open.
+    // A thread pill pressed again, or a push for a reply of the thread on screen, opens what is open:
+    // both reach the drawer through the landing, which opens it here.
     test("opening the thread it draws changes nothing, keeping the list it was opened from", async () => {
         mounted = mountFrame();
         const { frame, calls, state } = mounted;
@@ -235,15 +236,16 @@ describe("the panel column", () => {
         const openCount = frame.threadOpenCount();
         calls.splice(0);
 
-        frame.onOpenThread(7);
-        frame.onOpenThread(7);
+        void frame.openThreadDrawer(team, 7, null);
+        void frame.openThreadDrawer(team, 7, null);
         await settle();
 
         expect(frame.panelKind.value).toBe("thread");
         expect(frame.threadOrigin.value).toBe("threads");
         expect(frame.threadOpenCount()).toBe(openCount);
-        // A landing it carries lands again, as on a thread newly opened.
-        expect(calls).toEqual(["forgetReplyLanding", "threads.openThread:7", "forgetReplyLanding", "threads.openThread:7"]);
+        // The landing it carries is the landing's own to let go of and land again, so the open
+        // thread is only waited on.
+        expect(calls).toEqual(["threads.openThread:7", "threads.openThread:7"]);
 
         await frame.onThreadBack();
         expect(frame.panelKind.value).toBe("threads");

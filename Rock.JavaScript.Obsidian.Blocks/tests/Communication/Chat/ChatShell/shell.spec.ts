@@ -481,6 +481,25 @@ describe("createChatShell", () => {
         expect(Object.keys(h.stored).sort()).toEqual([rememberedChannelKey(tenant, person), `${rememberedChannelKey(tenant, person)}:kind`]);
     });
 
+    test("selecting a channel still opening waits for that open, asking nothing again", async () => {
+        const h = await started();
+
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        let isAgainDone = false;
+        const toBAgain = h.shell.selectChannel(channelB).then(() => isAgainDone = true);
+        await settle();
+
+        expect(isAgainDone).toBe(false);
+        expect(h.history[channelB]).toHaveLength(1);
+
+        answerHistory(h, channelB, 20);
+        await Promise.all([toB, toBAgain]);
+
+        expect(isAgainDone).toBe(true);
+        expect(h.shell.timelines.state(channelB).messages.map(m => m.id)).toEqual([20]);
+    });
+
     test("what is seen in the channel on screen is saved against that channel", async () => {
         const h = build();
         const starting = h.shell.start();
@@ -2147,6 +2166,38 @@ describe("a page's report after the shell stops", () => {
         expect(isSent).toBe(false);
         expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
     });
+
+    test("a send's answer still on its way writes nothing, and no send goes out after", async () => {
+        const h = await started();
+        h.heldSends.value = [];
+        const sending = h.shell.send("on my way");
+        await settle();
+        expect(h.sent).toHaveLength(1);
+
+        await h.shell.stop();
+        h.heldSends.value[0].resolve();
+        await sending;
+        await settle();
+        void h.shell.send("too late");
+        await settle();
+
+        expect(h.sent).toHaveLength(1);
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([10]);
+        expect(h.shell.sender.pending(channelA).map(r => r.status)).toEqual(["sending"]);
+    });
+
+    test("an open answered after the shell stops remembers nothing and puts nothing on screen", async () => {
+        const h = await started();
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+
+        await h.shell.stop();
+        answerHistory(h, channelB, 20);
+        await toB;
+        await settle();
+
+        expect(h.stored[rememberedChannelKey(tenant, person)]).toBe(channelA);
+    });
 });
 
 // The editor and the delete confirm belong to the conversation they were opened in: a switch to
@@ -2189,8 +2240,8 @@ describe("a conversation switch with a message's editor or delete confirm open",
 
 describe("mentions", () => {
     // The shell holds the mentions as shell.mentions, built with its own call path, the church and
-    // person, the page's storage and timelines, its open, and the frame's views for landing on a
-    // message and opening a thread, which the shell cannot see and the frame hands in.
+    // person, the page's storage, and the frame's views for landing on a message in its
+    // conversation and opening a thread, which the shell cannot see and the frame hands in.
 
     /** One entry of the bootstrap's me.unread_mentions, exactly its keys. */
     function unread(channelId: string, messageId: number): UnreadMention {
@@ -2265,22 +2316,18 @@ describe("mentions", () => {
         expect(Number(h.stored[`rock-chat:mentions-visit:${tenant}:${person}`])).toBeGreaterThan(0);
     });
 
-    test("a jump from the inbox opens the mention's conversation and lands on the message there", async () => {
-        const land = jest.fn();
-        const h = await started({ mentionViews: { land, openThread: jest.fn(async () => undefined) } });
+    test("a jump from the inbox lands on the message in its conversation through the frame", async () => {
+        const landInConversation = jest.fn(async () => "held" as const);
+        const h = await started({ mentionViews: { landInConversation, openThread: jest.fn(async () => undefined) } });
 
-        const jumping = h.shell.mentions.jump(mentionRow(channelB, 20));
-        await settle();
-        answerHistory(h, channelB, 20);
-        await jumping;
+        await h.shell.mentions.jump(mentionRow(channelB, 20));
 
-        expect(h.shell.state.activeChannelId).toBe(channelB);
-        expect(land).toHaveBeenCalledWith(20);
+        expect(landInConversation).toHaveBeenCalledWith(channelB, 20);
     });
 
     test("a jump to a reply opens its thread at the reply through the frame", async () => {
         const openThread = jest.fn(async () => undefined);
-        const h = await started({ mentionViews: { land: jest.fn(), openThread } });
+        const h = await started({ mentionViews: { landInConversation: jest.fn(async () => "held" as const), openThread } });
 
         await h.shell.mentions.jump(mentionRow(channelB, 21, 15));
 

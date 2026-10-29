@@ -445,6 +445,23 @@ describe("a send into a room the person has not joined", () => {
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "authz.join_required" });
     });
 
+    test("stopped while it waits to send again, sends nothing more and leaves the row as it was", async () => {
+        const { sender, sent, waits } = await joinSetup(
+            [joinRequired, joinRequired, { ok: true, id: 53, createdAt: "2026-10-07T10:00:02Z" }],
+            [{ code: "ok", message: null, isPending: true }]);
+
+        const sending = sender.send(channel, "hello room");
+        await settle();
+        expect(waits).toHaveLength(1);
+
+        sender.stop();
+        waits[0].resolve();
+
+        expect(await sending).toBe(false);
+        expect(sent).toHaveLength(2);
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "sending" });
+    });
+
     test("without a join door the refusal fails the message as before", async () => {
         const { sender } = await setup([joinRequired]);
 
@@ -1654,5 +1671,47 @@ describe("useSlowSend: a send says Sending… only once it has taken a second", 
         jest.advanceTimersByTime(2000);
 
         expect(slow.has("a")).toBe(false);
+    });
+});
+
+// Once stopped, as the shell is when its session is refused or the block is rebuilt, the sender
+// sends nothing new and nothing still on its way reaches the screen.
+describe("a stopped sender", () => {
+    test("writes nothing an answer still on its way brings", async () => {
+        const answer = deferred<SendResult>();
+        const { sender, timelines } = await setup([answer]);
+
+        const sending = sender.send(channel, "hello");
+        sender.stop();
+        answer.resolve({ ok: true, id: 61, createdAt: "2026-10-07T10:00:00Z" });
+
+        expect(await sending).toBe(false);
+        expect(timelines.state(channel).messages).toEqual([]);
+        expect(sender.pending(channel).map(row => row.status)).toEqual(["sending"]);
+    });
+
+    test("leaves a row whose send fails after it as it was", async () => {
+        const answer = deferred<SendResult>();
+        const { sender } = await setup([answer]);
+
+        const sending = sender.send(channel, "hello");
+        sender.stop();
+        answer.resolve({ ok: false, error: { code: "rpc.transport", severity: "failed" } });
+
+        expect(await sending).toBe(false);
+        expect(sender.pending(channel).map(row => row.status)).toEqual(["sending"]);
+        expect(sender.lastFailure()).toBeNull();
+    });
+
+    test("sends nothing new, and tries no failed row again", async () => {
+        const { sender, sent } = await setup([{ ok: false, error: { code: "rpc.transport", severity: "failed" } }]);
+        await sender.send(channel, "first");
+        const failed = sender.pending(channel)[0];
+
+        sender.stop();
+
+        expect(await sender.send(channel, "second")).toBe(false);
+        expect(await sender.retryAll([failed.localId])).toBe(false);
+        expect(sent).toEqual(["first"]);
     });
 });

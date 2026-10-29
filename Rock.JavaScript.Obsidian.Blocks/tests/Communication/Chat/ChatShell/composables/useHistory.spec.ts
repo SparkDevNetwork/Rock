@@ -730,6 +730,24 @@ describe("catching up when fetches fail or are overtaken", () => {
         expect(timelines.state(channel).isBehind).toBe(false);
     });
 
+    test("an older page asked for again while it is on its way is asked once, both asks ending with it", async () => {
+        const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
+        const fetches = controlled(platform, options => options.beforeId !== undefined);
+        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        await timelines.loadNewest(channel);
+        const oldest = ids(timelines.state(channel).messages)[0];
+
+        const first = timelines.loadOlder(channel);
+        const second = timelines.loadOlder(channel);
+        await settle();
+        expect(fetches.pending).toHaveLength(1);
+
+        fetches.pending.shift()?.answer();
+        await Promise.all([first, second]);
+
+        expect(ids(timelines.state(channel).messages)[0]).toBeLessThan(oldest);
+    });
+
     test("an older page asked for before the channel was reloaded is dropped when it arrives", async () => {
         const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
         const fetches = controlled(platform, options => options.beforeId !== undefined);

@@ -580,12 +580,11 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * Opens a thread in the drawer. One opened from the conversation replaces whatever the column
      * held; one opened from a list keeps the list to go back to. Its mentions stop lighting the
      * header's dot, as the thread is where they are read. The thread drawn already is where the
-     * reader is, so nothing about the column moves; a landing it carries still lands, once the
-     * page on its way is in.
+     * reader is, so nothing about the column moves and only the page on its way is waited on; a
+     * landing it carries is the landing's to make.
      */
     async function openThreadDrawer(channelId: string, rootId: number, origin: ThreadOrigin): Promise<void> {
         if (panelKind.value === "thread" && shell.value.threads.isOpen(channelId, rootId)) {
-            dependencies.forgetReplyLanding();
             return shell.value.threads.openThread(channelId, rootId);
         }
 

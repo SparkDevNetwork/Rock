@@ -526,6 +526,9 @@ a.chat-attach-file:focus-visible {
     /** The card being followed by the click the chat made itself, which its handler lets through. */
     let following: HTMLAnchorElement | null = null;
 
+    /** The cards waiting on a fresh link, so a second click meanwhile joins the follow already coming. */
+    const waiting = new Set<HTMLAnchorElement>();
+
     /** The most tiles the grid draws; the last of them counts the rest. */
     const gridTiles = 4;
 
@@ -577,15 +580,26 @@ a.chat-attach-file:focus-visible {
      * A download whose link is near its end waits for a fresh one, then is followed from it, so
      * a link renewed late, or not at all while the network was away, never fails the click. When
      * no fresh link can be had, the one still held is followed while it lasts; past its end the
-     * click does nothing, and the card is drawn as text once its link is gone.
+     * click does nothing, and the card is drawn as text once its link is gone. A card is followed
+     * once however often it is clicked while it waits.
      */
     function onLinkClick(event: MouseEvent, item: AttachmentItem): void {
         const anchor = event.currentTarget;
-        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following || views.links.isFresh(item)) {
+        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following) {
+            return;
+        }
+
+        if (waiting.has(anchor)) {
+            event.preventDefault();
+            return;
+        }
+
+        if (views.links.isFresh(item)) {
             return;
         }
 
         event.preventDefault();
+        waiting.add(anchor);
         const links = views.links;
         void links.fresh(item).then(async fresh => {
             const link = fresh ?? links.linkOf(item);
@@ -605,7 +619,7 @@ a.chat-attach-file:focus-visible {
             finally {
                 following = null;
             }
-        });
+        }).finally(() => waiting.delete(anchor));
     }
 
     /** Left and right step through the message's photos, round from the last to the first. */

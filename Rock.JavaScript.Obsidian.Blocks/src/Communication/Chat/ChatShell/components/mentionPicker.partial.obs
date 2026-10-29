@@ -1,46 +1,50 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <div ref="popElement"
-             class="chat-mention-pop"
-             :class="{ 'is-waiting': isAwaitingFirstAnswer }"
-             data-testid="mention-picker"
-             :aria-hidden="isAwaitingFirstAnswer ? 'true' : undefined"
-             :style="popStyles">
-            <!--
-                Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
-                popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
-                Hidden until the open's first answer, so it never flashes an empty line or grows under the
-                person; kept in place rather than left out, since its way in starts as it shows. The empty
-                line is said only once the answer for what was typed is in and empty.
-            -->
-            <template v-if="drawnRows.length > 0">
-                <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
-                <div :id="listId" role="listbox" aria-label="People to mention">
-                    <button v-for="(row, index) in drawnRows"
-                            :id="`${listId}-${index}`"
-                            :key="row.token"
-                            type="button"
-                            class="chat-mention-item"
-                            :class="{ 'is-active': index === activeIndex }"
-                            role="option"
-                            tabindex="-1"
-                            :aria-selected="index === activeIndex ? 'true' : 'false'"
-                            data-testid="mention-option"
-                            @mousedown.prevent
-                            @click="choose(row)">
-                        <span v-if="row.isAll" class="chat-all-mark" :style="{ '--chat-all-mark-s': `${faceSize}px` }" aria-hidden="true"><Icon name="users" size="xs" /></span>
-                        <Avatar v-else :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="faceSize" />
-                        <span class="chat-mention-main">
-                            <b>{{ row.isAll ? "@all" : row.name }}</b>
-                            <span v-if="row.isAll">Notify everyone in this {{ place }}</span>
-                        </span>
-                    </button>
-                </div>
-            </template>
+        <!-- The way out plays as the picker closes, unless a row was chosen or it never showed. -->
+        <Transition leave-active-class="is-leaving" :css="isWayOutPlayed">
+            <div v-if="isOpen"
+                 ref="popElement"
+                 class="chat-mention-pop"
+                 :class="{ 'is-waiting': isAwaitingFirstAnswer }"
+                 data-testid="mention-picker"
+                 :aria-hidden="isAwaitingFirstAnswer ? 'true' : undefined"
+                 :style="popStyles">
+                <!--
+                    Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
+                    popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
+                    Hidden until the open's first answer, so it never flashes an empty line or grows under the
+                    person; kept in place rather than left out, since its way in starts as it shows. The empty
+                    line is said only once the answer for what was typed is in and empty.
+                -->
+                <template v-if="drawnRows.length > 0">
+                    <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
+                    <div :id="listId" role="listbox" aria-label="People to mention">
+                        <button v-for="(row, index) in drawnRows"
+                                :id="`${listId}-${index}`"
+                                :key="row.token"
+                                type="button"
+                                class="chat-mention-item"
+                                :class="{ 'is-active': index === activeIndex }"
+                                role="option"
+                                tabindex="-1"
+                                :aria-selected="index === activeIndex ? 'true' : 'false'"
+                                data-testid="mention-option"
+                                @mousedown.prevent
+                                @click="choose(row)">
+                            <span v-if="row.isAll" class="chat-all-mark" :style="{ '--chat-all-mark-s': `${faceSize}px` }" aria-hidden="true"><Icon name="users" size="xs" /></span>
+                            <Avatar v-else :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="faceSize" />
+                            <span class="chat-mention-main">
+                                <b>{{ row.isAll ? "@all" : row.name }}</b>
+                                <span v-if="row.isAll">Notify everyone in this {{ place }}</span>
+                            </span>
+                        </button>
+                    </div>
+                </template>
 
-            <div v-else-if="!isAwaitingAnswer" :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this {{ place }} matches.</div>
-        </div>
+                <div v-else-if="!isAwaitingAnswer" :id="listId" role="listbox" aria-label="People to mention" class="chat-mention-empty">No one in this {{ place }} matches.</div>
+            </div>
+        </Transition>
     </Teleport>
 </template>
 
@@ -64,7 +68,7 @@
     animation: none;
 }
 
-/* The way out, played by a copy left behind as the picker goes, since a removed element cannot animate. */
+/* The way out, played while the picker's transition keeps it on the page as it closes. */
 .chat-mention-pop.is-leaving {
     pointer-events: none;
     animation: chat-mention-out var(--chat-t-fast) var(--chat-ease-out) forwards;
@@ -143,7 +147,6 @@
     import { MentionPerson } from "../types.partial";
     import { personName } from "../ui/face.partial";
     import Avatar from "../ui/avatar.partial.obs";
-    import { tokenDuration } from "../ui/brand.partial";
     import Icon from "../ui/icon.partial.obs";
     import { overlayHostOf } from "../ui/tooltip.partial";
 
@@ -173,6 +176,15 @@
     // #endregion Types
 
     const props = defineProps({
+        /**
+         * Whether the picker shows. Its host keeps it mounted while the room offers it, so each
+         * opening plays its way in and each closing its way out.
+         */
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
         /** The editor the picker lists for: its keys and its combobox attributes. */
         target: {
             type: Object as PropType<HTMLElement | null>,
@@ -228,12 +240,6 @@
     /** The rows drawn at most, as the design draws them. */
     const drawnRowLimit = 6;
 
-    /** How long past the way out's own length its copy is kept, should the animation never report its end. */
-    const outGraceMs = 50;
-
-    /** The way out's length where the token sheet is not on the page. */
-    const fallbackOutMs = 120;
-
     /** A row's face, and the @all row's group mark in its place, so every name lines up. */
     const faceSize = 28;
 
@@ -242,7 +248,7 @@
     const listId = `chat-mention-list-${getCurrentInstance()?.uid ?? 0}`;
 
     /** Set once a row is chosen: the chip replaces the picker at once, with no way out played, as the design does. */
-    let isChosen = false;
+    const isChosen = ref(false);
 
     /**
      * Enter or Tab pressed while no row matched what was typed and its answer was on its way: the
@@ -251,10 +257,10 @@
     let isChoicePending = false;
 
     /**
-     * Set as the picker goes. A choice can unmount it while a mark is waiting on the next tick, and
-     * that mark would expand the editor again over a listbox that is gone.
+     * Whether the picker is open and listening. A choice can close it while a mark is waiting on
+     * the next tick, and that mark would expand the editor again over a listbox that is gone.
      */
-    let isUnmounted = false;
+    let isShown = false;
 
     /** The rows last drawn that matched their query, kept on screen while a narrowing leaves none. */
     const lastRows = ref<PickerRow[]>([]);
@@ -303,6 +309,9 @@
     const drawnRows = computed((): PickerRow[] => isHoldingLastRows.value ? lastRows.value : rows.value);
 
     const hasPeopleDrawn = computed((): boolean => drawnRows.value.some(row => !row.isAll));
+
+    /** Whether closing plays the way out: not after a choice, which the chip answers at once, nor for a picker never shown. */
+    const isWayOutPlayed = computed((): boolean => !isChosen.value && !props.isAwaitingFirstAnswer);
 
     /**
      * The placement, with the pop grown from the box's middle along the picker's nearest edge and
@@ -379,14 +388,14 @@
     // #region Functions
 
     function choose(row: PickerRow): void {
-        isChosen = true;
+        isChosen.value = true;
         emit("choose", row.token, row.name, row.photoUrl);
     }
 
     /** Marks the editor as this picker's combobox, pointing at the active row. */
     function markTarget(): void {
         const target = props.target;
-        if (!target || isUnmounted) {
+        if (!target || !isShown) {
             return;
         }
 
@@ -412,33 +421,24 @@
         target?.removeAttribute("aria-activedescendant");
     }
 
-    /**
-     * Plays the way out on a copy of the picker left in its place, since the host removes the
-     * picker itself on the word. Skipped after a choice, which the chip answers at once, and where
-     * nothing animates.
-     */
-    function playWayOut(): void {
-        const element = popElement.value;
-        const parent = element?.parentElement;
-        if (isChosen || props.isAwaitingFirstAnswer || !element || !parent || typeof element.getAnimations !== "function") {
-            return;
-        }
+    /** Starts an opening afresh: its first row active, nothing chosen or waited for, and its keys listened for. */
+    function opened(): void {
+        isShown = true;
+        isChosen.value = false;
+        isChoicePending = false;
+        lastRows.value = rows.value.length > 0 ? rows.value : [];
+        activeIndex.value = 0;
+        markTarget();
+        document.addEventListener("keydown", onKeydown, true);
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+    }
 
-        const copy = element.cloneNode(true) as HTMLElement;
-        copy.classList.add("is-leaving");
-        copy.setAttribute("aria-hidden", "true");
-        copy.removeAttribute("data-testid");
-        copy.querySelectorAll("[id], [data-testid], [role]").forEach(node => {
-            node.removeAttribute("id");
-            node.removeAttribute("data-testid");
-            node.removeAttribute("role");
-        });
-        parent.append(copy);
-
-        const outMs = tokenDuration(copy, "--chat-t-fast", fallbackOutMs) + outGraceMs;
-        const remove = (): void => copy.remove();
-        copy.addEventListener("animationend", remove, { once: true });
-        window.setTimeout(remove, outMs);
+    /** Ends an opening: its keys no longer listened for, and the editor collapsed. */
+    function closed(): void {
+        isShown = false;
+        document.removeEventListener("keydown", onKeydown, true);
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        unmarkTarget();
     }
 
     // #endregion Functions
@@ -481,22 +481,23 @@
         markTarget();
     });
 
+    // After the render, so an opening marks the editor with the listbox it now draws.
+    watch(() => props.isOpen, isOpen => isOpen ? opened() : closed(), { flush: "post" });
+
     // #endregion Watchers
 
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        markTarget();
-        document.addEventListener("keydown", onKeydown, true);
-        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+        if (props.isOpen) {
+            opened();
+        }
     });
 
     onBeforeUnmount(() => {
-        isUnmounted = true;
-        document.removeEventListener("keydown", onKeydown, true);
-        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
-        unmarkTarget();
-        playWayOut();
+        if (isShown) {
+            closed();
+        }
     });
 
     // #endregion Lifecycle Hooks
