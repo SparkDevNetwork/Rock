@@ -183,7 +183,7 @@ export type Threads = {
     /** Whether the thread is the one open, loading or loaded, which opening it again leaves as it is. */
     isOpen: (channelId: string, rootId: number) => boolean;
 
-    /** Fetches the replies before the oldest held. */
+    /** Fetches the replies before the oldest held; asked again while that page is on its way, waits for it. */
     loadOlderReplies: () => Promise<void>;
 
     /** A reply of the open thread was on screen. */
@@ -263,6 +263,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // The open thread's first page on its way, or landed, which opening the same thread again
     // waits on rather than asking for it twice.
     let threadLoad: Promise<void> = Promise.resolve();
+
+    // The open thread's older page on its way: the reply it is read before and the open it was
+    // asked in, so a second ask for the same page, the drawer's top and a landing's, ends with it.
+    let olderLoad: { beforeId: number, open: number, done: Promise<void> } | null = null;
 
     // Each root's follow saves. The bell can be pressed again before the first answer, and the
     // answers can arrive in either order, so only the newest says how it went.
@@ -762,30 +766,46 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
         isOpen,
 
-        loadOlderReplies: async (): Promise<void> => {
+        loadOlderReplies: (): Promise<void> => {
             const thread = state.thread;
             const oldest = thread?.replies[0];
             if (isStopped || !thread || !oldest || !thread.hasMore) {
-                return;
+                return Promise.resolve();
             }
 
             const thisOpen = threadOpen;
-            const result = await dependencies.call("chat_get_thread_history", { p_root_id: thread.rootId, p_before_id: oldest.id, p_limit: dependencies.limits().history_page_size });
-            // dropped when the thread was left, or another older page got there first
-            if (isStopped || thisOpen !== threadOpen || !state.thread || state.thread.replies[0]?.id !== oldest.id) {
-                return;
-            }
-            if (!result.ok) {
-                state.thread.olderError = result.error;
-                return;
+            if (olderLoad && olderLoad.beforeId === oldest.id && olderLoad.open === thisOpen) {
+                return olderLoad.done;
             }
 
-            const page = body<ThreadPage>(result);
-            state.thread.olderError = null;
-            const older = (page.messages ?? []).filter(m => m.id < oldest.id).map(withSendKey).sort((a, b) => a.id - b.id);
-            state.thread.replies.unshift(...older);
-            reportLanded(older);
-            state.thread.hasMore = page.has_more === true;
+            const load = { beforeId: oldest.id, open: thisOpen, done: Promise.resolve() };
+            olderLoad = load;
+            load.done = (async (): Promise<void> => {
+                try {
+                    const result = await dependencies.call("chat_get_thread_history", { p_root_id: thread.rootId, p_before_id: oldest.id, p_limit: dependencies.limits().history_page_size });
+                    // dropped when the thread was left, or another older page got there first
+                    if (isStopped || thisOpen !== threadOpen || !state.thread || state.thread.replies[0]?.id !== oldest.id) {
+                        return;
+                    }
+                    if (!result.ok) {
+                        state.thread.olderError = result.error;
+                        return;
+                    }
+
+                    const page = body<ThreadPage>(result);
+                    state.thread.olderError = null;
+                    const older = (page.messages ?? []).filter(m => m.id < oldest.id).map(withSendKey).sort((a, b) => a.id - b.id);
+                    state.thread.replies.unshift(...older);
+                    reportLanded(older);
+                    state.thread.hasMore = page.has_more === true;
+                }
+                finally {
+                    if (olderLoad === load) {
+                        olderLoad = null;
+                    }
+                }
+            })();
+            return load.done;
         },
 
         seen: (messageId: number): void => {

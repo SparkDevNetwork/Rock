@@ -597,6 +597,54 @@ describe("the thread page", () => {
         expect(threads.state.thread?.hasMore).toBe(false);
     });
 
+    // The drawer's top and a landing looking for a reply can both ask for the next older page.
+    test("an older page asked for again while it is on its way is asked once, both asks ending with it", async () => {
+        const { threads, callsTo, answers } = await setup();
+        const older = deferred<CallResult>();
+        answers.chat_get_thread_history = [
+            threadAnswer(root(40), [reply(43, 40), reply(42, 40)], { has_more: true }),
+            older
+        ];
+        await threads.openThread(channel, 40);
+
+        let ended = 0;
+        const first = threads.loadOlderReplies().then(() => ended++);
+        const second = threads.loadOlderReplies().then(() => ended++);
+        await settle();
+        expect(callsTo("chat_get_thread_history")).toHaveLength(2);
+        expect(ended).toBe(0);
+
+        older.resolve(threadAnswer(root(40), [reply(41, 40)], { has_more: false }));
+        await Promise.all([first, second]);
+
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
+    });
+
+    test("an older page of a thread left is not shared with the same thread opened again", async () => {
+        const { threads, callsTo, answers } = await setup();
+        const older = deferred<CallResult>();
+        answers.chat_get_thread_history = [
+            threadAnswer(root(40), [reply(43, 40), reply(42, 40)], { has_more: true }),
+            older,
+            threadAnswer(root(40), [reply(43, 40), reply(42, 40)], { has_more: true }),
+            threadAnswer(root(40), [reply(41, 40)], { has_more: false })
+        ];
+        await threads.openThread(channel, 40);
+        const left = threads.loadOlderReplies();
+        await settle();
+
+        await threads.closeThread();
+        await threads.openThread(channel, 40);
+        await threads.loadOlderReplies();
+
+        expect(callsTo("chat_get_thread_history")).toHaveLength(4);
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
+
+        older.resolve(threadAnswer(root(40), [reply(41, 40)], { has_more: false }));
+        await left;
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42, 43]);
+    });
+
     test("a failed older page is said apart from the first page's failure, and cleared by the next that answers", async () => {
         const { threads, answers } = await setup();
         answers.chat_get_thread_history = [
