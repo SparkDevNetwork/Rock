@@ -195,6 +195,22 @@ describe("the timeline", () => {
         expect(wrapper.findAllComponents(MessageRow)).toHaveLength(4);
     });
 
+    test("a send says Sending… only after a quiet second, and a failure still says Not sent", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")] });
+
+        expect(wrapper.text()).not.toContain("Sending");
+        jest.advanceTimersByTime(999);
+        await wrapper.vm.$nextTick();
+        expect(wrapper.text()).not.toContain("Sending");
+        jest.advanceTimersByTime(1);
+        await wrapper.vm.$nextTick();
+        expect(wrapper.text()).toContain("Sending…");
+
+        await wrapper.setProps({ pending: [pendingRow("a", "failed")] });
+        expect(wrapper.text()).not.toContain("Sending");
+        expect(wrapper.text()).toContain("Not sent");
+    });
+
     test("a reply still sending is drawn here only when it is also sent to the conversation", () => {
         const threadOnly = { ...pendingRow("thread-only"), parentId: 1, isShownInChannel: false };
         const alsoHere = { ...pendingRow("also-here"), parentId: 1, isShownInChannel: true };

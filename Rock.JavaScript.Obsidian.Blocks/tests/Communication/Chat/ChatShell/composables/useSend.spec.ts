@@ -16,7 +16,10 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { mount } from "@vue/test-utils";
+import { defineComponent, reactive } from "vue";
+import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { AttachmentItem, ChatErrorSeverity, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -1494,5 +1497,102 @@ describe("a send with files", () => {
 
         expect(await sender.send(channel, "", undefined, undefined, undefined, [photo])).toBe(false);
         expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", errorCode: "rpc.attachment_missing", attachments: [photo] });
+    });
+});
+
+describe("useSlowSend: a send says Sending… only once it has taken a second", () => {
+    beforeEach(() => jest.useFakeTimers());
+    afterEach(() => jest.useRealTimers());
+
+    function row(localId: string, status: "sending" | "failed" = "sending"): PendingMessage {
+        return { localId, channelId: channel, body: "hi", status, errorCode: null };
+    }
+
+    function watchRows(rows: PendingMessage[]): { slow: ReadonlySet<string>, unmount: () => void } {
+        let slow!: ReadonlySet<string>;
+        const wrapper = mount(defineComponent({
+            setup() {
+                slow = useSlowSend(() => rows);
+                return () => null;
+            }
+        }));
+        return { slow, unmount: () => wrapper.unmount() };
+    }
+
+    test("the quiet second is one second", () => {
+        expect(sendingQuietMs).toBe(1000);
+    });
+
+    test("nothing at 0 and 999 ms, Sending… at 1000 ms", () => {
+        const rows = reactive([row("a")]);
+        const { slow } = watchRows(rows);
+
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(999);
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(1);
+        expect(slow.has("a")).toBe(true);
+    });
+
+    test("a send confirmed before the second never says Sending…", () => {
+        const rows = reactive([row("a")]);
+        const { slow } = watchRows(rows);
+
+        jest.advanceTimersByTime(500);
+        rows.splice(0, 1);
+        jest.advanceTimersByTime(5000);
+
+        expect(slow.has("a")).toBe(false);
+    });
+
+    test("a send gone quiet is dropped when it settles", () => {
+        const rows = reactive([row("a")]);
+        const { slow } = watchRows(rows);
+
+        jest.advanceTimersByTime(1000);
+        rows.splice(0, 1);
+
+        expect(slow.has("a")).toBe(false);
+    });
+
+    test("a failure ends the wait, and a retry is quiet for a second again", () => {
+        const rows = reactive([row("a")]);
+        const { slow } = watchRows(rows);
+
+        jest.advanceTimersByTime(1000);
+        rows[0].status = "failed";
+        expect(slow.has("a")).toBe(false);
+
+        rows[0].status = "sending";
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(999);
+        expect(slow.has("a")).toBe(false);
+        jest.advanceTimersByTime(1);
+        expect(slow.has("a")).toBe(true);
+    });
+
+    test("each send is timed from its own start, a failed row is never slow", () => {
+        const rows = reactive([row("a")]);
+        const { slow } = watchRows(rows);
+
+        jest.advanceTimersByTime(600);
+        rows.push(row("b"), row("c", "failed"));
+        jest.advanceTimersByTime(400);
+
+        expect(slow.has("a")).toBe(true);
+        expect(slow.has("b")).toBe(false);
+        expect(slow.has("c")).toBe(false);
+        jest.advanceTimersByTime(600);
+        expect(slow.has("b")).toBe(true);
+    });
+
+    test("leaving the view stops the waits", () => {
+        const rows = reactive([row("a")]);
+        const { slow, unmount } = watchRows(rows);
+
+        unmount();
+        jest.advanceTimersByTime(2000);
+
+        expect(slow.has("a")).toBe(false);
     });
 });

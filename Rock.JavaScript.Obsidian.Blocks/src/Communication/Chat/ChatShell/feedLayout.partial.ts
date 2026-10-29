@@ -28,6 +28,12 @@ export const groupWindowMs = 5 * 60 * 1000;
 /** How long a just-confirmed send shows "Sent" before it settles to its time. */
 export const sentHoldMs = 2200;
 
+/**
+ * How long a send is pending before its row says "Sending…". Most sends are answered well inside
+ * it, and a label that flashed for a few frames before turning to "Sent" read as flicker.
+ */
+export const sendingQuietMs = 1000;
+
 /** A first page faster than this never shows the skeleton, so a quick load does not flicker. */
 export const skeletonDelayMs = 1000;
 

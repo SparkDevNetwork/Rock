@@ -112,6 +112,7 @@
                                 :isDirectMessage="isDirectMessage"
                                 :isArriving="isRowArriving(row.key, row.message)"
                                 :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
+                                :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
                                 :senderNames="senderNames"
                                 :isInThread="true"
                                 :isFlashing="item.isReply && !!row.message && row.message.id === flashingId"
@@ -323,7 +324,7 @@
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold } from "../composables/useSend.partial";
+    import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -664,6 +665,7 @@
 
     /** The keys of the person's replies that settled while the thread was open, each showing "Sent" for a moment, as in the conversation. */
     const justSentKeys = useSentHold(() => pendingReplies.value, bodyElement);
+    const slowSendKeys = useSlowSend(() => pendingReplies.value);
 
     const items = computed((): DrawerItem[] => {
         if (!props.root) {
