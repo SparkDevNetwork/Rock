@@ -237,7 +237,7 @@ img.chat-sheet-glyph {
     });
 
     const emit = defineEmits<{
-        (e: "replyInThread", messageId: number): void;
+        (e: "replyInThread", message: TimelineMessage): void;
         (e: "quote", message: TimelineMessage): void;
         (e: "edit", message: TimelineMessage): void;
         (e: "copy", message: TimelineMessage): void;
@@ -369,7 +369,7 @@ img.chat-sheet-glyph {
         emit("close");
 
         if (key === "reply") {
-            emit("replyInThread", message.id);
+            emit("replyInThread", message);
         }
         else if (key === "quote") {
             emit("quote", message);

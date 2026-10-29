@@ -423,7 +423,7 @@ img.chat-tool-glyph {
     });
 
     const emit = defineEmits<{
-        (e: "replyInThread", messageId: number): void;
+        (e: "replyInThread", message: TimelineMessage): void;
         (e: "quote", message: TimelineMessage): void;
         (e: "edit", message: TimelineMessage): void;
         (e: "copy", message: TimelineMessage): void;
@@ -560,7 +560,7 @@ img.chat-tool-glyph {
 
     function onReplyInThread(): void {
         if (props.message) {
-            emit("replyInThread", props.message.id);
+            emit("replyInThread", props.message);
         }
     }
 

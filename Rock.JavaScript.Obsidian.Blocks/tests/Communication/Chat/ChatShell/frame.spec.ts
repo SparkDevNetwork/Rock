@@ -1717,16 +1717,60 @@ describe("the thread drawer", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='thread-summary']").element);
     });
 
-    test("opens from the \"Replied to a thread\" label over a reply also sent to the conversation", async () => {
+    /** Whether the drawer flashes the reply, the one it landed on. */
+    function isReplyFlashing(w: VueWrapper, id: number): boolean {
+        return !!w.element.querySelector(`[data-testid='frame-panel'] [data-reply-id='${id}']`)?.classList.contains("is-flashing");
+    }
+
+    test("opens from the \"Replied to a thread\" label over a reply also sent to the conversation, landed on that reply", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
         const w = await mountBlock(1200);
         await openWithRoot(w, [storedMessage(41, { parent_id: 40, shown_in_channel: true } as Partial<TimelineMessage>)]);
 
         await w.get("[data-testid='frame-main'] [data-testid='thread-reply-label']").trigger("click");
         await settle();
+        await settle();
 
         expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
         expect(panelOpen(w)).toBe("true");
         expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Thread");
+        expect(isReplyFlashing(w, 41)).toBe(true);
+    });
+
+    // A reply also sent is a message of its thread, never a root: the bar's Reply in thread on it
+    // opens the thread it belongs to, at the reply, as its label does, and never asks for a thread
+    // rooted at the reply, which the server refuses as unreadable.
+    test("opens from Reply in thread on a reply also sent to the conversation, at its own thread's root and landed on the reply", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200, true);
+        await openWithRoot(w, [storedMessage(41, { parent_id: 40, shown_in_channel: true } as Partial<TimelineMessage>)]);
+
+        await w.get("[data-testid='frame-main'] [data-hot-id='41']").trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await settle();
+        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        await settle();
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledTimes(1);
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(isReplyFlashing(w, 41)).toBe(true);
+    });
+
+    test("opens from Reply in thread on a root at that root, with no reply to land on", async () => {
+        mockThreadPages = { newest: [41, 42], older: [] };
+        const w = await mountBlock(1200, true);
+        await openWithRoot(w);
+
+        await w.get("[data-testid='frame-main'] [data-hot-id='40']").trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await settle();
+        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        await settle();
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(w.element.querySelectorAll("[data-testid='frame-panel'] .is-flashing")).toHaveLength(0);
     });
 
     test("sends a reply to the root through the shell, as asked for the conversation", async () => {

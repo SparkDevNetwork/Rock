@@ -819,8 +819,8 @@ describe("system lines and block posts", () => {
 
 describe("a reply also sent to the conversation", () => {
     // Drawn as an ordinary message under a label in the quote label's recipe: the thread icon and
-    // "Replied to a thread", a button that opens the thread at its root, emitted as
-    // openThread(rootId). Marked data-testid="thread-reply-label".
+    // "Replied to a thread", a button that opens the thread it belongs to, landed on the reply,
+    // emitted as openThread({ rootId, messageId }). Marked data-testid="thread-reply-label".
     function alsoSent(extra: Partial<TimelineMessage> = {}): TimelineMessage {
         return message({ id: 51, parent_id: 40, shown_in_channel: true, body: "Count me in", ...extra });
     }
@@ -836,12 +836,12 @@ describe("a reply also sent to the conversation", () => {
         expect(wrapper.get("[data-testid='message-body']").text()).toBe("Count me in");
     });
 
-    test("opens the thread at its root", async () => {
+    test("opens its thread at the reply", async () => {
         const wrapper = draw({ message: alsoSent(), isChannel: true, position: "single" });
 
         await wrapper.get("[data-testid='thread-reply-label']").trigger("click");
 
-        expect(wrapper.emitted("openThread")).toEqual([[40]]);
+        expect(wrapper.emitted("openThread")).toEqual([[{ rootId: 40, messageId: 51 }]]);
     });
 
     test("is not drawn on a root", () => {
@@ -1194,7 +1194,18 @@ describe("the phone's action sheet", () => {
         await w.trigger("click");
         sheetItem("Reply in thread").click();
         await nextTick();
-        expect(w.emitted("openThread")).toEqual([[42]]);
+        expect(w.emitted("openThread")).toEqual([[{ rootId: 42, messageId: null }]]);
+    });
+
+    // A reply also sent is a message of its thread: its Reply in thread opens that thread at the
+    // reply, never a thread rooted at the reply itself, which has none.
+    test("its Reply in thread on a reply also sent opens the reply's own thread at the reply", async () => {
+        const w = onPhone({ message: message({ id: 51, parent_id: 40, shown_in_channel: true }) });
+        await w.trigger("click");
+
+        sheetItem("Reply in thread").click();
+        await nextTick();
+        expect(w.emitted("openThread")).toEqual([[{ rootId: 40, messageId: 51 }]]);
     });
 
     // A bubble is the message in a direct message; a channel's message has no bubble, so the

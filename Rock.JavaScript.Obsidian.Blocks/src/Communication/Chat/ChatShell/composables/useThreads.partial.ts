@@ -53,6 +53,22 @@ import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
 import { failureWords } from "../errors.partial";
 
+/** A place in a thread: its root, and the reply to land on, or null to open it as it opens. */
+export type ThreadPlace = { rootId: number, messageId: number | null };
+
+/**
+ * Where a message's thread opens. Only a root has a thread: a root opens its own, and a reply,
+ * one also sent to its conversation included, is a message of its root's thread, which opens
+ * landed on it.
+ *
+ * @param message The message.
+ *
+ * @returns Its thread's root, and the reply to land on.
+ */
+export function threadPlaceOf(message: Pick<TimelineMessage, "id" | "parent_id">): ThreadPlace {
+    return message.parent_id ? { rootId: message.parent_id, messageId: message.id } : { rootId: message.id, messageId: null };
+}
+
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
 

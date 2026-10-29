@@ -28,7 +28,7 @@
 //       isInThread: boolean,               inside the thread drawer, where Reply in thread has no place
 //       favorites: [{ code, label, emoji, image_url }]   the bootstrap's favorites; the first six are drawn
 //   }
-//   emits: replyInThread(messageId), quote(message), edit(message), copy(message), delete(message),
+//   emits: replyInThread(message), quote(message), edit(message), copy(message), delete(message),
 //          serverAction(action), react(message, code), openPicker(message, anchor), close()
 //
 // The scrim is data-testid="action-sheet-scrim", the sheet data-testid="action-sheet", its row of
@@ -156,7 +156,7 @@ describe("the sheet's items", () => {
             await item(w, label).trigger("click");
         }
 
-        expect(w.emitted("replyInThread")).toEqual([[42]]);
+        expect(w.emitted("replyInThread")).toEqual([[target]]);
         expect(w.emitted("quote")).toEqual([[target]]);
         expect(w.emitted("edit")).toEqual([[target]]);
         expect(w.emitted("copy")).toEqual([[target]]);

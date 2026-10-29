@@ -53,7 +53,7 @@
                     type="button"
                     class="chat-thread-label"
                     data-testid="thread-reply-label"
-                    @click="onOpenRepliedThread">
+                    @click="onOpenOwnThread">
                 <Icon name="thread" size="xs" />Replied to a thread
             </button>
             <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
@@ -103,7 +103,7 @@
                 <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
                 <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
                     <template v-if="hasThread" #default>
-                        <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
+                        <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
                     </template>
                 </MessageReactions>
             </div>
@@ -124,7 +124,7 @@
                     type="button"
                     class="chat-thread-label"
                     data-testid="thread-reply-label"
-                    @click="onOpenRepliedThread">
+                    @click="onOpenOwnThread">
                 <Icon name="thread" size="xs" />Replied to a thread
             </button>
             <!-- The ghost of the message quoted, the bubble overlapping its foot. -->
@@ -163,7 +163,7 @@
             <!-- The reactions row, tucked into the bubble's foot, the thread pill first at its aligned edge. -->
             <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" v-on="reactionsHandlers">
                 <template v-if="hasThread" #default>
-                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="emit('openThread', $event)" />
+                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
                 </template>
             </MessageReactions>
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
@@ -998,6 +998,7 @@
     import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
+    import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
     import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
@@ -1155,7 +1156,7 @@
     });
 
     const emit = defineEmits<{
-        (e: "openThread", rootId: number): void,
+        (e: "openThread", place: ThreadPlace): void,
         (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void
     }>();
@@ -1556,9 +1557,10 @@
         emit("messageAction", { kind: "person", personAliasGuid, anchor });
     }
 
-    function onOpenRepliedThread(): void {
-        if (props.message?.parent_id) {
-            emit("openThread", props.message.parent_id);
+    /** The thread pill under a root and the label over a reply also sent: the thread the message belongs to. */
+    function onOpenOwnThread(): void {
+        if (props.message) {
+            emit("openThread", threadPlaceOf(props.message));
         }
     }
 
@@ -1566,7 +1568,7 @@
     const { actions: actionHandlers, reactions: reactionsHandlers, editor: editorHandlers, runBlockAction } = messageRowRequests({
         message: () => props.message,
         request: (request: MessageActionRequest) => emit("messageAction", request),
-        openThread: rootId => emit("openThread", rootId),
+        openThread: place => emit("openThread", place),
         pickerAnchor,
         messageAnchor
     });

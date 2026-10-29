@@ -646,6 +646,7 @@
     import { pageRevealKey } from "../pageLoad.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
@@ -791,7 +792,7 @@
         (e: "firstShown"): void,
         (e: "loadOlder"): void,
         (e: "markRead", messageId: number): void,
-        (e: "openThread", rootId: number): void,
+        (e: "openThread", place: ThreadPlace): void,
         (e: "jump", quotedMessageId: number): void,
         (e: "messageAction", request: MessageActionRequest): void
     }>();

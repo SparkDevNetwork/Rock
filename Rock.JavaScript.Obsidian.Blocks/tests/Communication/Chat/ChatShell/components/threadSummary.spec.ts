@@ -32,7 +32,7 @@
 //          "Last reply 9:41 AM" today, else the day as the feed's divider names it.
 //
 // The message row draws the summary under any root with a live reply, a tombstone included, in
-// its reactions row (.chat-reacts), and re-emits its open as openThread(rootId). In a channel
+// its reactions row (.chat-reacts), and re-emits its open as openThread({ rootId, messageId: null }). In a channel
 // that row sits in the text column (.chat-cm-main), after the text.
 import { defineComponent, h, nextTick } from "vue";
 import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
@@ -314,6 +314,6 @@ describe("in the message row", () => {
 
         await row.get("[data-testid='thread-summary']").trigger("click");
 
-        expect(row.emitted("openThread")).toEqual([[42]]);
+        expect(row.emitted("openThread")).toEqual([[{ rootId: 42, messageId: null }]]);
     });
 });

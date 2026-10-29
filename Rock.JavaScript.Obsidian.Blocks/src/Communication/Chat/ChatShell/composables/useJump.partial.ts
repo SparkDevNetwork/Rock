@@ -26,9 +26,10 @@
 
 import { nextTick, ref, Ref } from "vue";
 import { ChatShell } from "../shell.partial";
+import { ThreadPlace } from "./useThreads.partial";
 
-/** A reply to open its thread at: from a push's tap, or from a link to it. */
-export type ReplyLanding = { channelId: string, rootId: number, messageId: number | null };
+/** A thread to open in a conversation, at a reply when it names one: from a push's tap, a link, or a message's own thread. */
+export type ReplyLanding = ThreadPlace & { channelId: string };
 
 /** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
 export type ThreadOrigin = "threads" | "mentions" | null;
