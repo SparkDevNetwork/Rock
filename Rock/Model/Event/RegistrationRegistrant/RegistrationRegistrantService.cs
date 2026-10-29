@@ -375,6 +375,23 @@ namespace Rock.Model
                         }
                     );
             }
+
+            /// <summary>
+            /// Creates the state for a registrant whose registration instance and
+            /// template were captured before the save. Used for deletes, where the
+            /// Registration navigation property is no longer available.
+            /// </summary>
+            /// <param name="registrant">The registrant.</param>
+            /// <param name="personAliasId">The person alias identifier of the registrant.</param>
+            /// <param name="state">The state of the registrant.</param>
+            /// <param name="registrationInstanceGuid">The registration instance unique identifier captured before the save.</param>
+            /// <param name="registrationTemplateGuid">The registration template unique identifier captured before the save.</param>
+            public RegistrationRegistrantUpdatedState( RegistrationRegistrant registrant, int personAliasId, EntityContextState state, Guid? registrationInstanceGuid, Guid? registrationTemplateGuid )
+                : this( registrant, personAliasId, state )
+            {
+                RegistrationInstanceGuid = registrationInstanceGuid;
+                RegistrationTemplateGuid = registrationTemplateGuid;
+            }
         }
 
         /// <summary>
@@ -485,7 +502,6 @@ namespace Rock.Model
         {
             var bags = GetRegistrationRegistrantUpdatedMessageBags( rockContext, items );
             var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
-            var channel = GroupPlacementTopic.GetRegistrantDeletedChannel();
 
             foreach ( var item in items )
             {
@@ -493,7 +509,21 @@ namespace Rock.Model
                 {
                     var bag = bags.FirstOrDefault( b => b.RegistrantGuid == item.Guid );
 
-                    await topicClients.Channel( channel ).RegistrantDeleted( item.Guid, bag );
+                    if ( bag == null )
+                    {
+                        continue;
+                    }
+
+                    // Send only on this registrant's registration instance and
+                    // template channels, the same channels updates use.
+                    var channels = GroupPlacementTopic.GetRegistrantChannelsForBag( bag );
+
+                    if ( !channels.Any() )
+                    {
+                        continue;
+                    }
+
+                    await topicClients.Channels( channels ).RegistrantDeleted( item.Guid, bag );
                 }
                 catch ( Exception ex )
                 {
