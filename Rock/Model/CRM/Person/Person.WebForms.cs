@@ -77,6 +77,9 @@ namespace Rock.Model
                         emailLink = string.Format( "mailto:{0}", Email );
                     }
 
+                    var encodedLink = emailLink.EncodeHtml();
+                    var encodedEmail = Email.EncodeHtml();
+
                     switch ( EmailPreference )
                     {
                         case EmailPreference.EmailAllowed:
@@ -85,9 +88,9 @@ namespace Rock.Model
                                     "<a class='{0}' style='{1}' href='{2}'>{3} {4} {5}</a>",
                                     cssClass,
                                     styles,
-                                    emailLink,
+                                    encodedLink,
                                     preText,
-                                    Email,
+                                    encodedEmail,
                                     postText );
                             }
 
@@ -96,9 +99,9 @@ namespace Rock.Model
                                 return string.Format(
                                     "<span class='js-email-status email-status no-mass-email'><a class='{0}' href='{1}'>{2} {3} {4} <i class='ti ti-switch-3' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"No Mass Emails\"'></i></a> </span>",
                                     cssClass,
-                                    emailLink,
+                                    encodedLink,
                                     preText,
-                                    Email,
+                                    encodedEmail,
                                     postText );
                             }
 
@@ -108,7 +111,7 @@ namespace Rock.Model
                                     "<span class='{0} js-email-status email-status do-not-email'>{1} {2} {3} <i class='ti ti-ban text-sm text-danger' data-toggle='tooltip' data-placement='top' title='Email Preference is set to \"Do Not Email\"'></i></span>",
                                     cssClass,
                                     preText,
-                                    Email,
+                                    encodedEmail,
                                     postText );
                             }
                     }
@@ -117,8 +120,8 @@ namespace Rock.Model
                 {
                     return string.Format(
                         "<span class='js-email-status not-active email-status'>{1} <i class='ti ti-alert-triangle' data-toggle='tooltip' data-placement='top' title='Email is not active. {0}'></i></span>",
-                        HttpUtility.HtmlEncode( EmailNote ),
-                        Email );
+                        EmailNote.EncodeHtml(),
+                        Email.EncodeHtml() );
                 }
             }
 
