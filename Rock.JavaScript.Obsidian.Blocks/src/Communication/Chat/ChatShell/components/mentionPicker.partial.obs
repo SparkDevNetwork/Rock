@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <!-- The way out plays as the picker closes, unless a row was chosen or it never showed. -->
         <Transition leave-active-class="is-leaving" :css="isWayOutPlayed">
             <div v-if="isOpen"
                  ref="popElement"
@@ -15,7 +14,8 @@
                     popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
                     Hidden until the open's first answer, so it never flashes an empty line or grows under the
                     person; kept in place rather than left out, since its way in starts as it shows. The empty
-                    line is said only once the answer for what was typed is in and empty.
+                    line is said only once the answer for what was typed is in and empty. The way out plays
+                    as the picker closes, unless a row was chosen or it never showed.
                 -->
                 <template v-if="drawnRows.length > 0">
                     <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
