@@ -123,8 +123,9 @@
                          @insert="onEmojiInsert"
                          @close="onEmojiClose" />
 
-            <!-- The @ picker, mounted only while the caret ends an @ query, so each opening plays its way in. -->
-            <MentionPicker v-if="isMentionOpen && mentionSource"
+            <!-- The @ picker, open while the caret ends an @ query; kept mounted so its way out plays as it closes. -->
+            <MentionPicker v-if="mentionSource"
+                           :isOpen="isMentionOpen"
                            :target="editorElement"
                            :anchor="boxElement ?? null"
                            :people="mentionSource.canMention ? mentionSource.people : []"
