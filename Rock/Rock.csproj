@@ -1850,6 +1850,7 @@
     <Compile Include="Plugin\HotFixes\335_SecureDocumentTypeEntityTypeView.cs" />
     <Compile Include="Plugin\HotFixes\336_RestrictWorkflowActionTypeRestEdits.cs" />
     <Compile Include="Plugin\HotFixes\337_LinkDocumentBinaryFilesToDocument.cs" />
+    <Compile Include="Plugin\HotFixes\338_RemoveDefaultPresenceRestKey.cs" />
     <Compile Include="Plugin\HotFixes\280_AuthFixForIssue6712.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
