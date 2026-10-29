@@ -26,6 +26,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -124,6 +125,12 @@ namespace Rock.Rest.Controllers
                 new DocumentService( rockContext ).Add( document );
 
                 // Save the object graph.
+                rockContext.SaveChanges();
+
+                // Make sure the associated BinaryFile is using the Document Entity for security.
+                binaryFile.ParentEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.DOCUMENT );
+                binaryFile.ParentEntityId = document.Id;
+
                 rockContext.SaveChanges();
 
                 // Return the ID of the newly-saved document.
