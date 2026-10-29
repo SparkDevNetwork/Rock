@@ -877,9 +877,17 @@ describe("the components' own styles", () => {
             expect(sheetRule(".chat-badge", "font-size")).toBe("12px");
         });
 
-        test("a muted room's badge stays visible in dark, on the church tint", () => {
+        test("a muted room's badge is neutral, drawn from tokens the loud badge does not use, in both themes", () => {
+            expect(sheetRule(".chat-badge.is-quiet", "color")).toBe(normalize("var(--chat-muted)"));
+            expect(sheetRule(".chat-badge.is-quiet", "background")).toBe(normalize("var(--chat-hover)"));
+            expect(sheetRule(".chat-badge.is-quiet", "background")).not.toBe(sheetRule(".chat-badge", "background"));
+            expect(sheetRule(".chat-badge.is-quiet", "color")).not.toBe(sheetRule(".chat-badge", "color"));
+
+            // Both neutral tokens are set for light and for every dark path, so neither theme falls back to the brand tint.
             for (const condition of [isDarkExplicit, isDarkUnthemed, isDarkFollowingSystem]) {
-                expect(valuesOf(readSheet(sheetPath), "--chat-badge-quiet", condition)).toEqual([normalize("var(--chat-brand-tint)")]);
+                for (const token of ["--chat-muted", "--chat-hover"]) {
+                    expect(valuesOf(readSheet(sheetPath), token, condition).length).toBeGreaterThan(0);
+                }
             }
         });
 

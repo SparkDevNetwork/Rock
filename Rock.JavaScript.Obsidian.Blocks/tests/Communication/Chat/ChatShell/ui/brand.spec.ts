@@ -149,6 +149,56 @@ describe("the brand fill", () => {
     test("a church color written in lower case gives the same fill", () => {
         expect(brandFill("#0092b8")).toEqual(brandFill("#0092B8"));
     });
+
+    test("the edge colors terminate: pure white, pure black and an unreadable string", () => {
+        expect(contrast(brandFill("#FFFFFF").fill, white)).toBeGreaterThanOrEqual(4.5);
+        expectColor(brandFill("#000000").fill, "#000000", "black");
+        expect(brandFill("not a color")).toEqual(brandFill("#FF791D"));
+        expect(brandFill("rgb(255, 121, 29)")).toEqual(brandFill("#FF791D"));
+    });
+
+    describe("on the dark surface, where the fill is also a shape", () => {
+        const dark = "#0D1117";
+
+        test.each([
+            ["Navy", "#1A2A4A"],
+            ["Sandbox teal", "#0092B8"],
+            ["Rock orange", "#FF791D"],
+            ["Plum", "#7A4FD1"],
+            ["Pure white", "#FFFFFF"]
+        ])("%s %s reads at 3 to 1 on the surface and still carries white text at 4.5 to 1", (_name, church) => {
+            const result = brandFill(church, dark);
+
+            expect(contrast(result.fill, dark)).toBeGreaterThanOrEqual(3);
+            expect(contrast(result.fill, white)).toBeGreaterThanOrEqual(4.5);
+            expectColor(result.onBrand, white, "on-brand");
+        });
+
+        test("navy is lifted no further than 3 to 1 needs", () => {
+            const [lightness, a, b] = oklab(brandFill("#1A2A4A", dark).fill);
+            expect(contrast(hexFromOklab([lightness - 0.01, a, b]), dark)).toBeLessThan(3);
+        });
+
+        test("pure black, which has no color to lift, becomes a gray that reads", () => {
+            const result = brandFill("#000000", dark);
+            expect(contrast(result.fill, dark)).toBeGreaterThanOrEqual(3);
+            expect(contrast(result.fill, white)).toBeGreaterThanOrEqual(4.5);
+        });
+
+        test("a color that already reads on the surface is the light fill unchanged", () => {
+            expect(brandFill("#FF791D", dark)).toEqual(brandFill("#FF791D"));
+        });
+
+        test("an unreadable string falls back to Rock orange here too", () => {
+            expect(brandFill("nope", dark)).toEqual(brandFill("#FF791D", dark));
+        });
+
+        test("the dark token set carries the lifted fill and the light set the plain one", () => {
+            const tokens = brandTokens("#1A2A4A");
+            expect(tokens.light["brand-fill"]).toBe(brandFill("#1A2A4A").fill);
+            expect(tokens.dark["brand-fill"]).toBe(brandFill("#1A2A4A", dark).fill);
+        });
+    });
 });
 
 describe("the tokens drawn from the church color", () => {
@@ -172,7 +222,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#EFB999",
             "thread-unread-line": "#F0B48F",
             "row-announcement": "#FDF5F0",
-            "badge-quiet": "#F9E6DD",
             "current-line": "#ECC4AE",
             "focus-line": "#F3A97A",
             "composer-line": "#F4A470",
@@ -196,7 +245,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#7A4828",
             "thread-unread-line": "#854C27",
             "row-announcement": "#1C1717",
-            "badge-quiet": "#2C1B12",
             "current-line": "#64402A",
             "focus-line": "#9C5425",
             "composer-line": "#A75824",
@@ -235,7 +283,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#95C0AF",
             "thread-unread-line": "#8BBCA8",
             "row-announcement": "#F0F6F3",
-            "badge-quiet": "#D9E9E4",
             "current-line": "#A9C9BE",
             "focus-line": "#77B398",
             "composer-line": "#6DAE91",
@@ -259,7 +306,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#204F3E",
             "thread-unread-line": "#205440",
             "row-announcement": "#0E181B",
-            "badge-quiet": "#0D1E1A",
             "current-line": "#21453A",
             "focus-line": "#205D43",
             "composer-line": "#206245",

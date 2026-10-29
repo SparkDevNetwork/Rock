@@ -76,7 +76,6 @@
     --chat-row-announcement: var(--chat-row-announcement-light, #FDF5F0);
     /* An unread thread's border, the church color 45 percent over the line. */
     --chat-thread-unread-line: var(--chat-thread-unread-line-light, #F0B48F);
-    --chat-badge-quiet: var(--chat-badge-quiet-light, #F9E6DD);
     /* The sidebar: the open room's icon box and the focused search box, in the church color. */
     --chat-current-line: var(--chat-current-line-light, #ECC4AE);
     --chat-focus-line: var(--chat-focus-line-light, #F3A97A);
@@ -267,7 +266,6 @@
     --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
     --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
-    --chat-badge-quiet: var(--chat-brand-tint);
     --chat-current-line: var(--chat-current-line-dark, #64402A);
     --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
     --chat-composer-line: var(--chat-composer-line-dark, #A75824);
@@ -343,7 +341,6 @@
         --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
         --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
-        --chat-badge-quiet: var(--chat-brand-tint);
         --chat-current-line: var(--chat-current-line-dark, #64402A);
         --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
         --chat-composer-line: var(--chat-composer-line-dark, #A75824);
@@ -696,10 +693,11 @@
     --chat-ic-stroke: 2.3;
 }
 
-/* A muted room's count, there but not calling for attention. */
+/* A muted room's count, there but not calling for attention: neutral, the church color absent, so it
+   cannot be mistaken for a live mention's tint in either theme. */
 .chat-badge.is-quiet {
-    color: var(--chat-brand-ink);
-    background: var(--chat-badge-quiet);
+    color: var(--chat-muted);
+    background: var(--chat-hover);
 }
 
 /* An unread or new dot. */

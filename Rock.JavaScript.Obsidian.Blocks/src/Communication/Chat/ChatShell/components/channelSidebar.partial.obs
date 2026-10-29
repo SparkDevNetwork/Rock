@@ -967,6 +967,8 @@
         const mentions = mentionsOf(row);
         const parts = [
             row.is_member ? "" : "not joined",
+            // The lock beside a channel's name is a hidden icon, so a private channel says so here; a direct message is private by nature.
+            lookOf(row) === "community" && !row.is_public ? "private" : "",
             mentions > 0 ? `${mentions} mention${mentions === 1 ? "" : "s"}` : "",
             isUnread(row) ? "unread" : "",
             isMuted(row) ? "muted" : ""

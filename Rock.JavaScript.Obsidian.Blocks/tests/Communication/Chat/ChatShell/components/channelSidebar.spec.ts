@@ -536,14 +536,14 @@ describe("a channel's @ badge with @all", () => {
         const w = mountSidebar({ rows: [{ ...youth, mention_count: 2, all_mention_count: 1 }] });
 
         expect(rowOf(w, youth.channel_id).get("[data-testid='row-mention-badge']").text()).toContain("3");
-        expect(rowOf(w, youth.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 3 mentions, unread");
+        expect(rowOf(w, youth.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", private, 3 mentions, unread");
     });
 
     test("shows for @all alone", () => {
         const w = mountSidebar({ rows: [{ ...team, is_unread: true, mention_count: 0, all_mention_count: 2 }] });
 
         expect(rowOf(w, team.channel_id).get("[data-testid='row-mention-badge']").text()).toContain("2");
-        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 2 mentions, unread");
+        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", private, 2 mentions, unread");
     });
 
     test("reads 99+ when the two together pass 99", () => {
@@ -557,21 +557,30 @@ describe("a row's accessible name", () => {
     test("ends with a hidden suffix of mentions, unread and muted", () => {
         const w = mountSidebar();
 
-        expect(rowOf(w, muted.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 2 mentions, unread, muted");
+        expect(rowOf(w, muted.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", private, 2 mentions, unread, muted");
         expect(rowOf(w, muted.channel_id).get("[data-testid='row-label-suffix']").classes()).toContain("chat-sr-only");
     });
 
     test("says one mention in the singular, and unread for a direct message", () => {
         const w = mountSidebar({ rows: [{ ...youth, mention_count: 1 }, dmAnna] });
 
-        expect(rowOf(w, youth.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", 1 mention, unread");
+        expect(rowOf(w, youth.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", private, 1 mention, unread");
         expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", unread");
+    });
+
+    test("says 'private' for a private channel, whose lock is hidden, and not for a public one or a direct message", () => {
+        const locked = row({ channel_id: "c0000008-0000-4000-8000-000000000000", name: "Leaders", is_public: false, is_member: true });
+        const w = mountSidebar({ rows: [locked, { ...team, is_public: true, is_unread: false, mention_count: 0, all_mention_count: 0 }, dmAnna] });
+
+        expect(rowOf(w, locked.channel_id).get("[data-testid='row-label-suffix']").text()).toContain("private");
+        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).not.toContain("private");
+        expect(rowOf(w, dmAnna.channel_id).get("[data-testid='row-label-suffix']").text()).not.toContain("private");
     });
 
     test("says 'not joined' for a room the person is not in", () => {
         const w = mountSidebar({ rows: [{ ...team, is_member: false, always_shown: true }] });
 
-        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", not joined");
+        expect(rowOf(w, team.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", not joined, private");
     });
 
     test("hides the dot from a screen reader, which hears the suffix instead", () => {

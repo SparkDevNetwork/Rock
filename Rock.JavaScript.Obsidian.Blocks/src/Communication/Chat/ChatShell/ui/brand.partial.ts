@@ -23,7 +23,7 @@
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "brand-line" | "reaction-mine-line" | "flash" | "own-hairline"
     | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
-    | "badge-quiet" | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
+    | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
 
 /** The variable only Rock's newer themes define; the older themes have no dark mode. */
 const rockThemeV2Probe = "--popup-box-shadow";
@@ -145,27 +145,55 @@ function withAlpha(rgb: Rgb, alpha: number): string {
  * so the fill is darkened in oklab lightness, 0.01 at a time, only until white reads on it at 4.5
  * to 1; a color that already reads is kept as it is. The hue and chroma stay the church's own.
  *
+ * On a dark surface the fill is also a shape (the unread dot, a switch track, a solid button), and a
+ * dark fill such as navy would vanish into it. With `against` given, a fill that reads under 3 to 1
+ * on that surface is lightened, again in oklab and only as far as needed, while white text keeps
+ * 4.5 to 1. Where both cannot hold for a color, white text wins and the shape stays as it is.
+ *
  * @param color The church color, as hex or rgb().
+ * @param against The surface the fill is drawn on, as hex, when the shape must stand out from it.
  *
  * @returns The fill and the text color, both as uppercase hex.
  */
-export function brandFill(color: string): { fill: string, onBrand: string } {
+export function brandFill(color: string, against?: string): { fill: string, onBrand: string } {
     const church = parseColor(color) ?? parseColor(rockOrange)!;
     const whiteRgb = parseColor(white)!;
     const [lightness, a, b] = toOklab(church);
 
     // Contrast is read on the rounded channels the sheet will draw, not on the exact oklab value.
     // The loop ends well before lightness 0, where the fill is black and white reads at 21 to 1.
+    let base: Rgb = [0, 0, 0];
+    let baseLightness = 0;
+
     for (let step = 0; step * 0.01 < lightness; step++) {
         const candidate = step === 0 ? church : fromOklab([lightness - step * 0.01, a, b]);
         const rounded = parseColor(toHex(candidate))!;
 
         if (contrast(rounded, whiteRgb) >= 4.5) {
-            return { fill: toHex(rounded), onBrand: white };
+            base = rounded;
+            baseLightness = lightness - step * 0.01;
+            break;
         }
     }
 
-    return { fill: toHex([0, 0, 0]), onBrand: white };
+    if (against !== undefined) {
+        const surface = parseColor(against)!;
+
+        // Black has no chroma to carry, so the lift is a gray; from the darkened base it keeps the hue.
+        const [, baseA, baseB] = toOklab(base);
+
+        for (let step = 0; contrast(base, surface) < 3 && step < 100; step++) {
+            const lifted = parseColor(toHex(fromOklab([baseLightness + (step + 1) * 0.01, baseA, baseB])))!;
+
+            if (contrast(lifted, whiteRgb) < 4.5) {
+                break;
+            }
+
+            base = lifted;
+        }
+    }
+
+    return { fill: toHex(base), onBrand: white };
 }
 
 /**
@@ -179,6 +207,7 @@ export function brandFill(color: string): { fill: string, onBrand: string } {
 export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandTokenSet } {
     const church = parseColor(color) ?? parseColor(rockOrange)!;
     const { fill, onBrand } = brandFill(color);
+    const darkFill = brandFill(color, darkSurface);
     const ring = withAlpha(church, 0.32);
 
     // A pressed pill's border, the church color at 45% over whatever is under it.
@@ -190,15 +219,14 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
     // The message row's tints. The chips and the pill are the church color over whatever lies
     // under them, a bubble or a tinted row, so they stay alpha; the rest sit on a known background.
     // An unread thread's border is drawn a little stronger than the announcement ring, 45% over the line.
-    const row = (surface: string, line: string, sidebar: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement" | "badge-quiet"> => ({
+    const row = (surface: string, line: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"> => ({
         "mn-bg": withAlpha(church, 0.11),
         "mn-bg-hover": withAlpha(church, 0.18),
         "mn-bg-own": withAlpha(church, 0.16),
         "announcement-pill": withAlpha(church, 0.13),
         "announcement-ring": toHex(mixSrgb(church, parseColor(line)!, 0.40)),
         "thread-unread-line": toHex(mixSrgb(church, parseColor(line)!, 0.45)),
-        "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06)),
-        "badge-quiet": toHex(mixSrgb(church, parseColor(sidebar)!, 0.14))
+        "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06))
     });
 
     // The lines in the church color: the open room's icon box at 30% over the line, the search
@@ -222,12 +250,12 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "reaction-mine-line": reactionLine,
             "flash": withAlpha(church, 0.20),
             "own-hairline": "transparent",
-            ...row(lightSurface, lightLine, lightSidebar),
+            ...row(lightSurface, lightLine),
             ...lines(lightLine)
         },
         dark: {
-            "brand-fill": fill,
-            "on-brand": onBrand,
+            "brand-fill": darkFill.fill,
+            "on-brand": darkFill.onBrand,
             "brand-ink": toHex(mixSrgb(church, [255, 255, 255], 0.62)),
             "brand-tint": toHex(mixOklab(church, parseColor(darkTintBase)!, 0.24)),
             "brand-wash": toHex(mixSrgb(church, parseColor(darkSidebar)!, 0.15)),
@@ -236,7 +264,7 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
             "reaction-mine-line": reactionLine,
             "flash": withAlpha(church, 0.26),
             "own-hairline": withAlpha(church, 0.24),
-            ...row(darkSurface, darkLine, darkSidebar),
+            ...row(darkSurface, darkLine),
             ...lines(darkLine)
         }
     };
