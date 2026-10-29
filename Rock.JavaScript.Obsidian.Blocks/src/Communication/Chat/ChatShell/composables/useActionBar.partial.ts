@@ -26,8 +26,9 @@
 // The conversation's feed and the thread drawer each keep one, binding the handlers below on
 // their scroller, whose rows each mark themselves with data-hot-id.
 
-import { computed, ComputedRef, inject, InjectionKey, provide, Ref, ref, shallowReactive } from "vue";
-import { tokenDuration } from "../ui/brand.partial";
+import { computed, ComputedRef, inject, InjectionKey, provide, Ref, shallowReactive } from "vue";
+import { isKeyboardFocus } from "../ui/tooltip.partial";
+import { useHoverIntent } from "./useHoverIntent.partial";
 
 /** What a row lends the column's bar: where it is drawn, what it shows and where its choices go. */
 export type ActionBarDock = {
@@ -72,10 +73,6 @@ export type ColumnActionBar = {
 
 const actionBarKey: InjectionKey<ColumnActionBar> = Symbol("chat-action-bar");
 
-/** The design's rest and grace, used when the sheet is not on the page. */
-const fallbackRestMs = 150;
-const fallbackGraceMs = 220;
-
 /**
  * The message a row of the column stands for, from the element an event reached.
  *
@@ -90,23 +87,6 @@ function hotIdAt(target: EventTarget | null): number | null {
 }
 
 /**
- * Whether a focus came from the keyboard, which shows a bar the way a resting pointer does. The
- * oldest Safari Rock supports cannot tell and throws, and is taken as the keyboard.
- *
- * @param target The focused element.
- *
- * @returns True for a keyboard's focus.
- */
-function isKeyboardFocus(target: EventTarget | null): boolean {
-    try {
-        return target instanceof Element && target.matches(":focus-visible");
-    }
-    catch {
-        return true;
-    }
-}
-
-/**
  * Creates one column's action bar and hands it to the column's rows.
  *
  * @param timingElement The element the rest and grace tokens are read on, once the column is drawn.
@@ -116,10 +96,9 @@ function isKeyboardFocus(target: EventTarget | null): boolean {
 export function useActionBar(timingElement: () => Element | null | undefined): ColumnActionBar {
     const docks = shallowReactive(new Map<number, ActionBarDock>());
 
-    /** The message the bar is on; kept after it hides, so it fades where it was. */
-    const barId = ref<number | null>(null);
-    const isShown = ref(false);
-    const isInstant = ref(false);
+    // The timing the bar shares with the members list's Message button; the message the bar is on
+    // is kept after it hides, so it fades where it was.
+    const { shownKey: barId, isShown, isInstant, follow, show, hide, stop } = useHoverIntent<number>(timingElement);
 
     const dock = computed((): ActionBarDock | null => barId.value === null ? null : docks.get(barId.value) ?? null);
 
@@ -138,9 +117,6 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
     /** Set by a scroll and cleared by the next move, so the rows passing under a still pointer stay cold. */
     let isScrollMuted = false;
 
-    let restTimer: ReturnType<typeof setTimeout> | null = null;
-    let graceTimer: ReturnType<typeof setTimeout> | null = null;
-
     function isHeld(): boolean {
         return isOpenHeld || isFocusHeld;
     }
@@ -149,68 +125,6 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
     function isInBar(node: EventTarget | null): boolean {
         const element = dock.value?.element;
         return !!element && node instanceof Node && element.contains(node);
-    }
-
-    function hoverMs(token: string, fallbackMs: number): number {
-        const element = timingElement();
-        return element ? tokenDuration(element, token, fallbackMs) : fallbackMs;
-    }
-
-    function stop(): void {
-        if (restTimer) {
-            clearTimeout(restTimer);
-            restTimer = null;
-        }
-
-        if (graceTimer) {
-            clearTimeout(graceTimer);
-            graceTimer = null;
-        }
-    }
-
-    function show(id: number): void {
-        stop();
-        barId.value = id;
-        isInstant.value = false;
-        isShown.value = true;
-    }
-
-    function hide(isWithoutFade: boolean): void {
-        stop();
-        isInstant.value = isWithoutFade;
-        isShown.value = false;
-    }
-
-    /**
-     * The pointer, or a held bar letting go, leaves the bar where the pointer now is. A shown bar
-     * moves there at once; a hidden one waits for the pointer to rest; away from every message, a
-     * shown bar stays for its grace, so slipping off a message for a moment does not lose it.
-     */
-    function follow(id: number | null): void {
-        if (restTimer) {
-            clearTimeout(restTimer);
-            restTimer = null;
-        }
-
-        if (id === null) {
-            if (isShown.value && !graceTimer) {
-                graceTimer = setTimeout(() => hide(false), hoverMs("--chat-d-hover-grace", fallbackGraceMs));
-            }
-
-            return;
-        }
-
-        if (graceTimer) {
-            clearTimeout(graceTimer);
-            graceTimer = null;
-        }
-
-        if (isShown.value) {
-            barId.value = id;
-            return;
-        }
-
-        restTimer = setTimeout(() => show(id), hoverMs("--chat-d-hover-rest", fallbackRestMs));
     }
 
     /** The pointer reached a row, or a gap between rows. */

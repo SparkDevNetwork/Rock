@@ -607,3 +607,84 @@ describe("the roster's entrance", () => {
         expect(entered(w).isEntering).toBe(true);
     });
 });
+
+describe("a row's actions follow the pointer as the message action bar does", () => {
+    // The Message button fades in once the pointer has rested on a row, passes at once from row to
+    // row as the pointer sweeps down the list, and fades out a moment after it leaves the rows.
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    const hotRows = (w: VueWrapper): number[] => w.findAll("[data-testid='member-row']").flatMap((r, i) => r.classes().includes("is-hot") ? [i] : []);
+    const isInstant = (w: VueWrapper): boolean => w.get("[data-testid='members-panel']").classes().includes("is-instant");
+
+    async function over(w: VueWrapper, index: number): Promise<void> {
+        await w.findAll("[data-testid='member-who']")[index].element.dispatchEvent(new Event("pointerover", { bubbles: true }));
+        jest.advanceTimersByTime(150);
+        await nextTick();
+    }
+
+    test("shows on the row the pointer rests on, with a fade", async () => {
+        const w = draw();
+
+        await over(w, 1);
+
+        expect(hotRows(w)).toEqual([1]);
+        expect(isInstant(w)).toBe(false);
+    });
+
+    test("shows nothing before the pointer has rested", async () => {
+        const w = draw();
+
+        w.findAll("[data-testid='member-who']")[1].element.dispatchEvent(new Event("pointerover", { bubbles: true }));
+        jest.advanceTimersByTime(149);
+        await nextTick();
+
+        expect(hotRows(w)).toEqual([]);
+    });
+
+    test("moves to the next row at once, with no fade", async () => {
+        const w = draw();
+        await over(w, 1);
+
+        w.findAll("[data-testid='member-who']")[2].element.dispatchEvent(new Event("pointerover", { bubbles: true }));
+        await nextTick();
+
+        expect(hotRows(w)).toEqual([2]);
+        expect(isInstant(w)).toBe(true);
+    });
+
+    test("fades out a moment after the pointer leaves the rows, and fades in again on the next rest", async () => {
+        const w = draw();
+        await over(w, 1);
+
+        w.get("[data-testid='members-panel']").element.dispatchEvent(new Event("pointerleave"));
+        jest.advanceTimersByTime(219);
+        await nextTick();
+        expect(hotRows(w)).toEqual([1]);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(hotRows(w)).toEqual([]);
+        expect(isInstant(w)).toBe(false);
+
+        await over(w, 3);
+        expect(hotRows(w)).toEqual([3]);
+        expect(isInstant(w)).toBe(false);
+    });
+
+    test("a touch shows nothing, since a phone's actions are always there", async () => {
+        const w = draw();
+        const touch = Object.assign(new Event("pointerover", { bubbles: true }), { pointerType: "touch" });
+
+        w.findAll("[data-testid='member-who']")[1].element.dispatchEvent(touch);
+        jest.advanceTimersByTime(150);
+        await nextTick();
+
+        expect(hotRows(w)).toEqual([]);
+    });
+});
