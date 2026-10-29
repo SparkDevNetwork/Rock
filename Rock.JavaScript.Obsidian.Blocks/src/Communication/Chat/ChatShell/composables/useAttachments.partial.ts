@@ -704,7 +704,10 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     // When a file whose signing failed as a whole may be asked again.
     const retryAt = new Map<string, number>();
     const asked = new Map<string, AttachmentItem>();
-    const inFlight = new Set<string>();
+
+    // The signing each file is in while it is out, which a click wanting a fresh link waits on
+    // rather than asking Storage again.
+    const inFlight = new Map<string, Promise<void>>();
     let isFlushQueued = false;
 
     // The one timer for the next moment a watched file needs anything.
@@ -747,8 +750,21 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         schedule();
     }
 
-    async function sign(items: AttachmentItem[]): Promise<void> {
-        items.forEach(item => inFlight.add(item.id));
+    /** Signs files together, each held as being signed until its link is written. */
+    function sign(items: AttachmentItem[]): Promise<void> {
+        const signing = requestLinks(items).finally(() => {
+            items.forEach(item => {
+                if (inFlight.get(item.id) === signing) {
+                    inFlight.delete(item.id);
+                }
+            });
+        });
+        items.forEach(item => inFlight.set(item.id, signing));
+        return signing;
+    }
+
+    /** Asks Storage for files' links and writes what it answers. */
+    async function requestLinks(items: AttachmentItem[]): Promise<void> {
         const startedAt = now();
         const token = dependencies.currentToken();
         let answer: Array<{ path?: string, signedURL?: string | null, error?: string | null }> | null = null;
@@ -765,9 +781,6 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         }
         catch {
             answer = null;
-        }
-        finally {
-            items.forEach(item => inFlight.delete(item.id));
         }
 
         if (isStopped) {
@@ -890,7 +903,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 return null;
             }
             if (!isFresh(item.id)) {
-                await sign([item]);
+                // a signing already out for the file, a row's or another click's, is shared
+                await (inFlight.get(item.id) ?? sign([item]));
                 schedule();
             }
 

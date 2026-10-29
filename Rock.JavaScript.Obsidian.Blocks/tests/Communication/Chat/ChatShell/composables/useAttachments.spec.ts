@@ -474,6 +474,23 @@ describe("download links", () => {
         expect(link?.downloadUrl).toContain("token=again");
     });
 
+    test("two clicks on a link near its end share one signing, and both get the fresh link", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const pdf = file("d0000000-0000-4000-8000-0000000000b4", "a.pdf");
+        attachments.links.subscribe([pdf])();
+        await settle();
+        expect(h.signs).toHaveLength(1);
+
+        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=again`, error: null }));
+        const [first, second] = await Promise.all([attachments.links.fresh(pdf), attachments.links.fresh(pdf)]);
+
+        expect(h.signs).toHaveLength(2);
+        expect(first?.downloadUrl).toContain("token=again");
+        expect(second?.downloadUrl).toContain("token=again");
+    });
+
     test("more than fifty at once go in calls of fifty", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);

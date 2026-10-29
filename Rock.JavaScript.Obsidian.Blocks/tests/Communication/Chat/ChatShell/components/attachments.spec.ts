@@ -242,6 +242,37 @@ describe("links over time", () => {
         }
     });
 
+    test("a card double clicked as its link nears its end signs once and downloads once", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            const working = h.signAnswer.value;
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+            const signed = h.signs.length;
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(h.signs).toHaveLength(signed + 1);
+            // both of the person's clicks held back, then the one follow from the fresh link
+            expect(clicks.map(c => c.isPrevented)).toEqual([true, true, false]);
+            expect(clicks[2].href).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
     test("a card clicked as its link nears its end, whose fresh signing fails, downloads once from the link it still has", async () => {
         const h = harness();
         const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
