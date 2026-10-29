@@ -393,6 +393,34 @@ describe("the page reveal", () => {
         expect(reveal.state.isMainRevealed).toBe(true);
     });
 
+    test("a room opening takes back the answers of the room before it, until the page is released", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.sidebarAnswered();
+        reveal.factsAnswered();
+
+        reveal.roomOpening();
+        reveal.historyAnswered();
+        await rendered();
+
+        expect(reveal.state.isMainRevealed).toBe(false);
+
+        reveal.factsAnswered();
+        await rendered();
+
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a room opening after the release leaves the answers alone, so a later room never veils the column", async () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        answerAll(reveal);
+        await rendered();
+
+        reveal.roomOpening();
+        reveal.historyAnswered();
+
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
     test("a failure reveals what has arrived at once, without the face grace, and a region still waiting reveals when it lands", () => {
         const reveal = createPageReveal({ kind: "channel" });
         reveal.holdFace(new Promise(() => undefined));

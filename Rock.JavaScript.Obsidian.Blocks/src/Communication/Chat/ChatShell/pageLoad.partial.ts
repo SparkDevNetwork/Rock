@@ -201,6 +201,13 @@ export type PageReveal = {
     /** The opening room's facts answered, or were refused. */
     factsAnswered: () => void;
 
+    /**
+     * A room is being opened, the page load's or one the person chose: the answers of the room
+     * before it no longer count, so the column waits for the room on screen. Ignored once the
+     * page is released, when the column no longer waits.
+     */
+    roomOpening: () => void;
+
     /** The page load found no room to open, so the column has nothing more to wait for. */
     nothingToOpen: () => void;
 
@@ -346,6 +353,11 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         sidebarAnswered: () => answer("sidebar"),
         historyAnswered: () => answer("history"),
         factsAnswered: () => answer("facts"),
+        roomOpening: (): void => {
+            if (!isStopped && !state.isReleased) {
+                answered.history = answered.facts = false;
+            }
+        },
         nothingToOpen: (): void => {
             answer("history");
             answer("facts");

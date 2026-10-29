@@ -128,6 +128,7 @@ function build(options: {
     reloads: { count: number },
     heldSends: { value: Deferred<void>[] | null },
     heldBootstraps: { value: Deferred<Response>[] | null },
+    heldFacts: Record<string, Deferred<Response>>,
     channelReads: string[],
     channelFacts: Record<string, unknown>,
     directoryCalls: Array<Record<string, unknown>>,
@@ -167,6 +168,8 @@ function build(options: {
     const heldSends: { value: Deferred<void>[] | null } = { value: null };
     // Set to a list, each sidebar read waits for the test to answer it, in the order they were asked.
     const heldBootstraps: { value: Deferred<Response>[] | null } = { value: null };
+    // A room listed here has its chat_get_channel answer wait for the test.
+    const heldFacts: Record<string, Deferred<Response>> = {};
     // Each room's chat_get_channel answer by id; a room not listed answers as one the reader is in.
     const channelReads: string[] = [];
     const channelFacts: Record<string, unknown> = {};
@@ -277,6 +280,9 @@ function build(options: {
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_channel")) {
                 channelReads.push(body.p_channel_id);
+                if (heldFacts[body.p_channel_id]) {
+                    return heldFacts[body.p_channel_id].promise;
+                }
                 return fakeResponse(200, channelFacts[body.p_channel_id] ?? memberFacts(body.p_channel_id));
             }
             if (url.endsWith("/rest/v1/rpc/chat_list_members")) {
@@ -365,7 +371,7 @@ function build(options: {
     });
 
     return {
-        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps,
+        shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
         channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
@@ -871,6 +877,51 @@ describe("the page load's reveal", () => {
         expect(h.shell.reveal.state.isMainRevealed).toBe(true);
     });
 
+    test("a room the person clicks mid-load after the load's room answered waits for its own facts", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+
+        // The load's room has answered its facts; the clicked room's are still out.
+        h.heldFacts[channelB] = deferred<Response>();
+        const toB = h.shell.selectChannel(channelB);
+        await settle();
+        answerHistory(h, channelB, 20);
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+
+        h.heldFacts[channelB].resolve(fakeResponse(200, memberFacts(channelB)));
+        answerHistory(h, channelA, 10);
+        await Promise.all([toB, starting]);
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a refused remembered room's facts do not stand for the fallback room's", async () => {
+        const key = rememberedChannelKey(tenant, person);
+        const h = build({ linkedChannelId: null, stored: { [key]: channelB } });
+        h.bootstrap.value = { channels: [{ channel_id: channelA } as SidebarRow] };
+        h.heldFacts[channelA] = deferred<Response>();
+        const starting = h.shell.start();
+        await settle();
+
+        h.history[channelB][0].resolve(fakeResponse(403, { code: "42501", message: "authz.not_readable" }));
+        await settle();
+        answerHistory(h, channelA, 10);
+        await settle();
+
+        // The fallback's first page is in, its facts are not: the header would pop in after the reveal.
+        expect(h.shell.reveal.state.isMainRevealed).toBe(false);
+
+        h.heldFacts[channelA].resolve(fakeResponse(200, memberFacts(channelA)));
+        await starting;
+        await settle();
+
+        expect(h.shell.reveal.state.isMainRevealed).toBe(true);
+    });
+
     test("a room the person clicks mid-load that is refused reveals the column at once", async () => {
         const h = build();
         const starting = h.shell.start();
@@ -894,6 +945,17 @@ describe("the page load's reveal", () => {
         await h.shell.start();
 
         expect(h.shell.channels.loadState).toBe("failed");
+        expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
+    });
+
+    test("a sidebar that fails releases the page at once, without waiting for a face still decoding", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+        h.shell.reveal.holdFace(new Promise(() => undefined));
+
+        await h.shell.start();
+
+        expect(h.shell.reveal.state.isReleased).toBe(true);
         expect(h.shell.reveal.state.isSidebarRevealed).toBe(true);
     });
 

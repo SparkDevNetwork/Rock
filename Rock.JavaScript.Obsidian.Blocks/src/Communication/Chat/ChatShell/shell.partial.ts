@@ -1208,6 +1208,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         const thisOpen = ++openCount;
         const isCurrent = (): boolean => thisOpen === openCount;
 
+        // The first screen's column waits for the room now on screen: an answer of the room this
+        // one replaces, or a refused room's, must not complete its gates.
+        reveal.roomOpening();
+
         if (state.activeChannelId && state.activeChannelId !== channelId) {
             void tracker.leave();
             // its catch-up stops and its answers still on the way are dropped
