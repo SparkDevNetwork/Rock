@@ -456,6 +456,10 @@ function fakeThreads(): Record<string, unknown> {
             const hasMore = (mockThreadPages?.older.length ?? 0) > 0;
             state.thread = { channelId, rootId, root, replies, following: false, readCursor: null, hasMore, isLoading: false, error: null, olderError: null };
         }),
+        isOpen: (channelId: string, rootId: number) => {
+            const thread = state.thread as { channelId: string, rootId: number, error: unknown } | null;
+            return thread?.channelId === channelId && thread.rootId === rootId && !thread.error;
+        },
         // Each older page waits for the test to answer it, then goes in above what is held, as
         // useThreads' loadOlderReplies does.
         loadOlderReplies: jest.fn(() => {

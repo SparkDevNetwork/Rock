@@ -45,8 +45,10 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             calls.push("threads.closeList");
         }),
         openThread: jest.fn(async (channelId: string, rootId: number) => {
+            calls.push(`threads.openThread:${rootId}`);
             threads.state.thread = { channelId, rootId };
         }),
+        isOpen: (channelId: string, rootId: number) => threads.state.thread?.channelId === channelId && threads.state.thread.rootId === rootId,
         closeThread: jest.fn(async () => {
             threads.state.thread = null;
         })
@@ -126,6 +128,7 @@ type Mounted = {
  */
 function mountFrame(): Mounted {
     const calls: Calls = [];
+    const forgetReplyLanding = (): void => void calls.push("forgetReplyLanding");
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
     const hasPanelField = ref(false);
@@ -140,7 +143,7 @@ function mountFrame(): Mounted {
                 rootElement,
                 linkedReply: null,
                 landOnReply: async () => undefined,
-                forgetReplyLanding: () => undefined
+                forgetReplyLanding
             });
 
             return () => h("div", { ref: rootElement }, [
@@ -215,6 +218,32 @@ describe("the panel column", () => {
         await settle();
         expect(frame.panelKind.value).toBe("thread");
         expect(frame.threadOrigin.value).toBe("threads");
+
+        await frame.onThreadBack();
+        expect(frame.panelKind.value).toBe("threads");
+    });
+
+    // A thread pill pressed again, or a push for a reply of the thread on screen, opens what is open.
+    test("opening the thread it draws changes nothing, keeping the list it was opened from", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("threads");
+        frame.openThreadFromList(7, team);
+        await settle();
+        const openCount = frame.threadOpenCount();
+        calls.splice(0);
+
+        frame.onOpenThread(7);
+        frame.onOpenThread(7);
+        await settle();
+
+        expect(frame.panelKind.value).toBe("thread");
+        expect(frame.threadOrigin.value).toBe("threads");
+        expect(frame.threadOpenCount()).toBe(openCount);
+        // A landing it carries lands again, as on a thread newly opened.
+        expect(calls).toEqual(["forgetReplyLanding", "threads.openThread:7", "forgetReplyLanding", "threads.openThread:7"]);
 
         await frame.onThreadBack();
         expect(frame.panelKind.value).toBe("threads");

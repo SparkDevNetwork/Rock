@@ -506,6 +506,43 @@ describe("once the threads are stopped", () => {
 });
 
 describe("the thread page", () => {
+    // A pill pressed again, or a push for a reply of the thread on screen, opens what is open.
+    test("opening the thread already open asks for nothing more and keeps what it holds, loading or loaded", async () => {
+        const { threads, callsTo, answers } = await setup();
+        const page = deferred<CallResult>();
+        answers.chat_get_thread_history = [page];
+
+        const opening = threads.openThread(channel, 40);
+        const openingAgain = threads.openThread(channel, 40);
+        expect(threads.state.thread?.isLoading).toBe(true);
+        page.resolve(threadAnswer(root(40), [reply(42, 40), reply(41, 40)], { following: true }));
+        await openingAgain;
+
+        // The second open waits on the first one's page rather than settling before it.
+        expect(threads.state.thread?.replies.map(r => r.id)).toEqual([41, 42]);
+        await opening;
+        const held = threads.state.thread;
+        await threads.openThread(channel, 40);
+
+        expect(callsTo("chat_get_thread_history")).toHaveLength(1);
+        expect(callsTo("chat_mark_thread_read")).toHaveLength(0);
+        expect(threads.state.thread).toBe(held);
+        expect(threads.state.thread).toEqual(expect.objectContaining({ isLoading: false, following: true }));
+    });
+
+    test("opening the thread already open asks for its first page again when that page failed", async () => {
+        const { threads, callsTo, answers } = await setup();
+        answers.chat_get_thread_history = [offline, threadAnswer(root(40), [reply(41, 40)])];
+        await threads.openThread(channel, 40);
+        expect(threads.state.thread?.error).not.toBeNull();
+
+        await threads.openThread(channel, 40);
+
+        expect(callsTo("chat_get_thread_history")).toHaveLength(2);
+        expect(threads.state.thread).toEqual(expect.objectContaining({ error: null }));
+        expect(threads.state.thread?.root?.id).toBe(40);
+    });
+
     test("reads the newest replies and holds them oldest first, with the reader's follow", async () => {
         const { threads, callsTo, answers } = await setup();
         answers.chat_get_thread_history = [threadAnswer(root(40), [reply(43, 40), reply(42, 40), reply(41, 40)], { following: false, read_cursor: 41, has_more: true })];
@@ -908,6 +945,43 @@ describe("following", () => {
         const otherRoot = timelines.state(otherChannel).messages.find(m => m.id === 40);
         expect(otherRoot?.thread_following).toBe(false);
         expect(otherRoot?.thread_unread).toBe(false);
+    });
+
+    // A row's bell can be pressed and the row opened before the answer, and the list refreshed
+    // under it, so a page that lands meanwhile was read before the change and is out of date.
+    test("a thread page that lands while a change is out keeps the person's choice until the change's own answer", async () => {
+        const { threads, answers } = await setup({ messages: [root(40)], read_cursor: null, unread_count: 0, has_more: false });
+        answers.chat_list_threads = [listAnswer([listRow(40, { following: false })])];
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)], { following: false })];
+        await threads.openList(channel);
+        const answer = deferred<CallResult>();
+        answers.chat_follow_thread = [answer];
+
+        const following = threads.follow(40, true);
+        await threads.openThread(channel, 40);
+
+        expect(threads.state.thread?.following).toBe(true);
+
+        answer.resolve({ ok: true, data: { following: true, read_cursor: 41 } });
+        expect(await following).toBe(true);
+        expect(threads.state.thread?.following).toBe(true);
+    });
+
+    test("a list page that lands while a change is out keeps the person's choice on its row", async () => {
+        const { threads, answers } = await setup();
+        answers.chat_list_threads = [listAnswer([listRow(40), listRow(30)]), listAnswer([listRow(40), listRow(30)])];
+        await threads.openList(channel);
+        const answer = deferred<CallResult>();
+        answers.chat_follow_thread = [answer];
+
+        const unfollowing = threads.follow(40, false);
+        await threads.refresh();
+
+        expect(threads.state.list.rows.map(r => [r.root.id, r.following, r.root.thread_following])).toEqual([[40, false, false], [30, true, true]]);
+
+        answer.resolve({ ok: true, data: { following: false, read_cursor: null } });
+        expect(await unfollowing).toBe(true);
+        expect(threads.state.list.rows[0].following).toBe(false);
     });
 
     // The drawer's toggle does not wait for the answer, so it can be pressed twice in quick succession.

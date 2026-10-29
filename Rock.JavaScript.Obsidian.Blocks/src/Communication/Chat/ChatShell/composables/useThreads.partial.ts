@@ -158,8 +158,14 @@ export type Threads = {
     /** Follows or unfollows a thread. Resolves true when the platform took the change. */
     follow: (rootId: number, isFollowing: boolean) => Promise<boolean>;
 
-    /** Opens a thread at its newest replies, saving the position of any thread it replaces. */
+    /**
+     * Opens a thread at its newest replies, saving the position of any thread it replaces. The
+     * thread open already is only waited on, unless its first page failed.
+     */
     openThread: (channelId: string, rootId: number) => Promise<void>;
+
+    /** Whether the thread is the one open, loading or loaded, which opening it again leaves as it is. */
+    isOpen: (channelId: string, rootId: number) => boolean;
 
     /** Fetches the replies before the oldest held. */
     loadOlderReplies: () => Promise<void>;
@@ -238,6 +244,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // Bumped by every thread opened or closed, so a page of a thread left is dropped.
     let threadOpen = 0;
 
+    // The open thread's first page on its way, or landed, which opening the same thread again
+    // waits on rather than asking for it twice.
+    let threadLoad: Promise<void> = Promise.resolve();
+
     // Each root's follow saves. The bell can be pressed again before the first answer, and the
     // answers can arrive in either order, so only the newest says how it went.
     const followRule = createSaveRule(() => isStopped);
@@ -290,6 +300,19 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
     }
 
+    /**
+     * Whether a page that just landed should draw a root followed. A page read while a change of
+     * it is out is older than what the person chose, so the choice drawn stays until the change's
+     * own answer settles it.
+     */
+    function landedFollowing(rootId: number, read: boolean): boolean {
+        if (!followRule.isOut(`${rootId}`)) {
+            return read;
+        }
+
+        return state.list.rows.find(r => r.root.id === rootId)?.following ?? followedRoot(rootId)?.thread_following ?? read;
+    }
+
     /** Drops a thread's unread marks, which no longer apply once it is unfollowed. */
     function clearUnread(rootId: number): void {
         for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
@@ -300,6 +323,79 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         if (root) {
             root.thread_unread = false;
         }
+    }
+
+    /**
+     * Whether the thread is the one open. It is where the reader already is, loading or loaded, so
+     * opening it again changes nothing; only a first page that failed is asked for again.
+     */
+    function isOpen(channelId: string, rootId: number): boolean {
+        const open = state.thread;
+        return open?.channelId === channelId && open.rootId === rootId && !open.error;
+    }
+
+    /** Opens a thread at its newest replies, saving the position of any thread it replaces. */
+    async function loadThread(channelId: string, rootId: number): Promise<void> {
+        if (state.thread) {
+            void leaveThread();
+        }
+
+        const thisOpen = ++threadOpen;
+        state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null, olderError: null };
+        newestSeen = null;
+        lastSaved = null;
+        pendingRootUpdate = null;
+        whileLoading = [];
+
+        // Opening the thread is reading it, so its mark goes from the conversation and the list
+        // at once rather than at the next save, and stays gone from a conversation whose
+        // history arrives after it, as one opened from the All tab does.
+        dependencies.timelines.keepThreadRead(rootId);
+        const held = timelineRoot(channelId, rootId);
+        if (held?.thread_unread) {
+            held.thread_unread = false;
+        }
+        for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
+            row.has_unread = false;
+        }
+
+        const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
+        if (isStopped || thisOpen !== threadOpen || !state.thread) {
+            return;
+        }
+
+        const thread = state.thread;
+        thread.isLoading = false;
+        const changes = whileLoading;
+        whileLoading = [];
+        if (!result.ok) {
+            thread.error = result.error;
+            return;
+        }
+
+        const page = body<ThreadPage>(result);
+        const pageRoot = page.root ?? null;
+        if (pageRoot && pendingRootUpdate) {
+            moveRoot(pageRoot, pendingRootUpdate, true);
+        }
+        pendingRootUpdate = null;
+        thread.root = pageRoot;
+
+        // A reply that arrived live while the page was on its way may be newer than the page,
+        // so what is held joins the page by id rather than being replaced by it.
+        const live = thread.replies;
+        thread.replies = (page.messages ?? []).map(withSendKey).sort((a, b) => a.id - b.id);
+        reportLanded(thread.replies);
+        for (const reply of live) {
+            insertReply(reply);
+        }
+        thread.following = landedFollowing(rootId, page.following === true);
+        thread.readCursor = page.read_cursor ?? null;
+        thread.hasMore = page.has_more === true;
+        thread.error = null;
+        newestSeen = thread.readCursor;
+        lastSaved = thread.readCursor;
+        changes.forEach(change => change());
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -353,6 +449,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
         const page = body<ThreadListPage>(result);
         const rows = page.threads ?? [];
+        for (const row of rows) {
+            row.following = landedFollowing(row.root.id, row.following);
+            row.root.thread_following = row.following;
+        }
         list.error = null;
         list.rows = mode === "more" ? [...list.rows, ...rows] : rows;
         list.hasMore = page.has_more === true;
@@ -635,71 +735,16 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             });
         },
 
-        openThread: async (channelId: string, rootId: number): Promise<void> => {
-            if (isStopped) {
-                return;
-            }
-            if (state.thread) {
-                void leaveThread();
+        openThread: (channelId: string, rootId: number): Promise<void> => {
+            if (isStopped || isOpen(channelId, rootId)) {
+                return threadLoad;
             }
 
-            const thisOpen = ++threadOpen;
-            state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null, olderError: null };
-            newestSeen = null;
-            lastSaved = null;
-            pendingRootUpdate = null;
-            whileLoading = [];
-
-            // Opening the thread is reading it, so its mark goes from the conversation and the list
-            // at once rather than at the next save, and stays gone from a conversation whose
-            // history arrives after it, as one opened from the All tab does.
-            dependencies.timelines.keepThreadRead(rootId);
-            const held = timelineRoot(channelId, rootId);
-            if (held?.thread_unread) {
-                held.thread_unread = false;
-            }
-            for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
-                row.has_unread = false;
-            }
-
-            const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
-            if (isStopped || thisOpen !== threadOpen || !state.thread) {
-                return;
-            }
-
-            const thread = state.thread;
-            thread.isLoading = false;
-            const changes = whileLoading;
-            whileLoading = [];
-            if (!result.ok) {
-                thread.error = result.error;
-                return;
-            }
-
-            const page = body<ThreadPage>(result);
-            const pageRoot = page.root ?? null;
-            if (pageRoot && pendingRootUpdate) {
-                moveRoot(pageRoot, pendingRootUpdate, true);
-            }
-            pendingRootUpdate = null;
-            thread.root = pageRoot;
-
-            // A reply that arrived live while the page was on its way may be newer than the page,
-            // so what is held joins the page by id rather than being replaced by it.
-            const live = thread.replies;
-            thread.replies = (page.messages ?? []).map(withSendKey).sort((a, b) => a.id - b.id);
-            reportLanded(thread.replies);
-            for (const reply of live) {
-                insertReply(reply);
-            }
-            thread.following = page.following === true;
-            thread.readCursor = page.read_cursor ?? null;
-            thread.hasMore = page.has_more === true;
-            thread.error = null;
-            newestSeen = thread.readCursor;
-            lastSaved = thread.readCursor;
-            changes.forEach(change => change());
+            threadLoad = loadThread(channelId, rootId);
+            return threadLoad;
         },
+
+        isOpen,
 
         loadOlderReplies: async (): Promise<void> => {
             const thread = state.thread;
