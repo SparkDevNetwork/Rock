@@ -494,7 +494,7 @@ namespace Rock.Blocks.CheckIn
             {{ Person.Age }} yrs old ({{ Person.BirthDate | Date:'sd' }})<br>
         {%- endif -%}
         {% if Person.Email != '' -%}
-            <a href='mailto:{{ Person.Email }}'>{{ Person.Email }}</a>
+            <a href='mailto:{{ Person.Email | Escape }}'>{{ Person.Email | Escape }}</a>
         {%- endif -%}
     </div>
     <div class='col-md-6 rapid-attendance-entry-phone-numbers'>
