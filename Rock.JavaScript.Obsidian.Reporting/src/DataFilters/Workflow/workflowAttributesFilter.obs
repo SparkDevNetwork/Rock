@@ -4,7 +4,13 @@
                         label="Workflow Type"
                         showBlankItem />
 
-    <div style="margin-right:-10px">
+    <NotificationBox v-if="isLoadFailed" alertType="warning">
+        Unable to load the attributes for the selected workflow type.
+    </NotificationBox>
+
+    <LoadingIndicator v-else-if="!sourcesForWorkflowType" />
+
+    <div v-else style="margin-right:-10px">
         <FieldFilterRuleRow v-model="filterRule"
                             :sources="sourcesForWorkflowType"
                             :filterMode="filterMode"
@@ -16,8 +22,10 @@
 <script setup lang="ts">
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import FieldFilterRuleRow from "@Obsidian/Controls/fieldFilterRuleRow.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
-    import { computed, ref, watch } from "vue";
+    import { computed, ref, shallowRef, watch } from "vue";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { Guid } from "@Obsidian/Types";
@@ -33,21 +41,55 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
+    // #region Values
+
     const workflowType = ref<ListItemBag | null | undefined>(safeParseJson(props.modelValue.workflowType));
-    const fieldFilterSources = safeParseJson<Record<Guid, FieldFilterSourceBag[]>>(props.modelValue.fieldFilterSources) ?? {};
+
+    /*
+        10/29/2026 - MSE
+
+        The server only sends the attributes for the selected workflow type
+        and the attributes that apply to every workflow type. The attributes
+        for any other workflow type are loaded from the server the first time
+        that type is picked and kept here. They are not added to the emitted
+        model value, so the data posted back stays small.
+
+        Reason: Workflow Attributes filter loaded every workflow attribute (GitHub #7115).
+    */
+    const fieldFilterSources = shallowRef<Record<Guid, FieldFilterSourceBag[]>>(safeParseJson<Record<Guid, FieldFilterSourceBag[]>>(props.modelValue.fieldFilterSources) ?? {});
     const filterRule = ref<FieldFilterRuleBag>(safeParseJson(props.modelValue.filterRule) ?? createNewFieldRule());
 
-    const sourcesForWorkflowType = computed(() => {
-        return fieldFilterSources[workflowType.value?.value ?? emptyGuid] ?? [];
+    /** The workflow type keys whose sources are being loaded from the server. */
+    const loadingWorkflowTypeKeys = new Set<Guid>();
+
+    /** The workflow type keys whose sources could not be loaded from the server. */
+    const failedWorkflowTypeKeys = ref<Guid[]>([]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** The key in fieldFilterSources for the selected workflow type. */
+    const workflowTypeKey = computed((): Guid => {
+        return workflowType.value?.value ?? emptyGuid;
     });
 
-    watch(sourcesForWorkflowType, () => {
-        // Workflows types may share attributes between them if they're not specific to that type, so if they have an attribute
-        // identical to the one in the filter rule, we should keep it. Otherwise, we need to reset the rule.
-        if (!sourcesForWorkflowType.value.some(source => source.attribute?.attributeGuid === filterRule.value.attributeGuid)) {
-            filterRule.value = createNewFieldRule();
-        }
+    /**
+     * The sources for the selected workflow type, or undefined while they
+     * have not been loaded from the server yet.
+     */
+    const sourcesForWorkflowType = computed((): FieldFilterSourceBag[] | undefined => {
+        return fieldFilterSources.value[workflowTypeKey.value];
     });
+
+    /** Whether the sources for the selected workflow type could not be loaded. */
+    const isLoadFailed = computed((): boolean => {
+        return failedWorkflowTypeKeys.value.includes(workflowTypeKey.value);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
 
     function createNewFieldRule(): FieldFilterRuleBag {
         return {
@@ -57,6 +99,73 @@
         };
     }
 
+    /**
+     * Loads the sources for the workflow type from the server if we do not
+     * have them yet. Each response is stored under the key it was requested
+     * for, so switching types quickly does not mix up the lists.
+     *
+     * @param key The key of the workflow type to load the sources for.
+     */
+    async function loadSourcesForWorkflowType(key: Guid): Promise<void> {
+        if (fieldFilterSources.value[key] || loadingWorkflowTypeKeys.has(key)) {
+            return;
+        }
+
+        loadingWorkflowTypeKeys.add(key);
+        failedWorkflowTypeKeys.value = failedWorkflowTypeKeys.value.filter(k => k !== key);
+
+        try {
+            const response = await props.executeRequest({
+                action: "GetFieldFilterSources",
+                workflowTypeGuid: key
+            });
+
+            const sources = safeParseJson<FieldFilterSourceBag[]>(response?.fieldFilterSources);
+
+            if (Array.isArray(sources)) {
+                fieldFilterSources.value = {
+                    ...fieldFilterSources.value,
+                    [key]: sources
+                };
+            }
+            else {
+                failedWorkflowTypeKeys.value = [...failedWorkflowTypeKeys.value, key];
+            }
+        }
+        catch {
+            failedWorkflowTypeKeys.value = [...failedWorkflowTypeKeys.value, key];
+        }
+        finally {
+            loadingWorkflowTypeKeys.delete(key);
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(workflowTypeKey, () => {
+        loadSourcesForWorkflowType(workflowTypeKey.value);
+    });
+
+    watch(sourcesForWorkflowType, () => {
+        // While the sources for the workflow type are loading, check against
+        // the attributes that apply to every workflow type. Those are the only
+        // attributes of the previous type that will also be in the new list,
+        // so the rule is reset right away along with the type change.
+        const sources = sourcesForWorkflowType.value ?? fieldFilterSources.value[emptyGuid];
+
+        if (!sources) {
+            return;
+        }
+
+        // Workflows types may share attributes between them if they're not specific to that type, so if they have an attribute
+        // identical to the one in the filter rule, we should keep it. Otherwise, we need to reset the rule.
+        if (!sources.some(source => source.attribute?.attributeGuid === filterRule.value.attributeGuid)) {
+            filterRule.value = createNewFieldRule();
+        }
+    });
+
     watch([workflowType, filterRule], () => {
         emit("update:modelValue", {
             ...props.modelValue,
@@ -64,4 +173,14 @@
             filterRule: JSON.stringify(filterRule.value),
         });
     });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    // The selected workflow type may not be in the data from the server, such
+    // as after a WebForms postback when the type was changed before posting.
+    loadSourcesForWorkflowType(workflowTypeKey.value);
+
+    // #endregion Lifecycle Hooks
 </script>
