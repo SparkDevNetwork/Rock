@@ -1312,7 +1312,12 @@ Most styles are redundent from groupedPanel.obs */
             type: "application/octet-stream"
         });
 
-        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
+        // Titles that contain only non-ASCII characters (such as Korean or
+        // Chinese report names) are stripped down to nothing, so fall back to
+        // the same default filename that the WebForms grid uses.
+        const baseFilename = title.replace(/[^a-zA-Z0-9\-_]/g, "") || "RockExport";
+
+        await downloadFile(data, `${baseFilename}.${format}`);
     }
 
     /**

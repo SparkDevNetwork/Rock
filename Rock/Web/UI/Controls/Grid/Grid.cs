@@ -283,7 +283,8 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Gets or sets the filename to use when exporting the grid contents.
         /// The .xlsx extension will be appended if not given. Special characters are removed
-        /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx.
+        /// automatically to prevent problems saving the file. Default filename is RockExport.xlsx, which
+        /// is also used when no characters remain after the special characters are removed.
         /// </summary>
         /// <value>
         /// The value of a the export's filename.
@@ -292,21 +293,34 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                string exportFilename = ViewState["ExportFilename"] as string;
+                /*
+                    10/29/2026 - MSE
+
+                    The special characters must be removed before checking whether a name is left. A name
+                    made up only of non-ASCII characters (for example a Korean or Chinese report name) is
+                    stripped down to nothing, which used to produce a file named ".xlsx". The page title
+                    fallback also always produced at least ".xlsx", so the default was never reached.
+
+                    Reason: Use the default filename when no usable characters remain after stripping.
+                */
+                var exportFilename = ViewState["ExportFilename"] as string;
                 if ( string.IsNullOrWhiteSpace( exportFilename ) )
                 {
-                    exportFilename = $"{( Page as RockPage )?.PageTitle}.xlsx";
-                }
-                if ( string.IsNullOrWhiteSpace( exportFilename ) )
-                {
-                    exportFilename = "RockExport.xlsx";
-                }
-                else if ( !exportFilename.EndsWith( ".xlsx" ) )
-                {
-                    exportFilename += ".xlsx";
+                    exportFilename = ( Page as RockPage )?.PageTitle;
                 }
 
-                return exportFilename.RemoveSpecialCharacters();
+                var baseFilename = ( exportFilename ?? string.Empty ).RemoveSpecialCharacters();
+                if ( baseFilename.EndsWith( ".xlsx" ) )
+                {
+                    baseFilename = baseFilename.Substring( 0, baseFilename.Length - ".xlsx".Length );
+                }
+
+                if ( baseFilename.Trim( '.' ).Length == 0 )
+                {
+                    return "RockExport.xlsx";
+                }
+
+                return baseFilename + ".xlsx";
             }
 
             set
