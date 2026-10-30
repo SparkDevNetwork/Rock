@@ -272,16 +272,28 @@ namespace RockWeb.Blocks.CheckIn
                 if ( groupId.HasValue )
                 {
                     _specificGroup = new GroupService( rockContextAnalytics ).Get( groupId.Value );
-                    if ( _specificGroup != null )
-                    {
-                        lSpecificGroupName.Text = string.Format( ": {0}", _specificGroup.Name );
-                    }
                 }
 
-                if ( _specificGroup == null || ( !IsUserAuthorized( Rock.Security.Authorization.VIEW ) && !_specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ) )
+                /*
+                    10/16/2026 - MSE
+
+                    The person must have VIEW on the group itself. The old check only denied access when
+                    the person lacked VIEW on both the block and the group, and anyone who can see the block
+                    already has block VIEW, so the group was never checked. When access is denied we clear
+                    _specificGroup so no later load, rebind or export can use it, and the group name is only
+                    written to the heading after the check passes.
+
+                    Reason: Prevent reading attendance and attendee details for groups the person cannot view.
+                */
+                if ( _specificGroup == null || !_specificGroup.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 {
+                    _specificGroup = null;
                     nbInvalidGroup.Visible = true;
                     pnlContent.Visible = false;
+                }
+                else
+                {
+                    lSpecificGroupName.Text = string.Format( ": {0}", _specificGroup.Name.EncodeHtml() );
                 }
 
                 btnCopyToClipboard.Visible = false;
@@ -1238,6 +1250,20 @@ var headerText = dp.label;
             }
 
             string groupIds = GetSelectedGroupIds().AsDelimited( "," );
+
+            /*
+                10/16/2026 - MSE
+
+                An empty group filter makes GetChartData return attendance for every group, so return
+                no data instead. This happens when no group is selected or the specific group was denied.
+
+                Reason: Prevent the chart data from falling back to all groups.
+            */
+            if ( groupIds.IsNullOrWhiteSpace() )
+            {
+                return new List<Rock.Chart.IChartData>();
+            }
+
             string campusIds = GetAttributeValue( AttributeKeys.ShowCampusFilter ).AsBoolean() ? clbCampuses.SelectedValues.AsDelimited( "," ) : string.Empty;
             var dataView = dvpDataView.SelectedValueAsInt();
             var scheduleIds = GetAttributeValue( AttributeKeys.ShowScheduleFilter ).AsBoolean() ? spSchedules.SelectedValues.ToList().AsDelimited( "," ) : string.Empty;
@@ -1297,6 +1323,22 @@ var headerText = dp.label;
             if ( !string.IsNullOrWhiteSpace( groupIds ) )
             {
                 groupIdList = groupIds.Split( ',' ).AsIntegerList();
+            }
+
+            /*
+                10/16/2026 - MSE
+
+                Without a group filter the attendee query is not limited to any group. Return early when
+                no group is selected or the specific group was denied. An empty list is bound so an export
+                produces an empty file instead of failing on a missing data source.
+
+                Reason: Prevent the attendee grid and export from returning people outside the allowed groups.
+            */
+            if ( !groupIdList.Any() )
+            {
+                gAttendeesAttendance.DataSource = new List<AttendeeResult>();
+                gAttendeesAttendance.DataBind();
+                return;
             }
 
             // If campuses were included, filter attendances by those that have selected campuses

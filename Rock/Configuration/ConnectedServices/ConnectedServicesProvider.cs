@@ -193,7 +193,7 @@ namespace Rock.Configuration.ConnectedServices
                 RequestId = authResponse.RequestId
             };
 
-            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_AUTH, Serialize( authContext ) );
+            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_AUTH, Rock.Security.Encryption.EncryptString( Serialize( authContext ) ) );
 
             return authResponse.AuthUrl;
         }
@@ -213,7 +213,11 @@ namespace Rock.Configuration.ConnectedServices
         /// <returns>The context associated with the linked organization.</returns>
         public async Task<LinkOrganizationResult> CompleteLinkOrganizationAsync( string requestId, CancellationToken cancellationToken )
         {
-            var authContextJson = SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_AUTH );
+            // Falls back to plain text for a link started on a server that has not been upgraded yet.
+            var storedAuth = SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_AUTH );
+            var authContextJson = storedAuth.IsNullOrWhiteSpace()
+                ? storedAuth
+                : ( Rock.Security.Encryption.DecryptString( storedAuth ) ?? storedAuth );
             var authContext = DeserializeOrDefault<SparkAuthContext>( authContextJson );
 
             SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_AUTH, string.Empty );
@@ -319,14 +323,39 @@ namespace Rock.Configuration.ConnectedServices
             }
 
             var cache = RockCache.Get( ConfigurationCacheKey ) as ConnectedServicesConfiguration;
-            var cacheFlushCount = SystemSettings.CacheFlushCount;
 
-            if ( _lastCacheFlushCount != cacheFlushCount || cache == null )
+            if ( _lastCacheFlushCount != SystemSettings.CacheFlushCount || cache == null )
             {
-                cache = DeserializeOrDefault<ConnectedServicesConfiguration>( SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION ) );
+                // Shares the write lock so a reload can't cache a value that UpdateConfiguration is replacing.
+                lock ( _configLock )
+                {
+                    // Another thread may have reloaded while this one waited.
+                    cache = RockCache.Get( ConfigurationCacheKey ) as ConnectedServicesConfiguration;
+                    var cacheFlushCount = SystemSettings.CacheFlushCount;
 
-                _lastCacheFlushCount = cacheFlushCount;
-                RockCache.Remove( ConfigurationCacheKey );
+                    if ( _lastCacheFlushCount != cacheFlushCount || cache == null )
+                    {
+                        var json = ReadEncryptedSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_CONFIGURATION, out var isFromLegacySetting );
+                        cache = DeserializeOrDefault<ConnectedServicesConfiguration>( json );
+
+                        // Move a plain text configuration to the encrypted setting on first use.
+                        if ( isFromLegacySetting && cache != null )
+                        {
+                            UpdateConfiguration( configuration => true );
+                        }
+
+                        _lastCacheFlushCount = cacheFlushCount;
+
+                        if ( cache != null )
+                        {
+                            RockCache.AddOrUpdate( ConfigurationCacheKey, cache );
+                        }
+                        else
+                        {
+                            RockCache.Remove( ConfigurationCacheKey );
+                        }
+                    }
+                }
             }
 
             return cache;
@@ -370,7 +399,7 @@ namespace Rock.Configuration.ConnectedServices
 
             lock ( _configLock )
             {
-                var json = SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION );
+                var json = ReadEncryptedSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_CONFIGURATION, out _ );
                 var configuration = DeserializeOrDefault<ConnectedServicesConfiguration>( json )
                     ?? new ConnectedServicesConfiguration();
 
@@ -379,7 +408,7 @@ namespace Rock.Configuration.ConnectedServices
                     return;
                 }
 
-                SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_CONFIGURATION, Serialize( configuration ) );
+                WriteEncryptedSetting( SystemSetting.CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_CONFIGURATION, Serialize( configuration ) );
                 RockCache.Remove( ConfigurationCacheKey );
             }
         }
@@ -470,7 +499,7 @@ namespace Rock.Configuration.ConnectedServices
             // Parse now to verify the manifest is valid JSON before we store it.
             var manifest = Deserialize<ConnectedServicesManifest>( manifestJson );
 
-            SystemSettings.SetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST, manifestJson );
+            WriteEncryptedSetting( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_MANIFEST, manifestJson );
 
             UpdateConfiguration( configuration =>
             {
@@ -488,9 +517,16 @@ namespace Rock.Configuration.ConnectedServices
         /// <returns>The connected services manifest.</returns>
         internal ConnectedServicesManifest GetManifest()
         {
-            var manifestJson = SystemSettings.GetValue( SystemSetting.CONNECTED_SERVICES_MANIFEST );
+            var manifestJson = ReadEncryptedSetting( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_MANIFEST, out var isFromLegacySetting );
+            var manifest = DeserializeOrDefault<ConnectedServicesManifest>( manifestJson );
 
-            return DeserializeOrDefault<ConnectedServicesManifest>( manifestJson );
+            // Move a plain text manifest to the encrypted setting on first use.
+            if ( isFromLegacySetting && manifest != null )
+            {
+                WriteEncryptedSetting( SystemSetting.CONNECTED_SERVICES_MANIFEST_ENCRYPTED, SystemSetting.CONNECTED_SERVICES_MANIFEST, manifestJson );
+            }
+
+            return manifest;
         }
 
         #endregion
@@ -1068,6 +1104,54 @@ namespace Rock.Configuration.ConnectedServices
 #endif
             {
                 return crypt.ComputeHash( source );
+            }
+        }
+
+        /// <summary>
+        /// Reads and decrypts a setting, falling back to its legacy plain text
+        /// setting when nothing has been encrypted yet.
+        /// </summary>
+        /// <param name="encryptedKey">The key of the encrypted setting.</param>
+        /// <param name="legacyKey">The key of the legacy plain text setting.</param>
+        /// <param name="isFromLegacySetting"><c>true</c> if the value came from the legacy setting.</param>
+        /// <returns>The plain text value, or <c>null</c> if the encrypted value could not be decrypted.</returns>
+        private static string ReadEncryptedSetting( string encryptedKey, string legacyKey, out bool isFromLegacySetting )
+        {
+            isFromLegacySetting = false;
+
+            var storedValue = SystemSettings.GetValue( encryptedKey );
+
+            if ( storedValue.IsNotNullOrWhiteSpace() )
+            {
+                // A server that has not been upgraded yet may have written a plain text copy.
+                if ( SystemSettings.GetValue( legacyKey ).IsNotNullOrWhiteSpace() )
+                {
+                    SystemSettings.SetValue( legacyKey, string.Empty );
+                }
+
+                return Rock.Security.Encryption.DecryptString( storedValue );
+            }
+
+            var legacyValue = SystemSettings.GetValue( legacyKey );
+            isFromLegacySetting = legacyValue.IsNotNullOrWhiteSpace();
+
+            return legacyValue;
+        }
+
+        /// <summary>
+        /// Encrypts and saves a setting, then clears its legacy plain text
+        /// setting.
+        /// </summary>
+        /// <param name="encryptedKey">The key of the encrypted setting.</param>
+        /// <param name="legacyKey">The key of the legacy plain text setting.</param>
+        /// <param name="value">The plain text value to save.</param>
+        private static void WriteEncryptedSetting( string encryptedKey, string legacyKey, string value )
+        {
+            SystemSettings.SetValue( encryptedKey, value.IsNullOrWhiteSpace() ? string.Empty : Rock.Security.Encryption.EncryptString( value ) );
+
+            if ( SystemSettings.GetValue( legacyKey ).IsNotNullOrWhiteSpace() )
+            {
+                SystemSettings.SetValue( legacyKey, string.Empty );
             }
         }
 

@@ -138,8 +138,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 pnlContent.Attributes.Add("class","card card-profile card-profile-bio card-profile-bio-condensed");
             }
 
+            /*
+                10/14/2026 - MSE
+
+                The browser title is written into the page's <title> element without
+                encoding, and a person can choose their own name (for example when
+                signing up), so the name must be HTML encoded here.
+
+                Reason: Prevent script injection through the person's name.
+            */
             // Set the browser page title to include person's name
-            RockPage.BrowserTitle = Person.FullName;
+            RockPage.BrowserTitle = Person.FullName.EncodeHtml();
 
             ShowProtectionLevel();
             ShowBadgeList();
@@ -214,9 +223,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 isBusiness = ( Person.RecordTypeValueId.Value == recordTypeValueIdBusiness );
             }
 
+            /*
+                10/14/2026 - MSE
+
+                Person names are plain text that anyone can set (for example through a public
+                signup form), so they are HTML encoded before being placed in the header markup.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( isBusiness )
             {
-                return $@"<h1 class=""person-name is-business"">{Person.LastName}</h1>";
+                return $@"<h1 class=""person-name is-business"">{Person.LastName.EncodeHtml()}</h1>";
             }
 
             // Prefix with Title if they have a Title with IsFormal=True
@@ -230,7 +247,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
-            string nameText =  $"{titleText}{Person.NickName} {Person.LastName}";
+            string nameText =  $"{titleText.EncodeHtml()}{Person.NickName.EncodeHtml()} {Person.LastName.EncodeHtml()}";
 
             return $@"<h1 class=""person-name"">{nameText}</h1>";
         }
@@ -297,7 +314,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     <a href=""{personLink}"">
                         <img src=""{Person.GetPersonPhotoUrl( groupMember.Person.Initials, groupMember.Person.PhotoId, groupMember.Person.Age, groupMember.Person.Gender, groupMember.Person.RecordTypeValueId, groupMember.Person.AgeClassification, 400 )}&Style=icon&BackgroundColor=E4E4E7&ForegroundColor=A1A1AA"" alt="""" class=""avatar"">
                         <span class=""name"">
-                            {groupMember.Person.FullName}
+                            {groupMember.Person.FullName.EncodeHtml()}
                         </span>
                     </a>
                 </li>";

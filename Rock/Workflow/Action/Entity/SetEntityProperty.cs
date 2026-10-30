@@ -119,7 +119,17 @@ namespace Rock.Workflow.Action
             // Get the entity
             EntityTypeService entityTypeService = new EntityTypeService( _rockContext );
             IEntity entityObject = null;
-            string entityIdGuidString = GetAttributeValue( action, AttributeKey.EntityIdGuid, true ).ResolveMergeFields( mergeFields ).Trim();
+            /*
+                10/26/2026 - MSE
+
+                Values read from a selected workflow attribute are data and are not rendered
+                as Lava; only text typed into the setting is rendered. See
+                ActionComponent.GetTextOrAttributeValue.
+                The same rule applies to Property Name and Property Value below.
+
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            string entityIdGuidString = GetTextOrAttributeValue( action, AttributeKey.EntityIdGuid, mergeFields ).Trim();
             var entityId = entityIdGuidString.AsIntegerOrNull();
             if ( entityId.HasValue )
             {
@@ -147,8 +157,8 @@ namespace Rock.Workflow.Action
             }
 
             // Get the property settings
-            string propertyName = GetAttributeValue( action, AttributeKey.PropertyName, true ).ResolveMergeFields( mergeFields );
-            string propertyValue = GetAttributeValue( action, AttributeKey.PropertyValue, true ).ResolveMergeFields( mergeFields );
+            string propertyName = GetTextOrAttributeValue( action, AttributeKey.PropertyName, mergeFields );
+            string propertyValue = GetTextOrAttributeValue( action, AttributeKey.PropertyValue, mergeFields );
             string emptyValueHandling = GetAttributeValue( action, AttributeKey.EmptyValueHandling );
 
             if ( emptyValueHandling == "IGNORE" && String.IsNullOrWhiteSpace( propertyValue ) )

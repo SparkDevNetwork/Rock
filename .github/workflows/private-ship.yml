@@ -11,14 +11,22 @@ name: Ship to Public
 #          target in. Never rebases these, because a rebase would drop the
 #          resolution.
 #        - otherwise: rebases onto it
-#   3. Checks commit messages use the release-note format (+ or -). Merge
-#      commits are skipped.
+#   3. Squashes the PR into one commit whose message is the PR title, so the
+#      title must use the release-note format (+ or -).
 #   4. Merges the change up every branch it must reach, following the
 #      MERGE_CHAIN variable. Every step is a real merge commit, never a squash.
+#      A conflicting step is finished automatically only when EVERY conflicted
+#      file is covered by one of the two safe automatic resolutions (version
+#      lines, or a recorded resolution from an earlier merge or an approved AI
+#      proposal). See .github/scripts/merge-up-lib.sh, which the merge-up check
+#      (private-merge-up-check.yml) shares, so it predicts exactly this.
 #   5. Pushes the target branch and every merged-up branch in ONE atomic push:
 #      either all of them update or none do. Git rejects the push if public
 #      moved, so nothing on public can ever be overwritten.
-#   6. Comments with the public commit links and closes the PR.
+#   6. Comments with the public commit links and closes the PR. If step 4
+#      resolved anything automatically, a comment just before that explains
+#      each one: the merge, both sides of every conflict, what was chosen, and
+#      where the resolution came from. An automatic resolution is never silent.
 #   7. Labels the PR `awaiting-build` and records the commit it shipped as.
 #      private-build-results.yml waits for the first AppVeyor build of develop
 #      that includes that commit, then deletes the branch if it passes or
@@ -31,14 +39,12 @@ name: Ship to Public
 # no merge-up. It's the escape hatch when a merge-up conflicts: ship with
 # `ship-only`, then do that merge-up by hand.
 #
-# The `squash` label (add it BEFORE `ship` or `ship-only`) squashes the PR's
-# commits into one after step 2. The PR title becomes the commit message, so it
-# must be a release note, and it's the whole message. The first commit's author
-# keeps authorship, and any other person who committed gets Co-authored-by
-# credit. Merge-ups are still real merge commits.
+# Every PR ships as one squashed commit. The PR title is the whole commit
+# message. The first commit's author keeps authorship, and any other person who
+# committed gets Co-authored-by credit. Merge-ups are still real merge commits.
 #
-# AI attribution trailers ("Co-Authored-By: Claude ...") are removed from every
-# shipped commit, squashed or not.
+# AI attribution trailers ("Co-Authored-By: Claude ...") are removed before the
+# squash, so they never reach the shipped commit.
 #
 # Shipping does NOT wait on a build, so it takes about a minute. This matches
 # how Rock already works: code lands on develop, then AppVeyor builds it.
@@ -57,6 +63,12 @@ name: Ship to Public
 #                     for example {"release-20.0": ["hotfix-20.1"], "hotfix-20.1": ["develop"]}.
 #                     A branch with two parents (like hotfix-18.7, fed by both
 #                     hotfix-17.11 and hotfix-18.6) gets one merge from each.
+#
+# Ship it only reads the recorded resolutions (the mirror's `rerere-cache`
+# branch). The merge-ups it pushes reach the mirror a minute later, and the
+# merge-up check learns from them there. Automatic resolutions are only used in
+# merge-up steps, never in step 2, where a conflict is between the PR and its
+# own target and is the author's to resolve.
 
 on:
   pull_request:
@@ -77,7 +89,7 @@ permissions:
 # atomic push protects public: whichever pushes second is rejected and told to
 # retry.
 #
-# Other labels (sentinel, squash, ...) get a unique group, so they never wait
+# Other labels (sentinel, no-code-review, ...) get a unique group, so they never wait
 # behind or cancel a ship.
 concurrency:
   group: ${{ (github.event.label.name == 'ship' || github.event.label.name == 'ship-only') && format('ship-pr-{0}', github.event.pull_request.number) || format('ship-noop-{0}', github.run_id) }}
@@ -126,7 +138,6 @@ jobs:
       ACTOR: ${{ github.actor }}
       LABEL: ${{ github.event.label.name }}
       PR_TITLE: ${{ github.event.pull_request.title }}
-      SQUASH: ${{ contains(github.event.pull_request.labels.*.name, 'squash') }}
     steps:
       - name: Check the target branch
         run: |
@@ -166,6 +177,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
           persist-credentials: false
+
+      - name: Load the merge-up helpers
+        run: |
+          # From the commit this workflow file came from, not the PR's head,
+          # which may be older than the helpers (see the helpers file).
+          git fetch -q "https://x-access-token:${GH_TOKEN}@github.com/$GITHUB_REPOSITORY.git" "$GITHUB_SHA"
+          git show "$GITHUB_SHA:.github/scripts/merge-up-lib.sh" > "$RUNNER_TEMP/merge-up-lib.sh"
 
       - name: Bring the PR up to date with the live public branch
         env:
@@ -234,8 +252,6 @@ jobs:
           fi
 
       - name: Squash into one commit
-        # Only when the PR also has the `squash` label.
-        if: env.SQUASH == 'true'
         run: |
           count=$(git rev-list --count --no-merges "public/$BASE..HEAD")
           if [ "$count" -eq 0 ]; then
@@ -245,7 +261,7 @@ jobs:
 
           # The PR title becomes the commit message, so it must be a release note.
           if ! printf '%s' "$PR_TITLE" | grep -qE '^[+-] '; then
-            echo "SHIP_FAIL=With \`squash\`, the PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
+            echo "SHIP_FAIL=The PR title becomes the commit message, so it must use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Edit the title, then add the \`$LABEL\` label again." >> "$GITHUB_ENV"
             exit 1
           fi
 
@@ -267,20 +283,6 @@ jobs:
           git commit -q --author="$author" -F squash-message.txt
           echo "Squashed $count commits into: $(git log -1 --format='%h %s')"
 
-      - name: Check commit messages
-        run: |
-          # Merge commits ("Merge branch ...") aren't release notes, so they're skipped.
-          bad=$(git log --no-merges "public/$BASE..HEAD" --format='%s' | grep -vE '^[+-] ' || true)
-          if [ -n "$bad" ]; then
-            {
-              echo "SHIP_FAIL<<EOF"
-              echo "These commit messages don't use the release-note format (\`+ (Domain) ...\` or \`- ...\`). Reword them, then add the \`$LABEL\` label again:"
-              echo "$bad" | sed 's/^/- /'
-              echo "EOF"
-            } >> "$GITHUB_ENV"
-            exit 1
-          fi
-
           # The rebased PR becomes the new tip of the target branch. Named after
           # the real branch so merge commits read "Merge branch '<branch>' into ...".
           git branch -f "$BASE" HEAD
@@ -296,44 +298,26 @@ jobs:
             exit 1
           fi
 
-          # Prints one "<from> <into>" line per merge, in the order to run them.
-          # A branch is only merged onward after every branch feeding it is done.
-          python3 - > merge-plan.txt <<'PY'
-          import json, os, sys
-          base = os.environ["BASE"]
-          chain = json.loads(os.environ["MERGE_CHAIN"])
-
-          # Every branch this change must reach.
-          reach, todo = {base}, [base]
-          while todo:
-              for nxt in chain.get(todo.pop(), []):
-                  if nxt not in reach:
-                      reach.add(nxt)
-                      todo.append(nxt)
-
-          parents = {n: [p for p in reach if n in chain.get(p, [])] for n in reach}
-          done, order = [base], []
-          while len(done) < len(reach):
-              ready = sorted(n for n in reach if n not in done and all(p in done for p in parents[n]))
-              if not ready:
-                  sys.exit("MERGE_CHAIN contains a loop.")
-              for n in ready:
-                  order.append(n)
-                  done.append(n)
-
-          for n in order:
-              for p in sorted(parents[n], key=done.index):
-                  print(p, n)
-          PY
+          # One "<from> <into>" line per merge, in the order to run them.
+          . "$RUNNER_TEMP/merge-up-lib.sh"
+          mu_merge_plan "$BASE" > merge-plan.txt
 
           echo "Merge plan:"
           cat merge-plan.txt
+
+      - name: Set up automatic conflict resolutions
+        if: env.LABEL == 'ship'
+        run: |
+          . "$RUNNER_TEMP/merge-up-lib.sh"
+          mu_setup
 
       - name: Merge up
         if: env.LABEL == 'ship'
         env:
           TOKEN: ${{ steps.app.outputs.token }}
         run: |
+          . "$RUNNER_TEMP/merge-up-lib.sh"
+          mu_init
           targets=$(awk '{print $2}' merge-plan.txt | awk '!seen[$0]++')
           if [ -z "$targets" ]; then
             echo "Nothing to merge up from $BASE."
@@ -346,23 +330,42 @@ jobs:
           git fetch "https://x-access-token:${TOKEN}@github.com/SparkDevNetwork/Rock.git" $refspecs
           for t in $targets; do git branch -f "$t" "public/$t"; done
 
-          # Real merge commits (--no-ff), never a squash.
+          # Real merge commits (--no-ff), never a squash. Each step, and any
+          # automatic resolution in it, is mu_merge_step in the helpers.
+          resolved="$RUNNER_TEMP/resolved"
+          mkdir -p "$resolved"
+          n=0
           while read -r from into; do
-            git switch -q "$into"
-            if ! git merge --no-ff --no-edit "$from"; then
-              files=$(git diff --name-only --diff-filter=U | sed 's/^/- `/; s/$/`/')
-              git merge --abort
+            n=$((n + 1))
+            step="$resolved/step-$(printf '%02d' "$n")"
+            mu_merge_step "$from" "$into" "$step"
+            if [ "$STEP" = "conflict" ]; then
+              # The same file notes and ways forward as the merge-up check
+              # comment, so the two always agree, including where Claude's
+              # proposal for this conflict stands.
+              MU_AI_STATUS=""
+              if mu_can_propose "$step"; then
+                MU_AI_STATUS=$(mu_find_proposal "$(cat "$step/key")")
+              fi
               {
                 echo "SHIP_FAIL<<EOF"
                 echo "Merging \`$from\` into \`$into\` hit conflicts. Nothing was pushed to any branch."
-                echo "$files"
+                mu_render_conflict_files "$step"
                 echo ""
-                echo "To ship now: add the \`ship-only\` label to ship to \`$BASE\` without merging up, then do the merge-up by hand in SmartGit."
+                echo "To ship now:"
+                mu_render_ways_forward "$step" "$BASE" "$PR"
                 echo "EOF"
               } >> "$GITHUB_ENV"
               exit 1
             fi
+            if [ "$STEP" = "clean" ]; then
+              rm -rf "$step"
+            fi
           done < merge-plan.txt
+
+          if mu_has_resolutions "$resolved"; then
+            echo "RESOLVED=true" >> "$GITHUB_ENV"
+          fi
 
           # Unquoted on purpose: collapses the newline-separated targets onto one line.
           echo "PUSH_BRANCHES=$(echo $BASE $targets)" >> "$GITHUB_ENV"
@@ -398,8 +401,40 @@ jobs:
             echo "REACHED_DEVELOP=true" >> "$GITHUB_ENV"
           fi
 
-      - name: Close the PR
+      - name: Explain the automatic conflict resolutions
+        # Posted before the PR closes, so it stays on the closed PR. The ship is
+        # already on public at this point, so a failure here must not report
+        # "Ship failed"; the closing comment points at this step's log instead.
+        id: explain
+        if: env.RESOLVED == 'true'
+        continue-on-error: true
         run: |
+          . "$RUNNER_TEMP/merge-up-lib.sh"
+          mu_init
+          {
+            echo "**Ship it resolved merge-up conflicts automatically.** These merge commits are on public now. If a resolution is wrong for this change, fix it with a follow-up PR."
+            echo
+            mu_render_resolutions "$RUNNER_TEMP/resolved" "$MU_PUBLIC_COMMIT_URL"
+          } > resolutions.md
+          mu_cap_comment resolutions.md
+          cat resolutions.md
+          gh pr comment "$PR" -R "$GITHUB_REPOSITORY" -F resolutions.md
+
+      - name: Close the PR
+        env:
+          EXPLAINED: ${{ steps.explain.outcome }}
+        run: |
+          resolved=""
+          if [ "$RESOLVED" = "true" ] && [ "$EXPLAINED" = "success" ]; then
+            resolved="
+
+          Some merge-up conflicts were resolved automatically. The comment above shows each one."
+          elif [ "$RESOLVED" = "true" ]; then
+            resolved="
+
+          **Some merge-up conflicts were resolved automatically, but the comment explaining them couldn't be posted.** The [workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID) shows each one under \"Explain the automatic conflict resolutions\"."
+          fi
+
           if [ "$REACHED_DEVELOP" = "true" ]; then
             next="AppVeyor will build \`develop\`. When it passes, this PR's branch is deleted. If it fails, you'll get a comment here with an analysis, and the branch is kept."
           else
@@ -410,7 +445,7 @@ jobs:
           # Don't remove it.
           gh pr close "$PR" -R "$GITHUB_REPOSITORY" \
             -c "Shipped to public by \`$ACTOR\` ($LABEL):
-          $SHIPPED
+          $SHIPPED$resolved
 
           $next
 

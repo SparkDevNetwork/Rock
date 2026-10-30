@@ -89,6 +89,15 @@ namespace Rock.Search.Person
             Guid homeAddressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME );
             var homeAddressTypeValueId = DefinedValueCache.Get( homeAddressTypeGuid, rockContext ).Id;
 
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, and addresses can be set by
+                anonymous visitors through public forms. The values are HTML encoded, which can't be
+                done in SQL, so the results are materialized (capped at 50) first.
+
+                Reason: Prevent stored XSS through addresses in Smart Search results.
+            */
             var service = new GroupMemberService( rockContext );
             return service.Queryable()
                 .Where( m => m.Group.GroupType.Guid == groupTypefamilyGuid )
@@ -96,7 +105,12 @@ namespace Rock.Search.Person
                 .Where( gl => gl.GroupLocationTypeValueId == homeAddressTypeValueId &&
                     gl.Location.Street1.Contains( searchterm ) )
                 .Select( gl => gl.Location.Street1 )
-                .Distinct();
+                .Distinct()
+                .OrderBy( s => s )
+                .Take( 50 )
+                .ToList()
+                .Select( s => s.EncodeHtml() )
+                .AsQueryable();
         }
     }
 }

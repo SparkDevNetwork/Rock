@@ -114,6 +114,13 @@ namespace Rock.Model
                 authorizationMessage = "INFO: Data view contains a filter that you do not have access to view.";
             }
 
+            var restrictedFilterTitles = GetRestrictedFilterTitles( person );
+            if ( restrictedFilterTitles.Any() )
+            {
+                isAuthorized = false;
+                authorizationMessage = $"INFO: Data view contains filters that use information you do not have access to view: {string.Join( ", ", restrictedFilterTitles )}.";
+            }
+
             if ( this.TransformEntityTypeId != null )
             {
                 string dataTransformationComponentTypeName = EntityTypeCache.Get( this.TransformEntityTypeId ?? 0 ).GetEntityType().FullName;
@@ -129,6 +136,48 @@ namespace Rock.Model
             }
 
             return isAuthorized;
+        }
+
+        /// <summary>
+        /// Gets the titles of the filter components whose current selection
+        /// the person is not authorized to edit.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns>The distinct component titles, or an empty list.</returns>
+        private List<string> GetRestrictedFilterTitles( Person person )
+        {
+            var titles = new List<string>();
+            var entityType = this.EntityTypeId.HasValue ? EntityTypeCache.Get( this.EntityTypeId.Value )?.GetEntityType() : null;
+
+            if ( entityType == null || this.DataViewFilter == null )
+            {
+                return titles;
+            }
+
+            var filters = new Queue<DataViewFilter>();
+            filters.Enqueue( this.DataViewFilter );
+
+            while ( filters.Count > 0 )
+            {
+                var filter = filters.Dequeue();
+
+                if ( filter.ExpressionType == FilterExpressionType.Filter && filter.EntityTypeId.HasValue )
+                {
+                    var component = DataFilterContainer.GetComponent( EntityTypeCache.Get( filter.EntityTypeId.Value )?.Name );
+
+                    if ( component != null && !component.IsSelectionAuthorizedForEdit( entityType, filter.Selection, person ) )
+                    {
+                        titles.Add( component.GetTitle( entityType ) );
+                    }
+                }
+
+                foreach ( var childFilter in filter.ChildFilters ?? new List<DataViewFilter>() )
+                {
+                    filters.Enqueue( childFilter );
+                }
+            }
+
+            return titles.Distinct().ToList();
         }
 
         /// <summary>

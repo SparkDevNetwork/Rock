@@ -14,7 +14,7 @@
                             Sent By:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <span v-html="sentByPersonName || '&nbsp;'"></span>
+                            <span>{{ sentByPersonName }}</span>
                             <span v-if="sendDateTimeElapsed"
                                   :data-original-title="sendDateTimeTooltip"
                                   :ref="applyTooltip">
@@ -27,7 +27,7 @@
                             Approved By:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <span v-html="approvedByPersonName || '&nbsp;'"></span>
+                            <span>{{ approvedByPersonName }}</span>
                             <span v-if="approvedDateTimeElapsed"
                                   :data-original-title="approvedDateTimeTooltip"
                                   :ref="applyTooltip">

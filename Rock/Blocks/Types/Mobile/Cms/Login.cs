@@ -146,13 +146,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
         DefaultBooleanValue = true,
         Order = 13 )]
 
-    [BooleanField( "Enable Enhanced Authentication Security",
-        Key = AttributeKeys.EnableEnhancedAuthenticationSecurity,
-        Description = "Only applies to external authentication. Whether or not to enable enhanced authentication security. This will be automatically enabled in a future version of Rock, and the setting will be removed.",
-        IsRequired = false,
-        DefaultBooleanValue = true,
-        Order = 14 )]
-
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
@@ -235,11 +228,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The footer content key.
             /// </summary>
             public const string FooterContent = "FooterContent";
-
-            /// <summary>
-            /// The enable enhanced authentication security key.
-            /// </summary>
-            public const string EnableEnhancedAuthenticationSecurity = "EnableEnhancedAuthenticationSecurity";
         }
 
         #endregion
@@ -746,7 +734,17 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 FirstName = firstName,
                 LastName = lastName,
                 Email = email,
-                EmailVerified = emailVerified.AsBooleanOrNull() ?? true,
+                /*
+                    10/19/2026 - MSE
+
+                    Auth0 sends email_verified, so a missing value is not proof that the caller
+                    owns the email and is treated as not verified. Microsoft Graph never sends it,
+                    and Entra emails are trusted because GetEntraUserInfoAsync only accepts tokens
+                    issued by the configured tenant and for the configured application.
+
+                    Reason: Do not treat a missing Auth0 email_verified value as verified.
+                */
+                EmailVerified = emailVerified.AsBooleanOrNull() ?? ( provider == SupportedAuthenticationProvider.Entra ),
                 ForeignKey = sub,
                 Gender = gender,
                 NickName = nickname,
@@ -768,9 +766,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="connectionStatusValueId">The connection status to use when generating a new person.</param>
         /// <param name="recordStatusValueId">The record status to use when generating a </param>
         /// <param name="rockContext"></param>
+        /// <param name="requireVerifiedEmail">If <c>true</c>, an existing person is only matched when the provider reports the email as verified.</param>
         /// <returns></returns>
         [RockInternal( "1.15.1" )]
-        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null )
+        internal static UserLogin GetOrCreatePersonFromExternalAuthenticationUserInfo( ExternalAuthenticationUserInfoBag personInfo, ExternalAuthUserLoginBag userLoginInfo, RockContext rockContext = null, int? connectionStatusValueId = null, int? recordStatusValueId = null, bool requireVerifiedEmail = true )
         {
             rockContext = rockContext ?? new RockContext();
             UserLogin user = null;
@@ -815,7 +814,21 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 var personMatchQuery = new PersonService.PersonMatchQuery( firstName, lastName, email, phoneNumber );
                 var personService = new PersonService( rockContext );
 
-                person = personService.FindPerson( personMatchQuery, true );
+                /*
+                    10/19/2026 - MSE
+
+                    An email the provider has not verified is not proof that the caller owns
+                    the matched record, so only look for an existing person when the email is
+                    verified (unless the setting is off). Otherwise a new pending person is
+                    created below. This also skips the phone match, which is not verified either.
+
+                    Reason: Link a first sign-in to an existing person only by a verified email.
+                */
+                if ( !requireVerifiedEmail || personInfo.EmailVerified == true )
+                {
+                    person = personService.FindPerson( personMatchQuery, true );
+                }
+
                 rockContext.WrapTransaction( () =>
                 {
                     // If we couldn't match a person, we should create a new one.
@@ -1093,7 +1106,10 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 return ActionBadRequest( errorMessage );
             }
 
-            var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, RockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
+            // The Require Verified Email setting applies to Auth0 only.
+            var requireVerifiedEmail = options.AuthenticationProvider == SupportedAuthenticationProvider.Auth0 && ( additionalSettings?.Auth0RequireVerifiedEmail ?? true );
+
+            var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, RockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId, requireVerifiedEmail );
 
             // Something went wrong or we didn't receive enough information to create a Person.
             if ( userLogin == null )
@@ -1142,9 +1158,9 @@ namespace Rock.Blocks.Types.Mobile.Cms
         #region Legacy Actions
 
         /// <summary>
-        /// Processes an external login.
-        /// On the shell, use whatever authentication
-        /// component to create a <see cref="ExternalAuthenticationUserInfoBag" />. 
+        /// Legacy external login action. This always rejects the request
+        /// because the identity it received was not verified with the
+        /// provider. Mobile shells must use <see cref="ProcessExternalAuthentication(ExternalAuthenticationRequestBag)" />.
         /// </summary>
         /// <param name="userInfo">The user information.</param>
         /// <param name="personalDeviceGuid">The personal device unique identifier.</param>
@@ -1156,109 +1172,8 @@ namespace Rock.Blocks.Types.Mobile.Cms
         [RockObsolete( "17.1" )]
         public BlockActionResult ProcessExternalLogin( ExternalAuthenticationUserInfoBag userInfo, Guid? personalDeviceGuid, bool rememberMe, Rock.Common.Mobile.Enums.SupportedAuthenticationProvider provider )
         {
-            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
-
-            if ( !IsExternalAuthenticationEnabled( additionalSettings ) )
-            {
-                return ActionBadRequest( "External authentication is not enabled." );
-            }
-
-            var enforceEnhancedSecurity = GetAttributeValue( AttributeKeys.EnableEnhancedAuthenticationSecurity ).AsBoolean();
-            if( enforceEnhancedSecurity )
-            {
-                Logger.LogError( "Legacy external authentication endpoint was called, but enhanced authentication security is enabled." );
-                return ActionBadRequest( "You have enhanced authentication security enabled, but are still utilizing the legacy external authentication endpoint." );
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                // For the authentication providers that are supported,
-                // we need to structure the UserLogin accordingly.
-                string usernameValue = string.Empty;
-
-                switch ( provider )
-                {
-                    case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
-                        usernameValue = userInfo.ForeignKey;
-                        break;
-                    case Common.Mobile.Enums.SupportedAuthenticationProvider.Entra:
-                        usernameValue = userInfo.Email;
-                        break;
-                }
-
-                if ( usernameValue.IsNullOrWhiteSpace() )
-                {
-                    return ActionBadRequest( "There was no corresponding username provided for the authentication provider." );
-                }
-
-                // We'll supplement and save this as needed below.
-                var failedHistoryLogin = new HistoryLogin
-                {
-                    UserName = usernameValue,
-                    SourceSiteId = this.PageCache?.SiteId,
-                    WasLoginSuccessful = false
-                };
-
-                var providerInfo = GetExternalAuthUserLoginInfo( provider, usernameValue );
-
-                if ( providerInfo == null )
-                {
-                    var errorMessage = "There was no entity found for that authentication provider.";
-
-                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.Other;
-                    failedHistoryLogin.LoginFailureMessage = $"{errorMessage} ({provider.ConvertToString()})";
-                    failedHistoryLogin.SaveAfterDelay();
-
-                    return ActionBadRequest( errorMessage );
-                }
-
-                // Create or retrieve a Person using the information provided in the external authentication info bag.
-
-                var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, rockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
-
-                // Something went wrong or we didn't receive enough information to create a Person.
-                if ( userLogin == null )
-                {
-                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotFound;
-                    failedHistoryLogin.SaveAfterDelay();
-
-                    return ActionBadRequest( "There was an error when authenticating your request. Please ensure your external authentication provider is configured correctly." );
-                }
-
-                // We now know the IDs of the person attempting to authenticate.
-                failedHistoryLogin.UserLoginId = userLogin.Id;
-                failedHistoryLogin.PersonAliasId = userLogin.Person?.PrimaryAliasId;
-
-                // Make sure the login is confirmed, otherwise login is not allowed.
-                if ( userLogin.IsConfirmed != true )
-                {
-                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotConfirmed;
-                    failedHistoryLogin.SaveAfterDelay();
-
-                    SendConfirmation( userLogin );
-                    return ActionBadRequest( GetUnconfirmedMessage() );
-                }
-
-                // Make sure the login is not locked out.
-                if ( userLogin.IsLockedOut == true )
-                {
-                    failedHistoryLogin.LoginFailureReason = LoginFailureReason.LockedOut;
-                    failedHistoryLogin.SaveAfterDelay();
-
-                    return ActionBadRequest( GetLockedOutMessage() );
-                }
-
-                UpdateLastLoginDetails( userLogin, personalDeviceGuid, rockContext );
-
-                var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, rememberMe, false );
-                var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, PageCache.Layout.Site );
-                mobilePerson.AuthToken = authCookie.Value;
-
-                return ActionOk( new
-                {
-                    Person = mobilePerson
-                } );
-            }
+            Logger.LogWarning( "The legacy ProcessExternalLogin action was called. It is no longer supported; the mobile application must be updated to a shell that uses ProcessExternalAuthentication." );
+            return ActionBadRequest( "Signing in with an external provider requires an updated version of this app." );
         }
 
         #endregion

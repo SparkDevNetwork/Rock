@@ -309,16 +309,11 @@ namespace Rock.Blocks.Types.Mobile.Communication
             using ( var rockContext = new RockContext() )
             {
                 // First load the entity set from the entity set guid.
-                var entitySet = new EntitySetService( rockContext )
-                    .GetNoTracking( entitySetGuid );
+                var entitySet = GetCurrentPersonEntitySet( rockContext, entitySetGuid );
 
-                // Our recipients really should always be a Person entity,
-                // but just in case lets check for it.
-                var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
-
-                if ( entitySet.EntityTypeId != personEntityTypeId )
+                if ( entitySet == null )
                 {
-                    return ActionBadRequest();
+                    return ActionNotFound( "Could not load the recipients for this communication." );
                 }
 
                 var personService = new PersonService( rockContext ).Queryable();
@@ -376,10 +371,17 @@ namespace Rock.Blocks.Types.Mobile.Communication
         {
             using ( var rockContext = new RockContext() )
             {
+                var entitySet = GetCurrentPersonEntitySet( rockContext, entitySetGuid );
+
+                if ( entitySet == null )
+                {
+                    return ActionNotFound();
+                }
+
                 // Load our recipient.
                 var entitySetItemService = new EntitySetItemService( rockContext );
                 var entitySetItem = entitySetItemService.Queryable()
-                    .Where( esi => esi.Guid == entitySetItemGuid && esi.EntitySet.Guid == entitySetGuid )
+                    .Where( esi => esi.Guid == entitySetItemGuid && esi.EntitySetId == entitySet.Id )
                     .FirstOrDefault();
 
                 if ( entitySetItem == null )
@@ -409,8 +411,12 @@ namespace Rock.Blocks.Types.Mobile.Communication
                     return ActionForbidden();
                 }
 
-                var entitySetService = new EntitySetService( RockContext );
-                var entitySet = entitySetService.Get( sendCommunicationBag.EntitySetGuid );
+                if ( sendCommunicationBag == null )
+                {
+                    return ActionBadRequest();
+                }
+
+                var entitySet = GetCurrentPersonEntitySet( RockContext, sendCommunicationBag.EntitySetGuid );
 
                 if ( entitySet == null )
                 {
@@ -420,6 +426,39 @@ namespace Rock.Blocks.Types.Mobile.Communication
                 if ( entitySet.IsExpired )
                 {
                     return ActionBadRequest( "The message session has expired. Please try again." );
+                }
+
+                /*
+                    10/18/2026 - MSE
+
+                    The attachment guids come from the client. Mobile uploads are saved as
+                    permanent files, so only a file the current person uploaded is accepted.
+                    Otherwise any file in the system, including secured files, could be
+                    attached and emailed to the sender.
+
+                    Reason: Prevent sending files the person is not allowed to see.
+                */
+                if ( !IsAttachmentAllowed( sendCommunicationBag.FileAttachmentGuid )
+                     || !IsAttachmentAllowed( sendCommunicationBag.ImageAttachmentGuid ) )
+                {
+                    return ActionBadRequest( "The attachment is not valid." );
+                }
+
+                /*
+                    10/19/2026 - MSE
+
+                    The from number comes from the client. Only a number the phone
+                    number picker offers is accepted, which applies number security,
+                    SMS enabled, the Allowed SMS Numbers setting and the personal
+                    number settings. Otherwise a text could be sent from another
+                    person's personal number or a number this block does not allow.
+
+                    Reason: Enforce the block's SMS number settings on the server.
+                */
+                if ( sendCommunicationBag.CommunicationType.ToNative() == CommunicationType.SMS
+                     && !LoadPhoneNumbers().Any( n => n.Guid == sendCommunicationBag.FromNumberGuid ) )
+                {
+                    return ActionBadRequest( "Invalid From Phone." );
                 }
 
                 return ActionOk( SendCommunicationInternal( sendCommunicationBag, entitySet ) );
@@ -473,6 +512,81 @@ namespace Rock.Blocks.Types.Mobile.Communication
         }
 
         /// <summary>
+        /// Gets the person entity set if it was created by the current person.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="entitySetGuid">The entity set unique identifier from the client.</param>
+        /// <returns>The <see cref="EntitySet"/>, or <c>null</c> if it was not found, is not a person entity set or was not created by the current person.</returns>
+        private EntitySet GetCurrentPersonEntitySet( RockContext rockContext, Guid entitySetGuid )
+        {
+            /*
+                10/19/2026 - MSE
+
+                The entity set Guid comes from the client. The mobile app creates
+                the set with api/EntitySets/CreateFromItems while the person is
+                signed in, so the creator is the person who should use it. The
+                person Id is compared instead of the alias Id so a merged person
+                still matches. Sets with no creator, or that are not person sets,
+                are rejected.
+
+                Reason: Prevent reading, editing or messaging another person's recipient list.
+            */
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            if ( !currentPersonId.HasValue )
+            {
+                return null;
+            }
+
+            var entitySet = new EntitySetService( rockContext ).Get( entitySetGuid );
+            var personEntityTypeId = EntityTypeCache.Get<Rock.Model.Person>().Id;
+
+            if ( entitySet == null
+                 || !entitySet.CreatedByPersonAliasId.HasValue
+                 || entitySet.EntityTypeId != personEntityTypeId )
+            {
+                return null;
+            }
+
+            var ownerPersonId = new PersonAliasService( rockContext ).GetPersonId( entitySet.CreatedByPersonAliasId.Value );
+
+            return ownerPersonId.HasValue && ownerPersonId.Value == currentPersonId.Value ? entitySet : null;
+        }
+
+        /// <summary>
+        /// Determines whether the binary file can be attached to the
+        /// communication by the current person.
+        /// </summary>
+        /// <param name="binaryFileGuid">The unique identifier of the binary file from the client.</param>
+        /// <returns><c>true</c> if the file can be attached; otherwise <c>false</c>.</returns>
+        private bool IsAttachmentAllowed( Guid? binaryFileGuid )
+        {
+            if ( !binaryFileGuid.HasValue || binaryFileGuid.Value == Guid.Empty )
+            {
+                return true;
+            }
+
+            var guid = binaryFileGuid.Value;
+            var file = new BinaryFileService( RockContext ).Queryable()
+                .Where( b => b.Guid == guid )
+                .Select( b => new
+                {
+                    CreatedByPersonId = ( int? ) b.CreatedByPersonAlias.PersonId
+                } )
+                .FirstOrDefault();
+
+            // An unknown file is ignored when the communication is built.
+            if ( file == null )
+            {
+                return true;
+            }
+
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+
+            return currentPersonId.HasValue && file.CreatedByPersonId == currentPersonId.Value;
+        }
+
+        /// <summary>
         /// Creates a new communication and sends it based off the information in the <see cref="SendCommunication(SendCommunicationRequestBag)" />.
         /// </summary>
         /// <param name="bag">The bag containing the communication information.</param>
@@ -504,7 +618,18 @@ namespace Rock.Blocks.Types.Mobile.Communication
             // Structure the communication based on the communication type.
             if ( communicationType == CommunicationType.Email )
             {
-                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, bag.AdditionalEmailRecipients, personService, binaryFileService );
+                /*
+                    10/18/2026 - MSE
+
+                    Show Additional Email Recipients was only sent to the client as a UI
+                    flag. A crafted request could still add any email address as a
+                    recipient, so the setting is now enforced on the server.
+
+                    Reason: Only honor additional recipients when the block allows them.
+                */
+                var additionalRecipients = ShowAdditionalEmailRecipients ? bag.AdditionalEmailRecipients : null;
+
+                StructureEmailCommunication( communication, bag.Subject, bag.Message, bag.FromEmail, bag.FromName, bag.ReplyTo, true, bag.FileAttachmentGuid, additionalRecipients, personService, binaryFileService );
             }
             else if ( communicationType == CommunicationType.SMS )
             {
@@ -731,24 +856,27 @@ namespace Rock.Blocks.Types.Mobile.Communication
             }
 
             // Add the additional email recipients as "nameless" recipients.
-            foreach( var emailRecipient in additionalRecipients )
+            if ( additionalRecipients != null )
             {
-                var emailPerson = personService.GetPersonFromEmailAddress( emailRecipient, true );
-                if ( emailPerson != null )
+                foreach ( var emailRecipient in additionalRecipients )
                 {
-                    var newRecipient = new CommunicationRecipient
+                    var emailPerson = personService.GetPersonFromEmailAddress( emailRecipient, true );
+                    if ( emailPerson != null )
                     {
-                        PersonAliasId = emailPerson.PrimaryAliasId,
-                        MediumEntityTypeId = emailMediumEntityTypeId
-                    };
+                        var newRecipient = new CommunicationRecipient
+                        {
+                            PersonAliasId = emailPerson.PrimaryAliasId,
+                            MediumEntityTypeId = emailMediumEntityTypeId
+                        };
 
-                    // Checking for duplicates.
-                    if ( communication.Recipients.Any( cr => cr.PersonAliasId == newRecipient.PersonAliasId ) )
-                    {
-                        continue;
-                    };
+                        // Checking for duplicates.
+                        if ( communication.Recipients.Any( cr => cr.PersonAliasId == newRecipient.PersonAliasId ) )
+                        {
+                            continue;
+                        };
 
-                    communication.Recipients.Add( newRecipient );
+                        communication.Recipients.Add( newRecipient );
+                    }
                 }
             }
 

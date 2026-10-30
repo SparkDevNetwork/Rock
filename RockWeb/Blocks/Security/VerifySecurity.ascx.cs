@@ -65,6 +65,7 @@ namespace RockWeb.Blocks.Security
         {
             nbCacheCleared.Visible = false;
             nbPoppedLock.Text = string.Empty;
+            nbWarning.Text = string.Empty;
 
             if ( !IsPostBack )
             {
@@ -444,6 +445,44 @@ namespace RockWeb.Blocks.Security
                 var person = ppPerson.PersonId.HasValue ? new PersonService( new RockContext() ).Get( ppPerson.PersonId.Value ) : CurrentPerson;
                 ISecured entity = GetEntity();
 
+                if ( person == null )
+                {
+                    nbWarning.Text = "A person is required to add an Allow rule.";
+                    return;
+                }
+
+                if ( entity == null )
+                {
+                    nbWarning.Text = "Could not find the entity, maybe the wrong Id was specified.";
+                    return;
+                }
+
+                /*
+                    10/13/2026 - MSE
+
+                    Unlocking writes a security rule, so the current person must be able to
+                    administrate the checked entity, the same check the Security block makes.
+                    The governing rule is recomputed for the entity and person now on the form
+                    so a grid row cannot be applied to a different entity or person than the
+                    one it was shown for. Flipping a rule that lives on a parent item also
+                    requires administrate access on that parent item.
+
+                    Reason: People who could view this block could grant any permission to anyone.
+                */
+                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                {
+                    nbWarning.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of this item.";
+                    return;
+                }
+
+                ISecured authoritative;
+                var governingAuth = ItemAuthorized( entity, auth.Action, person, true, true, out authoritative );
+                if ( governingAuth == null || governingAuth.Id != auth.Id || governingAuth.AllowOrDeny == "A" )
+                {
+                    nbWarning.Text = "The security rule could not be found.";
+                    return;
+                }
+
                 var explicitAuth = new AuthService( rockContext ).Queryable()
                     .Where( a => a.EntityTypeId == auth.EntityTypeId && a.EntityId == auth.EntityId && a.Action == auth.Action )
                     .Where( a => a.PersonAlias.PersonId == person.Id )
@@ -451,10 +490,16 @@ namespace RockWeb.Blocks.Security
 
                 if ( explicitAuth != null )
                 {
+                    if ( authoritative == null || !authoritative.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+                    {
+                        nbWarning.Text = "Unfortunately, you are not able to edit security because you do not belong to a role that has been configured to allow administration of the item that owns this rule.";
+                        return;
+                    }
+
                     explicitAuth.AllowOrDeny = "A";
                     rockContext.SaveChanges();
 
-                    Authorization.RefreshAction( entity.TypeId, entity.Id, auth.Action );
+                    Authorization.RefreshAction( explicitAuth.EntityTypeId, explicitAuth.EntityId ?? 0, explicitAuth.Action );
                 }
                 else
                 {

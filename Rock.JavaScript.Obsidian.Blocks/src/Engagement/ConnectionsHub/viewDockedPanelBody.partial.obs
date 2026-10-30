@@ -468,7 +468,7 @@
     import { ConnectionRequestDetailsBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/connectionRequestDetailsBag";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { escapeHtml, isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { AdditionalRequestBag } from "@Obsidian/ViewModels/Blocks/Engagement/ConnectionsHub/additionalRequestBag";
@@ -789,68 +789,83 @@
             return "";
         }
 
+        /*
+            10/19/2026 - MSE
+
+            The message is shown with v-html. The creator name, the previous and new
+            values (statuses, states, connector or opportunity names) and the request's
+            opportunity name are stored data, so they are escaped here and only the
+            highlight spans are markup. isCreatedByPopulated still tests the raw value.
+
+            Reason: Prevent stored XSS through names in the Connections Hub activity feed.
+        */
+        const createdBy = escapeHtml(entry.createdBy ?? "");
+        const previousValue = escapeHtml(entry.systemUpdate.previousValue ?? "");
+        const newValue = escapeHtml(entry.systemUpdate.newValue ?? "");
+        const opportunityName = escapeHtml(props.requestDetails?.connectionOpportunityName ?? "");
+
         switch (entry.systemUpdate.systemUpdateType) {
             case SystemUpdateType.Creation:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> submitted this connection request for ${props.requestDetails?.connectionOpportunityName}.`;
+                    return `<span class="text-semibold">${createdBy}</span> submitted this connection request for ${opportunityName}.`;
                 }
-                return `This connection request was submitted for ${props.requestDetails?.connectionOpportunityName}.`;
+                return `This connection request was submitted for ${opportunityName}.`;
             case SystemUpdateType.StatusSet:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> set the connection request status to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="text-semibold">${createdBy}</span> set the connection request status to <span class="text-semibold">${newValue}</span>.`;
                 }
-                return `The connection request status was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request status was set to <span class="text-semibold">${newValue}</span>.`;
             case SystemUpdateType.StatusUpdated:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> changed the connection request status from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="text-semibold">${createdBy}</span> changed the connection request status from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
                 }
-                return `The connection request status changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request status changed from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
             case SystemUpdateType.StatusCleared:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> cleared the connection request status (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
+                    return `<span class="text-semibold">${createdBy}</span> cleared the connection request status (was <span class="text-semibold">${previousValue}</span>).`;
                 }
-                return `The connection request status was cleared (was <span class="text-semibold">${entry.systemUpdate.previousValue}</span>).`;
+                return `The connection request status was cleared (was <span class="text-semibold">${previousValue}</span>).`;
             case SystemUpdateType.StateChange: {
                 const hasPrevious = !isNullOrWhiteSpace(entry.systemUpdate.previousValue);
 
                 if (isCreatedByPopulated) {
                     return hasPrevious
-                        ? `<span class="text-semibold">${entry.createdBy}</span> changed the connection request state from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
-                        : `<span class="text-semibold">${entry.createdBy}</span> set the connection request state to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                        ? `<span class="text-semibold">${createdBy}</span> changed the connection request state from ${previousValue} to <span class="text-semibold">${newValue}</span>.`
+                        : `<span class="text-semibold">${createdBy}</span> set the connection request state to <span class="text-semibold">${newValue}</span>.`;
                 }
                 return hasPrevious
-                    ? `The connection request state changed from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`
-                    : `The connection request state was set to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    ? `The connection request state changed from ${previousValue} to <span class="text-semibold">${newValue}</span>.`
+                    : `The connection request state was set to <span class="text-semibold">${newValue}</span>.`;
             }
             case SystemUpdateType.Assignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> assigned <span class="text-semibold">${entry.systemUpdate.newValue}</span> to the connection request.`;
+                    return `<span class="text-semibold">${createdBy}</span> assigned <span class="text-semibold">${newValue}</span> to the connection request.`;
                 }
-                return `The connection request was assigned to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was assigned to <span class="text-semibold">${newValue}</span>.`;
             case SystemUpdateType.Unassignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> unassigned <span class="text-semibold">${entry.systemUpdate.previousValue}</span> from the connection request.`;
+                    return `<span class="text-semibold">${createdBy}</span> unassigned <span class="text-semibold">${previousValue}</span> from the connection request.`;
                 }
-                return `The connection request was unassigned from <span class="text-semibold">${entry.systemUpdate.previousValue}</span>.`;
+                return `The connection request was unassigned from <span class="text-semibold">${previousValue}</span>.`;
             case SystemUpdateType.Reassignment:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> reassigned the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="text-semibold">${createdBy}</span> reassigned the connection request from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
                 }
-                return `The connection request was reassigned from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was reassigned from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
             case SystemUpdateType.Transfer:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> transferred the connection request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                    return `<span class="text-semibold">${createdBy}</span> transferred the connection request from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
                 }
-                return `The connection request was transferred from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `The connection request was transferred from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
             case SystemUpdateType.DueDateChange:
             case SystemUpdateType.DueSoonDateChange: {
                 const dateType = entry.systemUpdate.systemUpdateType === SystemUpdateType.DueDateChange ? "Due Date" : "Due Soon Date";
                 // TODO - humanize the dates
-                return `Status change auto-updated <span class="text-semibold">${dateType}</span> for the request from ${entry.systemUpdate.previousValue} to <span class="text-semibold">${entry.systemUpdate.newValue}</span>.`;
+                return `Status change auto-updated <span class="text-semibold">${dateType}</span> for the request from ${previousValue} to <span class="text-semibold">${newValue}</span>.`;
             }
             case SystemUpdateType.Completion:
                 if (isCreatedByPopulated) {
-                    return `<span class="text-semibold">${entry.createdBy}</span> completed this connection request.`;
+                    return `<span class="text-semibold">${createdBy}</span> completed this connection request.`;
                 }
                 return `This connection request was completed.`;
             default:

@@ -286,16 +286,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return new List<ListItemViewModel>();
             }
 
-            var financialAccountService = new FinancialAccountService( rockContext );
-
-            var availableAccounts = financialAccountService.Queryable()
-            .Where( f =>
-                f.IsActive
-                    && f.IsPublic.HasValue
-                    && f.IsPublic.Value
-                    && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
-                    && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) );
-            availableAccounts = availableAccounts.Where( a => Accounts.Contains( a.Guid ) );
+            var availableAccounts = GetAvailableAccountQuery( rockContext );
 
             var accounts = availableAccounts.OrderBy( f => f.Order )
                 .ToList()
@@ -310,13 +301,30 @@ namespace Rock.Blocks.Types.Mobile.Finance
         }
 
         /// <summary>
+        /// Gets the query of active, public accounts that are in the block's Accounts setting.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private IQueryable<Rock.Model.FinancialAccount> GetAvailableAccountQuery( RockContext rockContext )
+        {
+            return new FinancialAccountService( rockContext ).Queryable()
+                .Where( f =>
+                    f.IsActive
+                        && f.IsPublic.HasValue
+                        && f.IsPublic.Value
+                        && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
+                        && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+                .Where( a => Accounts.Contains( a.Guid ) );
+        }
+
+        /// <summary>
         /// Processes the image and generates a financial transaction based on the provided image and batch information.
         /// </summary>
         /// <param name="processImageBag"></param>
+        /// <param name="batch">The batch that ProcessImage has already authorized.</param>
         /// <param name="imageId"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentException"></exception>
-        private void ProcessImageAndGenerateTransaction( ProcessImageBag processImageBag, int imageId )
+        private void ProcessImageAndGenerateTransaction( ProcessImageBag processImageBag, FinancialBatch batch, int imageId )
         {
             // Create FinancialPaymentDetail
             if ( processImageBag.BatchIdKey.IsNullOrWhiteSpace() )
@@ -337,7 +345,6 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             // Create FinancialTransaction
             FinancialTransaction financialTransaction = new FinancialTransaction();
-            FinancialBatch batch = new FinancialBatchService( RockContext ).Get( processImageBag.BatchIdKey );
             financialTransaction.BatchId = batch.Id;
             financialTransaction.TransactionCode = string.Empty;
             financialTransaction.Summary = string.Empty;
@@ -794,9 +801,66 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 return ActionBadRequest( "Binary file is not a MICR check." );
             }
 
+            var batch = processImageBag.BatchIdKey.IsNotNullOrWhiteSpace()
+                ? new FinancialBatchService( RockContext ).Get( processImageBag.BatchIdKey )
+                : null;
+
+            if ( batch == null )
+            {
+                return ActionNotFound( $"{FinancialBatch.FriendlyTypeName} not found." );
+            }
+
+            if ( batch.Status == BatchStatus.Closed || batch.IsAutomated )
+            {
+                return ActionBadRequest( "A transaction cannot be added to a closed or automated batch." );
+            }
+
+            if ( !batch.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to edit {FinancialBatch.FriendlyTypeName}." );
+            }
+
+            // Only allow an image the current person uploaded that is not
+            // already attached to a transaction.
+            var isImageAttached = new FinancialTransactionImageService( RockContext ).Queryable()
+                .Any( i => i.BinaryFileId == image.Id );
+            var imageCreatorPersonId = image.CreatedByPersonAliasId.HasValue
+                ? new PersonAliasService( RockContext ).GetPersonId( image.CreatedByPersonAliasId.Value )
+                : null;
+
+            if ( isImageAttached || !imageCreatorPersonId.HasValue || imageCreatorPersonId.Value != RequestContext.CurrentPerson?.Id )
+            {
+                return ActionBadRequest( "This image cannot be used for a new transaction." );
+            }
+
+            if ( processImageBag.AccountBox == null )
+            {
+                return ActionBadRequest( "Invalid account." );
+            }
+
+            var allowedAccountIds = Accounts.Any()
+                ? GetAvailableAccountQuery( RockContext ).Select( a => a.Id ).ToList()
+                : new List<int>();
+
+            foreach ( var accountBox in processImageBag.AccountBox )
+            {
+                var account = accountBox != null ? FinancialAccountCache.GetByIdKey( accountBox.Text ) : null;
+
+                if ( account == null || !allowedAccountIds.Contains( account.Id ) )
+                {
+                    return ActionBadRequest( "Invalid account." );
+                }
+
+                var amount = accountBox.Value.AsDecimalOrNull();
+                if ( amount.HasValue && amount.Value < 0 )
+                {
+                    return ActionBadRequest( "Amounts cannot be negative." );
+                }
+            }
+
             try
             {
-                ProcessImageAndGenerateTransaction( processImageBag, image.Id );
+                ProcessImageAndGenerateTransaction( processImageBag, batch, image.Id );
             }
             catch ( Exception ex )
             {
@@ -816,17 +880,15 @@ namespace Rock.Blocks.Types.Mobile.Finance
         [BlockAction( "OpenBatch" )]
         public BlockActionResult OpenBatch( string batchIdKey )
         {
-            var financialBatchService = new FinancialBatchService( RockContext );
-            var batch = financialBatchService.Get( batchIdKey );
-
-            if ( batch == null )
+            // TryGetEntityForEditAction creates a new batch for a blank key.
+            if ( batchIdKey.IsNullOrWhiteSpace() )
             {
                 return ActionNotFound( $"{FinancialBatch.FriendlyTypeName} not found." );
             }
 
-            if ( batch.Status == BatchStatus.Closed && !batch.IsAuthorized( AuthorizationReopenBatch, RequestContext.CurrentPerson ) )
+            if ( !TryGetEntityForEditAction( batchIdKey, RockContext, out var batch, out var actionError ) )
             {
-                return ActionUnauthorized( "User is not authorized to reopen a closed batch" );
+                return actionError;
             }
 
             batch.Status = BatchStatus.Open;

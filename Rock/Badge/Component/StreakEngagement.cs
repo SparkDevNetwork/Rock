@@ -181,7 +181,17 @@ namespace Rock.Badge.Component
 
             var tooltip = $"{person.NickName.ToPossessive()} engagement in the streak '{streakTypeCache.Name}' for the last {unitsToDisplay} {timeUnits}. Each bar is a {timeUnit}.";
 
-            var chartHtml = $"<div class='rockbadge rockbadge-attendance{animateClass} rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml()}'></div>";
+            /*
+                10/14/2026 - MSE
+
+                The tooltip is placed in an HTML attribute, which the browser decodes once,
+                and badge tooltips are then rendered as HTML (BadgeControl sets html: true).
+                A person can set their own name (for example through a public signup form),
+                so the tooltip is HTML encoded twice to still be encoded when it is rendered.
+
+                Reason: Prevent stored XSS through a person's name in the badge tooltip.
+            */
+            var chartHtml = $"<div class='rockbadge rockbadge-attendance{animateClass} rockbadge-id-{badge.Id}' data-toggle='tooltip' data-original-title='{tooltip.EncodeHtml().EncodeHtml()}'></div>";
             var linkedPageGuid = GetAttributeValue( badge, AttributeKey.StreakDetailPage ).AsGuidOrNull();
             var linkedPageId = linkedPageGuid.HasValue ? PageCache.GetId( linkedPageGuid.Value ) : null;
 

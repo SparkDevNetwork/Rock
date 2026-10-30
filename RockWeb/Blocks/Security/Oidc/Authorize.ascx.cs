@@ -168,6 +168,19 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            // On a development site the OIDC server lets this page display its errors, so a request it already
+            // rejected (e.g. a redirect URI that isn't allowed) still reaches this block and must stop here.
+            var rejectedResponse = Context.GetOwinContext().GetOpenIdConnectResponse();
+            if ( rejectedResponse != null && rejectedResponse.Error.IsNotNullOrWhiteSpace() )
+            {
+                divContent.Visible = false;
+                ShowError( rejectedResponse.ErrorDescription.IsNotNullOrWhiteSpace()
+                    ? rejectedResponse.ErrorDescription.EncodeHtml()
+                    : "The application requesting access could not be verified." );
+                base.OnLoad( e );
+                return;
+            }
+
             // Get the auth client for the request
             var authClient = GetAuthClient();
             if ( authClient == null )
@@ -195,11 +208,11 @@ namespace RockWeb.Blocks.Security.Oidc
                 return;
             }
 
-            lNickName.Text = CurrentPerson.NickName;
+            lNickName.Text = CurrentPerson.NickName.EncodeHtml();
 
             // Check if this client has already approved the scopes. We'll look for the cookie and check that the scopes have not changed.
             var scopesApprovalCookieValue = RockPage.GetCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ) )?.Value;
-            var scopesPreviouslyApproved = Rock.Security.Encryption.DecryptString( scopesApprovalCookieValue ) == authClient.AllowedScopes.ToString();
+            var scopesPreviouslyApproved = AuthClientService.IsScopeCookieValueValid( scopesApprovalCookieValue, authClient, CurrentUser );
 
             // We have to use querystring, because something in the .net postback chain writes to the Response object which breaks the auth call.
             var action = PageParameter( PageParamKey.Action );
@@ -330,7 +343,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             if ( authClient != null )
             {
-                lClientName.Text = authClient.Name;
+                lClientName.Text = authClient.Name.EncodeHtml();
             }
         }
 
@@ -493,7 +506,7 @@ namespace RockWeb.Blocks.Security.Oidc
             ticket.SetResources( "resource_server" );
 
             // Set cookie to remember the fact that this individual as approved the scopes.
-            var cookieValue = $"{Rock.Security.Encryption.EncryptString( authClient.AllowedScopes.ToString() )}";
+            var cookieValue = AuthClientService.GetScopeCookieValue( authClient, CurrentUser );
             RockPage.AddOrUpdateCookie( AuthClientService.GetScopeCookieName( authClient, CurrentUser ), cookieValue, RockDateTime.Now.AddDays( authClient.ScopeApprovalExpiration ) );
 
             // Returning a SignInResult will ask ASOS to serialize the specified identity

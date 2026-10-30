@@ -547,6 +547,21 @@ ORDER BY d.[Date];",
             }
 
             var mergeFields = GetDynamicDataMergeFields();
+
+            /*
+                10/21/2026 - MSE
+
+                Page parameters are request values, and the SQL is text rendered with
+                Lava. The PageParameter merge field gets values that are blank when they
+                contain SQL quoting or comment characters, the same rule as the Dynamic
+                Data block. Query Params (@Name) are the supported way to pass page values
+                to the SQL.
+
+                Reason: Keep page parameters from changing the Dynamic Chart SQL text.
+            */
+            var sqlSafePageParameters = Rock.Reporting.ReportingHelper.GetSqlSafePageParameters( PageParameters().Select( p => new KeyValuePair<string, string>( p.Key, p.Value?.ToString() ) ) );
+            mergeFields.AddOrReplace( "PageParameter", sqlSafePageParameters );
+
             sql = sql.ResolveMergeFields( mergeFields );
 
             var parameters = GetParameters();

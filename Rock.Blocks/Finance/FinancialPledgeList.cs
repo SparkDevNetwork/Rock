@@ -227,10 +227,14 @@ namespace Rock.Blocks.Finance
             if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
                 var currentPerson = RequestContext.CurrentPerson;
-                if ( currentPerson != null && !string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
+                if ( currentPerson == null || string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
                 {
-                    query = query.Where( a => a.PersonAlias.Person.GivingId == currentPerson.GivingId );
+                    // No signed-in person means no pledges to show.
+                    return query.Where( a => false );
                 }
+
+                var givingId = currentPerson.GivingId;
+                query = query.Where( a => a.PersonAlias.Person.GivingId == givingId );
             }
             else
             {
@@ -286,19 +290,25 @@ namespace Rock.Blocks.Finance
         /// <inheritdoc/>
         protected override GridBuilder<FinancialPledge> GetGridBuilder()
         {
-            return new GridBuilder<FinancialPledge>()
+            var builder = new GridBuilder<FinancialPledge>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddField( "id", a => a.Id )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
                 .AddTextField( "account", a => a.Account?.Name )
                 .AddTextField( "group", a => a.Group?.Name ?? "" )
-                .AddField( "totalAmount", a => a.TotalAmount )
                 .AddTextField( "pledgeFrequency", a => a.PledgeFrequencyValue?.Value )
                 .AddField( "startDate", a => a.StartDate == DateTime.MinValue.Date ? ( DateTime? ) null : a.StartDate )
                 .AddField( "endDate", a => a.EndDate == DateTime.MaxValue.Date ? ( DateTime? ) null : a.EndDate )
                 .AddField( "modifiedDate", a => a.ModifiedDateTime )
                 .AddAttributeFields( GetGridAttributes() );
+
+            if ( !GetAttributeValue( AttributeKey.HideAmount ).AsBoolean() )
+            {
+                builder.AddField( "totalAmount", a => a.TotalAmount );
+            }
+
+            return builder;
         }
 
         #endregion

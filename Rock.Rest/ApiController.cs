@@ -286,11 +286,41 @@ namespace Rock.Rest
                 throw new HttpResponseException( HttpStatusCode.BadRequest );
             }
 
+            CheckNoUntrackedRelatedEntities( value );
+
+            /*
+                10/15/2026 - MSE
+
+                POST always inserts a new record and EF ignores the posted key, so the Id
+                in the body never names the record being saved. CheckCanEdit reloads the
+                stored record by Id, so a non-zero Id would authorize that existing record
+                in place of the posted values. Clearing the Id makes CheckCanEdit authorize
+                the posted values as a new record. We reset it instead of returning 400 so
+                clients that post a copy of an existing record keep working.
+
+                Reason: Authorize the record that will be inserted, not an existing one.
+            */
+            value.Id = 0;
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
 
             Service.Add( value );
+
+            /*
+                10/19/2026 - MSE
+
+                A new record never takes the storage columns (such as BinaryFile Path) from
+                the client. The FileSystem provider trusts a stored Path that starts with ~,
+                so a posted Path could point the record at any file under the web root.
+                Clearing them lets Rock set them from the file type when the record is saved.
+                Nothing may read ContentStream on the posted entity before this clear, because
+                the cached stream would survive it and be written by the storage provider.
+
+                Reason: Clients must not choose where a stored file lives.
+            */
+            NotClientWritableAttribute.ClearValues( Service.Context, value, typeof( T ) );
 
             if ( !value.IsValid )
             {
@@ -346,6 +376,19 @@ namespace Rock.Rest
             CheckCanEdit( targetModel );
 
             Service.SetValues( value, targetModel );
+
+            /*
+                10/19/2026 - MSE
+
+                PUT copies every mapped column, including the storage columns (such as
+                BinaryFile Path) that only Rock may set. The FileSystem provider trusts a
+                stored Path that starts with ~, so a posted Path could point the record at
+                any file under the web root. We put the stored values back instead of
+                rejecting the request so clients that echo the whole record keep working.
+
+                Reason: Clients must not choose where a stored file lives.
+            */
+            NotClientWritableAttribute.RestoreOriginalValues( Service.Context, targetModel, typeof( T ) );
 
             // The check above authorized the record as it is stored. Authorize it again with the
             // posted values applied, since they may change who is allowed to edit it.
@@ -421,8 +464,44 @@ namespace Rock.Rest
                     var propertyType = Nullable.GetUnderlyingType( property.PropertyType ) ?? property.PropertyType;
                     var currentValue = values[key];
 
+                    /*
+                        10/15/2026 - MSE
+
+                        Setting a navigation property changes the related record only when the
+                        changes are saved, after the permission checks below have run on the
+                        stored foreign key values. Related records are changed by their foreign
+                        key properties instead.
+
+                        Reason: Do not let PATCH change related records around the permission checks.
+                    */
+                    if ( IsNavigationProperty( property ) )
+                    {
+                        var response = ControllerContext.Request.CreateErrorResponse(
+                            HttpStatusCode.BadRequest,
+                            string.Format( "Cannot write {0}", key ) );
+                        throw new HttpResponseException( response );
+                    }
+
                     if ( property != null )
                     {
+                        /*
+                            10/19/2026 - MSE
+
+                            The storage columns (such as BinaryFile Path) are set only by Rock. The
+                            FileSystem provider trusts a stored Path that starts with ~, so a patched
+                            Path could point the record at any file under the web root. This applies
+                            to every caller, like the IsSystem rule.
+
+                            Reason: Clients must not choose where a stored file lives.
+                        */
+                        if ( NotClientWritableAttribute.GetPropertyNames( typeof( T ) ).Contains( property.Name ) )
+                        {
+                            var response = ControllerContext.Request.CreateErrorResponse(
+                                HttpStatusCode.BadRequest,
+                                string.Format( "Modifying property '{0}' is not permitted.", key ) );
+                            throw new HttpResponseException( response );
+                        }
+
                         if ( property.GetValue( targetModel ) == currentValue )
                         {
                             continue;
@@ -553,7 +632,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "DataView" )]
         [EnableQuery]
-        public IQueryable<T> GetDataView( int id )
+        public virtual IQueryable<T> GetDataView( int id )
         {
             /*
              * 4-JAN-2022 DMV
@@ -584,7 +663,7 @@ namespace Rock.Rest
         [ActionName( "InDataView" )]
         [EnableQuery]
         [HttpGet]
-        public bool InDataView( int dataViewId, int entityId )
+        public virtual bool InDataView( int dataViewId, int entityId )
         {
             /*
              * 4-JAN-2022 DMV
@@ -657,6 +736,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeGuid );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -665,7 +770,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeGuid, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -675,6 +780,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
@@ -701,6 +807,32 @@ namespace Rock.Rest
              *
              */
 
+            /*
+                10/16/2026 - MSE
+
+                Launching a workflow needs VIEW on its workflow type, the same rule as the
+                Workflow Launch and Workflow Entry blocks and the v2 launch endpoint. EDIT on
+                the controller only says the caller may use this endpoint. The check runs
+                before the entity is loaded so an unauthorized call does no work. The caller
+                is recorded as the initiator like every other launch path.
+
+                Reason: Staff could launch any workflow type with chosen values through any v1 controller.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
+            if ( workflowType == null )
+            {
+                // An unknown workflow type launches nothing, the same as before.
+                return;
+            }
+
+            var person = GetPerson();
+            if ( !CanLaunchWorkflowType( workflowType, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
+            var initiatorPersonAliasId = person?.PrimaryAliasId;
+
             T entity = null;
             if ( id > 0 )
             {
@@ -709,7 +841,7 @@ namespace Rock.Rest
 
             if ( entity != null )
             {
-                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, null );
+                entity.LaunchWorkflow( workflowTypeId, workflowName, workflowAttributeValues, initiatorPersonAliasId );
             }
             else
             {
@@ -719,6 +851,7 @@ namespace Rock.Rest
                     transaction.WorkflowAttributeValues = workflowAttributeValues;
                 }
 
+                transaction.InitiatorPersonAliasId = initiatorPersonAliasId;
                 transaction.Enqueue();
             }
         }
@@ -734,7 +867,7 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "FollowedItems" )]
         [EnableQuery]
-        public IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
+        public virtual IQueryable<T> GetFollowedItems( int? personId = null, int? personAliasId = null )
         {
             /*
              * 4-JAN-2022 DMV
@@ -999,8 +1132,38 @@ namespace Rock.Rest
                 var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
                 var proxyModel = rockContext.Set<T>().Create();
 
-                service.Add( proxyModel );
+                /*
+                    10/27/2026 - MSE
+
+                    Attach the copy with the DbSet instead of service.Add. SetValues needs the
+                    copy to be tracked, but some services run their own rules in Add (for example
+                    StepService checks the StepTypeId), and the copy is still empty at this point,
+                    so those rules fail for valid values. On POST the real insert still goes
+                    through service.Add, so those rules still run on the record that is saved.
+
+                    Reason: Creating a Step through the REST API failed for a valid step type.
+                */
+                rockContext.Set<T>().Add( proxyModel );
                 service.SetValues( ( T ) securedModel, proxyModel );
+
+                /*
+                    10/15/2026 - MSE
+
+                    Some IsAuthorized overrides grant EDIT to the record's author (for example
+                    Note) or to the record itself (Person matches on Guid), and SetValues copied
+                    the posted CreatedByPersonAliasId and Guid onto this copy. A caller could name
+                    themselves as author, or post their own Guid, to skip the check. Clear the
+                    author and Id and give the copy a new Guid so it is checked as a brand new
+                    record. This copy is never saved, so the record being inserted is not affected.
+
+                    Reason: Do not let posted audit values or Guid grant EDIT on a new record.
+                */
+                proxyModel.Id = 0;
+                proxyModel.Guid = Guid.NewGuid();
+                if ( proxyModel is IModel proxyAuditModel )
+                {
+                    proxyAuditModel.CreatedByPersonAliasId = null;
+                }
 
                 if ( proxyModel is ISecured securedProxy )
                 {
@@ -1041,7 +1204,137 @@ namespace Rock.Rest
 
                 // Must run while this context is open so related records can lazy-load.
                 CheckCanEdit( ( ISecured ) updatedModel );
+
+                /*
+                    10/15/2026 - MSE
+
+                    The copy above keeps the stored Id and author, so IsAuthorized overrides that
+                    grant EDIT to the author (such as Note) still pass after the record is moved
+                    under a parent the person could never add to. A record moved under a different
+                    parent must meet the same bar as creating it there.
+
+                    Reason: Authorize a parent change like a create under the new parent.
+                */
+                if ( GetParentAuthorityKey( updatedModel as ISecured ) != GetStoredParentAuthorityKey( entity.Id )
+                    && !IsAuthorizedForNewModel( ( ISecured ) entity, GetPerson() ) )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
             }
+        }
+
+        /// <summary>
+        /// Checks that the current person can administrate the REST controller that
+        /// serves this request. Use it for records that are not secured themselves but
+        /// hold administrator settings.
+        /// </summary>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected void CheckCanAdministrateController()
+        {
+            /*
+                10/16/2026 - MSE
+
+                Records that are not ISecured have no record security, so the only gate on a
+                v1 write is the REST controller rule, and staff hold EDIT on every controller
+                through the seeded entity type rule. Controllers for administrator settings
+                call this to require ADMINISTRATE on the controller, which by default only
+                Rock Administration holds. An unknown controller falls back to a new
+                RestController the same way SecuredAttribute does.
+
+                This must stay protected. Web API treats public methods as actions, so a
+                public method would add an endpoint and new RestAction rows.
+
+                Reason: Staff must not change administrator settings through v1 REST.
+            */
+            ISecured controller = RestControllerCache.Get( GetType().FullName );
+            if ( controller == null )
+            {
+                controller = new RestController();
+            }
+
+            if ( !controller.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+        }
+
+        /// <summary>
+        /// Gets a key that identifies the parent authorities of the secured item.
+        /// </summary>
+        /// <param name="secured">The secured item.</param>
+        /// <returns>A string made from the type and identifier of each parent authority.</returns>
+        private static string GetParentAuthorityKey( ISecured secured )
+        {
+            if ( secured == null )
+            {
+                return string.Empty;
+            }
+
+            return $"{secured.ParentAuthority?.TypeId}:{secured.ParentAuthority?.Id}|{secured.ParentAuthorityPre?.TypeId}:{secured.ParentAuthorityPre?.Id}";
+        }
+
+        /// <summary>
+        /// Gets the parent authority key of the model as it is stored in the database.
+        /// The caller's tracked model is not saved yet, so this reads the stored parent
+        /// without touching the tracked model's navigation properties.
+        /// </summary>
+        /// <param name="id">The identifier of the model.</param>
+        /// <returns>The parent authority key of the stored model.</returns>
+        private string GetStoredParentAuthorityKey( int id )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Configuration.ProxyCreationEnabled = true;
+
+                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
+
+                return GetParentAuthorityKey( service.Get( id ) as ISecured );
+            }
+        }
+
+        /// <summary>
+        /// Checks that the posted model does not carry related records that would be
+        /// inserted along with it.
+        /// </summary>
+        /// <param name="value">The posted model that is about to be added.</param>
+        /// <exception cref="System.Web.Http.HttpResponseException"></exception>
+        protected void CheckNoUntrackedRelatedEntities( T value )
+        {
+            /*
+                10/15/2026 - MSE
+
+                Adding the posted model also inserts every related record it carries (such as
+                a note's ChildNotes or a group member's Person), and only the posted model itself
+                is authorized. A caller could nest a record they are not allowed to add (such as
+                a note in a restricted note type) inside one they are. Related records must be
+                posted on their own so they get their own permission check. We return 400
+                instead of dropping them so a client never loses data without knowing it.
+                Records already loaded by this request (such as the categories the Attributes
+                controller loads) are not inserted, so they are allowed.
+
+                Reason: Authorize every record a POST inserts.
+            */
+            var propertyName = GetUntrackedRelatedEntityPropertyName( value, Service.Context, IsRelatedEntityCollectionAllowed );
+
+            if ( propertyName != null )
+            {
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest,
+                    string.Format( "Related records in {0} cannot be saved with this record. Save them separately.", propertyName ) );
+                throw new HttpResponseException( response );
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the related records in the named collection property may be
+        /// inserted along with a posted model. Only allow a collection whose records take
+        /// their permissions from the posted model, since they are not checked on their own.
+        /// </summary>
+        /// <param name="propertyName">The name of the collection property.</param>
+        /// <returns><c>true</c> if the related records may be inserted with the posted model; otherwise <c>false</c>.</returns>
+        protected virtual bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            return false;
         }
 
         /// <summary>

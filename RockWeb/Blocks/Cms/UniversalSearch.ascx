@@ -88,6 +88,7 @@
                                     <Rock:RockCheckBox ID="cbShowScores" runat="server" Label="Show Scores" Help="Enables the display of scores for help with debugging." />
                                     <Rock:RockCheckBox ID="cbUseCustomResults" runat="server" Label="Use Custom Results Template" Help="Determines if the custom Lava results template should be used." />
                                     <Rock:RockCheckBox ID="cbShowFilter" runat="server" Label="Show Model Filter" />
+                                    <Rock:RockCheckBox ID="cbAllowSmartSearchRequests" runat="server" Label="Allow Smart Search Requests" Help="When enabled, requests from the Smart Search (SmartSearch page parameter) use the global Smart Search settings instead of this block's models and filters. Only enable this on the internal Smart Search results page; on a public page it lets any visitor search every Smart Search entity type, including people." />
                                 </div>
                                 <div class="col-md-6">
                                     <Rock:RockTextBox ID="tbBaseFieldFilters" runat="server" Label="Base Field Filters" Help="These field filters will always be enabled and will not be changeable by the individual. Uses the same syntax as the lava command." />

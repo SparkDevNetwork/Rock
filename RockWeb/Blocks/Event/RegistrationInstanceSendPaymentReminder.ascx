@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RegistrationInstanceSendPaymentReminder.ascx.cs" Inherits="RockWeb.Blocks.Event.RegistrationInstancePaymentReminder" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -20,7 +21,7 @@
                         <div class="col-md-12">
                             <label>Message</label>
                             <Rock:Toggle ID="tglEmailBodyView" runat="server" CssClass="pull-right" ActiveButtonCssClass="btn-info" ButtonSizeCssClass="btn-xs" OnText="Preview" OffText="Source" Checked="true" OnCheckedChanged="tglEmailBodyView_CheckedChanged" />
-                            <iframe id="ifEmailPreview" runat="server" style="width: 100%; height: 400px;" />
+                            <iframe id="ifEmailPreview" runat="server" sandbox="allow-popups allow-popups-to-escape-sandbox" style="width: 100%; height: 400px;" />
                             <Rock:CodeEditor ID="ceEmailMessage" runat="server" EditorHeight="400" Visible="false" />
                         </div>
                     </div>
@@ -33,7 +34,7 @@
                             <Rock:SelectField />
                             <Rock:RockTemplateField HeaderText="Name" SortExpression="Name">
                                 <ItemTemplate>
-                                    <%# Eval("LastName") %>, <%# Eval("FirstName") %>
+                                    <%# ( Eval( "LastName" ) as string ).EncodeHtml() %>, <%# ( Eval( "FirstName" ) as string ).EncodeHtml() %>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockTemplateField HeaderText="Date Registered" SortExpression="CreatedDateTime">

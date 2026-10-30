@@ -18,12 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using HttpStatusCode = System.Net.HttpStatusCode;
+using System.Web.Http;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Rest.Filters;
+using Rock.Security;
+using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
 {
@@ -32,6 +37,69 @@ namespace Rock.Rest.Controllers
     /// </summary>
     public partial class MetricsController
     {
+        /// <inheritdoc/>
+        protected override void CheckCanEdit( Metric entity )
+        {
+            base.CheckCanEdit( entity );
+
+            /*
+                10/25/2026 - MSE
+
+                Staff inherit EDIT on v1 REST controllers, and metric EDIT is also used for
+                value entry. New SQL or Lava metrics can run code as the application, so their
+                creation needs controller ADMINISTRATE, like block ADMINISTRATE in Metric Detail.
+                Check dormant source text too, so it cannot be planted through a different type.
+
+                Reason: Value editors must not author metric source code through v1 REST.
+            */
+            if ( entity != null && entity.Id == 0 )
+            {
+                var sourceTypeGuid = DefinedValueCache.Get( entity.SourceValueTypeId ?? 0 )?.Guid;
+                bool hasExecutableSource = sourceTypeGuid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid()
+                    || sourceTypeGuid == Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid()
+                    || !string.IsNullOrEmpty( entity.SourceSql )
+                    || !string.IsNullOrEmpty( entity.SourceLava );
+
+                if ( hasExecutableSource )
+                {
+                    CheckCanAdministrateController();
+                }
+            }
+        }
+
+        /// <inheritdoc/>
+        protected override void CheckCanEditAfterUpdate( Metric entity )
+        {
+            base.CheckCanEditAfterUpdate( entity );
+
+            /*
+                10/25/2026 - MSE
+
+                Only source changes need ADMINISTRATE. Full updates that echo unchanged source
+                and ordinary metadata updates must still work for metric editors. Authorize
+                against the stored metric so posted values cannot supply their own permission.
+
+                Reason: Source authoring must have the same authority through every v1 write.
+            */
+            using ( var rockContext = new RockContext() )
+            {
+                var storedMetric = new MetricService( rockContext ).Get( entity.Id );
+                if ( storedMetric == null )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
+                bool sourceChanged = entity.SourceValueTypeId != storedMetric.SourceValueTypeId
+                    || !string.Equals( entity.SourceSql ?? string.Empty, storedMetric.SourceSql ?? string.Empty, StringComparison.Ordinal )
+                    || !string.Equals( entity.SourceLava ?? string.Empty, storedMetric.SourceLava ?? string.Empty, StringComparison.Ordinal );
+
+                if ( sourceChanged && !storedMetric.IsAuthorized( Authorization.ADMINISTRATE, GetPerson() ) )
+                {
+                    CheckCanAdministrateController();
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the HTML for a LiquidDashboardWidget block
         /// </summary>
@@ -39,10 +107,16 @@ namespace Rock.Rest.Controllers
         /// <param name="entityTypeId">The entity type identifier.</param>
         /// <param name="entityId">The entity identifier.</param>
         /// <returns></returns>
+        [Authenticate]
         [System.Web.Http.Route( "api/Metrics/GetHtmlForBlock/{blockId}" )]
         [Rock.SystemGuid.RestActionGuid( "B67ED75B-94AB-49B7-9E36-84B845FB20D3" )]
         public string GetHtmlForBlock( int blockId, int? entityTypeId = null, int? entityId = null )
         {
+            if ( !CanViewDashboardWidgetBlock( BlockCache.Get( blockId ), GetPerson() ) )
+            {
+                return GetBlockNotFoundHtml( blockId );
+            }
+
             RockContext rockContext = this.Service.Context as RockContext ?? new RockContext();
             Block block = new BlockService( rockContext ).Get( blockId );
             if ( block != null )
@@ -63,7 +137,7 @@ namespace Rock.Rest.Controllers
 
                 if ( metrics.Count() == 0 )
                 {
-                    return @"<div class='alert alert-warning'> 
+                    return @"<div class='alert alert-warning'>
 								Please select a metric in the block settings.
 							</div>";
                 }
@@ -168,8 +242,49 @@ namespace Rock.Rest.Controllers
                 return resultHtml;
             }
 
+            return GetBlockNotFoundHtml( blockId );
+        }
+
+        /// <summary>
+        /// Determines whether the person can view the block as a Lava Dashboard Widget. Matches
+        /// the page rendering rules: block VIEW, EDIT or ADMINISTRATE plus page VIEW.
+        /// </summary>
+        /// <param name="blockCache">The block, or <c>null</c> if it was not found.</param>
+        /// <param name="person">The current person, or <c>null</c> if anonymous.</param>
+        /// <returns><c>true</c> if the block is a Lava Dashboard Widget the person can view; otherwise <c>false</c>.</returns>
+        private static bool CanViewDashboardWidgetBlock( BlockCache blockCache, Person person )
+        {
+            if ( blockCache == null || blockCache.BlockType?.Guid != Rock.SystemGuid.BlockType.REPORTING_LAVA_DASHBOARD_WIDGET.AsGuid() )
+            {
+                return false;
+            }
+
+            var canViewBlock = blockCache.IsAuthorized( Authorization.VIEW, person )
+                || blockCache.IsAuthorized( Authorization.EDIT, person )
+                || blockCache.IsAuthorized( Authorization.ADMINISTRATE, person );
+
+            if ( !canViewBlock )
+            {
+                return false;
+            }
+
+            if ( !blockCache.PageId.HasValue )
+            {
+                return true;
+            }
+
+            return PageCache.Get( blockCache.PageId.Value )?.IsAuthorized( Authorization.VIEW, person ) == true;
+        }
+
+        /// <summary>
+        /// Gets the alert HTML returned when a block cannot be found or cannot be viewed.
+        /// </summary>
+        /// <param name="blockId">The block identifier.</param>
+        /// <returns>The alert HTML.</returns>
+        private static string GetBlockNotFoundHtml( int blockId )
+        {
             return string.Format(
-                @"<div class='alert alert-danger'> 
+                @"<div class='alert alert-danger'>
                     unable to find block_id: {0}
                 </div>",
                 blockId );

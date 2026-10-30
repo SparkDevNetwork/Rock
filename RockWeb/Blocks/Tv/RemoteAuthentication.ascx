@@ -29,6 +29,7 @@
             <asp:Literal ID="lHeaderInfo" runat="server" />
 
             <Rock:RockTextBox ID="txtSecurityCode" runat="server" CssClass="code-entry" />
+            <asp:HiddenField ID="hfConfirmationToken" runat="server" />
 
             <asp:LinkButton ID="btnSubmit" runat="server" CssClass="btn btn-primary btn-remoteauth my-2" Text="Submit" OnClick="btnSubmit_Click" />
 

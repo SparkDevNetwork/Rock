@@ -30,6 +30,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using Humanizer;
 using Rock.Communication;
+using Rock.Security;
 
 namespace RockWeb.Blocks.Event
 {
@@ -45,6 +46,8 @@ namespace RockWeb.Blocks.Event
         #region Fields
 
         private RegistrationInstance _registrationInstance = null;
+
+        private bool? _canViewRegistrationInstance;
 
         #endregion
 
@@ -75,6 +78,16 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                pnlSend.Visible = false;
+                pnlComplete.Visible = true;
+                nbResult.NotificationBoxType = NotificationBoxType.Warning;
+                nbResult.Text = "The registration instance could not be found or you are not authorized to view it.";
+                base.OnLoad( e );
+                return;
+            }
+
             if ( !Page.IsPostBack )
             {
                 LoadData();
@@ -107,6 +120,11 @@ namespace RockWeb.Blocks.Event
         /// <exception cref="System.NotImplementedException"></exception>
         private void gRegistrations_GridRebind( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             LoadOutstandingBalances();
         }
 
@@ -117,6 +135,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSendReminders_Click( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             var registrationsSelected = new List<int>();
 
             int sendCount = 0;
@@ -159,7 +182,10 @@ namespace RockWeb.Blocks.Event
                                 emailMessage.AppRoot = ResolveRockUrl( "~/" );
                                 emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
                                 emailMessage.CreateCommunicationRecord = true;
-                                emailMessage.Send();
+                                using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                                {
+                                    emailMessage.Send();
+                                }
 
                                 registration.LastPaymentReminderDateTime = RockDateTime.Now;
                                 rockContext.SaveChanges();
@@ -215,6 +241,11 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tglEmailBodyView_CheckedChanged( object sender, EventArgs e )
         {
+            if ( !CanViewRegistrationInstance() )
+            {
+                return;
+            }
+
             if ( tglEmailBodyView.Checked )
             {
                 ceEmailMessage.Visible = false;
@@ -242,10 +273,10 @@ namespace RockWeb.Blocks.Event
                             mergeObjects.Add( "Registration", registrationSample );
                             mergeObjects.Add( "RegistrationInstance", _registrationInstance );
 
-                            ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
-                            
-                            // needed to work in IE
-                            ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
+                            using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                            {
+                                ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                            }
                         }
                     }
                 }
@@ -259,6 +290,47 @@ namespace RockWeb.Blocks.Event
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Determines whether the current person can view the registration
+        /// instance in the page parameter. The result is cached for the request.
+        /// </summary>
+        /// <returns><c>true</c> if the instance exists and the person can view it.</returns>
+        private bool CanViewRegistrationInstance()
+        {
+            /*
+                10/16/2026 - MSE
+
+                The block loads the instance from the page parameter in several
+                places (LoadData, the balance grid, send and preview), so a person
+                could swap in the Id of an instance they are not allowed to see and
+                get its registrations, balances and preview, or send reminders.
+                Every entry point calls this one cached check. VIEW on the instance
+                falls back to the template and its category, which is eager loaded
+                because the query is AsNoTracking.
+
+                Reason: Send Payment Reminder skipped VIEW on the registration instance.
+            */
+            if ( !_canViewRegistrationInstance.HasValue )
+            {
+                var registrationInstanceId = PageParameter( "RegistrationInstanceId" ).AsIntegerOrNull();
+
+                using ( var rockContext = new RockContext() )
+                {
+                    var registrationInstance = registrationInstanceId.HasValue
+                        ? new RegistrationInstanceService( rockContext ).Queryable()
+                            .Include( r => r.RegistrationTemplate.Category )
+                            .AsNoTracking()
+                            .FirstOrDefault( r => r.Id == registrationInstanceId.Value )
+                        : null;
+
+                    _canViewRegistrationInstance = registrationInstance != null
+                        && registrationInstance.IsAuthorized( Authorization.VIEW, CurrentPerson );
+                }
+            }
+
+            return _canViewRegistrationInstance.Value;
+        }
 
         /// <summary>
         /// Loads the registration.
@@ -297,14 +369,25 @@ namespace RockWeb.Blocks.Event
 
                         ceEmailMessage.Text = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate;
 
-                        ifEmailPreview.Attributes["srcdoc"] = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
+                        /*
+                            10/16/2026 - MSE
 
-                        // needed to work in IE
-                        ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
+                            The preview holds the email merged with registrant data, which an anonymous
+                            registrant can fill with HTML. The ifEmailPreview iframe in the markup has
+                            sandbox="allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run
+                            script in Rock's origin. Never add allow-scripts: a same-origin frame that may
+                            run script can remove its own sandbox. The old IE javascript: src fallback was
+                            removed because every supported browser uses srcdoc.
 
-                        txtFromEmail.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
-                        txtFromName.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );
-                        txtFromSubject.Text = _registrationInstance.RegistrationTemplate.PaymentReminderSubject.ResolveMergeFields( mergeObjects );
+                            Reason: Stop stored XSS through the payment reminder email preview.
+                        */
+                        using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                        {
+                            ifEmailPreview.Attributes["srcdoc"] = _registrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.ResolveMergeFields( mergeObjects );
+                            txtFromEmail.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromEmail.ResolveMergeFields( mergeObjects );
+                            txtFromName.Text = _registrationInstance.RegistrationTemplate.PaymentReminderFromName.ResolveMergeFields( mergeObjects );
+                            txtFromSubject.Text = _registrationInstance.RegistrationTemplate.PaymentReminderSubject.ResolveMergeFields( mergeObjects );
+                        }
 
                         if ( _registrationInstance.RegistrationTemplate.PaymentReminderTimeSpan.HasValue )
                         {

@@ -205,7 +205,7 @@ namespace RockWeb.Blocks.Groups
             if ( groupMember != null )
             {
                 lPersonNameHtml.Text = string.Format( photoFormat, groupMember.PersonId, groupMember.Person.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) )
-                    + groupMember.ToString();
+                    + groupMember.ToString().EncodeHtml();
 
                 string personUrl = this.ResolveUrl( string.Format( "~/Person/{0}", groupMember.PersonId ) );
                 lPersonProfileLink.Text = string.Format( @"<a href='{0}'><div class='btn btn-default btn-sm'><i class='ti ti-user'></i></div></a>", personUrl );

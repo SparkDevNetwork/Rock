@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.Security
@@ -34,7 +35,8 @@ namespace Rock.Security
     /// Blocked creation returns <c>TokenProhibited</c>, which every token consumer already rejects.
     /// </para>
     /// </remarks>
-    internal sealed class PersonTokenScope : IDisposable
+    [RockInternal( "17.12" )]
+    public sealed class PersonTokenScope : IDisposable
     {
         #region Fields
 
@@ -76,7 +78,7 @@ namespace Rock.Security
         /// </summary>
         /// <param name="personId">The identifier of the person the token would represent.</param>
         /// <returns><c>true</c> if no active scope blocks the person; otherwise <c>false</c>.</returns>
-        public static bool IsTokenAllowed( int personId )
+        internal static bool IsTokenAllowed( int personId )
         {
             for ( var scope = _currentScope.Value; scope != null; scope = scope._parentScope )
             {

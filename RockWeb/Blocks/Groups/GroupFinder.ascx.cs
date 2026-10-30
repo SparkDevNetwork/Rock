@@ -307,8 +307,16 @@ namespace RockWeb.Blocks.Groups
 
         private static class AttributeDefaultLava
         {
+            /*
+                10/19/2026 - MSE
+
+                The map info window is rendered as HTML and group names can be set by group
+                editors, so the default template escapes the group name.
+
+                Reason: Prevent stored XSS through group names in the default info window.
+            */
             public const string MapInfo = @"
-<h4 class='margin-t-none'>{{ Group.Name }}</h4> 
+<h4 class='margin-t-none'>{{ Group.Name | Escape }}</h4> 
 
 <div class='margin-b-sm'>
 {% for attribute in Group.AttributeValues %}
@@ -888,7 +896,15 @@ namespace RockWeb.Blocks.Groups
 
             if ( targetPerson != null )
             {
-                lTitle.Text = string.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName );
+                /*
+                    10/18/2026 - MSE
+
+                    The person comes from the PersonGuid query string and their name can be set
+                    by that person, so it is encoded before it is written into the title markup.
+
+                    Reason: Person names are plain text and must not render as HTML.
+                */
+                lTitle.Text = string.Format( "<h4 class='margin-t-none'>Groups for {0}</h4>", targetPerson.FullName.EncodeHtml() );
                 acAddress.SetValues( targetPersonLocation );
                 acAddress.Visible = false;
                 phFilterControls.Visible = false;
@@ -897,13 +913,13 @@ namespace RockWeb.Blocks.Groups
 
                 if ( targetPersonLocation != null && targetPersonLocation.GeoPoint != null )
                 {
-                    lTitle.Text += string.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>Search based on: {0}</p>", targetPersonLocation.ToString().EncodeHtml() );
 
                     ShowResults();
                 }
                 else if ( targetPersonLocation != null )
                 {
-                    lTitle.Text += string.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString() );
+                    lTitle.Text += string.Format( "<p>The position of the address on file ({0}) could not be determined.</p>", targetPersonLocation.ToString().EncodeHtml() );
                 }
                 else
                 {
@@ -1890,6 +1906,17 @@ namespace RockWeb.Blocks.Groups
                 zoomAmount = "null";
             }
 
+            /*
+                10/18/2026 - MSE
+
+                The htmlDecode function in the script below decodes group names for the marker
+                titles. Those names are not encoded, can be set by group editors and are shown to
+                anonymous visitors on this public page, so it must not parse them as HTML. It
+                sets them on a textarea, which only decodes character references and keeps tags
+                as text, instead of a div, which would create elements and run their handlers.
+
+                Reason: Prevent stored XSS through group names in map marker titles.
+            */
             // write script to page
             string mapScriptFormat = @"
 
@@ -2258,9 +2285,9 @@ namespace RockWeb.Blocks.Groups
         }}
 
         function htmlDecode(input) {{
-            var e = document.createElement('div');
-            e.innerHTML = input;
-            return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+            var e = document.createElement('textarea');
+            e.innerHTML = input == null ? '' : input;
+            return e.value;
         }}
 
         function getNextPolygonColor() {{
@@ -2296,14 +2323,25 @@ namespace RockWeb.Blocks.Groups
         }}
 ";
 
+            /*
+                10/18/2026 - MSE
+
+                These JSON strings are written into an inline startup script, so a group
+                name containing "</script>" could end the script block and inject markup.
+                Each "<" is replaced with the JSON escape \u003c (before the backslashes
+                are doubled for the JS string literal) so JSON.parse still returns the
+                same values but the page source never contains a raw "<".
+
+                Reason: Prevent script breakout through group, location and fence data.
+            */
             var locationJson = location != null ?
-                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", location.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var fencesJson = fences != null && fences.Any() ?
-                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", fences.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var groupsJson = groups != null && groups.Any() ?
-                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
+                string.Format( "JSON.parse('{0}')", groups.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty ) ) : "null";
 
             var markerDefinedValueId = GetAttributeValue( AttributeKey.MapMarker ).AsIntegerOrNull();
             var marker = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";

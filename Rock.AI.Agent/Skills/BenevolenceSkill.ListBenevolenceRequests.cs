@@ -24,6 +24,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.FinanceSkill;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills;
@@ -61,6 +62,22 @@ internal sealed partial class BenevolenceSkill
         {
             return helper.ErrorResult;
         }
+
+        /*
+            10/23/2026 - MSE
+
+            A benevolence type can be visible while an individual request is
+            denied. Check each request before paging so the tool follows the
+            request list permissions and keeps page sizes and counts correct.
+
+            Reason: Prevent listing benevolence requests without VIEW permission.
+        */
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var allowedIds = query.ToList()
+            .Where( br => br.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .Select( br => br.Id )
+            .ToList();
+        query = query.Where( br => allowedIds.Contains( br.Id ) );
 
         var projectionQry = query
             .OrderByDescending( br => br.RequestDateTime )

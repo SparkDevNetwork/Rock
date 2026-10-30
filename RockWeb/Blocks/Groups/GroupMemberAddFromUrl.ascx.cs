@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Groups
 </div>" )]
 
     [EnumField("Group Member Status", "The status to use when adding a person to the group.", typeof(GroupMemberStatus), true, "Active")]
-    [GroupTypesField( "Limit Group Type", "To ensure that people cannot modify the URL and try adding themselves to standard Rock security groups with known Id numbers you can limit which Group Type that are considered valid during add.", false )]
+    [GroupTypesField( "Limit Group Type", "The group types that people can be added to from a link. Required: when blank, the block adds no one. Security role groups are not supported.", true )]
     [BooleanField( "Enable Passing Group Id", "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.", true, "" )]
 
     [Rock.SystemGuid.BlockTypeGuid( "42CF3822-A70C-4E07-9394-21607EED7018" )]
@@ -103,7 +103,32 @@ namespace RockWeb.Blocks.Groups
             {
                 RockContext rockContext = new RockContext();
                 var groupService = new GroupService( rockContext );
-                
+
+                /*
+                    10/19/2026 - MSE
+
+                    Limit Group Type is required. The block adds no one until an administrator
+                    selects the group types it may add people to, and it never accepts the
+                    Security Role group type. These checks run before any value from the URL
+                    is read so a misconfigured block makes no changes.
+
+                    Reason: Only add people to group types an administrator has allowed.
+                */
+                var allowedGroupTypeGuids = GetAttributeValue( "LimitGroupType" ).SplitDelimitedValues().AsGuidList();
+                if ( !allowedGroupTypeGuids.Any() )
+                {
+                    lAlerts.Text = "This block is not configured. An administrator must select one or more group types in the Limit Group Type setting.";
+                    base.OnLoad( e );
+                    return;
+                }
+
+                if ( allowedGroupTypeGuids.Contains( Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() ) )
+                {
+                    lAlerts.Text = "Security role groups are not supported by this block. An administrator must remove the Security Role group type from the Limit Group Type setting.";
+                    base.OnLoad( e );
+                    return;
+                }
+
                 Group group = null;
                 Guid personGuid = Guid.Empty;
                 GroupTypeRole groupMemberRole = null;
@@ -140,19 +165,27 @@ namespace RockWeb.Blocks.Groups
                     return;
                 }
 
-                // Validate the group type.
-                if ( !string.IsNullOrEmpty( GetAttributeValue( "LimitGroupType" ) ) )
-                {
-                    bool groupTypeMatch = GetAttributeValue( "LimitGroupType" )
-                        .Split( ',' )
-                        .Contains( group.GroupType.Guid.ToString(), StringComparer.CurrentCultureIgnoreCase );
+                /*
+                    10/19/2026 - MSE
 
-                    if ( !groupTypeMatch )
-                    {
-                        lAlerts.Text = "Invalid group specified.";
-                        base.OnLoad( e );
-                        return;
-                    }
+                    The group, whether it came from the URL or the Default Group setting,
+                    must be of one of the allowed group types, and it must never be a
+                    security role group, whatever the block settings say.
+
+                    Reason: Only add people to allowed groups, never to security roles.
+                */
+                if ( !allowedGroupTypeGuids.Contains( group.GroupType.Guid ) )
+                {
+                    lAlerts.Text = "Invalid group specified.";
+                    base.OnLoad( e );
+                    return;
+                }
+
+                if ( group.IsSecurityRoleOrSecurityGroupType() )
+                {
+                    lAlerts.Text = "Invalid group specified.";
+                    base.OnLoad( e );
+                    return;
                 }
 
                 // get group role id from url

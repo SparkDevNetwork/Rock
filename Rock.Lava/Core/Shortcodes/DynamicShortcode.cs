@@ -163,25 +163,12 @@ namespace Rock.Lava
 
             parms.AddOrReplace( "RecursionDepth", originalRecursionDepth + 1 );
 
-            var securityCheckRequired = true;
-
-            // Resolve the merge fields in the shortcode template in a separate context, using the set of merge fields that have been modified by the shortcode parameters.
-            // Apply the set of enabled commands specified by the shortcode definition, or those enabled for the current context if none are defined by the shortcode.
-            // The result is a shortcode template that is ready to be processed to final output by resolving the content elements specified by the user.
-            var shortcodeEnabledCommands = _shortcode.EnabledLavaCommands ?? new List<string>();
-
-            shortcodeEnabledCommands = shortcodeEnabledCommands.Where( x => !string.IsNullOrWhiteSpace( x ) ).ToList();
-
-            if ( !shortcodeEnabledCommands.Any() )
-            {
-                shortcodeEnabledCommands = context.GetEnabledCommands();
-
-                // If the enabled commands are inherited from the current context, no security check is needed when rendering the block content.
-                securityCheckRequired = false;
-            }
-
-            var shortcodeTemplateContext = _engine.NewRenderContext( internalMergeFields, shortcodeEnabledCommands );
-            var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( shortcodeTemplateContext ) );
+            // Resolve the block content in a separate context, using the set of merge fields that have been modified by the shortcode parameters.
+            // The block content is written by the author of the calling template, so it is rendered with the commands enabled for the caller only.
+            // The commands enabled by the shortcode definition apply only to the shortcode template markup rendered below.
+            var callerEnabledCommands = context.GetEnabledCommands();
+            var blockContentContext = _engine.NewRenderContext( internalMergeFields, callerEnabledCommands );
+            var blockMarkupRenderResult = _engine.RenderTemplate( _blockMarkup.ToString(), LavaRenderParameters.WithContext( blockContentContext ) );
             var shortcodeTemplateMarkup = blockMarkupRenderResult.Text;
 
             // Extract child elements from the shortcode template content.
@@ -233,48 +220,6 @@ namespace Rock.Lava
             // Set the blockContent merge field even if there is no content to prevent parent shortcodes from bleeding into their children.
             parms.AddOrReplace( "blockContent", residualMarkup );
 
-            if ( blockHasContent )
-            {
-                if ( securityCheckRequired )
-                {
-                    // If the commands enabled for the current render context are a superset of the commands enabled for the shortcode,
-                    // we can bypass the security check.
-                    var blockEnabledCommands = context.GetEnabledCommands();
-
-                    securityCheckRequired = !blockEnabledCommands.Contains( "All", StringComparer.OrdinalIgnoreCase )
-                        && shortcodeEnabledCommands.Except( blockEnabledCommands ).Any();
-                }
-
-                if ( securityCheckRequired )
-                {
-                    // Render the user content of the shortcode with the current template permissions to check for security errors.
-                    // We do not want to allow the user to gain access to any elevated permissions that are granted to the shortcode
-                    // for its internal rendering.
-                    // Note that in some situations, the template may fail to render for other reasons - for example, where the previous render operation has
-                    // introduced invalid Lava as the output of a {% raw %} tag. Consequently, this method of verifying security is unreliable
-                    // and should be replaced with a more robust implementation in the future.
-                    // This could be achieved with a refined render process that is capable of replacing merge fields while leaving tags and blocks intact.
-                    var securityRenderParameters = new LavaRenderParameters
-                    {
-                        Context = context,
-                        ExceptionHandlingStrategy = ExceptionHandlingStrategySpecifier.RenderToOutput
-                    };
-
-                    var securityCheckResult = _engine.RenderTemplate( _blockMarkup.ToString(), securityRenderParameters );
-
-                    var securityErrorPattern = new Regex( string.Format( Constants.Messages.NotAuthorizedMessage, ".*" ) );
-                    var securityErrorMatch = securityErrorPattern.Match( securityCheckResult.Text );
-
-                    // If the security check failed, return the error message.
-                    if ( securityErrorMatch.Success )
-                    {
-                        result.Write( securityErrorMatch.Value );
-
-                        return;
-                    }
-                }
-            }
-
             var isIsolatedScope = _shortcode.ShortcodeScopeBehavior == Enums.Cms.ShortcodeScopeBehavior.Isolated;
             if ( isIsolatedScope )
             {
@@ -309,6 +254,12 @@ namespace Rock.Lava
                 if ( isIsolatedScope )
                 {
                     context.ExitChildScope();
+                }
+                else
+                {
+                    // A Shared scope shares the shortcode's variables with the caller, but not its Lava commands.
+                    // Restore the caller's enabled commands so the rest of the calling template cannot use the shortcode's commands.
+                    context.SetEnabledCommands( callerEnabledCommands );
                 }
             }
 

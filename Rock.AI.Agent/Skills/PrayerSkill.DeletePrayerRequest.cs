@@ -39,11 +39,27 @@ internal sealed partial class PrayerSkill
         var helper = new AgentToolHelper( rockContext, AgentRequestContext, _logger );
         var prayerRequestService = new PrayerRequestService( rockContext );
 
-        var existingPrayerRequest = helper.GetRequiredEntity<PrayerRequest>( prayerRequestIdKey, checkSecurity: false );
+        var existingPrayerRequest = helper.GetRequiredEntity<PrayerRequest>( prayerRequestIdKey );
 
         if ( helper.HasErrors )
         {
             return helper.ErrorResult;
+        }
+
+        /*
+            10/26/2026 - MSE
+
+            The request is loaded with the normal VIEW check, so a person can
+            only find requests they can see. Deleting it must also be allowed
+            for this person: they must be the person the request is for, the
+            person that created it, or have EDIT on it. This is the same rule
+            the update tool uses. Anonymous callers are never allowed.
+
+            Reason: Prevent deleting prayer requests the person does not own or cannot edit.
+        */
+        if ( !IsAuthorizedToEditPrayerRequest( existingPrayerRequest, AgentRequestContext.CurrentPerson ) )
+        {
+            return Error( "You are not authorized to delete this prayer request." );
         }
 
         prayerRequestService.Delete( existingPrayerRequest );

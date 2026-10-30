@@ -1046,7 +1046,16 @@ namespace Rock.Security
 
             // If IsSecureConnection is false then check the scheme in case the web server is behind a load balancer.
             // The server could use unencrypted traffic to the balancer, which would encrypt it before sending to the browser.
-            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlProxySafe().Scheme == "https" ? ";Secure" : string.Empty;
+            /*
+                10/26/2026 - MSE
+
+                The Secure flag must follow the scheme the browser actually used. UrlProxySafe now uses the
+                PublicApplicationRoot scheme on hosts that are not site domains, which would mark the auth
+                cookie Secure on a plain http request and the browser would drop it (sign-in would fail).
+
+                Reason: Decide the Secure flag from the received scheme.
+            */
+            var secureSetting = HttpContext.Current.Request.IsSecureConnection || HttpContext.Current.Request.UrlForwardedUnvalidated().Scheme == "https" ? ";Secure" : string.Empty;
 
             // For browsers to recognize SameSite=none the Secure tag is required, but it doesn't hurt to add it for all samesite settings.
             string sameSiteCookieValue = $";SameSite={sameSiteCookieSetting}{secureSetting}";
@@ -1775,6 +1784,15 @@ namespace Rock.Security
         {
             get
             {
+                /*
+                    10/19/2026 - MSE
+
+                    The display name is an HTML fragment (the small labels and the span are markup)
+                    that the Security block shows as HTML. Person, role and group names are stored
+                    data that a person or group leader can set, so they are HTML encoded here.
+
+                    Reason: Prevent stored XSS through names shown in the Security dialog.
+                */
                 // All Users
                 switch ( SpecialRole )
                 {
@@ -1797,7 +1815,7 @@ namespace Rock.Security
                                 var person = personService.Get( PersonId.Value );
                                 if ( person != null )
                                 {
-                                    return person.FullName + " <small>(User)</small>";
+                                    return person.FullName.EncodeHtml() + " <small>(User)</small>";
                                 }
                             }
                             catch
@@ -1817,14 +1835,14 @@ namespace Rock.Security
                             if ( role != null )
                             {
                                 return ( role.IsSecurityTypeGroup ? "" : "GROUP - " ) +
-                                       role.Name + " <small>(Role)</small>";
+                                       role.Name.EncodeHtml() + " <small>(Role)</small>";
                             }
 
                             var groupService = new GroupService( RockApp.Current.CreateRockContext() );
                             var group = groupService.Get( GroupId.Value );
                             if ( group != null )
                             {
-                                return $"<span class='text-muted'>GROUP - {group.Name} <small>(No longer a valid active role)</small></span>";
+                                return $"<span class='text-muted'>GROUP - {group.Name.EncodeHtml()} <small>(No longer a valid active role)</small></span>";
                             }
                         }
                         catch

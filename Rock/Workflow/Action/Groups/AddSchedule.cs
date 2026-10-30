@@ -182,8 +182,18 @@ namespace Rock.Workflow.Action.Groups
             var mergeFields = GetMergeFields( action );
 
             // At the very least, we need a start date/time; if we don't have this, we can't create a schedule.
-            var startDateTimeString = GetAttributeValue( action, AttributeKey.StartDateTime, true );
-            var startDateTime = startDateTimeString.ResolveMergeFields( mergeFields ).AsDateTime();
+            /*
+                10/26/2026 - MSE
+
+                Values read from a selected workflow attribute are data and are not rendered
+                as Lava; only text typed into the setting is rendered. See
+                ActionComponent.GetTextOrAttributeValue.
+                The same rule applies to Name, Abbreviated Name and Category below.
+
+                Reason: Attribute values can hold untrusted input and must not run as Lava.
+            */
+            var startDateTimeString = GetTextOrAttributeValue( action, AttributeKey.StartDateTime, mergeFields );
+            var startDateTime = startDateTimeString.AsDateTime();
             if ( !startDateTime.HasValue )
             {
                 errorMessages.Add( $@"Could not parse ""Start Date/Time"": {startDateTimeString}" );
@@ -217,12 +227,12 @@ namespace Rock.Workflow.Action.Groups
             var iCalendarContent = iCalendarSerializer.SerializeToString();
 
             // Get the name and abbreviated name.
-            var name = GetAttributeValue( action, AttributeKey.Name, true ).ResolveMergeFields( mergeFields );
-            var abbreviatedName = GetAttributeValue( action, AttributeKey.AbbreviatedName, true ).ResolveMergeFields( mergeFields );
+            var name = GetTextOrAttributeValue( action, AttributeKey.Name, mergeFields );
+            var abbreviatedName = GetTextOrAttributeValue( action, AttributeKey.AbbreviatedName, mergeFields );
 
             // Only consider category if a schedule name was provided (categories are only relevant for named schedules).
             int? categoryId = null;
-            var categoryString = GetAttributeValue( action, AttributeKey.Category, true ).ResolveMergeFields( mergeFields );
+            var categoryString = GetTextOrAttributeValue( action, AttributeKey.Category, mergeFields );
             if ( categoryString.IsNotNullOrWhiteSpace() && name.IsNotNullOrWhiteSpace() )
             {
                 var scheduleEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.SCHEDULE ).GetValueOrDefault();

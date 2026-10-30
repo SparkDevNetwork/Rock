@@ -16,7 +16,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -333,33 +332,39 @@ namespace Rock.Rest.Swagger
                     handler: new RedirectHandler( SwaggerDocsConfig.DefaultRootUrlResolver, "api/docs/index" ) );
         }
 
+        /// <summary>
+        /// Gets the root URL of the request message.
+        /// </summary>
+        /// <param name="request">The request message.</param>
+        /// <returns>The root URL.</returns>
         private static string DefaultRootUrlResolver( HttpRequestMessage request )
         {
-            string referer = GetHeaderValue( request, "Referer" );
-            if ( referer.IsNullOrWhiteSpace() )
-            {
-                string text = GetHeaderValue( request, "X-Forwarded-Proto" ) ?? request.RequestUri.Scheme;
-                string text2 = GetHeaderValue( request, "X-Forwarded-Host" ) ?? request.RequestUri.Host;
-                string text3 = GetHeaderValue( request, "X-Forwarded-Port" ) ?? request.RequestUri.Port.ToString( CultureInfo.InvariantCulture );
-                HttpConfiguration configuration = request.GetConfiguration();
-                string text4 = configuration.VirtualPathRoot.TrimEnd( '/' );
-                return $"{text}://{text2}:{text3}{text4}";
-            }
-            else
-            {
-                var baseUrl = new Uri( referer ).GetLeftPart( System.UriPartial.Authority );
-                return baseUrl;
-            }
-        }
+            var uri = new HttpRequestMessageWrapper( request ).UrlProxySafe();
 
-        private static string GetHeaderValue( HttpRequestMessage request, string headerName )
-        {
-            if ( !request.Headers.TryGetValues( headerName, out var values ) ) 
+            var authority = $"{uri.Scheme}://{uri.Host}";
+
+            if ( !uri.IsDefaultPort )
             {
-                return null;
+                authority += $":{uri.Port}";
             }
 
-            return values.FirstOrDefault();
+            // A same-host https Referer can upgrade an http request to https when
+            // a TLS-offloading proxy doesn't send the forwarded headers (#3893).
+            // It must never supply a different host or downgrade to http.
+            var referrer = request.Headers.Referrer;
+
+            if ( referrer != null
+                && referrer.IsAbsoluteUri
+                && uri.Scheme == Uri.UriSchemeHttp
+                && referrer.Scheme == Uri.UriSchemeHttps
+                && string.Equals( referrer.Host, uri.Host, StringComparison.OrdinalIgnoreCase ) )
+            {
+                authority = referrer.GetLeftPart( UriPartial.Authority );
+            }
+
+            var virtualPathRoot = request.GetConfiguration()?.VirtualPathRoot?.TrimEnd( '/' ) ?? string.Empty;
+
+            return authority + virtualPathRoot;
         }
     }
 }

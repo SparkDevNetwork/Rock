@@ -56,8 +56,8 @@ namespace Rock.Workflow.Action
 
             var mergeFields = GetMergeFields( action );
 
-            var fromNumber = GetAttributeValue( action, "FromNumber", true ).ResolveMergeFields( mergeFields ).Trim();
-            var toNumber = GetAttributeValue( action, "ToNumber", true ).ResolveMergeFields( mergeFields ).Trim();
+            var fromNumber = GetTextOrAttributeValue( action, "FromNumber", mergeFields ).Trim();
+            var toNumber = GetTextOrAttributeValue( action, "ToNumber", mergeFields ).Trim();
             var message = GetAttributeValue( action, "Message" ).ResolveMergeFields( mergeFields ).Trim();
             var attribute = AttributeCache.Get( GetAttributeValue( action, "ErrorAttribute" ).AsGuid(), rockContext );
 

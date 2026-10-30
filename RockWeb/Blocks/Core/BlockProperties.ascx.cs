@@ -174,13 +174,26 @@ namespace RockWeb.Blocks.Core
                 Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
                 if ( dialogPage != null )
                 {
-                    dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
                     dialogPage.Title = _block.BlockType.Name;
                     dialogPage.SubTitle = string.Format( "{0} / Id: {1}", _block.BlockType.Category, blockId );
                 }
 
                 if ( _block.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
                 {
+                    /*
+                        10/16/2026 - MSE
+
+                        The save handler used to be wired for every person who could open this
+                        dialog, even when the check below showed them an error. Only wire it for
+                        people who can administrate the block.
+
+                        Reason: A person without block ADMINISTRATE must not be able to save.
+                    */
+                    if ( dialogPage != null )
+                    {
+                        dialogPage.OnSave += new EventHandler<EventArgs>( masterPage_OnSave );
+                    }
+
                     var blockTypeId = _block.BlockTypeId;
                     var blockType = BlockTypeCache.Get( blockTypeId );
                     if ( blockType != null && !blockType.IsInstancePropertiesVerified )
@@ -511,6 +524,22 @@ namespace RockWeb.Blocks.Core
         {
             bool reloadPage = false;
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
+
+            /*
+                10/16/2026 - MSE
+
+                Re-check ADMINISTRATE at the write so the save does not depend only on how the
+                handler was wired in OnInit.
+
+                Reason: Only people who can administrate the block may change its settings.
+            */
+            var blockCache = BlockCache.Get( blockId );
+            if ( blockCache == null || !blockCache.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson ) )
+            {
+                DisplayError( "You are not authorized to edit this block", null );
+                return;
+            }
+
             if ( !Page.IsValid )
             {
                 return;

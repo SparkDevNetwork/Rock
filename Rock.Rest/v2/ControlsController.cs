@@ -839,7 +839,17 @@ namespace Rock.Rest.v2
             else
             {
                 editedLocation = locationService.Get( editedLocation.Street1, editedLocation.Street2, editedLocation.City, editedLocation.State, editedLocation.County, editedLocation.PostalCode, editedLocation.Country, null );
-                addressString = editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+
+                /*
+                    10/19/2026 - MSE
+
+                    The address picker renders this string as HTML and the lookup can return an
+                    existing stored location, so the address text is encoded before the line
+                    breaks become <br>. The Address bag fields stay raw; they fill text inputs.
+
+                    Reason: Stored address text must not render as HTML.
+                */
+                addressString = editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
             }
 
             return Ok( new AddressControlValidateAddressResultsBag
@@ -895,7 +905,15 @@ namespace Rock.Rest.v2
                 };
             }
 
-            return Ok( editedLocation.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
+            /*
+                10/19/2026 - MSE
+
+                The address picker renders this string as HTML, so the address text is
+                encoded before the line breaks become <br>.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return Ok( editedLocation.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
         }
 
         #endregion
@@ -2736,6 +2754,26 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "1B7BA1CB-6D3F-4DE7-AC02-EAAADF89C7ED" )]
         public IActionResult AttributeMatrixEditorNormalizeEditValue( [FromBody] AttributeMatrixEditorNormalizeEditValueOptionsBag options )
         {
+            if ( options?.Attributes == null || options.AttributeValues == null )
+            {
+                return BadRequest( "Invalid options." );
+            }
+
+            // Only matrix item attributes may be converted here. Otherwise any
+            // attribute's value conversion, including one that saves data, could
+            // be run by an anonymous caller.
+            var matrixItemEntityTypeId = EntityTypeCache.GetId<AttributeMatrixItem>();
+
+            foreach ( var attribute in options.Attributes )
+            {
+                var attributeCache = attribute.Value != null ? AttributeCache.Get( attribute.Value.AttributeGuid ) : null;
+
+                if ( attributeCache == null || attributeCache.EntityTypeId != matrixItemEntityTypeId )
+                {
+                    return BadRequest( "Invalid attribute." );
+                }
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var publicValues = options.Attributes.ToDictionary( a => a.Key, a =>
@@ -4599,6 +4637,49 @@ namespace Rock.Rest.v2
         #region Email Editor
 
         /// <summary>
+        /// Determines whether the unique identifier belongs to one of the
+        /// starter email sections that the email editor seeds.
+        /// </summary>
+        /// <param name="guid">The email section unique identifier.</param>
+        /// <returns><c>true</c> if the unique identifier is a starter email section; otherwise, <c>false</c>.</returns>
+        private static bool IsStarterEmailSectionGuid( Guid guid )
+        {
+            return guid == Rock.SystemGuid.EmailSection.STARTER_HERO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_STANDARD_PROMO.AsGuid()
+                || guid == Rock.SystemGuid.EmailSection.STARTER_3_COLUMN_PROMO.AsGuid();
+        }
+
+        /// <summary>
+        /// Validates the source markup of an email section.
+        /// </summary>
+        /// <param name="sourceMarkup">The source markup to validate.</param>
+        /// <returns>The validation error message, or <c>null</c> if the markup is valid.</returns>
+        private static string GetEmailSectionSourceMarkupError( string sourceMarkup )
+        {
+            /*
+                10/18/2026 - MSE
+
+                Email section markup is shared with every email editor user and
+                is inserted into the editor iframe, which runs on the Rock origin.
+                Script tags, javascript: URLs and event handler attributes are
+                rejected here. This always runs and is not gated on
+                DbContext.EnableStringValidation, which is off by default.
+
+                Reason: Prevent stored script in saved email sections.
+            */
+            try
+            {
+                StringValueValidator.Validate( sourceMarkup, StringValueValidator.GetEffectiveRules( Rock.Enums.Security.StringValidationProfile.LavaAndBasicHtml ), typeof( EmailSection ), nameof( EmailSection.SourceMarkup ) );
+
+                return null;
+            }
+            catch ( PropertyValidationException ex )
+            {
+                return ex.Message;
+            }
+        }
+
+        /// <summary>
         /// Creates an email section.
         /// </summary>
         /// <param name="options">The email section to create.</param>
@@ -4649,16 +4730,32 @@ namespace Rock.Rest.v2
                 var thumbnailBinaryFileGuid = options.ThumbnailBinaryFile?.Value.AsGuidOrNull();
                 var thumbnailBinaryFile = thumbnailBinaryFileGuid.HasValue ? new BinaryFileService( rockContext ).Get( thumbnailBinaryFileGuid.Value ) : null;
 
+                /*
+                    10/18/2026 - MSE
+
+                    The editor seeds the three starter sections from the browser
+                    with IsSystem set, so the flag is still honored for those.
+                    Any other section is saved as a normal section so that its
+                    creator and administrators can still edit or delete it.
+
+                    Reason: Prevent locking planted sections with IsSystem.
+                */
                 var emailSection = new EmailSection
                 {
                     Category = category,
                     Guid = options.Guid,
-                    IsSystem = options.IsSystem,
+                    IsSystem = options.IsSystem && IsStarterEmailSectionGuid( options.Guid ),
                     Name = options.Name,
                     SourceMarkup = options.SourceMarkup,
                     ThumbnailBinaryFile = thumbnailBinaryFile,
                     UsageSummary = options.UsageSummary
                 };
+
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
+                }
 
                 if ( !emailSection.IsValid )
                 {
@@ -4852,6 +4949,12 @@ namespace Rock.Rest.v2
                         // The logged in person is not allowed to edit this email section.
                         return StatusCode( HttpStatusCode.Forbidden );
                     }
+                }
+
+                var sourceMarkupError = GetEmailSectionSourceMarkupError( options.SourceMarkup );
+                if ( sourceMarkupError != null )
+                {
+                    return BadRequest( sourceMarkupError );
                 }
 
                 if ( emailSection == null )
@@ -10561,11 +10664,19 @@ namespace Rock.Rest.v2
                         }
                     }
 
+                    /*
+                        10/19/2026 - MSE
+
+                        The person link control renders this popup with v-html, so the person and
+                        spouse names are encoded before they are placed in the markup.
+
+                        Reason: Stored names must not render as HTML.
+                    */
                     var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                     html.AppendFormat(
                         "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
                         Person.GetPersonPhotoImageTag( person, 65, 65 ),
-                        person.FullName,
+                        person.FullName.EncodeHtml(),
                         person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
 
                     html.Append( "<div class='body'>" );
@@ -10575,7 +10686,7 @@ namespace Rock.Rest.v2
                     {
                         html.AppendFormat(
                             "<div><strong>Spouse</strong> {0}</div>",
-                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                            ( spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName ).EncodeHtml() );
                     }
 
                     int? age = person.Age;
@@ -11833,7 +11944,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "6b39600f-3037-48d8-861e-6e7d0bb5972f" )]
         public IActionResult UniversalItemSearchPickerGetItems( [FromBody] UniversalItemSearchPickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemSearchPickerFieldType.ContextData>();
+            var data = UniversalItemSearchPickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {
@@ -11878,7 +11989,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "529df00f-2338-4d9b-a947-aa0ec5459f35" )]
         public IActionResult UniversalItemTreePickerGetItems( [FromBody] UniversalItemTreePickerOptionsBag options )
         {
-            var data = Encryption.DecryptString( options.Context ).FromJsonOrNull<UniversalItemTreePickerFieldType.ContextData>();
+            var data = UniversalItemTreePickerFieldType.DecryptContextData( options.Context );
 
             if ( data == null )
             {

@@ -80,7 +80,41 @@ namespace Rock.Rest.Controllers
         {
             var errorMessage = string.Empty;
 
+            /*
+                10/23/2026 - MSE
+
+                Finance callers may charge on behalf of donors, but disabling payment
+                safeguards requires Administrate permission on this REST action.
+
+                Reason: Keep payment protection overrides limited to trusted callers.
+            */
+            if ( !enableDuplicateChecking || !enableScheduleAdherenceProtection )
+            {
+                var restAction = RestActionCache.Get( new Guid( "D9027A44-BAF1-4D6F-9681-9E461ED9D071" ) );
+                if ( restAction?.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) != true )
+                {
+                    throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "Turning off duplicate or schedule protection requires Administrate permission on this endpoint." ) );
+                }
+            }
+
             var rockContext = Service.Context as RockContext;
+
+            /*
+                10/23/2026 - MSE
+
+                This endpoint also accepts a schedule in its payment arguments, so it
+                must reject inactive schedules just like the scheduled Process endpoint.
+
+                Reason: Do not bypass inactive schedule protection through this endpoint.
+            */
+            if ( automatedPaymentArgs?.ScheduledTransactionId.HasValue == true &&
+                new FinancialScheduledTransactionService( rockContext ).Queryable()
+                    .Any( s => s.Id == automatedPaymentArgs.ScheduledTransactionId.Value && !s.IsActive ) )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Conflict, "The scheduled transaction is not active." );
+                throw new HttpResponseException( errorResponse );
+            }
+
             var automatedPaymentProcessor = new AutomatedPaymentProcessor( GetPersonAliasId( rockContext ), automatedPaymentArgs, rockContext, enableDuplicateChecking, enableScheduleAdherenceProtection );
 
             if ( !automatedPaymentProcessor.AreArgsValid( out errorMessage ) )
@@ -174,6 +208,21 @@ namespace Rock.Rest.Controllers
             }
 
             return base.Post( value );
+        }
+
+        /// <inheritdoc/>
+        protected override bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            /*
+                10/15/2026 - MSE
+
+                The Check Scanner posts a new transaction with its TransactionDetails in one
+                request. A detail takes its permissions from its transaction, which the POST
+                has already authorized, so these may still be inserted with the transaction.
+
+                Reason: Keep Check Scanner uploads working.
+            */
+            return propertyName == nameof( FinancialTransaction.TransactionDetails );
         }
 
         /// <summary>

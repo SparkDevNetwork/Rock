@@ -790,7 +790,8 @@ namespace Rock.Blocks.Finance
                 entity.AccountId = financialAccount.Id;
             }
 
-            if ( box.Entity.SaveButtonText == GetAttributeValue( AttributeKey.SaveButtonText ) )
+            if ( GetCurrentPerson() != null
+                && box.Entity.SaveButtonText == GetAttributeValue( AttributeKey.SaveButtonText ) )
             {
                 var duplicatePledges = entityService.Queryable()
                     .Where( a => a.PersonAlias.PersonId == person.Id )

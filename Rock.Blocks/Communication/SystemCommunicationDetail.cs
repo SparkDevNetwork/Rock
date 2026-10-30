@@ -71,6 +71,15 @@ namespace Rock.Blocks.Communication
 
             var isNew = systemCommunication == null;
 
+            if ( !isNew && !systemCommunication.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return new CustomBlockBox<SystemCommunicationBag, SystemCommunicationDetailOptionsBag>
+                {
+                    ErrorMessage = "You are not authorized to view this system communication.",
+                    NavigationUrls = GetBoxNavigationUrls()
+                };
+            }
+
             var bag = isNew
                 ? new SystemCommunicationBag
                 {
@@ -470,13 +479,38 @@ namespace Rock.Blocks.Communication
         [BlockAction( "GetPreviewMessage" )]
         public BlockActionResult GetPreviewMessage( SystemCommunicationDetailGetPreviewMessageRequestBag bag )
         {
-            if ( bag.Message.IsNullOrWhiteSpace() )
+            var currentPerson = GetCurrentPerson();
+            var systemCommunication = GetSystemCommunication();
+
+            if ( systemCommunication != null && !systemCommunication.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return ActionForbidden( "You do not have permission to view this system communication." );
+            }
+
+            /*
+                10/16/26 - JMH
+
+                People who cannot edit an existing system communication preview its saved body.
+                Person tokens in the preview are limited to the person viewing it.
+
+                Reason: Match the preview to what the viewer may edit.
+            */
+            var message = systemCommunication != null && !systemCommunication.IsAuthorized( Authorization.EDIT, currentPerson )
+                ? systemCommunication.Body
+                : bag.Message;
+
+            if ( message.IsNullOrWhiteSpace() )
             {
                 return ActionOk( string.Empty );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
-            var resolvedPreviewHtml = bag.Message.ResolveMergeFields( mergeFields );
+            string resolvedPreviewHtml;
+
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                resolvedPreviewHtml = message.ResolveMergeFields( mergeFields );
+            }
 
             if ( bag.IsCssInlined )
             {

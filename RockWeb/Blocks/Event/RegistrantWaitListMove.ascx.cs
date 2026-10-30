@@ -31,6 +31,7 @@ using Rock.Attribute;
 using System.Data.Entity;
 using Humanizer;
 using Rock.Communication;
+using Rock.Security;
 using System.Text;
 
 namespace RockWeb.Blocks.Event
@@ -140,14 +141,27 @@ namespace RockWeb.Blocks.Event
                     {
                         Dictionary<string, object> mergeObjects = GetMergeObjects( _firstRegistration );
 
-                        tbFromSubject.Text = _template.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
-                        tbFromName.Text = _template.WaitListTransitionFromName.ResolveMergeFields( mergeObjects );
-                        tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
                         ceEmailMessage.Text = _template.WaitListTransitionEmailTemplate;
-                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
 
-                        // needed to work in IE
-                        ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
+                        /*
+                            10/16/2026 - MSE
+
+                            The preview holds the email merged with registrant data, which an anonymous
+                            registrant can fill with HTML. The ifEmailPreview iframe in the markup has
+                            sandbox="allow-popups allow-popups-to-escape-sandbox" so that HTML cannot run
+                            script in Rock's origin. Never add allow-scripts: a same-origin frame that may
+                            run script can remove its own sandbox. The old IE javascript: src fallback was
+                            removed because every supported browser uses srcdoc.
+
+                            Reason: Stop stored XSS through the wait list transition email preview.
+                        */
+                        using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                        {
+                            tbFromSubject.Text = _template.WaitListTransitionSubject.ResolveMergeFields( mergeObjects );
+                            tbFromName.Text = _template.WaitListTransitionFromName.ResolveMergeFields( mergeObjects );
+                            tbFromEmail.Text = _template.WaitListTransitionFromEmail.ResolveMergeFields( mergeObjects );
+                            ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                        }
                     }
                 }
                 else
@@ -188,10 +202,11 @@ namespace RockWeb.Blocks.Event
                 if ( _firstRegistration != null )
                 {
                     Dictionary<string, object> mergeObjects = GetMergeObjects( _firstRegistration );
-                    ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
 
-                    // needed to work in IE
-                    ifEmailPreview.Src = "javascript: window.frameElement.getAttribute('srcdoc');";
+                    using ( PersonTokenScope.RestrictTo( CurrentPerson ) )
+                    {
+                        ifEmailPreview.Attributes["srcdoc"] = ceEmailMessage.Text.ResolveMergeFields( mergeObjects );
+                    }
                 }
             }
             else
@@ -219,12 +234,12 @@ namespace RockWeb.Blocks.Event
 
                 StringBuilder recipientText = new StringBuilder();
                 recipientText.Append( string.Format( "{0} {1} <small>({2})</small><br />"
-                    , registrationSummary.Registration.FirstName
-                    , registrationSummary.Registration.LastName
-                    , registrationSummary.Registration.ConfirmationEmail ) );
+                    , registrationSummary.Registration.FirstName.EncodeHtml()
+                    , registrationSummary.Registration.LastName.EncodeHtml()
+                    , registrationSummary.Registration.ConfirmationEmail.EncodeHtml() ) );
 
                 recipientText.Append( string.Format( "<small>Registrants: {0}</small>"
-                    , string.Join( ", ", registrationSummary.Registrants.Select( r => r.Person.FullName ) ) ) );
+                    , string.Join( ", ", registrationSummary.Registrants.Select( r => r.Person.FullName.EncodeHtml() ) ) ) );
 
                 CheckBox cbEmailRecipient = (CheckBox)e.Item.FindControl( "cbEmailRecipient" );
 
@@ -266,7 +281,11 @@ namespace RockWeb.Blocks.Event
                         emailMessage.Message = ceEmailMessage.Text;
                         emailMessage.AppRoot = ResolveRockUrl( "~/" );
                         emailMessage.ThemeRoot = ResolveRockUrl( "~~/" );
-                        emailMessage.Send();
+
+                        using ( PersonTokenScope.RestrictTo( registration.PersonAlias?.Person ) )
+                        {
+                            emailMessage.Send();
+                        }
 
                         sendCount++;
                     }

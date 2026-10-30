@@ -22,7 +22,9 @@ using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -59,6 +61,18 @@ internal partial class AttendanceSkill
         qry = helper.WhereOptionalIdKey( qry, a => a.CampusId, campusIdKey );
         qry = helper.WhereOptionalPropertyBetween( qry, a => a.StartDateTime, startDate, endDate );
 
+        /*
+            10/19/2026 - MSE
+
+            A requested group must be one the current person can view. The
+            helper records "The groupIdKey is not valid." when the group is
+            missing or the person is not authorized, so HasErrors below
+            returns that error instead of the group's attendance.
+
+            Reason: Prevent reading attendance for a secured group by IdKey.
+        */
+        helper.GetOptionalEntity<Model.Group>( groupIdKey );
+
         helper.RequireAtLeastOneFilter( [
             personIdKey,
             groupTypeIdKey,
@@ -74,6 +88,31 @@ internal partial class AttendanceSkill
         {
             return helper.ErrorResult;
         }
+
+        /*
+            10/19/2026 - MSE
+
+            Only return attendance for groups the current person can view.
+            The filter is applied to the query before paging so that each
+            pageNumber stays consistent. Attendance with no group is not
+            attendance for a group the person can view, so it is excluded.
+            A request with no current person can view no group and gets
+            no rows.
+
+            Reason: Prevent attendance in secured groups from being returned.
+        */
+        var currentPerson = AgentRequestContext.CurrentPerson;
+        var groupIds = qry
+            .Where( a => a.Occurrence.GroupId.HasValue )
+            .Select( a => a.Occurrence.GroupId.Value )
+            .Distinct()
+            .ToList();
+        var viewableGroupIds = GroupCache.GetMany( groupIds, AgentRequestContext.RockContext )
+            .Where( g => g.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            .Select( g => g.Id )
+            .ToList();
+
+        qry = qry.Where( a => a.Occurrence.GroupId.HasValue && viewableGroupIds.Contains( a.Occurrence.GroupId.Value ) );
 
         var orderedQry = qry
             .Select( a => new AttendanceResult

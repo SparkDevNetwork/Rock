@@ -73,6 +73,11 @@ namespace Rock.Security.ExternalAuthentication
         IsRequired = false,
         Key = AttributeKey.RequestedScopes,
         Order = 6 )]
+    [BooleanField( "Require Verified Email",
+        Key = AttributeKey.RequireVerifiedEmail,
+        Description = "When enabled, a first sign-in is matched to an existing person only if the identity provider reports the email address as verified (the email_verified claim). Otherwise a new person is created. Disable this only if your provider verifies every email address but does not send the email_verified claim.",
+        DefaultBooleanValue = true,
+        Order = 7 )]
     [Rock.SystemGuid.EntityTypeGuid( "2C964ABD-3F4D-43F8-B170-21A2A210EB30")]
     public class OidcClient : AuthenticationComponent, IExternalRedirectAuthentication
     {
@@ -110,6 +115,11 @@ namespace Rock.Security.ExternalAuthentication
             /// The post logout redirect URI
             /// </summary>
             public const string PostLogoutRedirectUri = "PostLogoutRedirectUri";
+
+            /// <summary>
+            /// Whether a first sign-in requires a verified email to link to an existing person.
+            /// </summary>
+            internal const string RequireVerifiedEmail = "RequireVerifiedEmail";
         }
 
         /// <summary>
@@ -400,8 +410,22 @@ namespace Rock.Security.ExternalAuthentication
 
                     Person person = null;
 
+                    /*
+                        10/19/2026 - MSE
+
+                        An email that the identity provider has not verified is not proof that the
+                        caller owns the matched record, so only look for an existing person when the
+                        ID token has email_verified set to true (unless an admin turned off Require
+                        Verified Email). A missing claim counts as not verified. Otherwise a new
+                        pending person is created below.
+
+                        Reason: Link a first sign-in to an existing person only by a verified email.
+                    */
+                    var requireVerifiedEmail = GetAttributeValue( AttributeKey.RequireVerifiedEmail ).AsBooleanOrNull() ?? true;
+                    var isEmailVerified = idToken.GetClaimValue( JwtClaimTypes.EmailVerified ).AsBoolean();
+
                     // If person had an email, get the first person with the same name and email address.
-                    if ( !string.IsNullOrWhiteSpace( email ) )
+                    if ( !string.IsNullOrWhiteSpace( email ) && ( isEmailVerified || !requireVerifiedEmail ) )
                     {
                         var personService = new PersonService( rockContext );
                         person = personService.FindPerson( firstName, lastName, email, true );
@@ -760,8 +784,17 @@ namespace Rock.Security.ExternalAuthentication
                 SameSite = SameSiteMode.Lax,
 
                 // Only add the Secure option if the request site is using HTTPS.
+                /*
+                    10/26/2026 - MSE
+
+                    The Secure flag must follow the scheme the browser actually used. UrlProxySafe now uses the
+                    PublicApplicationRoot scheme on hosts that are not site domains, which would mark this
+                    cookie Secure on a plain http request and the browser would drop it.
+
+                    Reason: Decide the Secure flag from the received scheme.
+                */
                 Secure = HttpContext.Current.Request.IsSecureConnection
-                         || string.Equals( HttpContext.Current.Request.UrlProxySafe().Scheme, "https", StringComparison.OrdinalIgnoreCase ),
+                         || string.Equals( HttpContext.Current.Request.UrlForwardedUnvalidated().Scheme, "https", StringComparison.OrdinalIgnoreCase ),
 
                 // Encrypt the cookie value as an extra layer of security.
                 Value = Encryption.EncryptString( cookieValue ),

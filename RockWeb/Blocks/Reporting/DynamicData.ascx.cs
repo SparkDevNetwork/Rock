@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Reporting
 
     // Custom Settings
     [CodeEditorField( "Query",
-        Description = "The query to execute. Note that if you are providing SQL you can add items from the query string using Lava like {{ QueryParmName }}.",
+        Description = "The SQL query or stored procedure name to execute. To filter by a page parameter, write @Name in the SQL (for example WHERE [Id] = @GroupId) and add Name= to Query Params (for example GroupId=). Rock passes the page's value as a SQL parameter, for plain queries as well as stored procedures. Never print page parameters into the SQL with Lava, because that is not safe; always use @Name parameters. A page parameter value printed into the SQL with Lava is replaced with blank when it contains a single quote ('), a semicolon (;), two hyphens in a row or a slash followed by an asterisk (/*).",
         EditorMode = CodeEditorMode.Sql,
         EditorHeight = 400,
         IsRequired = false,
@@ -546,11 +546,26 @@ namespace RockWeb.Blocks.Reporting
                 {
                     var mergeFields = GetDynamicDataMergeFields();
 
-                    // NOTE: there is already a PageParameters merge field from GetDynamicDataMergeFields, but for backwards compatibility, also add each of the PageParameters as plain merge fields
-                    foreach ( var pageParam in PageParameters() )
+                    /*
+                        10/21/2026 - MSE
+
+                        Page parameters are request values, and the query is SQL text
+                        rendered with Lava. Both Lava routes to page values (the plain
+                        merge fields kept for backwards compatibility and the PageParameter
+                        merge field) get values that are blank when they contain SQL quoting
+                        or comment characters. @Name Query Params are the supported way to
+                        pass page values to the SQL. The display Lava builds its own merge
+                        fields, so it still sees the raw values.
+
+                        Reason: Keep page parameters from changing the Dynamic Data SQL text.
+                    */
+                    var sqlSafePageParameters = Rock.Reporting.ReportingHelper.GetSqlSafePageParameters( PageParameters().Select( p => new KeyValuePair<string, string>( p.Key, p.Value?.ToString() ) ) );
+                    foreach ( var pageParam in sqlSafePageParameters )
                     {
                         mergeFields.AddOrReplace( pageParam.Key, pageParam.Value );
                     }
+
+                    mergeFields.AddOrReplace( "PageParameter", sqlSafePageParameters );
 
                     query = query.ResolveMergeFields( mergeFields, enabledLavaCommands );
 
@@ -604,7 +619,18 @@ namespace RockWeb.Blocks.Reporting
                 }
                 catch ( System.Exception ex )
                 {
-                    errorMessage = ex.Message;
+                    /*
+                        10/21/2026 - MSE
+
+                        The SQL Server message can echo request values and is written into
+                        the page without encoding. Only people who can edit or administrate
+                        the block see the detail (encoded); everyone else gets a fixed
+                        message and the detail goes to the exception log.
+
+                        Reason: Do not show database errors to viewers who cannot edit the block.
+                    */
+                    LogException( ex );
+                    errorMessage = ( UserCanEdit || UserCanAdministrate ) ? ex.Message.EncodeHtml() : "The data for this block could not be loaded.";
                 }
             }
 

@@ -26,6 +26,7 @@ using Rock.AI.Agent.Classes.Entity;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Model;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -142,6 +143,21 @@ internal sealed partial class PersonSkill
         if ( person == null )
         {
             return Error( "No person could be found with the provided personIdKey." );
+        }
+
+        /*
+            10/16/2026 - MSE
+
+            Loading the person does not check any security. Changing a person,
+            including the email address used for password resets, must require
+            EDIT on them, as the other agent write tools do. A person can still
+            edit themselves because Person.IsAuthorized() allows that.
+
+            Reason: Prevent changing a person without EDIT permission.
+        */
+        if ( !person.IsAuthorized( Authorization.EDIT, currentPerson ) )
+        {
+            return Error( "You are not authorized to edit this person." );
         }
 
         // Name properties, gender.

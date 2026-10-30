@@ -215,6 +215,21 @@ namespace Rock.Blocks.Event
         /// </summary>
         public const string ReturnUrlSessionPrefix = "sessionGuid";
 
+        /// <summary>
+        /// Encryption purpose that binds a signature security token to this block.
+        /// </summary>
+        private const string SignatureSecurityTokenEncryptionPurpose = "Rock.Blocks.Event.RegistrationEntry.SignatureSecurityToken";
+
+        /// <summary>
+        /// Encryption purpose that binds signed document data to this block.
+        /// </summary>
+        private const string SignedDocumentDataEncryptionPurpose = "Rock.Blocks.Event.RegistrationEntry.SignedDocumentData";
+
+        /// <summary>
+        /// Message shown when a signed document cannot be read or verified.
+        /// </summary>
+        private const string InvalidSignedDocumentMessage = "The signed document could not be verified. Please review and sign the document again.";
+
         #endregion Keys
 
         #region Properties
@@ -496,6 +511,16 @@ namespace Rock.Blocks.Event
                     {
                         RequestContext.PageParameters.Add( PageParameterKey.GroupId, groupId.ToString() );
                     }
+                }
+
+                // Reject an unreadable signed document before the person is sent to the external payment page, so no money moves against a registration that cannot be saved.
+                if ( context.Registration == null
+                    && context.RegistrationSettings.SignatureDocumentTemplateId.HasValue
+                    && context.RegistrationSettings.IsInlineSignatureRequired
+                    && args.Registrants != null
+                    && args.Registrants.Any( r => !r.ExistingSignatureDocumentGuid.HasValue && Encryption.DecryptStringForPurpose( r.SignatureData, SignedDocumentDataEncryptionPurpose )?.FromJsonOrNull<SignedDocumentData>() == null ) )
+                {
+                    return ActionBadRequest( InvalidSignedDocumentMessage );
                 }
 
                 var session = UpsertSession( rockContext, context, args, SessionStatus.PaymentPending, out errorMessage );
@@ -802,7 +827,7 @@ namespace Rock.Blocks.Event
                 // be used later to validate the document after signing.
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var unencryptedSecurityToken = new[] { RockDateTime.Now.ToString( "o" ), GetSha256Hash( fieldHashToken + html ) }.ToJson();
-                var encryptedSecurityToken = Encryption.EncryptString( unencryptedSecurityToken );
+                var encryptedSecurityToken = Encryption.EncryptStringForPurpose( unencryptedSecurityToken, SignatureSecurityTokenEncryptionPurpose );
 
                 response.DocumentHtml = html;
                 response.SecurityToken = encryptedSecurityToken;
@@ -848,7 +873,7 @@ namespace Rock.Blocks.Event
                 }
 
                 // Validate they did not modify any of the fields or the signed HTML.
-                var unencryptedSecurityToken = Encryption.DecryptString( securityToken ).FromJsonOrNull<List<string>>();
+                var unencryptedSecurityToken = Encryption.DecryptStringForPurpose( securityToken, SignatureSecurityTokenEncryptionPurpose )?.FromJsonOrNull<List<string>>();
                 var fieldHashToken = GetRegistrantSignatureHashToken( registrantInfo );
                 var hash = GetSha256Hash( fieldHashToken + documentHtml );
 
@@ -869,7 +894,7 @@ namespace Rock.Blocks.Event
                     SignedByEmail = signature.SignedByEmail
                 };
 
-                return ActionOk( Encryption.EncryptString( signedData.ToJson() ) );
+                return ActionOk( Encryption.EncryptStringForPurpose( signedData.ToJson(), SignedDocumentDataEncryptionPurpose ) );
             }
         }
 
@@ -3750,7 +3775,13 @@ namespace Rock.Blocks.Event
                     var documentTemplate = new SignatureDocumentTemplateService( rockContext ).Get( context.RegistrationSettings.SignatureDocumentTemplateId ?? 0 );
 
                     // Get the signed document data and encode any string data that was sent by the front-end.
-                    var signedData = Encryption.DecryptString( registrantInfo.SignatureData ).FromJsonOrThrow<SignedDocumentData>();
+                    var signedData = Encryption.DecryptStringForPurpose( registrantInfo.SignatureData, SignedDocumentDataEncryptionPurpose )?.FromJsonOrNull<SignedDocumentData>();
+
+                    if ( signedData == null )
+                    {
+                        throw new Exception( InvalidSignedDocumentMessage );
+                    }
+
                     signedData.SignatureData = signedData.SignatureData.EncodeHtml();
                     signedData.SignedByName = signedData.SignedByName.EncodeHtml();
                     signedData.SignedByEmail = signedData.SignedByEmail.EncodeHtml();

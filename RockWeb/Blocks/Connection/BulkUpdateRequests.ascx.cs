@@ -21,7 +21,9 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.Transactions;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System;
@@ -85,6 +87,11 @@ namespace RockWeb.Blocks.Connection
         #endregion PageParameterKeys
 
         #region Properties
+
+        /// <summary>
+        /// The message shown when the selected launch workflow type is not one the current person can view.
+        /// </summary>
+        private const string LaunchWorkflowNotAuthorizedMessage = "You are not authorized to launch the selected workflow.";
 
         private ConnectionOpportunity ConnectionOpportunity { get; set; }
         private List<ConnectionActivityType> ConnectionActivityTypes { get; set; } = new List<ConnectionActivityType>();
@@ -314,6 +321,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            if ( !IsLaunchWorkflowTypeAuthorized() )
+            {
+                ShowNotification( NotificationBoxType.Warning, LaunchWorkflowNotAuthorizedMessage );
+                return;
+            }
+
             var currentOpportunityId = ConnectionCampusCountViewModelsState.FirstOrDefault().OpportunityId;
             var selectedOpportunity = ddlOpportunity.SelectedValue.AsInteger();
             var selectedCampusIds = cblBulkUpdateCampuses.SelectedValuesAsInt;
@@ -380,6 +393,14 @@ namespace RockWeb.Blocks.Connection
                 mdConfirmUpdateRequests.SaveButtonText = "Confirm";
                 mdConfirmUpdateRequests.CancelLinkVisible = true;
                 mdConfirmUpdateRequests.Hide();
+                return;
+            }
+
+            // Check again here since the picker value is posted again with the confirmation.
+            if ( !IsLaunchWorkflowTypeAuthorized() )
+            {
+                mdConfirmUpdateRequests.Hide();
+                ShowNotification( NotificationBoxType.Warning, LaunchWorkflowNotAuthorizedMessage );
                 return;
             }
 
@@ -904,6 +925,35 @@ namespace RockWeb.Blocks.Connection
             nbBulkUpdateNotification.Visible = true;
             nbBulkUpdateNotification.NotificationBoxType = notificationType;
             nbBulkUpdateNotification.Text = message;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may launch the workflow type selected
+        /// in the Launch Workflow picker. Returns <c>true</c> when no workflow type is selected.
+        /// </summary>
+        /// <returns><c>true</c> if no workflow type is selected or the current person is authorized to view it; otherwise <c>false</c>.</returns>
+        private bool IsLaunchWorkflowTypeAuthorized()
+        {
+            var workflowTypeId = wtpLaunchWorkflow.SelectedValue.AsInteger();
+
+            if ( workflowTypeId == 0 )
+            {
+                return true;
+            }
+
+            /*
+                10/13/2026 - MSE
+
+                The WorkflowTypePicker only lists workflow types the individual can view,
+                but the selected value comes from a hidden field the client controls. The
+                server must apply the same rule before launching the workflow for every
+                connection request in the set.
+
+                Reason: Prevent launching a restricted workflow type by changing the picker value.
+            */
+            var workflowType = WorkflowTypeCache.Get( workflowTypeId );
+
+            return workflowType != null && workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson );
         }
 
         #endregion Methods

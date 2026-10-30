@@ -32,6 +32,17 @@ namespace Rock.RealTime.Topics
         /// <inheritdoc/>
         public override Task OnConnectedAsync()
         {
+            EnsureCanAdministrateTransport();
+
+            return base.OnConnectedAsync();
+        }
+
+        /// <summary>
+        /// Throws unless the current person has Administrate access to the
+        /// test SMS transport.
+        /// </summary>
+        private void EnsureCanAdministrateTransport()
+        {
             using ( var rockContext = new RockContext() )
             {
                 var transport = new EntityTypeService( rockContext ).Get( new Guid( "c50fb8f9-6ada-4c4b-88ee-ed7bc93b1819" ) );
@@ -50,8 +61,6 @@ namespace Rock.RealTime.Topics
                     throw new RealTimeException( "Not authorized to access test SMS transport." );
                 }
             }
-
-            return base.OnConnectedAsync();
         }
 
         /// <summary>
@@ -61,6 +70,19 @@ namespace Rock.RealTime.Topics
         /// <param name="message">The message details.</param>
         public async Task MessageReceived( SmsMessage message )
         {
+            /*
+                10/16/2026 - MSE
+
+                Joining the topic is the only other place that checks access,
+                so a connection that got joined without passing that check, or
+                a person who lost Administrate after joining, could record
+                forged inbound SMS messages as any person with a mobile number.
+                Check access again on every simulated message.
+
+                Reason: Only transport administrators may simulate inbound SMS messages.
+            */
+            EnsureCanAdministrateTransport();
+
             if ( !message.PipelineGuid.HasValue )
             {
                 string errorMessage;

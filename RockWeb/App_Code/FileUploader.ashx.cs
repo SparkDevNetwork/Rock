@@ -257,7 +257,25 @@ namespace RockWeb
         private void ProcessAssetStorageProviderAsset( HttpContext context, HttpPostedFile uploadedFile )
         {
             int? assetStorageId = context.Request.Form[ParameterKey.StorageId].AsIntegerOrNull();
-            string assetKey = context.Request.Form[ParameterKey.Key] + uploadedFile.FileName;
+            /*
+                10/19/2026 - MSE
+
+                The asset storage provider upload grant does not name a provider
+                or a key, so the provider and key posted by the browser have to
+                be checked here. The file name is scrubbed the same way as
+                content uploads, the provider must be active and have a
+                component, keys with a backslash or a segment made only of dots
+                and spaces are refused, and cloud provider keys must stay inside
+                the provider's root folder. The file system component already
+                keeps keys inside its root folder when it uploads. Its root
+                folder may be typed with backslashes, which it maps the same as
+                forward slashes, so backslashes in its keys are turned into
+                forward slashes instead of being refused.
+
+                Reason: A grant holder could write to an inactive provider or to
+                any object in a cloud bucket outside the provider's root folder.
+            */
+            string assetKey = ( context.Request.Form[ParameterKey.Key] ?? string.Empty ) + ScrubFileName( uploadedFile.FileName );
 
             if ( assetStorageId == null || assetKey.IsNullOrWhiteSpace() )
             {
@@ -265,14 +283,40 @@ namespace RockWeb
             }
 
             var assetStorageProviderCache = AssetStorageProviderCache.Get( assetStorageId.Value );
-            var component = assetStorageProviderCache.AssetStorageComponent;
+            var component = assetStorageProviderCache?.AssetStorageComponent;
+
+            if ( assetStorageProviderCache == null
+                || !assetStorageProviderCache.IsActive
+                || !assetStorageProviderCache.EntityTypeId.HasValue
+                || component == null )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid storage provider.", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            if ( component is Rock.Storage.AssetStorage.FileSystemComponent )
+            {
+                assetKey = assetKey.Replace( '\\', '/' );
+            }
+
+            if ( !IsValidAssetKey( assetKey ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid key.", System.Net.HttpStatusCode.BadRequest );
+            }
+
+            var assetStorageProvider = assetStorageProviderCache.ToEntity();
+
+            if ( !( component is Rock.Storage.AssetStorage.FileSystemComponent )
+                && !IsKeyWithinRoot( assetKey, component.GetRootFolder( assetStorageProvider ) ) )
+            {
+                throw new Rock.Web.FileUploadException( "Invalid key.", System.Net.HttpStatusCode.BadRequest );
+            }
 
             var asset = new Rock.Storage.AssetStorage.Asset();
             asset.Key = assetKey;
             asset.Type = Rock.Storage.AssetStorage.AssetType.File;
             asset.AssetStream = uploadedFile.InputStream;
 
-            if ( component.UploadObject( assetStorageProviderCache.ToEntity(), asset ) )
+            if ( component.UploadObject( assetStorageProvider, asset ) )
             {
                 context.Response.Write( new { Id = string.Empty, FileName = assetKey }.ToJson() );
             }
@@ -388,6 +432,11 @@ namespace RockWeb
         private const string UnknownMimeType = "application/octet-stream";
 
         /// <summary>
+        /// The longest mime type that can be stored on a <see cref="BinaryFile"/>.
+        /// </summary>
+        private const int MaxMimeTypeLength = 255;
+
+        /// <summary>
         /// The mime types that clients and remote servers send when they do not know the type
         /// of the file.
         /// </summary>
@@ -399,8 +448,15 @@ namespace RockWeb
         };
 
         /// <summary>
-        /// The image mime types that can be inferred from the file name when the client did not
-        /// supply a usable mime type.
+        /// Matches a well-formed mime type, a type and subtype with optional parameters.
+        /// </summary>
+        private static readonly Regex _validMimeTypeRegex = new Regex(
+            @"^[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]*(\s*;\s*[A-Za-z0-9!#$&^_.+-]+=([A-Za-z0-9!#$&^_.+-]+|""[^""\\\r\n]*""))*\z",
+            RegexOptions.Compiled );
+
+        /// <summary>
+        /// The image mime types that can be inferred from the file's contents when the client
+        /// did not supply a usable mime type.
         /// </summary>
         private static readonly HashSet<string> _inferableMimeTypes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
         {
@@ -409,21 +465,17 @@ namespace RockWeb
             "image/gif",
             "image/bmp",
             "image/tiff",
-            "image/webp",
-            "image/heic",
-            "image/heif"
+            "image/webp"
         };
 
         /// <summary>
-        /// The image file extensions that MimeMapping does not know or maps to a non-standard
-        /// mime type.
+        /// The image file extensions whose types cannot be detected from the file's contents,
+        /// so they are inferred from the file name instead.
         /// </summary>
         private static readonly Dictionary<string, string> _imageExtensionMimeTypes = new Dictionary<string, string>( StringComparer.OrdinalIgnoreCase )
         {
-            { ".webp", "image/webp" },
             { ".heic", "image/heic" },
-            { ".heif", "image/heif" },
-            { ".jfif", "image/jpeg" }
+            { ".heif", "image/heif" }
         };
 
         /// <summary>
@@ -440,8 +492,8 @@ namespace RockWeb
 
         /// <summary>
         /// Gets the mime type to use for the uploaded file. If the client did not supply a
-        /// specific mime type then an attempt is made to infer an image type from the file
-        /// name.
+        /// specific mime type then an attempt is made to infer an image type from the file's
+        /// contents, and then from the file name for image types that cannot be detected.
         /// </summary>
         /// <param name="uploadedFile">The uploaded file.</param>
         /// <param name="isInferred">Set to <c>true</c> if the returned mime type was inferred rather than supplied by the client.</param>
@@ -469,21 +521,43 @@ namespace RockWeb
 
                 Reason: Issue #7083
             */
+
+            /*
+                10/13/2026 - CH
+
+                The type is detected from the file's contents before the file name is
+                considered, the same way api/BinaryFiles/Upload does. A real image with
+                no extension is then stored with its image type, and a non-image named
+                with an image extension is not stored as an image.
+
+                HEIC and HEIF cannot be detected from their contents by the image library
+                we use, so those two types are still inferred from the file name.
+
+                Reason: Issue #7089 follow-up (DEV-16466)
+            */
             isInferred = false;
 
-            var mimeType = uploadedFile.ContentType;
+            var mimeType = uploadedFile.ContentType?.Trim();
 
-            if ( mimeType.IsNotNullOrWhiteSpace() && !_unknownMimeTypes.Contains( mimeType.Trim() ) )
+            // A malformed or oversized type is handled like a missing one rather than failing the upload.
+            if ( mimeType.IsNotNullOrWhiteSpace()
+                && mimeType.Length <= MaxMimeTypeLength
+                && !_unknownMimeTypes.Contains( mimeType )
+                && _validMimeTypeRegex.IsMatch( mimeType ) )
             {
                 return mimeType;
             }
 
-            if ( !_imageExtensionMimeTypes.TryGetValue( Path.GetExtension( uploadedFile.FileName ?? string.Empty ), out var inferredMimeType ) )
+            var detectedMimeType = Rock.Utility.FileUtilities.GetImageMimeType( uploadedFile.InputStream );
+
+            if ( detectedMimeType != null && _inferableMimeTypes.Contains( detectedMimeType ) )
             {
-                inferredMimeType = MimeMapping.GetMimeMapping( uploadedFile.FileName );
+                isInferred = true;
+
+                return detectedMimeType;
             }
 
-            if ( _inferableMimeTypes.Contains( inferredMimeType ) )
+            if ( _imageExtensionMimeTypes.TryGetValue( Path.GetExtension( uploadedFile.FileName ?? string.Empty ), out var inferredMimeType ) )
             {
                 isInferred = true;
 
@@ -552,8 +626,8 @@ namespace RockWeb
                     {
                         // The inferred image type could not be decoded, so store the
                         // file as an unknown type rather than failing the upload.
-                        // System.Drawing cannot decode types such as webp and heic,
-                        // so those keep their inferred type without a size check.
+                        // System.Drawing cannot decode webp, heic or heif, so those
+                        // keep their inferred type without a size check.
                         if ( _decodableMimeTypes.Contains( mimeType ) )
                         {
                             mimeType = UnknownMimeType;
@@ -751,6 +825,48 @@ namespace RockWeb
             scrubbedFileName = string.Concat( scrubbedFileName.Split( illegalChars ) );
 
             return scrubbedFileName;
+        }
+
+        /// <summary>
+        /// Determines whether an asset storage provider key is safe to use. A key
+        /// is not safe if it contains a backslash or a path segment made only of
+        /// dots and spaces, such as "." or "..". Empty segments are allowed.
+        /// </summary>
+        /// <param name="key">The asset key.</param>
+        /// <returns><c>true</c> if the key is safe to use; otherwise, <c>false</c>.</returns>
+        private static bool IsValidAssetKey( string key )
+        {
+            if ( key.IndexOf( '\\' ) >= 0 )
+            {
+                return false;
+            }
+
+            return !key.Split( '/' ).Any( s => s.Length > 0 && s.Trim( '.', ' ' ).Length == 0 );
+        }
+
+        /// <summary>
+        /// Determines whether an asset storage provider key is inside the
+        /// provider's root folder. A blank root folder or a root folder of "/"
+        /// means the whole storage location, so every key is inside it.
+        /// </summary>
+        /// <param name="key">The asset key.</param>
+        /// <param name="rootFolder">The provider's root folder.</param>
+        /// <returns><c>true</c> if the key is inside the root folder; otherwise, <c>false</c>.</returns>
+        private static bool IsKeyWithinRoot( string key, string rootFolder )
+        {
+            var root = rootFolder?.Trim() ?? string.Empty;
+
+            if ( root.Length == 0 || root == "/" )
+            {
+                return true;
+            }
+
+            if ( !root.EndsWith( "/" ) )
+            {
+                root += "/";
+            }
+
+            return key.StartsWith( root, StringComparison.Ordinal );
         }
 
         /// <summary>

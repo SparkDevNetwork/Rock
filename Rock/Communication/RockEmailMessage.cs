@@ -225,7 +225,7 @@ namespace Rock.Communication
             this.FromEmail = systemCommunication.From;
             this.FromName = systemCommunication.FromName;
 
-            var recipients = systemCommunication.To.SplitDelimitedValues().ToList().Select( a => RockEmailMessageRecipient.CreateAnonymous( a, null ) ).ToList();
+            var recipients = systemCommunication.To.SplitDelimitedValues().ToList().Select( a => CreateTemplateRecipient( a ) ).ToList();
             this.SetRecipients( recipients );
 
             this.CCEmails = systemCommunication.Cc.SplitDelimitedValues().ToList();
@@ -246,6 +246,18 @@ namespace Rock.Communication
         {
             this.Recipients = new List<RockMessageRecipient>();
             this.Recipients.AddRange( recipients );
+        }
+
+        /// <summary>
+        /// Creates an anonymous recipient whose address is an admin-authored Lava template.
+        /// </summary>
+        /// <param name="to">The To value from a System Communication or System Email.</param>
+        /// <returns>A recipient that the transport renders as Lava before sending.</returns>
+        private static RockEmailMessageRecipient CreateTemplateRecipient( string to )
+        {
+            var recipient = RockEmailMessageRecipient.CreateAnonymous( to, null );
+            recipient.IsToLavaTemplate = true;
+            return recipient;
         }
     }
 }

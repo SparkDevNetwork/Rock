@@ -1648,6 +1648,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             btnDelete.Visible = btnDelete.Visible && _canEdit;
 
+            /*
+                10/15/2026 - MSE
+
+                The member names are written by data binding expressions in the ascx, which do
+                not encode, and person names are plain text that anyone can set (for example
+                through a public signup form), so the ascx HTML encodes NickName and LastName.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             lvMembers.DataSource = GetMembersOrdered();
             lvMembers.DataBind();
         }
@@ -2040,7 +2049,16 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     return string.Empty;
                 }
 
-                return result.ConvertCrLfToHtmlBr();
+                /*
+                    10/18/2026 - MSE
+
+                    The address column writes this value as HTML. Address parts are plain text
+                    that anyone can set (for example through Family Pre-Registration), so the text
+                    is encoded before the line breaks are turned into <br> tags.
+
+                    Reason: Prevent stored XSS through a family address.
+                */
+                return result.EncodeHtml().ConvertCrLfToHtmlBr();
             }
         }
     }

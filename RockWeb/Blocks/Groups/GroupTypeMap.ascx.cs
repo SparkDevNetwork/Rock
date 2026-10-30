@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Groups
     [Category( "Groups" )]
     [Description( "Displays groups on a map." )]
 
-    [GroupTypeField( "Group Type", "The type of group to map.", false, "", "", 0 )]
+    [GroupTypesField( "Group Type", "The group types this block may map. Required. With one type selected, the map always shows that type. With more than one selected, the GroupTypeId page parameter picks the type to show and must be one of the selected types. No security is checked on the groups shown: their names, locations and members are shown to anyone who can view this page.", true, "", "", 0, "GroupType" )]
     //[GroupRoleField("", "Display Group Role", "")]
     [IntegerField( "Map Height", "Height of the map in pixels (default value is 600px)", false, 600, "", 2 )]
     [LinkedPage( "Group Detail Page", "Page to use as a link to the group details (optional).", false, "", "", 3 )]
@@ -51,6 +51,15 @@ namespace RockWeb.Blocks.Groups
     [TextField( "Attributes", "Comma delimited list of attribute keys to include values for in the map info window (e.g. 'StudyTopic,MeetingTime').", false, "", "", 7 )]
     [DefinedValueField( Rock.SystemGuid.DefinedType.MAP_STYLES, "Map Style", "The map theme that should be used for styling the map.", true, false, Rock.SystemGuid.DefinedValue.MAP_STYLE_GOOGLE, "", 8 )]
 
+    /*
+        10/19/2026 - MSE
+
+        The info window below is rendered as HTML. Group names, location fields, person names
+        and emails can be set by group editors or the people themselves, so the default
+        template escapes them.
+
+        Reason: Prevent stored XSS through names in the default info window.
+    */
     [CodeEditorField( "Info Window Contents",
         Description = "Lava template for the info window. To suppress the window provide a blank template.",
         EditorMode = CodeEditorMode.Lava,
@@ -58,15 +67,15 @@ namespace RockWeb.Blocks.Groups
         IsRequired = false,
         DefaultValue = @"
 <div class='clearfix'>
-    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName}}</h4>
+    <h4 class='pull-left' style='margin-top: 0;'>{{GroupName | Escape}}</h4>
     <span class='label label-campus pull-right'>{{GroupCampus}}</span>
 </div>
 
 <div class='clearfix'>
     <div class='pull-left' style='padding-right: 24px'>
         <strong>{{GroupLocation.Name}}</strong><br>
-        {{GroupLocation.Street1}}
-        <br>{{GroupLocation.City}}, {{GroupLocation.State}} {{GroupLocation.PostalCode}}
+        {{GroupLocation.Street1 | Escape}}
+        <br>{{GroupLocation.City | Escape}}, {{GroupLocation.State | Escape}} {{GroupLocation.PostalCode | Escape}}
         {% for attribute in Attributes %}
             {% if forloop.first %}<br/>{% endif %}
             <br/><strong>{{attribute.Name}}:</strong> {{ attribute.Value }}
@@ -76,11 +85,11 @@ namespace RockWeb.Blocks.Groups
         <strong>{{GroupMemberTerm}}s</strong><br>
         {% for GroupMember in GroupMembers -%}
             {% if PersonProfilePage != '' %}
-                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName}} {{GroupMember.LastName}}</a>
+                <a href='{{PersonProfilePage}}{{GroupMember.Id}}'>{{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}</a>
             {% else %}
-                {{GroupMember.NickName}} {{GroupMember.LastName}}
+                {{GroupMember.NickName | Escape}} {{GroupMember.LastName | Escape}}
             {% endif %}
-            - {{GroupMember.Email}}
+            - {{GroupMember.Email | Escape}}
             {% for PhoneType in GroupMember.PhoneTypes %}
                 <br>{{PhoneType.Name}}: {{PhoneType.Number}}
             {% endfor %}
@@ -186,13 +195,13 @@ namespace RockWeb.Blocks.Groups
 
             lMapStyling.Text = string.Format( mapStylingFormat, GetAttributeValue( "MapHeight" ) );
 
-            string settingGroupTypeId = GetAttributeValue( "GroupType" );
+            var allowedGroupTypeGuids = GetAttributeValue( "GroupType" ).SplitDelimitedValues().AsGuidList();
             string queryStringGroupTypeId = PageParameter( "GroupTypeId" );
 
-            if ( ( string.IsNullOrWhiteSpace(settingGroupTypeId) && string.IsNullOrWhiteSpace(queryStringGroupTypeId) )  )
+            if ( !allowedGroupTypeGuids.Any() )
             {
                 pnlMap.Visible = false;
-                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display as a block setting or pass a GroupTypeId as a query parameter.</div>";
+                lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please select one or more group types in the block settings.</div>";
             }
             else
             {
@@ -203,21 +212,22 @@ namespace RockWeb.Blocks.Groups
                 int groupsMapped = 0;
                 int groupsWithNoGeo = 0;
 
-                StringBuilder sbGroupJson = new StringBuilder();
+                var groupMapItems = new List<object>();
                 StringBuilder sbGroupsWithNoGeo = new StringBuilder();
 
                 Guid? groupType = null;
                 int groupTypeId = -1;
 
-                if ( !string.IsNullOrWhiteSpace( settingGroupTypeId ) )
+                if ( allowedGroupTypeGuids.Count == 1 )
                 {
-                    groupType = new Guid( settingGroupTypeId );
+                    groupType = allowedGroupTypeGuids[0];
                 }
-                else
+                else if ( Int32.TryParse( queryStringGroupTypeId, out groupTypeId ) )
                 {
-                    if ( !string.IsNullOrWhiteSpace( queryStringGroupTypeId ) && Int32.TryParse( queryStringGroupTypeId, out groupTypeId ) )
+                    var queryStringGroupType = GroupTypeCache.Get( groupTypeId );
+                    if ( queryStringGroupType != null && allowedGroupTypeGuids.Contains( queryStringGroupType.Guid ) )
                     {
-                        groupType = new GroupTypeService( rockContext ).Get( groupTypeId ).Guid;
+                        groupType = queryStringGroupType.Guid;
                     }
                 }
 
@@ -390,35 +400,56 @@ namespace RockWeb.Blocks.Groups
                                 infoWindow = infoWindow.Replace( "\n", string.Empty );
                             }
 
-                            sbGroupJson.Append( string.Format(
-                                                    @"{{ ""name"":""{0}"" , ""latitude"":""{1}"", ""longitude"":""{2}"", ""infowindow"":""{3}"" }},",
-                                                    HttpUtility.HtmlEncode( group.GroupName ),
-                                                    group.GroupLocation.Latitude,
-                                                    group.GroupLocation.Longitude,
-                                                    HttpUtility.HtmlEncode( infoWindow ) ) );
+                            // The values keep the same shape as before (HTML encoded strings, with
+                            // latitude and longitude as strings) so the map script is unchanged.
+                            groupMapItems.Add( new
+                            {
+                                name = HttpUtility.HtmlEncode( ( string ) group.GroupName ),
+                                latitude = string.Format( "{0}", ( object ) group.GroupLocation.Latitude ),
+                                longitude = string.Format( "{0}", ( object ) group.GroupLocation.Longitude ),
+                                infowindow = HttpUtility.HtmlEncode( infoWindow )
+                            } );
                         }
                         else
                         {
                             groupsWithNoGeo++;
 
+                            /*
+                                10/19/2026 - MSE
+
+                                Group names can be set by anyone who can edit a group of this type, so
+                                they are encoded before they are written into the list markup.
+
+                                Reason: Group names are plain text and must not render as HTML.
+                            */
+                            var encodedGroupName = HttpUtility.HtmlEncode( ( string ) group.GroupName );
+
                             if ( !string.IsNullOrWhiteSpace( group.GroupDetailPage ) )
                             {
-                                sbGroupsWithNoGeo.Append( string.Format( @"<li><a href='{0}'>{1}</a></li>", group.GroupDetailPage, group.GroupName ) );
+                                sbGroupsWithNoGeo.Append( string.Format( @"<li><a href='{0}'>{1}</a></li>", group.GroupDetailPage, encodedGroupName ) );
                             }
                             else
                             {
-                                sbGroupsWithNoGeo.Append( string.Format( @"<li>{0}</li>", group.GroupName ) );
+                                sbGroupsWithNoGeo.Append( string.Format( @"<li>{0}</li>", encodedGroupName ) );
                             }
                         }
                     }
 
-                    string groupJson = sbGroupJson.ToString();
+                    /*
+                        10/19/2026 - MSE
 
-                    // remove last comma
-                    if ( groupJson.Length > 0 )
-                    {
-                        groupJson = groupJson.Substring( 0, groupJson.Length - 1 );
-                    }
+                        The group data is written into a single quoted JavaScript string that is
+                        passed to JSON.parse. It used to be built by hand, so a backslash escape
+                        such as \x3c in a group name was turned into a raw "<" by the JavaScript
+                        parser and then rendered as HTML. The data is now serialized as JSON and
+                        then escaped for the string literal the same way as the Group Finder:
+                        each "<" becomes the JSON escape \u003c (before the backslashes are
+                        doubled), backslashes are doubled and quotes are escaped, so JSON.parse
+                        returns exactly the original values.
+
+                        Reason: Prevent stored XSS through group names and info window content.
+                    */
+                    string groupJson = new { groups = groupMapItems }.ToJson().Replace( Environment.NewLine, string.Empty ).Replace( "<", "\\u003c" ).Replace( "\\", "\\\\" ).EscapeQuotes().Replace( "\x0A", string.Empty );
 
                     // add styling to map
                     string styleCode = "null";
@@ -435,10 +466,20 @@ namespace RockWeb.Blocks.Groups
                         }
                     }
 
+                    /*
+                        10/19/2026 - MSE
+
+                        The htmlDecode function in the script below decodes the group name for the
+                        marker title and the info window content. It sets them on a textarea, which
+                        only decodes character references and keeps tags as text, instead of a div,
+                        which would create elements and run their handlers while decoding.
+
+                        Reason: Prevent stored XSS through group names in map marker titles.
+                    */
                     // write script to page
                     string mapScriptFormat = @" <script>
                                                 Sys.Application.add_load(function () {{
-                                                    var groupData = JSON.parse('{{ ""groups"" : [ {0} ]}}');
+                                                    var groupData = JSON.parse('{0}');
                                                     var showInfoWindow = {1};
                                                     var mapStyle = {2};
                                                     var pinColor = '{3}';
@@ -508,9 +549,9 @@ namespace RockWeb.Blocks.Groups
                                                     }}
 
                                                     function htmlDecode(input) {{
-                                                        var e = document.createElement('div');
-                                                        e.innerHTML = input;
-                                                        return e.childNodes.length === 0 ? """" : e.childNodes[0].nodeValue;
+                                                        var e = document.createElement('textarea');
+                                                        e.innerHTML = input == null ? '' : input;
+                                                        return e.value;
                                                     }}
                                                 }});
                                             </script>";
@@ -557,7 +598,7 @@ namespace RockWeb.Blocks.Groups
                 else
                 {
                     pnlMap.Visible = false;
-                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Please configure a group type to display and a location type to use.</div>";
+                    lMessages.Text = "<div class='alert alert-warning'><strong>Group Mapper</strong> Pass a GroupTypeId page parameter for one of the group types selected in the block settings.</div>";
                 }
             }
         }

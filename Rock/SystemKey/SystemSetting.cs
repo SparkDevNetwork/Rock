@@ -472,23 +472,38 @@ namespace Rock.SystemKey
         public const string TRAILBLAZER_MODE = "core_TrailblazerMode";
 
         /// <summary>
-        /// The JSON that represents the connected services settings for the
-        /// Rock installation. The settings contains the options that have been
-        /// set by the administrator.
+        /// The legacy plain text location of the connected services manifest.
+        /// It is read once to migrate the value to
+        /// <see cref="CONNECTED_SERVICES_MANIFEST_ENCRYPTED"/> and then cleared.
         /// </summary>
         public const string CONNECTED_SERVICES_MANIFEST = "core_ConnectedServicesManifest";
 
         /// <summary>
-        /// The JSON that represents the connected services configuration for the
-        /// Rock installation. The configuration contains the data provided by
-        /// the API service.
+        /// The legacy plain text location of the connected services
+        /// configuration. It is read once to migrate the value to
+        /// <see cref="CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED"/> and then
+        /// cleared.
         /// </summary>
         public const string CONNECTED_SERVICES_CONFIGURATION = "core_ConnectedServicesConfiguration";
 
         /// <summary>
-        /// The JSON that represents the connected services authentication for
-        /// linking the Rock installation to a Spark organization.
+        /// The encrypted JSON that represents the connected services
+        /// authentication for linking the Rock installation to a Spark
+        /// organization.
         /// </summary>
         public const string CONNECTED_SERVICES_AUTH = "core_ConnectedServicesAuth";
+
+        /// <summary>
+        /// The encrypted JSON that represents the connected services manifest
+        /// for the Rock installation.
+        /// </summary>
+        internal const string CONNECTED_SERVICES_MANIFEST_ENCRYPTED = "core_ConnectedServicesManifestEncrypted";
+
+        /// <summary>
+        /// The encrypted JSON that represents the connected services
+        /// configuration for the Rock installation. The configuration contains
+        /// the data provided by the API service.
+        /// </summary>
+        internal const string CONNECTED_SERVICES_CONFIGURATION_ENCRYPTED = "core_ConnectedServicesConfigurationEncrypted";
     }
 }

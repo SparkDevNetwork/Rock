@@ -323,10 +323,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the address summary text.
+        /// Gets the address summary as HTML. The address text is HTML encoded
+        /// and only the line breaks are emitted as <c>&lt;br&gt;</c> tags.
         /// </summary>
         /// <value>
-        /// The address summary text.
+        /// The HTML encoded address summary text.
         /// </value>
         public string AddressSummaryText
         {
@@ -334,7 +335,15 @@ namespace Rock.Web.UI.Controls
             {
                 if ( this.Location != null )
                 {
-                    return this.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr();
+                    /*
+                        10/19/2026 - MSE
+
+                        This value is written into the picker label with InnerHtml, so the address
+                        text is encoded before the line breaks become <br>.
+
+                        Reason: Stored address text must not render as HTML.
+                    */
+                    return this.Location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr();
                 }
                 else
                 {

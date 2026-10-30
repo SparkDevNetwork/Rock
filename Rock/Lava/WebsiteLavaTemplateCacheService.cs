@@ -64,6 +64,9 @@ namespace Rock.Lava
         {
             WebsiteLavaTemplateCache template;
 
+            // A null template is stored as empty text, so an entry with no recorded source never matches.
+            var sourceText = content ?? string.Empty;
+
             var fromCache = true;
             template = WebsiteLavaTemplateCache.GetOrAddExisting( key, () =>
             {
@@ -71,13 +74,29 @@ namespace Rock.Lava
 
                 var parseResult = CompileLavaTemplate( engine, content );
 
-                var cacheEntry = new WebsiteLavaTemplateCache
-                {
-                    Template = parseResult.Template
-                };
+                var cacheEntry = new WebsiteLavaTemplateCache( parseResult.Template, sourceText );
 
                 return cacheEntry;
             } );
+
+            /*
+                10/14/2026 - MSE
+
+                A cached entry is only used when its stored source text exactly matches the requested
+                content, because different content can share a cache key. Otherwise the content is
+                parsed and replaces the entry.
+
+                Reason: Prevent one template from being served in place of another that shares its cache key.
+            */
+            if ( fromCache && !string.Equals( template?.SourceText, sourceText, StringComparison.Ordinal ) )
+            {
+                fromCache = false;
+
+                var parseResult = CompileLavaTemplate( engine, content );
+
+                template = new WebsiteLavaTemplateCache( parseResult.Template, sourceText );
+                WebsiteLavaTemplateCache.UpdateCacheItem( key, template );
+            }
 
             if ( fromCache )
             {
@@ -130,6 +149,9 @@ namespace Rock.Lava
             Exception parseException = null;
             if ( this.IsCacheEnabled() )
             {
+                // A null template is stored as empty text, so an entry with no recorded source never matches.
+                var sourceText = templateContent ?? string.Empty;
+
                 // Retrieve the cached template or add a new template to the cache.
                 fromCache = true;
                 var templateCache = WebsiteLavaTemplateCache.GetOrAddExisting( cacheKey, () =>
@@ -140,9 +162,31 @@ namespace Rock.Lava
                     var parseResult = CompileLavaTemplate( engine, templateContent );
                     parseException = parseResult.Error;
 
-                    var cacheEntry = new WebsiteLavaTemplateCache { Template = parseResult.Template };
+                    var cacheEntry = new WebsiteLavaTemplateCache( parseResult.Template, sourceText );
                     return cacheEntry;
                 } );
+
+                /*
+                    10/14/2026 - MSE
+
+                    The cache key is a fast 32-bit hash of the template text (or a key supplied by the
+                    caller), so two different templates can share a key. A cached entry is only used when
+                    its stored source text exactly matches the requested text. Otherwise the requested
+                    text is parsed and replaces the entry, and the request is counted as a miss. Entries
+                    with no recorded source text (such as those added through AddTemplate) are never trusted.
+
+                    Reason: Prevent one template from being served in place of another that shares its cache key.
+                */
+                if ( fromCache && !string.Equals( templateCache?.SourceText, sourceText, StringComparison.Ordinal ) )
+                {
+                    fromCache = false;
+
+                    var parseResult = CompileLavaTemplate( engine, templateContent );
+                    parseException = parseResult.Error;
+
+                    templateCache = new WebsiteLavaTemplateCache( parseResult.Template, sourceText );
+                    WebsiteLavaTemplateCache.UpdateCacheItem( cacheKey, templateCache );
+                }
 
                 template = templateCache?.Template;
             }

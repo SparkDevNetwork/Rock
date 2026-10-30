@@ -577,7 +577,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 return location.FormattedHtmlAddress;
             }
 
-            return $"{location.Street1}<br/>{location.Street2}<br/>{location.City}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County : "" )}, {location.State} {location.PostalCode}"
+            /*
+                10/19/2026 - MSE
+
+                The result is written into the page as HTML, so each stored address part is
+                encoded before it is joined with <br/> tags.
+
+                Reason: Stored address text must not render as HTML.
+            */
+            return $"{location.Street1.EncodeHtml()}<br/>{location.Street2.EncodeHtml()}<br/>{location.City.EncodeHtml()}{( location.County.IsNotNullOrWhiteSpace() ? ", " + location.County.EncodeHtml() : "" )}, {location.State.EncodeHtml()} {location.PostalCode.EncodeHtml()}"
                 .ReplaceWhileExists( "  ", " " )
                 .ReplaceWhileExists( "<br/><br/>", "<br/>" );
         }
@@ -618,12 +626,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <returns></returns>
         protected string FormatPersonName( string nickName, string lastName )
         {
+            /*
+                10/15/2026 - MSE
+
+                The result is placed into HTML markup without further encoding, and person
+                names are plain text that anyone can set (for example through a public signup
+                form), so the names are HTML encoded here. The comparison uses the raw values.
+
+                Reason: Prevent stored XSS through a person's name.
+            */
             if ( Person != null && ( Person.LastName != lastName || !_IsFamilyGroupType ) )
             {
-                return string.Format( "{0} {1}", nickName, lastName );
+                return string.Format( "{0} {1}", nickName.EncodeHtml(), lastName.EncodeHtml() );
             }
 
-            return nickName;
+            return nickName.EncodeHtml();
         }
 
         /// <summary>
@@ -685,16 +702,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             foreach ( var attribute in authorizedAttributes )
             {
-                string value = attribute.DefaultValue;
-                if ( group.AttributeValues.ContainsKey( attribute.Key ) && group.AttributeValues[attribute.Key] != null )
-                {
-                    value = group.AttributeValues[attribute.Key].ValueFormatted;
-                }
+                /*
+                    10/16/2026 - MSE
+
+                    Family attribute values can be set by anonymous visitors (for example on
+                    Family Pre-Registration), and the formatted text value is not HTML encoded.
+                    Use the field type's HTML value, which encodes plain text and keeps the
+                    intended markup of field types such as URL Link, and encode the attribute name.
+
+                    Reason: Prevent stored text from rendering as HTML on the family card.
+                */
+                string value = group.GetAttributeHtmlValue( attribute.Key );
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
                     var attributeHtml = $@"
-                        <dt>{attribute.Name}</dt>
+                        <dt>{attribute.Name.EncodeHtml()}</dt>
                         <dd>{value}</dd>";
 
                     if ( attribute.IsGridColumn )

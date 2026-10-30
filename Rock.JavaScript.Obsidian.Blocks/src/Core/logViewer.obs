@@ -66,10 +66,11 @@
 </style>
 
 <script setup lang="ts">
-    import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useDownloadBlockAction } from "@Obsidian/Utility/block";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Grid, { ButtonColumn, DateTimeColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { ref, reactive } from "vue";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { RockLogEventsBag } from "@Obsidian/ViewModels/Blocks/Core/LogViewer/RockLogEventsBag";
@@ -80,7 +81,7 @@
     // #region Values
 
     const config = useConfigurationValues<ListBlockBox<RockLogEventsBag>>();
-    const blockActionUrl = useBlockActionUrl();
+    const downloadBlockAction = useDownloadBlockAction();
     const invokeBlockAction = useInvokeBlockAction();
 
     const gridDataSource = ref<Promise<GridDataBag>>();
@@ -118,9 +119,17 @@
         return gridData;
     }
 
-    function onDownloadClick(): void {
-        const url = blockActionUrl("DownloadLogs");
-        window.location.href = url;
+    /**
+    * Called when the Download button is clicked. Downloads the log files.
+    */
+    async function onDownloadClick(): Promise<void> {
+        error.value = "";
+
+        const result = await downloadBlockAction("DownloadLogs", undefined, "RockLogs.zip");
+
+        if (!result.isSuccess) {
+            error.value = result.errorMessage ?? "Unable to download the logs.";
+        }
     }
 
     function onExceptionClick(key: string): void {

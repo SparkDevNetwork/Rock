@@ -206,6 +206,11 @@ namespace Rock.Blocks.Communication
 
             var currentPerson = GetCurrentPerson();
 
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
             if ( SaveCommunicationTemplate( this.RockContext, currentPerson, bag, out var communicationTemplate, out var errorResult ) )
             {
                 // Return the saved communication back to the caller.
@@ -235,6 +240,11 @@ namespace Rock.Blocks.Communication
 
             var currentPerson = GetCurrentPerson();
 
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
             // Build the communication template (without saving).
             var communicationTemplate = GetOrCreateFlowCommunicationTemplate( this.RockContext, bag.CommunicationTemplate );
 
@@ -252,7 +262,13 @@ namespace Rock.Blocks.Communication
             // Generate the preview message.
             var commonMergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
             var mergeFields = communication.Recipients.First().CommunicationMergeValues( commonMergeFields );
-            var previewHtml = GenerateEmailHtmlPreview( communication, currentPerson, mergeFields );
+            string previewHtml;
+
+            // The preview goes back to its author, so only the author's own token may appear in it.
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                previewHtml = GenerateEmailHtmlPreview( communication, currentPerson, mergeFields );
+            }
 
             return ActionOk( previewHtml );
         }
@@ -267,8 +283,24 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( validationResult.ErrorMessage );
             }
 
-            if ( SendTestCommunication( this.RockContext, GetCurrentPerson(), bag, out var communicationTemplate, out validationResult ) )
-            { 
+            var currentPerson = GetCurrentPerson();
+
+            if ( !CanEditPageFlow( currentPerson ) )
+            {
+                return ActionForbidden( EditModeMessage.NotAuthorizedToEdit( CommunicationFlow.FriendlyTypeName ) );
+            }
+
+            bool isSent;
+            CommunicationTemplate communicationTemplate;
+
+            // The test goes only to the current person, so only their own token may be created while it renders.
+            using ( PersonTokenScope.RestrictTo( currentPerson ) )
+            {
+                isSent = SendTestCommunication( this.RockContext, currentPerson, bag, out communicationTemplate, out validationResult );
+            }
+
+            if ( isSent )
+            {
                 return ActionOk( GetCommunicationTemplateAsBag( communicationTemplate ) );
             }
             else
@@ -604,6 +636,22 @@ namespace Rock.Blocks.Communication
             if ( !AreTemplateBinaryFilesAllowed( this.RockContext, currentPerson, communicationTemplate, bag ) )
             {
                 errorResult = new ValidationResult( "Invalid attachment." );
+                return false;
+            }
+
+            /*
+                10/25/2026 - MSE
+
+                The SMS From list sent to the client only contains numbers the person
+                can view, but the posted number was saved and used for test sends
+                without checking it. This must run before ApplyBagToCommunicationTemplate
+                because that call overwrites the number stored on the template.
+
+                Reason: Prevent sending SMS from system phone numbers the person cannot view.
+            */
+            if ( !IsSmsFromNumberAllowed( communicationTemplate, bag, currentPerson ) )
+            {
+                errorResult = new ValidationResult( "Invalid SMS from number." );
                 return false;
             }
 
@@ -977,6 +1025,38 @@ namespace Rock.Blocks.Communication
             }
 
             return communicationTemplate;
+        }
+
+        /// <summary>
+        /// Determines whether the SMS from number in the request is one offered
+        /// in the SMS from number list or the number already stored on the
+        /// communication template.
+        /// </summary>
+        /// <param name="communicationTemplate">The existing or new communication template.</param>
+        /// <param name="bag">The template bag sent by the client.</param>
+        /// <param name="currentPerson">The current person.</param>
+        /// <returns><c>true</c> if the SMS from number is allowed; otherwise <c>false</c>.</returns>
+        private bool IsSmsFromNumberAllowed( CommunicationTemplate communicationTemplate, CommunicationFlowDetailCommunicationTemplateBag bag, Person currentPerson )
+        {
+            var smsFromNumberGuid = bag.SmsFromSystemPhoneNumber?.Value?.AsGuidOrNull();
+
+            if ( !smsFromNumberGuid.HasValue )
+            {
+                return true;
+            }
+
+            // Keep the number already stored on the template so people with
+            // EDIT on it can still edit it.
+            if ( communicationTemplate.SmsFromSystemPhoneNumberId.HasValue
+                 && SystemPhoneNumberCache.GetGuid( communicationTemplate.SmsFromSystemPhoneNumberId.Value ) == smsFromNumberGuid.Value )
+            {
+                return true;
+            }
+
+            // Same filter used to build the SmsFromSystemPhoneNumbers option list.
+            return SystemPhoneNumberCache.All( false )
+                .Any( spn => spn.Guid == smsFromNumberGuid.Value
+                    && spn.IsAuthorized( Authorization.VIEW, currentPerson ) );
         }
 
         private void ApplyBagToCommunicationTemplate( RockContext rockContext, CommunicationTemplate communicationTemplate, CommunicationFlowDetailCommunicationTemplateBag bag )
@@ -1965,6 +2045,23 @@ namespace Rock.Blocks.Communication
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
             };
+        }
+
+        /// <summary>
+        /// Determines whether the person may edit the communication flow this page is showing.
+        /// </summary>
+        /// <param name="currentPerson">The person making the request.</param>
+        /// <returns><c>true</c> if the page's flow exists and the person has EDIT access to it; otherwise <c>false</c>.</returns>
+        private bool CanEditPageFlow( Person currentPerson )
+        {
+            var flow = GetInitialEntity( this.RockContext );
+
+            if ( flow == null )
+            {
+                return false;
+            }
+
+            return flow.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <inheritdoc/>

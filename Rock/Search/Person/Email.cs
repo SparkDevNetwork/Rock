@@ -89,10 +89,23 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            /*
+                10/18/2026 - MSE
+
+                Smart Search renders each result string as HTML, and email addresses can be set by
+                anonymous visitors through public forms. The values are HTML encoded, which can't be
+                done in SQL, so the results are materialized (capped at 50) first.
+
+                Reason: Prevent stored XSS through email addresses in Smart Search results.
+            */
             return GetSearchResults( searchterm )
-                .OrderBy( p => p.Email )
                 .Select( p => p.Email )
-                .Distinct();
+                .Distinct()
+                .OrderBy( e => e )
+                .Take( 50 )
+                .ToList()
+                .Select( e => e.EncodeHtml() )
+                .AsQueryable();
         }
     }
 }

@@ -473,7 +473,7 @@ namespace Rock.Transactions
 
         /// <inheritdoc cref="Interaction.InteractionComponentId"/>
         /// <remarks>
-        /// This will be determined automatically from <seealso cref="InteractionComponentCache.GetComponentIdByChannelIdAndEntityId"/> 
+        /// This will be determined automatically from <seealso cref="InteractionComponentCache.GetComponentIdByChannelIdAndEntityId(int, int?, string)"/> 
         /// </remarks>
         public int? InteractionComponentId { get; private set; }
 
@@ -634,13 +634,7 @@ namespace Rock.Transactions
                     }
                 }
 
-                // Remove the site name from the title.
-                if ( title?.Contains( "|" ) == true )
-                {
-                    title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
-                }
-
-                this.InteractionSummary = title;
+                this.InteractionSummary = GetInteractionSummaryFromPageTitle( title );
             }
 
             // Make sure we don't exceed these fields' character limit.
@@ -678,6 +672,35 @@ namespace Rock.Transactions
             }
 
             queue.Enqueue( this );
+        }
+
+        /// <summary>
+        /// Gets the interaction summary to store for a page view from the page's
+        /// browser or page title: the site name is removed and the title is HTML
+        /// decoded into plain text.
+        /// </summary>
+        /// <param name="title">The browser or page title, as it is written into the page.</param>
+        /// <returns>The plain text summary.</returns>
+        internal static string GetInteractionSummaryFromPageTitle( string title )
+        {
+            // Remove the site name from the title.
+            if ( title?.Contains( "|" ) == true )
+            {
+                title = title.Substring( 0, title.LastIndexOf( '|' ) ).Trim();
+            }
+
+            /*
+                10/19/2026 - MSE
+
+                Page titles are written into the page as HTML, so some blocks HTML encode
+                the values they put in them (for example the Person Bio blocks encode the
+                person's name). The summary is stored as plain text and the blocks that
+                show it encode it, so the title is decoded here. Otherwise a name such as
+                O'Brien would be stored as O&#39;Brien and shown with the entity.
+
+                Reason: Store page view summaries as plain text.
+            */
+            return HttpUtility.HtmlDecode( title );
         }
 
         /// <summary>

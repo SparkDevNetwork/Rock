@@ -109,6 +109,16 @@ namespace Rock.Blocks.Types.Mobile.Core
                 return null;
             }
 
+            /*
+                10/16/2026 - MSE
+
+                Saving requires EDIT on the context entity (see UpdateAttributeValue), so
+                show the fields as read only when the person cannot edit the entity.
+
+                Reason: Keep the displayed edit state in line with what can be saved.
+            */
+            var canEditEntity = CanEditContextEntity( entity );
+
             var attributeBags = new List<AttributeField>();
             foreach ( var attribute in attributes )
             {
@@ -124,7 +134,7 @@ namespace Rock.Blocks.Types.Mobile.Core
                 }
 
                 // We want to grab the corresponding attribute info dependent on the usage.
-                var canEdit = attribute.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+                var canEdit = canEditEntity && attribute.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
                 if ( canEdit )
                 {
                     attributeBag = ToAttributeField( attribute, useAbbrevNames, true, value, categories );
@@ -227,6 +237,29 @@ namespace Rock.Blocks.Types.Mobile.Core
             return new List<AttributeCache>();
         }
 
+        /// <summary>
+        /// Determines whether the current person can edit the specified context entity.
+        /// </summary>
+        /// <param name="entity">The context entity.</param>
+        /// <returns><c>true</c> if the current person can edit the entity; otherwise, <c>false</c>.</returns>
+        private bool CanEditContextEntity( IHasAttributes entity )
+        {
+            var currentPerson = RequestContext.CurrentPerson;
+
+            if ( entity is Person person )
+            {
+                // Person.IsAuthorized returns true for the person's own record.
+                return person.IsAuthorized( Authorization.EDIT, currentPerson )
+                    || BlockCache.IsAuthorized( Authorization.EDIT, currentPerson );
+            }
+
+            if ( entity is ISecured secured )
+            {
+                return secured.IsAuthorized( Authorization.EDIT, currentPerson );
+            }
+
+            return false;
+        }
 
         #endregion
 
@@ -268,11 +301,12 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// Updates a attribute value.
         /// </summary>
         /// <param name="attributeGuid">The attribute unique identifier.</param>
-        /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
+        /// <param name="key">Deprecated. The attribute key. The attribute unique identifier is
+        /// the single source of truth; when a key is sent it must name the same attribute.</param>
         /// <returns>BlockActionResult.</returns>
         [BlockAction]
-        public BlockActionResult UpdateAttributeValue( Guid attributeGuid, string key, string value )
+        public BlockActionResult UpdateAttributeValue( Guid attributeGuid, string value, string key = null )
         {
             if ( RequestContext.CurrentPerson == null )
             {
@@ -308,16 +342,60 @@ namespace Rock.Blocks.Types.Mobile.Core
 
                 attributeEntity.LoadAttributes();
 
-                if ( !attribute.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                /*
+                    10/16/2026 - MSE
+
+                    The attribute is resolved from the context entity's own attributes and
+                    must match the posted attribute Guid. Previously the EDIT check was done
+                    on the attribute named by the Guid while the value was written under the
+                    separately posted key, so a person with EDIT on any one attribute could
+                    write any attribute of the context entity.
+
+                    Reason: The attribute that is authorized must be the attribute that is written.
+                */
+                AttributeCache entityAttribute = null;
+
+                if ( attributeEntity.Attributes != null )
+                {
+                    if ( key.IsNotNullOrWhiteSpace() )
+                    {
+                        attributeEntity.Attributes.TryGetValue( key, out entityAttribute );
+                    }
+                    else
+                    {
+                        entityAttribute = attributeEntity.Attributes.Values.FirstOrDefault( a => a.Guid == attributeGuid );
+                    }
+                }
+
+                if ( entityAttribute == null || entityAttribute.Guid != attributeGuid )
                 {
                     return ActionForbidden();
                 }
 
-                attributeEntity.SetAttributeValue( key, value );
+                if ( !entityAttribute.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    return ActionForbidden();
+                }
+
+                /*
+                    10/16/2026 - MSE
+
+                    The context entity is chosen by the caller (header, cookie or page
+                    parameter) and only needs VIEW to be accepted as context. Require EDIT
+                    on the entity itself before writing any of its attribute values.
+
+                    Reason: Prevent writing attribute values on records the person cannot edit.
+                */
+                if ( !CanEditContextEntity( attributeEntity ) )
+                {
+                    return ActionForbidden();
+                }
+
+                attributeEntity.SetAttributeValue( entityAttribute.Key, value );
                 rockContext.SaveChanges();
                 attributeEntity.SaveAttributeValues( rockContext );
 
-                var formattedValue = attribute.FieldType.Field?.FormatValueAsHtml( null, value, attribute.QualifierValues );
+                var formattedValue = entityAttribute.FieldType.Field?.FormatValueAsHtml( null, value, entityAttribute.QualifierValues );
                 return ActionOk( new
                 {
                     FormattedValue = formattedValue.IsNotNullOrWhiteSpace() ? formattedValue : value,

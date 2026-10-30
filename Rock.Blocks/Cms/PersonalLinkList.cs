@@ -68,9 +68,19 @@ namespace Rock.Blocks.Cms
             var box = new ListBlockBox<PersonalLinkListOptionsBag>();
             var builder = GetGridBuilder();
 
-            // anybody can add a non-shared link
-            // EDIT auth users can add shared link
-            box.IsAddEnabled = true;
+            /*
+                10/16/2026 - MSE
+
+                Adding and reordering links needs EDIT on the section. The owner of a
+                private section has EDIT; for a shared section it comes from the section's
+                security. This also hides the reorder column for people without EDIT.
+
+                Reason: Only people who can edit a shared section may add or reorder its links.
+            */
+            var currentPerson = GetCurrentPerson();
+            var sectionId = GetPersonalLinkSectionId();
+            var section = sectionId.HasValue ? new PersonalLinkSectionService( RockContext ).Get( sectionId.Value ) : null;
+            box.IsAddEnabled = currentPerson != null && section != null && section.IsAuthorized( Authorization.EDIT, currentPerson );
             // edit and delete buttons will be enabled/disabled per row based on security
             box.IsDeleteEnabled = true;
             box.ExpectedRowCount = null;
@@ -174,6 +184,34 @@ namespace Rock.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
+                /*
+                    10/16/2026 - MSE
+
+                    The order is stored on each link row, so reordering the links of a
+                    shared section changes them for everyone. Require EDIT on the section,
+                    the same as adding a link.
+
+                    Reason: Prevent reordering shared links with only VIEW access.
+                */
+                var currentPerson = GetCurrentPerson();
+
+                if ( currentPerson?.PrimaryAliasId == null )
+                {
+                    return ActionUnauthorized();
+                }
+
+                var section = new PersonalLinkSectionService( rockContext ).Get( GetPersonalLinkSectionId() ?? 0 );
+
+                if ( section == null )
+                {
+                    return ActionBadRequest( "Invalid Personal Link Section Id" );
+                }
+
+                if ( !section.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                {
+                    return ActionBadRequest( "Not authorized to reorder links in this section." );
+                }
+
                 // Get the queryable and make sure it is ordered correctly.
                 var qry = GetListQueryable( rockContext );
                 qry = GetOrderedListQueryable( qry, rockContext );
@@ -243,9 +281,33 @@ namespace Rock.Blocks.Cms
                 var personalLinkSection = personalLinkSectionService.Get( sectionId ?? 0 );
                 var currentPerson = GetCurrentPerson();
 
+                if ( currentPerson?.PrimaryAliasId == null )
+                {
+                    return ActionUnauthorized();
+                }
+
                 if ( personalLinkSection == null )
                 {
                     return ActionBadRequest( "Invalid Personal Link Section Id" );
+                }
+
+                if ( bag == null || bag.Name.IsNullOrWhiteSpace() || bag.Url.IsNullOrWhiteSpace() )
+                {
+                    return ActionBadRequest( "Link name and URL are required." );
+                }
+
+                /*
+                    10/16/2026 - MSE
+
+                    Links in shared sections are shown to every internal user in the header
+                    bookmark menu, so only allow relative URLs and safe schemes (http, https,
+                    mailto, tel). A javascript URL would run in the session of whoever clicks it.
+
+                    Reason: Prevent stored script links in personal links.
+                */
+                if ( !PersonalLinkService.IsUrlSchemeAllowed( bag.Url ) )
+                {
+                    return ActionBadRequest( "Link URL must be an http, https, mailto, or tel address." );
                 }
 
                 PersonalLink personalLink = null;
@@ -258,6 +320,20 @@ namespace Rock.Blocks.Cms
 
                 if ( personalLink == null )
                 {
+                    /*
+                        10/16/2026 - MSE
+
+                        The SectionId page parameter is caller controlled, so check that the
+                        person can edit the section before adding a link to it. A private
+                        section's owner passes; a shared section uses its own security.
+
+                        Reason: Only people who can edit a shared section may add links to it.
+                    */
+                    if ( !personalLinkSection.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    {
+                        return ActionBadRequest( "Not authorized to add links to this section." );
+                    }
+
                     personalLink = new PersonalLink
                     {
                         SectionId = personalLinkSection.Id
@@ -271,7 +347,38 @@ namespace Rock.Blocks.Cms
                 }
                 else
                 {
-                    if ( personalLink.PersonAliasId != currentPerson.PrimaryAliasId && !personalLink.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    /*
+                        10/16/2026 - MSE
+
+                        The owner below is set from the page's section, so editing a link
+                        through a different SectionId could change its owner. The grid only
+                        lists the page section's links, so the UI never does this.
+
+                        Reason: Prevent changing a link's owner through another section.
+                    */
+                    if ( personalLink.SectionId != personalLinkSection.Id )
+                    {
+                        return ActionBadRequest( "Not authorized to make changes to this link." );
+                    }
+
+                    /*
+                        10/16/2026 - MSE
+
+                        Saving a link in a shared section clears its owner, which makes it
+                        visible to everyone who can view the section. A person could own a
+                        link in a shared section (created through the REST API), so owning
+                        the link is not enough there; section edit is required instead.
+
+                        Reason: Only people who can edit a shared section may share links in it.
+                    */
+                    if ( personalLinkSection.IsShared )
+                    {
+                        if ( !personalLinkSection.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                        {
+                            return ActionBadRequest( "Not authorized to make changes to this link." );
+                        }
+                    }
+                    else if ( personalLink.PersonAliasId != currentPerson.PrimaryAliasId && !personalLink.IsAuthorized( Authorization.EDIT, currentPerson ) )
                     {
                         return ActionBadRequest( "Not authorized to make changes to this link." );
                     }

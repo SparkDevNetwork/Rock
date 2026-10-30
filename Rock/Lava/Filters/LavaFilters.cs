@@ -4486,7 +4486,20 @@ namespace Rock.Lava
                  * without doing anything.
                  */
 
-                input = input.EscapeQuotes();
+                /*
+                    10/19/2026 - MSE
+
+                    The input and type name are placed inside single quoted JavaScript strings
+                    in an inline script. Escaping only quotes let a backslash before a quote, a
+                    line break or a closing script tag in a stored name (workflow, report, data
+                    view, group, person) end the string or the script and run code for the staff
+                    member viewing the page. Both values are now JavaScript string encoded, so
+                    callers must pass the raw value and must not encode it first.
+
+                    Reason: Prevent script injection through quick return names.
+                */
+                input = HttpUtility.JavaScriptStringEncode( input );
+                typeName = HttpUtility.JavaScriptStringEncode( typeName ?? string.Empty );
 
                 if ( ScriptManager.GetCurrent( rockPage ).IsInAsyncPostBack )
                 {

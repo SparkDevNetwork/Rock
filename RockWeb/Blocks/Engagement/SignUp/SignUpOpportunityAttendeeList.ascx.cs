@@ -350,7 +350,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
             if ( opportunityName.IsNotNullOrWhiteSpace() )
             {
-                var breadCrumbName = $"{opportunityName} Attendee List";
+                /*
+                    10/18/2026 - MSE
+
+                    The opportunity name comes from the project or opportunity configuration, which
+                    can be edited by anyone with edit access to the project, and breadcrumb names are
+                    rendered as HTML. Encode it so it shows as text.
+
+                    Reason: Prevent stored cross-site scripting in the breadcrumb.
+                */
+                var breadCrumbName = $"{opportunityName.EncodeHtml()} Attendee List";
                 breadCrumbs.Add( new BreadCrumb( breadCrumbName, pageReference ) );
             }
             else
@@ -551,7 +560,16 @@ namespace RockWeb.Blocks.Engagement.SignUp
 
                 nameHtml.Append( $"<div class=\"photo-icon photo-round photo-round-xs margin-r-sm js-person-popover\" personid=\"{groupMember.PersonId}\" data-original=\"{groupMember.Person.PhotoUrl}&w=50\" style=\"background-image: url( 'ResolveUrl( \"~/Assets/Images/person-no-photo-unknown.svg\" )' ); background-size: cover; background-repeat: no-repeat;\"></div>" );
 
-                nameHtml.Append( groupMember.Person.FullName );
+                /*
+                    10/18/2026 - MSE
+
+                    Attendees can register themselves (including through public sign-up pages) and
+                    choose their own name. The name column is rendered as HTML, so encode the name
+                    so it shows as text.
+
+                    Reason: Prevent stored cross-site scripting in the attendee list.
+                */
+                nameHtml.Append( groupMember.Person.FullName.EncodeHtml() );
                 if ( groupMember.Person.TopSignalColor.IsNotNullOrWhiteSpace() )
                 {
                     nameHtml.Append( $" {groupMember.Person.GetSignalMarkup()}" );
@@ -1456,8 +1474,18 @@ namespace RockWeb.Blocks.Engagement.SignUp
         /// <param name="opportunity">The opportunity.</param>
         private void InitializeSummary( Opportunity opportunity )
         {
-            lTitle.Text = opportunity.Name;
-            lLocation.Text = opportunity.Location.ToString();
+            /*
+                10/18/2026 - MSE
+
+                The opportunity name comes from the project or opportunity configuration, which
+                can be edited by anyone with edit access to the project, and the location text comes
+                from location data. Both literals are rendered as HTML, so encode them so they show
+                as text.
+
+                Reason: Prevent stored cross-site scripting in the page title and location.
+            */
+            lTitle.Text = opportunity.Name.EncodeHtml();
+            lLocation.Text = opportunity.Location.ToString().EncodeHtml();
             lSchedule.Text = opportunity.Schedule.ToFriendlyScheduleText( true );
             lConfiguredSlots.Text = opportunity.ConfiguredSlots;
             bSlotsFilled.Text = opportunity.SlotsFilled.ToString( "N0" );

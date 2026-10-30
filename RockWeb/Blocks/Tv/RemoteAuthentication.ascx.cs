@@ -141,17 +141,35 @@ namespace RockWeb.Blocks.Tv
                     return;
                 }
 
-                // If passed an authentication token we will attempt to complete the authentication
-                var passScanCode = PageParameter( "AuthCode" );
+                SetupPage();
+
+                // If passed an authentication code, prefill it and ask the person to confirm.
+                // Nothing is written until they confirm with a postback.
+                int? pendingSessionId = null;
+                var passScanCode = PageParameter( "AuthCode" )?.Trim().ToUpperInvariant();
 
                 if ( passScanCode.IsNotNullOrWhiteSpace() )
                 {
-                    AttemptAuthentication( passScanCode );
-                    base.OnLoad( e );
-                    return;
+                    txtSecurityCode.Text = passScanCode;
+
+                    var authSession = FindPendingSession( new RockContext(), passScanCode, out var errorMessage );
+
+                    if ( authSession == null )
+                    {
+                        ShowAuthenticationMessage( errorMessage, NotificationBoxType.Warning );
+                    }
+                    else
+                    {
+                        pendingSessionId = authSession.Id;
+                        txtSecurityCode.ReadOnly = true;
+                        btnSubmit.Text = "Confirm";
+
+                        var appName = SiteCache.Get( authSession.SiteId ?? 0 )?.Name ?? "your TV application";
+                        ShowAuthenticationMessage( $"Sign in to {appName.EncodeHtml()}? This code was requested at {authSession.SessionStartDateTime?.ToShortTimeString()}. Only continue if this code is showing on a TV in front of you.", NotificationBoxType.Info );
+                    }
                 }
 
-                SetupPage();
+                hfConfirmationToken.Value = CreateConfirmationToken( pendingSessionId );
             }
         }
 
@@ -178,7 +196,23 @@ namespace RockWeb.Blocks.Tv
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
-            AttemptAuthentication( txtSecurityCode.Text );
+            // A postback event can be raised from a GET request that carries the
+            // postback fields in the query string, so require an actual POST.
+            if ( Request.HttpMethod != "POST" )
+            {
+                ShowAuthenticationMessage( "This action must be submitted from the page.", NotificationBoxType.Warning );
+                return;
+            }
+
+            var token = TryDecryptConfirmationToken( hfConfirmationToken.Value );
+
+            if ( token == null )
+            {
+                ShowAuthenticationMessage( "This page has expired. Please reload the page and try again.", NotificationBoxType.Warning );
+                return;
+            }
+
+            AttemptAuthentication( txtSecurityCode.Text, token.RemoteAuthenticationSessionId );
         }
 
         #endregion
@@ -205,12 +239,34 @@ namespace RockWeb.Blocks.Tv
         }
 
         /// <summary>
-        /// Attempts the authentication.
+        /// Shows a message in the authentication notification box.
         /// </summary>
-        private void AttemptAuthentication( string authCode )
+        /// <param name="text">The message text.</param>
+        /// <param name="type">The type of notification box to display.</param>
+        private void ShowAuthenticationMessage( string text, NotificationBoxType type )
         {
-            pnlAuthenticate.Visible = false;
-            pnlSuccess.Visible = true;
+            nbAuthenticationMessages.Text = text;
+            nbAuthenticationMessages.NotificationBoxType = type;
+            nbAuthenticationMessages.Visible = true;
+        }
+
+        /// <summary>
+        /// Finds the pending remote authentication session for the code. This does not
+        /// make any changes to the session.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="authCode">The authentication code.</param>
+        /// <param name="errorMessage">The message to display if no valid session was found.</param>
+        /// <returns>The pending session or <c>null</c> if the code is not valid or has expired.</returns>
+        private RemoteAuthenticationSession FindPendingSession( RockContext rockContext, string authCode, out string errorMessage )
+        {
+            authCode = authCode?.Trim().ToUpperInvariant();
+
+            if ( authCode.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "The code provided is not valid. Please confirm that you have correctly entered the code.";
+                return null;
+            }
 
             var codeExpirationDuration = GetAttributeValue( AttributeKey.CodeExpirationDuration ).AsInteger();
             var codeExpirationDateTime = RockDateTime.Now.AddMinutes( codeExpirationDuration * -1 );
@@ -225,7 +281,6 @@ namespace RockWeb.Blocks.Tv
             }
 
             // Get matching remote authentication record
-            var rockContext = new RockContext();
             var remoteAuthenticationService = new RemoteAuthenticationSessionService( rockContext );
 
             // Create a fallback date to eliminate very old sessions. We want to be able to tell someone
@@ -243,18 +298,40 @@ namespace RockWeb.Blocks.Tv
             // Check for code that does not exist
             if ( authSession == null )
             {
-                nbAuthenticationMessages.Text = "The code provided is not valid. Please confirm that you have correctly entered the code.";
-                nbAuthenticationMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbAuthenticationMessages.Visible = true;
-                return;
+                errorMessage = "The code provided is not valid. Please confirm that you have correctly entered the code.";
+                return null;
             }
 
             // Check for expired session
             if ( authSession.SessionStartDateTime < codeExpirationDateTime )
             {
-                nbAuthenticationMessages.Text = "The code you provided has expired. Please create a new new code and try again.";
-                nbAuthenticationMessages.NotificationBoxType = NotificationBoxType.Warning;
-                nbAuthenticationMessages.Visible = true;
+                errorMessage = "The code you provided has expired. Please create a new new code and try again.";
+                return null;
+            }
+
+            errorMessage = null;
+            return authSession;
+        }
+
+        /// <summary>
+        /// Attempts the authentication.
+        /// </summary>
+        /// <param name="authCode">The authentication code.</param>
+        /// <param name="expectedSessionId">The identifier of the session that was shown to the person when the page loaded, if any.</param>
+        private void AttemptAuthentication( string authCode, int? expectedSessionId )
+        {
+            var rockContext = new RockContext();
+            var authSession = FindPendingSession( rockContext, authCode, out var errorMessage );
+
+            if ( authSession == null )
+            {
+                ShowAuthenticationMessage( errorMessage, NotificationBoxType.Warning );
+                return;
+            }
+
+            if ( expectedSessionId.HasValue && authSession.Id != expectedSessionId.Value )
+            {
+                ShowAuthenticationMessage( "This code does not match the sign-in request shown on this page. Please reload the page and try again.", NotificationBoxType.Warning );
                 return;
             }
 
@@ -271,6 +348,83 @@ namespace RockWeb.Blocks.Tv
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, null, new Rock.Lava.CommonMergeFieldsOptions() );
             lSuccessContent.Text = GetAttributeValue( AttributeKey.SuccessMessage ).ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Creates the encrypted confirmation token that must be posted back
+        /// with the request to authenticate a session.
+        /// </summary>
+        /// <param name="pendingSessionId">The identifier of the session shown to the person, if any.</param>
+        /// <returns>The encrypted token.</returns>
+        private string CreateConfirmationToken( int? pendingSessionId )
+        {
+            var payload = new ConfirmationTokenPayload
+            {
+                BlockId = BlockId,
+                PersonAliasId = CurrentPersonAliasId.Value,
+                RemoteAuthenticationSessionId = pendingSessionId,
+                ExpiresAt = RockDateTime.Now.Add( ConfirmationTokenLifetime )
+            };
+
+            return Rock.Security.Encryption.EncryptString( payload.ToJson() );
+        }
+
+        /// <summary>
+        /// Decrypts and validates the confirmation token. The token must have been
+        /// issued by this block to the current person and must not have expired.
+        /// </summary>
+        /// <param name="token">The encrypted token.</param>
+        /// <returns>The token payload or <c>null</c> if the token is not valid.</returns>
+        private ConfirmationTokenPayload TryDecryptConfirmationToken( string token )
+        {
+            if ( token.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            ConfirmationTokenPayload payload;
+
+            try
+            {
+                payload = Rock.Security.Encryption.DecryptString( token ).FromJsonOrNull<ConfirmationTokenPayload>();
+            }
+            catch
+            {
+                return null;
+            }
+
+            if ( payload == null
+                || payload.BlockId != BlockId
+                || payload.PersonAliasId != CurrentPersonAliasId
+                || payload.ExpiresAt < RockDateTime.Now )
+            {
+                return null;
+            }
+
+            return payload;
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// How long a confirmation token is valid after the page is loaded.
+        /// </summary>
+        private static readonly TimeSpan ConfirmationTokenLifetime = TimeSpan.FromMinutes( 30 );
+
+        /// <summary>
+        /// The data stored in the encrypted confirmation token.
+        /// </summary>
+        private class ConfirmationTokenPayload
+        {
+            public int BlockId { get; set; }
+
+            public int PersonAliasId { get; set; }
+
+            public int? RemoteAuthenticationSessionId { get; set; }
+
+            public DateTime ExpiresAt { get; set; }
         }
 
         #endregion

@@ -39,6 +39,7 @@ iframe {
         getComponentHostSelector,
         getComponentTypeName,
         GlobalCssClasses,
+        importInertHtml,
         LineHeights,
         removeTemporaryAttributes,
         removeTemporaryClasses,
@@ -1474,7 +1475,7 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
 
         if (customHtml) {
             const tempElement = iFrameDocument.createElement("div");
-            tempElement.innerHTML = customHtml;
+            tempElement.appendChild(importInertHtml(iFrameDocument, customHtml));
             const customComponentElement = tempElement.querySelector(".component");
             if (customComponentElement) {
                 const componentTypeName = getComponentTypeName(customComponentElement);
@@ -1485,7 +1486,12 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
                     }
                 }
             }
-            draggingElement.value = tempElement.firstElementChild as HTMLElement;
+            draggingElement.value = tempElement.firstElementChild as HTMLElement | null;
+
+            if (!draggingElement.value) {
+                // Nothing could be imported, so there is nothing to drag.
+                return;
+            }
         }
         else {
             draggingElement.value = createComponentElement(iFrameDocument, componentTypeName);
@@ -1895,6 +1901,19 @@ body:not(.${draggingCssClass}) .rock-runtime-wrapper-element.for-component-secti
         | ComponentTypeDragOverMessage
         | ComponentTypeDragLeaveMessage
         | ComponentTypeDragEndMessage>): void {
+        /*
+            10/18/2026 - MSE
+
+            Only the host page (sendMessageToIFrame) may drive the editor.
+            Any other window that holds a handle to this tab could otherwise
+            post markup into the email.
+
+            Reason: Ignore messages from other windows and origins.
+        */
+        if (event.source !== window || event.origin !== window.location.origin) {
+            return;
+        }
+
         console.debug(`"message" iframe`);
 
         switch (event.data.type) {

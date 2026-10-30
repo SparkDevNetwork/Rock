@@ -1104,7 +1104,7 @@ namespace Rock.Rest.Controllers
 
                 if ( group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
                 {
-                    string infoWindow = group.Name;
+                    string infoWindow = group.Name.EncodeHtml();
 
                     if ( infoWindowDetails != null )
                     {
@@ -1143,7 +1143,16 @@ namespace Rock.Rest.Controllers
 
                         var dictLocation = new Dictionary<string, object>();
                         dictLocation.Add( "Type", grouplocation.GroupLocationTypeValue.Value );
-                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().ConvertCrLfToHtmlBr() );
+                        /*
+                            10/19/2026 - MSE
+
+                            The address is used as HTML in the info window (line breaks become <br>)
+                            and can be entered by anonymous visitors (Family Pre-Registration) or
+                            group editors, so it is encoded before the line breaks are added.
+
+                            Reason: Prevent stored XSS through addresses in the map info window.
+                        */
+                        dictLocation.Add( "Address", grouplocation.Location.GetFullStreetAddress().EncodeHtml().ConvertCrLfToHtmlBr() );
                         dictLocation.Add( "Street1", grouplocation.Location.Street1 );
                         dictLocation.Add( "Street2", grouplocation.Location.Street2 );
                         dictLocation.Add( "City", grouplocation.Location.City );
@@ -1185,7 +1194,19 @@ namespace Rock.Rest.Controllers
                         dynGroup.Members = members;
 
                         var groupDict = dynGroup as IDictionary<string, object>;
-                        string result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict );
+                        /*
+                            10/20/26 - JMH
+
+                            The template comes from the request, so it renders with no Lava
+                            commands and with person tokens turned off.
+
+                            Reason: The caller controls the template.
+                        */
+                        string result;
+                        using ( Rock.Security.PersonTokenScope.RestrictTo( null ) )
+                        {
+                            result = System.Web.HttpUtility.HtmlDecode( infoWindowDetails.Template ).ResolveMergeFields( groupDict, new List<string>() );
+                        }
 
                         return new InfoWindowResult( result );
                     }

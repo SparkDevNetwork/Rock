@@ -40,6 +40,18 @@ namespace Rock.Utility.CaptchaApi
         private const int DefaultChallengeSize = 32;
         private const int DefaultChallengeDifficulty = 4;
 
+        /// <summary>
+        /// Purpose that binds the encrypted challenge token to this provider, so a
+        /// tampered or foreign token fails verification.
+        /// </summary>
+        private const string ChallengeTokenEncryptionPurpose = "Rock.Utility.CaptchaApi.ProofOfWork.ChallengeToken";
+
+        /// <summary>
+        /// Purpose that binds the encrypted captcha token to this provider, so a
+        /// challenge token can never pass as a solved captcha token.
+        /// </summary>
+        private const string CaptchaTokenEncryptionPurpose = "Rock.Utility.CaptchaApi.ProofOfWork.CaptchaToken";
+
         #endregion Constants
 
         #region ICaptchaProvider Methods
@@ -56,7 +68,7 @@ namespace Rock.Utility.CaptchaApi
                 ChallengeDifficulty = DefaultChallengeDifficulty
             };
 
-            var challengeToken = Encryption.EncryptString( seed.ToJson() );
+            var challengeToken = Encryption.EncryptStringForPurpose( seed.ToJson(), ChallengeTokenEncryptionPurpose );
 
             return Task.FromResult( new CaptchaInitializeResult
             {
@@ -81,8 +93,8 @@ namespace Rock.Utility.CaptchaApi
             }
 
             // Rehydrate original seed from encrypted token.
-            var seed = Encryption.DecryptString( powOptions.ChallengeToken )
-                .FromJsonOrNull<ChallengeSeed>();
+            var seed = Encryption.DecryptStringForPurpose( powOptions.ChallengeToken, ChallengeTokenEncryptionPurpose )
+                ?.FromJsonOrNull<ChallengeSeed>();
 
             if ( seed == null )
             {
@@ -136,7 +148,7 @@ namespace Rock.Utility.CaptchaApi
                 TokenLifetime = TimeSpan.FromDays( 1 ).Add( TimeSpan.FromMinutes( -2 ) )
             };
 
-            var encryptedToken = Encryption.EncryptString( captchaToken.ToJson() );
+            var encryptedToken = Encryption.EncryptStringForPurpose( captchaToken.ToJson(), CaptchaTokenEncryptionPurpose );
 
             return Task.FromResult( CaptchaVerifyResult.Pass( encryptedToken, captchaToken.TokenIssueDate, captchaToken.TokenLifetime ) );
         }
@@ -157,7 +169,7 @@ namespace Rock.Utility.CaptchaApi
                 return Task.FromResult( false );
             }
 
-            var payload = Encryption.DecryptString( token ).FromJsonOrNull<CaptchaToken>();
+            var payload = Encryption.DecryptStringForPurpose( token, CaptchaTokenEncryptionPurpose )?.FromJsonOrNull<CaptchaToken>();
 
             if (payload == null )
             {

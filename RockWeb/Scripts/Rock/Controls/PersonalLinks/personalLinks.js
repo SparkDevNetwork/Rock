@@ -7,6 +7,60 @@
             $bookmarkButton,
             $bookmarkPanel,
             _quickLinksLocalStorageKey = 'quickLinks_',
+            /*
+                10/14/2026 - MSE
+
+                Quick return names come from page data such as a person's name,
+                which anyone can set (for example through a public signup form),
+                and are kept in local storage. They are HTML encoded here because
+                the list is built as an HTML string.
+
+                Reason: Prevent script injection through quick return names.
+            */
+            /*
+                10/16/2026 - MSE
+
+                Moved encodeHtml here so the personal links list can use it too.
+                Personal link and section names and URLs come from stored data
+                (including older rows and the REST endpoints) and are also built
+                into an HTML string, so they are encoded the same way. Encoding the
+                href also keeps an entity encoded scheme such as "javascript&#58;"
+                as literal text instead of letting the HTML parser decode it.
+
+                Reason: Prevent script injection through personal links.
+            */
+            encodeHtml = function (value) {
+                return String(value == null ? '' : value)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            },
+            /*
+                10/16/2026 - MSE
+
+                Shared personal links are shown to every internal user. Browsers remove
+                tab, CR and LF anywhere in a URL and trim leading control characters and
+                spaces before reading the scheme, so normalize the same way and replace
+                script schemes with '#'. Other schemes are kept so existing links work.
+
+                Reason: Prevent stored script links from running when clicked.
+            */
+            getSafeHref = function (url) {
+                if (!url) {
+                    return '#';
+                }
+
+                var normalized = String(url).replace(/[\t\n\r]/g, '').replace(/^[\u0000- ]+/, '');
+                var match = /^([a-z][a-z0-9+.\-]*):/i.exec(normalized);
+
+                if (match && ['javascript', 'vbscript', 'data'].indexOf(match[ 1 ].toLowerCase()) !== -1) {
+                    return '#';
+                }
+
+                return String(url);
+            },
             exports = {
                 initialize: function (clientId) {
                     $bookmarkButton = $('.js-rock-bookmark');
@@ -190,12 +244,13 @@
                     if ($quickReturns.length) {
                         var quickReturnsByType = Rock.personalLinks.getQuickReturns();
                         var quickReturnHtml = '';
+
                         if (quickReturnsByType.length > 0) {
                             for (var i = 0; i < quickReturnsByType.length; i++) {
                                 if (quickReturnsByType[ i ].items.length > 0) {
-                                    var itemsHtml = '<li><strong>' + quickReturnsByType[ i ].type + '</strong></li>';
+                                    var itemsHtml = '<li><strong>' + encodeHtml(quickReturnsByType[ i ].type) + '</strong></li>';
                                     for (var item in quickReturnsByType[ i ].items) {
-                                        itemsHtml += ' <li><a href="' + quickReturnsByType[ i ].items[ item ].url + '">' + quickReturnsByType[ i ].items[ item ].itemName + '</a></li>';
+                                        itemsHtml += ' <li><a href="' + encodeHtml(quickReturnsByType[ i ].items[ item ].url) + '">' + encodeHtml(quickReturnsByType[ i ].items[ item ].itemName) + '</a></li>';
                                     }
                                     quickReturnHtml += '<ul class="list-unstyled">' + itemsHtml + '</ul>';
                                 }
@@ -228,11 +283,11 @@
                             for (var i = 0; i < personalSections.length; i++) {
                                 if (personalSections[ i ].PersonalLinks.length > 0) {
                                     var itemsHtml = '';
-                                    itemsHtml = '<li><strong>' + personalSections[ i ].Name + '</strong></li>';
+                                    itemsHtml = '<li><strong>' + encodeHtml(personalSections[ i ].Name) + '</strong></li>';
 
                                     for (var personalLinkIndex in personalSections[ i ].PersonalLinks) {
                                         var personalLink = personalSections[ i ].PersonalLinks[ personalLinkIndex ];
-                                        itemsHtml += ' <li><a href="' + personalLink.Url + '">' + personalLink.Name + '</a></li>';
+                                        itemsHtml += ' <li><a href="' + encodeHtml(getSafeHref(personalLink.Url)) + '">' + encodeHtml(personalLink.Name) + '</a></li>';
                                     }
                                     personalLinksHtml += '<ul class="list-unstyled">' + itemsHtml + '</ul>';
                                 }

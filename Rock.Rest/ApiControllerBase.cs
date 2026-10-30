@@ -15,6 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -204,6 +208,174 @@ namespace Rock.Rest
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether the person may launch workflows of the workflow type.
+        /// VIEW on the workflow type (or its category) is the launch right, the same
+        /// rule used by the Workflow Entry and Workflow Launch blocks.
+        /// </summary>
+        /// <param name="workflowType">The workflow type to be launched.</param>
+        /// <param name="person">The person launching the workflow, or <c>null</c> for an anonymous caller.</param>
+        /// <returns><c>true</c> if the person may launch the workflow type; otherwise, <c>false</c>.</returns>
+        protected static bool CanLaunchWorkflowType( Rock.Security.ISecured workflowType, Rock.Model.Person person )
+        {
+            return workflowType != null && workflowType.IsAuthorized( Rock.Security.Authorization.VIEW, person );
+        }
+
+        /// <summary>
+        /// The navigation properties of each entity type that can carry related records, cached
+        /// because they are read on every POST.
+        /// </summary>
+        private static readonly ConcurrentDictionary<Type, PropertyInfo[]> _relatedRecordPropertiesByType = new ConcurrentDictionary<Type, PropertyInfo[]>();
+
+        /// <summary>
+        /// Gets the name of the first navigation property on the entity that holds a related
+        /// record which is not tracked by the context. Adding the entity to the context would
+        /// insert that related record too, without any authorization check of its own.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isCollectionAllowed">Returns <c>true</c> if the related records in the named collection may be inserted with the entity. May be <c>null</c>.</param>
+        /// <returns>The property name, or <c>null</c> if no untracked related records were found.</returns>
+        internal static string GetUntrackedRelatedEntityPropertyName( object entity, DbContext context, Func<string, bool> isCollectionAllowed )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            foreach ( var property in GetRelatedRecordProperties( entity.GetType() ) )
+            {
+                var value = property.GetValue( entity );
+
+                if ( value == null )
+                {
+                    continue;
+                }
+
+                if ( IsMappedEntityType( property.PropertyType ) )
+                {
+                    if ( !IsTrackedEntity( value, context ) )
+                    {
+                        return property.Name;
+                    }
+
+                    continue;
+                }
+
+                var isAllowed = isCollectionAllowed?.Invoke( property.Name ) == true;
+
+                foreach ( var relatedItem in ( ( IEnumerable ) value ).Cast<object>() )
+                {
+                    if ( relatedItem == null || IsTrackedEntity( relatedItem, context ) )
+                    {
+                        continue;
+                    }
+
+                    if ( !isAllowed )
+                    {
+                        return property.Name;
+                    }
+
+                    // An allowed child may still not carry related records of its own.
+                    var childPropertyName = GetUntrackedRelatedEntityPropertyName( relatedItem, context, null );
+                    if ( childPropertyName != null )
+                    {
+                        return $"{property.Name}.{childPropertyName}";
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether the property is a navigation property that holds a related
+        /// record or a collection of related records.
+        /// </summary>
+        /// <remarks>
+        /// This is broader than <see cref="Utility.ExcludeNavigationPropertiesContractResolver.IsNavigationPropertyType(Type)"/>,
+        /// which only looks for <see cref="IEntity"/> and cache types.
+        /// </remarks>
+        /// <param name="property">The property.</param>
+        /// <returns><c>true</c> if the property is a navigation property; otherwise <c>false</c>.</returns>
+        internal static bool IsNavigationProperty( PropertyInfo property )
+        {
+            if ( property == null || !property.CanWrite || property.GetIndexParameters().Length != 0 )
+            {
+                return false;
+            }
+
+            return IsMappedEntityType( property.PropertyType )
+                || IsMappedEntityType( GetCollectionItemType( property.PropertyType ) );
+        }
+
+        /// <summary>
+        /// Determines whether the type is a database entity, which EF inserts when it is
+        /// reachable from an entity being added.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns><c>true</c> if the type is a database entity; otherwise <c>false</c>.</returns>
+        internal static bool IsMappedEntityType( Type type )
+        {
+            /*
+                10/15/2026 - MSE
+
+                Some mapped tables (such as GroupLocationScheduleConfig and AnalyticsSourceDate)
+                do not implement IEntity, so any class with a [Table] attribute is also treated
+                as an entity. EF metadata is not used because the v2 API has no context at this
+                point and the check must stay cheap.
+
+                Reason: Catch every related record that EF would insert.
+            */
+            return type != null
+                && type.IsClass
+                && ( typeof( IEntity ).IsAssignableFrom( type ) || System.Attribute.IsDefined( type, typeof( TableAttribute ), true ) );
+        }
+
+        /// <summary>
+        /// Gets the navigation properties of the entity type that are saved to the database.
+        /// </summary>
+        /// <param name="type">The entity type.</param>
+        /// <returns>The navigation properties.</returns>
+        private static PropertyInfo[] GetRelatedRecordProperties( Type type )
+        {
+            return _relatedRecordPropertiesByType.GetOrAdd( type, t => t.GetProperties( BindingFlags.Public | BindingFlags.Instance )
+                .Where( p => IsNavigationProperty( p ) && !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ), true ) )
+                .ToArray() );
+        }
+
+        /// <summary>
+        /// Gets the item type of a generic collection or array type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The item type, or <c>null</c> if the type is not a collection.</returns>
+        private static Type GetCollectionItemType( Type type )
+        {
+            if ( type.IsArray )
+            {
+                return type.GetElementType();
+            }
+
+            if ( type.IsGenericType && typeof( IEnumerable ).IsAssignableFrom( type ) && type.GetGenericArguments().Length == 1 )
+            {
+                return type.GetGenericArguments()[0];
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Determines whether the entity is tracked by the context, which means adding a
+        /// related entity will not insert it.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="context">The context, or <c>null</c>.</param>
+        /// <returns><c>true</c> if the entity is tracked by the context; otherwise <c>false</c>.</returns>
+        private static bool IsTrackedEntity( object entity, DbContext context )
+        {
+            return context != null && context.Entry( entity ).State != System.Data.Entity.EntityState.Detached;
         }
 
         #region .NET Core compatible methods

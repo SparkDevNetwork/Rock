@@ -286,9 +286,20 @@ namespace RockWeb.Blocks.Reporting
                         mergeFields.Add( PageNavigationKey.PreviousPageNavigateUrl, pageReferencePrev.BuildUrl() );
                     }
 
+                    /*
+                        10/19/2026 - MSE
+
+                        Interaction data, summaries, person names, device text and component names
+                        can be set by anonymous visitors, signed-in people and mobile or TV apps.
+                        Render the channel template and the Default Template with {{ }} output values
+                        HTML encoded, while keeping the template's own markup. This also covers
+                        saved and custom templates without changing any saved setting.
+
+                        Reason: Prevent stored interaction values from rendering as HTML in the component list.
+                    */
                     lContent.Text = interactionChannel.ComponentListTemplate.IsNotNullOrWhiteSpace() ?
-                        interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
+                        interactionChannel.ComponentListTemplate.ResolveMergeFields( mergeFields, encodeStrings: true ) :
+                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields, encodeStrings: true );
                 }
             }
         }

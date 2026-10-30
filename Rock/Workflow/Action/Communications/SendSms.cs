@@ -249,6 +249,12 @@ namespace Rock.Workflow.Action
             // which allows us to remove the unneeded code.
             string message = GetAttributeValue( action, "Message", checkWorkflowAttributeValue: true );
 
+            // Attribute values can hold user-entered text, so strip any Lava before the SMS transport renders it.
+            if ( IsAttributeSourcedSetting( action, AttributeKey.Message ) )
+            {
+                message = message.SanitizeLava();
+            }
+
             // Add the attachment (if one was specified)
             var attachmentBinaryFileGuid = GetAttributeValue( action, "Attachment", true ).AsGuidOrNull();
             BinaryFile binaryFile = null;

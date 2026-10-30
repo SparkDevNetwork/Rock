@@ -618,8 +618,16 @@ namespace Rock.Blocks.Engagement
                 return "";
             }
 
-            personImageStringBuilder.AppendFormat( photoFormat, person.Id, person.PhotoUrl );
-            personImageStringBuilder.AppendFormat( nameLinkFormat, person.FullName, person.Id );
+            /*
+                10/19/2026 - MSE
+
+                This HTML is shown with v-html. A person can set their own name (and the photo
+                URL carries their initials), so both are encoded before they go into the markup.
+
+                Reason: Prevent stored XSS through a person's name in Streak Detail.
+            */
+            personImageStringBuilder.AppendFormat( photoFormat, person.Id, person.PhotoUrl.EncodeHtml() );
+            personImageStringBuilder.AppendFormat( nameLinkFormat, person.FullName.EncodeHtml(), person.Id );
 
             if ( person.TopSignalColor.IsNotNullOrWhiteSpace() )
             {

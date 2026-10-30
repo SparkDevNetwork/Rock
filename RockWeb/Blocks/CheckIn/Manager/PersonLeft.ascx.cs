@@ -514,8 +514,8 @@ namespace RockWeb.Blocks.CheckIn.Manager
                     btnShare.Visible = false;
                 }
 
-                lName.Text = person.FullName;
-                lSmsRecipient.Text = person.FullName;
+                lName.Text = person.FullName.EncodeHtml();
+                lSmsRecipient.Text = person.FullName.EncodeHtml();
 
                 string photoTag = Rock.Model.Person.GetPersonPhotoImageTag( person, 200, 200 );
                 if ( person.PhotoId.HasValue )

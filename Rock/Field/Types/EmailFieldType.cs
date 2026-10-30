@@ -71,7 +71,25 @@ namespace Rock.Field.Types
             }
             else
             {
-                return string.Format( "<a href='mailto:{0}'>{0}</a>", formattedValue );
+                /*
+                    10/16/2026 - MSE
+
+                    The stored value can come from public forms (such as
+                    Registration Entry and Workflow Entry) that do not check
+                    its format. It is always encoded, and only a single valid
+                    address becomes a mailto link. A valid address can still
+                    contain a single quote, so the encode is still needed.
+
+                    Reason: Stored values were rendered as raw HTML.
+                */
+                var encodedValue = formattedValue.EncodeHtml();
+
+                if ( EmailAddressFieldValidator.IsValid( formattedValue ) )
+                {
+                    return string.Format( "<a href='mailto:{0}'>{0}</a>", encodedValue );
+                }
+
+                return encodedValue;
             }
         }
 

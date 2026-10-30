@@ -34,6 +34,7 @@ using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Rest.Controllers
@@ -98,6 +99,23 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "D64DDDCC-8FBD-433E-A032-94D1C9F44286" )]
         public virtual System.Net.Http.HttpResponseMessage ProcessPayment( int scheduledTransactionId, [FromUri] bool enableDuplicateChecking = true, [FromUri] bool enableScheduleAdherenceProtection = true, [FromUri] string idempotencyKey = null )
         {
+            /*
+                10/23/2026 - MSE
+
+                Finance callers may charge on behalf of donors, but disabling payment
+                safeguards requires Administrate permission on this REST action.
+
+                Reason: Keep payment protection overrides limited to trusted callers.
+            */
+            if ( !enableDuplicateChecking || !enableScheduleAdherenceProtection )
+            {
+                var restAction = RestActionCache.Get( new Guid( "D64DDDCC-8FBD-433E-A032-94D1C9F44286" ) );
+                if ( restAction?.IsAuthorized( Rock.Security.Authorization.ADMINISTRATE, GetPerson() ) != true )
+                {
+                    throw new HttpResponseException( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Unauthorized, "Turning off duplicate or schedule protection requires Administrate permission on this endpoint." ) );
+                }
+            }
+
             var financialScheduledTransactionService = Service as FinancialScheduledTransactionService;
             var financialScheduledTransaction = financialScheduledTransactionService.Queryable()
                 .AsNoTracking()
@@ -113,6 +131,20 @@ namespace Rock.Rest.Controllers
             if ( !financialScheduledTransaction.FinancialGatewayId.HasValue )
             {
                 var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.BadRequest, "The scheduled transaction does not have an assigned gateway ID" );
+                throw new HttpResponseException( errorResponse );
+            }
+
+            /*
+                10/23/2026 - MSE
+
+                A cancelled schedule must remain inactive even when an administrator
+                intentionally overrides duplicate or schedule adherence protection.
+
+                Reason: Do not process payments for inactive schedules.
+            */
+            if ( !financialScheduledTransaction.IsActive )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( HttpStatusCode.Conflict, "The scheduled transaction is not active." );
                 throw new HttpResponseException( errorResponse );
             }
 

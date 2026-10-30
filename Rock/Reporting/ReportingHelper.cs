@@ -483,6 +483,76 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// Gets the page parameter values for use as merge fields in SQL text.
+        /// Any value that contains SQL quoting or comment characters (a single
+        /// quote, a semicolon, two hyphens in a row or a slash followed by an
+        /// asterisk) is replaced by an empty string. A value that contains a
+        /// Unicode character SQL Server turns into a single quote when it
+        /// converts nvarchar to varchar (U+02BC, U+FF07, U+02B9 or U+2032) is
+        /// also replaced. Other values, including <c>null</c>, are returned
+        /// unchanged.
+        /// </summary>
+        /// <param name="pageParameters">The page parameters.</param>
+        /// <returns>A case-insensitive dictionary of the page parameter values that are safe to print into SQL text.</returns>
+        [Rock.Attribute.RockInternal( "17.12", true )]
+        public static Dictionary<string, object> GetSqlSafePageParameters( IEnumerable<KeyValuePair<string, string>> pageParameters )
+        {
+            /*
+                10/21/2026 - MSE
+
+                Dynamic Data style blocks render their SQL with Lava and page
+                parameters are request values, so a value printed into the SQL
+                can change the statement. A value printed inside a quoted literal
+                can only escape it with a single quote, so any value with SQL
+                quoting or comment characters becomes blank. That includes the
+                Unicode characters U+02BC, U+FF07, U+02B9 and U+2032, which SQL
+                Server turns into a single quote when it converts nvarchar to
+                varchar, so they could break out of a literal in SQL that is
+                built again later (for example dynamic SQL in a stored
+                procedure). This does not protect values printed without
+                quotes; @Name SQL parameters are the supported way to pass page
+                values to SQL. It is public only so RockWeb blocks can call it.
+
+                Reason: Keep request values from changing Lava rendered SQL text.
+            */
+            var safePageParameters = new Dictionary<string, object>( StringComparer.OrdinalIgnoreCase );
+
+            if ( pageParameters == null )
+            {
+                return safePageParameters;
+            }
+
+            foreach ( var pageParameter in pageParameters )
+            {
+                safePageParameters[pageParameter.Key] = IsUnsafeSqlText( pageParameter.Value ) ? string.Empty : pageParameter.Value;
+            }
+
+            return safePageParameters;
+        }
+
+        /// <summary>
+        /// Determines whether the value contains SQL quoting or comment characters.
+        /// </summary>
+        /// <param name="value">The value to check.</param>
+        /// <returns><c>true</c> if the value contains a single quote, a Unicode character that SQL Server converts to a single quote (U+02BC, U+FF07, U+02B9 or U+2032), a semicolon, a SQL line comment marker or a SQL block comment marker; otherwise <c>false</c>.</returns>
+        private static bool IsUnsafeSqlText( string value )
+        {
+            if ( value == null )
+            {
+                return false;
+            }
+
+            return value.Contains( "'" )
+                || value.Contains( "\u02BC" )
+                || value.Contains( "\uFF07" )
+                || value.Contains( "\u02B9" )
+                || value.Contains( "\u2032" )
+                || value.Contains( ";" )
+                || value.Contains( "--" )
+                || value.Contains( "/*" );
+        }
+
+        /// <summary>
         /// Gets the filter overrides from controls.
         /// </summary>
         /// <param name="dataView">The data view.</param>
@@ -493,12 +563,21 @@ namespace Rock.Reporting
             if ( phFilters.Controls.Count > 0 )
             {
                 var dataViewFilter = GetFilterFromControls( phFilters );
-                var dataViewFilterOverrideList = phFilters.ControlsOfTypeRecursive<FilterField>().Select( a => new DataViewFilterOverride
+                var filterFields = phFilters.ControlsOfTypeRecursive<FilterField>().ToList();
+                var dataViewFilterOverrideList = filterFields.Select( a => new DataViewFilterOverride
                 {
                     DataFilterGuid = a.DataViewFilterGuid,
                     IncludeFilter = a.ShowCheckbox ? a.CheckBoxChecked.GetValueOrDefault( true ) : true,
                     Selection = a.GetSelection()
                 } ).ToList();
+
+                // Compare against the original selection the filter control
+                // computed with the same round trip, when it has one, so a
+                // stored selection in another format does not look changed.
+                var originalSelections = filterFields
+                    .Where( a => a.OriginalSelection != null )
+                    .GroupBy( a => a.DataViewFilterGuid )
+                    .ToDictionary( g => g.Key, g => g.First().OriginalSelection );
 
                 List<int> ignoreDataViewPersistedValues = new List<int>();
 
@@ -511,12 +590,14 @@ namespace Rock.Reporting
                         var originalFilter = filters.FirstOrDefault( a => a.Guid == dataViewFilterOverride.DataFilterGuid );
                         if ( originalFilter != null )
                         {
-                            if ( dataViewFilterOverride.IncludeFilter && originalFilter.Selection == dataViewFilterOverride.Selection )
+                            var originalSelection = originalSelections.GetValueOrNull( dataViewFilterOverride.DataFilterGuid ) ?? originalFilter.Selection;
+
+                            if ( dataViewFilterOverride.IncludeFilter && originalSelection == dataViewFilterOverride.Selection )
                             {
                                 // the filter override is the same as the saved dataview, so no need to override it
                                 dataViewFilterOverrideList.Remove( dataViewFilterOverride );
                             }
-                            else if ( originalFilter.Selection != dataViewFilterOverride.Selection )
+                            else if ( originalSelection != dataViewFilterOverride.Selection )
                             {
                                 // if the selection has changed, and it is from a 'other data view'  filter, add the other dataview and the dataviews it impacts to the list of dataviews that should not use the persisted values
                                 if ( originalFilter.ImpactedDataViews?.Any() == true )

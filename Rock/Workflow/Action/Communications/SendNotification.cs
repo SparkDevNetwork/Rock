@@ -299,7 +299,8 @@ namespace Rock.Workflow.Action
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
                         {
-                            message = messageAttributeValue;
+                            // Attribute values can hold user-entered text, so strip any Lava before the push transport renders it.
+                            message = messageAttributeValue.SanitizeLava();
                         }
                     }
                 }
@@ -317,7 +318,8 @@ namespace Rock.Workflow.Action
                     {
                         if ( attribute.FieldType.Class == "Rock.Field.Types.TextFieldType" )
                         {
-                            title = titleAttributeValue;
+                            // Attribute values can hold user-entered text, so strip any Lava before the push transport renders it.
+                            title = titleAttributeValue.SanitizeLava();
                         }
                     }
                 }

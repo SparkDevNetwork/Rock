@@ -514,12 +514,51 @@ namespace Rock.Communication.Chat
         /// <returns>The <see cref="Group"/> identifier or <see langword="null"/> if unable to parse.</returns>
         internal static int? GetGroupId( string chatChannelKey )
         {
-            if ( chatChannelKey.IsNotNullOrWhiteSpace() )
+            /*
+                10/15/2026 - MSE
+
+                Only a key in the exact "rock-group-{id}" form that Rock itself generates may resolve to a group. The
+                previous Replace-based parse also accepted keys such as "123" or "rock-group-rock-group-123", and chat
+                channel keys can be chosen by any chat user who creates a channel in the external chat system.
+
+                Reason: Prevent client-chosen chat channel keys from mapping to arbitrary Rock groups.
+            */
+            if ( chatChannelKey.IsNullOrWhiteSpace()
+                || !chatChannelKey.StartsWith( ChatChannelKeyPrefix, StringComparison.Ordinal ) )
             {
-                return chatChannelKey.Replace( ChatChannelKeyPrefix, string.Empty ).AsIntegerOrNull();
+                return null;
             }
 
-            return null;
+            var groupId = chatChannelKey.Substring( ChatChannelKeyPrefix.Length ).AsIntegerOrNull();
+            if ( !groupId.HasValue
+                || groupId.Value <= 0
+                || !string.Equals( $"{ChatChannelKeyPrefix}{groupId.Value}", chatChannelKey, StringComparison.Ordinal ) )
+            {
+                return null;
+            }
+
+            return groupId;
+        }
+
+        /// <summary>
+        /// Determines whether the provided <see cref="ChatChannelType.Key"/> and <see cref="ChatChannel.Key"/> identify
+        /// exactly the <see cref="ChatChannel"/> that represents the provided <see cref="Group"/>.
+        /// </summary>
+        /// <param name="groupId">The <see cref="Group"/> identifier.</param>
+        /// <param name="groupTypeId">The <see cref="Group"/>'s <see cref="GroupType"/> identifier.</param>
+        /// <param name="groupChatChannelKey">The <see cref="Group.ChatChannelKey"/> stored on the <see cref="Group"/>.</param>
+        /// <param name="chatChannelTypeKey">The <see cref="ChatChannelType.Key"/> to check.</param>
+        /// <param name="chatChannelKey">The <see cref="ChatChannel.Key"/> to check.</param>
+        /// <returns>Whether the chat channel type key and chat channel key exactly match the <see cref="Group"/>'s chat channel.</returns>
+        internal static bool IsChatChannelForGroup( int groupId, int groupTypeId, string groupChatChannelKey, string chatChannelTypeKey, string chatChannelKey )
+        {
+            if ( chatChannelTypeKey.IsNullOrWhiteSpace() || chatChannelKey.IsNullOrWhiteSpace() )
+            {
+                return false;
+            }
+
+            return string.Equals( GetChatChannelTypeKey( groupTypeId ), chatChannelTypeKey, StringComparison.Ordinal )
+                && string.Equals( GetChatChannelKey( groupId, groupChatChannelKey ), chatChannelKey, StringComparison.Ordinal );
         }
 
         /// <summary>
@@ -5015,15 +5054,32 @@ namespace Rock.Communication.Chat
                         }
                         else
                         {
+                            // The same chat channel key can exist on other channel types, so only look within this group type.
                             group = groupService
-                                .GetChatChannelGroupsQuery()
+                                .GetChatChannelGroupsQuery( syncCommand.GroupTypeId )
                                 .FirstOrDefault( g => g.ChatChannelKey == syncCommand.ChatChannelKey );
+                        }
+
+                        /*
+                            10/15/2026 - MSE
+
+                            The chat channel type and key come from the external chat system's webhook payload, and the
+                            channel key is chosen by whoever created the channel. Only act on an existing group if the
+                            channel is exactly the one Rock uses for it: the group's own group type and chat channel key.
+
+                            Reason: Prevent chat users from renaming a Rock group through a look-alike chat channel.
+                        */
+                        if ( group != null
+                            && !IsChatChannelForGroup( group.Id, group.GroupTypeId, group.ChatChannelKey, GetChatChannelTypeKey( syncCommand.GroupTypeId ), syncCommand.ChatChannelKey ) )
+                        {
+                            syncCommand.MarkAsUnrecoverable( $"Chat channel '{GetChatChannelTypeKey( syncCommand.GroupTypeId )}:{syncCommand.ChatChannelKey}' does not match Rock group with ID {group.Id}." );
+                            continue;
                         }
 
                         if ( group?.GetIsChatEnabled() == false )
                         {
                             // Only allow sync operations to be performed against chat-enabled Rock groups.
-                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {groupId.Value} is not chat-enabled." );
+                            syncCommand.MarkAsUnrecoverable( $"Rock group with ID {group.Id} is not chat-enabled." );
                             continue;
                         }
 
@@ -5148,6 +5204,7 @@ namespace Rock.Communication.Chat
                         // Try to get the targeted group.
                         var groupIdentifier = GetChatToRockGroupIdentifier(
                             groupId,
+                            syncCommand.ChatChannelTypeKey,
                             syncCommand.ChatChannelKey,
                             syncCommand.ChatSyncType,
                             rockContext
@@ -5452,6 +5509,7 @@ namespace Rock.Communication.Chat
                         // Try to get the targeted group.
                         var groupIdentifier = GetChatToRockGroupIdentifier(
                             groupId,
+                            syncCommand.ChatChannelTypeKey,
                             syncCommand.ChatChannelKey,
                             syncCommand.ChatSyncType,
                             rockContext
@@ -5599,6 +5657,7 @@ namespace Rock.Communication.Chat
                         // Try to get the targeted group.
                         var groupIdentifier = GetChatToRockGroupIdentifier(
                             groupId,
+                            syncCommand.ChatChannelTypeKey,
                             syncCommand.ChatChannelKey,
                             syncCommand.ChatSyncType,
                             rockContext
@@ -5724,11 +5783,12 @@ namespace Rock.Communication.Chat
         /// Gets the <see cref="ChatToRockGroupIdentifier"/> for the specified <see cref="Group"/> ID or chat channel key.
         /// </summary>
         /// <param name="groupId">The identifier to use for locating the <see cref="Group"/>.</param>
+        /// <param name="chatChannelTypeKey">The chat channel type key that the <see cref="Group"/>'s chat channel must have.</param>
         /// <param name="chatChannelKey">The chat channel key to use for locating the <see cref="Group"/>.</param>
         /// <param name="chatSyncType">The type of synchronization operation being performed.</param>
         /// <param name="rockContext">The Rock context to use for database operations.</param>
         /// <returns>A <see cref="ChatToRockGroupIdentifier"/> object.</returns>
-        private ChatToRockGroupIdentifier GetChatToRockGroupIdentifier( int? groupId, string chatChannelKey, ChatSyncType chatSyncType, RockContext rockContext )
+        private ChatToRockGroupIdentifier GetChatToRockGroupIdentifier( int? groupId, string chatChannelTypeKey, string chatChannelKey, ChatSyncType chatSyncType, RockContext rockContext )
         {
             var identifier = new ChatToRockGroupIdentifier();
 
@@ -5753,13 +5813,42 @@ namespace Rock.Communication.Chat
             }
             else
             {
-                // Try to get the group ID for the chat channel key.
-                groupId = new GroupService( RockContext ).GetChatChannelGroupId( chatChannelKey );
+                // Try to get the group ID for the chat channel key. When the key doesn't embed a Rock group ID, only
+                // look for groups of the chat channel's group type, since the same key can exist on other channel types.
+                groupId = GetGroupId( chatChannelKey );
+
+                var groupTypeId = GetGroupTypeId( chatChannelTypeKey );
+                if ( !groupId.HasValue && groupTypeId.HasValue && chatChannelKey.IsNotNullOrWhiteSpace() )
+                {
+                    groupId = new GroupService( RockContext )
+                        .GetChatChannelGroupsQuery( groupTypeId.Value )
+                        .Where( g => g.ChatChannelKey == chatChannelKey )
+                        .Select( g => ( int? ) g.Id )
+                        .FirstOrDefault();
+                }
 
                 if ( groupId.HasValue )
                 {
                     identifier.GroupCache = GroupCache.Get( groupId.Value );
                 }
+            }
+
+            /*
+                10/15/2026 - MSE
+
+                The chat channel type and key come from the external chat system's webhook payload, and the channel key
+                is chosen by whoever created the channel. Only accept the group if the channel is exactly the one Rock
+                uses for it: type "rock-grouptype-{GroupTypeId}" and the group's own chat channel key. A missing type
+                fails closed.
+
+                Reason: Prevent chat users from changing group membership through a look-alike chat channel.
+            */
+            var groupCache = identifier.GroupCache;
+            if ( groupCache != null
+                && !IsChatChannelForGroup( groupCache.Id, groupCache.GroupTypeId, groupCache.ChatChannelKey, chatChannelTypeKey, chatChannelKey ) )
+            {
+                identifier.GroupCache = null;
+                identifier.UnrecoverableReason = $"Chat channel '{chatChannelTypeKey}:{chatChannelKey}' does not match Rock group with ID {groupCache.Id}.";
             }
 
             return identifier;
@@ -5900,10 +5989,26 @@ namespace Rock.Communication.Chat
                     // Assign the group type to the message event.
                     messageEvent.ChannelType = groupType;
 
-                    // Try to find a group match.
+                    /*
+                        10/15/2026 - MSE
+
+                        The chat channel key comes from the external chat system and is chosen by whoever created the
+                        channel. Only match a group of this chat channel's group type, and only when the channel is
+                        exactly the one Rock uses for that group.
+
+                        Reason: Prevent a look-alike chat channel from triggering automations for another Rock group.
+                    */
                     var group = groupService
-                        .GetChatChannelGroupsQuery()
+                        .GetChatChannelGroupsQuery( groupTypeId.Value )
                         .FirstOrDefault( g => g.ChatChannelKey == messageEvent.ChatChannelKey );
+
+                    if ( group != null
+                        && !IsChatChannelForGroup( group.Id, group.GroupTypeId, group.ChatChannelKey, messageEvent.ChatChannelTypeKey, messageEvent.ChatChannelKey ) )
+                    {
+                        structuredLog = "{GroupId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Chat channel does not match Rock group with ID {structuredLog}.", group.Id );
+                        continue;
+                    }
 
                     if ( group?.GetIsChatEnabled() == false )
                     {

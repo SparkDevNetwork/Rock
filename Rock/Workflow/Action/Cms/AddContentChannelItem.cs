@@ -215,7 +215,7 @@ namespace Rock.Workflow.Action
             }
             else
             {
-                contentChannelItem.Content = content.ResolveMergeFields( mergeFields );
+                contentChannelItem.Content = IsAttributeSourcedSetting( action, "Content" ) ? content : content.ResolveMergeFields( mergeFields );
             }
 
             contentChannelItem.StartDateTime = startDateTime;

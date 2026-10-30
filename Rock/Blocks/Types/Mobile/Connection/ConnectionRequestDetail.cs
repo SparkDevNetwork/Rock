@@ -414,7 +414,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     ActivityTypeGuid = a.ConnectionActivityType.Guid,
                     ConnectorGuid = a.ConnectorPersonAlias?.Person.Guid,
                     CreatedDateTime = ( DateTimeOffset ) a.CreatedDateTime,
-                    IsModifiable = IsActivityModifiable( a ),
+                    IsModifiable = isEditable && IsActivityModifiable( a ),
                     Note = a.Note.StripHtml(),
                     Guid = a.Guid,
                     ActivityType = a.ConnectionActivityType.ToString(),
@@ -2090,45 +2090,64 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// </summary>
         /// <param name="activityGuid">The activity unique identifier.</param>
         /// <param name="connectionRequestGuid">The connection request unique identifier.</param>
-        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns>The view model data that should be displayed.</returns>
         [BlockAction]
-        public BlockActionResult DeleteActivity( Guid activityGuid, string connectionRequestGuid, int currentPersonAliasId )
+        public BlockActionResult DeleteActivity( Guid activityGuid, string connectionRequestGuid )
         {
             using ( var rockContext = new RockContext() )
             {
-                // only allow deleting if current user created the activity, and not a system activity
+                // Only allow deleting if the current person created the activity or
+                // is its connector, has EDIT on the request, and it is not a system activity.
                 var connectionRequestActivityService = new ConnectionRequestActivityService( rockContext );
                 var connectionRequestService = new ConnectionRequestService( rockContext );
 
-                var activity = connectionRequestActivityService.Get( activityGuid );
-
                 var disablePredictableIds = this.PageCache.Layout.Site.DisablePredictableIds;
-                var request = connectionRequestService.Get( connectionRequestGuid, !disablePredictableIds );
 
-                if ( activity == null )
-                {
-                    return ActionNotFound( "Unable to find that specific activity." );
-                }
+                // Load the connection request. Include the connection opportunity
+                // and type for security check.
+                var request = connectionRequestService.GetQueryableByKey( connectionRequestGuid, !disablePredictableIds )
+                    .Include( r => r.ConnectionOpportunity.ConnectionType )
+                    .FirstOrDefault();
 
                 if ( request == null )
                 {
                     return ActionNotFound( "Unable to find that specific connection request." );
                 }
 
-                // Make sure we have permission to delete this activity.
-                if ( ( activity.CreatedByPersonAliasId.Equals( currentPersonAliasId )
-                    || activity.ConnectorPersonAliasId.Equals( currentPersonAliasId ) )
-                    && activity.ConnectionActivityType.ConnectionTypeId.HasValue )
+                if ( !request.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    connectionRequestActivityService.Delete( activity );
-                    rockContext.SaveChanges();
+                    return ActionUnauthorized();
                 }
-                // If we don't have permission.
-                else
+
+                var activity = connectionRequestActivityService.Get( activityGuid );
+
+                // Only accept an activity that this request's detail view lists.
+                if ( activity == null || !GetConnectionRequestActivities( request, rockContext ).Any( a => a.Id == activity.Id ) )
+                {
+                    return ActionNotFound( "Unable to find that specific activity." );
+                }
+
+                // The activity may belong to a sibling request when the full
+                // activity list is enabled, so check EDIT on that request too.
+                if ( activity.ConnectionRequestId != request.Id )
+                {
+                    var activityRequest = connectionRequestService.Queryable()
+                        .Include( r => r.ConnectionOpportunity.ConnectionType )
+                        .FirstOrDefault( r => r.Id == activity.ConnectionRequestId );
+
+                    if ( activityRequest == null || !activityRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionUnauthorized();
+                    }
+                }
+
+                if ( !IsActivityModifiable( activity ) )
                 {
                     return ActionForbidden( "You don't have permission to delete that activity." );
                 }
+
+                connectionRequestActivityService.Delete( activity );
+                rockContext.SaveChanges();
 
                 return ActionOk( GetRequestViewModel( request, rockContext ) );
             }

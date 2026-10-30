@@ -499,6 +499,10 @@
                                 <div class="col-md-6">
                                     <Rock:DefinedValuePicker ID="dvpAuth0RecordStatus" runat="server" Label="Record Status" Help="When an Auth0 login creates a person, this record status will be used.." />
                                 </div>
+
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbAuth0RequireVerifiedEmail" runat="server" Label="Require Verified Email" Help="When enabled, a first Auth0 sign-in from the app is matched to an existing person only if Auth0 reports the email address as verified. Otherwise a new person is created. Disable this only if every email address in your Auth0 tenant is verified by other means." />
+                                </div>
                             </div>
                             <hr class="section-header-hr" />
                         </div>

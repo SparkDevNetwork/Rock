@@ -366,7 +366,7 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             metric.Subtitle = tbSubtitle.Text;
             metric.Description = tbDescription.Text;
             metric.IconCssClass = tbIconCssClass.Text;
-            metric.SourceValueTypeId = ddlSourceType.SelectedValueAsId();
+            int? postedSourceValueTypeId = ddlSourceType.SelectedValueAsId();
             metric.YAxisLabel = tbYAxisLabel.Text;
             metric.UnitType = rblUnitType.SelectedValueAsEnum<Rock.Model.UnitType>();
             metric.IsCumulative = cbIsCumulative.Checked;
@@ -376,6 +376,30 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             int sourceTypeSQL = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL.AsGuid() ).Id;
             int sourceTypeLava = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA.AsGuid() ).Id;
 
+            /*
+                10/25/2026 - MSE
+
+                Metric EDIT also permits entering metric values. SQL and Lava sources run as
+                the application, so authoring them needs the same ADMINISTRATE right as Run Now.
+                Keep the stored source type for existing metrics when the editor lacks that right.
+
+                Reason: Value editors must not author code that the metric job runs.
+            */
+            bool canEditSource = CanEditMetricSource( metric );
+            if ( metric.Id == 0 && !canEditSource
+                && ( postedSourceValueTypeId == sourceTypeSQL || postedSourceValueTypeId == sourceTypeLava ) )
+            {
+                nbEditModeMessage.Text = "Only people who can administrate this block can create a metric with a SQL or Lava source.";
+                nbEditModeMessage.NotificationBoxType = NotificationBoxType.Warning;
+                nbEditModeMessage.Visible = true;
+                return;
+            }
+
+            if ( metric.Id == 0 || canEditSource )
+            {
+                metric.SourceValueTypeId = postedSourceValueTypeId;
+            }
+
             var personService = new PersonService( rockContext );
             var metricChampionPerson = personService.Get( ppMetricChampionPerson.SelectedValue ?? 0 );
             metric.MetricChampionPersonAliasId = metricChampionPerson != null ? metricChampionPerson.PrimaryAliasId : null;
@@ -384,7 +408,10 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( metric.SourceValueTypeId == sourceTypeSQL )
             {
-                metric.SourceSql = ceSourceSql.Text;
+                if ( canEditSource )
+                {
+                    metric.SourceSql = ceSourceSql.Text;
+                }
             }
             else
             {
@@ -393,7 +420,10 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
 
             if ( metric.SourceValueTypeId == sourceTypeLava )
             {
-                metric.SourceLava = ceSourceLava.Text;
+                if ( canEditSource )
+                {
+                    metric.SourceLava = ceSourceLava.Text;
+                }
             }
             else
             {
@@ -819,6 +849,27 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
         }
 
         /// <summary>
+        /// Determines whether the current person can author the metric source. Existing metrics
+        /// require ADMINISTRATE on the metric or block; new metrics require block ADMINISTRATE.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        /// <returns>Whether source authoring is permitted.</returns>
+        private bool CanEditMetricSource( Metric metric )
+        {
+            if ( metric == null )
+            {
+                return false;
+            }
+
+            if ( metric.Id == 0 )
+            {
+                return UserCanAdministrate;
+            }
+
+            return IsMetricAuthorized( metric, Authorization.ADMINISTRATE );
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="metricId">The metric identifier.</param>
@@ -954,6 +1005,29 @@ Example: Let's say you have a DataView called 'Small Group Attendance for Last W
             int manualSourceType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_MANUAL.AsGuid() ).Id;
 
             ddlSourceType.SetValue( metric.SourceValueTypeId ?? manualSourceType );
+
+            bool canEditSource = CanEditMetricSource( metric );
+            ddlSourceType.Enabled = metric.Id == 0 || canEditSource;
+            if ( !canEditSource )
+            {
+                if ( metric.Id == 0 )
+                {
+                    foreach ( var sourceTypeGuid in new[] { Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_SQL, Rock.SystemGuid.DefinedValue.METRIC_SOURCE_VALUE_TYPE_LAVA } )
+                    {
+                        var sourceTypeItem = ddlSourceType.Items.FindByValue( DefinedValueCache.Get( sourceTypeGuid.AsGuid() )?.Id.ToString() );
+                        if ( sourceTypeItem != null )
+                        {
+                            ddlSourceType.Items.Remove( sourceTypeItem );
+                        }
+                    }
+                }
+
+                ddlSourceType.Help = "Only people who can administrate this metric can set or change its source type, SQL or Lava.";
+            }
+
+            ceSourceSql.ReadOnly = !canEditSource;
+            ceSourceLava.ReadOnly = !canEditSource;
+
             tbYAxisLabel.Text = metric.YAxisLabel;
             rblUnitType.SetValue( metric.UnitType.ConvertToInt() );
             cbIsCumulative.Checked = metric.IsCumulative;

@@ -537,7 +537,16 @@ namespace Rock.Blocks.Communication
             var mergeFields = RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Person", recipientPerson );
 
-            string html = lava.ResolveMergeFields( mergeFields );
+            /*
+                10/16/2026 - MSE
+
+                The person's name and other values in the template can be set by anonymous
+                visitors and the result is rendered as HTML. Encode every {{ }} output value
+                as HTML while keeping the template's own markup.
+
+                Reason: Prevent stored person text from rendering as HTML in the conversation header.
+            */
+            string html = lava.ResolveMergeFields( mergeFields, true );
 
             return html;
         }
@@ -1030,12 +1039,13 @@ namespace Rock.Blocks.Communication
 
                 request.IfValidProperty( nameof( request.Bag.Text ), () =>
                 {
+                    var sanitizedText = NoteService.SanitizeNoteText( request.Bag.Text );
                     var noteTypeCache = NoteTypeCache.Get( note.NoteTypeId );
                     if ( noteTypeCache.FormatType != NoteFormatType.Unstructured && noteTypeCache.IsMentionEnabled )
                     {
-                        mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( request.Bag.Text, note.Text );
+                        mentionedPersonIds = noteService.GetNewPersonIdsMentionedInContent( sanitizedText, note.Text );
                     }
-                    note.Text = request.Bag.Text;
+                    note.Text = sanitizedText;
                 } );
 
                 request.IfValidProperty( nameof( request.Bag.IsAlert ),

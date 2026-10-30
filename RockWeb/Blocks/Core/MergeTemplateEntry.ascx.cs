@@ -202,7 +202,17 @@ namespace RockWeb.Blocks.Core
 
             try
             {
-                var outputBinaryFileDoc = mergeTemplateType.CreateDocument( mergeTemplate,
+                /*
+                    10/21/2026 - MSE
+
+                    The merged document is written straight to this postback response instead
+                    of being saved as a temporary BinaryFile and linked through GetFile.ashx,
+                    because that file used the unsecured default file type and anyone could
+                    download it by Id until Rock Cleanup removed it.
+
+                    Reason: Merged documents must not be downloadable by Id.
+                */
+                var document = mergeTemplateType.CreateDocumentForDownload( mergeTemplate,
                     dataSourceResult.DetailMergeObjects.Values.ToList(),
                     globalMergeFields );
 
@@ -222,8 +232,22 @@ namespace RockWeb.Blocks.Core
                     }
                 }
 
-                string getFileUrl = FileUrlHelper.GetFileUrl( outputBinaryFileDoc.Guid ) + "&attachment=true";
-                Response.Redirect( getFileUrl, false );
+                if ( document == null )
+                {
+                    nbMergeError.Text = "Unable to get merge template";
+                    nbMergeError.Visible = true;
+                    return;
+                }
+
+                var bytes = document.ContentStream.ReadBytesToEnd();
+
+                Response.Clear();
+                Response.ContentType = document.MimeType;
+                Response.AddHeader( "content-disposition", "attachment; filename=" + document.FileName.MakeValidFileName() );
+                Response.BufferOutput = true;
+                Response.BinaryWrite( bytes );
+                Response.Flush();
+                Response.SuppressContent = true;
                 Context.ApplicationInstance.CompleteRequest();
             }
             catch ( Exception ex )

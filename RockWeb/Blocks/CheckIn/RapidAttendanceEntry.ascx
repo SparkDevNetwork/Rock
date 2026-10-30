@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RapidAttendanceEntry.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.RapidAttendanceEntry" %>
+<%@ Import Namespace="Rock" %>
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
@@ -131,16 +132,16 @@
                                                 <div class="family-select-item <%# (bool)Eval("IsActive") ? "" :"is-inactive" %> <%# SelectedPersonId.HasValue && (int)Eval("Id") == SelectedPersonId.Value ? "active" :"" %>">
                                                     <asp:LinkButton ID="lbPerson" runat="server" CommandArgument='<%# Eval("Id") %>' CommandName="Display" CssClass="js-main-event">
                                                 <div>
-                                                        <h5 class="strong d-inline"><%# Eval("Name") %></h5> <span class="age"><%# Eval("Age") %></span>
+                                                        <h5 class="strong d-inline"><%# ( Eval( "Name" ) as string ).EncodeHtml() %></h5> <span class="age"><%# Eval("Age") %></span>
 
                                                         <% if ( IsAttendanceEnabled )
                                                             { %>   <i class="ti ti-circle-filled <%# (bool)Eval("IsAttended") ? "text-success":"text-muted" %> pull-right" aria-hidden="true"></i> <% } %>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "<span class='label label-campus pull-right margin-r-sm'>"+ Eval("CampusName").ToString() +"</span>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "<span class='label label-campus pull-right margin-r-sm'>"+ ( Eval( "CampusName" ) as string ).EncodeHtml() +"</span>" :"" %>
                                                 </div>
-                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ?  "<span class='family-member-names'>"+Eval("FamilyMemberNames").ToString() +"</span>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ?  "<span class='family-member-names'>"+( Eval( "FamilyMemberNames" ) as string ).EncodeHtml() +"</span>" :"" %>
                                                     <div class="margin-t-sm small">
-                                                        <%# !string.IsNullOrEmpty((string)Eval("Email")) ? Eval("Email").ToString() +"<br/>" :"" %>
-                                                        <%# Eval("Address") != null ? Eval("Address.FormattedAddress").ToString() +"<br/>" :"" %>
+                                                        <%# !string.IsNullOrEmpty((string)Eval("Email")) ? ( Eval( "Email" ) as string ).EncodeHtml() +"<br/>" :"" %>
+                                                        <%# Eval("Address") != null ? ( Eval( "Address.FormattedAddress" ) as string ).EncodeHtml() +"<br/>" :"" %>
                                                         <%# !string.IsNullOrEmpty((string)Eval("Mobile")) ? "M: "+Eval("Mobile").ToString() +"<br/>" :"" %>
                                                     </div>
                                                     </asp:LinkButton>

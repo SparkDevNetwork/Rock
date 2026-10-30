@@ -819,12 +819,12 @@ namespace RockWeb.Blocks.Event
                         this.RegistrationTemplateId = registrant.Registration.RegistrationInstance.RegistrationTemplateId;
                         this.RegistrationInstanceId = registrant.Registration.RegistrationInstanceId;
 
-                        lTitle.Text = registrant.ToString();
+                        lTitle.Text = registrant.ToString().EncodeHtml();
 
                         lWizardTemplateName.Text = registrant.Registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registrant.Registration.RegistrationInstance.Name;
-                        lWizardRegistrationName.Text = registrant.Registration.ToString();
-                        lWizardRegistrantName.Text = registrant.ToString();
+                        lWizardRegistrationName.Text = registrant.Registration.ToString().EncodeHtml();
+                        lWizardRegistrantName.Text = registrant.ToString().EncodeHtml();
 
                         tglWaitList.Checked = !registrant.OnWaitList;
                     }
@@ -859,7 +859,7 @@ namespace RockWeb.Blocks.Event
 
                         lWizardTemplateName.Text = registration.RegistrationInstance.RegistrationTemplate.Name;
                         lWizardInstanceName.Text = registration.RegistrationInstance.Name;
-                        lWizardRegistrationName.Text = registration.ToString();
+                        lWizardRegistrationName.Text = registration.ToString().EncodeHtml();
                         lWizardRegistrantName.Text = "New Registrant";
                     }
                 }

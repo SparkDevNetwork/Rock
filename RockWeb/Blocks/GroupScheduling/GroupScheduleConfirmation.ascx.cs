@@ -186,6 +186,16 @@ namespace RockWeb.Blocks.GroupScheduling
 
         private Person _selectedPerson;
 
+        /// <summary>
+        /// Set by <see cref="GetAuthorizedContextPerson" /> to the context person when the current person may act for them.
+        /// </summary>
+        private Person _authorizedContextPerson;
+
+        /// <summary>
+        /// Whether <see cref="GetAuthorizedContextPerson" /> has already checked the context person on this request.
+        /// </summary>
+        private bool _isContextPersonResolved;
+
         #endregion Fields
 
         #region Base Control Methods
@@ -256,6 +266,13 @@ namespace RockWeb.Blocks.GroupScheduling
             }
 
             SetSelectedPersonId();
+
+            if ( _selectedPerson == null )
+            {
+                mdDeclineAll.Hide();
+                ShowNotAuthorizedMessage();
+                return;
+            }
 
             int? declineReasonValueId = ddlDeclineAllReason.SelectedItem.Value.AsIntegerOrNull();
             var rockContext = new RockContext();
@@ -794,12 +811,19 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         /// <summary>
-        /// Gets the context person, but only if it is the current person or the
-        /// current person is authorized to edit this block.
+        /// Gets the context person, but only if it is the current person or the current
+        /// person can schedule the groups of every requested attendance.
         /// </summary>
         /// <returns>The context person, or <c>null</c> if there is none or it is not allowed.</returns>
         private Person GetAuthorizedContextPerson()
         {
+            if ( _isContextPersonResolved )
+            {
+                return _authorizedContextPerson;
+            }
+
+            _isContextPersonResolved = true;
+
             var contextPerson = this.ContextEntity<Person>();
 
             if ( contextPerson == null )
@@ -807,12 +831,55 @@ namespace RockWeb.Blocks.GroupScheduling
                 return null;
             }
 
-            if ( contextPerson.Id == this.CurrentPersonId || IsUserAuthorized( Rock.Security.Authorization.EDIT ) )
+            if ( contextPerson.Id == this.CurrentPersonId || CanScheduleRequestedAttendances( contextPerson.Id ) )
             {
-                return contextPerson;
+                _authorizedContextPerson = contextPerson;
             }
 
-            return null;
+            return _authorizedContextPerson;
+        }
+
+        /// <summary>
+        /// Determines whether every attendance in the page parameters belongs to the specified
+        /// person and is in a group the current person can schedule (SCHEDULE, EDIT or MANAGE_MEMBERS).
+        /// </summary>
+        /// <param name="personId">The person identifier.</param>
+        /// <returns><c>true</c> if all requested attendances can be scheduled; otherwise, <c>false</c>.</returns>
+        private bool CanScheduleRequestedAttendances( int personId )
+        {
+            // GetAttendanceIdsFromParameters needs the selected person, which isn't known yet, so read the parameters here.
+            var attendanceIdsValue = PageParameter( PageParameterKey.AttendanceIds ).IsNotNullOrWhiteSpace()
+                ? PageParameter( PageParameterKey.AttendanceIds )
+                : PageParameter( PageParameterKey.AttendanceId );
+
+            var attendanceIds = attendanceIdsValue.SplitDelimitedValues().AsIntegerList().Distinct().ToList();
+            if ( !attendanceIds.Any() )
+            {
+                return false;
+            }
+
+            var rockContext = new RockContext();
+
+            var attendanceGroupIds = new AttendanceService( rockContext ).Queryable()
+                .Where( a => attendanceIds.Contains( a.Id ) && a.PersonAlias.PersonId == personId )
+                .Select( a => a.Occurrence.GroupId )
+                .ToList();
+
+            if ( attendanceGroupIds.Count != attendanceIds.Count || attendanceGroupIds.Any( id => !id.HasValue ) )
+            {
+                return false;
+            }
+
+            // SCHEDULE is checked first because it never queries. MANAGE_MEMBERS comes before EDIT
+            // because its group member query also matches roles that can edit.
+            return attendanceGroupIds
+                .Select( id => id.Value )
+                .Distinct()
+                .Select( id => GroupCache.Get( id, rockContext ) )
+                .All( g => g != null
+                    && ( g.IsAuthorized( Rock.Security.Authorization.SCHEDULE, this.CurrentPerson )
+                        || g.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                        || g.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson ) ) );
         }
 
         /// <summary>
@@ -824,6 +891,12 @@ namespace RockWeb.Blocks.GroupScheduling
             if ( targetPerson != null )
             {
                 _selectedPerson = targetPerson;
+            }
+            else if ( this.ContextEntity<Person>() != null )
+            {
+                // A context person the current person may not act for selects nobody,
+                // so the block shows the not authorized message instead of the current person.
+                _selectedPerson = null;
             }
             else
             {
