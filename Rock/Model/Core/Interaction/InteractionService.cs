@@ -534,6 +534,23 @@ namespace Rock.Model
                 }
             }
 
+            /*
+                10/30/2026 - MSE
+
+                Clamp the values to the InteractionDeviceType column lengths here, before
+                the lookup key is built and before the database lookup. The cache key and
+                the lookup/insert must see the same value, otherwise an over-long value
+                would miss the cache every time and the insert would throw a validation
+                exception (ClientType is only 25 characters). Callers pass strings that
+                come from outside Rock (webhooks, mobile apps, media players), so the
+                values cannot be trusted to fit.
+
+                Reason: An over-long device value made the insert fail instead of being stored.
+            */
+            application = ClampDeviceTypeValue( application, MaxDeviceTypeApplicationLength );
+            operatingSystem = ClampDeviceTypeValue( operatingSystem, MaxDeviceTypeOperatingSystemLength );
+            clientType = ClampDeviceTypeValue( clientType, MaxDeviceTypeClientTypeLength );
+
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";
             int? deviceTypeId = lookupTable.GetValueOrNull( lookupKey );
             if ( deviceTypeId == null )
@@ -543,6 +560,39 @@ namespace Rock.Model
             }
 
             return deviceTypeId.Value;
+        }
+
+        /// <summary>
+        /// The maximum length of <see cref="InteractionDeviceType.Application"/>.
+        /// </summary>
+        internal const int MaxDeviceTypeApplicationLength = 100;
+
+        /// <summary>
+        /// The maximum length of <see cref="InteractionDeviceType.OperatingSystem"/>.
+        /// </summary>
+        internal const int MaxDeviceTypeOperatingSystemLength = 100;
+
+        /// <summary>
+        /// The maximum length of <see cref="InteractionDeviceType.ClientType"/>.
+        /// </summary>
+        internal const int MaxDeviceTypeClientTypeLength = 25;
+
+        /// <summary>
+        /// Cuts a device type value down to the specified length so it fits the
+        /// <see cref="InteractionDeviceType"/> column. A null value stays null so
+        /// the lookup still matches existing rows that have a null value.
+        /// </summary>
+        /// <param name="value">The value to clamp.</param>
+        /// <param name="maxLength">The maximum length of the column.</param>
+        /// <returns>The value, cut at <paramref name="maxLength"/> characters if it was longer.</returns>
+        internal static string ClampDeviceTypeValue( string value, int maxLength )
+        {
+            if ( value == null || value.Length <= maxLength )
+            {
+                return value;
+            }
+
+            return value.Left( maxLength );
         }
 
         /// <summary>
