@@ -55,6 +55,9 @@ const attachmentMissingCode = "rpc.attachment_missing";
 /** The refusal of a GIF in a church that has GIFs off, which hides them at once. */
 const gifsOffCode = "rpc.gifs_off";
 
+/** The refusal of a GIF whose signed token ran out before the send, which only a new pick can mend. */
+const badGifCode = "rpc.bad_gif";
+
 /** A try that reached nothing: a call that threw, or one a stopped sender never made. */
 const notSent: SendResult = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
 
@@ -379,6 +382,12 @@ export type SenderDependencies = {
 
     /** The platform refused a GIF because the church has GIFs off, which hides them at once. */
     onGifsOff?: () => void;
+
+    /**
+     * A send's GIF was refused as expired. The shell puts the send's text back in the box and
+     * drops the row, since the same token under the same key can only be refused again.
+     */
+    onGifExpired?: (row: PendingMessage) => void;
 };
 
 /** How one try of a message that is tried again on its own is sent. */
@@ -615,6 +624,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
             const reason = failureReason(result.error, isFinal, dependencies.isOffline?.());
             if (reason) {
                 row.reason = reason;
+            }
+            if (result.error.code === badGifCode) {
+                dependencies.onGifExpired?.(row);
             }
             return false;
         }

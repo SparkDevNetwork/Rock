@@ -246,6 +246,36 @@ describe("the menu as a sheet", () => {
         expect(document.activeElement).toBe(anchor);
     });
 
+    test("Tab and Shift+Tab go round the rows and never leave the sheet", async () => {
+        await openSheet();
+        const rows = menuItems();
+        const tab = async (isShift: boolean): Promise<void> => {
+            (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", shiftKey: isShift, bubbles: true, cancelable: true }));
+            await settle();
+        };
+
+        rows[rows.length - 1].focus();
+        await tab(false);
+        expect(document.activeElement).toBe(rows[0]);
+
+        await tab(true);
+        expect(document.activeElement).toBe(rows[rows.length - 1]);
+        expect(menu()).not.toBeNull();
+    });
+
+    test("Shift+Tab with focus on no row starts from the last row", async () => {
+        await openSheet();
+        const rows = menuItems();
+        const menuElement = menu()!;
+        menuElement.tabIndex = -1;
+        menuElement.focus();
+
+        menuElement.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", shiftKey: true, bubbles: true, cancelable: true }));
+        await settle();
+
+        expect(document.activeElement).toBe(rows[rows.length - 1]);
+    });
+
     test("a choice is emitted and closes it, and Escape closes it with focus back", async () => {
         const anchor = await openSheet();
         menuItems()[1].click();

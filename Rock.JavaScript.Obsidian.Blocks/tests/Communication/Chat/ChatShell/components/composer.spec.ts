@@ -1234,6 +1234,21 @@ describe("the composer's GIFs", () => {
         expect(document.activeElement).toBe(editorOf(wrapper));
     });
 
+    test("a GIF waiting to go leaves the tray when GIFs are turned off, with a line saying so", async () => {
+        const gifs = fakeGifs();
+        const { wrapper, tray } = gifTray(gifs);
+        tray.stageGif(result("first"));
+        await nextTick();
+        expect(wrapper.find("[data-testid='composer-gif']").exists()).toBe(true);
+
+        gifs.turnOff();
+        await flushPromises();
+
+        expect(tray.gif).toBeNull();
+        expect(wrapper.find("[data-testid='composer-gif']").exists()).toBe(false);
+        expect(tray.notice).toContain("turned off");
+    });
+
     test("GIFs refused as off hide the \"+\" and close the picker at once", async () => {
         const gifs = fakeGifs();
         const { wrapper } = gifTray(gifs);

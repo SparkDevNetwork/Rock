@@ -1022,16 +1022,16 @@
         props.tray?.stageGif(result);
     }
 
-    /**
-     * The GIF picker went. Closed by a choice or by Escape, it handed focus back to the "+", and the
-     * person carries on in the box; closed by a press elsewhere, focus stays there.
-     */
     /** The remove button leaves with the GIF, so focus goes on to the box rather than to the page. */
     function onRemoveGif(): void {
         props.tray?.removeGif();
         editor.value?.focus();
     }
 
+    /**
+     * The GIF picker went. Closed by a choice or by Escape, it handed focus back to the "+", and the
+     * person carries on in the box; closed by a press elsewhere, focus stays there.
+     */
     function onGifClose(): void {
         isGifOpen.value = false;
         if (addAnchor.value && document.activeElement === addAnchor.value) {
@@ -1093,10 +1093,14 @@
         }
     });
 
-    // GIFs refused as off go at once, the picker with them, so nothing more is searched.
+    // GIFs refused as off go at once, the picker and a GIF waiting to go with them, so nothing
+    // more is searched and no send is made that can only be refused.
     watch(isGifOffered, isOffered => {
         if (!isOffered) {
             isGifOpen.value = false;
+            if (props.tray?.gif) {
+                props.tray.removeGif("GIFs were turned off, so the GIF was taken out.");
+            }
         }
     });
 

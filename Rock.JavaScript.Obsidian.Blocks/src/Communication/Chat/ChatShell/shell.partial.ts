@@ -69,6 +69,9 @@ export type RealtimeOptions = ReturnType<typeof realtimeOptions>;
 /** How many of the found conversation's newest messages New message shows, as the design draws them. */
 const foundHistoryLimit = 16;
 
+/** What the tray says where a GIF waited so long its token ran out and the send was handed back. */
+const expiredGifNotice = "That GIF expired. Pick it again to send it.";
+
 /** What the Rock token action answered. */
 export type MintActionResult = {
     isSuccess: boolean;
@@ -872,7 +875,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         newLocalId,
         isOffline: () => state.connection !== null,
-        onGifsOff: () => gifs.turnOff()
+        onGifsOff: () => gifs.turnOff(),
+        onGifExpired: row => {
+            // The text goes back where it was written and the person is told to pick again, so
+            // nothing is retyped and no failed row waits for a Delete that mends nothing.
+            const place = quoteKey(row.channelId, row.parentId);
+            drafts.append(place, row.body);
+            attachments.trayFor(place, row.channelId).notice = expiredGifNotice;
+            sender.discard(row.localId);
+        }
     });
 
     /**

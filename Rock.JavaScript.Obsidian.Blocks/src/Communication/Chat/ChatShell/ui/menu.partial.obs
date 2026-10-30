@@ -389,7 +389,9 @@
             if (props.isSheet) {
                 // A sheet is modal over the chat, so Tab stays among its rows.
                 event.preventDefault();
-                items[(current + (event.shiftKey ? -1 : 1) + items.length) % items.length]?.focus();
+                // with focus on no row, Shift+Tab starts from the end as Tab starts from the first row
+                const next = current < 0 ? (event.shiftKey ? items.length - 1 : 0) : (current + (event.shiftKey ? -1 : 1) + items.length) % items.length;
+                items[next]?.focus();
             }
             else {
                 close(false);

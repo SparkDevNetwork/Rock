@@ -1723,7 +1723,7 @@ describe("a send with a GIF", () => {
     const staged: GifItem = { id: "g-local", kind: "gif", slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "signed.token" };
     const stored: GifItem = { id: "d0000000-0000-4000-8000-0000000000f1", kind: "gif", slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280 };
 
-    async function gifSetup(answers: SendResult[], onGifsOff?: () => void): Promise<{
+    async function gifSetup(answers: SendResult[], onGifsOff?: () => void, onGifExpired?: (row: PendingMessage) => void): Promise<{
         sender: ReturnType<typeof createSender>,
         timelines: ReturnType<typeof createTimelines>,
         sent: Array<Record<string, unknown>>
@@ -1741,7 +1741,8 @@ describe("a send with a GIF", () => {
             timelines,
             personAliasGuid: me,
             newLocalId: () => `local-${++next}`,
-            ...(onGifsOff ? { onGifsOff } : {})
+            ...(onGifsOff ? { onGifsOff } : {}),
+            ...(onGifExpired ? { onGifExpired } : {})
         });
         return { sender, timelines, sent };
     }
@@ -1798,6 +1799,25 @@ describe("a send with a GIF", () => {
         const [row] = sender.pending(channel);
         expect(row.status).toBe("failed");
         expect(row.refusal?.code).toBe("rpc.bad_gif");
+    });
+
+    test("a GIF whose token ran out is handed back once, with the text it was sent with", async () => {
+        const onGifExpired = jest.fn();
+        const { sender } = await gifSetup([{ ok: false, error: { code: "rpc.bad_gif", severity: "failed", text: "That GIF can't be sent. Search again." } }], undefined, onGifExpired);
+
+        await sender.send(channel, "yay", undefined, undefined, undefined, [staged]);
+
+        expect(onGifExpired).toHaveBeenCalledTimes(1);
+        expect(onGifExpired.mock.calls[0][0]).toMatchObject({ channelId: channel, body: "yay", errorCode: "rpc.bad_gif" });
+    });
+
+    test("other refusals of a GIF are not handed back", async () => {
+        const onGifExpired = jest.fn();
+        const { sender } = await gifSetup([{ ok: false, error: { code: "rpc.gifs_off", severity: "failed" } }], undefined, onGifExpired);
+
+        await sender.send(channel, "yay", undefined, undefined, undefined, [staged]);
+
+        expect(onGifExpired).not.toHaveBeenCalled();
     });
 
     test("a church that turned GIFs off says so once, so the button goes at once", async () => {

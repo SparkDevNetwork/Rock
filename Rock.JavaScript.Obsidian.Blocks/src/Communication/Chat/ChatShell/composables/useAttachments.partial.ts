@@ -348,7 +348,7 @@ export type AttachmentTray = {
     stageGif: (result: GifResult) => void;
 
     /** Takes the GIF out. */
-    removeGif: () => void;
+    removeGif: (notice?: string) => void;
 };
 
 /**
@@ -732,9 +732,9 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 };
                 tray.notice = null;
             },
-            removeGif: (): void => {
+            removeGif: (notice?: string): void => {
                 tray.gif = null;
-                tray.notice = null;
+                tray.notice = notice ?? null;
             }
         }) as AttachmentTray;
 

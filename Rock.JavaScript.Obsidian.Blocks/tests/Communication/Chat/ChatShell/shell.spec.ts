@@ -3520,3 +3520,22 @@ describe("a send with files", () => {
         expect(h.uploads[0].isAborted).toBe(true);
     });
 });
+
+// A GIF staged longer than its token lives is refused as expired. The person's words go back in
+// the place's box and the tray says to pick again, with no failed row left to delete.
+describe("a send whose GIF expired", () => {
+    test("puts the text back in the box, tells the tray to pick again, and leaves no failed row", async () => {
+        const h = await started();
+        const tray = h.shell.trayOf(channelA);
+        tray.stageGif({ slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "stale" });
+        h.sendRefusals.value = [{ status: 400, body: { code: "P0001", message: "rpc.bad_gif", hint: "That GIF can't be sent. Search again." } }];
+
+        await h.shell.send("yay");
+        await settle();
+
+        expect(h.shell.sender.pending(channelA)).toEqual([]);
+        expect(h.shell.drafts.of(quoteKey(channelA)).text).toBe("yay");
+        expect(tray.gif).toBeNull();
+        expect(tray.notice).toContain("Pick it again");
+    });
+});
