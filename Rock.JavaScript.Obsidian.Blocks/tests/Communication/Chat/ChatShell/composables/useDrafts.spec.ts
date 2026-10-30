@@ -113,6 +113,15 @@ describe("a draft in memory", () => {
         d.append(team, "refused again");
         expect(d.of(team).text).toBe("refused once\n\nrefused again");
     });
+
+    test("keeps a thread reply's also-send choice for its place, off until chosen", () => {
+        const d = drafts(memoryStorage());
+        expect(d.of(team).isAlsoSent).toBe(false);
+
+        d.setAlsoSent(team, true);
+
+        expect(d.of(team).isAlsoSent).toBe(true);
+    });
 });
 
 describe("a draft on the device", () => {
@@ -164,7 +173,7 @@ describe("a draft on the device", () => {
         const next = drafts(storage);
         expect(read).not.toHaveBeenCalled();
 
-        expect(next.of(team)).toEqual({ text: `Thanks <@${anna}>`, mentions: [{ type: "mention", text: "@Anna Kim", person_alias_guid: anna, avatar_url: null }] });
+        expect(next.of(team)).toEqual({ text: `Thanks <@${anna}>`, mentions: [{ type: "mention", text: "@Anna Kim", person_alias_guid: anna, avatar_url: null }], isAlsoSent: false });
         next.of(team);
         expect(read).toHaveBeenCalledTimes(1);
     });

@@ -837,6 +837,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isEnabled: () => session.settings().flags.gifs
     });
 
+    /** The quote each place's latest send used up, which a hand-back puts back. */
+    const takenQuotes = new Map<string, TimelineMessage>();
+
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId, files) => {
             const result = await call("chat_send_message", {
@@ -877,10 +880,16 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isOffline: () => state.connection !== null,
         onGifsOff: () => gifs.turnOff(),
         onGifExpired: row => {
-            // The text goes back where it was written and the person is told to pick again, so
-            // nothing is retyped and no failed row waits for a Delete that mends nothing.
+            // The text goes back where it was written, with the quote and the also-send choice the
+            // send used up, and the person is told to pick again, so nothing is retyped and no
+            // failed row waits for a Delete that mends nothing.
             const place = quoteKey(row.channelId, row.parentId);
             drafts.append(place, row.body);
+            drafts.setAlsoSent(place, row.isShownInChannel === true);
+            const quote = takenQuotes.get(place);
+            if (quote && quote.id === row.quotedMessageId) {
+                messageActions.startQuote(place, quote);
+            }
             attachments.trayFor(place, row.channelId).notice = expiredGifNotice;
             sender.discard(row.localId);
         }
@@ -905,6 +914,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
     function takeQuote(key: string): number | undefined {
         const quoted = messageActions.state.quotes[key];
         messageActions.cancelQuote(key);
+        // kept for the place's latest send only, so an expired GIF can give the quote back whole
+        if (quoted) {
+            takenQuotes.set(key, quoted);
+        }
+        else {
+            takenQuotes.delete(key);
+        }
         return quoted?.id;
     }
 

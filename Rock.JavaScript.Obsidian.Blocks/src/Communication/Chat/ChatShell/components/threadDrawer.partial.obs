@@ -150,6 +150,7 @@
                       :maxLength="maxLength"
                       :text="draft.text"
                       :mentions="draft.mentions"
+                      :isAlsoSent="draft.isAlsoSent"
                       :quote="quote"
                       :isQuoteOwn="isQuoteOwn"
                       :emojiSource="emojiSource"
@@ -162,6 +163,7 @@
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
                       @update:text="emit('draftText', $event)"
+                      @update:isAlsoSent="emit('draftAlsoSent', $event)"
                       @mention="emit('draftMention', $event)"
                       @editLast="emit('editLast')"
                       @cancelQuote="emit('cancelQuote')"
@@ -498,7 +500,7 @@
         /** The reply this thread's composer holds, as its owner keeps it for the thread. */
         draft: {
             type: Object as PropType<ComposerDraft>,
-            default: () => ({ text: "", mentions: [] })
+            default: () => ({ text: "", mentions: [], isAlsoSent: false })
         },
 
         /** The files waiting to go with the next reply, or null where files cannot go. */
@@ -575,6 +577,8 @@
         (e: "cancelQuote"): void,
         /** The reply composer's text changed. */
         (e: "draftText", text: string): void,
+        /** The reply composer's also-send choice changed. */
+        (e: "draftAlsoSent", isAlsoSent: boolean): void,
         /** A chip was drawn in the reply composer. */
         (e: "draftMention", piece: DisplayPiece): void,
         (e: "editLast"): void,

@@ -145,7 +145,7 @@
             <div class="chat-composer-foot">
                 <!-- The label names the switch and passes a press on its words to it. -->
                 <label v-if="isThread" class="chat-composer-also" data-testid="composer-also">
-                    <Switch size="sm" :isOn="isAlsoSent" @click="isAlsoSent = !isAlsoSent" />
+                    <Switch size="sm" :isOn="isAlsoSent" @click="setAlsoSent(!isAlsoSent)" />
                     <span>Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
@@ -684,6 +684,12 @@
             default: null
         },
 
+        /** A thread reply's choice to show it in the conversation too, as its owner keeps it for the place. */
+        isAlsoSent: {
+            type: Boolean,
+            default: false
+        },
+
         /**
          * The files waiting to go with the next send from this box, uploading as they are picked;
          * null where files cannot go, which offers no way to attach one.
@@ -699,6 +705,8 @@
         (e: "send", body: string, isAlsoSent?: boolean): void;
         /** The box's text changed, a send's emptying included. */
         (e: "update:text", text: string): void;
+        /** The also-send choice changed, or was cleared by a send. */
+        (e: "update:isAlsoSent", isAlsoSent: boolean): void;
         /** A chip was drawn in the box, with the name and photo it shows. */
         (e: "mention", piece: DisplayPiece): void;
         /** Up in an empty box: the person asks to edit their newest message. */
@@ -725,7 +733,7 @@
     // #region Values
 
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
-    const isAlsoSent = ref(false);
+    const isAlsoSent = ref(props.isAlsoSent);
 
     const editor = ref<InstanceType<typeof ChipEditor>>();
     const emojiButton = ref<InstanceType<typeof IconButton>>();
@@ -899,8 +907,17 @@
             emit("send", body);
         }
         emit("update:text", textAfterSend(body, props.isTextKeptOnSend || !canMakeSendKey()));
-        isAlsoSent.value = false;
+        setAlsoSent(false);
     }
+
+    /** Turns the choice and tells its owner, who keeps it for the place. */
+    function setAlsoSent(isOn: boolean): void {
+        isAlsoSent.value = isOn;
+        emit("update:isAlsoSent", isOn);
+    }
+
+    // A choice its owner puts back, as an expired GIF's send does, shows at once.
+    watch(() => props.isAlsoSent, isOn => isAlsoSent.value = isOn);
 
     /**
      * Try again and Delete each take the strip's buttons away, as the sends go back to sending or

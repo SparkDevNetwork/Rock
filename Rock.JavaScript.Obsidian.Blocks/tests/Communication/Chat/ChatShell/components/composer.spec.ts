@@ -698,6 +698,19 @@ describe("the reply composer's Also send switch", () => {
         expect(wrapper.emitted("send")?.[1]).toEqual(["And Ben", false]);
     });
 
+    test("draws the choice its place holds, and says each change and the reset after a send", async () => {
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults", isAlsoSent: true } });
+        expect(alsoSwitch(wrapper).attributes("aria-checked")).toBe("true");
+
+        await alsoSwitch(wrapper).trigger("click");
+        expect(wrapper.emitted("update:isAlsoSent")).toEqual([[false]]);
+
+        await wrapper.setProps({ isAlsoSent: true });
+        await type(wrapper, "Count me in");
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("update:isAlsoSent")?.at(-1)).toEqual([false]);
+    });
+
     test("a press on the words toggles it, as a label does", async () => {
         const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title: "young-adults" } });
 

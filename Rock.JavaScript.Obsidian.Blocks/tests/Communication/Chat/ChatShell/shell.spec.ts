@@ -3538,4 +3538,42 @@ describe("a send whose GIF expired", () => {
         expect(tray.gif).toBeNull();
         expect(tray.notice).toContain("Pick it again");
     });
+
+    test("tells no failure news about the row it dropped", async () => {
+        const h = await started();
+        h.shell.trayOf(channelA).stageGif({ slug: "a", title: "A", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "stale" });
+        h.sendRefusals.value = [{ status: 400, body: { code: "P0001", message: "rpc.bad_gif", hint: "That GIF can't be sent. Search again." } }];
+
+        await h.shell.send("yay");
+        await settle();
+
+        expect(h.shell.sender.lastFailure()).toBeNull();
+    });
+
+    test("puts the quote back, so the strip comes back with the text", async () => {
+        const h = await started();
+        const quoted = page(10).messages[0];
+        h.shell.messageActions.startQuote(quoteKey(channelA), quoted);
+        h.shell.trayOf(channelA).stageGif({ slug: "a", title: "A", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "stale" });
+        h.sendRefusals.value = [{ status: 400, body: { code: "P0001", message: "rpc.bad_gif", hint: "That GIF can't be sent. Search again." } }];
+
+        await h.shell.send("yay");
+        await settle();
+
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA)]).toEqual(quoted);
+    });
+
+    test("puts a thread reply's quote and its also-send choice back under the thread", async () => {
+        const h = await started();
+        const quoted = page(10).messages[0];
+        h.shell.messageActions.startQuote(quoteKey(channelA, 10), quoted);
+        h.shell.trayOf(channelA, 10).stageGif({ slug: "a", title: "A", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "stale" });
+        h.sendRefusals.value = [{ status: 400, body: { code: "P0001", message: "rpc.bad_gif", hint: "That GIF can't be sent. Search again." } }];
+
+        await (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> }).sendReply(10, "yay", true);
+        await settle();
+
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA, 10)]).toEqual(quoted);
+        expect(h.shell.drafts.of(quoteKey(channelA, 10))).toMatchObject({ text: "yay", isAlsoSent: true });
+    });
 });

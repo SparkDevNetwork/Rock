@@ -381,6 +381,7 @@
                                   @discard="shell.sender.discard"
                                   @cancelQuote="onCancelQuote(threadQuoteKey)"
                                   @draftText="onDraftText(threadQuoteKey, $event)"
+                                  @draftAlsoSent="onDraftAlsoSent(threadQuoteKey, $event)"
                                   @draftMention="onDraftMention(threadQuoteKey, $event)"
                                   @editLast="onEditLastReply"
                                   @jump="onJump($event, true)"
@@ -1268,6 +1269,13 @@
     function onDraftText(place: string | null, text: string): void {
         if (place) {
             shell.value.drafts.write(place, text);
+        }
+    }
+
+    /** A thread reply's also-send choice changed: it is kept with that thread's draft. */
+    function onDraftAlsoSent(place: string | null, isAlsoSent: boolean): void {
+        if (place) {
+            shell.value.drafts.setAlsoSent(place, isAlsoSent);
         }
     }
 

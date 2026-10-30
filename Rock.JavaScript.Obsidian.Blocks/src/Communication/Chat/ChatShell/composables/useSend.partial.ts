@@ -385,7 +385,8 @@ export type SenderDependencies = {
 
     /**
      * A send's GIF was refused as expired. The shell puts the send's text back in the box and
-     * drops the row, since the same token under the same key can only be refused again.
+     * drops the row, since the same token under the same key can only be refused again. No
+     * failure is told for a row it dropped.
      */
     onGifExpired?: (row: PendingMessage) => void;
 };
@@ -616,6 +617,11 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
             row.status = "failed";
             row.errorCode = result.error.code;
+            // The hand-back drops the row, so no news may name it: it comes before the failure is told.
+            if (result.error.code === badGifCode && dependencies.onGifExpired) {
+                dependencies.onGifExpired(row);
+                return false;
+            }
             failures.last = { localId: row.localId, count: (failures.last?.count ?? 0) + 1 };
             const isFinal = isFinalRefusal(result.error, row.isFirstMessage === true);
             if (isFinal) {
@@ -624,9 +630,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
             const reason = failureReason(result.error, isFinal, dependencies.isOffline?.());
             if (reason) {
                 row.reason = reason;
-            }
-            if (result.error.code === badGifCode) {
-                dependencies.onGifExpired?.(row);
             }
             return false;
         }

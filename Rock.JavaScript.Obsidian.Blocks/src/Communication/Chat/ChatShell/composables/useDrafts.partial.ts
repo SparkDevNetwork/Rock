@@ -44,6 +44,9 @@ export type ComposerDraft = {
 
     /** A mention piece for each chip drawn in the box, which the box draws its token with. */
     mentions: DisplayPiece[];
+
+    /** A thread reply's choice to show it in the conversation too; kept for the page, never written to the device. */
+    isAlsoSent: boolean;
 };
 
 /** The part of the browser's storage drafts use, every call of which may throw. */
@@ -89,6 +92,9 @@ export type Drafts = {
     /** A chip was drawn in a place's box, with the name and photo it is drawn with. */
     addMention: (place: string, piece: DisplayPiece) => void;
 
+    /** A thread reply's choice to also send to the conversation changed, or came back with refused text. */
+    setAlsoSent: (place: string, isAlsoSent: boolean) => void;
+
     /** Puts held text after what a place's box holds, a blank line between, as refused text comes back. */
     append: (place: string, text: string) => void;
 
@@ -100,7 +106,7 @@ export type Drafts = {
 };
 
 /** A draft as the device keeps it. */
-type StoredDraft = ComposerDraft & {
+type StoredDraft = Omit<ComposerDraft, "isAlsoSent"> & {
     /** When it was last written, in milliseconds. */
     at: number;
 };
@@ -173,7 +179,7 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
 
     /** A place's draft as the device holds it, or an empty one. One too old is removed as it is read. */
     function read(place: string): ComposerDraft {
-        const empty: ComposerDraft = { text: "", mentions: [] };
+        const empty: ComposerDraft = { text: "", mentions: [], isAlsoSent: false };
         let value: string | null = null;
         try {
             value = storage?.getItem(personPrefix + place) ?? null;
@@ -192,7 +198,7 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
             return empty;
         }
 
-        return { text: draft.text, mentions: draft.mentions };
+        return { text: draft.text, mentions: draft.mentions, isAlsoSent: false };
     }
 
     /** A stored draft, or null for anything else under its key. */
@@ -370,6 +376,10 @@ export function createDrafts(dependencies: DraftsDependencies): Drafts {
             else if (draft.mentions[index].text !== piece.text || draft.mentions[index].avatar_url !== piece.avatar_url) {
                 draft.mentions[index] = piece;
             }
+        },
+
+        setAlsoSent: (place: string, isAlsoSent: boolean): void => {
+            draftOf(place).isAlsoSent = isAlsoSent;
         },
 
         append: (place: string, text: string): void => {
