@@ -416,8 +416,24 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "E3C50A1C-DF4E-4828-A0D0-A0BED27EDBE1" )]
         public void RegisterRSVPRecipients( int occurrenceId, [FromBody] List<string> personIds )
         {
+            var rockContext = new RockContext();
+            var occurrence = new AttendanceOccurrenceService( rockContext ).Get( occurrenceId );
+
+            if ( occurrence?.Group == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.NotFound );
+            }
+
+            var groupType = GroupTypeCache.Get( occurrence.Group.GroupTypeId );
+            var person = GetPerson();
+
+            if ( person == null || groupType?.EnableRSVP != true || !occurrence.Group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
             var personIdList = personIds.Select( int.Parse ).ToList();
-            new AttendanceService( new RockContext() )
+            new AttendanceService( rockContext )
                 .RegisterRSVPRecipients( occurrenceId, personIdList );
         }
 
