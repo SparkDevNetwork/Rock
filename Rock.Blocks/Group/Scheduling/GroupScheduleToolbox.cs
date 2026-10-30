@@ -398,6 +398,8 @@ namespace Rock.Blocks.Group.Scheduling
         protected const string NO_LOCATION_PREFERENCE = "No Location Preference";
         private const string NOT_AUTHORIZED_MESSAGE = "You are not authorized to view other people's schedules.";
 
+        private const string LIMITED_AUTHORIZATION_MESSAGE = "You are not authorized to view all of this person's schedule. Only schedules for groups you are authorized to schedule are shown.";
+
         #endregion Keys & Constants
 
         #region Fields
@@ -485,7 +487,70 @@ namespace Rock.Blocks.Group.Scheduling
             box.ToolboxActionType = toolboxData.ToolboxActionType;
             box.SchedulableFamilyMembers = toolboxData.SchedulableFamilyMemberPeople.Select( fmp => fmp.Person ).ToListItemBagList();
 
+            if ( IsScheduleDataLimited( toolboxData ) )
+            {
+                box.LimitedAuthorizationMessage = LIMITED_AUTHORIZATION_MESSAGE;
+            }
+
             box.SecurityGrantToken = GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Determines whether any of the selected person's upcoming schedules are hidden from the current person
+        /// because they are not authorized to schedule all of the person's groups.
+        /// </summary>
+        /// <param name="toolboxData">The toolbox data.</param>
+        /// <returns><c>true</c> if some upcoming schedules are hidden; otherwise, <c>false</c>.</returns>
+        private bool IsScheduleDataLimited( ToolboxData toolboxData )
+        {
+            if ( toolboxData.AuthorizedGroupIds == null || toolboxData.ScheduledGroupIds == null )
+            {
+                return false;
+            }
+
+            return toolboxData.ScheduledGroupIds.Any( groupId => !toolboxData.AuthorizedGroupIds.Contains( groupId ) );
+        }
+
+        /// <summary>
+        /// Gets the identifiers of the groups the selected person has upcoming pending, confirmed or declined
+        /// schedules in. This includes groups the person is not an active member of, since a person can be
+        /// scheduled from an alternate group, parent group or data view, or stay scheduled after becoming inactive.
+        /// Groups whose type is left out by the Include/Exclude Group Types settings are never displayed, so they don't count.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="selectedPerson">The selected person.</param>
+        /// <returns>The group identifiers.</returns>
+        private List<int> GetUpcomingScheduledGroupIds( RockContext rockContext, Person selectedPerson )
+        {
+            var attendanceService = new AttendanceService( rockContext );
+            var today = RockDateTime.Now.Date;
+
+            var pendingOccurrences = attendanceService
+                .GetPendingScheduledConfirmations()
+                .Where( a => a.PersonAlias.PersonId == selectedPerson.Id )
+                .Select( a => a.Occurrence );
+
+            var upcomingOccurrences = attendanceService
+                .GetConfirmedScheduled()
+                .Concat( attendanceService.GetDeclinedScheduleConfirmations() )
+                .Where( a => a.PersonAlias.PersonId == selectedPerson.Id
+                    && a.Occurrence.OccurrenceDate >= today )
+                .Select( a => a.Occurrence );
+
+            var occurrences = pendingOccurrences
+                .Concat( upcomingOccurrences )
+                .Where( o => o.GroupId.HasValue );
+
+            var displayedGroupTypeIds = GetDisplayedGroupTypeIds();
+            if ( displayedGroupTypeIds != null )
+            {
+                occurrences = occurrences.Where( o => displayedGroupTypeIds.Contains( o.Group.GroupTypeId ) );
+            }
+
+            return occurrences
+                .Select( o => o.GroupId.Value )
+                .Distinct()
+                .ToList();
         }
 
         /// <summary>
@@ -528,8 +593,19 @@ namespace Rock.Blocks.Group.Scheduling
 
             if ( toolboxData.IsGroupAuthorizationRequired )
             {
-                toolboxData.AuthorizedGroupIds = GetAuthorizedGroupIds( rockContext, toolboxData.SelectedPerson );
-                if ( !toolboxData.AuthorizedGroupIds.Any() )
+                toolboxData.ScheduledGroupIds = GetUpcomingScheduledGroupIds( rockContext, toolboxData.SelectedPerson );
+
+                var selectedPersonGroupIds = GetSelectedPersonGroupIds( rockContext, toolboxData.SelectedPerson )
+                    .Union( toolboxData.ScheduledGroupIds )
+                    .ToList();
+
+                toolboxData.AuthorizedGroupIds = GetAuthorizedGroupIds( rockContext, selectedPersonGroupIds );
+
+                var isAuthorized = selectedPersonGroupIds.Any()
+                    ? toolboxData.AuthorizedGroupIds.Any()
+                    : IsAuthorizedToScheduleAnyGroup();
+
+                if ( !isAuthorized )
                 {
                     toolboxData.ErrorMessage = NOT_AUTHORIZED_MESSAGE;
                     return toolboxData;
@@ -635,36 +711,68 @@ namespace Rock.Blocks.Group.Scheduling
         }
 
         /// <summary>
-        /// Gets the identifiers of the selected person's active groups that the current person
-        /// is authorized to schedule (SCHEDULE, EDIT or MANAGE_MEMBERS). Groups whose type is
+        /// Gets the identifiers of the selected person's active groups. Groups whose type is
         /// left out by the Include/Exclude Group Types settings are never displayed, so they don't count.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="selectedPerson">The selected person.</param>
-        /// <returns>The authorized group identifiers.</returns>
-        private HashSet<int> GetAuthorizedGroupIds( RockContext rockContext, Person selectedPerson )
+        /// <returns>The group identifiers.</returns>
+        private List<int> GetSelectedPersonGroupIds( RockContext rockContext, Person selectedPerson )
         {
             var groupMembersQry = new GroupMemberService( rockContext )
                 .Queryable()
                 .Where( gm => gm.PersonId == selectedPerson.Id && gm.GroupMemberStatus == GroupMemberStatus.Active );
 
-            var includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().AsGuidList();
-            var excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().AsGuidList();
-
-            if ( includeGroupTypeGuids.Any() )
+            var displayedGroupTypeIds = GetDisplayedGroupTypeIds();
+            if ( displayedGroupTypeIds != null )
             {
-                groupMembersQry = groupMembersQry.Where( gm => includeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) );
-            }
-            else if ( excludeGroupTypeGuids.Any() )
-            {
-                groupMembersQry = groupMembersQry.Where( gm => !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) );
+                groupMembersQry = groupMembersQry.Where( gm => displayedGroupTypeIds.Contains( gm.Group.GroupTypeId ) );
             }
 
-            var groupIds = groupMembersQry
+            return groupMembersQry
                 .Select( gm => gm.GroupId )
                 .Distinct()
                 .ToList();
+        }
 
+        /// <summary>
+        /// Gets the identifiers of the group types allowed by the Include/Exclude Group Types settings.
+        /// Include wins when both are set.
+        /// </summary>
+        /// <returns>The allowed group type identifiers, or <c>null</c> when neither setting is set and every group type is allowed.</returns>
+        private List<int> GetDisplayedGroupTypeIds()
+        {
+            var includeGroupTypeGuids = GetAttributeValue( AttributeKey.IncludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+            if ( includeGroupTypeGuids.Any() )
+            {
+                return includeGroupTypeGuids
+                    .Select( guid => GroupTypeCache.GetId( guid ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+            }
+
+            var excludeGroupTypeGuids = GetAttributeValue( AttributeKey.ExcludeGroupTypes ).SplitDelimitedValues().AsGuidList();
+            if ( excludeGroupTypeGuids.Any() )
+            {
+                return GroupTypeCache.All()
+                    .Where( gt => !excludeGroupTypeGuids.Contains( gt.Guid ) )
+                    .Select( gt => gt.Id )
+                    .ToList();
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the identifiers of the specified groups that the current person is authorized
+        /// to schedule (SCHEDULE, EDIT or MANAGE_MEMBERS).
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupIds">The group identifiers to check.</param>
+        /// <returns>The authorized group identifiers.</returns>
+        private HashSet<int> GetAuthorizedGroupIds( RockContext rockContext, List<int> groupIds )
+        {
             // GroupCache walks parent groups from cache, so this avoids a query per group.
             // SCHEDULE is checked first because it never queries. MANAGE_MEMBERS comes before EDIT
             // because its group member query also matches roles that can edit.
@@ -675,6 +783,22 @@ namespace Rock.Blocks.Group.Scheduling
                 .Select( g => g.Id );
 
             return new HashSet<int>( authorizedGroupIds );
+        }
+
+        /// <summary>
+        /// Determines whether the current person is authorized to schedule groups in general
+        /// (SCHEDULE, EDIT or MANAGE_MEMBERS), using the Group entity type security.
+        /// </summary>
+        /// <returns><c>true</c> if the current person is authorized; otherwise, <c>false</c>.</returns>
+        private bool IsAuthorizedToScheduleAnyGroup()
+        {
+            // A new group has no parent group or group type, so this checks the Group entity
+            // type rules and then Global Default.
+            var group = new Rock.Model.Group();
+
+            return group.IsAuthorized( Rock.Security.Authorization.SCHEDULE, this.CurrentPerson )
+                || group.IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, this.CurrentPerson )
+                || group.IsAuthorized( Rock.Security.Authorization.EDIT, this.CurrentPerson );
         }
 
         /// <summary>
@@ -3234,6 +3358,12 @@ namespace Rock.Blocks.Group.Scheduling
             /// When <c>null</c>, all of the selected person's groups are allowed.
             /// </summary>
             public HashSet<int> AuthorizedGroupIds { get; set; }
+
+            /// <summary>
+            /// Gets or sets the groups the selected person has upcoming schedules in. Only loaded
+            /// when <see cref="IsGroupAuthorizationRequired"/> is <c>true</c>.
+            /// </summary>
+            public List<int> ScheduledGroupIds { get; set; }
 
             /// <summary>
             /// Gets or sets whether the "schedule preferences" feature is enabled.
