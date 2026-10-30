@@ -128,9 +128,9 @@ describe("the chat's text boxes", () => {
             }
         }
 
-        // The sidebar's search, the directory's, the emoji picker's, the members filter, the
-        // leader search, the people picker's field and the rename field.
-        expect(found).toBe(7);
+        // The sidebar's search, the directory's, the emoji picker's, the GIF picker's, the members
+        // filter, the leader search, the people picker's field and the rename field.
+        expect(found).toBe(8);
         // The rename field's ring is the sheet's second selector in the wrapper's rule.
         expect(ruleBody(sheet, ".chat-shell .chat-field:focus-within")).not.toBeNull();
         expect(sheet).toMatch(/\.chat-shell \.chat-rn-grp \.chat-sg:focus-within\s*\{/);
