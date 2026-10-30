@@ -1090,38 +1090,29 @@ WHERE r.[RowNumber] > 1;";
 
             rockContext.WrapTransaction( () =>
             {
-                var recipientId = rockContext.Database.SqlQuery<int?>( @"
-UPDATE cr
-SET cr.[ModifiedDateTime] = @Now
-    , cr.[Status] = @SendingStatus
-    , cr.[FirstSendAttemptDateTime] = CASE
-        WHEN cr.[FirstSendAttemptDateTime] IS NOT NULL
-            THEN cr.[FirstSendAttemptDateTime]
-            ELSE @FirstSendAttemptDateTime
-        END
-OUTPUT INSERTED.[Id]
-FROM [CommunicationRecipient] cr
-WHERE cr.[Id] IN (
-    SELECT TOP 1 next.[Id]
-    FROM [CommunicationRecipient] next WITH (XLOCK, ROWLOCK, READPAST)
-    WHERE next.[CommunicationId] = @CommunicationId
-        AND next.[MediumEntityTypeId] = @MediumEntityTypeId
-        AND (
-            next.[Status] = @PendingStatus
-            OR (
-                next.[Status] = @SendingStatus
-                AND next.[ModifiedDateTime] < @PreviousSendLockExpiredDateTime
-            )
-        )
-);",
-                        new SqlParameter( "@CommunicationId", communicationId ),
-                        new SqlParameter( "@MediumEntityTypeId", mediumEntityId ),
-                        new SqlParameter( "@PendingStatus", CommunicationRecipientStatus.Pending ),
-                        new SqlParameter( "@SendingStatus", CommunicationRecipientStatus.Sending ),
-                        new SqlParameter( "@FirstSendAttemptDateTime", RockDateTime.Now ),
-                        new SqlParameter( "@PreviousSendLockExpiredDateTime", previousSendLockExpiredDateTime ),
-                        new SqlParameter( "@Now", RockDateTime.Now )
-                    ).FirstOrDefault();
+                /*
+                    10/30/2026 - MSE
+
+                    Claim a Pending recipient first, and only when there is none fall back to a Sending recipient
+                    whose lock expired. Each step is its own single UPDATE statement and its own SqlQuery call;
+                    SqlQuery only reads the first result set, so the two steps must never share one batch.
+
+                    The status values are written into the SQL as literals (not parameters) and the old
+                    "Pending OR (Sending AND expired)" condition is split into the two steps so that SQL Server
+                    can match the filtered index IX_Unsent_CommunicationId_MediumEntityTypeId_Status
+                    (WHERE [Status] IN (0, 5)), which the PostV201AddCommunicationRecipientClaimIndex job adds.
+                    With that index each claim reads only a few pages no matter how many recipients were already
+                    sent. The old statement reread every processed recipient on every claim, so large sends got
+                    slower and slower.
+
+                    Do not turn these statuses into parameters and do not merge the two steps back into one
+                    statement with an OR. Either change still works, but silently stops using the index and
+                    brings the slowdown back.
+
+                    Reason: Keep the cost of each claim constant for large sends (Fixes #7092).
+                */
+                var recipientId = ClaimNextRecipientId( rockContext, communicationId, mediumEntityId, false, previousSendLockExpiredDateTime )
+                    ?? ClaimNextRecipientId( rockContext, communicationId, mediumEntityId, true, previousSendLockExpiredDateTime );
 
                 if ( recipientId.HasValue )
                 {
@@ -1134,6 +1125,53 @@ WHERE cr.[Id] IN (
             } );
 
             return recipient;
+        }
+
+        /// <summary>
+        /// Claims (marks as Sending) the next recipient of the specified communication and medium entity type and
+        /// returns its identifier. This must be called inside a transaction so the row lock is held until commit.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="mediumEntityId">The medium entity type identifier.</param>
+        /// <param name="isExpiredSendingClaim"><c>true</c> to claim a Sending recipient whose previous send lock expired;
+        /// <c>false</c> to claim a Pending recipient.</param>
+        /// <param name="previousSendLockExpiredDateTime">Sending recipients last modified before this date time have an expired send lock.</param>
+        /// <returns>The identifier of the claimed recipient or <see langword="null"/> if there was none to claim.</returns>
+        private static int? ClaimNextRecipientId( RockContext rockContext, int communicationId, int mediumEntityId, bool isExpiredSendingClaim, DateTime previousSendLockExpiredDateTime )
+        {
+            // These must stay SQL literals so the filtered claim index can be used (see the note in GetNextPending).
+            var pendingStatus = CommunicationRecipientStatus.Pending.ConvertToInt();
+            var sendingStatus = CommunicationRecipientStatus.Sending.ConvertToInt();
+
+            var statusCondition = isExpiredSendingClaim
+                ? $"next.[Status] = {sendingStatus} AND next.[ModifiedDateTime] < @PreviousSendLockExpiredDateTime"
+                : $"next.[Status] = {pendingStatus}";
+
+            return rockContext.Database.SqlQuery<int?>( $@"
+UPDATE cr
+SET cr.[ModifiedDateTime] = @Now
+    , cr.[Status] = {sendingStatus}
+    , cr.[FirstSendAttemptDateTime] = CASE
+        WHEN cr.[FirstSendAttemptDateTime] IS NOT NULL
+            THEN cr.[FirstSendAttemptDateTime]
+            ELSE @FirstSendAttemptDateTime
+        END
+OUTPUT INSERTED.[Id]
+FROM [CommunicationRecipient] cr
+WHERE cr.[Id] IN (
+    SELECT TOP 1 next.[Id]
+    FROM [CommunicationRecipient] next WITH (XLOCK, ROWLOCK, READPAST)
+    WHERE next.[CommunicationId] = @CommunicationId
+        AND next.[MediumEntityTypeId] = @MediumEntityTypeId
+        AND {statusCondition}
+);",
+                    new SqlParameter( "@CommunicationId", communicationId ),
+                    new SqlParameter( "@MediumEntityTypeId", mediumEntityId ),
+                    new SqlParameter( "@FirstSendAttemptDateTime", RockDateTime.Now ),
+                    new SqlParameter( "@PreviousSendLockExpiredDateTime", previousSendLockExpiredDateTime ),
+                    new SqlParameter( "@Now", RockDateTime.Now )
+                ).FirstOrDefault();
         }
 
         #endregion Static Methods
