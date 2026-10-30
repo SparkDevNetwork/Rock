@@ -65,6 +65,11 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         public List<ListItemBag> ProfileCardEnabledLavaCommands { get; set; }
 
         /// <summary>
+        /// Gets or sets whether people may search for and send GIFs.
+        /// </summary>
+        public bool AreGifsEnabled { get; set; }
+
+        /// <summary>
         /// Gets or sets the chat project this church talks to. Issued when chat was
         /// enabled and shown here read only.
         /// </summary>

@@ -69,6 +69,12 @@ namespace Rock.Communication.Chat.Platform.Configuration
         /// </summary>
         public List<string> ProfileCardEnabledLavaCommands { get; set; }
 
+        /// <summary>
+        /// Whether people may search for and send GIFs. Off until the church turns it on; the search
+        /// itself is Spark's, so no vendor key is held here.
+        /// </summary>
+        public bool AreGifsEnabled { get; set; }
+
         #endregion Church half
 
         #region Platform half

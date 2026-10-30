@@ -418,11 +418,14 @@
       "rpc.bad_attachments",
       "rpc.bad_blocks",
       "rpc.bad_body",
+      "rpc.bad_gif",
       "rpc.bad_message_type",
       "rpc.bad_parent",
       "rpc.bad_quote",
       "rpc.bad_reaction",
       "rpc.channel_not_found",
+      "rpc.gif_search_busy",
+      "rpc.gifs_off",
       "rpc.idempotency_mismatch",
       "rpc.maintenance",
       "rpc.message_deleted",
@@ -470,6 +473,7 @@
   "attachment_previews": {
     "file": "File: {name}",
     "files": "{count} files",
+    "gif": "GIF",
     "photo": "Photo",
     "photos": "{count} photos"
   }

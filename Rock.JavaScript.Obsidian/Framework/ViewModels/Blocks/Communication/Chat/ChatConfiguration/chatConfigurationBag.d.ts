@@ -51,6 +51,9 @@ export type ChatConfigurationBag = {
     /** Gets or sets the Lava commands the profile card template may run. */
     profileCardEnabledLavaCommands?: ListItemBag[] | null;
 
+    /** Gets or sets whether people may search for and send GIFs. */
+    areGifsEnabled: boolean;
+
     /** Gets or sets the chat project this church talks to. Read only. */
     projectUrl?: string | null;
 

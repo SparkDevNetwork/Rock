@@ -993,6 +993,14 @@ namespace Rock.Communication.Chat.Platform.Session
                     claims.Add( new Claim( JwtRegisteredClaimNames.Sub, subject.Value.ToString() ) );
                 }
 
+                // The church's GIF switch rides with the person, refreshed with every token, so a
+                // change reaches the platform within one token's life. Absent means off, which is
+                // also how a Rock that predates the switch reads. A sync never sends a message.
+                if ( config.AreGifsEnabled && scope == PersonScope )
+                {
+                    claims.Add( new Claim( "gifs", "true", ClaimValueTypes.Boolean ) );
+                }
+
                 var credentials = new SigningCredentials( jwk, SecurityAlgorithms.EcdsaSha256 );
                 var descriptor = new SecurityTokenDescriptor
                 {

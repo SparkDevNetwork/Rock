@@ -101,6 +101,7 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 stored.ChatBadgeDataViewGuids = source.ChatBadgeDataViewGuids;
                 stored.ProfileCardLavaTemplate = source.ProfileCardLavaTemplate;
                 stored.ProfileCardEnabledLavaCommands = source.ProfileCardEnabledLavaCommands;
+                stored.AreGifsEnabled = source.AreGifsEnabled;
 
                 Write( stored );
             }
@@ -181,6 +182,7 @@ namespace Rock.Communication.Chat.Platform.Configuration
                 ProfileCardEnabledLavaCommands = ( configuration.ProfileCardEnabledLavaCommands ?? new List<string>() )
                     .Select( command => new ListItemBag { Value = command, Text = command } )
                     .ToList(),
+                AreGifsEnabled = configuration.AreGifsEnabled,
                 ProjectUrl = configuration.ProjectUrl,
                 PublishableKey = configuration.PublishableKey,
                 TenantId = configuration.TenantId?.ToString(),
@@ -232,7 +234,8 @@ namespace Rock.Communication.Chat.Platform.Configuration
                         .Select( item => item?.Value?.Trim() )
                         .Where( command => command.IsNotNullOrWhiteSpace() )
                         .Distinct()
-                        .ToList()
+                        .ToList(),
+                    AreGifsEnabled = sent.AreGifsEnabled
                 }
             };
         }
