@@ -479,6 +479,55 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.AreEqual( global::Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber(), token.Payload["cv"].ToString() );
         }
 
+        [TestMethod]
+        public void TryMintChurchToken_GifsEnabled_CarriesGifsAsAJsonBoolean()
+        {
+            // The platform turns GIFs on only for the JSON value true, never the text "true", so
+            // the test reads the signed bytes rather than a parsed claim that would hide the type.
+            var config = SigningConfig();
+            config.Configuration.AreGifsEnabled = true;
+
+            var result = ChatSessionHelper.TryMintChurchToken( Adult(), config, _rockContext );
+
+            var payload = SignedPayload( result.ChurchToken );
+            Assert.AreEqual( JTokenType.Boolean, payload["gifs"]?.Type, "a person token of a church with GIFs on says so as a JSON boolean" );
+            Assert.IsTrue( payload["gifs"].Value<bool>() );
+        }
+
+        [TestMethod]
+        public void MintToken_GifsEnabled_CarriesGifsForTheWebAndMobileMint()
+        {
+            // The web block and the mobile API both mint through this call.
+            var config = SigningConfig();
+            config.Configuration.AreGifsEnabled = true;
+
+            var bag = ChatSessionHelper.MintToken( Adult(), config, _rockContext );
+
+            var payload = SignedPayload( bag.ChurchToken );
+            Assert.AreEqual( JTokenType.Boolean, payload["gifs"]?.Type );
+            Assert.IsTrue( payload["gifs"].Value<bool>() );
+        }
+
+        [TestMethod]
+        public void TryMintChurchToken_GifsOff_CarriesNoGifs()
+        {
+            // Absent is off, which is also how a Rock too old to know the setting reads.
+            var result = ChatSessionHelper.TryMintChurchToken( Adult(), SigningConfig(), _rockContext );
+
+            Assert.IsNull( SignedPayload( result.ChurchToken ).Property( "gifs" ), "a church with GIFs off signs no gifs claim at all" );
+        }
+
+        [TestMethod]
+        public void TryMintSyncToken_GifsEnabled_CarriesNoGifs()
+        {
+            var config = SigningConfig();
+            config.Configuration.AreGifsEnabled = true;
+
+            var result = ChatSessionHelper.TryMintSyncToken( config );
+
+            Assert.IsNull( SignedPayload( result.ChurchToken ).Property( "gifs" ), "no person sends with a sync token, so it never carries the GIF switch" );
+        }
+
         #endregion
 
         #region Enrolment
@@ -529,6 +578,17 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// The payload segment of a signed token as the JSON it was written as.
+        /// </summary>
+        private static JObject SignedPayload( string token )
+        {
+            var segment = token.Split( '.' )[1].Replace( '-', '+' ).Replace( '_', '/' );
+            segment = segment.PadRight( segment.Length + ( 4 - segment.Length % 4 ) % 4, '=' );
+
+            return JObject.Parse( System.Text.Encoding.UTF8.GetString( Convert.FromBase64String( segment ) ) );
+        }
 
         private static string StripJwkProperty( string jwkJson, string name )
         {

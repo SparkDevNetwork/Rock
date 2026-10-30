@@ -153,6 +153,30 @@ namespace Rock.Tests.Communication.Chat.Platform.Configuration
             }
         }
 
+        [TestMethod]
+        public void SaveChurchSettings_WithGifsEnabled_ReadsBackEnabled()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                PrimeSettingKey();
+
+                SaveChurchSettings( new ChatPlatformConfiguration { AreGifsEnabled = true } );
+
+                Assert.IsTrue( ChatPlatformConfigurationService.Read().AreGifsEnabled );
+            }
+        }
+
+        [TestMethod]
+        public void Read_WhenNothingWasEverSaved_HasGifsOff()
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                PrimeSettingKey();
+
+                Assert.IsFalse( ChatPlatformConfigurationService.Read().AreGifsEnabled, "GIFs are off until a church turns them on" );
+            }
+        }
+
         #endregion Round trip
 
         #region Who owns which field

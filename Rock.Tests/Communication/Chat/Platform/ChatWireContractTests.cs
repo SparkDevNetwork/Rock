@@ -413,6 +413,21 @@ namespace Rock.Tests.Communication.Chat.Platform
 
             CollectionAssert.AreEquivalent( listed["values"].Select( v => v.Value<string>() ).ToArray(), rockKinds );
         }
+
+        /// <summary>
+        /// The copy here is the platform's as of GIFs: the three refusals a GIF search or send can
+        /// answer, and the word a message of a GIF alone reads as, with the claims left as they were.
+        /// </summary>
+        [TestMethod]
+        public void EmbeddedContract_CarriesTheGifCodesAndPreview()
+        {
+            var contract = ReadEmbeddedContract();
+            var codes = contract["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
+
+            CollectionAssert.IsSubsetOf( new[] { "rpc.gifs_off", "rpc.bad_gif", "rpc.gif_search_busy" }, codes );
+            Assert.AreEqual( "GIF", contract["attachment_previews"]?["gif"]?.Value<string>() );
+            Assert.IsNull( contract["jwt_claims"]["gifs"], "no reader function reads the GIF claim, so the contract does not list it" );
+        }
         #endregion
     }
 }

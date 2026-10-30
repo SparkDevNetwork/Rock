@@ -221,15 +221,42 @@ namespace Rock.Tests.Communication.Chat.Platform.Blocks
         #region Pins
 
         [TestMethod]
-        public void Bag_NamesNoGifVendorKey()
+        public void BagAndInitializationBoxes_NameNoGifVendorKey()
         {
-            var named = typeof( ChatConfigurationBag ).GetProperties()
-                .Select( p => p.Name )
+            // The church owns one GIF setting, whether GIFs are on. Anything else about GIFs on
+            // these would be the vendor's key, which Spark's platform holds and no church ever does.
+            var named = new[]
+                {
+                    typeof( ChatConfigurationBag ),
+                    typeof( ChatConfigurationInitializationBox ),
+                    typeof( Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatShellInitializationBox )
+                }
+                .SelectMany( type => type.GetProperties().Select( p => $"{type.Name}.{p.Name}" ) )
                 .Where( n => n.IndexOf( "klipy", StringComparison.OrdinalIgnoreCase ) >= 0
-                    || n.IndexOf( "gif", StringComparison.OrdinalIgnoreCase ) >= 0 )
+                    || ( n.IndexOf( "gif", StringComparison.OrdinalIgnoreCase ) >= 0 && !n.EndsWith( ".AreGifsEnabled", StringComparison.Ordinal ) ) )
                 .ToList();
 
             Assert.AreEqual( 0, named.Count, "GIF search is hosted by Spark, so no church ever holds that key: " + string.Join( ", ", named ) );
+        }
+
+        [TestMethod]
+        public void ToConfigurationBag_CarriesWhetherGifsAreEnabled()
+        {
+            var stored = Stored();
+            stored.AreGifsEnabled = true;
+
+            Assert.IsTrue( ChatPlatformConfigurationService.ToConfigurationBag( stored ).AreGifsEnabled );
+        }
+
+        [TestMethod]
+        public void SaveConfiguration_TakesWhetherGifsAreEnabled()
+        {
+            var bag = ChatPlatformConfigurationService.ToConfigurationBag( Stored() );
+            bag.AreGifsEnabled = true;
+
+            var result = ChatPlatformConfigurationService.SaveConfiguration( bag, isAuthorizedToEdit: true, EveryDataViewIsOfPeople );
+
+            Assert.IsTrue( result.Configuration.AreGifsEnabled );
         }
 
         #endregion Pins
