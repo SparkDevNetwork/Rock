@@ -1271,7 +1271,7 @@ namespace Rock.Blocks.Event
                 LastNameFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.LastName, registrant.FieldValues ).ToStringSafe(),
                 EmailFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.Email, registrant.FieldValues ).ToStringSafe(),
                 BirthdateFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrant.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime(),
-                MobilePhoneFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrant.FieldValues ).ToStringSafe(),
+                MobilePhoneFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrant.FieldValues ).ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>()?.Number,
             };
 
             var resolver = new RegistrantPersonResolver();
@@ -1319,7 +1319,7 @@ namespace Rock.Blocks.Event
                 FirstRegistrantLastNameFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.LastName, firstRegistrant?.FieldValues ).ToStringSafe(),
                 FirstRegistrantEmailFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.Email, firstRegistrant?.FieldValues ).ToStringSafe(),
                 FirstRegistrantBirthdateFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.Birthdate, firstRegistrant?.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime(),
-                FirstRegistrantMobilePhoneFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, firstRegistrant?.FieldValues ).ToStringSafe(),
+                FirstRegistrantMobilePhoneFieldValue = GetPersonFieldValue( registrationContext.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, firstRegistrant?.FieldValues ).ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>()?.Number,
             };
 
             var resolver = new RegistrarPersonResolver();
@@ -3279,7 +3279,7 @@ namespace Rock.Blocks.Event
             var lastName = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.LastName, registrantInfo.FieldValues ).ToStringSafe();
             var email = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Email, registrantInfo.FieldValues ).ToStringSafe();
             var birthday = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.Birthdate, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<BirthdayPickerBag>().ToDateTime();
-            var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe();
+            var mobilePhone = GetPersonFieldValue( context.RegistrationSettings, RegistrationPersonFieldType.MobilePhone, registrantInfo.FieldValues ).ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>()?.Number;
             var emailField = GetPersonField( context.RegistrationSettings, RegistrationPersonFieldType.Email );
 
             /*
