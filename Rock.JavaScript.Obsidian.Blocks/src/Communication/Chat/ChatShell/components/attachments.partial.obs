@@ -69,8 +69,9 @@
             </div>
 
             <!--
-                A GIF: KLIPY's looping mp4 in the single photo's box at its stored shape, playing while
-                on screen, still with a play button where motion is reduced; a press opens nothing.
+                A GIF: its still always draws in the single photo's box at its stored shape; KLIPY's
+                looping mp4 lays over it, playing while on screen, or where motion is reduced from
+                the first press of Play. It is unavailable only when its still or its video fails.
             -->
             <span v-for="item in gifs"
                   :key="item.id"
@@ -82,7 +83,12 @@
                   :style="boxStyle(item.width, item.height)">
                 <template v-if="deadGifs.has(item.id)"><Icon name="eye-off" size="sm" />GIF unavailable</template>
                 <template v-else>
-                    <video :ref="element => watchGif(item.id, element)"
+                    <img :src="item.still"
+                         alt=""
+                         decoding="async"
+                         @error="deadGifs.add(item.id)" />
+                    <video v-if="!isMotionReduced || loadedGifs.has(item.id)"
+                           :ref="element => watchGif(item.id, element)"
                            :src="item.url"
                            :poster="item.still"
                            :data-gif="item.id"
@@ -384,7 +390,10 @@
     border-radius: var(--chat-r-lg);
 }
 
+.chat-attach-gif img,
 .chat-attach-gif video {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
@@ -644,8 +653,11 @@ a.chat-attach-file:focus-visible {
     /** The GIFs whose media could not be loaded, drawn as unavailable. */
     const deadGifs = reactive(new Set<string>());
 
-    /** The GIFs played by a press where motion is reduced. */
+    /** The GIFs playing by a press where motion is reduced. */
     const playedGifs = reactive(new Set<string>());
+
+    /** The GIFs whose video a first press mounted where motion is reduced, so a pause keeps its place. */
+    const loadedGifs = reactive(new Set<string>());
 
     /** Each GIF's video by id, while drawn. */
     const gifVideos = new Map<string, HTMLVideoElement>();
@@ -659,7 +671,7 @@ a.chat-attach-file:focus-visible {
             if (entry.isIntersecting && (!isMotionReduced.value || playedGifs.has(id))) {
                 play(video);
             }
-            else if (!entry.isIntersecting) {
+            else {
                 video.pause();
             }
         }));
@@ -790,19 +802,23 @@ a.chat-attach-file:focus-visible {
         }
     }
 
-    /** Where motion is reduced, a press plays a GIF and the next pauses it. */
+    /** Where motion is reduced, a press mounts the video and plays it, and the next pauses it. */
     function togglePlay(id: string): void {
-        const video = gifVideos.get(id);
         if (playedGifs.has(id)) {
             playedGifs.delete(id);
-            video?.pause();
+            gifVideos.get(id)?.pause();
+            return;
         }
-        else {
-            playedGifs.add(id);
-            if (video) {
+
+        playedGifs.add(id);
+        loadedGifs.add(id);
+        // the press mounts the video, so it plays once it is drawn
+        void nextTick(() => {
+            const video = gifVideos.get(id);
+            if (video && playedGifs.has(id)) {
                 play(video);
             }
-        }
+        });
     }
 
     /** Plays a video, as far as the browser allows: one that refuses stays on its still. */
@@ -848,6 +864,13 @@ a.chat-attach-file:focus-visible {
             onCleanup(views.links.subscribe(props.items));
         }
     }, { immediate: true });
+
+    // A change of the setting starts every GIF over by the one rule: reduced motion unmounts the
+    // videos, which stops them, and motion allowed mounts them, which the observer plays on screen.
+    watch(isMotionReduced, () => {
+        playedGifs.clear();
+        loadedGifs.clear();
+    });
 
     // #endregion Watchers
 

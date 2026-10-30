@@ -623,12 +623,16 @@ describe("a GIF in a message", () => {
         const pause = HTMLMediaElement.prototype.pause as jest.Mock;
         const { wrapper } = await mountFiles([gif(1)]);
 
+        expect(wrapper.find("video").exists()).toBe(false);
+        expect(wrapper.get("[data-testid='attachment-gif'] img").attributes("src")).toBe("https://static.klipy.com/ii/md/1.jpg");
         observed[0]?.report(true);
         expect(play).not.toHaveBeenCalled();
 
         const button = wrapper.get("[data-testid='attachment-gif-play']");
         expect(button.attributes("aria-label")).toBe("Play GIF");
         await button.trigger("click");
+        await nextTick();
+        expect(wrapper.find("video").exists()).toBe(true);
         expect(play).toHaveBeenCalledTimes(1);
         expect(wrapper.get("[data-testid='attachment-gif-play']").attributes("aria-label")).toBe("Pause GIF");
 
@@ -684,6 +688,66 @@ describe("a GIF in a message", () => {
         await nextTick();
 
         expect(wrapper.find("[data-testid='attachment-gif-play']").exists()).toBe(true);
+        // the video is gone, so nothing keeps moving under the play button
+        expect(wrapper.find("video").exists()).toBe(false);
+    });
+
+    test("a flip of the setting either way starts every GIF over: a playing one stops, a held one plays on screen", async () => {
+        const listeners: Array<(event: { matches: boolean }) => void> = [];
+        window.matchMedia = ((query: string) => ({
+            get matches() {
+                return query.includes("reduced-motion") && isMotionReduced;
+            },
+            addEventListener: (_type: string, listener: (event: { matches: boolean }) => void) => listeners.push(listener),
+            removeEventListener: () => undefined
+        })) as unknown as typeof window.matchMedia;
+        const play = HTMLMediaElement.prototype.play as jest.Mock;
+        const { wrapper } = await mountFiles([gif(1)]);
+        observed[0].report(true);
+        expect(play).toHaveBeenCalledTimes(1);
+
+        isMotionReduced = true;
+        listeners.forEach(listener => listener({ matches: true }));
+        await nextTick();
+        expect(wrapper.find("video").exists()).toBe(false);
+
+        // played by a press, then the setting off and on again: held still once more
+        await wrapper.get("[data-testid='attachment-gif-play']").trigger("click");
+        await nextTick();
+        expect(wrapper.find("video").exists()).toBe(true);
+        isMotionReduced = false;
+        listeners.forEach(listener => listener({ matches: false }));
+        await nextTick();
+        expect(wrapper.find("[data-testid='attachment-gif-play']").exists()).toBe(false);
+        const remounted = observed[observed.length - 1];
+        remounted.report(true);
+        expect(play).toHaveBeenCalledTimes(3);
+        isMotionReduced = true;
+        listeners.forEach(listener => listener({ matches: true }));
+        await nextTick();
+        expect(wrapper.find("video").exists()).toBe(false);
+    });
+
+    test("a held GIF whose still is gone draws the unavailable tile without a Play press", async () => {
+        isMotionReduced = true;
+        const { wrapper } = await mountFiles([gif(1)]);
+
+        await wrapper.get("[data-testid='attachment-gif'] img").trigger("error");
+
+        const dead = wrapper.get("[data-testid='attachment-gif']");
+        expect(dead.attributes("data-unavailable")).toBe("true");
+        expect(dead.text()).toContain("GIF unavailable");
+    });
+
+    test("a held GIF whose video fails after Play is unavailable too", async () => {
+        isMotionReduced = true;
+        const { wrapper } = await mountFiles([gif(1)]);
+        await wrapper.get("[data-testid='attachment-gif-play']").trigger("click");
+        await nextTick();
+
+        await wrapper.get("video").trigger("error");
+
+        expect(wrapper.get("[data-testid='attachment-gif']").attributes("data-unavailable")).toBe("true");
     });
 
     test("a GIF whose media is gone draws the unavailable tile at its stored size", async () => {
