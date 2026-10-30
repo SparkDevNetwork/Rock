@@ -62,6 +62,39 @@ html[theme="dark"] .email-body {
             : defaultMinimumPixelHeight;
     });
 
+    // #region Functions
+
+    /*
+        10/29/2026 - MSE
+
+        The height is measured from the iframe body and the iframe is then resized to that height.
+        When the message sets "html, body { height: 100% }" the body is always exactly as tall as
+        the iframe, so any visible content outside a full-height wrapper makes body.scrollHeight
+        larger than the iframe. Growing the iframe grows the body, the ResizeObserver fires again,
+        and the preview grows forever. This style is added to the preview document only (never to
+        the message string, so it is not saved or sent) to let the body size to its content so the
+        measurement settles. The iframe minimum height still fills the preview area.
+
+        Reason: Stop the Communication Detail email preview from growing without end (#7138).
+    */
+    function injectAutoHeightStyle(doc: Document): void {
+        const styleId = "rock-email-preview-auto-height";
+
+        if (doc.getElementById(styleId)) {
+            return;
+        }
+
+        const style = doc.createElement("style");
+        style.id = styleId;
+        style.textContent = "html, body { height: auto !important; min-height: 0 !important; }";
+
+        // Appended to the end of the document (after the body) so it comes after any email
+        // styles, including style blocks inside the body, and wins at equal specificity.
+        doc.documentElement.appendChild(style);
+    }
+
+    // #endregion Functions
+
     // #region Watchers
 
     watch(iframeElement, (newIframe, oldIFrame) => {
@@ -94,13 +127,22 @@ html[theme="dark"] .email-body {
         }
 
         loadHandler = () => {
+            const doc = newIframe.contentDocument || newIframe.contentWindow?.document;
+
+            // Must run before the first measurement so height is never based on a body that
+            // is stretched to the iframe.
+            if (doc) {
+                injectAutoHeightStyle(doc);
+            }
+
             updateHeight();
 
             // Fallback: ensure height settles even if late layout changes occur.
             setTimeout(() => updateHeight(), 100);
 
-            const doc = newIframe.contentDocument || newIframe.contentWindow?.document;
             if (doc?.body && resizeObserver) {
+                // The message changed (new srcdoc) so stop watching the previous body.
+                resizeObserver.disconnect();
                 resizeObserver.observe(doc.body);
             }
         };
