@@ -378,6 +378,8 @@ namespace Rock.Blocks.Example
                         Households = entry.Households,
                         Campuses = entry.Campuses,
                         TypicalInstallSeconds = entry.TypicalInstallSeconds,
+                        DatabaseSpaceMegabytes = entry.DatabaseSpaceMegabytes,
+                        Version = entry.Version,
                         IsInstallable = installableEntry != null
                     };
                 } )

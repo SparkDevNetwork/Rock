@@ -36,6 +36,12 @@ export type SampleDataInstallerPackageBag = {
     /** Gets or sets the key of the dataset in the package, such as "core-1". */
     dataset?: string | null;
 
+    /**
+     * Gets or sets the database space, in whole megabytes, that a
+     * typical install of every part uses.
+     */
+    databaseSpaceMegabytes: number;
+
     /** Gets or sets a few short phrases that set the dataset apart. */
     highlights?: string[] | null;
 
@@ -63,4 +69,7 @@ export type SampleDataInstallerPackageBag = {
      * part takes.
      */
     typicalInstallSeconds: number;
+
+    /** Gets or sets the version of the package, such as "0.1.0-alpha.16". */
+    version?: string | null;
 };

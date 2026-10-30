@@ -73,6 +73,17 @@ namespace Rock.ViewModels.Blocks.Example.SampleDataInstaller
         public int TypicalInstallSeconds { get; set; }
 
         /// <summary>
+        /// Gets or sets the database space, in whole megabytes, that a
+        /// typical install of every part uses.
+        /// </summary>
+        public int DatabaseSpaceMegabytes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the version of the package, such as "0.1.0-alpha.16".
+        /// </summary>
+        public string Version { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the package can be
         /// installed on this Rock. A package serves one Rock major release
         /// and needs a loader at least as new as its minimum loader version.

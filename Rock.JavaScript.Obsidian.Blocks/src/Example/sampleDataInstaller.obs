@@ -95,20 +95,21 @@
             <ContentSection title="2. Choose What to Include" icon="ti ti-list-check" disableCollapse>
                 <p class="text-muted">Church setup and people are always included. Turn off any part you don't need.</p>
 
-                <div v-for="part in parts" :key="part.key ?? ''" class="sample-data-part">
-                    <CheckBox :modelValue="isPartIncluded(part)"
-                              label=""
-                              :text="part.name ?? ''"
-                              :disabled="isFormDisabled || !!getMissingDependency(part)"
-                              @update:modelValue="onPartToggled(part, $event)" />
-                    <p class="text-muted mb-0">
-                        <small>
-                            {{ part.description }}
-                            <template v-if="getMissingDependency(part)">
-                                <strong>Off because {{ getMissingDependency(part)?.name }} is off.</strong>
+                <div class="sample-data-parts">
+                    <div v-for="part in parts" :key="part.key ?? ''">
+                        <CheckBox :modelValue="isPartIncluded(part)"
+                                  label=""
+                                  :text="part.name ?? ''"
+                                  :disabled="isFormDisabled || !!getMissingDependency(part)"
+                                  @update:modelValue="onPartToggled(part, $event)">
+                            <template v-if="part.description" #textAppend>
+                                <HelpBlock :text="part.description" />
                             </template>
-                        </small>
-                    </p>
+                        </CheckBox>
+                        <p v-if="getMissingDependency(part)" class="text-muted mb-0">
+                            <small><strong>Off because {{ getMissingDependency(part)?.name }} is off.</strong></small>
+                        </p>
+                    </div>
                 </div>
             </ContentSection>
 
@@ -287,8 +288,22 @@
     color: var(--color-interface-medium);
 }
 
-.sample-data-part + .sample-data-part {
-    margin-top: var(--spacing-medium);
+.sample-data-parts {
+    display: grid;
+    grid-template-columns: 1fr;
+    column-gap: var(--spacing-large);
+}
+
+@media (min-width: 768px) {
+    .sample-data-parts {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    .sample-data-parts {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
 </style>
 
@@ -298,6 +313,7 @@
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -522,7 +538,7 @@
 
     /**
      * Gets the fact lines for a dataset card. An older package index leaves
-     * some facts at 0, and those are left out.
+     * some facts at 0 or empty, and those are left out.
      *
      * @param hostedPackage The hosted package on the card.
      *
@@ -545,6 +561,14 @@
 
         if (hostedPackage.typicalInstallSeconds > 0) {
             facts.push({ iconCssClass: "ti ti-clock", text: `Installs in ${formatAboutDuration(hostedPackage.typicalInstallSeconds)}` });
+        }
+
+        if (hostedPackage.databaseSpaceMegabytes > 0) {
+            facts.push({ iconCssClass: "ti ti-database", text: `${formatAboutSpace(hostedPackage.databaseSpaceMegabytes)} of database space` });
+        }
+
+        if (hostedPackage.version) {
+            facts.push({ iconCssClass: "ti ti-tag", text: `Version ${hostedPackage.version}` });
         }
 
         return facts;
@@ -583,6 +607,25 @@
         const minutes = Math.round(totalSeconds / 60);
 
         return `about ${minutes} ${pluralConditional(minutes, "minute", "minutes")}`;
+    }
+
+    /**
+     * Formats a typical database space for a person to read. Below 10 GB it
+     * keeps one decimal place, and above that it rounds to whole gigabytes.
+     *
+     * @param megabytes The space in megabytes.
+     *
+     * @returns The space, such as "about 800 MB", "about 1.4 GB" or "about 13 GB".
+     */
+    function formatAboutSpace(megabytes: number): string {
+        if (megabytes < 1024) {
+            return `about ${asFormattedString(megabytes)} MB`;
+        }
+
+        const gigabytes = megabytes / 1024;
+        const rounded = gigabytes < 10 ? Math.round(gigabytes * 10) / 10 : Math.round(gigabytes);
+
+        return `about ${asFormattedString(rounded)} GB`;
     }
 
     /**
