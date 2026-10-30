@@ -19,13 +19,18 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Security.Cryptography;
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
-using Rock.Model;
+
+using Rock.Logging;
 using Rock.SystemKey;
 using Rock.Web;
 
 namespace Rock.Oidc.Configuration
 {
+    [RockLoggingCategory]
     internal class RockOidcSigningCredentials : IRockOidcSigningCredentials
     {
         private RockOidcSettings _rockOidcSettings = null;
@@ -64,7 +69,8 @@ namespace Rock.Oidc.Configuration
 
                 if ( keysJson == null )
                 {
-                    ExceptionLogService.LogException( new Exception( "The OIDC signing keys could not be decrypted. New signing keys will be generated." ) );
+                    RockLogger.LoggerFactory.CreateLogger<RockOidcSigningCredentials>()
+                        .LogWarning( "The OIDC signing keys could not be decrypted. New signing keys will be generated." );
                 }
                 else
                 {
@@ -77,7 +83,8 @@ namespace Rock.Oidc.Configuration
                     }
                     catch ( Exception ex )
                     {
-                        ExceptionLogService.LogException( new Exception( "The OIDC signing keys could not be read. New signing keys will be generated.", ex ) );
+                        RockLogger.LoggerFactory.CreateLogger<RockOidcSigningCredentials>()
+                            .LogWarning( ex, "The OIDC signing keys could not be read. New signing keys will be generated." );
                     }
                 }
             }
