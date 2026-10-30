@@ -118,7 +118,7 @@ namespace Rock.Search.Other
                 return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
             }
 
-            using ( var rockContext = new RockContext() )
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
                 var results = GetSearchResults( searchTerm )
