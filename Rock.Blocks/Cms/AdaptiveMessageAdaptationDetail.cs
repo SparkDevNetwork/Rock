@@ -98,7 +98,9 @@ namespace Rock.Blocks.Cms
 
             if ( isEditable )
             {
-                var segments = PersonalizationSegmentCache.All();
+                // Only offer the segments the current person is allowed to view.
+                var segments = PersonalizationSegmentCache.All()
+                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) );
                 foreach ( var item in segments.OrderBy( a => a.Name ) )
                 {
                     options.SegmentOptions.Add( new ViewModels.Utility.ListItemBag() { Text = item.Name, Value = item.Guid.ToString() } );
@@ -242,7 +244,12 @@ namespace Rock.Blocks.Cms
             box.IfValidProperty( nameof( box.Bag.Segments ),
                 () =>
                 {
-                    var segmentIds = box.Bag.Segments.AsGuidList().Select( a => PersonalizationSegmentCache.GetId( a ) ).Where( a => a.HasValue ).ToList();
+                    // Only accept posted segments the current person can view. The save step keeps the attached segments they cannot view.
+                    var segmentIds = box.Bag.Segments.AsGuidList()
+                        .Select( a => PersonalizationSegmentCache.Get( a ) )
+                        .Where( a => a != null && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                        .Select( a => ( int? ) a.Id )
+                        .ToList();
 
                     var itemsToAdd = segmentIds.Where( a => !entity.AdaptiveMessageAdaptationSegments.Any( b => b.PersonalizationSegmentId == a ) );
                     foreach ( var segmentId in itemsToAdd )
@@ -439,8 +446,26 @@ namespace Rock.Blocks.Cms
                 return ActionBadRequest( "Invalid data." );
             }
 
-            var segmentIds = box.Bag.Segments.AsGuidList().Select( a => PersonalizationSegmentCache.GetId( a ) ).Where( a => a.HasValue ).ToList();
-            var itemsToDelete = entity.AdaptiveMessageAdaptationSegments.Where( a => !segmentIds.Contains( a.PersonalizationSegmentId ) ).ToList();
+            var segmentIds = box.Bag.Segments.AsGuidList()
+                .Select( a => PersonalizationSegmentCache.Get( a ) )
+                .Where( a => a != null && a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Select( a => a.Id )
+                .ToList();
+
+            /*
+                10/30/2026 - MSE
+
+                The segment picker only lists the segments the current person can view, so a person
+                who cannot view a segment cannot see or remove it. Only delete the attached segments
+                that are missing from the posted list AND that the person can view. Segments the
+                person cannot view stay attached, otherwise saving would silently remove them.
+
+                Reason: Preserve segments the person cannot view when saving.
+            */
+            var itemsToDelete = entity.AdaptiveMessageAdaptationSegments
+                .Where( a => !segmentIds.Contains( a.PersonalizationSegmentId )
+                    && ( PersonalizationSegmentCache.Get( a.PersonalizationSegmentId )?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ?? true ) )
+                .ToList();
             entity.AdaptiveMessageAdaptationSegments.RemoveAll( itemsToDelete );
             var adaptiveMessageAdaptationSegmentService = new AdaptiveMessageAdaptationSegmentService( RockContext );
             adaptiveMessageAdaptationSegmentService.DeleteRange( itemsToDelete );

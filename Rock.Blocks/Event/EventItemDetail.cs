@@ -108,7 +108,9 @@ namespace Rock.Blocks.Event
             var options = new EventItemDetailOptionsBag()
             {
                 Audiences = audiences,
+                // Only offer the segments the current person is allowed to view.
                 SegmentOptions = PersonalizationSegmentCache.All()
+                    .Where( s => s.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
                     .OrderBy( s => s.Name )
                     .ToListItemBagList(),
                 RequestFilterOptions = RequestFilterCache.All()
@@ -970,10 +972,29 @@ namespace Rock.Blocks.Event
             box.IfValidProperty( nameof( box.Entity.SelectedSegmentGuids ), () =>
             {
                 var segmentIds = ( box.Entity.SelectedSegmentGuids ?? new List<Guid>() )
-                    .Select( guid => PersonalizationSegmentCache.Get( guid )?.Id )
-                    .Where( id => id.HasValue )
-                    .Select( id => id.Value )
+                    .Select( guid => PersonalizationSegmentCache.Get( guid ) )
+                    .Where( s => s != null && s.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                    .Select( s => s.Id )
                     .ToList();
+
+                /*
+                    10/30/2026 - MSE
+
+                    The segment picker only lists the segments the current person can view, so a
+                    person who cannot view a segment cannot see or remove it. Keep the segments that
+                    are already attached and not viewable by the person, and only accept posted
+                    segments the person can view. Otherwise saving would silently remove an attached
+                    segment the person cannot see, or let a posted Guid attach one they cannot view.
+
+                    Reason: Preserve segments the person cannot view and block attaching them.
+                */
+                var unviewableExistingSegmentIds = new PersonalizationSegmentService( rockContext )
+                    .GetPersonalizedEntitySegmentQuery( entityTypeId, entity.Id )
+                    .Select( a => a.PersonalizationEntityId )
+                    .ToList()
+                    .Where( id => !( PersonalizationSegmentCache.Get( id )?.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) ?? true ) );
+
+                segmentIds = segmentIds.Union( unviewableExistingSegmentIds ).ToList();
 
                 new PersonalizationSegmentService( rockContext ).UpdatePersonalizedEntityForSegments( entityTypeId, entity.Id, segmentIds );
             } );

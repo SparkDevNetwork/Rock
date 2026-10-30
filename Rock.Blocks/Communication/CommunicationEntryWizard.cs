@@ -1152,11 +1152,40 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private List<ListItemBag> GetPersonalizationSegments( RockContext rockContext, Person authorizedPerson )
         {
-            var personalizationSegmentCategory = this.PersonalizationSegmentCategoryGuid;
+            var personalizationSegmentCategoryGuid = this.PersonalizationSegmentCategoryGuid;
 
-            return new PersonalizationSegmentService( rockContext )
-                        .Queryable().AsNoTracking()
-                        .Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategory ) )
+            var segmentQuery = new PersonalizationSegmentService( rockContext )
+                        .Queryable().AsNoTracking();
+
+            var personalizationSegmentCategory = CategoryCache.Get( personalizationSegmentCategoryGuid );
+
+            if ( personalizationSegmentCategory != null )
+            {
+                /*
+                    10/30/2026 - MSE
+
+                    List the segments in the configured category and in any of its descendant
+                    categories. Matching only the exact category hid every segment that an admin
+                    organized into a child category. Match on the category Ids (the root's Id comes
+                    from the cached category) to avoid a Guid-based join.
+
+                    Reason: Segments in child categories of the configured category were not listed.
+                */
+                var categoryIds = new CategoryService( rockContext )
+                    .GetAllDescendents( personalizationSegmentCategory.Id )
+                    .Select( c => c.Id )
+                    .ToList();
+                categoryIds.Add( personalizationSegmentCategory.Id );
+
+                segmentQuery = segmentQuery.Where( p => p.Categories.Any( c => categoryIds.Contains( c.Id ) ) );
+            }
+            else
+            {
+                // No category could be resolved, so keep the previous behavior of matching the configured Guid exactly.
+                segmentQuery = segmentQuery.Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategoryGuid ) );
+            }
+
+            return segmentQuery
                         .ToList()
                         .Where( p => p.IsAuthorized( Authorization.VIEW, authorizedPerson ) )
                         .Select( p => new ListItemBag
@@ -1182,11 +1211,18 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private List<ListItemBag> GetPersonalizationSegments( RockContext rockContext, List<int> personalizationSegmentIds )
         {
-            var personalizationSegmentCategoryGuid = this.PersonalizationSegmentCategoryGuid;
+            /*
+                10/30/2026 - MSE
 
+                Do not filter these segments by category. They are the segments already saved on the
+                communication, and filtering them by the configured category dropped any segment that
+                was in another category (or whose category changed). The next save of the draft then
+                wrote the list back without it, which lost the segment for good.
+
+                Reason: Keep every segment already saved on the communication.
+            */
             return new PersonalizationSegmentService( rockContext )
                 .GetByIds( personalizationSegmentIds )
-                .Where( p => p.Categories.Any( c => c.Guid == personalizationSegmentCategoryGuid ) )
                 .Select( p => new ListItemBag
                 {
                     // We need integer IDs to store in the Communication.PersonalizationSegmentIds column.
