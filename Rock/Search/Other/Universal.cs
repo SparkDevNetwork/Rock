@@ -118,12 +118,20 @@ namespace Rock.Search.Other
                 return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
             }
 
-            // This is a bit of a cheat. Since everything will have the same
-            // order .OrderBy() will return an IOrderedQueryable in the original
-            // order of the results.
-            return GetSearchResults( searchTerm )
-                .AsQueryable()
-                .OrderBy( a => true );
+            using ( var rockContext = new RockContext() )
+            {
+                var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
+                var results = GetSearchResults( searchTerm )
+                    .Where( r => r.IsViewAllowed( currentPerson, rockContext ) )
+                    .ToList();
+
+                // This is a bit of a cheat. Since everything will have the same
+                // order .OrderBy() will return an IOrderedQueryable in the original
+                // order of the results.
+                return results
+                    .AsQueryable()
+                    .OrderBy( a => true );
+            }
         }
 
         /// <summary>
