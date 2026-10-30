@@ -183,20 +183,75 @@ internal class SendGridResponseAsync : IAsyncResult
             return;
         }
 
-        ProcessSendGridEventListAsync( eventList );
+        var failedEventCount = ProcessSendGridEventListAsync( eventList );
+
+        /*
+            10/30/2026 - MSE
+
+            Only answer with an error when the batch was non-empty and every event
+            failed (for example the database is down), because then nothing was saved
+            and a SendGrid retry cannot create duplicates. When at least one event was
+            handled, answer 200. A 500 makes SendGrid resend the whole batch, and there
+            is no check on sg_event_id, so the events that already succeeded would be
+            recorded a second time. The trade-off is that an event that failed is not
+            retried. Each failure is written to the Exception Log with the event type
+            and sg_event_id so it can be replayed by hand.
+
+            Reason: One bad event in a batch made SendGrid retry the whole batch.
+        */
+        if ( eventList.Count > 0 && failedEventCount == eventList.Count )
+        {
+            response.StatusCode = ( int ) System.Net.HttpStatusCode.InternalServerError;
+            return;
+        }
 
         response.StatusCode = ( int ) System.Net.HttpStatusCode.OK;
     }
 
-    private void ProcessSendGridEventListAsync( List<SendGridEvent> sendGridEvents )
+    /// <summary>
+    /// Processes each event in the batch on its own so one failing event does not
+    /// discard the rest of the batch.
+    /// </summary>
+    /// <param name="sendGridEvents">The events SendGrid posted.</param>
+    /// <returns>The number of events that threw an exception.</returns>
+    private int ProcessSendGridEventListAsync( List<SendGridEvent> sendGridEvents )
     {
         var rockContext = new Rock.Data.RockContext();
+        var failedEventCount = 0;
 
         foreach ( var sendGridEvent in sendGridEvents )
         {
-            ProcessSendGridEvent( sendGridEvent, rockContext );
+            try
+            {
+                ProcessSendGridEvent( sendGridEvent, rockContext );
+            }
+            catch ( Exception ex )
+            {
+                failedEventCount++;
+
+                var message = string.Format(
+                    "Error processing SendGrid event '{0}' (sg_event_id '{1}').",
+                    sendGridEvent?.EventType,
+                    sendGridEvent?.SendGridEventId );
+
+                Rock.Model.ExceptionLogService.LogException( new Exception( message, ex ) );
+
+                /*
+                    10/30/2026 - MSE
+
+                    After a failed SaveChanges the entities that caused the failure stay
+                    tracked by the context, so every later SaveChanges on the same context
+                    would throw again and the rest of the batch would still be lost. Replace
+                    the context so the next event starts clean.
+
+                    Reason: A failed event must not poison the context for the remaining events.
+                */
+                rockContext.Dispose();
+                rockContext = new Rock.Data.RockContext();
+            }
         }
 
+        return failedEventCount;
     }
 
     private void ProcessSendGridEvent( SendGridEvent sendGridEvent, Rock.Data.RockContext rockContext )
@@ -296,11 +351,13 @@ internal class SendGridResponseAsync : IAsyncResult
                 case "open":
                     communicationRecipient.Status = CommunicationRecipientStatus.Opened;
                     communicationRecipient.OpenedDateTime = timeStamp;
+
+                    // OpenedClient is limited to 200 characters and the device family comes from the user agent.
                     communicationRecipient.OpenedClient = string.Format(
                         "{0} {1} ({2})",
                         payload.ClientOs ?? "unknown",
                         payload.ClientBrowser ?? "unknown",
-                        payload.ClientDeviceType ?? "unknown" );
+                        payload.ClientDeviceType ?? "unknown" ).Left( 200 );
 
                     if ( interactionComponent != null )
                     {
@@ -313,8 +370,8 @@ internal class SendGridResponseAsync : IAsyncResult
                             timeStamp,
                             payload.ClientBrowser,
                             payload.ClientOs,
+                            payload.ClientType,
                             payload.ClientDeviceType,
-                            payload.ClientDeviceBrand,
                             payload.IpAddress,
                             null );
                     }
@@ -333,8 +390,8 @@ internal class SendGridResponseAsync : IAsyncResult
                             timeStamp,
                             payload.ClientBrowser,
                             payload.ClientOs,
+                            payload.ClientType,
                             payload.ClientDeviceType,
-                            payload.ClientDeviceBrand,
                             payload.IpAddress,
                             null );
                     }
