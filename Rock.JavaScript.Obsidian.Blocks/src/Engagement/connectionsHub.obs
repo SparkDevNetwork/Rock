@@ -2949,7 +2949,10 @@
 
         const data = new Blob([buffer], { type: "application/octet-stream" });
 
-        await downloadFile(data, `${title.replace(/[^a-zA-Z0-9\-_]/g, "")}.${format}`);
+        // Fall back to the same default filename as the grid when no usable characters remain.
+        const baseFilename = title.replace(/[^a-zA-Z0-9\-_]/g, "") || "RockExport";
+
+        await downloadFile(data, `${baseFilename}.${format}`);
     }
 
     /**
