@@ -134,6 +134,13 @@ namespace Rock.Model
         private ICollection<CommunicationFlowInstanceCommunication> _communicationFlowInstanceCommunications;
 
         #endregion Navigation Properties
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => this.CommunicationFlow ?? base.ParentAuthority;
+
+        #endregion ISecured
     }
 
     #region Entity Configuration
