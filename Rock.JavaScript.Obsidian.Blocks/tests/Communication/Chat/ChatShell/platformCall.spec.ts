@@ -206,3 +206,46 @@ describe("computeBackoff", () => {
         expect(computeBackoff(10, 2000, 60000, () => 0)).toBe(30000);
     });
 });
+
+describe("callFunction", () => {
+    test("posts the body to the platform's own function with the token, and hands on the signal that ends it", async () => {
+        const { call, sent } = setup([response(200, { items: [], has_next: false })]);
+        const controller = new AbortController();
+
+        const result = await call.callFunction("gif-search", { q: "thanks", page: 1 }, { signal: controller.signal });
+
+        expect(result).toEqual({ ok: true, data: { items: [], has_next: false } });
+        expect(sent[0].url).toBe(`${url}/functions/v1/gif-search`);
+        expect(sent[0].init.method).toBe("POST");
+        expect(headers(sent[0])["Authorization"]).toBe("Bearer platform-token");
+        expect(headers(sent[0])["apikey"]).toBe("k");
+        expect(JSON.parse(sent[0].init.body as string)).toEqual({ q: "thanks", page: 1 });
+        expect(sent[0].init.signal).toBe(controller.signal);
+    });
+
+    test("classifies a function's refusal from its error envelope, with the wait it gave", async () => {
+        const { call } = setup([response(429, { error: { code: "rpc.gif_search_busy", message: "GIF search is busy. Try again in a moment." } }, { "retry-after": "7" })]);
+
+        const result = await call.callFunction("gif-search", { q: "thanks", page: 1 });
+
+        expect(result).toMatchObject({ ok: false, status: 429, retryAfterSeconds: 7, error: { code: "rpc.gif_search_busy", text: "GIF search is busy. Try again in a moment." } });
+    });
+
+    test("a church with GIFs off is refused with its own code", async () => {
+        const { call } = setup([response(403, { error: { code: "rpc.gifs_off", message: "GIFs are turned off in this church's chat." } })]);
+
+        const result = await call.callFunction("gif-search", { q: "thanks", page: 1 });
+
+        expect(result).toMatchObject({ ok: false, status: 403, error: { code: "rpc.gifs_off" } });
+    });
+
+    test("asks nothing without a token", async () => {
+        const { call, sent } = setup([]);
+        const options = { fetch: async () => response(200, {}), projectUrl: url, publishableKey: "k", currentToken: () => null, routes: () => ({ send: "direct" }) };
+
+        const result = await createPlatformCall(options).callFunction("gif-search", { q: "thanks", page: 1 });
+
+        expect(result).toMatchObject({ ok: false, error: { code: "auth.expired" } });
+        expect(sent).toHaveLength(0);
+    });
+});

@@ -22,17 +22,22 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import Attachments from "../../../../../src/Communication/Chat/ChatShell/components/attachments.partial.obs";
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
-import { AttachmentItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
 
-function image(n: number, extra: Partial<AttachmentItem> = {}): AttachmentItem {
+function image(n: number, extra: Partial<FileItem> = {}): FileItem {
     const id = `d0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
     return { id, key: `${tenant}/${id}`, kind: "image", name: `photo-${n}.jpg`, size: 1000, type: "image/jpeg", width: 800, height: 600, ...extra };
 }
 
-function file(n: number, name: string, size = 1_400_000): AttachmentItem {
+function file(n: number, name: string, size = 1_400_000): FileItem {
     const id = `d0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
     return { id, key: `${tenant}/${id}`, kind: "file", name, size, type: "application/pdf", width: null, height: null };
+}
+
+function gif(n: number, extra: Partial<GifItem> = {}): GifItem {
+    const id = `e0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
+    return { id, kind: "gif", slug: `slug-${n}`, title: `Thank you dance ${n}`, url: `https://static.klipy.com/ii/md/${n}.mp4?v=2`, still: `https://static.klipy.com/ii/md/${n}.jpg`, width: 498, height: 280, ...extra };
 }
 
 let wrapper: VueWrapper | null = null;
@@ -531,5 +536,140 @@ describe("the room a message's files take", () => {
         const declarations = ruleOf("components/attachments.partial.obs", selector);
         expect(declarations.width).toBe("320px");
         expect(declarations["max-width"]).toBe("100%");
+    });
+});
+
+describe("a GIF in a message", () => {
+    /** What the page reports for reduced motion, and the GIFs seen on screen, both driven by hand. */
+    let isMotionReduced = false;
+    let observed: Array<{ element: Element, report: (isOnScreen: boolean) => void }> = [];
+
+    beforeEach(() => {
+        isMotionReduced = false;
+        observed = [];
+        window.matchMedia = ((query: string) => ({ matches: query.includes("reduced-motion") && isMotionReduced, addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia;
+        window.IntersectionObserver = class {
+            private callback: IntersectionObserverCallback;
+            constructor(callback: IntersectionObserverCallback) {
+                this.callback = callback;
+            }
+            observe(element: Element): void {
+                observed.push({ element, report: isOnScreen => this.callback([{ target: element, isIntersecting: isOnScreen } as unknown as IntersectionObserverEntry], this as unknown as IntersectionObserver) });
+            }
+            unobserve(): void {
+                // nothing held
+            }
+            disconnect(): void {
+                // nothing held
+            }
+        } as unknown as typeof IntersectionObserver;
+        jest.spyOn(HTMLMediaElement.prototype, "play").mockImplementation(() => Promise.resolve());
+        jest.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test("draws in the single photo's box at its stored shape, within 320 by 360, with the GIF badge and its title for a reader", async () => {
+        const { wrapper } = await mountFiles([gif(1, { width: 498, height: 280 })]);
+
+        const box = wrapper.get("[data-testid='attachment-gif']");
+        expect(box.attributes("style")).toContain("aspect-ratio: 498 / 280");
+        expect(box.attributes("style")).toContain("width: 320px");
+        expect(box.attributes("aria-label")).toBe("Thank you dance 1");
+        expect(box.get("[data-testid='attachment-gif-badge']").text()).toBe("GIF");
+
+        wrapper.unmount();
+        const tall = await mountFiles([gif(2, { width: 360, height: 480 })]);
+        // 360 high at 3:4 is 270 wide
+        expect(tall.wrapper.get("[data-testid='attachment-gif']").attributes("style")).toContain("width: 270px");
+    });
+
+    test("a GIF with no title is still named for a reader", async () => {
+        const { wrapper } = await mountFiles([gif(1, { title: "" })]);
+
+        expect(wrapper.get("[data-testid='attachment-gif']").attributes("aria-label")).toBe("GIF");
+    });
+
+    test("plays KLIPY's mp4 as stored, muted and looping, with its still as the poster and no cross origin request", async () => {
+        const item = gif(1);
+        const { wrapper } = await mountFiles([item]);
+
+        const video = wrapper.get("video");
+        expect(video.attributes("src")).toBe(item.url);
+        expect(video.attributes("poster")).toBe(item.still);
+        expect((video.element as HTMLVideoElement).muted).toBe(true);
+        expect(video.attributes("loop")).toBeDefined();
+        expect(video.attributes("playsinline")).toBeDefined();
+        expect(video.attributes("crossorigin")).toBeUndefined();
+    });
+
+    test("plays while on screen and pauses once it leaves", async () => {
+        const play = HTMLMediaElement.prototype.play as jest.Mock;
+        const pause = HTMLMediaElement.prototype.pause as jest.Mock;
+        await mountFiles([gif(1)]);
+
+        expect(play).not.toHaveBeenCalled();
+        observed[0].report(true);
+        expect(play).toHaveBeenCalledTimes(1);
+        observed[0].report(false);
+        expect(pause).toHaveBeenCalled();
+    });
+
+    test("with reduced motion it stays still, with a play button that plays it and a second press that pauses it", async () => {
+        isMotionReduced = true;
+        const play = HTMLMediaElement.prototype.play as jest.Mock;
+        const pause = HTMLMediaElement.prototype.pause as jest.Mock;
+        const { wrapper } = await mountFiles([gif(1)]);
+
+        observed[0]?.report(true);
+        expect(play).not.toHaveBeenCalled();
+
+        const button = wrapper.get("[data-testid='attachment-gif-play']");
+        expect(button.attributes("aria-label")).toBe("Play GIF");
+        await button.trigger("click");
+        expect(play).toHaveBeenCalledTimes(1);
+        expect(wrapper.get("[data-testid='attachment-gif-play']").attributes("aria-label")).toBe("Pause GIF");
+
+        await wrapper.get("[data-testid='attachment-gif-play']").trigger("click");
+        expect(pause).toHaveBeenCalled();
+    });
+
+    test("a GIF whose media is gone draws the unavailable tile at its stored size", async () => {
+        const { wrapper } = await mountFiles([gif(1)]);
+
+        await wrapper.get("video").trigger("error");
+
+        const dead = wrapper.get("[data-testid='attachment-gif']");
+        expect(dead.attributes("data-unavailable")).toBe("true");
+        expect(dead.text()).toContain("GIF unavailable");
+        expect(dead.attributes("style")).toContain("aspect-ratio: 498 / 280");
+        expect(wrapper.find("video").exists()).toBe(false);
+    });
+
+    test("is drawn whatever the church's GIF switch says, and asks no signed link", async () => {
+        // A GIF already sent stays in the conversation when the church turns GIFs off; nothing
+        // here reads the switch, and KLIPY's media is never a key of ours to sign.
+        const { wrapper, h } = await mountFiles([gif(1)]);
+
+        expect(wrapper.find("[data-testid='attachment-gif']").exists()).toBe(true);
+        expect(h.signs).toHaveLength(0);
+    });
+
+    test("a kind this client does not know is skipped, never drawn as a file card", async () => {
+        const unknown = { ...file(3, "x.bin"), kind: "sticker" } as unknown as AttachmentItem;
+
+        const { wrapper } = await mountFiles([unknown, file(4, "a.pdf")]);
+
+        expect(wrapper.findAll("[data-testid='attachment-file']")).toHaveLength(1);
+        expect(wrapper.get("[data-testid='attachment-file-name']").text()).toBe("a.pdf");
+    });
+
+    test("a GIF still being sent draws from its stored addresses at once", async () => {
+        const item = gif(1);
+        const { wrapper } = await mountFiles([item], harness(), { isPending: true });
+
+        expect(wrapper.get("video").attributes("src")).toBe(item.url);
     });
 });

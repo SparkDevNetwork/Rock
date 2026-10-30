@@ -31,6 +31,7 @@ function bag(): Record<string, unknown> {
         chatBadgeDataViews: [{ value: "cccccccc-cccc-4ccc-8ccc-cccccccccccc", text: "Staff" }],
         profileCardLavaTemplate: "{{ Person | Groups }}",
         profileCardEnabledLavaCommands: [{ value: "RockEntity", text: "RockEntity" }],
+        areGifsEnabled: true,
         projectUrl: "https://example.supabase.co",
         publishableKey: "sb_publishable_test",
         tenantId: "11111111-1111-4111-8111-111111111111",
@@ -50,6 +51,18 @@ describe("chatConfiguration view model", () => {
         expect(form.chatBadgeDataViews).toHaveLength(1);
         expect(form.profileCardLavaTemplate).toBe("{{ Person | Groups }}");
         expect(form.profileCardEnabledLavaCommands.map(item => item.value)).toEqual(["RockEntity"]);
+        expect(form.areGifsEnabled).toBe(true);
+    });
+
+    it("starts a church that never chose with GIFs off", () => {
+        expect(toFormModel({ ...bag(), areGifsEnabled: undefined }).areGifsEnabled).toBe(false);
+    });
+
+    it("saves the GIF switch as it was toggled", () => {
+        const form = toFormModel(bag());
+        form.areGifsEnabled = false;
+
+        expect(toBag(form).areGifsEnabled).toBe(false);
     });
 
     it("starts a church with no profile card template on a blank one with no commands", () => {
@@ -92,6 +105,7 @@ describe("chatConfiguration view model", () => {
 
         expect(Object.keys(sent).sort()).toEqual([
             "areChatProfilesVisible",
+            "areGifsEnabled",
             "chatBadgeDataViews",
             "directMessageAccessDataView",
             "isOpenDirectMessagingAllowed",
@@ -129,6 +143,7 @@ describe("chatConfiguration unsaved edits", () => {
             form => { form.chatBadgeDataViews = []; },
             form => { form.chatBadgeDataViews = [...form.chatBadgeDataViews, { value: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", text: "Elders" }]; },
             form => { form.profileCardLavaTemplate = ""; },
+            form => { form.areGifsEnabled = false; },
             form => { form.profileCardEnabledLavaCommands = [...form.profileCardEnabledLavaCommands, { value: "Sql", text: "Sql" }]; }
         ];
 

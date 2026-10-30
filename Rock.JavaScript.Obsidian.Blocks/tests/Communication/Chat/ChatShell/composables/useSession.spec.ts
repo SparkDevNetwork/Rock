@@ -499,7 +499,8 @@ describe("settings from the token exchange", () => {
             // no list takes no files
             attachment_types: []
         },
-        flags: {},
+        // GIFs are off unless the platform says the church has them on
+        flags: { gifs: false },
         push: { web: null, vapid_key: null, prompt: "after_send" }
     };
 
@@ -542,6 +543,16 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ limits: { ...platform, attachment_types: "image/jpeg" } }).limits.attachment_types).toEqual([]);
         const odd = readSettings({ limits: { ...platform, dm_max_others: "8", history_page_size: 2.5, people_search_size: -1, member_page_size: undefined } }).limits;
         expect([odd.dm_max_others, odd.history_page_size, odd.people_search_size, odd.member_page_size]).toEqual([0, 0, 0, 0]);
+    });
+
+    // The platform sets the flag from the church's switch and Spark's; only the JSON value true
+    // turns GIFs on, so a text "true" or anything else this client cannot read leaves them off.
+    test("GIFs are on only when the platform's flag is the boolean true", () => {
+        expect(readSettings({ flags: { gifs: true } }).flags.gifs).toBe(true);
+        expect(readSettings({ flags: { gifs: "true" } }).flags.gifs).toBe(false);
+        expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
+        expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
+        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, other: "kept" });
     });
 
     test("a catch-up page is never larger than history will serve", () => {

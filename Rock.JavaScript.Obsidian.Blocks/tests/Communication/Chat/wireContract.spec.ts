@@ -71,4 +71,12 @@ describe("chat wire contract", () => {
         expect("Rpc.UnknownErrorCode").not.toMatch(pattern);
         expect("nope.unknown_error_code").not.toMatch(pattern);
     });
+
+    it("carries the refusals a GIF search or send can answer, which the client branches on", () => {
+        const contract = readContract();
+
+        for (const code of ["rpc.gifs_off", "rpc.bad_gif", "rpc.gif_search_busy"]) {
+            expect(contract.error_codes.codes).toContain(code);
+        }
+    });
 });

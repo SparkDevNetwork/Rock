@@ -23,10 +23,12 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { nextTick, Ref, ref } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
+import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
 
 function editorOf(wrapper: VueWrapper): HTMLElement {
@@ -1075,5 +1077,161 @@ describe("the composer's quote of files alone", () => {
         const wrapper = mountComposer({ props: { title: "Anna Reyes", quote } as Record<string, unknown> });
 
         expect(wrapper.get("[data-testid='composer-quote-preview']").text()).toBe("File: Q3.pdf");
+    });
+});
+
+// GIFs ride with the box too, where the church has them on: the paperclip becomes a "+" whose menu
+// holds GIF and Photo or file; a pick waits above the box, playing, until it is sent or removed.
+// With GIFs off the box is exactly as it was, the paperclip and nothing else.
+describe("the composer's GIFs", () => {
+    const place = "c0000001-0000-4000-8000-000000000000";
+
+    function result(slug: string): GifResult {
+        return {
+            token: `token-${slug}`,
+            slug,
+            title: `Title ${slug}`,
+            url: `https://static.klipy.com/ii/md/${slug}.mp4`,
+            still: `https://static.klipy.com/ii/md/${slug}.jpg`,
+            preview: { url: `https://static.klipy.com/ii/sm/${slug}.webp`, width: 200, height: 112 },
+            blur: null,
+            width: 498,
+            height: 280
+        };
+    }
+
+    /** The session's GIF search as the shell provides it, its switch driven by hand. */
+    function fakeGifs(isOn = true): Gifs & { on: Ref<boolean> } {
+        const on = ref(isOn);
+        return {
+            on,
+            isOn: () => on.value,
+            search: jest.fn(async () => ({ ok: true as const, items: [result("first"), result("second")], hasNext: false })),
+            turnOff: () => {
+                on.value = false;
+            }
+        };
+    }
+
+    function gifTray(gifs: Gifs | null = fakeGifs()): { wrapper: VueWrapper, tray: AttachmentTray } {
+        const tray = createAttachments(harness().dependencies).trayFor(place, place);
+        const wrapper = mountComposer({
+            props: { title: "Anna Reyes", tray },
+            attachTo: document.body,
+            global: { provide: gifs ? { [gifsKey as symbol]: gifs } : {} }
+        });
+        return { wrapper, tray };
+    }
+
+    afterEach(() => {
+        document.body.replaceChildren();
+    });
+
+    test("with GIFs off the box keeps today's paperclip and no menu", () => {
+        const { wrapper } = gifTray(fakeGifs(false));
+
+        expect(wrapper.find("[data-testid='composer-attach']").exists()).toBe(true);
+        expect(wrapper.find("[data-testid='composer-add']").exists()).toBe(false);
+
+        const unprovided = gifTray(null).wrapper;
+        expect(unprovided.find("[data-testid='composer-attach']").exists()).toBe(true);
+        expect(unprovided.find("[data-testid='composer-add']").exists()).toBe(false);
+    });
+
+    test("with GIFs on the paperclip is a \"+\" whose menu is GIF and Photo or file, each its icon and words alone", async () => {
+        const { wrapper } = gifTray();
+
+        expect(wrapper.find("[data-testid='composer-attach']").exists()).toBe(false);
+        const add = wrapper.get("[data-testid='composer-add']");
+        expect(add.attributes("aria-haspopup")).toBe("menu");
+        await add.trigger("click");
+        await nextTick();
+
+        const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menuitem']"));
+        expect(items.map(item => item.textContent?.trim())).toEqual(["GIF", "Photo or file"]);
+        expect(document.querySelector(".chat-menu-desc")).toBeNull();
+        expect(document.querySelector("kbd")).toBeNull();
+        // the emoji keeps its own button
+        expect(wrapper.find("[data-testid='composer-emoji']").exists()).toBe(true);
+    });
+
+    test("Photo or file opens the file chooser", async () => {
+        const { wrapper } = gifTray();
+        const input = wrapper.get("[data-testid='composer-file-input']").element as HTMLInputElement;
+        const click = jest.spyOn(input, "click").mockImplementation(() => undefined);
+
+        await wrapper.get("[data-testid='composer-add']").trigger("click");
+        await nextTick();
+        document.querySelector<HTMLElement>("[data-key='file']")?.click();
+
+        expect(click).toHaveBeenCalledTimes(1);
+    });
+
+    test("a GIF picked waits above the box, playing KLIPY's media, ready to send with or without words; a second pick replaces it", async () => {
+        const { wrapper, tray } = gifTray();
+        await wrapper.get("[data-testid='composer-add']").trigger("click");
+        await nextTick();
+        document.querySelector<HTMLElement>("[data-key='gif']")?.click();
+        await flushPromises();
+        expect(document.querySelector("[data-testid='gif-picker']")).not.toBeNull();
+
+        tray.stageGif(result("first"));
+        tray.stageGif(result("second"));
+        await nextTick();
+
+        const staged = wrapper.get("[data-testid='composer-gif']");
+        expect(staged.get("video").attributes("src")).toBe("https://static.klipy.com/ii/md/second.mp4");
+        expect(staged.get("video").attributes("poster")).toBe("https://static.klipy.com/ii/md/second.jpg");
+        expect(staged.get("[data-testid='composer-gif-badge']").text()).toBe("GIF");
+        expect(wrapper.get("[data-testid='composer-send']").classes()).toContain("is-ready");
+
+        await wrapper.get("form").trigger("submit");
+        expect(wrapper.emitted("send")).toEqual([[""]]);
+    });
+
+    test("removing the staged GIF clears it and the box has nothing to send", async () => {
+        const { wrapper, tray } = gifTray();
+        tray.stageGif(result("first"));
+        await nextTick();
+
+        await wrapper.get("[data-testid='composer-gif-remove']").trigger("click");
+
+        expect(tray.gif).toBeNull();
+        expect(wrapper.find("[data-testid='composer-gif']").exists()).toBe(false);
+        expect(wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
+    });
+
+    test("GIFs refused as off hide the \"+\" and close the picker at once", async () => {
+        const gifs = fakeGifs();
+        const { wrapper } = gifTray(gifs);
+        await wrapper.get("[data-testid='composer-add']").trigger("click");
+        await nextTick();
+        document.querySelector<HTMLElement>("[data-key='gif']")?.click();
+        await flushPromises();
+
+        gifs.turnOff();
+        await flushPromises();
+
+        expect(document.querySelector("[data-testid='gif-picker']")).toBeNull();
+        expect(wrapper.find("[data-testid='composer-add']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='composer-attach']").exists()).toBe(true);
+    });
+
+    test("the staged GIF's still is drawn with no referrer where motion is reduced", async () => {
+        const original = window.matchMedia;
+        window.matchMedia = ((query: string) => ({ matches: query.includes("reduced-motion"), addEventListener: () => undefined, removeEventListener: () => undefined })) as unknown as typeof window.matchMedia;
+        try {
+            const { wrapper, tray } = gifTray();
+            tray.stageGif(result("first"));
+            await nextTick();
+
+            const still = wrapper.get("[data-testid='composer-gif'] img");
+            expect(still.attributes("src")).toBe("https://static.klipy.com/ii/md/first.jpg");
+            expect(still.attributes("referrerpolicy")).toBe("no-referrer");
+            expect(wrapper.find("[data-testid='composer-gif'] video").exists()).toBe(false);
+        }
+        finally {
+            window.matchMedia = original;
+        }
     });
 });

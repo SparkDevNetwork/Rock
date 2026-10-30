@@ -20,17 +20,38 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
-import { AttachmentItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { FileItem, GifItem, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { fakeCodec, harness, limits, picked, projectUrl, publishableKey, settle, tenant, token } from "../attachmentFakes";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 
-function image(id: string, extra: Partial<AttachmentItem> = {}): AttachmentItem {
+function image(id: string, extra: Partial<FileItem> = {}): FileItem {
     return { id, key: `${tenant}/${id}`, kind: "image", name: `${id}.jpg`, size: 1000, type: "image/jpeg", width: 400, height: 300, ...extra };
 }
 
-function file(id: string, name: string, extra: Partial<AttachmentItem> = {}): AttachmentItem {
+function file(id: string, name: string, extra: Partial<FileItem> = {}): FileItem {
     return { id, key: `${tenant}/${id}`, kind: "file", name, size: 2048, type: "application/pdf", width: null, height: null, ...extra };
+}
+
+/** A GIF as a message stores it: KLIPY's media, never a key of ours. */
+function gif(id: string, extra: Partial<GifItem> = {}): GifItem {
+    return { id, kind: "gif", slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4?x=1", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, ...extra };
+}
+
+/** A search result as the platform's GIF search answers it. */
+function result(slug: string, extra: Partial<GifResult> = {}): GifResult {
+    return {
+        token: `token-${slug}`,
+        slug,
+        title: `Title ${slug}`,
+        url: `https://static.klipy.com/ii/md/${slug}.mp4`,
+        still: `https://static.klipy.com/ii/md/${slug}.jpg`,
+        preview: { url: `https://static.klipy.com/ii/sm/${slug}.webp`, width: 200, height: 112 },
+        blur: null,
+        width: 498,
+        height: 280,
+        ...extra
+    };
 }
 
 describe("declaredType", () => {
@@ -61,6 +82,11 @@ describe("attachment previews", () => {
         expect(attachmentsPreview([image("a"), file("b", "Q3.pdf"), file("c", "Q4.pdf")])).toBe("3 files");
         expect(attachmentsPreview(null)).toBe("");
         expect(attachmentsPreview([])).toBe("");
+    });
+
+    test("a message of a GIF reads as GIF, never its title or a file", () => {
+        expect(attachmentPreviewWords.gif).toBe("GIF");
+        expect(attachmentsPreview([gif("g1")])).toBe("GIF");
     });
 
     test("the words are the wire contract's, so the platform and this client say the same", () => {
@@ -361,6 +387,65 @@ describe("photos", () => {
     });
 });
 
+describe("a tray's GIF", () => {
+    test("a picked GIF waits in the tray with its token, ready to go; a second pick replaces it", () => {
+        const attachments = createAttachments(harness().dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.stageGif(result("first"));
+        tray.stageGif(result("second"));
+
+        expect(tray.gif).toMatchObject({ kind: "gif", slug: "second", token: "token-second", url: "https://static.klipy.com/ii/md/second.mp4", still: "https://static.klipy.com/ii/md/second.jpg", width: 498, height: 280, title: "Title second" });
+        expect(isTrayReady(tray)).toBe(true);
+    });
+
+    test("the send takes the GIF with its token, emptying the tray", () => {
+        const attachments = createAttachments(harness().dependencies);
+        const tray = attachments.trayFor(channel, channel);
+        tray.stageGif(result("thanks"));
+
+        const taken = attachments.take(channel);
+
+        expect(taken).toHaveLength(1);
+        expect(taken?.[0]).toMatchObject({ kind: "gif", slug: "thanks", token: "token-thanks" });
+        expect(tray.gif).toBeNull();
+        expect(attachments.take(channel)).toBeNull();
+    });
+
+    test("removing the GIF empties the tray", () => {
+        const attachments = createAttachments(harness().dependencies);
+        const tray = attachments.trayFor(channel, channel);
+        tray.stageGif(result("thanks"));
+
+        tray.removeGif();
+
+        expect(tray.gif).toBeNull();
+        expect(isTrayReady(tray)).toBe(false);
+    });
+
+    test("a GIF goes alone: files picked while one waits are refused with a notice, and a GIF is not taken over files", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+        tray.stageGif(result("thanks"));
+
+        tray.add([picked("a.pdf", "application/pdf")]);
+        await settle();
+
+        expect(tray.files).toHaveLength(0);
+        expect(h.begins).toHaveLength(0);
+        expect(tray.notice).toBe("A GIF is sent on its own. Send it or remove it to add files.");
+
+        tray.removeGif();
+        tray.add([picked("a.pdf", "application/pdf")]);
+        await settle();
+        tray.stageGif(result("later"));
+
+        expect(tray.gif).toBeNull();
+        expect(tray.notice).toBe("A GIF is sent on its own. Send the files or remove them to add a GIF.");
+    });
+});
+
 describe("download links", () => {
     test("links asked for together are signed in one call, for ten minutes, and read as full addresses", async () => {
         const h = harness();
@@ -384,6 +469,21 @@ describe("download links", () => {
         expect(photoLink?.downloadUrl).toBe(`${photoLink?.url}&download=${encodeURIComponent(photo.name)}`);
         // a file card always downloads, under its own name
         expect(attachments.links.linkOf(pdf)?.downloadUrl).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments/${pdf.key}?token=t-00a2&download=Q3%20report%20%231%20%26%20notes.pdf`);
+    });
+
+    test("a GIF is never signed: its media is KLIPY's, not a key of ours", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const photo = image("d0000000-0000-4000-8000-0000000000b1");
+
+        attachments.links.subscribe([gif("g1"), photo]);
+        await settle();
+        const fresh = await attachments.links.fresh(gif("g2"));
+
+        expect(h.signs).toHaveLength(1);
+        expect(h.signs[0].body.paths).toEqual([photo.key]);
+        expect(fresh).toBeNull();
+        expect(attachments.links.linkOf(gif("g1"))).toBeNull();
     });
 
     test("a link is kept by id, drawn until it ends, and asked again for a row only once it is near its end", async () => {

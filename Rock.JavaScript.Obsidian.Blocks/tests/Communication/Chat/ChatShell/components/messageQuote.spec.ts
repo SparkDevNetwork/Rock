@@ -232,3 +232,13 @@ describe("a quote of files alone", () => {
         expect(wrapper.get("[data-testid='quote-body']").text()).toBe("2 photos");
     });
 });
+
+// A GIF is shown by the one word the platform's previews use, never its title or a file name.
+describe("a quote of a GIF alone", () => {
+    test("reads as GIF", () => {
+        const gif = { id: "g1", kind: "gif", slug: "thanks", title: "Thank you dance", url: "https://static.klipy.com/a.mp4", still: "https://static.klipy.com/a.jpg", width: 498, height: 280 };
+        const wrapper = draw(reply(ben, quoted({ body: null, attachments: [gif] })));
+
+        expect(wrapper.get("[data-testid='quote-body']").text()).toBe("GIF");
+    });
+});

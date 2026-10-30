@@ -16,12 +16,12 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { mount } from "@vue/test-utils";
 import { defineComponent, reactive } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { AttachmentItem, ChatErrorSeverity, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { AttachmentItem, ChatErrorSeverity, GifItem, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -1713,5 +1713,100 @@ describe("a stopped sender", () => {
         expect(await sender.send(channel, "second")).toBe(false);
         expect(await sender.retryAll([failed.localId])).toBe(false);
         expect(sent).toEqual(["first"]);
+    });
+});
+
+// A GIF goes as the token the platform's search signed it with; the row draws KLIPY's media at
+// once, keeps the token through a failure so Try again sends the same GIF, and becomes the message
+// the platform stored, which never carries the token.
+describe("a send with a GIF", () => {
+    const staged: GifItem = { id: "g-local", kind: "gif", slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "signed.token" };
+    const stored: GifItem = { id: "d0000000-0000-4000-8000-0000000000f1", kind: "gif", slug: "thank-you-dance", title: "Thank you dance", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280 };
+
+    async function gifSetup(answers: SendResult[], onGifsOff?: () => void): Promise<{
+        sender: ReturnType<typeof createSender>,
+        timelines: ReturnType<typeof createTimelines>,
+        sent: Array<Record<string, unknown>>
+    }> {
+        const sent: Array<Record<string, unknown>> = [];
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        await timelines.loadNewest(channel);
+        let next = 0;
+        const sender = createSender({
+            // the arguments the platform is sent for the message's media, as the shell builds them
+            send: async (_c, _body, _key, _reply, _quote, attachments) => {
+                sent.push(mediaArgs(attachments));
+                return answers.shift() as SendResult;
+            },
+            timelines,
+            personAliasGuid: me,
+            newLocalId: () => `local-${++next}`,
+            ...(onGifsOff ? { onGifsOff } : {})
+        });
+        return { sender, timelines, sent };
+    }
+
+    test("a GIF's media goes as its token, and files as their uploads", () => {
+        const photo: AttachmentItem = { id: "d0000000-0000-4000-8000-000000000001", key: "t/d1", kind: "image", name: "p.jpg", size: 900, type: "image/jpeg", width: 400, height: 300 };
+
+        expect(mediaArgs([staged])).toEqual({ p_gif: "signed.token" });
+        expect(mediaArgs([photo])).toEqual({ p_attachments: [photo.id] });
+        expect(mediaArgs(undefined)).toEqual({});
+        expect(mediaArgs([])).toEqual({});
+    });
+
+    test("a GIF with no text sends at once, its row drawing the GIF, and the stored message carries no token", async () => {
+        const { sender, timelines, sent } = await gifSetup([{ ok: true, id: 71, createdAt: "2026-10-30T10:00:00Z", attachments: [stored] }]);
+
+        const sending = sender.send(channel, "", undefined, undefined, undefined, [staged]);
+        expect(sender.pending(channel)[0].attachments).toEqual([staged]);
+        expect(await sending).toBe(true);
+
+        expect(sent).toEqual([{ p_gif: "signed.token" }]);
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed.attachments).toEqual([stored]);
+        expect(JSON.stringify(confirmed)).not.toContain("signed.token");
+    });
+
+    test("a stored message the platform answered without its media still drops the token", async () => {
+        const { sender, timelines } = await gifSetup([{ ok: true, id: 72, createdAt: "2026-10-30T10:00:00Z" }]);
+
+        await sender.send(channel, "yay", undefined, undefined, undefined, [staged]);
+
+        const [confirmed] = timelines.state(channel).messages;
+        expect(confirmed.attachments?.[0]).toMatchObject({ kind: "gif", slug: "thank-you-dance" });
+        expect(JSON.stringify(confirmed)).not.toContain("signed.token");
+    });
+
+    test("Try again sends the same GIF under the same token", async () => {
+        const { sender, sent } = await gifSetup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 73, createdAt: "2026-10-30T10:00:00Z", attachments: [stored] }
+        ]);
+
+        expect(await sender.send(channel, "", undefined, undefined, undefined, [staged])).toBe(false);
+        expect(await sender.retryAll(["local-1"])).toBe(true);
+
+        expect(sent).toEqual([{ p_gif: "signed.token" }, { p_gif: "signed.token" }]);
+    });
+
+    test("a GIF the platform will not take is refused for good, with no Try again", async () => {
+        const { sender } = await gifSetup([{ ok: false, error: { code: "rpc.bad_gif", severity: "failed", text: "That GIF can't be sent. Search again." } }]);
+
+        await sender.send(channel, "", undefined, undefined, undefined, [staged]);
+
+        const [row] = sender.pending(channel);
+        expect(row.status).toBe("failed");
+        expect(row.refusal?.code).toBe("rpc.bad_gif");
+    });
+
+    test("a church that turned GIFs off says so once, so the button goes at once", async () => {
+        const onGifsOff = jest.fn();
+        const { sender } = await gifSetup([{ ok: false, error: { code: "rpc.gifs_off", severity: "failed", text: "GIFs are turned off in this church's chat." } }], onGifsOff);
+
+        await sender.send(channel, "", undefined, undefined, undefined, [staged]);
+
+        expect(onGifsOff).toHaveBeenCalledTimes(1);
+        expect(sender.pending(channel)[0].refusal?.code).toBe("rpc.gifs_off");
     });
 });
