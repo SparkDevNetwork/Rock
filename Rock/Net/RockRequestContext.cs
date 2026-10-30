@@ -590,7 +590,8 @@ namespace Rock.Net
         /// <param name="entityTypeName">The entity type name.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
-        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
+        /// <param name="isIntegerIdentifierAllowed">If <c>false</c>, a plain integer Id will not be used to load the entity.</param>
+        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities, bool isIntegerIdentifierAllowed = true )
         {
             // If entity type name or entity key are not defined then skip.
             if ( entityTypeName.IsNullOrWhiteSpace() || entityKey.IsNullOrWhiteSpace() )
@@ -613,7 +614,7 @@ namespace Rock.Net
                 return;
             }
 
-            AddOrReplaceContextEntity( type, entityKey, contextEntities );
+            AddOrReplaceContextEntity( type, entityKey, contextEntities, isIntegerIdentifierAllowed );
         }
 
         /// <summary>
@@ -622,7 +623,8 @@ namespace Rock.Net
         /// <param name="type">The entity type.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
         /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
-        private void AddOrReplaceContextEntity( Type type, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
+        /// <param name="isIntegerIdentifierAllowed">If <c>false</c>, a plain integer Id will not be used to load the entity.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities, bool isIntegerIdentifierAllowed = true )
         {
             // If entity type or entity key are not defined then skip.
             if ( type == null || entityKey.IsNullOrWhiteSpace() )
@@ -635,7 +637,8 @@ namespace Rock.Net
             {
                 IEntity entity = null;
                 var keyParts = entityKey.Split( '>' );
-                var allowIntegerIdentifier = _siteCache?.DisablePredictableIds != true;
+                // Treat a missing site as having predictable Ids disabled.
+                var allowIntegerIdentifier = isIntegerIdentifierAllowed && _siteCache?.DisablePredictableIds == false;
 
                 if ( keyParts.Length == 2 )
                 {
@@ -666,10 +669,15 @@ namespace Rock.Net
 
                     entity = personService.AmendQueryable( eagerQry, personQueryOptions ).FirstOrDefault();
                 }
-                else if ( allowIntegerIdentifier && int.TryParse( entityKey, out var entityId ) )
+                else if ( int.TryParse( entityKey, out var entityId ) )
                 {
-                    // Load from plain integer Id, but only if not disabled by site.
-                    entity = Reflection.GetIEntityForEntityType( type, entityId );
+                    // Load from plain integer Id, but only if allowed. An integer
+                    // key must not fall through to the IdKey lookup below, which
+                    // would also accept it as an integer Id.
+                    if ( allowIntegerIdentifier )
+                    {
+                        entity = Reflection.GetIEntityForEntityType( type, entityId );
+                    }
                 }
                 else if ( Guid.TryParse( entityKey, out Guid entityGuid ) )
                 {
@@ -711,7 +719,7 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault(), TransientContextEntities );
+                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault(), TransientContextEntities, false );
             }
         }
 
@@ -918,7 +926,7 @@ namespace Rock.Net
                 var cookieName = GetContextCookieName( page );
                 var contextItems = new Dictionary<string, string>();
 
-                AddOrReplaceContextEntity( entityType, entity.Id.ToString(), page != null ? PageContextEntities : SiteContextEntities );
+                AddOrReplaceContextEntity( entityType, entity.Guid.ToString(), page != null ? PageContextEntities : SiteContextEntities );
 
                 foreach ( var kvp in page != null ? PageContextEntities : SiteContextEntities )
                 {
