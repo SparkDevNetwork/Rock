@@ -18,7 +18,7 @@
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
-    /// Removes a default REST key that was included with new installs.
+    /// Removes the default presence login and its default credentials that were included with new installs.
     /// </summary>
     /// <seealso cref="Rock.Plugin.Migration" />
     [MigrationNumber( 338, "17.8" )]
@@ -32,17 +32,29 @@ namespace Rock.Plugin.HotFixes
             /*
                 10/29/2026 - MSE
 
-                New installs included a default REST key on the built in presence login.
-                Clear it so it cannot be used. Match on the shipped value only, so a key
-                an administrator has already set is left in place. Administrators who need
-                REST access for this login can generate a new key.
+                New installs included a built in presence login with a default REST key
+                and a default password. Clear the default key, remove the login while it
+                is still exactly as shipped, and clear the default password from any login
+                that still has it. A login an administrator changed (new key or new password)
+                is kept. The Presence person, its alias and its security rules are kept.
+                Each statement matches only the shipped values, so it is safe to run again.
 
-                Reason: Removes a default REST key that was included with new installs so it cannot be used.
+                Reason: Removes the default presence login and its default credentials that were included with new installs.
             */
             Sql( @"
 UPDATE [UserLogin]
 SET [ApiKey] = NULL
-WHERE [ApiKey] = 'B421A0508102448AA50506E3452BB08D';" );
+WHERE [ApiKey] = 'B421A0508102448AA50506E3452BB08D';
+
+DELETE FROM [UserLogin]
+WHERE [Guid] = '0CEB5F7F-AD1D-493E-8E7F-B6C12DCB5646'
+    AND [UserName] = 'presence'
+    AND [Password] = '$2a$11$bRBPqjG.Lzalcf6EN8msrebJEmzshVZdUIBgiVvqHgUzwRZDhfd46'
+    AND ( [ApiKey] IS NULL OR [ApiKey] = 'B421A0508102448AA50506E3452BB08D' );
+
+UPDATE [UserLogin]
+SET [Password] = NULL
+WHERE [Password] = '$2a$11$bRBPqjG.Lzalcf6EN8msrebJEmzshVZdUIBgiVvqHgUzwRZDhfd46';" );
         }
 
         /// <summary>
