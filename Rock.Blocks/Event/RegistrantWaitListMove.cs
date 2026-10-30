@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Moves the person from the wait list to be a full registrant." )]
     [IconCssClass( "fa fa-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [Rock.SystemGuid.EntityTypeGuid( "7700303a-45e2-4fbf-9c10-c7f3726f529e" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "7733cb25-df4d-4ffe-a898-ff6a03858799" )]
     [Rock.SystemGuid.BlockTypeGuid( "AAD07299-F30F-4DB2-8E04-5F3369CE46D2" )]

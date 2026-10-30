@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Model.Groups.Group.Options;
 using Rock.Security;
+using Rock.Utility.Enums;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Group.GroupDetail;
 using Rock.ViewModels.Controls;
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays the details of the given group." )]
     [IconCssClass( "ti ti-users-group" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -982,7 +983,7 @@ namespace Rock.Blocks.Group
                 entity.ElevatedSecurityLevel = box.Bag.ElevatedSecurityLevel;
                 if ( !entity.IsSecurityRole )
                 {
-                    entity.ElevatedSecurityLevel = Rock.Utility.Enums.ElevatedSecurityLevel.None;
+                    entity.ElevatedSecurityLevel = ElevatedSecurityLevel.None;
                 }
             } );
 
@@ -3035,7 +3036,7 @@ namespace Rock.Blocks.Group
         /// <summary>
         /// Builds the GroupRequirementType dropdown options for the Group
         /// Requirement modal. Each entry carries the type's
-        /// <see cref="Model.DueDateType"/> so the Due Date well can react
+        /// <see cref="DueDateType"/> so the Due Date well can react
         /// to the selection without a server round-trip.
         /// </summary>
         private List<GroupRequirementTypeBag> BuildGroupRequirementTypeOptions()
@@ -3550,7 +3551,7 @@ namespace Rock.Blocks.Group
                     AppliesToDataView = r.AppliesToDataView.ToListItemBag(),
                     AllowLeadersToOverride = r.AllowLeadersToOverride,
                     MustMeetRequirementToAddMember = r.MustMeetRequirementToAddMember,
-                    DueDateType = r.GroupRequirementType?.DueDateType ?? Model.DueDateType.Immediate,
+                    DueDateType = r.GroupRequirementType?.DueDateType ?? DueDateType.Immediate,
                     DueDateStaticDate = r.DueDateStaticDate?.ToRockDateTimeOffset(),
                     DueDateAttribute = r.DueDateAttribute != null
                         ? new ListItemBag { Value = r.DueDateAttribute.Guid.ToString(), Text = r.DueDateAttribute.Name }
@@ -3595,11 +3596,11 @@ namespace Rock.Blocks.Group
                     requirement.DueDateStaticDate = null;
                     requirement.DueDateAttributeId = null;
 
-                    if ( bag.DueDateType == Model.DueDateType.ConfiguredDate )
+                    if ( bag.DueDateType == DueDateType.ConfiguredDate )
                     {
                         requirement.DueDateStaticDate = bag.DueDateStaticDate?.DateTime;
                     }
-                    else if ( bag.DueDateType == Model.DueDateType.GroupAttribute )
+                    else if ( bag.DueDateType == DueDateType.GroupAttribute )
                     {
                         requirement.DueDateAttributeId = bag.DueDateAttribute?.GetEntityId<Rock.Model.Attribute>( RockContext );
                     }

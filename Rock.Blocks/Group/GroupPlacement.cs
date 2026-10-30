@@ -47,7 +47,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Placement" )]
     [Category( "Group" )]
     [Description( "Block to manage group placements" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -2747,7 +2747,7 @@ namespace Rock.Blocks.Group
             public int? GroupRoleId { get; set; }
 
             /// <summary>
-            /// Gets or sets the group member status as the integer value of <see cref="Rock.Model.GroupMemberStatus"/>.
+            /// Gets or sets the group member status as the integer value of <see cref="GroupMemberStatus"/>.
             /// This is null for people who are not in a destination group.
             /// </summary>
             public int? GroupMemberStatus { get; set; }

@@ -31,7 +31,7 @@ namespace Rock.Blocks.Example
     [Category( "Obsidian > Example" )]
     [Description( "Allows the user to try out various field types." )]
     [IconCssClass( "ti ti-flask" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_EXAMPLE_FIELD_TYPE_GALLERY )]
     [Rock.SystemGuid.BlockTypeGuid( "50B7B326-8212-44E6-8CF6-515B1FF75A19")]

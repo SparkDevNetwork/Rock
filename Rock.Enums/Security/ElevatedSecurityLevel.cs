@@ -28,15 +28,25 @@
     Connection/FamilyLimits.cs, Core/TimeIntervalUnit.cs). Without the qualifier the
     unqualified token "Enums" inside namespace Rock.Utility resolves to the new sub-
     namespace Rock.Utility.Enums first, which doesn't contain EnumDomain.
+
+    On .NET the enum lives in Rock.Enums.Security and has no [EnumDomain] attribute,
+    since there are no legacy plugins to keep compatible there. The namespace
+    preservation above only applies to the .NET Framework build.
 */
 
+#if NET
+namespace Rock.Enums.Security
+#else
 namespace Rock.Utility.Enums
+#endif
 {
     /// <summary>
     /// Used by the group to determine what AccountProtectionProfile a
     /// Person should be assigned.
     /// </summary>
+#if !NET
     [Rock.Enums.EnumDomain( "Security" )]
+#endif
     public enum ElevatedSecurityLevel
     {
         /// <summary>

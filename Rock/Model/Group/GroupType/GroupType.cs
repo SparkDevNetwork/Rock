@@ -218,10 +218,10 @@ namespace Rock.Model
         public bool ShowMaritalStatus { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
+        /// Gets or sets the <see cref="AttendanceRule"/> that indicates how attendance is managed a <see cref="Rock.Model.Group"/> of this GroupType
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.AttendanceRule"/> that indicates how attendance is managed for a <see cref="Rock.Model.Group"/> of this GroupType.
+        /// The <see cref="AttendanceRule"/> that indicates how attendance is managed for a <see cref="Rock.Model.Group"/> of this GroupType.
         /// </value>
         /// <example>
         /// The available options are:
@@ -262,10 +262,10 @@ namespace Rock.Model
         public GroupCapacityRule GroupCapacityRule { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.PrintTo"/> indicating the type of  location of where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
+        /// Gets or sets the <see cref="PrintTo"/> indicating the type of  location of where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.PrintTo"/> enum value indicating how and where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
+        /// A <see cref="PrintTo"/> enum value indicating how and where attendee labels for <see cref="Rock.Model.Group">Groups</see> of this GroupType should print.
         /// </value>
         /// <remarks>
         /// The available options include:

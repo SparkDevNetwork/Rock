@@ -17,12 +17,18 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents how a Page should be displayed in the page navigation controls.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum DisplayInNavWhen
     {
         /// <summary>

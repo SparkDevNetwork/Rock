@@ -18,12 +18,18 @@ using System;
 
 using Rock;
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The entity that attribute applies to
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum RegistrationFieldSource
     {
         /// <summary>

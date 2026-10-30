@@ -36,6 +36,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 using static Rock.Model.ConnectionType.ConnectionTypeAdditionalSettings;
 
 namespace Rock.Blocks.Engagement
@@ -48,7 +50,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Engagement" )]
     [Description( "Displays the Connections Hub." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

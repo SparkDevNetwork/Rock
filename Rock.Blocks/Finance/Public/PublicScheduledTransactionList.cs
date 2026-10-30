@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Shows the current person's scheduled giving profiles, with the ability to edit, transfer, or cancel each one." )]
     [IconCssClass( "ti ti-cash" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

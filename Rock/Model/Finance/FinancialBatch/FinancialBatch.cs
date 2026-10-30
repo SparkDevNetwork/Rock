@@ -79,7 +79,7 @@ namespace Rock.Model
         /// Gets or sets the status of the batch.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.BatchStatus"/> representing the status of the batch.
+        /// A <see cref="BatchStatus"/> representing the status of the batch.
         /// When this value is <c>BatchStatus.Pending</c>  it means that transactions are still being added to the batch.
         /// When this value is <c>BatchStatus.Open</c> it means that all transactions have been added and are ready to be matched up.
         /// When this value is <c>BatchStatus.Closed</c> it means that the batch has balanced and has been closed.

@@ -41,7 +41,7 @@ namespace Rock.Blocks.Connection
     [DisplayName( "Connection Opportunity Navigation" )]
     [Category( "Connection" )]
     [Description( "Displays metrics of a connection type's combined opportunities and provides easy navigation into each opportunity's connection requests." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

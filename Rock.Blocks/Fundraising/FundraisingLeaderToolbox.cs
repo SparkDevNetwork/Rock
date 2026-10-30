@@ -41,7 +41,7 @@ namespace Rock.Blocks.Fundraising
     [Category( "Fundraising" )]
     [Description( "The Leader Toolbox for a fundraising opportunity" )]
     [IconCssClass( "ti ti-briefcase" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

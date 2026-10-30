@@ -43,7 +43,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Used to look at pledges using various criteria." )]
     [IconCssClass( "ti ti-report-money" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

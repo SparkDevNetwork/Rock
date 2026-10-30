@@ -306,7 +306,7 @@ namespace Rock.Model
         /// Gets or sets the gender of the Person. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Gender"/> enum value representing the Person's gender.  Valid values are <c>Gender.Unknown</c> if the Person's gender is unknown,
+        /// A <see cref="Gender"/> enum value representing the Person's gender.  Valid values are <c>Gender.Unknown</c> if the Person's gender is unknown,
         /// <c>Gender.Male</c> if the Person's gender is Male, <c>Gender.Female</c> if the Person's gender is Female.
         /// </value>
         [Required]

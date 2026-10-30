@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Represents and indicates the participation type or mode used in a Fundraising Opportunity Rock.Model.GroupType to determine the way contributions and participants are displayed.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum ParticipationType
     {
         /// <summary>

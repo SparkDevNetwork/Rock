@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Events" )]
     [Description( "Displays a particular calendar event item occurrence." )]
     [IconCssClass( "ti ti-calendar-event" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

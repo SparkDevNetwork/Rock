@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Crm
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The person's email preference
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "CRM" )]
+#endif
     public enum EmailPreference
     {
         /// <summary>

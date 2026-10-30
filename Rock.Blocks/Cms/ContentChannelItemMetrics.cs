@@ -44,7 +44,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays metrics for a content channel item." )]
     [IconCssClass( "ti ti-chart-line" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [EnumsField( "UTM Metrics to Show",
         Description = "The UTM dimensions (Source, Medium, Campaign, Term, Content) to include in the metric. If none are selected, all dimensions with captured data will be shown.",

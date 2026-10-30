@@ -59,6 +59,18 @@ using System.Runtime.CompilerServices;
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Examples.SampleData" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks.Security.PhoneNumberIdentification" )]
 
+/*
+    10/29/26 - CLAUDE
+
+    Type forwarding exists so plugins compiled against an older Rock.dll keep
+    resolving types that moved to other assemblies. On .NET every plugin must
+    be recompiled anyway, and many of the forwarded enums live in a different
+    namespace there (Rock.Enums.[Domain] instead of Rock.Model), so the
+    forwards are only declared for the .NET Framework build.
+
+    Reason: Type forwards are only needed for .NET Framework plugin compatibility.
+*/
+#if !NET
 // The following type forwardings were setup in Rock 1.13.0
 [assembly: TypeForwardedTo( typeof( Rock.RockObsolete ) )]
 [assembly: TypeForwardedTo( typeof( Rock.RockDateTime ) )]
@@ -185,3 +197,4 @@ using System.Runtime.CompilerServices;
 
 // The following type forwardings were setup in Rock 21.0.2
 [assembly: TypeForwardedTo( typeof( Rock.Model.RegistrationNotify ) )]
+#endif

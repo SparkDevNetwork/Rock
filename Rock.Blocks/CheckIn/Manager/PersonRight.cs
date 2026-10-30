@@ -46,7 +46,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Shows most recent attendances for a person." )]
     [IconCssClass( "ti ti-history" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SecurityAction( SecurityActionKey.ReprintLabels, "The roles and/or users that can reprint labels for the selected person." )]
 

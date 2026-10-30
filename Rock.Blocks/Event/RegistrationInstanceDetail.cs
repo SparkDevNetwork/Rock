@@ -43,7 +43,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the details of a Registration Instance for viewing and editing." )]
     [IconCssClass( "ti ti-file" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

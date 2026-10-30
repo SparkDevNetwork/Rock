@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Category( "Mobile > Core" )]
     [Description( "Performs a search using the configured search components and displays the results." )]
     [IconCssClass( "ti ti-search" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_CORE_SMART_SEARCH_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_CORE_SMART_SEARCH )]

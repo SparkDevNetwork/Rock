@@ -27,6 +27,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+#if NET
+using EmailPreference = Rock.Enums.Crm.EmailPreference;
+#else
+using EmailPreference = Rock.Model.EmailPreference;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Groups
 {
     /// <summary>
@@ -38,7 +44,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [Category( "Mobile > Groups" )]
     [Description( "Allows a person to register for a group." )]
     [IconCssClass( "ti ti-user-plus" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -691,7 +697,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 LastName = lastName,
                 Email = email,
                 IsEmailActive = true,
-                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
+                EmailPreference = EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = ConnectionStatus?.Id,
                 RecordStatusValueId = RecordStatus?.Id

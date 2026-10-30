@@ -48,7 +48,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Used for merging data into output documents, such as Word, Html, using a pre-defined template." )]
     [IconCssClass( "ti ti-files" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

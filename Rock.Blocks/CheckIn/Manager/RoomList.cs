@@ -44,7 +44,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Shows all locations of the type room for the campus (context) and selected schedules." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [Rock.Web.UI.ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

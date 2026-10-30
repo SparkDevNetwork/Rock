@@ -42,7 +42,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Achievements" )]
     [Description( "Displays the details of the given attempt for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

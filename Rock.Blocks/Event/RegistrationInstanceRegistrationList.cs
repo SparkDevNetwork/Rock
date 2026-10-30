@@ -42,7 +42,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the list of Registrations related to a Registration Instance." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Registration Page",

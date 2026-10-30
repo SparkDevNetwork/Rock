@@ -35,6 +35,8 @@ using Rock.Lava;
 using Rock.Logging;
 using Rock.Model;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Jobs
 {
     /// <summary>

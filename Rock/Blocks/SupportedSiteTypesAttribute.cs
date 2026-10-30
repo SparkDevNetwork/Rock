@@ -17,6 +17,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Model;
+
 namespace Rock.Blocks
 {
     /// <summary>
@@ -29,13 +31,13 @@ namespace Rock.Blocks
         /// Gets the site types that the block type supports.
         /// </summary>
         /// <value>The site types that the block type supports.</value>
-        public IEnumerable<Model.SiteType> SiteTypes { get; }
+        public IEnumerable<SiteType> SiteTypes { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SupportedSiteTypesAttribute"/> class.
         /// </summary>
         /// <param name="siteTypes">The supported site types.</param>
-        public SupportedSiteTypesAttribute( params Model.SiteType[] siteTypes )
+        public SupportedSiteTypesAttribute( params SiteType[] siteTypes )
         {
             SiteTypes = siteTypes;
         }

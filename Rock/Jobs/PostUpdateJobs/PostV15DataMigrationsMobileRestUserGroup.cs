@@ -23,6 +23,7 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Mobile;
 using Rock.Model;
+using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -99,7 +100,7 @@ namespace Rock.Jobs
 
             // A list of an 'ApiKeyId' object that every mobile application should contain.
             var mobileSiteUserIds = SiteCache.GetAllActiveSites()
-                .Where( s => s.SiteType == Rock.Model.SiteType.Mobile )
+                .Where( s => s.SiteType == SiteType.Mobile )
                 .Select( s => s.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>()?.ApiKeyId )
                 .Where( id => id.HasValue )
                 .ToList();
@@ -153,7 +154,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "36336448-3021-4A03-B62D-B85CC3FB5FA2" );
 
             //
@@ -172,7 +173,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "C5D068B8-A3CF-4C8F-BD2B-43BEF433BAC6" );
 
             // Delete( int, int, string ) DELETE.
@@ -185,7 +186,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "B2F664B7-F4E9-4CDA-A1B3-29B6A713070A" );
 
             // Follow( Guid, Guid, string ) POST.
@@ -198,7 +199,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "865D2996-9A90-483C-9BD2-25122355229A" );
 
             // Delete( Guid, Guid, string ) DELETE.
@@ -211,7 +212,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "5F878F7E-5E4C-4DA1-ADB3-24F5B871B9EC" );
 
             //
@@ -226,7 +227,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "98f43094-1188-491b-a43e-1993731ff313" );
 
             migrationHelper.AddRestAction( "9696DB0A-4CCC-4530-BC8D-E4E54A438BFA",
@@ -238,7 +239,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "3DE44323-7873-4BA8-BFDB-4BCC0AC25970" );
 
             // 
@@ -253,7 +254,7 @@ namespace Rock.Jobs
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "96CF823C-D014-4AF3-A17D-64B0C60B6150" );
         }
 
@@ -274,7 +275,7 @@ namespace Rock.Jobs
                 Description = "Group of mobile application people to use for endpoint authorization.",
                 IsSecurityRole = true,
                 IsActive = true,
-                ElevatedSecurityLevel = Utility.Enums.ElevatedSecurityLevel.Extreme,
+                ElevatedSecurityLevel = ElevatedSecurityLevel.Extreme,
                 IsPublic = true
             };
         }

@@ -21,6 +21,9 @@ using System.Drawing;
 using System.IO;
 
 using Rock.Common.Mobile.Enums;
+using Rock.Model;
+
+using DisplayInNavWhen = Rock.Common.Mobile.Enums.DisplayInNavWhen;
 
 namespace Rock.Plugin.HotFixes
 {
@@ -121,7 +124,7 @@ WHERE [Guid] IN ('{publicCourseListPageGuid}', '{publicCourseDetailPageGuid}')
                 Rock.Security.Authorization.VIEW,
                 false,
                 null,
-                ( int ) Rock.Model.SpecialRole.AllUnAuthenticatedUsers,
+                ( int ) SpecialRole.AllUnAuthenticatedUsers,
                 Guid.NewGuid().ToString() );
 
             // Add the linked page attributes for the enroll block.

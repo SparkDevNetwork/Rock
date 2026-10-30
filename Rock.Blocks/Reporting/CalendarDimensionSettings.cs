@@ -29,7 +29,7 @@ namespace Rock.Blocks.Reporting
     [Category( "Reporting" )]
     [Description( "Helps configure and generate the AnalyticsSourceDate table for BI Analytics" )]
     [IconCssClass( "ti ti-calendar" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "df6324dc-1e42-4556-b337-d4e416868a01" )]
     //WAS [Rock.SystemGuid.BlockTypeGuid( "a4c6b9df-5034-40f6-958a-342921142ffb" )]

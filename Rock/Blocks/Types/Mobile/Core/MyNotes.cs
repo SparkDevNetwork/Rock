@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Category( "Mobile > Core" )]
     [Description( "View notes created by you with the ability to manage associations and link unassociated notes." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

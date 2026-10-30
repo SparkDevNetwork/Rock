@@ -29,7 +29,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Bus Status" )]
     [Category( "Bus" )]
     [Description( "Gives insight into the message bus." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

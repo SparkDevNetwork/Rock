@@ -17,14 +17,20 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Categorizes a Registration by how much of its discounted cost has been
     /// paid. Used to drive the Registration Instance Registration List block's
     /// payment status filter.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum RegistrationPaymentStatus
     {
         /// <summary>

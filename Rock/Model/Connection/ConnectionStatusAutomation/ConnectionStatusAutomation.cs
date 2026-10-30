@@ -85,7 +85,7 @@ namespace Rock.Model
         /// Gets or sets the Group Requirements filter.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.GroupRequirementsFilter"/> enum value that represents the Group Requirements filter.
+        /// A <see cref="GroupRequirementsFilter"/> enum value that represents the Group Requirements filter.
         /// </value>
         [DataMember]
         public GroupRequirementsFilter GroupRequirementsFilter { get; set; }

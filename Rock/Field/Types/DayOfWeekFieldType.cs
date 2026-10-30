@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 #endif
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
@@ -70,7 +71,7 @@ namespace Rock.Field.Types
             {
                 publicValue = new ComparisonValue
                 {
-                    ComparisonType = Rock.Model.ComparisonType.EqualTo,
+                    ComparisonType = ComparisonType.EqualTo,
                     Value = publicValue.Value
                 };
             }

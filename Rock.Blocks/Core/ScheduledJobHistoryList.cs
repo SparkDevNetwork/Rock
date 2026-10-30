@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all scheduled job's History." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4b46834f-c9d3-43f3-9de2-8990d3a232c2" )]
     [Rock.SystemGuid.BlockTypeGuid( "2306068d-3551-4c10-8db8-133c030fa4fa" )]

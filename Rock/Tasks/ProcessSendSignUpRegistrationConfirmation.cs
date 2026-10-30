@@ -24,6 +24,8 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Tasks
 {
     /// <summary>

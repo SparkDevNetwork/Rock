@@ -45,7 +45,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Allows a person to set their email preferences and manage their subscriptions to communication channels." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

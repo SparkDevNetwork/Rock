@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Reporting
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// 
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Reporting" )]
+#endif
     public enum ReportFieldType
     {
         /// <summary>

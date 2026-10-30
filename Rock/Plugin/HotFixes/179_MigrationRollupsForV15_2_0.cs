@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -182,7 +184,7 @@ WHERE AttributeId = (SELECT Id FROM Attribute WHERE Guid = '4D245B9E-6B03-46E7-8
                 Rock.Security.Authorization.VIEW,
                 true,
                 Rock.SystemGuid.Group.GROUP_MOBILE_APPLICATION_USERS,
-                Model.SpecialRole.None,
+                SpecialRole.None,
                 "93AFF421-D2B9-46A7-8420-70EC2FF8CD38" );
         }
 

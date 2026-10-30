@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block to administrate MEF plugins." )]
     [IconCssClass( "ti ti-settings" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [TextField( "Component Container",
         Description = "The Rock Extension Managed Component Container to manage. For example: 'Rock.Search.SearchContainer, Rock'",

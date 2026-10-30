@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "030b944d-66b5-4edb-aa38-10081e2acfb6" )]
     [Rock.SystemGuid.BlockTypeGuid( "18fa879f-1466-413b-8623-834d728f677b" )]

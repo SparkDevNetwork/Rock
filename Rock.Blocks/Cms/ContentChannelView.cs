@@ -50,7 +50,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display dynamic content channel items." )]
     [IconCssClass( "ti ti-article" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     #region Block Attributes

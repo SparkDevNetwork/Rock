@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
     [Category( "Event > Interactive Experiences" )]
     [Description( "Displays a list of interactive experience occurrences for the individual to pick from." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

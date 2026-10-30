@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays a list of layouts." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes(Model.SiteType.Web)]
+    [SupportedSiteTypes(SiteType.Web)]
     [LinkedPage( "Detail Page", Description = "The page that will show the layout details.", Key = AttributeKey.DetailPage )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]

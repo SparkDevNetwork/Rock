@@ -47,7 +47,7 @@ namespace Rock.Blocks.CheckIn.Manager
     [Category( "Check-in > Manager" )]
     [Description( "Lists the people who are checked-in but not yet marked present." )]
     [IconCssClass( "ti ti-map-route" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [Rock.Web.UI.ContextAware( typeof( Campus ) )]
 
     #region Block Attributes

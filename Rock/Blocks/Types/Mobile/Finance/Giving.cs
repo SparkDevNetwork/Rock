@@ -49,7 +49,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Category( "Mobile > Finance" )]
     [Description( "Allows an individual to give. Apple and Google Pay are supported." )]
     [IconCssClass( "ti ti-heart-handshake" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

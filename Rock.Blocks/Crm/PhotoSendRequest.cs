@@ -31,6 +31,8 @@ using Rock.ViewModels.Blocks.Crm.PhotoSendRequest;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Crm
 {
     /// <summary>

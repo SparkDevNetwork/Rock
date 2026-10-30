@@ -40,7 +40,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person key attributes (Person Detail Page)." )]
     [IconCssClass( "ti ti-bookmark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "45A9EF77-4048-4097-B7AD-2F610EC96755" )]

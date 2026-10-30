@@ -46,7 +46,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Category( "Engagement > Sign-Up" )]
     [Description( "Displays details about the scheduled opportunities for a given project group." )]
     [IconCssClass( "ti ti-clipboard-text" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -54,7 +54,7 @@ namespace Rock.Web.Cache
         public string Description { get; private set; }
 
         /// <summary>
-        /// Gets or sets the attendance association (<see cref="Rock.Model.StreakStructureType"/>). If not set, this streak type
+        /// Gets or sets the attendance association (<see cref="StreakStructureType"/>). If not set, this streak type
         /// will not produce attendance records.
         /// </summary>
         [DataMember]
@@ -81,7 +81,7 @@ namespace Rock.Web.Cache
         public bool RequiresEnrollment { get; private set; }
 
         /// <summary>
-        /// Gets or sets the timespan that each map bit represents (<see cref="Rock.Model.StreakOccurrenceFrequency"/>).
+        /// Gets or sets the timespan that each map bit represents (<see cref="StreakOccurrenceFrequency"/>).
         /// </summary>
         [DataMember]
         public StreakOccurrenceFrequency OccurrenceFrequency { get; private set; }

@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Crm
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The age classification of a person
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "CRM" )]
+#endif
     public enum AgeClassification
     {
         /// <summary>

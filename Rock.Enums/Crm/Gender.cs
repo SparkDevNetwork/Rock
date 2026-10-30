@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Crm
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The gender of a person
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "CRM" )]
+#endif
     public enum Gender
     {
         /// <summary>

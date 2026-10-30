@@ -37,7 +37,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "System Communication Detail" )]
     [Category( "Communication" )]
     [Description( "Allows the administration of a system communication." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "D57F3F36-26DB-4413-BF62-FA5C9D37E686" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "EFFC90F0-E93E-45C3-8750-F75AF68F9027" )]

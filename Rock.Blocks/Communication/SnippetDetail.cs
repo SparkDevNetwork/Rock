@@ -40,7 +40,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Displays the details of a particular snippet." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

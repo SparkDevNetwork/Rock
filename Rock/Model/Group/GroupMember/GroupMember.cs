@@ -121,10 +121,10 @@ namespace Rock.Model
         public string Note { get; set; }
 
         /// <summary>
-        /// Gets or sets the GroupMember's status (<see cref="Rock.Model.GroupMemberStatus"/>) in the Group. This value is required.
+        /// Gets or sets the GroupMember's status (<see cref="GroupMemberStatus"/>) in the Group. This value is required.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.GroupMemberStatus"/> enum value that represents the GroupMember's status in the group.  A <c>GroupMemberStatus.Active</c> indicates that the GroupMember is active,
+        /// A <see cref="GroupMemberStatus"/> enum value that represents the GroupMember's status in the group.  A <c>GroupMemberStatus.Active</c> indicates that the GroupMember is active,
         /// A <c>GroupMemberStatus.Inactive</c> value indicates that the GroupMember is not active, otherwise their GroupMemberStatus will be <c>GroupMemberStatus.Pending</c>.
         /// </value>
         [Required]

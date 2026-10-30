@@ -46,7 +46,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Category( "Mobile > Communication" )]
     [Description( "Displays a single SMS conversation between Rock and individual." )]
     [IconCssClass( "ti ti-messages" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

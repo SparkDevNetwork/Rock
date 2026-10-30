@@ -39,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Description( "Used to display attribute values based on the category." )]
     [IconCssClass( "ti ti-edit" )]
     [ContextAware]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

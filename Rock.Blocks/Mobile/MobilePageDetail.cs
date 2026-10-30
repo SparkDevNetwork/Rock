@@ -38,7 +38,11 @@ using Rock.ViewModels.Utility;
 using Rock.Web;
 using Rock.Web.Cache;
 
+#if NET
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+#else
 using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+#endif
 
 namespace Rock.Blocks.Mobile
 {

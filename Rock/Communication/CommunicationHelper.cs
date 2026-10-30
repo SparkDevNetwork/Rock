@@ -25,6 +25,8 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication
 {
     /// <summary>

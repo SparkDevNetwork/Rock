@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     [Category( "LMS" )]
     [Description( "Allows the current person or other registrant to enroll in a learning class." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CodeEditorField( "Header Lava Template",
         Key = AttributeKey.HeaderLavaTemplate,

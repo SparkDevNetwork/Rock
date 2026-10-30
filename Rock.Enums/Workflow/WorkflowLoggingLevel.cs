@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Workflow
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The level of details to log
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Workflow" )]
+#endif
     public enum WorkflowLoggingLevel
     {
         /// <summary>

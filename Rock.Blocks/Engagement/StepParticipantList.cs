@@ -44,7 +44,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Lists all the participants in a Step." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Detail Page",

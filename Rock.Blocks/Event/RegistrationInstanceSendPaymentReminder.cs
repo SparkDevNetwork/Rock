@@ -44,7 +44,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Sends payment reminders for paid registrations that have a remaining balance." )]
     [IconCssClass( "ti ti-bell" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Registration Instance Page",

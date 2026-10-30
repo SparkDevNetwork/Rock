@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect clients." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the auth client details.",

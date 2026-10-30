@@ -21,6 +21,8 @@ using System.ComponentModel.Composition;
 using Rock.Model;
 using Rock.Web.UI.Controls.Communication;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication.Medium
 {
 

@@ -44,7 +44,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Allows for the managing of attributes." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -31,6 +31,8 @@ using Rock.ViewModels.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.Web;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -39,7 +41,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

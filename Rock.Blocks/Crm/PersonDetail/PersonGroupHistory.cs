@@ -41,7 +41,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Displays a timeline of a person's history in groups." )]
     [IconCssClass( "ti ti-history" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

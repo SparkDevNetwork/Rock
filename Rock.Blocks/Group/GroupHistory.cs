@@ -38,7 +38,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Displays a timeline of history for a group." )]
     [IconCssClass( "ti ti-history" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

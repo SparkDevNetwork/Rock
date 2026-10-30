@@ -43,6 +43,12 @@ using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+#if NET
+using EmailPreference = Rock.Enums.Crm.EmailPreference;
+#else
+using EmailPreference = Rock.Model.EmailPreference;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
@@ -54,7 +60,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to log in on a mobile application." )]
     [IconCssClass( "ti ti-user-shield" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -849,7 +855,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         person.LastName = lastName;
                         person.Email = email;
                         person.IsEmailActive = true;
-                        person.EmailPreference = Rock.Model.EmailPreference.EmailAllowed;
+                        person.EmailPreference = EmailPreference.EmailAllowed;
 
                         person.NickName = personInfo.NickName?.Trim()?.FixCase();
                         person.Gender = personInfo.Gender.ToNative();

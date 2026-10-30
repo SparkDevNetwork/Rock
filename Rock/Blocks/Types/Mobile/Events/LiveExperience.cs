@@ -39,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Events" )]
     [Description( "Block that is used to connect to a Live Experience from within your mobile application." )]
     [IconCssClass( "ti ti-device-tv" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

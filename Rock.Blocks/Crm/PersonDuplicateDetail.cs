@@ -37,7 +37,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Shows records that are possible duplicates of the selected person." )]
     [IconCssClass( "ti ti-users" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

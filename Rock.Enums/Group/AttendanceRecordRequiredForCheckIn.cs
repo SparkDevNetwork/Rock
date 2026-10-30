@@ -16,12 +16,18 @@
 //
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Check-in Requirements for Group Scheduling
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum AttendanceRecordRequiredForCheckIn
     {
         /// <summary>

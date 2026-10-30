@@ -213,7 +213,7 @@ namespace Rock.Model
         /// that are associated with this Job
         /// </summary>
         /// <value>
-        /// An <see cref="Rock.Model.JobNotificationStatus"/> that indicates when notification emails should be sent for this job. 
+        /// An <see cref="JobNotificationStatus"/> that indicates when notification emails should be sent for this job. 
         /// When this value is <c>JobNotificationStatus.All</c> a notification email will be sent when the Job completes with any completion status.
         /// When this value is <c>JobNotificationStatus.Success</c> a notification email will be sent when the Job has completed successfully.
         /// When this value is <c>JobNotificationStatus.Error</c> a notification email will be sent when the Job completes with an error status.

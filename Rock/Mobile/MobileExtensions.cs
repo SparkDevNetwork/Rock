@@ -18,6 +18,19 @@ using Rock.Common.Mobile.Enums;
 using Rock.Enums.Mobile;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Common.Mobile.Enums.CommunicationType;
+#if NET
+using ConnectionState = Rock.Enums.Connection.ConnectionState;
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+using EmailPreference = Rock.Enums.Crm.EmailPreference;
+using Gender = Rock.Enums.Crm.Gender;
+#else
+using ConnectionState = Rock.Model.ConnectionState;
+using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+using EmailPreference = Rock.Model.EmailPreference;
+using Gender = Rock.Model.Gender;
+#endif
+
 namespace Rock.Mobile
 {
     /// <summary>
@@ -53,42 +66,42 @@ namespace Rock.Mobile
         #region Gender
 
         /// <summary>
-        /// Converts the Rock <see cref="Rock.Model.Gender"/> enumeration to the mobile counterpart.
+        /// Converts the Rock <see cref="Gender"/> enumeration to the mobile counterpart.
         /// </summary>
         /// <param name="gender">The gender.</param>
-        /// <returns>The <see cref="Gender"/> equivalent.</returns>
-        public static Gender ToMobile( this Rock.Model.Gender gender )
+        /// <returns>The <see cref="Rock.Common.Mobile.Enums.Gender"/> equivalent.</returns>
+        public static Rock.Common.Mobile.Enums.Gender ToMobile( this Gender gender )
         {
             switch ( gender )
             {
-                case Model.Gender.Male:
-                    return Gender.Male;
+                case Gender.Male:
+                    return Rock.Common.Mobile.Enums.Gender.Male;
 
-                case Model.Gender.Female:
-                    return Gender.Female;
+                case Gender.Female:
+                    return Rock.Common.Mobile.Enums.Gender.Female;
 
                 default:
-                    return Gender.Unknown;
+                    return Rock.Common.Mobile.Enums.Gender.Unknown;
             }
         }
 
         /// <summary>
-        /// Converts a <see cref="Rock.Model.DisplayInNavWhen"/> to a mobile <see cref="Rock.Common.Mobile.Enums.DisplayInNavWhen"/>.
+        /// Converts a <see cref="DisplayInNavWhen"/> to a mobile <see cref="Rock.Common.Mobile.Enums.DisplayInNavWhen"/>.
         /// </summary>
         /// <param name="displayInNavWhen">The display in nav when.</param>
         /// <returns>DisplayInNavWhen.</returns>
-        public static DisplayInNavWhen ToMobile( this Rock.Model.DisplayInNavWhen displayInNavWhen )
+        public static Rock.Common.Mobile.Enums.DisplayInNavWhen ToMobile( this DisplayInNavWhen displayInNavWhen )
         {
             switch ( displayInNavWhen )
             {
-                case Model.DisplayInNavWhen.Always:
-                    return DisplayInNavWhen.Always;
-                case Model.DisplayInNavWhen.Never:
-                    return DisplayInNavWhen.Never;
-                case Model.DisplayInNavWhen.WhenAllowed:
-                    return DisplayInNavWhen.WhenAllowed;
+                case DisplayInNavWhen.Always:
+                    return Rock.Common.Mobile.Enums.DisplayInNavWhen.Always;
+                case DisplayInNavWhen.Never:
+                    return Rock.Common.Mobile.Enums.DisplayInNavWhen.Never;
+                case DisplayInNavWhen.WhenAllowed:
+                    return Rock.Common.Mobile.Enums.DisplayInNavWhen.WhenAllowed;
                 default:
-                    return DisplayInNavWhen.Never;
+                    return Rock.Common.Mobile.Enums.DisplayInNavWhen.Never;
             }
         }
 
@@ -128,17 +141,17 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="emailPreference"></param>
         /// <returns></returns>
-        public static Rock.Common.Mobile.Enums.EmailPreference ToMobile( this Model.EmailPreference emailPreference )
+        public static Rock.Common.Mobile.Enums.EmailPreference ToMobile( this EmailPreference emailPreference )
         {
             switch ( emailPreference )
             {
-                case Model.EmailPreference.DoNotEmail:
-                    return EmailPreference.DoNotEmail;
-                case Model.EmailPreference.NoMassEmails:
-                    return EmailPreference.NoMassEmails;
+                case EmailPreference.DoNotEmail:
+                    return Rock.Common.Mobile.Enums.EmailPreference.DoNotEmail;
+                case EmailPreference.NoMassEmails:
+                    return Rock.Common.Mobile.Enums.EmailPreference.NoMassEmails;
 
                 default:
-                    return EmailPreference.EmailAllowed;
+                    return Rock.Common.Mobile.Enums.EmailPreference.EmailAllowed;
             }
         }
 
@@ -207,22 +220,22 @@ namespace Rock.Mobile
     public static class MobileExtensionsGender
     {
         /// <summary>
-        /// Converts to mobile <see cref="Gender"/> to a web native <see cref="Rock.Model.Gender"/>.
+        /// Converts to mobile <see cref="Rock.Common.Mobile.Enums.Gender"/> to a web native <see cref="Gender"/>.
         /// </summary>
         /// <param name="gender">The gender to be converted.</param>
         /// <returns>The local gender value.</returns>
-        public static Rock.Model.Gender ToNative( this Gender gender )
+        public static Gender ToNative( this Rock.Common.Mobile.Enums.Gender gender )
         {
             switch ( gender )
             {
-                case Gender.Male:
-                    return Model.Gender.Male;
+                case Rock.Common.Mobile.Enums.Gender.Male:
+                    return Gender.Male;
 
-                case Gender.Female:
-                    return Model.Gender.Female;
+                case Rock.Common.Mobile.Enums.Gender.Female:
+                    return Gender.Female;
 
                 default:
-                    return Model.Gender.Unknown;
+                    return Gender.Unknown;
             }
         }
     }
@@ -233,7 +246,7 @@ namespace Rock.Mobile
     public static class MobileExtensionsCommunicationPreference
     {
         /// <summary>
-        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// Converts a mobile <see cref="Rock.Common.Mobile.Enums.EmailPreference"/> to a web native.
         /// </summary>
         /// <param name="communicationType">The email preference.</param>
         /// <returns>Rock.Model.CommunicationType.</returns>
@@ -261,20 +274,20 @@ namespace Rock.Mobile
     public static class MobileExtensionsEmailPreference
     {
         /// <summary>
-        /// Converts a mobile <see cref="EmailPreference"/> to a web native.
+        /// Converts a mobile <see cref="Rock.Common.Mobile.Enums.EmailPreference"/> to a web native.
         /// </summary>
         /// <param name="emailPreference">The email preference.</param>
         /// <returns>Rock.Model.EmailPreference.</returns>
-        public static Rock.Model.EmailPreference ToNative( this EmailPreference emailPreference )
+        public static EmailPreference ToNative( this Rock.Common.Mobile.Enums.EmailPreference emailPreference )
         {
             switch ( emailPreference )
             {
-                case EmailPreference.DoNotEmail:
-                    return Model.EmailPreference.DoNotEmail;
-                case EmailPreference.NoMassEmails:
-                    return Model.EmailPreference.NoMassEmails;
+                case Rock.Common.Mobile.Enums.EmailPreference.DoNotEmail:
+                    return EmailPreference.DoNotEmail;
+                case Rock.Common.Mobile.Enums.EmailPreference.NoMassEmails:
+                    return EmailPreference.NoMassEmails;
                 default:
-                    return Model.EmailPreference.EmailAllowed;
+                    return EmailPreference.EmailAllowed;
             }
         }
     }
@@ -289,17 +302,17 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
-        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this Rock.Model.ConnectionState state )
+        public static Rock.Common.Mobile.Enums.ConnectionState ToMobile( this ConnectionState state )
         {
             switch ( state )
             {
-                case Model.ConnectionState.Active:
+                case ConnectionState.Active:
                     return Rock.Common.Mobile.Enums.ConnectionState.Active;
-                case Model.ConnectionState.Inactive:
+                case ConnectionState.Inactive:
                     return Rock.Common.Mobile.Enums.ConnectionState.Inactive;
-                case Model.ConnectionState.FutureFollowUp:
+                case ConnectionState.FutureFollowUp:
                     return Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp;
-                case Model.ConnectionState.Connected:
+                case ConnectionState.Connected:
                     return Rock.Common.Mobile.Enums.ConnectionState.Connected;
                 default:
                     return Rock.Common.Mobile.Enums.ConnectionState.Active;
@@ -311,20 +324,20 @@ namespace Rock.Mobile
         /// </summary>
         /// <param name="state"></param>
         /// <returns></returns>
-        public static Rock.Model.ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
+        public static ConnectionState ToNative( this Rock.Common.Mobile.Enums.ConnectionState state )
         {
             switch ( state )
             {
                 case Rock.Common.Mobile.Enums.ConnectionState.Active:
-                    return Model.ConnectionState.Active;
+                    return ConnectionState.Active;
                 case Rock.Common.Mobile.Enums.ConnectionState.Inactive:
-                    return Model.ConnectionState.Inactive;
+                    return ConnectionState.Inactive;
                 case Rock.Common.Mobile.Enums.ConnectionState.FutureFollowUp:
-                    return Model.ConnectionState.FutureFollowUp;
+                    return ConnectionState.FutureFollowUp;
                 case Rock.Common.Mobile.Enums.ConnectionState.Connected:
-                    return Model.ConnectionState.Connected;
+                    return ConnectionState.Connected;
                 default:
-                    return Model.ConnectionState.Active;
+                    return ConnectionState.Active;
             }
         }
 

@@ -42,7 +42,7 @@ namespace Rock.Blocks.Group.Scheduling
     [Category( "Group Scheduling" )]
     [Description( "Allows management of group scheduling for a specific person (worker)." )]
     [IconCssClass( "ti ti-calendar-month" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Person ) )]
 
     #region Block Attributes

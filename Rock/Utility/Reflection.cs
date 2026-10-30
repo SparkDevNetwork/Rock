@@ -85,6 +85,13 @@ namespace Rock
                     ( t.Name.Equals( enumTypeName, StringComparison.OrdinalIgnoreCase ) ||
                      t.FullName.Equals( enumTypeName, StringComparison.OrdinalIgnoreCase ) ) );
 
+#if NET
+            if ( enumType == null )
+            {
+                enumType = GetLegacyEnumType( enumTypeName );
+            }
+#endif
+
             if ( enumType != null )
             {
                 _enumTypeCache[enumTypeName] = enumType;
@@ -92,7 +99,83 @@ namespace Rock
 
             return enumType;
         }
-        private static readonly Dictionary<string, Type> _enumTypeCache = new Dictionary<string, Type>();
+        private static readonly ConcurrentDictionary<string, Type> _enumTypeCache = new ConcurrentDictionary<string, Type>();
+
+#if NET
+        /*
+            10/29/26 - CLAUDE
+
+            On .NET the legacy enums in the Rock.Enums project live in Rock.Enums.[Domain]
+            instead of Rock.Model, Rock.Utility, Rock.Utility.Enums, Rock.Media or
+            Rock.Reporting. Lava templates and other stored settings can still reference the
+            old full names (such as 'Rock.Model.SiteType'), so those names are mapped to the
+            enum with the same name in a Rock.Enums.[Domain] namespace.
+
+            Reason: Keep stored legacy enum type names working on .NET.
+        */
+
+        /// <summary>
+        /// The namespaces that the legacy enums in the Rock.Enums project used before
+        /// they were moved into Rock.Enums.[Domain] on .NET.
+        /// </summary>
+        private static readonly string[] _legacyEnumNamespaces = new[]
+        {
+            "Rock.Model",
+            "Rock.Utility",
+            "Rock.Utility.Enums",
+            "Rock.Media",
+            "Rock.Reporting"
+        };
+
+        /// <summary>
+        /// Gets the enum type for a legacy full name, such as 'Rock.Model.SiteType', whose
+        /// enum now lives in a Rock.Enums.[Domain] namespace.
+        /// </summary>
+        /// <param name="enumTypeName">The legacy full name of the enum.</param>
+        /// <returns>The enum type, or <c>null</c> if the name does not use a legacy namespace or a single matching enum was not found.</returns>
+        private static Type GetLegacyEnumType( string enumTypeName )
+        {
+            var separatorIndex = enumTypeName.LastIndexOf( '.' );
+
+            if ( separatorIndex <= 0 )
+            {
+                return null;
+            }
+
+            var legacyNamespace = enumTypeName.Substring( 0, separatorIndex );
+            var name = enumTypeName.Substring( separatorIndex + 1 );
+            var isLegacyNamespace = _legacyEnumNamespaces.Any( ns => ns.Equals( legacyNamespace, StringComparison.OrdinalIgnoreCase ) );
+
+            if ( !isLegacyNamespace )
+            {
+                return null;
+            }
+
+            // A name that still exists in Rock (such as Rock.Model.CommunicationType)
+            // was never moved, even if Rock.Enums has an enum with the same name.
+            var existingType = typeof( Reflection ).Assembly.GetType( enumTypeName, false, true );
+
+            if ( existingType != null )
+            {
+                return existingType.IsEnum ? existingType : null;
+            }
+
+            // Only consider Rock.Enums.[Domain] so block specific enums in
+            // Rock.Enums.Blocks.* never match a legacy name.
+            var domainPrefix = "Rock.Enums.";
+            var matches = typeof( Rock.Enums.Cms.SiteType ).Assembly
+                .GetTypes()
+                .Where( t => t.IsEnum
+                    && t.Name.Equals( name, StringComparison.OrdinalIgnoreCase )
+                    && t.Namespace != null
+                    && t.Namespace.StartsWith( domainPrefix )
+                    && t.Namespace.IndexOf( '.', domainPrefix.Length ) < 0 )
+                .Take( 2 )
+                .ToList();
+
+            return matches.Count == 1 ? matches[0] : null;
+        }
+#endif
 
         /// <summary>
         /// Finds the first matching type in Rock or any of the assemblies that reference Rock

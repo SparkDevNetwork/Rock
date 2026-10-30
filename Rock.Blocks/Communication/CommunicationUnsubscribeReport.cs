@@ -39,7 +39,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Unsubscribe Report" )]
     [Category( "Communication" )]
     [Description( "Used for displaying details of recipients who have unsubscribed as a result of receiving communications." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "FA66E8EA-EC5B-4E1B-BC08-20608AB3CD22" )]
     [Rock.SystemGuid.BlockTypeGuid( "33AC3AE0-928E-42C4-B6AC-BA4AB1DA4520" )]

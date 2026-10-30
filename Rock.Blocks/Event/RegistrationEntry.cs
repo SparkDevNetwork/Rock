@@ -63,7 +63,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Block used to register for a registration instance." )]
     [IconCssClass( "ti ti-clipboard-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

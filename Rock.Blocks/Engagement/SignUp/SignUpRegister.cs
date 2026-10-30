@@ -35,6 +35,8 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Engagement.SignUp
 {
     /// <summary>
@@ -46,7 +48,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [Category( "Engagement > Sign-Up" )]
     [Description( "Block used to register for a sign-up group/project occurrence date time." )]
     [IconCssClass( "ti ti-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -38,6 +38,8 @@ using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -1729,7 +1731,7 @@ namespace Rock.Blocks.Communication
             var isNewCommunication = communication.Id == 0;
 
             // If started from a grid and not edited yet, treat it as new so 'Default As Bulk' block setting will apply.
-            var isNewCommunicationFromGrid = communication.Status == Model.CommunicationStatus.Transient
+            var isNewCommunicationFromGrid = communication.Status == CommunicationStatus.Transient
                 && communication.CreatedDateTime.HasValue
                 && communication.ModifiedDateTime.HasValue
                 && communication.CreatedDateTime.Value == communication.ModifiedDateTime.Value;

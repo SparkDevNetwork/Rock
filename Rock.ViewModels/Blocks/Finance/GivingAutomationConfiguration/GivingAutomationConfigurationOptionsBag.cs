@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Finance.GivingAutomationConfiguration
@@ -54,12 +55,12 @@ namespace Rock.ViewModels.Blocks.Finance.GivingAutomationConfiguration
         public List<ListItemBag> SystemCommunications { get; set; }
 
         /// <summary>
-        /// Gets or sets the amount-sensitivity help text keyed by <see cref="Rock.Model.AlertType"/> value.
+        /// Gets or sets the amount-sensitivity help text keyed by <see cref="AlertType"/> value.
         /// </summary>
         public Dictionary<string, string> AmountSensitivityDescriptions { get; set; }
 
         /// <summary>
-        /// Gets or sets the frequency-sensitivity help text keyed by <see cref="Rock.Model.AlertType"/> value.
+        /// Gets or sets the frequency-sensitivity help text keyed by <see cref="AlertType"/> value.
         /// </summary>
         public Dictionary<string, string> FrequencySensitivityDescriptions { get; set; }
 

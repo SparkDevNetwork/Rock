@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -243,7 +245,7 @@ WHERE [Guid] = '{Rock.SystemGuid.BlockType.MOBILE_GROUPS_GROUP_REGISTRATION}'
                 Rock.Security.Authorization.EDIT,
                 true,
                 string.Empty,
-                Rock.Model.SpecialRole.AllAuthenticatedUsers,
+                SpecialRole.AllAuthenticatedUsers,
                 "9D5DBDC5-12F1-4ED1-B369-440DEF4F0CDF" );
         }
     }

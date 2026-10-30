@@ -39,6 +39,11 @@ using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 
 using Authorization = Rock.Security.Authorization;
+#if NET
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+#else
+using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+#endif
 
 namespace Rock.Mobile
 {
@@ -875,7 +880,7 @@ namespace Rock.Mobile
                     // This property was obsoleted for the DisplayInNavWhen property,
                     // but we set it just in case someone is still on an old version of the shell.
 #pragma warning disable CS0618 // Type or member is obsolete
-                    DisplayInNav = page.DisplayInNavWhen == Rock.Model.DisplayInNavWhen.WhenAllowed,
+                    DisplayInNav = page.DisplayInNavWhen == DisplayInNavWhen.WhenAllowed,
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     DisplayInNavWhen = page.DisplayInNavWhen.ToMobile(),

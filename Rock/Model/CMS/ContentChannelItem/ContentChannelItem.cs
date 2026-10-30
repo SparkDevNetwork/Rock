@@ -115,10 +115,10 @@ namespace Rock.Model
         public int Priority { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.ContentChannelItemStatus"/> (status) of this ContentItem.
+        /// Gets or sets the <see cref="ContentChannelItemStatus"/> (status) of this ContentItem.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.ContentChannelItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is 
+        /// A <see cref="ContentChannelItemStatus"/> enumeration value that represents the status of this ContentItem. When <c>ContentItemStatus.PendingApproval</c> the item is 
         /// awaiting approval; when <c>ContentItemStatus.Approved</c> the item has been approved by the approver, when <c>ContentItemStatus.Denied</c> the item has been denied by the approver.
         /// </value>
         [DataMember]

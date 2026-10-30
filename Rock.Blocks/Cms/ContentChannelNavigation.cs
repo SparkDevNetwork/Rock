@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a menu of content channels/items that user is authorized to view." )]
     [IconCssClass( "ti ti-speakerphone" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

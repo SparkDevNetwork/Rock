@@ -43,6 +43,8 @@ using Rock.Utilities;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication.Chat
 {
     /// <summary>

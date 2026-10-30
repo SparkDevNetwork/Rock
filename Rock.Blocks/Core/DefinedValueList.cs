@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing values for a defined type." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefinedTypeField( "Defined Type",
         Description = "If a Defined Type is set, only its Defined Values will be displayed (regardless of the querystring parameters).",

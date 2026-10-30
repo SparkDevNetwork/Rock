@@ -42,7 +42,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Giving Overview" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Block used to view the giving." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

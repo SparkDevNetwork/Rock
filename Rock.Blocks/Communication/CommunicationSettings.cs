@@ -34,7 +34,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block used to set values specific to communication." )]
     [IconCssClass( "ti ti-tool" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0B3EA469-5969-4CD0-AE2A-7856F2EADF2B" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "7594EF64-737B-4CD8-B09F-89663A1AFDB0" )]

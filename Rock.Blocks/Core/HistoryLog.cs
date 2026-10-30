@@ -43,7 +43,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "History Log" )]
     [Category( "Core" )]
     [Description( "Block for displaying the history of changes to a particular entity." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware]
 
     #region Block Attributes

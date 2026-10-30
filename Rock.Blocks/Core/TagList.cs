@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing a list of tags." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [BooleanField( "Show Qualifier Columns",
         Description = "Should the 'Qualifier Column' and 'Qualifier Value' fields be displayed in the grid?",

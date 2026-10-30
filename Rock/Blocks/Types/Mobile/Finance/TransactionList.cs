@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Category( "Mobile > Finance" )]
     [Description( "The Transaction List block." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

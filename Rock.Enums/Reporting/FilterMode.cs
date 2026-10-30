@@ -15,12 +15,18 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Reporting
+#else
 namespace Rock.Reporting
+#endif
 {
     /// <summary>
     /// The operating mode the filter should use when displaying itself.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Reporting" )]
+#endif
     public enum FilterMode
     {
         /// <summary>

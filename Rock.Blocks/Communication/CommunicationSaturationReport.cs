@@ -32,6 +32,8 @@ using Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Shows analytics for communications." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group List Personalized Lava" )]
     [Category( "Groups" )]
     [Description( "Lists all group that the person is a member of using a Lava template." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( Rock.Enums.Cms.BlockReloadMode.Page )]
 
     #region Block Attributes

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Connection
     [DisplayName( "Connection Opportunity Signup" )]
     [Category( "Connection" )]
     [Description( "Block used to sign up for a connection opportunity." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
     [BooleanField( "Display Home Phone",

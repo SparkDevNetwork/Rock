@@ -25,7 +25,11 @@ using Rock.Mobile;
 using Rock.Model;
 using Rock.Utility;
 
+#if NET
+using Gender = Rock.Enums.Crm.Gender;
+#else
 using Gender = Rock.Model.Gender;
+#endif
 using RelationshipFocus = Rock.Enums.Engagement.RelationshipFocus;
 using RelationshipStrength = Rock.Enums.Engagement.RelationshipStrength;
 using TouchpointType = Rock.Enums.Engagement.TouchpointType;

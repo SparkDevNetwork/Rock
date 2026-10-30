@@ -36,7 +36,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Confirm Account" )]
     [Category( "Security" )]
     [Description( "Block for user to confirm a newly created login account, usually from an email that was sent to them." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

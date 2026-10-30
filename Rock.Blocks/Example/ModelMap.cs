@@ -43,7 +43,7 @@ namespace Rock.Blocks.Example
     [Category( "Obsidian > Example" )]
     [Description( "Displays the details about each model class in Rock.Model." )]
     [IconCssClass( "ti ti-map" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

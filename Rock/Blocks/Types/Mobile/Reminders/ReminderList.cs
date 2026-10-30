@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Reminders
     [Category( "Reminders" )]
     [Description( "Allows management of the current person's reminders." )]
     [IconCssClass( "ti ti-list-details" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     [LinkedPage(
         "Reminder Edit Page",

@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks;
@@ -33,7 +34,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Log Out" )]
     [Category( "Security" )]
     [Description( "This block logs the current person out." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

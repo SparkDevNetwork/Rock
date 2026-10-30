@@ -36,7 +36,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Dynamic Chart" )]
     [Category( "Reporting" )]
     [Description( "Block to display a chart using SQL as the chart datasource" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

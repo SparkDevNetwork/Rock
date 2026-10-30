@@ -41,7 +41,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Lists the content channel items associated to a particular calendar item occurrence." )]
     [IconCssClass( "ti ti-speakerphone" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

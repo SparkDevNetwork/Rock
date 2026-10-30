@@ -68,7 +68,7 @@ namespace Rock.Model
         public int? GroupMemberRoleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.GroupMemberStatus"/>.
+        /// Gets or sets the <see cref="GroupMemberStatus"/>.
         /// </summary>
         /// <value>
         /// The group member status.

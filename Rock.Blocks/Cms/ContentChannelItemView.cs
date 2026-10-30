@@ -51,7 +51,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block to display a specific content channel item." )]
     [IconCssClass( "ti ti-article" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     #region Block Attributes

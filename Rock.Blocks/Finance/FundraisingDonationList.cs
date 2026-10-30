@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Category( "Fundraising" )]
     [Description( "Lists donations in a grid for the current fundraising opportunity or participant." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CustomCheckboxListField( "Hide Grid Columns",
         Key = AttributeKey.HideGridColumns,

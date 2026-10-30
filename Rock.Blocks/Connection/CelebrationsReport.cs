@@ -44,7 +44,7 @@ namespace Rock.Blocks.Connection
     [Category( "Connection" )]
     [Description( "Displays a list of connection celebrations." )]
     [IconCssClass( "ti ti-trophy" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Connection Request Detail Page",
         Description = "The page that will show the connection request details.",

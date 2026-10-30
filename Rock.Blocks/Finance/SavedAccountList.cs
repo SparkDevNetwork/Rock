@@ -41,7 +41,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web, SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Web, SiteType.Mobile )]
 
     #region Block Attributes
 

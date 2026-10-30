@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 
+using Rock.Model;
+
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
@@ -36,7 +38,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the expression grouping.
         /// </value>
-        public Model.FilterExpressionType ExpressionType { get; set; }
+        public FilterExpressionType ExpressionType { get; set; }
 
         /// <summary>
         /// Gets or sets the child expressions.
@@ -55,7 +57,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public CompoundFilterExpression()
         {
-            ExpressionType = Model.FilterExpressionType.GroupAny;
+            ExpressionType = FilterExpressionType.GroupAny;
             Filters = new List<FilterExpression>();
         }
 
@@ -66,7 +68,7 @@ namespace Rock.Web.UI.Controls
         public CompoundFilterExpression( Newtonsoft.Json.Linq.JObject jobject )
             : this()
         {
-            ExpressionType = ( Model.FilterExpressionType ) jobject.Value<int>( "ExpressionType" );
+            ExpressionType = ( FilterExpressionType ) jobject.Value<int>( "ExpressionType" );
             foreach ( Newtonsoft.Json.Linq.JObject filter in jobject.Value<Newtonsoft.Json.Linq.JArray>( "Filters" ) )
             {
                 Filters.Add( FilterExpression.FromJObject( filter ) );
@@ -94,8 +96,8 @@ namespace Rock.Web.UI.Controls
 
             switch ( ExpressionType )
             {
-                case Model.FilterExpressionType.GroupAll:
-                case Model.FilterExpressionType.GroupAnyFalse:
+                case FilterExpressionType.GroupAll:
+                case FilterExpressionType.GroupAnyFalse:
                     foreach ( var comparison in Filters )
                     {
                         var expr = comparison.GetExpression( property );
@@ -110,7 +112,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    if ( ExpressionType == Model.FilterExpressionType.GroupAnyFalse )
+                    if ( ExpressionType == FilterExpressionType.GroupAnyFalse )
                     {
                         //
                         // If only one of the conditions must be false, invert the expression so
@@ -121,8 +123,8 @@ namespace Rock.Web.UI.Controls
 
                     return expression;
 
-                case Model.FilterExpressionType.GroupAny:
-                case Model.FilterExpressionType.GroupAllFalse:
+                case FilterExpressionType.GroupAny:
+                case FilterExpressionType.GroupAllFalse:
                     foreach ( var comparison in Filters )
                     {
                         var expr = comparison.GetExpression( property );
@@ -137,7 +139,7 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    if ( ExpressionType == Model.FilterExpressionType.GroupAllFalse )
+                    if ( ExpressionType == FilterExpressionType.GroupAllFalse )
                     {
                         //
                         // If all of the conditions must be false, invert the expression so
@@ -166,11 +168,11 @@ namespace Rock.Web.UI.Controls
 
             switch ( ExpressionType )
             {
-                case Model.FilterExpressionType.GroupAll:
+                case FilterExpressionType.GroupAll:
                     operationWord = " And ";
                     break;
 
-                case Model.FilterExpressionType.GroupAny:
+                case FilterExpressionType.GroupAny:
                     operationWord = " Or ";
                     break;
 
@@ -181,7 +183,7 @@ namespace Rock.Web.UI.Controls
 
             var text = string.Join( operationWord, Filters.Select( f => f.ToString() ) );
 
-            if ( ExpressionType == Model.FilterExpressionType.GroupAllFalse || ExpressionType == Model.FilterExpressionType.GroupAnyFalse )
+            if ( ExpressionType == FilterExpressionType.GroupAllFalse || ExpressionType == FilterExpressionType.GroupAnyFalse )
             {
                 text = $"Not ({ text })";
             }

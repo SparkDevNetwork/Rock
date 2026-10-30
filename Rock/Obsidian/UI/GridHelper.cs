@@ -26,6 +26,8 @@ using Rock.Net;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Obsidian.UI
 {
     /// <summary>
@@ -157,7 +159,7 @@ namespace Rock.Obsidian.UI
                 var communication = new Rock.Model.Communication
                 {
                     IsBulkCommunication = true,
-                    Status = Model.CommunicationStatus.Transient,
+                    Status = CommunicationStatus.Transient,
                     CommunicationType = CommunicationType.Email,
                     AdditionalMergeFields = communicationBag.MergeFields,
                     SenderPersonAliasId = currentPersonAliasId

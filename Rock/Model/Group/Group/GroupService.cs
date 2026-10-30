@@ -2178,7 +2178,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="sourceSchedule">The schedule to be copied.</param>
         /// <returns>
-        ///     <para>The source schedule when <seealso cref="Rock.Model.ScheduleType.Named"/>.</para>
+        ///     <para>The source schedule when <seealso cref="ScheduleType.Named"/>.</para>
         ///     A new Schedule with matching iCalendarContent, WeeklyDayOfWeek and WeeklyTimeOfDay for other ScheduleTypes.
         /// </returns>
         private static Schedule GetSchedule( Schedule sourceSchedule )

@@ -16,12 +16,18 @@
 //
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Workflow
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// WorkflowActionFormPersonEntryOption Enum
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Workflow" )]
+#endif
     public enum WorkflowActionFormPersonEntryOption
     {
         /// <summary>

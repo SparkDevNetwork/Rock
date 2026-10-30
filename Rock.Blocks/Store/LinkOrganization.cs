@@ -26,6 +26,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Configuration;
 using Rock.Configuration.ConnectedServices;
+using Rock.Model;
 
 namespace Rock.Blocks.Store
 {
@@ -38,7 +39,7 @@ namespace Rock.Blocks.Store
     [Category( "Store" )]
     [Description( "Links a Rock organization to the store." )]
     [IconCssClass( "ti ti-link" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "363974F0-1A85-40C6-AAAE-36D58A7B7C03" )]
     // WAS [Rock.SystemGuid.BlockTypeGuid( "39F9DD1F-675B-492A-8DD2-E89F7BDA3FB3" )]

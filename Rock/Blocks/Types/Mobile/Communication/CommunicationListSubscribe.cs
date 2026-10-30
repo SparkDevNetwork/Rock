@@ -28,6 +28,8 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Types.Mobile.Events
 {
     /// <summary>
@@ -39,7 +41,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Communication" )]
     [Description( "Allows the user to subscribe or unsubscribe from specific communication lists." )]
     [IconCssClass( "ti ti-at" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

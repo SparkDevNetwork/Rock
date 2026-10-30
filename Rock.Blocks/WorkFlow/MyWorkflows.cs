@@ -41,7 +41,7 @@ namespace Rock.Blocks.Workflow
     [Category( "Workflow" )]
     [Description( "Block to display the workflow types that user is authorized to view, and the activities that are currently assigned to the user." )]
     [IconCssClass( "ti ti-settings-cog" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

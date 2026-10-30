@@ -36,10 +36,16 @@ using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-using ConnectionState = Rock.Model.ConnectionState;
 using DueStatus = Rock.Common.Mobile.Enums.DueStatus;
+#if NET
+using ConnectionState = Rock.Enums.Connection.ConnectionState;
+using GroupMemberStatus = Rock.Enums.Group.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Enums.Group.MeetsGroupRequirement;
+#else
+using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+#endif
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -52,7 +58,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays the details of the given connection request for editing state, status, etc." )]
     [IconCssClass( "ti ti-id" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

@@ -35,6 +35,8 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication
 {
     /// <summary>
@@ -301,7 +303,7 @@ namespace Rock.Communication
                     .Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communication.Id );
 
-                var isApprovedCommunication = communication != null && communication.Status == Model.CommunicationStatus.Approved;
+                var isApprovedCommunication = communication != null && communication.Status == CommunicationStatus.Approved;
                 var isReadyToSend = communication != null &&
                                         ( !communication.FutureSendDateTime.HasValue
                                         || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 );
@@ -437,13 +439,13 @@ namespace Rock.Communication
                         recipient.StatusNote = "Recipient Email Address is not active";
                         valid = false;
                     }
-                    else if ( person.EmailPreference == Model.EmailPreference.DoNotEmail )
+                    else if ( person.EmailPreference == EmailPreference.DoNotEmail )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Communication Preference of 'Do Not Send Communication'";
                         valid = false;
                     }
-                    else if ( person.EmailPreference == Model.EmailPreference.NoMassEmails && isBulkCommunication )
+                    else if ( person.EmailPreference == EmailPreference.NoMassEmails && isBulkCommunication )
                     {
                         recipient.Status = CommunicationRecipientStatus.Failed;
                         recipient.StatusNote = "Communication Preference of 'No Bulk Communication'";
@@ -1103,7 +1105,7 @@ namespace Rock.Communication
                     .Include( a => a.CommunicationTemplate )
                     .FirstOrDefault( c => c.Id == communicationId );
 
-            var isApprovedCommunication = communication != null && communication.Status == Model.CommunicationStatus.Approved;
+            var isApprovedCommunication = communication != null && communication.Status == CommunicationStatus.Approved;
             var isReadyToSend = communication != null &&
                                     ( !communication.FutureSendDateTime.HasValue
                                     || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 );

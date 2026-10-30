@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Block that lists Known Individuals for a given Personalization Segment." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "3d9b1436-3022-4875-9346-020317aee3b5" )]
     //WAS [Rock.SystemGuid.BlockTypeGuid( "b286e17f-1faa-48c4-8a0b-035018207212" )]

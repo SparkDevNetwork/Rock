@@ -51,7 +51,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "The standard Rock block for performing check-in at a kiosk." )]
     [IconCssClass( "ti ti-clipboard-check" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

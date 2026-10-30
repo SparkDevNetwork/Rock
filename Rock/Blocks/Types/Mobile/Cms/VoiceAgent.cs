@@ -48,7 +48,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "A voice agent that help you with you everyday task." )]
     [IconCssClass( "ti ti-brain" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
 
     [TextField( "API Key",

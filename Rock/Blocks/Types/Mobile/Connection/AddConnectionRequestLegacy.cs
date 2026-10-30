@@ -35,7 +35,11 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+#if NET
+using GroupMemberStatus = Rock.Enums.Group.GroupMemberStatus;
+#else
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+#endif
 
 namespace Rock.Blocks.Types.Mobile.Connection
 {
@@ -48,7 +52,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Allows an individual to create and add a new Connection Request." )]
     [IconCssClass( "ti ti-plus" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -666,7 +670,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 }
 
                 placementGroupId = new GroupService( rockContext ).Get( placementGroup.Value, false )?.Id;
-                placementGroupMemberStatus = ( Rock.Model.GroupMemberStatus ) bag.PlacementGroupMemberStatusValue;
+                placementGroupMemberStatus = ( GroupMemberStatus ) bag.PlacementGroupMemberStatusValue;
 
                 if ( placementGroupId.HasValue && bag.PlacementGroupMemberRoleId.IsNotNullOrWhiteSpace() )
                 {

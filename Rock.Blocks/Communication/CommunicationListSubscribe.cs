@@ -29,6 +29,8 @@ using Rock.ViewModels.Blocks.Communication.CommunicationListSubscribe;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -38,7 +40,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to." )]
     [IconCssClass( "ti ti-speakerphone" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Campus ), typeof( Person ) )]
 
     #region Block Attributes

@@ -41,7 +41,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Lists pages in Rock." )]
     [IconCssClass( "ti ti-files" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "0CE697C7-F101-4326-8BFD-3A2DC936F877" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "EE48BABA-C094-4A5F-A393-383B9BDE16E2" )]

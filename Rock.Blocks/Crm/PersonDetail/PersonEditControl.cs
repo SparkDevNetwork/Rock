@@ -35,7 +35,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Edit" )]
     [Description( "Allows you to navigate to the person edit page." )]
     [IconCssClass( "ti ti-pencil" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Web.UI.ContextAware( typeof( Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "3D8A8B2C-7221-4157-A89D-5777FC44284E" )]

@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Utility.Enums;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Security.RockSecuritySettings
@@ -29,7 +30,7 @@ namespace Rock.ViewModels.Blocks.Security.RockSecuritySettings
     {
         /// <summary>
         /// Gets or sets the list of account protection profile levels available for selection
-        /// in the checkbox lists. Built from all <see cref="Rock.Utility.Enums.AccountProtectionProfile"/>
+        /// in the checkbox lists. Built from all <see cref="AccountProtectionProfile"/>
         /// enum values.
         /// </summary>
         public List<ListItemBag> AccountProtectionProfiles { get; set; }

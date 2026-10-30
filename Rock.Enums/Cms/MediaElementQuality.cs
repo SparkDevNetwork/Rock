@@ -17,7 +17,11 @@
 
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Media
+#endif
 {
     /// <summary>
     /// The quality of the media file.
@@ -28,7 +32,9 @@ namespace Rock.Media
     /// <para>In each quality, the results will be further sorted by see MediaElementFileData.Width
     /// in descending order.</para>
     /// </remarks>
-     [Enums.EnumDomain( "Cms" )]
+#if !NET
+    [Enums.EnumDomain( "Cms" )]
+#endif
     public enum MediaElementQuality
     {
         /// <summary>

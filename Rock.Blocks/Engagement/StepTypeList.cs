@@ -41,7 +41,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Shows a list of all step types for a program." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [StepProgramField(
         "Step Program",

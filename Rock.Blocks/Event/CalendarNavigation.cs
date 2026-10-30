@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays icons to help with calendar administration navigation." )]
     [IconCssClass( "ti ti-border-all" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Navigation )]
     [Rock.SystemGuid.EntityTypeGuid( "2E57FFE8-961C-4073-94FE-B7CC4BD700C0" )]

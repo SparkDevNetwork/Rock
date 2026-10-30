@@ -51,7 +51,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Person biographic/demographic information and picture (Person detail page)." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( Enums.Cms.BlockReloadMode.Page )]
 
     [SecurityAction( Authorization.VIEW_PROTECTION_PROFILE, "The roles and/or users that can view the protection profile alert for the selected person." )]
@@ -1120,7 +1120,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             Reason: Style the <pre> example in the help tooltip.
         */
-        [CustomSettingsBlockType( typeof( Bio ), Model.SiteType.Web )]
+        [CustomSettingsBlockType( typeof( Bio ), SiteType.Web )]
         public class BioCustomSettingsProvider : RockCustomSettingsProvider
         {
             private const string TooltipStyleScript = @"

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Bus
     [Category( "Bus" )]
     [Description( "Shows a list of all message bus queues." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage(
         "Queue Detail Page",

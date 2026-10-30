@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -57,7 +59,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.VIEW,
                 true,
                 SystemGuid.Group.GROUP_ADMINISTRATORS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "C64A249D-6210-46C4-B06C-0E3C6EF494D1" );
 
             RockMigrationHelper.AddSecurityAuthForEntityType( SystemPhoneNumberEntityTypeName,
@@ -65,7 +67,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.VIEW,
                 true,
                 SystemGuid.Group.GROUP_COMMUNICATION_ADMINISTRATORS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "E82E4FC1-B45C-4315-8D93-D75C91877F6A" );
 
             RockMigrationHelper.AddSecurityAuthForEntityType( SystemPhoneNumberEntityTypeName,
@@ -73,7 +75,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.VIEW,
                 true,
                 SystemGuid.Group.GROUP_STAFF_MEMBERS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "EB1F5BB8-96EA-4A4A-893C-65A5C2EC838D" );
 
             RockMigrationHelper.AddSecurityAuthForEntityType( SystemPhoneNumberEntityTypeName,
@@ -81,7 +83,7 @@ namespace Rock.Plugin.HotFixes
                 Security.Authorization.VIEW,
                 true,
                 SystemGuid.Group.GROUP_STAFF_LIKE_MEMBERS,
-                ( int ) Model.SpecialRole.None,
+                ( int ) SpecialRole.None,
                 "54087D1B-5808-4EDE-808D-3528279E2151" );
 
             // The helper's duplicate check compares GroupId with = and never matches a NULL group,
@@ -93,7 +95,7 @@ INNER JOIN [EntityType] et ON et.[Id] = a.[EntityTypeId]
 WHERE et.[Name] = '{SystemPhoneNumberEntityTypeName}'
     AND a.[EntityId] = 0
     AND a.[Action] = '{Security.Authorization.VIEW}'
-    AND a.[SpecialRole] = {( int ) Model.SpecialRole.AllUsers}
+    AND a.[SpecialRole] = {( int ) SpecialRole.AllUsers}
     AND a.[GroupId] IS NULL" ).ToStringSafe().AsInteger();
 
             if ( allUsersRuleCount == 0 )
@@ -103,7 +105,7 @@ WHERE et.[Name] = '{SystemPhoneNumberEntityTypeName}'
                     Security.Authorization.VIEW,
                     false,
                     null,
-                    ( int ) Model.SpecialRole.AllUsers,
+                    ( int ) SpecialRole.AllUsers,
                     "30CC7B5E-7104-466E-A522-BD5AB9139C67" );
             }
         }

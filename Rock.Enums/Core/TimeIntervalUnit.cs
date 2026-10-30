@@ -16,12 +16,18 @@
 
 using Rock.Enums;
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Utility
+#endif
 {
     /// <summary>
     /// Time Interval Units
     /// </summary>
+#if !NET
     [EnumDomain( "Core" )]
+#endif
     public enum TimeIntervalUnit
     {
         /// <summary>

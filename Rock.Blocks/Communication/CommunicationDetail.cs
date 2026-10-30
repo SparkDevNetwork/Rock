@@ -50,7 +50,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Detail" )]
     [Category( "Communication" )]
     [Description( "Used for displaying details of an existing communication that has already been created." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

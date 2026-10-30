@@ -34,6 +34,8 @@ using Rock.Tasks;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Types.Mobile.Core
 {
     /// <summary>
@@ -45,7 +47,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Category( "Mobile > Core" )]
     [Description( "Displays entity notes to the user and allows adding new notes." )]
     [IconCssClass( "ti ti-sticker-2" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Adds an editable HTML fragment to the page." )]
     [IconCssClass( "ti ti-code" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     #region Block Attributes

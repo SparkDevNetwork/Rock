@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Library Viewer" )]
     [Category( "CMS" )]
     [Description( "Displays items from the Spark Development Network Content Library." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "C368D439-37CC-4304-AC18-873DEC76289C" )]
     [Rock.SystemGuid.BlockTypeGuid( "B147D578-B5CF-4265-9D92-B7BC43BF1CBC" )]

@@ -22,6 +22,7 @@ using System.Runtime.Serialization;
 
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Model;
 
 namespace Rock.Web.Cache
 {
@@ -180,7 +181,7 @@ namespace Rock.Web.Cache
 
                 // Add the members
                 foreach ( var personGuid in groupMembersQry
-                    .Where( m => m.GroupMemberStatus == Model.GroupMemberStatus.Active )
+                    .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                     .Select( m => m.Person.Guid )
                     .ToList()
                     .Distinct() )

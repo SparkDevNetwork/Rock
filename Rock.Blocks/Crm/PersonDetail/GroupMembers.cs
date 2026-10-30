@@ -39,7 +39,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Group Members" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to view the other members of a group person belongs to (e.g. Family groups)." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

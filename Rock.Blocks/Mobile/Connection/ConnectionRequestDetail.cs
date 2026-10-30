@@ -34,9 +34,15 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+#if NET
+using ConnectionState = Rock.Enums.Connection.ConnectionState;
+using GroupMemberStatus = Rock.Enums.Group.GroupMemberStatus;
+using MeetsGroupRequirement = Rock.Enums.Group.MeetsGroupRequirement;
+#else
 using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
 using MeetsGroupRequirement = Rock.Model.MeetsGroupRequirement;
+#endif
 using MobileActivityEntryType = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ActivityEntryType;
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 using MobileDueStatus = Rock.Common.Mobile.Enums.DueStatus;
@@ -60,7 +66,7 @@ namespace Rock.Blocks.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Displays a single connection request for viewing and editing." )]
     [IconCssClass( "ti ti-id" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

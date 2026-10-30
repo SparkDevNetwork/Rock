@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block that can be used to set the default campus context for the site or page." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

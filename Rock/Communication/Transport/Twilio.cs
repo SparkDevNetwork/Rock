@@ -35,6 +35,7 @@ using Rock.Web.Cache;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
+using CommunicationType = Rock.Model.CommunicationType;
 using TwilioExceptions = Twilio.Exceptions;
 using TwilioTypes = Twilio.Types;
 
@@ -121,14 +122,14 @@ namespace Rock.Communication.Transport
                 communication = new CommunicationService( rockContext ).Get( communication.Id );
 
                 if ( communication != null &&
-                    communication.Status == Model.CommunicationStatus.Approved &&
+                    communication.Status == CommunicationStatus.Approved &&
                     ( !communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo( RockDateTime.Now ) <= 0 ) )
                 {
                     var qryRecipients = new CommunicationRecipientService( rockContext ).Queryable();
                     unprocessedRecipientCount = qryRecipients
                         .Where( r =>
                             r.CommunicationId == communication.Id &&
-                            r.Status == Model.CommunicationRecipientStatus.Pending &&
+                            r.Status == CommunicationRecipientStatus.Pending &&
                             r.MediumEntityTypeId.HasValue &&
                             r.MediumEntityTypeId.Value == mediumEntityTypeId )
                         .Count();

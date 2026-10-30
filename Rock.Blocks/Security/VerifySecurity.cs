@@ -41,7 +41,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Verify the security of an entity and how it applies to a specified user." )]
     [IconCssClass( "ti ti-lock" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "81AA9B27-1663-4B04-B2A2-13BFF409ECA1" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "1208DFB0-188B-44B4-AD54-7EAC00687A1F" )]

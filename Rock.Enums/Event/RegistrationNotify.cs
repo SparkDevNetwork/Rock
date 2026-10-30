@@ -17,13 +17,19 @@
 
 using System;
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Flag indicating who should be notified on a new registration
     /// </summary>
     [Flags]
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum RegistrationNotify
     {
         /// <summary>

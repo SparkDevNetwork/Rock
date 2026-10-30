@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 
@@ -77,7 +78,7 @@ namespace Rock.ViewModels.Blocks.Group.GroupFinder
         public List<ListItemBag> CampusStatuses { get; set; }
 
         /// <summary>
-        /// Gets or sets how distance to each group is measured, as a <see cref="Rock.Model.DistanceCalculationMode"/> name.
+        /// Gets or sets how distance to each group is measured, as a <see cref="DistanceCalculationMode"/> name.
         /// </summary>
         /// <remarks>
         /// Carried as the enum's name rather than its number so the stored setting reads plainly, matching

@@ -38,7 +38,11 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
+#if NET
+using BatchStatus = Rock.Enums.Finance.BatchStatus;
+#else
 using BatchStatus = Rock.Model.BatchStatus;
+#endif
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -49,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Category( "Mobile > Finance" )]
     [Description( "The Financial Batch Detail block." )]
     [IconCssClass( "ti ti-report-money" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
 
     #region Block Attributes

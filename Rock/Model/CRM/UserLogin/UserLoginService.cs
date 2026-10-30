@@ -435,7 +435,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The <see cref="Rock.Model.Person" /> that this <see cref="UserLogin" /> will be associated with.</param>
-        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType" /> type of Login</param>
+        /// <param name="serviceType">The <see cref="AuthenticationServiceType" /> type of Login</param>
         /// <param name="entityTypeId">The EntityTypeId of the <see cref="Rock.Model.EntityType"/> for the authentication service that this UserLogin user will use.</param>
         /// <param name="username">A <see cref="System.String" /> containing the UserName.</param>
         /// <param name="password">A <see cref="System.String" /> containing the unhashed/unencrypted password.</param>

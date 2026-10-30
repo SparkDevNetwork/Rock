@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Displays the details of person views." )]
     [IconCssClass( "fa fa-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
 
     [Rock.SystemGuid.EntityTypeGuid( "4bd62b58-6e21-4769-ae19-2fca3638fd07" )]

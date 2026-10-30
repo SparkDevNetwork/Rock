@@ -44,7 +44,7 @@ namespace Rock.Model
             var sb = new StringBuilder();
             sb.AppendFormat( "{0} ", this.AllowOrDeny == "A" ? "Allow" : "Deny" );
 
-            if ( SpecialRole != Model.SpecialRole.None )
+            if ( SpecialRole != SpecialRole.None )
             {
                 sb.AppendFormat( "{0} ", SpecialRole.ToStringSafe().SplitCase() );
             }

@@ -31,6 +31,8 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Jobs
 {
     /// <summary>

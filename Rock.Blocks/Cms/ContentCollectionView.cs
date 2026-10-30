@@ -47,7 +47,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Displays the search results of a particular content collection." )]
     [IconCssClass( "ti ti-book" )]
-    [SupportedSiteTypes( Model.SiteType.Web, Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Web, SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -706,7 +706,7 @@ namespace Rock.Blocks.Cms
         {
             var itemTemplate = GetAttributeValue( AttributeKey.PreSearchTemplate );
 
-            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile;
+            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == SiteType.Mobile;
 
             //
             // We want to set the default value of the item template depending on
@@ -738,7 +738,7 @@ namespace Rock.Blocks.Cms
         {
             var itemTemplate = GetAttributeValue( AttributeKey.ItemTemplate );
 
-            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile;
+            var useMobileTemplate = PageCache.Layout?.Site?.SiteType == SiteType.Mobile;
 
             //
             // We want to set the default value of the item template depending on
@@ -1254,7 +1254,7 @@ namespace Rock.Blocks.Cms
 
             string resultsTemplate;
 
-            if ( PageCache.Layout?.Site?.SiteType == Model.SiteType.Mobile )
+            if ( PageCache.Layout?.Site?.SiteType == SiteType.Mobile )
             {
                 resultsTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate );
             }
@@ -1517,7 +1517,7 @@ namespace Rock.Blocks.Cms
                     SegmentBoostAmount = GetAttributeValue( AttributeKey.SegmentBoostAmount ).AsDecimalOrNull(),
                     RequestFilterBoostAmount = GetAttributeValue( AttributeKey.RequestFilterBoostAmount ).AsDecimalOrNull(),
                     GroupHeaderTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate ),
-                    SiteType = ( PageCache?.Layout?.Site?.SiteType ?? Model.SiteType.Web ).ToString().ToLower(),
+                    SiteType = ( PageCache?.Layout?.Site?.SiteType ?? SiteType.Web ).ToString().ToLower(),
                     IncludeUnapproved = GetAttributeValue( AttributeKey.IncludeUnapproved ).AsBoolean()
                 };
 

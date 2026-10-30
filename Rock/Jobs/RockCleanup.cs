@@ -46,6 +46,8 @@ using Rock.Observability;
 using Rock.Pdf;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Jobs
 {
     /// <summary>

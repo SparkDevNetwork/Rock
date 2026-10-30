@@ -293,7 +293,7 @@ namespace Rock.Model
         /// <param name="scheduleId">The schedule identifier.</param>
         /// <param name="rsvp">The RSVP.</param>
         /// <returns></returns>
-        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, Rock.Model.RSVP rsvp )
+        public IQueryable<Attendance> GetAttendances( DateTime date, int locationId, int scheduleId, RSVP rsvp )
         {
             return Queryable( "Occurrence.Group,Occurrence.Schedule,PersonAlias" )
                 .Where( a => a.Occurrence.OccurrenceDate == date.Date
@@ -3068,7 +3068,7 @@ namespace Rock.Model
                             OccurrenceId = occurrenceId,
                             PersonAliasId = personAliasId,
                             StartDateTime = startDateTime,
-                            RSVP = Rock.Model.RSVP.Unknown,
+                            RSVP = RSVP.Unknown,
                             DidAttend = false
                         } );
                 }

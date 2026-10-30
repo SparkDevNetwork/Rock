@@ -44,7 +44,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Block for editing the wait list associated with an event registration instance." )]
     [IconCssClass( "ti ti-clock" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [Category( "CRM > Person Detail" )]
     [Description( "Handles displaying badges for a person." )]
     [IconCssClass( "ti ti-certificate" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [InitialBlockHeight( 100 )]
 
     #region Block Attributes

@@ -45,7 +45,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Allows the user to register." )]
     [IconCssClass( "ti ti-user-shield" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

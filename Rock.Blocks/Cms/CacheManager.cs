@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Cache Manager" )]
     [Category( "CMS" )]
     [Description( "Block used to view cache statistics and clear the existing cache." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "EDE17016-ABCC-41E1-A686-D9D466CC203A" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "E481208F-EFAA-4635-8C5E-9CD094A67A59" )]

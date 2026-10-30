@@ -3049,7 +3049,7 @@ namespace Rock.Model
         public string ExclusionMap { get; set; }
 
         /// <summary>
-        /// Gets or sets the timespan that each map bit represents (<see cref="Rock.Model.StreakOccurrenceFrequency"/>).
+        /// Gets or sets the timespan that each map bit represents (<see cref="StreakOccurrenceFrequency"/>).
         /// </summary>
         public StreakOccurrenceFrequency OccurrenceFrequency { get; set; }
 

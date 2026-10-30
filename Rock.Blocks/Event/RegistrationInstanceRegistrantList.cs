@@ -45,7 +45,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the list of Registrants related to a Registration Instance." )]
     [IconCssClass( "ti ti-users" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

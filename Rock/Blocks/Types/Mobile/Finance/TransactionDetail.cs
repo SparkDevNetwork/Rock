@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [Category( "Mobile > Finance" )]
     [Description( "The Transaction Detail block." )]
     [IconCssClass( "ti ti-receipt" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

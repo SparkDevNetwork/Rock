@@ -43,7 +43,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for managing categories for a specific, configured entity type." )]
     [IconCssClass( "ti ti-folder-open" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [EntityTypeField( "Entity Type",
         Description = "The entity type to manage categories for.",

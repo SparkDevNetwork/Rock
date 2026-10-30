@@ -15,13 +15,19 @@
 // </copyright>
 //
 
+#if NET
+namespace Rock.Enums.Core
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// The ownership type of a tag, indicating whether it belongs
     /// to an individual person or the organization.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Core" )]
+#endif
     public enum TagOwnershipType
     {
         /// <summary>

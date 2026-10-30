@@ -49,7 +49,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "7ECDCE1B-D63F-42AA-88B6-7C5585E1F33A" )]
     [SystemGuid.BlockTypeGuid( "3855B15B-C903-446A-AE5B-891AB52851CB" )]

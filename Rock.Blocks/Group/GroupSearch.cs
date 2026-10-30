@@ -37,7 +37,7 @@ namespace Rock.Blocks.Group
     [Category( "Groups" )]
     [Description( "Handles displaying group search results and navigates to the group detail page when only one match was found." )]
     [IconCssClass( "ti ti-search" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CodeEditorField( "Group URL Format",
         Description = "The URL to use for linking to a group. <span class='tip tip-lava'></span>",

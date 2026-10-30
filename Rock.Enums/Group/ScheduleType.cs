@@ -16,13 +16,19 @@
 
 using System;
 
+#if NET
+namespace Rock.Enums.Group
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Schedule Type
     /// </summary>
     [Flags]
+#if !NET
     [Enums.EnumDomain( "Group" )]
+#endif
     public enum ScheduleType
     {
         /// <summary>

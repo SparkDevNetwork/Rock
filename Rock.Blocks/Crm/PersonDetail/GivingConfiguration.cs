@@ -23,7 +23,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Giving Configuration" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Block used to view the scheduled transactions, saved accounts and pledges of a person." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -39,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [Category( "Mobile > Prayer" )]
     [Description( "Allows the user to read through and pray for prayer requests." )]
     [IconCssClass( "ti ti-pray" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

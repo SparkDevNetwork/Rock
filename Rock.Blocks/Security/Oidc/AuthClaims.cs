@@ -38,7 +38,7 @@ namespace Rock.Blocks.Security.Oidc
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect claims." )]
     [IconCssClass( "ti ti-lock" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [CustomizedGrid]
     [SystemGuid.EntityTypeGuid( "3EBA8801-B43E-421F-B343-87835A0F8519" )]

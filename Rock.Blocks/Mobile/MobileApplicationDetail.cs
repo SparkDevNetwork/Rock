@@ -42,6 +42,11 @@ using Rock.Web.Cache;
 using AdditionalSiteSettings = Rock.Mobile.AdditionalSiteSettings;
 using ShellType = Rock.Common.Mobile.Enums.ShellType;
 using TabLocation = Rock.Mobile.TabLocation;
+#if NET
+using DisplayInNavWhen = Rock.Enums.Cms.DisplayInNavWhen;
+#else
+using DisplayInNavWhen = Rock.Model.DisplayInNavWhen;
+#endif
 
 namespace Rock.Blocks.Mobile
 {
@@ -1587,7 +1592,7 @@ namespace Rock.Blocks.Mobile
                     PageTitle = pageName,
                     Description = string.Empty,
                     LayoutId = layout.Id,
-                    DisplayInNavWhen = Rock.Model.DisplayInNavWhen.WhenAllowed
+                    DisplayInNavWhen = DisplayInNavWhen.WhenAllowed
                 };
 
                 pageService.Add( page );

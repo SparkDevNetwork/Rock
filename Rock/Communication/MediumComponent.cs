@@ -26,6 +26,8 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls.Communication;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Communication
 {
     /// <summary>

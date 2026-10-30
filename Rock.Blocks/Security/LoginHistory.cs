@@ -44,7 +44,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Login History" )]
     [Category( "Security" )]
     [Description( "A block for viewing login activity for all or a single person." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ContextAware( typeof( Person ) )]
 
     #region Block Attributes
@@ -349,9 +349,9 @@ WHERE
                         BirthDay = a.BirthDay,
                         BirthMonth = a.BirthMonth,
                         BirthYear = a.BirthYear,
-                        Gender = a.Gender ?? Model.Gender.Unknown,
+                        Gender = a.Gender ?? Gender.Unknown,
                         RecordTypeValueId = a.RecordTypeValueId,
-                        AgeClassification = a.AgeClassification ?? Model.AgeClassification.Unknown
+                        AgeClassification = a.AgeClassification ?? AgeClassification.Unknown
                     };
                 } );
             }

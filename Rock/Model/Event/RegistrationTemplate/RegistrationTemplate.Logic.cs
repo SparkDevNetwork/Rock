@@ -23,6 +23,22 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Web.Cache;
 
+/*
+    10/29/26 - CLAUDE
+
+    RegistrantEligibilitySettings has a nullable AgeClassification property, so the
+    bare name AgeClassification means the property inside that class and the enum
+    has to be reached some other way. The enum lives in Rock.Model on .NET Framework
+    and in Rock.Enums.Crm on .NET, so no single qualified name works for both.
+
+    Reason: Reference the AgeClassification enum on both target frameworks.
+*/
+#if NET
+using AgeClassificationEnum = Rock.Enums.Crm.AgeClassification;
+#else
+using AgeClassificationEnum = Rock.Model.AgeClassification;
+#endif
+
 namespace Rock.Model
 {
     public partial class RegistrationTemplate
@@ -138,7 +154,7 @@ namespace Rock.Model
             /// </summary>
             public decimal? GetEffectiveMinimumAge()
             {
-                if ( AgeClassification == Model.AgeClassification.Adult && ( !MinimumAge.HasValue || MinimumAge < 18m ) )
+                if ( AgeClassification == AgeClassificationEnum.Adult && ( !MinimumAge.HasValue || MinimumAge < 18m ) )
                 {
                     return 18m;
                 }
@@ -151,7 +167,7 @@ namespace Rock.Model
             /// </summary>
             public decimal? GetEffectiveMaximumAge()
             {
-                if ( AgeClassification == Model.AgeClassification.Child && ( !MaximumAge.HasValue || MaximumAge >= 18m ) )
+                if ( AgeClassification == AgeClassificationEnum.Child && ( !MaximumAge.HasValue || MaximumAge >= 18m ) )
                 {
                     return 17m;
                 }

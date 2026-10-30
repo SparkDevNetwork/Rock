@@ -16,6 +16,7 @@
 
 using System;
 
+using Rock.Model;
 using Rock.Security;
 
 namespace Rock.Plugin.HotFixes
@@ -108,7 +109,7 @@ namespace Rock.Plugin.HotFixes
                 Rock.Security.Authorization.VIEW,
                 false,
                 null,
-                ( int ) Rock.Model.SpecialRole.AllUnAuthenticatedUsers,
+                ( int ) SpecialRole.AllUnAuthenticatedUsers,
                 Guid.NewGuid().ToString() );
 
             RockMigrationHelper.AddSecurityRoleGroup( "RSR - LMS Administration", "Group of individuals who can administrate the various parts of the LMS functionality.", RSR_LMS_ADMINISTRATION_GUID );

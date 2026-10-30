@@ -41,7 +41,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows the details of a FormBuilder template." )]
     [IconCssClass( "ti ti-align-left" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

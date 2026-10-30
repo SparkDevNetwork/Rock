@@ -88,7 +88,7 @@ namespace Rock.Model
         public int WorkflowTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.GroupMemberWorkflowTriggerType">type</see> of the trigger.
+        /// Gets or sets the <see cref="GroupMemberWorkflowTriggerType">type</see> of the trigger.
         /// </summary>
         /// <value>
         /// The type of the trigger.

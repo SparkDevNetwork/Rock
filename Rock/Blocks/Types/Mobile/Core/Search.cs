@@ -38,7 +38,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [Category( "Mobile > Core" )]
     [Description( "Performs a search using one of the configured search components and displays the results." )]
     [IconCssClass( "ti ti-search" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

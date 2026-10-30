@@ -32,6 +32,8 @@ using Rock.Tasks;
 using Rock.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Types.Mobile.Communication
 {
     /// <summary>
@@ -122,7 +124,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [Category( "Mobile > Communication" )]
     [Description( "Allows you to send communications to a set of recipients." )]
     [IconCssClass( "ti ti-message" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     // This block uses a unique security action that determines whether someone can send out communications immediately or has
     // to submit them for approval.

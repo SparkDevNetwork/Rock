@@ -50,7 +50,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Builds a list of all financial transactions which can be filtered by date, account, transaction type, etc." )]
     [IconCssClass( "ti ti-credit-card" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SecurityAction( SecurityActionKey.FilterByPerson, "The roles and/or users that can filter transactions by person." )]
 

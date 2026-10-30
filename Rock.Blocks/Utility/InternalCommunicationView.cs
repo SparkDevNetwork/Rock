@@ -42,7 +42,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Block for showing the contents of internal content channels." )]
     [IconCssClass( "ti ti-news" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     #region Block Attributes

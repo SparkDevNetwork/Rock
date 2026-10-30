@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Model;
+
 namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
 {
     /// <summary>
@@ -33,8 +35,8 @@ namespace Rock.ViewModels.Blocks.Group.GroupTypeDetail
         public string Value { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DueDateType"/> associated with the requirement.
+        /// Gets or sets the <see cref="DueDateType"/> associated with the requirement.
         /// </summary>
-        public Rock.Model.DueDateType DueDateType { get; set; }
+        public DueDateType DueDateType { get; set; }
     }
 }

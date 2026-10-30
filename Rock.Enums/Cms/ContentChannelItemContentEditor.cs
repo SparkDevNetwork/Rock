@@ -14,13 +14,19 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET
+namespace Rock.Enums.Cms
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Identifies which content editor the Content Channel Item Detail block
     /// renders for an item.
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Cms" )]
+#endif
     public enum ContentChannelItemContentEditor
     {
         /// <summary>

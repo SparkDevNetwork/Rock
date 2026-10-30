@@ -38,7 +38,7 @@ namespace Rock.Blocks.Connection
     [DisplayName( "Connection Request Entry" )]
     [Category( "Connection" )]
     [Description( "Public-facing block that lets a person request one or more connection opportunities." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

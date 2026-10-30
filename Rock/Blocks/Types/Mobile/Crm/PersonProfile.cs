@@ -42,7 +42,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
     [Category( "Mobile > Crm" )]
     [Description( "The person profile block." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

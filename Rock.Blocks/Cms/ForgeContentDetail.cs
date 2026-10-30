@@ -48,7 +48,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Renders an authored forge content, compiled on the server, and lets an administrator edit it in place." )]
     [IconCssClass( "ti ti-code" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8C7E29E5-E2C5-4331-B7F7-06EF894E7316" )]
     [Rock.SystemGuid.BlockTypeGuid( "D4A5F720-493C-4DE8-B4B6-D6667D7ED2A2" )]

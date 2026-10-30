@@ -44,7 +44,7 @@ namespace Rock.Blocks.Utility
     [Category( "Utility" )]
     [Description( "Displays RealTime events from Rock with custom formatting options." )]
     [IconCssClass( "ti ti-chart-bar" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Description( "Displays the details of the given business." )]
     [IconCssClass( "ti ti-question-mark" )]
     [Rock.Web.UI.ContextAware]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

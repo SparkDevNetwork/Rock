@@ -34,7 +34,7 @@ namespace Rock.Blocks.Crm.PersonDetail
     [DisplayName( "Family Navigation" )]
     [Category( "CRM > Person Detail" )]
     [Description( "Allows you to switch between the members of the family the person belongs to." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [InitialBlockHeight( -1 )]
 
     #region Block Attributes

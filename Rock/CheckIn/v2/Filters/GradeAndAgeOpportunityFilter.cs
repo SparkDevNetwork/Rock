@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.CheckIn;
+using Rock.Model;
 
 namespace Rock.CheckIn.v2.Filters
 {
@@ -231,7 +232,7 @@ namespace Rock.CheckIn.v2.Filters
             // If the group requires membership in order to check-in then do
             // not allow it to be removed. Again, they have provided a set
             // list of people.
-            if ( group.CheckInAreaData.AttendanceRule == Model.AttendanceRule.AlreadyEnrolledInGroup )
+            if ( group.CheckInAreaData.AttendanceRule == AttendanceRule.AlreadyEnrolledInGroup )
             {
                 return true;
             }

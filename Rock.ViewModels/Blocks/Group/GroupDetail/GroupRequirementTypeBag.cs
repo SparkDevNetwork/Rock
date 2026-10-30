@@ -15,20 +15,21 @@
 // </copyright>
 //
 
+using Rock.Model;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Group.GroupDetail
 {
     /// <summary>
     /// A group requirement type option for the Group Requirement modal. Carries the type's
-    /// <see cref="Rock.Model.DueDateType"/> so the modal's Due Date well can react to the
+    /// <see cref="DueDateType"/> so the modal's Due Date well can react to the
     /// selection without an extra round-trip.
     /// </summary>
     public class GroupRequirementTypeBag : ListItemBag
     {
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.DueDateType"/> associated with the requirement.
+        /// Gets or sets the <see cref="DueDateType"/> associated with the requirement.
         /// </summary>
-        public Rock.Model.DueDateType DueDateType { get; set; }
+        public DueDateType DueDateType { get; set; }
     }
 }

@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// For Attendance Reporting, graph into series partitioned by Total, Group, Campus, or Schedule
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum AttendanceGraphBy
     {
         /// <summary>

@@ -43,7 +43,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Registration" )]
     [Category( "Group" )]
     [Description( "Allows a person to register for a group." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

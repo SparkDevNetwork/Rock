@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 
+using Rock.Model;
+
 namespace Rock.Plugin.HotFixes
 {
     /// <summary>
@@ -442,18 +444,18 @@ END" );
 
             // Add the same security as Financial Transcation Image.
             // BinaryFileType: Giving Statement, Group: <all users>.
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 3, "View", false, "", Model.SpecialRole.AllUsers, "F1346FFD-D1DB-426D-95CB-9A47394FA728" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 3, "View", false, "", SpecialRole.AllUsers, "F1346FFD-D1DB-426D-95CB-9A47394FA728" );
             // BinaryFileType: Giving Statement, Group: 628C51A8-4613-43ED-A18D-4A6FB999273E ( RSR - Rock Administration ).
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 2, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", Model.SpecialRole.None, "A4181C9A-BA06-41BB-9F3C-F049FC3D8BDD" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 2, "View", true, "628C51A8-4613-43ED-A18D-4A6FB999273E", SpecialRole.None, "A4181C9A-BA06-41BB-9F3C-F049FC3D8BDD" );
             // BinaryFileType: Giving Statement, Group: 2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9 ( RSR - Finance Worker ).
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 1, "View", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", Model.SpecialRole.None, "E0539428-9BF0-4CE7-B99D-0D2AB6F3F480" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 1, "View", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", SpecialRole.None, "E0539428-9BF0-4CE7-B99D-0D2AB6F3F480" );
             // BinaryFileType: Giving Statement, Group: 6246A7EF-B7A3-4C8C-B1E4-3FF114B84559 ( RSR - Finance Administration ).
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 0, "View", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", Model.SpecialRole.None, "6FE9A2E5-8BDF-479E-8BED-DC68DC580B05" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 0, "View", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", SpecialRole.None, "6FE9A2E5-8BDF-479E-8BED-DC68DC580B05" );
 
             // BinaryFileType: Giving Statement, Group: 2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9 ( RSR - Finance Worker ).
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 1, "Edit", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", Model.SpecialRole.None, "B7F4548D-F1F4-4690-9C41-4B4697961EA8" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 1, "Edit", true, "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9", SpecialRole.None, "B7F4548D-F1F4-4690-9C41-4B4697961EA8" );
             // BinaryFileType: Giving Statement, Group: 6246A7EF-B7A3-4C8C-B1E4-3FF114B84559 ( RSR - Finance Administration ).
-            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 0, "Edit", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", Model.SpecialRole.None, "D753305E-C91B-43A9-95D0-DC5A7786C8AE" );
+            RockMigrationHelper.AddSecurityAuthForBinaryFileType( givingStatementBinaryFileGuid, 0, "Edit", true, "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559", SpecialRole.None, "D753305E-C91B-43A9-95D0-DC5A7786C8AE" );
 
             // Not using string interpolation here because of the lava template.
             Sql( $@"DECLARE @BinaryFileTypeGuid UNIQUEIDENTIFIER = '{givingStatementBinaryFileGuid}';

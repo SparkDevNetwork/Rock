@@ -38,7 +38,7 @@ namespace Rock.Blocks.Communication.Chat
     [DisplayName( "Chat Configuration" )]
     [Category( "Communication > Chat" )]
     [Description( "Used for making configuration changes to Rock's chat system." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4E1EF8E8-8984-47EA-A6FC-31125C3B6153" )]
     [Rock.SystemGuid.BlockTypeGuid( "D5BE6AAE-70A2-4021-93F7-DD66A09B08CB" )]

@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
     [IconCssClass( "ti ti-question-mark" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -618,7 +618,7 @@ namespace Rock.Blocks.Finance
                     FirstName = entityBag.FirstName,
                     LastName = entityBag.LastName,
                     Email = entityBag.Email,
-                    EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
+                    EmailPreference = EmailPreference.EmailAllowed,
                     ConnectionStatusValueId = definedValue.Id,
                     IsSystem = false,
                     RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,

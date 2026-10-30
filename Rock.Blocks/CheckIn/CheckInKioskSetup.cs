@@ -45,7 +45,7 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Sets kiosk options and then starts the kiosk to allow self check-in." )]
     [IconCssClass( "ti ti-clipboard" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

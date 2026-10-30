@@ -33,9 +33,14 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 
-using ConnectionState = Rock.Model.ConnectionState;
 using Detail = Rock.Common.Mobile.Blocks.Connection.ConnectionRequestDetail;
+#if NET
+using ConnectionState = Rock.Enums.Connection.ConnectionState;
+using GroupMemberStatus = Rock.Enums.Group.GroupMemberStatus;
+#else
+using ConnectionState = Rock.Model.ConnectionState;
 using GroupMemberStatus = Rock.Model.GroupMemberStatus;
+#endif
 using MobileConnectionState = Rock.Common.Mobile.Enums.ConnectionState;
 
 namespace Rock.Blocks.Mobile.Connection
@@ -53,7 +58,7 @@ namespace Rock.Blocks.Mobile.Connection
     [Category( "Mobile > Connection" )]
     [Description( "Creates a new connection request through a multi-step wizard." )]
     [IconCssClass( "ti ti-plus" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 

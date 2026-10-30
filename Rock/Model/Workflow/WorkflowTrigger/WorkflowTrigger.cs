@@ -115,7 +115,7 @@ namespace Rock.Model
         /// Gets or sets the type of the workflow trigger. Indicates the type of change and  the timing the trigger.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.WorkflowTriggerType"/> enum value indicating the type of trigger.
+        /// A <see cref="WorkflowTriggerType"/> enum value indicating the type of trigger.
         /// When <c>WorkflowTriggerType.PreSave</c> the workflow is triggered prior to a save action being executed.
         /// When <c>WorkflowTriggerType.PostSave</c> the workflow is triggered after a save action is executed.
         /// When <c>WorkflowTriggerType.PreDelete</c> the workflow is triggered prior to a delete action being executed.

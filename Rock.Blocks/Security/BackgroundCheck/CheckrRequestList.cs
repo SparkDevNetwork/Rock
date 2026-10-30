@@ -39,7 +39,7 @@ namespace Rock.Blocks.Security.BackgroundCheck
     [Category( "Security > Background Check" )]
     [Description( "Lists all the Checkr background check requests." )]
     [IconCssClass( "ti ti-file-type-txt" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Workflow Detail Page",
         Description = "The page to view details about the background check workflow.",

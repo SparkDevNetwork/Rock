@@ -40,7 +40,7 @@ namespace Rock.Blocks.Event
     [Category( "Event" )]
     [Description( "Displays the discounts related to an event registration instance." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "1F95772E-90B6-4A43-8689-B3A685FA49E1" )]

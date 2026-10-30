@@ -43,7 +43,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Dynamic Data" )]
     [Category( "Reporting" )]
     [Description( "Block to display dynamic report, html, xml, or transformed xml based on a SQL query or stored procedure." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

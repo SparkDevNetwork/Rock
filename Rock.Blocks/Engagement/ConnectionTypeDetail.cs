@@ -48,7 +48,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Connection Type Detail" )]
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular connection type." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

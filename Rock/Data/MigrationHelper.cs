@@ -5108,7 +5108,7 @@ END";
 
         #region Auth Methods
 
-        private void AddSecurityAuthForEntityBase( string entityTypeName, string entityTypeTableName, string entityGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRoleType, string authGuid, string entityGuidField = "Guid" )
+        private void AddSecurityAuthForEntityBase( string entityTypeName, string entityTypeTableName, string entityGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRoleType, string authGuid, string entityGuidField = "Guid" )
         {
             if ( string.IsNullOrWhiteSpace( groupGuid ) )
             {
@@ -5347,7 +5347,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForNoteType( string noteTypeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.NoteType", "NoteType", noteTypeGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.NoteType", "NoteType", noteTypeGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         #endregion
@@ -5748,7 +5748,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForSite( string siteGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.Site", "Site", siteGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.Site", "Site", siteGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5763,7 +5763,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForPage( string pageGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.Page", "Page", pageGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.Page", "Page", pageGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5785,7 +5785,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForBlock( string blockGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.Block", "Block", blockGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -5800,7 +5800,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForBinaryFileType( string binaryFileTypeGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.BinaryFileType", "BinaryFileType", binaryFileTypeGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -5824,7 +5824,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForGroupType( string groupTypeGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForGroupType( string groupTypeGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.GroupType", "GroupType", groupTypeGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -5850,7 +5850,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForAttribute( string attributeGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.Attribute", "Attribute", attributeGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.Attribute", "Attribute", attributeGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5863,7 +5863,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForCalendar( string calendarGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForCalendar( string calendarGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.EventCalendar", "EventCalendar", calendarGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -5890,7 +5890,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForCategory( string categoryGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.Category", "Category", categoryGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.Category", "Category", categoryGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5905,7 +5905,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForAISkill( string skillGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.AISkill", "AISkill", skillGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.AISkill", "AISkill", skillGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5920,7 +5920,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForAISkillTool( string skillToolGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.AISkillTool", "AISkillTool", skillToolGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.AISkillTool", "AISkillTool", skillToolGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5935,7 +5935,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         public void AddSecurityAuthForAIAgent( string agentGuid, int order, string action, bool allow, string groupGuid, int specialRole, string authGuid )
         {
-            AddSecurityAuthForEntityBase( "Rock.Model.AIAgent", "AIAgent", agentGuid, order, action, allow, groupGuid, ( Rock.Model.SpecialRole ) specialRole, authGuid );
+            AddSecurityAuthForEntityBase( "Rock.Model.AIAgent", "AIAgent", agentGuid, order, action, allow, groupGuid, ( SpecialRole ) specialRole, authGuid );
         }
 
         /// <summary>
@@ -5959,7 +5959,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         [RockObsolete( "17.0" )]
         [Obsolete( "Use the AddSecurityAuthForRestControllerByFullClassName method instead." )]
-        public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForRestController( string restControllerClass, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestController", "RestController", restControllerClass, order, action, allow, groupGuid, specialRole, authGuid, "Name" );
         }
@@ -5975,7 +5975,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForRestControllerByFullClassName( string restControllerClass, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForRestControllerByFullClassName( string restControllerClass, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestController", "RestController", restControllerClass, order, action, allow, groupGuid, specialRole, authGuid, nameof( RestController.ClassName ) );
         }
@@ -5990,7 +5990,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForContentChannel( string contentChannelGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForContentChannel( string contentChannelGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.ContentChannel", "ContentChannel", contentChannelGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -6005,7 +6005,7 @@ END
         /// <param name="groupGuid">The group unique identifier.</param>
         /// <param name="specialRole">The special role.</param>
         /// <param name="authGuid">The authentication unique identifier.</param>
-        public void AddSecurityAuthForRestAction( string restActionGuid, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForRestAction( string restActionGuid, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             AddSecurityAuthForEntityBase( "Rock.Model.RestAction", "RestAction", restActionGuid, order, action, allow, groupGuid, specialRole, authGuid );
         }
@@ -6030,7 +6030,7 @@ END
         /// <param name="authGuid">The authentication unique identifier.</param>
         [RockObsolete( "1.15.2" )]
         [Obsolete( "Use the method that takes a restActionGuid parameter." )]
-        public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, Rock.Model.SpecialRole specialRole, string authGuid )
+        public void AddSecurityAuthForRestAction( string restActionMethod, string restActionPath, int order, string action, bool allow, string groupGuid, SpecialRole specialRole, string authGuid )
         {
             /*
              * BC - 08/23
@@ -8962,7 +8962,7 @@ END
         /// <param name="order">The order.</param>
         /// <param name="columnHeaderText">The column header text.</param>
         /// <param name="guid">The unique identifier.</param>
-        public void AddReportField( string reportGuid, Rock.Model.ReportFieldType reportFieldType, bool showInGrid,
+        public void AddReportField( string reportGuid, ReportFieldType reportFieldType, bool showInGrid,
             string dataSelectComponentEntityTypeGuid, string selection, int order, string columnHeaderText, string guid )
         {
             Migration.Sql( string.Format( @"

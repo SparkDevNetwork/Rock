@@ -14,12 +14,18 @@
 // limitations under the License.
 // </copyright>
 
+#if NET
+namespace Rock.Enums.Event
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Flag indicating if registrants are typically in the same family
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Event" )]
+#endif
     public enum RegistrantsSameFamily
     {
         /// <summary>

@@ -20,6 +20,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
 
@@ -34,7 +35,7 @@ namespace Rock.Blocks.Administration
     [Category( "Administration" )]
     [Description( "Displays a notice to administrators when the running version of Rock has known security vulnerabilities." )]
     [IconCssClass( "ti ti-shield-half" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "31922DA8-A172-4B85-8FC7-BB07BCBBCDE5" )]
     [SystemGuid.BlockTypeGuid( "82BA1CB3-7220-46D1-9B5B-BC07F6D9005A" )]

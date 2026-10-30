@@ -29,6 +29,12 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 
+#if NET
+using Gender = Rock.Enums.Crm.Gender;
+#else
+using Gender = Rock.Model.Gender;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Cms
 {
     /// <summary>
@@ -39,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to edit their account on a mobile application." )]
     [IconCssClass( "ti ti-user-cog" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -375,7 +381,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
             person.FirstName = profile.FirstName;
             person.LastName = profile.LastName;
 
-            var gender = ( Model.Gender ) profile.Gender;
+            var gender = ( Gender ) profile.Gender;
 
             if ( GenderVisibility != VisibilityTriState.Hidden )
             {

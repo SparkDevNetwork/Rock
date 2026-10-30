@@ -32,7 +32,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Allows you to convert a Person record into a Business and vice-versa." )]
     [IconCssClass( "ti ti-building" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [DefinedValueField(
         "Default Connection Status",

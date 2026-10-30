@@ -43,7 +43,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
     [IconCssClass( "ti ti-list" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
 
     #region Block Attributes

@@ -342,7 +342,7 @@ namespace Rock.Blocks.Reporting
         /// <summary>
         /// Gets the semantic color variable for the given Gender name.
         /// </summary>
-        /// <param name="genderName">The <see cref="Rock.Model.Gender"/> name (e.g. "Male").</param>
+        /// <param name="genderName">The <see cref="Gender"/> name (e.g. "Male").</param>
         /// <returns>The CSS variable name to use for this gender in the Gender chart.</returns>
         private static string GetGenderColor( string genderName )
         {

@@ -34,6 +34,14 @@ using Rock.Security;
 using Rock.Utility.Enums;
 using Rock.Web.Cache;
 
+#if NET
+using EmailPreference = Rock.Enums.Crm.EmailPreference;
+using Gender = Rock.Enums.Crm.Gender;
+#else
+using EmailPreference = Rock.Model.EmailPreference;
+using Gender = Rock.Model.Gender;
+#endif
+
 namespace Rock.Blocks.Types.Mobile.Security
 {
     /// <summary>
@@ -45,7 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [Category( "Mobile > Security" )]
     [Description( "Provides an interface for the user to safely identify themselves and create a login." )]
     [IconCssClass( "ti ti-plane-departure" )]
-    [SupportedSiteTypes( Model.SiteType.Mobile )]
+    [SupportedSiteTypes( SiteType.Mobile )]
 
     #region Block Attributes
 
@@ -1353,7 +1361,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// </summary>
         /// <param name="gender">The mobile gender.</param>
         /// <returns>The web gender value.</returns>
-        private Rock.Model.Gender? ToWeb( Rock.Common.Mobile.Enums.Gender? gender )
+        private Gender? ToWeb( Rock.Common.Mobile.Enums.Gender? gender )
         {
             if ( !gender.HasValue )
             {
@@ -1363,13 +1371,13 @@ namespace Rock.Blocks.Types.Mobile.Security
             switch ( gender.Value )
             {
                 case Common.Mobile.Enums.Gender.Male:
-                    return Rock.Model.Gender.Male;
+                    return Gender.Male;
 
                 case Common.Mobile.Enums.Gender.Female:
-                    return Rock.Model.Gender.Female;
+                    return Gender.Female;
 
                 default:
-                    return Rock.Model.Gender.Unknown;
+                    return Gender.Unknown;
             }
         }
 
@@ -1390,9 +1398,9 @@ namespace Rock.Blocks.Types.Mobile.Security
                 FirstName = details.FirstName,
                 LastName = details.LastName,
                 Email = details.Email,
-                Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown,
+                Gender = ToWeb( details.Gender ) ?? Gender.Unknown,
                 IsEmailActive = true,
-                EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
+                EmailPreference = EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
                 RecordStatusValueId = dvcRecordStatus?.Id,
@@ -1497,7 +1505,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                 person.PhoneNumbers.Remove( existingPhoneNumber );
             }
 
-            person.Gender = ToWeb( details.Gender ) ?? Rock.Model.Gender.Unknown;
+            person.Gender = ToWeb( details.Gender ) ?? Gender.Unknown;
             person.Email = details.Email;
 
             var familyGroup = person.GetFamily( rockContext );
@@ -2051,7 +2059,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                     }
                 }
 
-                if ( isSamePerson && person.Gender != Rock.Model.Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )
+                if ( isSamePerson && person.Gender != Gender.Unknown && person.Gender != ToWeb( request.Details.Gender ) )
                 {
                     isSamePerson = false;
                 }

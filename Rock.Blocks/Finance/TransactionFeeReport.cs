@@ -40,7 +40,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block that reports transaction fees." )]
     [IconCssClass( "ti ti-file-dollar" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "06DEA3D2-6C2F-471B-BA0A-880E5B3A7BF8" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "A83896E0-A4D4-4BF9-86A8-04917F9A2EE5" )]

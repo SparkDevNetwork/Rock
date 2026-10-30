@@ -42,7 +42,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Lists current alerts based on current filters." )]
     [IconCssClass( "ti ti-message" )]
-    [SupportedSiteTypes( Rock.Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Transaction Detail Page",
         Description = "The page used to view the details of the transaction that triggered an alert.",

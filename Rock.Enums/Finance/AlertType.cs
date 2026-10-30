@@ -16,12 +16,18 @@
 //
 using System.ComponentModel;
 
+#if NET
+namespace Rock.Enums.Finance
+#else
 namespace Rock.Model
+#endif
 {
     /// <summary>
     /// Alert Type
     /// </summary>
+#if !NET
     [Enums.EnumDomain( "Finance" )]
+#endif
     public enum AlertType
     {
         /// <summary>

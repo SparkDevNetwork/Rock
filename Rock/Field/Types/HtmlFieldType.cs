@@ -22,6 +22,7 @@ using System.Web.UI;
 
 #endif
 using Rock.Attribute;
+using Rock.Model;
 using Rock.Reporting;
 using Rock.Security.SecurityGrantRules;
 using Rock.Security;
@@ -101,7 +102,7 @@ namespace Rock.Field.Types
         /// <value>
         /// The type of the filter comparison.
         /// </value>
-        public override Model.ComparisonType FilterComparisonType
+        public override ComparisonType FilterComparisonType
         {
             get
             {

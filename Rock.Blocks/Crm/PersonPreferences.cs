@@ -38,7 +38,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Allows the person to set their personal preferences." )]
     [IconCssClass( "ti ti-user" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "F0F74227-7025-4330-BC08-33262C327A52" )]
     // was [Rock.SystemGuid.BlockTypeGuid( "B185A172-488A-40D1-9478-49F7EAB0E94F" )]

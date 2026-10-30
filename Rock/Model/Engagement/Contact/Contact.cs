@@ -25,6 +25,8 @@ using Rock.Enums.Security;
 using Rock.Security;
 using Rock.Utility;
 
+using RelationshipStrength = Rock.Enums.Engagement.RelationshipStrength;
+
 namespace Rock.Model
 {
     /// <summary>

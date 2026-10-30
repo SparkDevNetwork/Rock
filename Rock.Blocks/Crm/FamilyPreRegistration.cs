@@ -37,12 +37,14 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Crm
 {
     [DisplayName( "Family Pre Registration" )]
     [Category( "CRM" )]
     [Description( "Provides a way to allow people to pre-register their families for weekend check-in." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 
@@ -1593,7 +1595,7 @@ namespace Rock.Blocks.Crm
             var user = UserLoginService.Create(
                 rockContext,
                 person,
-                Rock.Model.AuthenticationServiceType.Internal,
+                AuthenticationServiceType.Internal,
                 EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_DATABASE.AsGuid() ).Id,
                 username,
                 password,

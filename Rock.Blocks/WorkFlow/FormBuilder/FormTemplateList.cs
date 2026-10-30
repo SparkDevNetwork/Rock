@@ -36,7 +36,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
     [Category( "WorkFlow > FormBuilder" )]
     [Description( "Shows a list of form templates." )]
     [IconCssClass( "ti ti-notes" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes
 

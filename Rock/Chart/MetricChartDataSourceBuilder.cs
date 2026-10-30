@@ -41,7 +41,7 @@ namespace Rock.Chart
         /// The type of value displayed on the chart.
         /// If not specified, each value type should be displayed as a separate series.
         /// </summary>
-        public MetricValueType ValueType { get; set; } = Rock.Model.MetricValueType.Measure;
+        public MetricValueType ValueType { get; set; } = MetricValueType.Measure;
 
         /// <summary>
         /// The first date of the reporting period.
@@ -211,7 +211,7 @@ namespace Rock.Chart
                 var metric = metricService.Get( metricIdGroup.Key );
 
                 var categoryName = string.IsNullOrWhiteSpace( metric.Title ) ? defaultSeriesName : metric.Title;
-                if ( this.ValueType == Rock.Model.MetricValueType.Goal )
+                if ( this.ValueType == MetricValueType.Goal )
                 {
                     categoryName += " Goal";
                 }

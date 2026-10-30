@@ -43,7 +43,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Block for displaying and editing Rock's security settings." )]
     [IconCssClass( "ti ti-shield-half" )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "208087DA-E267-4656-A9CC-362A69E92A26" )]
     // Was [Rock.SystemGuid.BlockTypeGuid( "5B56AE6E-E73E-4D14-AF3E-680B3569CE38" )]

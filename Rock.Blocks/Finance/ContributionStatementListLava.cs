@@ -36,7 +36,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Contribution Statement List Lava" )]
     [Category( "Finance" )]
     [Description( "Block for displaying a listing of years where contribution statements are available." )]
-    [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( SiteType.Web )]
     [ConfigurationChangedReload( Rock.Enums.Cms.BlockReloadMode.Page )]
 
     #region Block Attributes
