@@ -204,6 +204,63 @@ describe("the menu", () => {
     });
 });
 
+// A menu asked to be a sheet is the phone's form of the same list: a scrim and a bottom sheet with
+// a grab bar and full width rows, not a popover beside its button.
+describe("the menu as a sheet", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    async function openSheet(): Promise<HTMLElement> {
+        wrapper = mount(Menu, { props: { icon: "plus", label: "Add", items, isSheet: true }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        anchor.focus();
+        anchor.click();
+        await settle();
+        return anchor;
+    }
+
+    test("draws a scrim and a sheet with a grab bar and one sheet row for each item, and no floating placement", async () => {
+        await openSheet();
+
+        expect(document.querySelector(".chat-sheet-scrim")).not.toBeNull();
+        expect(menu()?.classList.contains("chat-sheet")).toBe(true);
+        expect(menu()?.querySelector(".chat-sheet-grab")).not.toBeNull();
+        expect(document.querySelectorAll("[role='menu'] .chat-sheet-item")).toHaveLength(3);
+        expect(menu()?.style.left ?? "").toBe("");
+        expect(menu()?.style.top ?? "").toBe("");
+        expect(document.activeElement).toBe(menuItems()[0]);
+    });
+
+    test("a press on the scrim closes it with focus back on the button", async () => {
+        const anchor = await openSheet();
+
+        document.querySelector(".chat-sheet-scrim")!.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await settle();
+
+        expect(menu()).toBeNull();
+        expect(document.activeElement).toBe(anchor);
+    });
+
+    test("a choice is emitted and closes it, and Escape closes it with focus back", async () => {
+        const anchor = await openSheet();
+        menuItems()[1].click();
+        await settle();
+        expect(wrapper!.emitted("select")).toEqual([["settings"]]);
+        expect(menu()).toBeNull();
+
+        anchor.click();
+        await settle();
+        await press("Escape");
+        expect(menu()).toBeNull();
+        expect(document.activeElement).toBe(anchor);
+    });
+});
+
 // How a focused item looks. jsdom computes no styles, so these read the menu's own rules: they show
 // the item never hides the chat's focus ring and is tinted only under the pointer, not that a
 // browser draws either; a browser check proves that.

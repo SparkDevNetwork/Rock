@@ -21,6 +21,7 @@
 // Every exchange also answers the platform's settings for this church, which is how a client
 // released years ago still learns the service state, the route of the send and its limits: it is
 // the one call every client already makes at load and every few minutes.
+import { shallowRef } from "vue";
 import { maintenanceSentence, readOnlySentence } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
@@ -317,7 +318,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     let token: string | null = null;
     let timer: unknown = null;
     let expiresAt = 0;
-    let settings = readSettings(undefined);
+    // Read by components (a flag in it decides what the message box offers), so it is a ref: a
+    // refresh that changes a flag must reach a reader made before it.
+    const settings = shallowRef(readSettings(undefined));
 
     // Failed refreshes in a row, which sets how long the next wait is, and how long the platform
     // asked to be left alone after the last one, when it said.
@@ -361,7 +364,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             if (exchanged.ok) {
                 token = exchanged.accessToken;
                 expiresAt = now() + exchanged.expiresInSeconds * 1000;
-                settings = readSettings(exchanged.settings);
+                settings.value = readSettings(exchanged.settings);
                 state.errorCode = null;
                 failures = 0;
                 schedule(exchanged.expiresInSeconds);
@@ -443,7 +446,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         }
         const wait = retryAfterSeconds !== null
             ? retryAfterSeconds * 1000
-            : computeBackoff(failures, settings.limits.reconnect_base_ms, settings.limits.reconnect_cap_ms, dependencies.random);
+            : computeBackoff(failures, settings.value.limits.reconnect_base_ms, settings.value.limits.reconnect_cap_ms, dependencies.random);
         failures++;
         timer = dependencies.setTimer(() => void refresh(), wait);
     }
@@ -496,10 +499,10 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             isStopped = true;
             clear();
         },
-        settings: () => settings,
+        settings: () => settings.value,
         applyServiceRefusal: (error: ChatError): void => {
             if (error.code === "rpc.read_only" || error.code === "rpc.maintenance") {
-                settings = { ...settings, service: { state: error.code.slice("rpc.".length), banner: error.text ?? null } };
+                settings.value = { ...settings.value, service: { state: error.code.slice("rpc.".length), banner: error.text ?? null } };
             }
         },
         state

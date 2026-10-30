@@ -732,6 +732,116 @@
     }
 }
 
+/*
+    The bottom sheet's frame, shared by what is drawn as one on a phone: the message actions and the
+    message box's add menu. A scrim over the whole chat, the sheet held to its bottom edge and clipped
+    there as it slides, its rows a finger's size.
+*/
+.chat-sheet-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background: var(--chat-scrim);
+    animation: chat-sheet-scrim-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-sheet-scrim.is-leaving {
+    pointer-events: none;
+    animation: chat-sheet-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+/* Slides up from below the edge, and back down faster as it goes; the safe area keeps it off a phone's home bar. */
+.chat-sheet {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 71;
+    padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-sheet-in var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-sheet.is-leaving,
+.chat-sheet-scrim.is-leaving .chat-sheet {
+    animation: chat-sheet-out var(--chat-t-base) var(--chat-ease-out) forwards;
+}
+
+.chat-sheet-grab {
+    width: 40px;
+    height: 5px;
+    margin: 2px auto 12px;
+    background: var(--chat-line-strong);
+    border-radius: 3px;
+}
+
+/* A choice at a finger's size: 48px tall, 15px text. */
+.chat-sheet-item {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    width: 100%;
+    min-height: 48px;
+    padding: 8px 10px;
+    font-size: 15px;
+    color: var(--chat-text);
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-item);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-sheet-item:hover,
+.chat-sheet-item:focus-visible {
+    outline: none;
+    background: var(--chat-hover);
+}
+
+.chat-sheet-item .chat-ic {
+    color: var(--chat-icon);
+}
+
+.chat-sheet-item.is-danger,
+.chat-sheet-item.is-danger .chat-ic {
+    color: var(--chat-danger-ink);
+}
+
+.chat-sheet-label {
+    flex: 1;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+@keyframes chat-sheet-scrim-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-sheet-scrim-out {
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chat-sheet-out {
+    to {
+        transform: translateY(100%);
+    }
+}
+
 /* A busy spinner, in the color of the text around it. */
 .chat-spinner {
     display: inline-block;

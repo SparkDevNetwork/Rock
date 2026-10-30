@@ -20,6 +20,8 @@
 // have no color-mix, so the mixes the sheet would otherwise write are computed here and set on the
 // chat's root, each in a light and a dark form the sheet picks between.
 
+import { onScopeDispose, Ref, ref } from "vue";
+
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "brand-line" | "reaction-mine-line" | "flash" | "own-hairline"
     | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
@@ -354,3 +356,26 @@ export function tokenDuration(element: Element, token: string, fallbackMs: numbe
 }
 
 // #endregion The page's theme
+
+// #region The page's motion preference
+
+/**
+ * Whether the person asked the page for less motion, followed as it changes: the setting can be
+ * turned on with the chat open, and what was drawn moving must go still at once. Called from a
+ * component's setup, which is when the listener is ended.
+ *
+ * @returns A ref that is true while less motion is asked for.
+ */
+export function useIsMotionReduced(): Ref<boolean> {
+    const query = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    const isReduced = ref(query?.matches ?? false);
+    const onChange = (event: { matches: boolean }): void => {
+        isReduced.value = event.matches;
+    };
+
+    query?.addEventListener?.("change", onChange);
+    onScopeDispose(() => query?.removeEventListener?.("change", onChange));
+    return isReduced;
+}
+
+// #endregion The page's motion preference

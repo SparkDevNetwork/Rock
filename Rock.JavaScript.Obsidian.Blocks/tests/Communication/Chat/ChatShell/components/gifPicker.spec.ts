@@ -170,6 +170,38 @@ describe("the GIF picker", () => {
         expect(picker().querySelector("[data-testid='gif-error']")?.textContent).toContain("GIF search is busy. Try again in a moment.");
     });
 
+    test("a screen reader hears a failure and a busy search, not only results", async () => {
+        const gifs = fakeGifs();
+        await open(gifs);
+        const live = (): string => picker().querySelector("[aria-live]")?.textContent?.trim() ?? "";
+
+        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });
+        await flushPromises();
+        expect(live()).toBe("GIFs can't load right now");
+
+        picker().querySelector<HTMLElement>("[data-testid='gif-retry']")?.click();
+        await nextTick();
+        gifs.asked[1].answer({ ok: false, error: { code: "rpc.gif_search_busy", severity: "failed", text: "GIF search is busy. Try again in a moment." }, retryAfterSeconds: 4 });
+        await flushPromises();
+        expect(live()).toBe("GIF search is busy. Try again in a moment.");
+    });
+
+    test("the search ends as the picker starts to leave, so nothing is asked or written on its way out", async () => {
+        jest.useFakeTimers();
+        const gifs = fakeGifs();
+        const w = await open(gifs);
+
+        search().value = "thanks";
+        search().dispatchEvent(new Event("input"));
+        await nextTick();
+        (w.findComponent({ ref: "shell" }).vm as unknown as { close: (isFocusReturned: boolean) => void }).close(true);
+        await nextTick();
+        jest.advanceTimersByTime(1000);
+
+        expect(gifs.asked).toHaveLength(0);
+    });
+
     test("a pick hands the GIF over and closes, giving focus back to what opened it", async () => {
         const gifs = fakeGifs();
         const w = await open(gifs);
@@ -205,6 +237,16 @@ describe("the GIF picker", () => {
         document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
         await flushPromises();
         expect(w.emitted("pick")).toEqual([[result("c", 100, 50)]]);
+    });
+
+    test("a sheet over a scrim is modal for a screen reader, a popover is not", async () => {
+        await open(fakeGifs(), { isSheet: true });
+        expect(picker().getAttribute("aria-modal")).toBe("true");
+        wrapper?.unmount();
+        wrapper = null;
+
+        await open(fakeGifs());
+        expect(picker().getAttribute("aria-modal")).toBeNull();
     });
 
     test("Escape closes and gives focus back to what opened it", async () => {

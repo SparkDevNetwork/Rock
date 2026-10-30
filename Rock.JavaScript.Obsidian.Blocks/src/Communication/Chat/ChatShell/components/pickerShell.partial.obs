@@ -11,6 +11,7 @@
              class="chat-picker"
              :class="{ 'is-pill': isPill, 'is-sheet': isSheet, 'is-leaving': isClosing }"
              role="dialog"
+             :aria-modal="isSheet ? 'true' : undefined"
              :aria-label="label"
              tabindex="-1"
              :style="shellStyles"

@@ -636,6 +636,56 @@ describe("a GIF in a message", () => {
         expect(pause).toHaveBeenCalled();
     });
 
+    test("a dead GIF is read as its words, not as a picture named for its title", async () => {
+        const { wrapper } = await mountFiles([gif(1)]);
+
+        await wrapper.get("video").trigger("error");
+
+        const dead = wrapper.get("[data-testid='attachment-gif']");
+        expect(dead.attributes("role")).toBeUndefined();
+        expect(dead.attributes("aria-label")).toBeUndefined();
+        expect(dead.text()).toContain("GIF unavailable");
+    });
+
+    test("a redraw of the message does not stop and start watching its GIFs", async () => {
+        const watched = jest.spyOn(window.IntersectionObserver.prototype, "observe");
+        const unwatched = jest.spyOn(window.IntersectionObserver.prototype, "unobserve");
+        const { wrapper } = await mountFiles([gif(1), gif(2)]);
+        expect(watched).toHaveBeenCalledTimes(2);
+
+        await wrapper.setProps({ items: [gif(1), gif(2)] });
+        await wrapper.setProps({ isPending: true });
+        await wrapper.setProps({ isPending: false });
+
+        expect(watched).toHaveBeenCalledTimes(2);
+        expect(unwatched).not.toHaveBeenCalled();
+    });
+
+    test("a GIF's video asks for nothing until it plays, the poster holding its box", async () => {
+        const { wrapper } = await mountFiles([gif(1)]);
+
+        expect(wrapper.get("video").attributes("preload")).toBe("none");
+    });
+
+    test("a person who turns reduced motion on with the page open sees the GIF held still at once", async () => {
+        const listeners: Array<(event: { matches: boolean }) => void> = [];
+        window.matchMedia = ((query: string) => ({
+            get matches() {
+                return query.includes("reduced-motion") && isMotionReduced;
+            },
+            addEventListener: (_type: string, listener: (event: { matches: boolean }) => void) => listeners.push(listener),
+            removeEventListener: () => undefined
+        })) as unknown as typeof window.matchMedia;
+        const { wrapper } = await mountFiles([gif(1)]);
+        expect(wrapper.find("[data-testid='attachment-gif-play']").exists()).toBe(false);
+
+        isMotionReduced = true;
+        listeners.forEach(listener => listener({ matches: true }));
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='attachment-gif-play']").exists()).toBe(true);
+    });
+
     test("a GIF whose media is gone draws the unavailable tile at its stored size", async () => {
         const { wrapper } = await mountFiles([gif(1)]);
 

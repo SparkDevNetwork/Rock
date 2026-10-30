@@ -77,8 +77,8 @@
                   class="chat-attach-gif"
                   data-testid="attachment-gif"
                   :data-unavailable="deadGifs.has(item.id) ? 'true' : undefined"
-                  :role="isMotionReduced && !deadGifs.has(item.id) ? 'group' : 'img'"
-                  :aria-label="item.title || 'GIF'"
+                  :role="deadGifs.has(item.id) ? undefined : isMotionReduced ? 'group' : 'img'"
+                  :aria-label="deadGifs.has(item.id) ? undefined : item.title || 'GIF'"
                   :style="boxStyle(item.width, item.height)">
                 <template v-if="deadGifs.has(item.id)"><Icon name="eye-off" size="sm" />GIF unavailable</template>
                 <template v-else>
@@ -89,7 +89,7 @@
                            muted
                            loop
                            playsinline
-                           preload="metadata"
+                           preload="none"
                            @error="deadGifs.add(item.id)"></video>
                     <span class="chat-attach-gif-badge" data-testid="attachment-gif-badge" aria-hidden="true">GIF</span>
                     <button v-if="isMotionReduced"
@@ -573,6 +573,7 @@ a.chat-attach-file:focus-visible {
 <script setup lang="ts">
     import { computed, inject, nextTick, onBeforeUnmount, PropType, reactive, ref, watch } from "vue";
     import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
+    import { useIsMotionReduced } from "../ui/brand.partial";
     import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -638,7 +639,7 @@ a.chat-attach-file:focus-visible {
     const singleHeight = 360;
 
     /** Whether the person asked for less motion, which holds every GIF still until it is played. */
-    const isMotionReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    const isMotionReduced = useIsMotionReduced();
 
     /** The GIFs whose media could not be loaded, drawn as unavailable. */
     const deadGifs = reactive(new Set<string>());
@@ -655,7 +656,7 @@ a.chat-attach-file:focus-visible {
         : new IntersectionObserver(entries => entries.forEach(entry => {
             const video = entry.target as HTMLVideoElement;
             const id = video.dataset.gif ?? "";
-            if (entry.isIntersecting && (!isMotionReduced || playedGifs.has(id))) {
+            if (entry.isIntersecting && (!isMotionReduced.value || playedGifs.has(id))) {
                 play(video);
             }
             else if (!entry.isIntersecting) {

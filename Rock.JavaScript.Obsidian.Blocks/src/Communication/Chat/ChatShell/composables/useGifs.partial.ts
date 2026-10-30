@@ -95,7 +95,9 @@ export function createGifs(dependencies: GifDependencies): Gifs {
     const isRefused = ref(false);
 
     return {
-        isOn: () => dependencies.isEnabled() && !isRefused.value,
+        // The refusal is read first so a reader is always subscribed to it, even while the church
+        // switch is off.
+        isOn: () => !isRefused.value && dependencies.isEnabled(),
 
         search: async (query, page, signal): Promise<GifSearchAnswer> => {
             const result: CallResult = await dependencies.callFunction("gif-search", { q: query, page }, signal ? { signal } : undefined);
@@ -188,6 +190,10 @@ export function createGifSearch(gifs: Gifs): GifSearch {
         }
         controller?.abort();
         controller = null;
+
+        // An ask cancelled is stale from that moment: its answer, an aborted call that resolves
+        // as a failure at once, must not be written while the newer query waits out its pause.
+        asks++;
     }
 
     async function ask(query: string, next: number): Promise<void> {
@@ -202,7 +208,9 @@ export function createGifSearch(gifs: Gifs): GifSearch {
         state.isLoadingMore = false;
         if (answer.ok) {
             page = next;
-            state.items = next === 1 ? answer.items : [...state.items, ...answer.items];
+            // A later page may repeat a GIF an earlier one drew; a tile is drawn once.
+            const seen = new Set(state.items.map(item => item.slug));
+            state.items = next === 1 ? answer.items : [...state.items, ...answer.items.filter(item => !seen.has(item.slug))];
             state.hasNext = answer.hasNext;
             state.status = state.items.length > 0 ? "results" : "empty";
             return;
@@ -211,6 +219,12 @@ export function createGifSearch(gifs: Gifs): GifSearch {
         // A further page that failed leaves the GIFs already drawn where they are.
         if (next > 1) {
             state.hasNext = false;
+            return;
+        }
+
+        // A refusal as off ends GIFs for the session, and the switch that hides them closes the
+        // picker; a Try again that can never work is not drawn meanwhile.
+        if (answer.error.code === gifsOffCode) {
             return;
         }
 
@@ -244,7 +258,6 @@ export function createGifSearch(gifs: Gifs): GifSearch {
             const trimmed = query.trim();
             if (trimmed.length < minimumQueryLength) {
                 // a shorter query is no search, so the suggestions come back
-                asks++;
                 state.items = [];
                 state.hasNext = false;
                 state.isLoadingMore = false;

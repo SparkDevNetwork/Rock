@@ -338,7 +338,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref } from "vue";
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import PickerShell from "./pickerShell.partial.obs";
     import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
@@ -406,7 +406,16 @@
             return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
         }
 
-        return search.status === "empty" ? "No GIFs found" : "";
+        switch (search.status) {
+            case "empty":
+                return "No GIFs found";
+            case "busy":
+                return search.busyText ?? "";
+            case "error":
+                return "GIFs can't load right now";
+            default:
+                return "";
+        }
     });
 
     // #endregion Computed Values
@@ -523,6 +532,14 @@
         await nextTick();
         const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
         (isTouch ? shell.value?.element : searchElement.value)?.focus({ preventScroll: true });
+    });
+
+    // The search ends as the picker starts to leave, not when it is finally removed, so a pause
+    // that runs out or an answer that comes in during the way out writes nothing.
+    watch(() => shell.value?.isClosing, isClosing => {
+        if (isClosing) {
+            search.stop();
+        }
     });
 
     onBeforeUnmount(() => {

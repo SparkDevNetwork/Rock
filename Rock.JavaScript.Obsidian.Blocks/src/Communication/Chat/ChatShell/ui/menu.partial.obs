@@ -10,25 +10,28 @@
                 @click="onAnchorClick" />
 
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <Transition name="chat-pop">
+        <Transition leave-active-class="is-leaving">
+            <div v-if="isOpen && isSheet" class="chat-sheet-scrim" data-testid="menu-scrim"></div>
+        </Transition>
+        <Transition :name="isSheet ? 'chat-sheet-menu' : 'chat-pop'" :leave-active-class="isSheet ? 'is-leaving' : undefined">
             <div v-if="isOpen"
                  ref="menuElement"
-                 class="chat-menu"
+                 :class="isSheet ? 'chat-sheet' : 'chat-menu'"
                  role="menu"
                  :aria-label="label"
-                 :style="menuStyles"
+                 :style="isSheet ? undefined : menuStyles"
                  @keydown="onKeydown">
                 <!--
                     Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
                     a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
                 -->
+                <div v-if="isSheet" class="chat-sheet-grab" aria-hidden="true"></div>
                 <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
                     <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                     <button type="button"
-                            class="chat-menu-item"
-                            :class="{ 'is-danger': item.isDanger }"
+                            :class="[isSheet ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
                             :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
                             :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
                             :data-key="item.key"
@@ -287,6 +290,12 @@
         placement: {
             type: String as PropType<"bottom-end" | "top-start">,
             default: "bottom-end"
+        },
+
+        /** Whether it opens as a bottom sheet over a scrim that a press closes, as on a phone, rather than beside its button. */
+        isSheet: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -377,7 +386,14 @@
             close(true);
         }
         else if (event.key === "Tab") {
-            close(false);
+            if (props.isSheet) {
+                // A sheet is modal over the chat, so Tab stays among its rows.
+                event.preventDefault();
+                items[(current + (event.shiftKey ? -1 : 1) + items.length) % items.length]?.focus();
+            }
+            else {
+                close(false);
+            }
         }
         else if ((event.key === "Enter" || event.key === " ") && current >= 0) {
             // Handled here so the choice does not depend on the browser turning a key into a click.
@@ -396,11 +412,12 @@
     /** A press anywhere outside the menu and its button closes it, leaving focus where the press put it. */
     function onDocumentPointerDown(event: Event): void {
         const target = event.target as Node;
-        if (menuElement.value?.contains(target) || anchorElement.value?.contains(target)) {
+        if (menuElement.value?.contains(target) || anchor.value?.buttonElement?.contains(target)) {
             return;
         }
 
-        close(false);
+        // A sheet's scrim is the whole chat, so a press on it is the way out and focus goes back to the button.
+        close(props.isSheet);
     }
 
     // #endregion Event Handlers
@@ -408,7 +425,8 @@
     // #region Functions
 
     async function open(at: "first" | "last"): Promise<void> {
-        anchorElement.value = anchor.value?.buttonElement ?? undefined;
+        // A sheet is placed by its own rules, so nothing is floated for it.
+        anchorElement.value = props.isSheet ? undefined : anchor.value?.buttonElement ?? undefined;
         isOpen.value = true;
         await nextTick();
         const items = menuItems();

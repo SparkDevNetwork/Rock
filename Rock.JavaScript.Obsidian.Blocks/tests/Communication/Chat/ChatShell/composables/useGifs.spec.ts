@@ -19,9 +19,10 @@
 // moment the platform refuses them as off, and a picker's search, which waits for the person to
 // stop typing, asks once for each query that is long enough, drops an answer a newer query
 // overtook, and pages on. Laid out in two columns, each tile placed in the shorter.
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import { createGifs, createGifSearch, gifSuggestions, GifSearchAnswer, Gifs, masonry, nextInMasonry } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
+import { createSession, ExchangeResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 function result(slug: string, width = 200, height = 112): GifResult {
@@ -114,6 +115,40 @@ describe("createGifs", () => {
     });
 });
 
+describe("the church switch through a real session", () => {
+    /** A session whose every exchange answers the next of the given gifs flags. */
+    function sessionAnswering(...flags: boolean[]): ReturnType<typeof createSession> {
+        let calls = 0;
+        return createSession({
+            mintChurchToken: async () => ({ gate: "ok", churchToken: "church" }),
+            exchange: async (): Promise<ExchangeResult> => ({
+                ok: true,
+                accessToken: "platform",
+                expiresInSeconds: 300,
+                settings: { flags: { gifs: flags[Math.min(calls++, flags.length - 1)] } }
+            }),
+            pushTokenToConnection: async () => undefined,
+            random: () => 0.5,
+            setTimer: () => 0,
+            clearTimer: () => undefined
+        });
+    }
+
+    test("a reader made while the church has GIFs off follows the switch on, and off again, at a refresh", async () => {
+        const session = sessionAnswering(false, true, false);
+        const gifs = createGifs({ callFunction: async () => ({ ok: true, data: {}, retryAfterSeconds: null }) as unknown as CallResult, isEnabled: () => session.settings().flags.gifs });
+        await session.start();
+        const isOffered = computed(() => gifs.isOn());
+        expect(isOffered.value).toBe(false);
+
+        await session.refresh();
+        expect(isOffered.value).toBe(true);
+
+        await session.refresh();
+        expect(isOffered.value).toBe(false);
+    });
+});
+
 describe("a picker's search", () => {
     test("before two characters it asks nothing and offers the suggestions", async () => {
         const gifs = fakeGifs();
@@ -168,6 +203,29 @@ describe("a picker's search", () => {
         expect(search.status).toBe("results");
     });
 
+    test("typing while an ask is out does not show the failure its end causes", async () => {
+        const gifs = fakeGifs();
+        const search = createGifSearch(gifs);
+
+        search.setQuery("cats", true);
+        search.setQuery("cat s");
+        gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });
+        await settle();
+
+        expect(search.status).toBe("loading");
+    });
+
+    test("a refusal as off from a search is final, not a failure to try again", async () => {
+        const gifs = fakeGifs();
+        const search = createGifSearch(gifs);
+
+        search.setQuery("cats", true);
+        gifs.asked[0].answer({ ok: false, error: { code: "rpc.gifs_off", severity: "failed" }, retryAfterSeconds: null });
+        await settle();
+
+        expect(search.status).not.toBe("error");
+    });
+
     test("no results, a failure with Try again, and busy with the server's sentence each have their state", async () => {
         const gifs = fakeGifs();
         const search = createGifSearch(gifs);
@@ -219,6 +277,20 @@ describe("a picker's search", () => {
         expect(search.items.map(item => item.slug)).toEqual(["a", "b", "c"]);
         expect(search.hasNext).toBe(false);
         expect(gifs.asked).toHaveLength(2);
+    });
+
+    test("a GIF a later page repeats is not added twice", async () => {
+        const gifs = fakeGifs();
+        const search = createGifSearch(gifs);
+        search.setQuery("thanks", true);
+        gifs.asked[0].answer({ ok: true, items: [result("a"), result("b")], hasNext: true });
+        await settle();
+
+        search.loadMore();
+        gifs.asked[1].answer({ ok: true, items: [result("b"), result("c")], hasNext: false });
+        await settle();
+
+        expect(search.items.map(item => item.slug)).toEqual(["a", "b", "c"]);
     });
 
     test("stop ends the ask in flight and nothing is written after", async () => {

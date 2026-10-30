@@ -49,7 +49,7 @@
                   class="chat-composer-gif"
                   data-testid="composer-gif"
                   :style="{ aspectRatio: `${tray.gif.width} / ${tray.gif.height}` }">
-                <img v-if="isMotionReduced()"
+                <img v-if="isMotionReduced"
                      :src="tray.gif.still"
                      :alt="tray.gif.title || 'GIF'"
                      referrerpolicy="no-referrer" />
@@ -67,7 +67,7 @@
                             class="chat-composer-gif-remove"
                             label="Remove GIF"
                             data-testid="composer-gif-remove"
-                            @click="tray.removeGif()" />
+                            @click="onRemoveGif" />
             </span>
 
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
@@ -97,6 +97,7 @@
                           icon="plus"
                           label="Add a GIF or file"
                           placement="top-start"
+                          :isSheet="isPhone"
                           :items="addItems"
                           :anchorAttrs="{ disabled: isDisabled, 'data-testid': 'composer-add', class: { 'is-open': isGifOpen } }"
                           @select="onAddSelect" />
@@ -546,6 +547,7 @@
     import { gifsKey } from "../composables/useGifs.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
+    import { useIsMotionReduced } from "../ui/brand.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -733,6 +735,9 @@
     /** The session's GIF search, provided once by the chat; none outside it. */
     const gifs = inject(gifsKey, null);
     const addMenu = ref<InstanceType<typeof Menu>>();
+
+    /** Whether the person asked for less motion, which draws a staged GIF still. */
+    const isMotionReduced = useIsMotionReduced();
     const isGifOpen = ref(false);
 
     const boxElement = ref<HTMLFormElement>();
@@ -1021,16 +1026,17 @@
      * The GIF picker went. Closed by a choice or by Escape, it handed focus back to the "+", and the
      * person carries on in the box; closed by a press elsewhere, focus stays there.
      */
+    /** The remove button leaves with the GIF, so focus goes on to the box rather than to the page. */
+    function onRemoveGif(): void {
+        props.tray?.removeGif();
+        editor.value?.focus();
+    }
+
     function onGifClose(): void {
         isGifOpen.value = false;
         if (addAnchor.value && document.activeElement === addAnchor.value) {
             editor.value?.focus();
         }
-    }
-
-    /** Whether the person asked for less motion, which draws a staged GIF still. */
-    function isMotionReduced(): boolean {
-        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
     }
 
     /** Focus came into the box; a move between its own parts is not news to the shell. */

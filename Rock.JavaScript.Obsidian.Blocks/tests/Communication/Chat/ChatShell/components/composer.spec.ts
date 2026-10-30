@@ -1155,6 +1155,29 @@ describe("the composer's GIFs", () => {
         expect(wrapper.find("[data-testid='composer-emoji']").exists()).toBe(true);
     });
 
+    test("on a phone the \"+\" opens as a bottom sheet, off a phone as a menu beside it", async () => {
+        const tray = createAttachments(harness().dependencies).trayFor(place, place);
+        const phone = mountComposer({
+            props: { title: "Anna Reyes", tray, isPhone: true },
+            attachTo: document.body,
+            global: { provide: { [gifsKey as symbol]: fakeGifs() } }
+        });
+
+        await phone.get("[data-testid='composer-add']").trigger("click");
+        await nextTick();
+
+        expect(document.querySelector(".chat-sheet-scrim")).not.toBeNull();
+        expect(document.querySelector("[role='menu'].chat-sheet")).not.toBeNull();
+        phone.unmount();
+        document.body.replaceChildren();
+
+        const { wrapper } = gifTray();
+        await wrapper.get("[data-testid='composer-add']").trigger("click");
+        await nextTick();
+        expect(document.querySelector(".chat-sheet-scrim")).toBeNull();
+        expect(document.querySelector("[role='menu'].chat-menu")).not.toBeNull();
+    });
+
     test("Photo or file opens the file chooser", async () => {
         const { wrapper } = gifTray();
         const input = wrapper.get("[data-testid='composer-file-input']").element as HTMLInputElement;
@@ -1199,6 +1222,16 @@ describe("the composer's GIFs", () => {
         expect(tray.gif).toBeNull();
         expect(wrapper.find("[data-testid='composer-gif']").exists()).toBe(false);
         expect(wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
+    });
+
+    test("removing the staged GIF puts focus in the message box, not on the page", async () => {
+        const { wrapper, tray } = gifTray();
+        tray.stageGif(result("first"));
+        await nextTick();
+
+        await wrapper.get("[data-testid='composer-gif-remove']").trigger("click");
+
+        expect(document.activeElement).toBe(editorOf(wrapper));
     });
 
     test("GIFs refused as off hide the \"+\" and close the picker at once", async () => {
