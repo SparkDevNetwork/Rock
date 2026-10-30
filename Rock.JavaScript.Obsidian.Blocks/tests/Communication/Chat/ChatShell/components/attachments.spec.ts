@@ -575,7 +575,7 @@ describe("a GIF in a message", () => {
         const { wrapper } = await mountFiles([gif(1, { width: 498, height: 280 })]);
 
         const box = wrapper.get("[data-testid='attachment-gif']");
-        expect(box.attributes("style")).toContain("aspect-ratio: 498 / 280");
+        expect((box.element as HTMLElement).style.aspectRatio).toBe("498 / 280");
         expect(box.attributes("style")).toContain("width: 320px");
         expect(box.attributes("aria-label")).toBe("Thank you dance 1");
         expect(box.get("[data-testid='attachment-gif-badge']").text()).toBe("GIF");
@@ -644,7 +644,7 @@ describe("a GIF in a message", () => {
         const dead = wrapper.get("[data-testid='attachment-gif']");
         expect(dead.attributes("data-unavailable")).toBe("true");
         expect(dead.text()).toContain("GIF unavailable");
-        expect(dead.attributes("style")).toContain("aspect-ratio: 498 / 280");
+        expect((dead.element as HTMLElement).style.aspectRatio).toBe("498 / 280");
         expect(wrapper.find("video").exists()).toBe(false);
     });
 

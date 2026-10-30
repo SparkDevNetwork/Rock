@@ -1,0 +1,393 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <div v-if="isSheet"
+             class="chat-picker-scrim"
+             :class="{ 'is-leaving': isClosing }"
+             data-testid="picker-scrim"
+             @pointerdown="close(false)"></div>
+        <div v-bind="$attrs"
+             ref="shellElement"
+             class="chat-picker"
+             :class="{ 'is-pill': isPill, 'is-sheet': isSheet, 'is-leaving': isClosing }"
+             role="dialog"
+             :aria-label="label"
+             tabindex="-1"
+             :style="shellStyles"
+             @keydown="onKeydown"
+             @focusout="onFocusOut">
+            <div v-if="isSheet" class="chat-picker-grab" aria-hidden="true"></div>
+            <slot />
+        </div>
+    </Teleport>
+</template>
+
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut the picker near its edge. */
+.chat-picker {
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    width: 328px;
+    max-width: calc(100vw - 16px);
+    max-height: 380px;
+    overflow: hidden;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-pop);
+    outline: none;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-picker-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* A pill as wide as what it holds, as the emoji tray's quick reactions are. */
+.chat-picker.is-pill {
+    width: auto;
+    border-radius: var(--chat-r-full);
+}
+
+/*
+    On a phone, a sheet over the whole chat from its bottom edge, as the message actions' sheet is,
+    most of the chat high; the safe area keeps it off a phone's home bar.
+*/
+.chat-picker.is-sheet {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 71;
+    width: auto;
+    max-width: none;
+    height: 72%;
+    max-height: none;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    animation: chat-picker-sheet-in var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-picker-grab {
+    flex: none;
+    width: 40px;
+    height: 5px;
+    margin: 8px auto 4px;
+    background: var(--chat-line-strong);
+    border-radius: 3px;
+}
+
+.chat-picker-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 70;
+    background: var(--chat-scrim);
+    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* Leaves half as far and faster than it came, and takes no press on its way out. */
+.chat-picker.is-leaving {
+    pointer-events: none;
+    animation: chat-picker-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+.chat-picker.is-sheet.is-leaving {
+    animation: chat-picker-sheet-out var(--chat-t-base) var(--chat-ease-out) forwards;
+}
+
+.chat-picker-scrim.is-leaving {
+    pointer-events: none;
+    animation: chat-picker-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+/* From just toward what opened it and a touch small; toward is down when the picker sits above. */
+@keyframes chat-picker-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-picker-out {
+    to {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-picker-sheet-in {
+    from {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chat-picker-sheet-out {
+    to {
+        transform: translateY(100%);
+    }
+}
+
+@keyframes chat-picker-scrim-out {
+    to {
+        opacity: 0;
+    }
+}
+
+/* Reduced motion: the sheet only fades, as every other entrance does. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-picker.is-sheet {
+        animation-name: chat-crossfade;
+    }
+
+    .chat-picker.is-sheet.is-leaving {
+        animation: chat-picker-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref } from "vue";
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { tokenDuration } from "../ui/brand.partial";
+    import { overlayHostOf } from "../ui/tooltip.partial";
+
+    // The frame both pickers are drawn in, emoji and GIF: placed beside what opened it in the chat's
+    // root, or a sheet on a phone; closed by Escape, a press or focus elsewhere, or its opener leaving
+    // the page; playing its way out before it says it closed, with focus back where it came from.
+    // Each picker draws its own content inside and asks it to close when a choice is made.
+
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        /** What the picker is placed beside, and what opened it unless an opener is given. */
+        anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        /**
+         * What opened the picker when it is not what the picker is placed beside, as a message's
+         * add chip that a choice can take away: given focus back on a close by key or choice, or
+         * the message's row once it has gone.
+         */
+        opener: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        /** What the dialog is called for a screen reader. */
+        label: {
+            type: String,
+            required: true
+        },
+
+        /** The side of the anchor the picker opens at, above it. */
+        placement: {
+            type: String as PropType<"top-start" | "top-end">,
+            default: "top-start"
+        },
+
+        /** Whether it is drawn as a bottom sheet over a scrim, as on a phone, rather than beside its anchor. */
+        isSheet: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether it is a pill as wide as what it holds rather than the picker's full size. */
+        isPill: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    /** The way out's length when the sheet is not on the page, the sheet's own fast motion. */
+    const fallbackOutMs = 120;
+
+    /**
+     * How long past the way out's length a close still waits on it: the animation starts a frame
+     * after the close is asked for, so at its length it is still playing.
+     */
+    const outGraceMs = 50;
+
+    const shellElement = ref<HTMLElement>();
+
+    /** Set once the picker is on its way out, so nothing chosen or pressed after counts twice. */
+    const isClosing = ref(false);
+
+    /** Watches for what opened the picker leaving the page, which nothing else would tell it. */
+    let anchorObserver: MutationObserver | null = null;
+
+    /** The chat's root, which the picker is drawn in; null where it is drawn alone. */
+    const overlayHost = computed(() => overlayHostOf(props.anchor));
+
+    // A sheet is placed by its own rules, so nothing is floated for it.
+    const anchorElement = computed(() => props.isSheet ? undefined : props.anchor ?? undefined);
+
+    // Above what opened it, at the side the picker asks for. Placed by left and top, since a
+    // transform here would override the pop's own and the picker would only fade.
+    //
+    // Only the side flips, below when there is no room above. The alignment is kept and the picker
+    // is slid along inside the window instead, 8px clear of its edge, as the design places every
+    // popover: flipping the alignment would throw a picker near the window's edge to the far side
+    // of its anchor, away from the message it belongs to.
+    const { floatingStyles, placement, x } = useFloating(anchorElement, shellElement, {
+        placement: props.placement,
+        strategy: "fixed",
+        transform: false,
+        middleware: [offset(8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
+        whileElementsMounted: autoUpdate
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * The placement, with the pop grown from what opened it: from its middle along the picker's
+     * nearest edge, and moving toward it, so a picker flipped below grows down from above.
+     */
+    const shellStyles = computed((): Record<string, string> => {
+        if (props.isSheet) {
+            return {};
+        }
+
+        const isAbove = placement.value.startsWith("top");
+        const anchorBox = props.anchor?.getBoundingClientRect();
+        const width = shellElement.value?.offsetWidth ?? 0;
+
+        // Measured from where the picker landed, after any slide along the window, so the pop
+        // still grows out of the anchor; clamped to the picker, as an anchor can sit past its end.
+        const middle = anchorBox ? anchorBox.left + anchorBox.width / 2 - (x.value ?? 0) : width / 2;
+        return {
+            ...floatingStyles.value,
+            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
+            "--chat-pop-toward": isAbove ? "1" : "-1"
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            event.preventDefault();
+
+            // The picker's own Escape, so a panel under it does not close on the same key.
+            event.stopPropagation();
+            void close(true);
+        }
+    }
+
+    /** Focus leaving the picker for somewhere else on the page closes it, as Tab past its end does. */
+    function onFocusOut(event: FocusEvent): void {
+        // No next element means focus went nowhere on the page, as when the window lost it or the
+        // tray gave way to the full picker, and the reader is still in the picker.
+        const next = event.relatedTarget as Node | null;
+        if (next && !shellElement.value?.contains(next) && !isOfOpener(next)) {
+            void close(false);
+        }
+    }
+
+    /** A press outside the picker and what opened it closes it, leaving focus where the press put it. */
+    function onDocumentPointerDown(event: Event): void {
+        // A press on what opened the picker is left to that control, which closes it by its click.
+        const target = event.target as Node;
+        if (shellElement.value?.contains(target) || isOfOpener(target)) {
+            return;
+        }
+
+        void close(false);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Closes, with focus back on what opened it when the close came from the picker itself. The
+     * picker plays its own way out before saying so, since the host removes it on the word and a
+     * removed element cannot animate; where nothing animates, the word goes at once. A browser
+     * holds an animation in a hidden tab until the tab is shown again, so the word also goes once
+     * the way out's length has passed, whichever comes first.
+     */
+    async function close(isFocusReturned: boolean): Promise<void> {
+        if (isClosing.value) {
+            return;
+        }
+
+        isClosing.value = true;
+        if (isFocusReturned) {
+            returnFocus();
+        }
+
+        await nextTick();
+
+        // A choice can take the opener away as the page redraws, and the focus it held with it.
+        if (isFocusReturned && props.opener?.isConnected === false) {
+            returnFocus();
+        }
+
+        const shell = shellElement.value;
+        const animations = shell?.getAnimations?.() ?? [];
+        if (shell && animations.length > 0) {
+            const outMs = tokenDuration(shell, "--chat-t-fast", fallbackOutMs) + outGraceMs;
+            await Promise.race([
+                Promise.allSettled(animations.map(animation => animation.finished)),
+                new Promise(resolve => window.setTimeout(resolve, outMs))
+            ]);
+        }
+
+        emit("close");
+    }
+
+    /** Whether a node is what the picker is placed beside or what opened it. */
+    function isOfOpener(node: Node): boolean {
+        return !!props.anchor?.contains(node) || !!props.opener?.contains(node);
+    }
+
+    /** Gives focus back to what opened the picker, or to its message's row once that has gone. */
+    function returnFocus(): void {
+        const opener = props.opener ?? props.anchor;
+        const target = opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") : opener;
+        target?.focus({ preventScroll: true });
+    }
+
+    /**
+     * Closes at once when what it is placed beside has left the page, as when its row is redrawn or its
+     * drawer goes: placed beside a detached element the picker would float at the window's corner.
+     */
+    function onAnchorGone(): void {
+        if (isClosing.value || props.anchor?.isConnected !== false) {
+            return;
+        }
+
+        isClosing.value = true;
+        emit("close");
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+
+        // Only a removal anywhere on the page can take the anchor away, so that is all it watches.
+        if (props.anchor && typeof MutationObserver !== "undefined") {
+            anchorObserver = new MutationObserver(onAnchorGone);
+            anchorObserver.observe(document.body, { childList: true, subtree: true });
+        }
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        anchorObserver?.disconnect();
+    });
+
+    // #endregion Lifecycle Hooks
+
+    defineExpose({ element: shellElement, isClosing, close });
+</script>

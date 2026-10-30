@@ -193,6 +193,9 @@ const tokens: Token[] = [
     { name: "tip-bg", light: "#1B2029", dark: "#F8F8FC" },
     { name: "tip-fg", light: "#F8F8FC", dark: "#0D1117" },
     { name: "scrim", light: "rgba(13,17,23,.38)", dark: "rgba(0,0,0,.55)" },
+    // Over a photo or GIF, the same in either theme, since what is under it is the media's own.
+    { name: "media-scrim", light: "rgba(13,17,23,.55)" },
+    { name: "media-fg", light: "#FFFFFF" },
 
     // Status colors. The soft fills are written out, since the browsers Rock supports cannot mix them.
     { name: "danger", light: "#D70015", rock: "base-danger" },

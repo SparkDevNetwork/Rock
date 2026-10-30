@@ -68,6 +68,39 @@
                 </button>
             </div>
 
+            <!--
+                A GIF: KLIPY's looping mp4 in the single photo's box at its stored shape, playing while
+                on screen, still with a play button where motion is reduced; a press opens nothing.
+            -->
+            <span v-for="item in gifs"
+                  :key="item.id"
+                  class="chat-attach-gif"
+                  data-testid="attachment-gif"
+                  :data-unavailable="deadGifs.has(item.id) ? 'true' : undefined"
+                  :role="isMotionReduced && !deadGifs.has(item.id) ? 'group' : 'img'"
+                  :aria-label="item.title || 'GIF'"
+                  :style="boxStyle(item.width, item.height)">
+                <template v-if="deadGifs.has(item.id)"><Icon name="eye-off" size="sm" />GIF unavailable</template>
+                <template v-else>
+                    <video :ref="element => watchGif(item.id, element)"
+                           :src="item.url"
+                           :poster="item.still"
+                           :data-gif="item.id"
+                           muted
+                           loop
+                           playsinline
+                           preload="metadata"
+                           @error="deadGifs.add(item.id)"></video>
+                    <span class="chat-attach-gif-badge" data-testid="attachment-gif-badge" aria-hidden="true">GIF</span>
+                    <button v-if="isMotionReduced"
+                            type="button"
+                            class="chat-attach-gif-play"
+                            data-testid="attachment-gif-play"
+                            :aria-label="playedGifs.has(item.id) ? 'Pause GIF' : 'Play GIF'"
+                            @click="togglePlay(item.id)"><Icon :name="playedGifs.has(item.id) ? 'pause' : 'play'" /></button>
+                </template>
+            </span>
+
             <component :is="isPending || !linkOf(item)?.downloadUrl ? 'span' : 'a'"
                        v-for="item in files"
                        :key="item.id"
@@ -341,6 +374,74 @@
     object-fit: cover;
 }
 
+/* A GIF: a single photo's box, sized from its stored width and height before anything loads. */
+.chat-attach-gif {
+    position: relative;
+    display: block;
+    max-width: 100%;
+    overflow: hidden;
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-lg);
+}
+
+.chat-attach-gif video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Says it moves, and that it is KLIPY's, whether or not it is playing. */
+.chat-attach-gif-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--chat-media-fg);
+    letter-spacing: .05em;
+    background: var(--chat-media-scrim);
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-attach-gif-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: -22px 0 0 -22px;
+    color: var(--chat-media-fg);
+    cursor: pointer;
+    background: var(--chat-media-scrim);
+    border: 0;
+    border-radius: 50%;
+}
+
+.chat-attach-gif-play:focus-visible {
+    outline: 2px solid var(--chat-focus-line);
+    outline-offset: 2px;
+}
+
+/* A GIF whose media is gone keeps its place, saying so as an unavailable photo does. */
+.chat-attach-gif[data-unavailable="true"] {
+    display: grid;
+    gap: 4px;
+    place-content: center;
+    place-items: center;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
 .chat-attach-unavailable {
     display: grid;
     gap: 4px;
@@ -470,9 +571,9 @@ a.chat-attach-file:focus-visible {
 </style>
 
 <script setup lang="ts">
-    import { computed, inject, nextTick, PropType, ref, watch } from "vue";
+    import { computed, inject, nextTick, onBeforeUnmount, PropType, reactive, ref, watch } from "vue";
     import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
-    import { AttachmentItem } from "../types.partial";
+    import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -532,19 +633,48 @@ a.chat-attach-file:focus-visible {
     /** The most tiles the grid draws; the last of them counts the rest. */
     const gridTiles = 4;
 
-    /** A single photo's largest drawn size, in pixels. */
+    /** A single photo's or a GIF's largest drawn size, in pixels. */
     const singleWidth = 320;
     const singleHeight = 360;
+
+    /** Whether the person asked for less motion, which holds every GIF still until it is played. */
+    const isMotionReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+
+    /** The GIFs whose media could not be loaded, drawn as unavailable. */
+    const deadGifs = reactive(new Set<string>());
+
+    /** The GIFs played by a press where motion is reduced. */
+    const playedGifs = reactive(new Set<string>());
+
+    /** Each GIF's video by id, while drawn. */
+    const gifVideos = new Map<string, HTMLVideoElement>();
+
+    /** Plays a GIF while it is on screen and pauses it once it leaves, so a long history does not play unseen. */
+    const gifObserver = typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(entries => entries.forEach(entry => {
+            const video = entry.target as HTMLVideoElement;
+            const id = video.dataset.gif ?? "";
+            if (entry.isIntersecting && (!isMotionReduced || playedGifs.has(id))) {
+                play(video);
+            }
+            else if (!entry.isIntersecting) {
+                video.pause();
+            }
+        }));
 
     // #endregion Values
 
     // #region Computed Values
 
-    const images = computed((): AttachmentItem[] => props.items.filter(item => item.kind === "image"));
+    // Only the kinds this client knows are drawn, so one a later platform adds is never a broken file card.
+    const images = computed((): FileItem[] => props.items.filter((item): item is FileItem => item.kind === "image"));
 
-    const files = computed((): AttachmentItem[] => props.items.filter(item => item.kind !== "image"));
+    const files = computed((): FileItem[] => props.items.filter((item): item is FileItem => item.kind === "file"));
 
-    const shownImages = computed((): AttachmentItem[] => images.value.slice(0, gridTiles));
+    const gifs = computed((): GifItem[] => props.items.filter(isGifItem));
+
+    const shownImages = computed((): FileItem[] => images.value.slice(0, gridTiles));
 
     const layout = computed((): string => images.value.length >= gridTiles ? "4+" : String(images.value.length));
 
@@ -552,18 +682,11 @@ a.chat-attach-file:focus-visible {
      * A single photo's box, sized from its declared size before it loads, within the largest
      * width and height, so the feed never moves when it arrives.
      */
-    const singleStyle = computed((): Record<string, string> => {
-        const item = images.value[0];
-        const width = item?.width && item.width > 0 ? item.width : 4;
-        const height = item?.height && item.height > 0 ? item.height : 3;
-        const drawn = Math.min(singleWidth, width, singleHeight * width / height);
-
-        return { aspectRatio: `${width} / ${height}`, width: `${Math.round(drawn)}px` };
-    });
+    const singleStyle = computed((): Record<string, string> => boxStyle(images.value[0]?.width, images.value[0]?.height));
 
     const gridStyle = computed((): Record<string, string> | undefined => images.value.length === 1 ? { width: singleStyle.value.width } : undefined);
 
-    const viewed = computed((): AttachmentItem | null => viewerIndex.value === null ? null : images.value[viewerIndex.value] ?? null);
+    const viewed = computed((): FileItem | null => viewerIndex.value === null ? null : images.value[viewerIndex.value] ?? null);
 
     // #endregion Computed Values
 
@@ -583,7 +706,7 @@ a.chat-attach-file:focus-visible {
      * click does nothing, and the card is drawn as text once its link is gone. A card is followed
      * once however often it is clicked while it waits.
      */
-    function onLinkClick(event: MouseEvent, item: AttachmentItem): void {
+    function onLinkClick(event: MouseEvent, item: FileItem): void {
         const anchor = event.currentTarget;
         if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following) {
             return;
@@ -636,6 +759,61 @@ a.chat-attach-file:focus-visible {
 
     // #region Functions
 
+    /**
+     * A single photo's or a GIF's box, sized from its declared size before it loads, within the
+     * largest width and height, so the feed never moves when it arrives.
+     */
+    function boxStyle(declaredWidth: number | null | undefined, declaredHeight: number | null | undefined): Record<string, string> {
+        const width = declaredWidth && declaredWidth > 0 ? declaredWidth : 4;
+        const height = declaredHeight && declaredHeight > 0 ? declaredHeight : 3;
+        const drawn = Math.min(singleWidth, width, singleHeight * width / height);
+
+        return { aspectRatio: `${width} / ${height}`, width: `${Math.round(drawn)}px` };
+    }
+
+    /** Holds a GIF's video while it is drawn, watched for coming on screen. */
+    function watchGif(id: string, element: unknown): void {
+        const held = gifVideos.get(id);
+        if (element === held) {
+            return;
+        }
+
+        if (held) {
+            gifObserver?.unobserve(held);
+            gifVideos.delete(id);
+        }
+
+        if (element instanceof HTMLVideoElement) {
+            gifVideos.set(id, element);
+            gifObserver?.observe(element);
+        }
+    }
+
+    /** Where motion is reduced, a press plays a GIF and the next pauses it. */
+    function togglePlay(id: string): void {
+        const video = gifVideos.get(id);
+        if (playedGifs.has(id)) {
+            playedGifs.delete(id);
+            video?.pause();
+        }
+        else {
+            playedGifs.add(id);
+            if (video) {
+                play(video);
+            }
+        }
+    }
+
+    /** Plays a video, as far as the browser allows: one that refuses stays on its still. */
+    function play(video: HTMLVideoElement): void {
+        try {
+            void Promise.resolve(video.play()).catch(() => undefined);
+        }
+        catch {
+            // a browser with no media playback keeps the still
+        }
+    }
+
     function step(by: number): void {
         if (viewerIndex.value === null || images.value.length < 2) {
             return;
@@ -644,12 +822,12 @@ a.chat-attach-file:focus-visible {
         viewerIndex.value = (viewerIndex.value + by + images.value.length) % images.value.length;
     }
 
-    function linkOf(item: AttachmentItem): AttachmentLink | null {
+    function linkOf(item: FileItem): AttachmentLink | null {
         return props.isPending ? null : views?.links.linkOf(item) ?? null;
     }
 
     /** What a photo draws from: the person's own copy where this page sent it, else its link. */
-    function imageSource(item: AttachmentItem): string | null {
+    function imageSource(item: FileItem): string | null {
         return views?.previewOf(item.id) ?? linkOf(item)?.url ?? null;
     }
 
@@ -671,4 +849,8 @@ a.chat-attach-file:focus-visible {
     }, { immediate: true });
 
     // #endregion Watchers
+
+    onBeforeUnmount(() => {
+        gifObserver?.disconnect();
+    });
 </script>

@@ -149,6 +149,9 @@ const refusedForGoodCodes = new Set([
     "rpc.attachment_size",
     "rpc.attachment_count",
     "rpc.bad_attachments",
+    // a GIF whose signed token the send cannot take, or a church that has GIFs off
+    "rpc.bad_gif",
+    "rpc.gifs_off",
     // the same key was first sent with other text, so the same ask is refused every time
     "rpc.idempotency_mismatch",
     "door.bad_request",

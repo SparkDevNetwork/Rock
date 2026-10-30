@@ -31,7 +31,7 @@
 import { InjectionKey, markRaw, reactive, ref } from "vue";
 import { failedWords, failureWords, finalWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
-import { AttachmentItem, FailureWords } from "../types.partial";
+import { AttachmentItem, FailureWords, FileItem, GifItem, GifResult, isFileItem } from "../types.partial";
 import { AttachmentTypes, PlatformLimits } from "./useSession.partial";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -40,16 +40,21 @@ export type AttachmentLimits = Pick<PlatformLimits, "attachment_max_bytes" | "at
 /* eslint-enable @typescript-eslint/naming-convention */
 
 /**
- * How a message of files alone reads where only text is drawn: a quote, a list. The platform's
- * previews say the same, and the wire contract carries these words so the two cannot drift;
- * {count} and {name} are filled in.
+ * How a message of files or a GIF alone reads where only text is drawn: a quote, a list. The
+ * platform's previews say the same, and the wire contract carries these words so the two cannot
+ * drift; {count} and {name} are filled in. A GIF is the one word, never its title.
  */
 export const attachmentPreviewWords = {
     photo: "Photo",
     photos: "{count} photos",
     file: "File: {name}",
-    files: "{count} files"
+    files: "{count} files",
+    gif: "GIF"
 };
+
+/** Why a GIF and files cannot wait together: a message carries one or the other. */
+const gifAloneNotice = "A GIF is sent on its own. Send it or remove it to add files.";
+const filesAloneNotice = "A GIF is sent on its own. Send the files or remove them to add a GIF.";
 
 /** The bucket every chat file lives in. */
 const bucket = "chat-attachments";
@@ -124,12 +129,16 @@ export function attachmentsPreview(items: AttachmentItem[] | null | undefined): 
         return "";
     }
 
+    if (items[0].kind === "gif") {
+        return attachmentPreviewWords.gif;
+    }
+
     if (items.every(item => item.kind === "image")) {
         return items.length === 1 ? attachmentPreviewWords.photo : attachmentPreviewWords.photos.replace("{count}", String(items.length));
     }
 
     return items.length === 1
-        ? attachmentPreviewWords.file.replace("{name}", items[0].name)
+        ? attachmentPreviewWords.file.replace("{name}", isFileItem(items[0]) ? items[0].name : "")
         : attachmentPreviewWords.files.replace("{count}", String(items.length));
 }
 
@@ -227,7 +236,7 @@ type PreparedFile = {
     blob: Blob;
     name: string;
     type: string;
-    kind: AttachmentItem["kind"];
+    kind: FileItem["kind"];
     width: number | null;
     height: number | null;
 };
@@ -296,7 +305,7 @@ export type TrayFile = {
     /** This page's own id for the file, until begin gives it an upload. */
     localId: string;
     name: string;
-    kind: AttachmentItem["kind"];
+    kind: FileItem["kind"];
     type: string;
     size: number;
     width: number | null;
@@ -331,6 +340,15 @@ export type AttachmentTray = {
 
     /** Tries a failed file again. */
     retry: (localId: string) => void;
+
+    /** The GIF waiting to go with the next send, with its token; null for none. */
+    gif: GifItem | null;
+
+    /** Puts a picked GIF in the tray, in place of one already there. */
+    stageGif: (result: GifResult) => void;
+
+    /** Takes the GIF out. */
+    removeGif: () => void;
 };
 
 /**
@@ -346,13 +364,18 @@ export function canAttach(limits: AttachmentLimits): boolean {
 }
 
 /**
- * Whether a tray's files can go: every one is up. A file still going, or failed, holds the send.
+ * Whether a tray's media can go: a GIF, or files every one of which is up. A file still going, or
+ * failed, holds the send.
  *
  * @param tray The tray.
  *
- * @returns True when the tray holds files and each is uploaded.
+ * @returns True when the tray holds a GIF, or files each of which is uploaded.
  */
 export function isTrayReady(tray: AttachmentTray): boolean {
+    if (tray.gif) {
+        return true;
+    }
+
     return tray.files.length > 0 && tray.files.every(file => file.status === "uploaded");
 }
 
@@ -442,7 +465,7 @@ type BeginAnswer = { upload_id?: string, key?: string };
 /* eslint-enable @typescript-eslint/naming-convention */
 
 /** A file kept for the session once uploaded: its bytes, so it can be uploaded again. */
-type KeptFile = { blob: Blob, item: AttachmentItem };
+type KeptFile = { blob: Blob, item: FileItem };
 
 /**
  * Creates the session's attachments.
@@ -640,6 +663,12 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             files: [],
             notice: null,
             add: (picked: File[]): void => {
+                // one or the other goes with a message, so a GIF waiting turns files away
+                if (tray.gif) {
+                    tray.notice = gifAloneNotice;
+                    return;
+                }
+
                 const room = Math.max(0, dependencies.limits().attachment_max_files - tray.files.length);
                 tray.notice = picked.length > room ? `A message can carry up to ${dependencies.limits().attachment_max_files} files.` : null;
 
@@ -681,6 +710,31 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 if (file?.status === "failed" && file.failure?.canRetry) {
                     void send(tray, file);
                 }
+            },
+            gif: null,
+            stageGif: (result: GifResult): void => {
+                if (tray.files.length > 0) {
+                    tray.notice = filesAloneNotice;
+                    return;
+                }
+
+                // The id is this page's own until the platform mints the stored message's.
+                tray.gif = {
+                    id: `gif-${++localIds}`,
+                    kind: "gif",
+                    slug: result.slug,
+                    title: result.title,
+                    url: result.url,
+                    still: result.still,
+                    width: result.width,
+                    height: result.height,
+                    token: result.token
+                };
+                tray.notice = null;
+            },
+            removeGif: (): void => {
+                tray.gif = null;
+                tray.notice = null;
             }
         }) as AttachmentTray;
 
@@ -699,11 +753,11 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     const clock = ref(now());
 
     // The files rows on screen draw, each with how many rows draw it; only these are renewed.
-    const watched = new Map<string, { item: AttachmentItem, count: number }>();
+    const watched = new Map<string, { item: FileItem, count: number }>();
 
     // When a file whose signing failed as a whole may be asked again.
     const retryAt = new Map<string, number>();
-    const asked = new Map<string, AttachmentItem>();
+    const asked = new Map<string, FileItem>();
 
     // The signing each file is in while it is out, which a click wanting a fresh link waits on
     // rather than asking Storage again.
@@ -719,7 +773,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     }
 
     /** Asks for each file without a good link and not already being signed, together in a moment. */
-    function ask(items: AttachmentItem[]): void {
+    function ask(items: FileItem[]): void {
         for (const item of items) {
             if (!isFresh(item.id) && !inFlight.has(item.id)) {
                 asked.set(item.id, item);
@@ -741,7 +795,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         const items = Array.from(asked.values());
         asked.clear();
 
-        const batches: AttachmentItem[][] = [];
+        const batches: FileItem[][] = [];
         for (let i = 0; i < items.length; i += signBatch) {
             batches.push(items.slice(i, i + signBatch));
         }
@@ -751,7 +805,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     }
 
     /** Signs files together, each held as being signed until its link is written. */
-    function sign(items: AttachmentItem[]): Promise<void> {
+    function sign(items: FileItem[]): Promise<void> {
         const signing = requestLinks(items).finally(() => {
             items.forEach(item => {
                 if (inFlight.get(item.id) === signing) {
@@ -764,7 +818,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     }
 
     /** Asks Storage for files' links and writes what it answers. */
-    async function requestLinks(items: AttachmentItem[]): Promise<void> {
+    async function requestLinks(items: FileItem[]): Promise<void> {
         const startedAt = now();
         const token = dependencies.currentToken();
         let answer: Array<{ path?: string, signedURL?: string | null, error?: string | null }> | null = null;
@@ -859,8 +913,10 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     }
 
     const linkCache: AttachmentLinks = {
-        subscribe: (items: AttachmentItem[]): (() => void) => {
-            if (isStopped) {
+        subscribe: (drawn: AttachmentItem[]): (() => void) => {
+            // a GIF is KLIPY's media, linked as it was stored, never signed by us
+            const items = drawn.filter(isFileItem);
+            if (isStopped || items.length === 0) {
                 return () => undefined;
             }
 
@@ -890,16 +946,20 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         },
 
         linkOf: (item: AttachmentItem): AttachmentLink | null => {
+            if (!isFileItem(item)) {
+                return null;
+            }
+
             // read so a row follows the clock past a link's end
             void clock.value;
             const held = links.get(item.id);
             return held && held.endsAt > now() ? held.link : null;
         },
 
-        isFresh: (item: AttachmentItem): boolean => isFresh(item.id),
+        isFresh: (item: AttachmentItem): boolean => isFileItem(item) && isFresh(item.id),
 
         fresh: async (item: AttachmentItem): Promise<AttachmentLink | null> => {
-            if (isStopped) {
+            if (isStopped || !isFileItem(item)) {
                 return null;
             }
             if (!isFresh(item.id)) {
@@ -931,8 +991,15 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 return null;
             }
 
-            const items = tray.files.map((file): AttachmentItem => {
-                const item: AttachmentItem = {
+            if (tray.gif) {
+                const gif = tray.gif;
+                tray.gif = null;
+                tray.notice = null;
+                return [gif];
+            }
+
+            const items = tray.files.map((file): FileItem => {
+                const item: FileItem = {
                     id: file.uploadId as string,
                     key: file.key as string,
                     kind: file.kind,
@@ -958,9 +1025,11 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             return items;
         },
 
-        reupload: async (channelId: string, items: AttachmentItem[]): Promise<AttachmentItem[] | null> => {
+        reupload: async (channelId: string, carried: AttachmentItem[]): Promise<AttachmentItem[] | null> => {
+            // only files are uploaded, so only a send of files has anything to upload again
+            const items = carried.filter(isFileItem);
             const copies = items.map(item => kept.get(item.id));
-            if (copies.some(copy => !copy)) {
+            if (items.length !== carried.length || copies.some(copy => !copy)) {
                 return null;
             }
 

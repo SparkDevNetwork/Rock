@@ -204,7 +204,7 @@ describe("the GIF picker", () => {
 
         document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
         await flushPromises();
-        expect(w.emitted("pick")).toEqual([[result("c")]]);
+        expect(w.emitted("pick")).toEqual([[result("c", 100, 50)]]);
     });
 
     test("Escape closes and gives focus back to what opened it", async () => {

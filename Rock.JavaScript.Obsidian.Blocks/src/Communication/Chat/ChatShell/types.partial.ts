@@ -225,7 +225,7 @@ export type MessageAction = {
  * summary never changes after. The key names the file's bytes in storage, and a link to them is
  * signed only for someone who can read the message.
  */
-export type AttachmentItem = {
+export type FileItem = {
     /** The upload's id, which names the file everywhere, the link cache included. */
     id: string;
     key: string;
@@ -244,6 +244,77 @@ export type AttachmentItem = {
     width?: number | null;
     height?: number | null;
 };
+
+/**
+ * A GIF a message carries, as the platform built it from the search's signed token: KLIPY's media
+ * as KLIPY gave it, never a file of ours, so nothing is signed to draw it.
+ */
+export type GifItem = {
+    /** Minted when the message was sent, so a list keyed by id holds a GIF as it does a file. */
+    id: string;
+    kind: "gif";
+    slug: string;
+
+    /** KLIPY's title, read aloud as the GIF's name; possibly empty, and never shown as text. */
+    title: string;
+
+    /** The looping mp4 and its first frame. */
+    url: string;
+    still: string;
+    width: number;
+    height: number;
+
+    /**
+     * The signed token a picked GIF waits to be sent with. Only a staged or pending GIF has one;
+     * the platform never stores it or answers it.
+     */
+    token?: string;
+};
+
+/** What a message carries: files, or a GIF. A kind a later platform adds is drawn by no one here. */
+export type AttachmentItem = FileItem | GifItem;
+
+/** One GIF the platform's search answered, signed for a send by the church that asked. */
+export type GifResult = {
+    token: string;
+    slug: string;
+    title: string;
+
+    /** The mp4 and still a message stores, drawn in the clear while it is staged and sent. */
+    url: string;
+    still: string;
+
+    /** The small animated preview the picker draws, with its own size. */
+    preview: { url: string, width: number, height: number };
+
+    /** KLIPY's tiny blurred stand-in, drawn while the preview loads; null when it sent none. */
+    blur: string | null;
+    width: number;
+    height: number;
+};
+
+/**
+ * Whether an item is a file of ours, a photo or a card, rather than a GIF or a kind this client
+ * does not know.
+ *
+ * @param item What a message carries.
+ *
+ * @returns True for a photo or a file.
+ */
+export function isFileItem(item: AttachmentItem): item is FileItem {
+    return item.kind === "image" || item.kind === "file";
+}
+
+/**
+ * Whether an item is a GIF.
+ *
+ * @param item What a message carries.
+ *
+ * @returns True for a GIF.
+ */
+export function isGifItem(item: AttachmentItem): item is GifItem {
+    return item.kind === "gif";
+}
 
 /**
  * The message a message quotes, as the platform previews it. Its body is withheld once it is

@@ -139,6 +139,28 @@ describe("the menu", () => {
         expect(document.activeElement).toBe(menuItems()[1]);
     });
 
+    test("opens from its button on Down at the first item, and on Up at the last", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        anchor.focus();
+
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(menuItems()[0]);
+
+        await press("Escape");
+        await press("ArrowUp");
+        expect(document.activeElement).toBe(menuItems()[2]);
+    });
+
+    test("goes to the next item that starts with a letter typed", async () => {
+        await open();
+
+        await press("l");
+        expect(document.activeElement).toBe(menuItems()[2]);
+        await press("T");
+        expect(document.activeElement).toBe(menuItems()[0]);
+    });
+
     test("closes on Escape and gives focus back to its button", async () => {
         const anchor = await open();
 

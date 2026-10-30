@@ -64,7 +64,8 @@ export type ChatSettings = {
     client: { update_required: boolean };
     routes: { send: string };
     limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number } & PlatformLimits & AttachmentTypes;
-    flags: Record<string, unknown>;
+    /** Switches by name; gifs is whether the church may search for and send GIFs, off unless true. */
+    flags: Record<string, unknown> & { gifs: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -166,7 +167,8 @@ export function readSettings(raw: unknown): ChatSettings {
                 ? [...limits.attachment_types as string[]]
                 : []
         },
-        flags: { ...flags },
+        // only the JSON true turns GIFs on, so a value this client cannot read leaves them off
+        flags: { ...flags, gifs: flags.gifs === true },
         push: {
             web: hasPush ? web : null,
             vapid_key: hasPush ? push.vapid_key as string : null,

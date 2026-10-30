@@ -727,6 +727,7 @@
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { ComposerDraft } from "./ChatShell/composables/useDrafts.partial";
     import { attachmentViewsKey, AttachmentTray, canAttach } from "./ChatShell/composables/useAttachments.partial";
+    import { gifsKey } from "./ChatShell/composables/useGifs.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
@@ -814,6 +815,13 @@
             isFresh: item => shell.value.attachments.links.isFresh(item),
             fresh: item => shell.value.attachments.links.fresh(item)
         }
+    });
+
+    // Every composer's GIF search, which follows the shell when it is built again in the same way.
+    provide(gifsKey, {
+        isOn: () => shell.value.gifs.isOn(),
+        search: (query, page, signal) => shell.value.gifs.search(query, page, signal),
+        turnOff: () => shell.value.gifs.turnOff()
     });
 
     const birthdateMessage = ref<string | null>(null);

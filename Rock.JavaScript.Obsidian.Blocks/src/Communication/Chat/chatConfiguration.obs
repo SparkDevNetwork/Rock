@@ -29,6 +29,11 @@
                                   help="Whether a person may be direct messaged by anyone. A person who has set this for themselves keeps their own answer. With this off, a person can still be messaged inside a private channel you both belong to."
                                   :disabled="isSaving" />
 
+                        <CheckBox v-model="form.areGifsEnabled"
+                                  label="GIFs Are Enabled"
+                                  help="Whether people may search for GIFs from KLIPY, filtered to a general audience, and send them in chat. A change reaches each person within about five minutes, without a sync. GIFs already sent stay in the conversation when this is turned off."
+                                  :disabled="isSaving" />
+
                         <div class="chat-configuration-minimum-age">
                             <NumberBox v-model="form.minimumAge"
                                        label="Minimum Age"

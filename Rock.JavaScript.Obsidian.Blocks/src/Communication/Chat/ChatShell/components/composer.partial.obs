@@ -44,6 +44,32 @@
             <!-- The files waiting to go with the next send, each uploading as it was picked. -->
             <Attachments v-if="tray" :tray="tray" />
 
+            <!-- The GIF waiting to go, in the files' place, playing as it will in the conversation. -->
+            <span v-if="tray?.gif"
+                  class="chat-composer-gif"
+                  data-testid="composer-gif"
+                  :style="{ aspectRatio: `${tray.gif.width} / ${tray.gif.height}` }">
+                <img v-if="isMotionReduced()"
+                     :src="tray.gif.still"
+                     :alt="tray.gif.title || 'GIF'"
+                     referrerpolicy="no-referrer" />
+                <video v-else
+                       :src="tray.gif.url"
+                       :poster="tray.gif.still"
+                       :aria-label="tray.gif.title || 'GIF'"
+                       autoplay
+                       muted
+                       loop
+                       playsinline></video>
+                <span class="chat-composer-gif-badge" data-testid="composer-gif-badge" aria-hidden="true">GIF</span>
+                <IconButton icon="x"
+                            icon-size="xs"
+                            class="chat-composer-gif-remove"
+                            label="Remove GIF"
+                            data-testid="composer-gif-remove"
+                            @click="tray.removeGif()" />
+            </span>
+
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
                 <Icon name="reply" size="sm" />
                 <span class="chat-composer-quote-main">
@@ -65,7 +91,17 @@
                             data-testid="composer-emoji"
                             @click="onEmojiClick" />
                 <template v-if="tray">
-                    <IconButton icon="paperclip"
+                    <!-- With GIFs on, one "+" holds GIF and files; with them off, the paperclip alone. -->
+                    <Menu v-if="isGifOffered"
+                          ref="addMenu"
+                          icon="plus"
+                          label="Add a GIF or file"
+                          placement="top-start"
+                          :items="addItems"
+                          :anchorAttrs="{ disabled: isDisabled, 'data-testid': 'composer-add', class: { 'is-open': isGifOpen } }"
+                          @select="onAddSelect" />
+                    <IconButton v-else
+                                icon="paperclip"
                                 label="Attach files"
                                 tooltip="Attach"
                                 :disabled="isDisabled"
@@ -122,6 +158,14 @@
                          :anchor="emojiAnchor"
                          @insert="onEmojiInsert"
                          @close="onEmojiClose" />
+
+            <!-- The GIF picker, mounted only while open, so it searches and focuses as it opens. -->
+            <GifPicker v-if="isGifOpen && isGifOffered && gifs"
+                       :gifs="gifs"
+                       :anchor="addAnchor"
+                       :isSheet="isPhone"
+                       @pick="onGifPick"
+                       @close="onGifClose" />
 
             <!-- The @ picker, open while the caret ends an @ query; kept mounted so its way out plays as it closes. -->
             <MentionPicker v-if="mentionSource"
@@ -309,6 +353,57 @@
     cursor: default;
 }
 
+/* The staged GIF: 120px high at its own shape, its badge and a way to take it out on the GIF. */
+.chat-composer-gif {
+    position: relative;
+    align-self: flex-start;
+    height: 120px;
+    max-width: 100%;
+    overflow: hidden;
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-lg);
+    box-shadow: 0 0 0 1px var(--chat-line);
+    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-composer.is-phone .chat-composer-gif {
+    height: 110px;
+}
+
+.chat-composer-gif img,
+.chat-composer-gif video {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.chat-composer-gif-badge {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--chat-media-fg);
+    letter-spacing: .05em;
+    background: var(--chat-media-scrim);
+    border-radius: var(--chat-r-sm);
+}
+
+.chat-composer-gif-remove {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    color: var(--chat-media-fg);
+    background: var(--chat-media-scrim);
+}
+
 .chat-composer-send {
     display: grid;
     flex: none;
@@ -418,7 +513,8 @@
     }
 
     .chat-composer-quote,
-    .chat-composer-failed {
+    .chat-composer-failed,
+    .chat-composer-gif {
         animation-name: chat-crossfade;
     }
 
@@ -435,16 +531,19 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, inject, nextTick, PropType, ref, watch } from "vue";
     import Attachments from "./attachments.partial.obs";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
+    import GifPicker from "./gifPicker.partial.obs";
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
+    import { gifsKey } from "../composables/useGifs.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
-    import { DisplayPiece, TimelineMessage } from "../types.partial";
+    import { DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Switch from "../ui/switch.partial.obs";
 
     const props = defineProps({
@@ -625,6 +724,11 @@
 
     const isEmojiOpen = ref(false);
 
+    /** The session's GIF search, provided once by the chat; none outside it. */
+    const gifs = inject(gifsKey, null);
+    const addMenu = ref<InstanceType<typeof Menu>>();
+    const isGifOpen = ref(false);
+
     const boxElement = ref<HTMLFormElement>();
     const fileInput = ref<HTMLInputElement>();
     const stripElement = ref<HTMLElement>();
@@ -720,16 +824,28 @@
     /** Whether files wait in the tray. */
     const hasFiles = computed((): boolean => (props.tray?.files.length ?? 0) > 0);
 
+    /** Whether GIFs are offered here: where files can go, in a church that has them on. */
+    const isGifOffered = computed((): boolean => !!props.tray && !!gifs?.isOn());
+
+    /** The "+" menu: a message carries a GIF or files, so the one waiting holds the other back. */
+    const addItems = computed((): MenuItem[] => [
+        { key: "gif", label: "GIF", icon: "gif", isDisabled: hasFiles.value },
+        { key: "file", label: "Photo or file", icon: "paperclip", isDisabled: !!props.tray?.gif }
+    ]);
+
+    /** The "+", which the GIF picker is placed above and hands focus back to. */
+    const addAnchor = computed((): HTMLElement | null => addMenu.value?.buttonElement ?? null);
+
     /**
      * Whether there is something to send, which turns the send button to the church's fill: text,
-     * or files alone; and every file waiting is up, since the send names them.
+     * or files or a GIF alone; and every file waiting is up, since the send names them.
      */
     const isReady = computed((): boolean => {
         if (hasFiles.value && !isTrayReady(props.tray as AttachmentTray)) {
             return false;
         }
 
-        return props.text.trim() !== "" || hasFiles.value;
+        return props.text.trim() !== "" || hasFiles.value || !!props.tray?.gif;
     });
 
     /** The emoji button, which the picker is placed above and hands focus back to. */
@@ -880,6 +996,37 @@
         }
     }
 
+    /** The "+" menu's choice: the GIF picker in its place, or the browser's file chooser, from the click itself. */
+    function onAddSelect(key: string): void {
+        if (key === "gif") {
+            isGifOpen.value = true;
+        }
+        else if (key === "file") {
+            fileInput.value?.click();
+        }
+    }
+
+    /** A GIF chosen waits in the tray, in place of one already there. */
+    function onGifPick(result: GifResult): void {
+        props.tray?.stageGif(result);
+    }
+
+    /**
+     * The GIF picker went. Closed by a choice or by Escape, it handed focus back to the "+", and the
+     * person carries on in the box; closed by a press elsewhere, focus stays there.
+     */
+    function onGifClose(): void {
+        isGifOpen.value = false;
+        if (addAnchor.value && document.activeElement === addAnchor.value) {
+            editor.value?.focus();
+        }
+    }
+
+    /** Whether the person asked for less motion, which draws a staged GIF still. */
+    function isMotionReduced(): boolean {
+        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    }
+
     /** Focus came into the box; a move between its own parts is not news to the shell. */
     function onBoxFocusIn(event: FocusEvent): void {
         if (!boxElement.value?.contains(event.relatedTarget as Node | null)) {
@@ -931,6 +1078,13 @@
     watch(() => [props.sendFailure === null, props.conversationKey] as const, ([isNone, key], [, previousKey]) => {
         if (isNone || key !== previousKey) {
             failedAnnouncement.value = null;
+        }
+    });
+
+    // GIFs refused as off go at once, the picker with them, so nothing more is searched.
+    watch(isGifOffered, isOffered => {
+        if (!isOffered) {
+            isGifOpen.value = false;
         }
     });
 

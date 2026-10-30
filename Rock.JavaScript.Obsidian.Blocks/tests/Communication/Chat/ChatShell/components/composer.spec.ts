@@ -1150,7 +1150,7 @@ describe("the composer's GIFs", () => {
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menuitem']"));
         expect(items.map(item => item.textContent?.trim())).toEqual(["GIF", "Photo or file"]);
         expect(document.querySelector(".chat-menu-desc")).toBeNull();
-        expect(document.querySelector("kbd")).toBeNull();
+        expect(document.querySelector("[role='menu'] kbd")).toBeNull();
         // the emoji keeps its own button
         expect(wrapper.find("[data-testid='composer-emoji']").exists()).toBe(true);
     });

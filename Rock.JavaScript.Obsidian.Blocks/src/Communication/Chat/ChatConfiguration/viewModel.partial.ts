@@ -62,6 +62,7 @@ export type ChatConfigurationFormModel = {
     chatBadgeDataViews: ListItemBag[];
     profileCardLavaTemplate: string;
     profileCardEnabledLavaCommands: ListItemBag[];
+    areGifsEnabled: boolean;
 };
 
 /** Reads the settings the form may edit out of what the block sent. */
@@ -73,7 +74,8 @@ export function toFormModel(bag: Partial<ChatConfigurationBag> | null | undefine
         directMessageAccessDataView: bag?.directMessageAccessDataView ?? null,
         chatBadgeDataViews: bag?.chatBadgeDataViews ?? [],
         profileCardLavaTemplate: bag?.profileCardLavaTemplate ?? "",
-        profileCardEnabledLavaCommands: bag?.profileCardEnabledLavaCommands ?? []
+        profileCardEnabledLavaCommands: bag?.profileCardEnabledLavaCommands ?? [],
+        areGifsEnabled: bag?.areGifsEnabled ?? false
     };
 }
 
@@ -96,7 +98,8 @@ export function hasUnsavedChanges(form: ChatConfigurationFormModel, saved: ChatC
         directMessageAccessDataView: value.directMessageAccessDataView?.value ?? null,
         chatBadgeDataViews: value.chatBadgeDataViews.map(item => item.value ?? null),
         profileCardLavaTemplate: value.profileCardLavaTemplate,
-        profileCardEnabledLavaCommands: value.profileCardEnabledLavaCommands.map(item => item.value ?? null)
+        profileCardEnabledLavaCommands: value.profileCardEnabledLavaCommands.map(item => item.value ?? null),
+        areGifsEnabled: value.areGifsEnabled
     });
 
     return stored(form) !== stored(saved);
@@ -111,6 +114,7 @@ export function toBag(form: ChatConfigurationFormModel): Partial<ChatConfigurati
         directMessageAccessDataView: form.directMessageAccessDataView,
         chatBadgeDataViews: form.chatBadgeDataViews,
         profileCardLavaTemplate: form.profileCardLavaTemplate,
-        profileCardEnabledLavaCommands: form.profileCardEnabledLavaCommands
+        profileCardEnabledLavaCommands: form.profileCardEnabledLavaCommands,
+        areGifsEnabled: form.areGifsEnabled
     };
 }

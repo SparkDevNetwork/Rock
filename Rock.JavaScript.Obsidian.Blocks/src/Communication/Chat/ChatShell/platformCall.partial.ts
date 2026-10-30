@@ -56,6 +56,15 @@ export type PlatformCall = {
      * @param options keepalive for a call that must survive the page closing.
      */
     call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
+
+    /**
+     * Calls one of the platform's own functions, which reads its body as it chooses.
+     *
+     * @param path The function's name, as its address ends.
+     * @param body What it is sent.
+     * @param options signal, which ends a call no longer wanted.
+     */
+    callFunction: (path: string, body: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<CallResult>;
 };
 
 /** The operations a route in the settings can move; every other call goes straight to the database. */
@@ -133,46 +142,55 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
     const projectUrl = options.projectUrl.replace(/\/+$/, "");
     const now = options.now ?? ((): number => Date.now());
 
-    return {
-        call: async (name, args, callOptions): Promise<CallResult> => {
-            const token = options.currentToken();
-            if (!token) {
-                return { ok: false, status: 401, error: { code: "auth.expired", severity: "session" }, retryAfterSeconds: null };
-            }
+    /** Posts a body with the person's token and reads the answer, a refusal by its code. */
+    async function post(url: string, body: Record<string, unknown>, init: Pick<RequestInit, "keepalive" | "signal">): Promise<CallResult> {
+        const token = options.currentToken();
+        if (!token) {
+            return { ok: false, status: 401, error: { code: "auth.expired", severity: "session" }, retryAfterSeconds: null };
+        }
 
+        let response: Response;
+        try {
+            response = await options.fetch(url, {
+                method: "POST",
+                ...init,
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "apikey": options.publishableKey,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(body)
+            });
+        }
+        catch (error) {
+            return { ok: false, status: 0, error: classifyPlatformError(error instanceof TypeError ? error : new TypeError(String(error))), retryAfterSeconds: null };
+        }
+
+        const answer = await response.json().catch(() => null) as unknown;
+        if (response.ok) {
+            return { ok: true, data: answer };
+        }
+
+        return {
+            ok: false,
+            status: response.status,
+            error: refusal(response.status, answer),
+            retryAfterSeconds: parseRetryAfter(response.headers?.get("retry-after") ?? null, now())
+        };
+    }
+
+    return {
+        call: (name, args, callOptions): Promise<CallResult> => {
             const routed = routedFunctions[name];
             const url = routed && options.routes()[routed.setting] === "edge"
                 ? `${projectUrl}${routed.gatePath}`
                 : `${projectUrl}/rest/v1/rpc/${name}`;
 
-            let response: Response;
-            try {
-                response = await options.fetch(url, {
-                    method: "POST",
-                    keepalive: callOptions?.keepalive === true,
-                    headers: {
-                        "Authorization": `Bearer ${token}`,
-                        "apikey": options.publishableKey,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(args)
-                });
-            }
-            catch (error) {
-                return { ok: false, status: 0, error: classifyPlatformError(error instanceof TypeError ? error : new TypeError(String(error))), retryAfterSeconds: null };
-            }
+            return post(url, args, { keepalive: callOptions?.keepalive === true });
+        },
 
-            const body = await response.json().catch(() => null) as unknown;
-            if (response.ok) {
-                return { ok: true, data: body };
-            }
-
-            return {
-                ok: false,
-                status: response.status,
-                error: refusal(response.status, body),
-                retryAfterSeconds: parseRetryAfter(response.headers?.get("retry-after") ?? null, now())
-            };
+        callFunction: (path, body, callOptions): Promise<CallResult> => {
+            return post(`${projectUrl}/functions/v1/${path}`, body, callOptions?.signal ? { signal: callOptions.signal } : {});
         }
     };
 }

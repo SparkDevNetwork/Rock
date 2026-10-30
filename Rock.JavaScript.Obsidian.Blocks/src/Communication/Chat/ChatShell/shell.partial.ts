@@ -31,7 +31,7 @@ import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker }
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
-import { canMakeSendKey, createSender, isComposerOpen, JoinResult, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
+import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
@@ -41,6 +41,7 @@ import { createMentions, Mentions, MentionsDependencies } from "./composables/us
 import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, Rooms, RoomsDependencies } from "./composables/useRooms.partial";
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
+import { createGifs, Gifs } from "./composables/useGifs.partial";
 import {
     createPageReveal,
     openChannel,
@@ -266,6 +267,9 @@ export type ChatShell = {
 
     /** The files picked for each place, uploaded as they are picked, and every message's links. */
     attachments: Attachments;
+
+    /** GIF search, and whether the church has GIFs on. */
+    gifs: Gifs;
 
     /** The files waiting to go with the next send in a conversation, or in a thread when a root is named. */
     trayOf: (channelId: string, rootId?: number) => AttachmentTray;
@@ -822,16 +826,24 @@ export function createChatShell(options: ShellOptions): ChatShell {
         limits: () => session.settings().limits
     });
 
+    const gifs = createGifs({
+        callFunction: (path, body, callOptions) => session.withFreshToken(
+            () => platform.callFunction(path, body, callOptions),
+            answer => !answer.ok && answer.error.code === "auth.expired"
+        ),
+        isEnabled: () => session.settings().flags.gifs
+    });
+
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId, files) => {
             const result = await call("chat_send_message", {
                 p_channel_id: channelId,
-                // files with blank text go as no text, which the platform stores as none
+                // files or a GIF with blank text go as no text, which the platform stores as none
                 p_body: body.trim() === "" ? null : body,
                 p_client_key: key ?? null,
                 ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {}),
                 ...(typeof quotedMessageId === "number" ? { p_quoted_message_id: quotedMessageId } : {}),
-                ...(files?.length ? { p_attachments: files.map(file => file.id) } : {})
+                ...mediaArgs(files)
             });
             if (!result.ok) {
                 return { ok: false, error: result.error };
@@ -859,7 +871,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
         newLocalId,
-        isOffline: () => state.connection !== null
+        isOffline: () => state.connection !== null,
+        onGifsOff: () => gifs.turnOff()
     });
 
     /**
@@ -1295,6 +1308,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         prefs,
         drafts,
         attachments,
+        gifs,
         trayOf: (channelId: string, rootId?: number): AttachmentTray => attachments.trayFor(quoteKey(channelId, rootId), channelId),
         isNewMessageShown: isNewMessageShown(options.session),
 

@@ -1,0 +1,533 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PickerShell ref="shell"
+                 class="chat-gif"
+                 data-testid="gif-picker"
+                 :anchor="anchor"
+                 label="Add a GIF"
+                 :isSheet="isSheet"
+                 @keydown="onKeydown"
+                 @close="emit('close')">
+        <div class="chat-gif-head">
+            <label class="chat-gif-search chat-field">
+                <Icon name="search" size="sm" />
+                <input ref="searchElement"
+                       class="chat-field-input"
+                       type="text"
+                       placeholder="Search KLIPY"
+                       autocomplete="off"
+                       spellcheck="false"
+                       aria-label="Search KLIPY for a GIF"
+                       :aria-controls="bodyId"
+                       :value="search.query"
+                       @input="onSearchInput"
+                       @keydown="onSearchKeydown" />
+                <button v-if="search.query"
+                        type="button"
+                        class="chat-gif-clear"
+                        aria-label="Clear search"
+                        @click="onClear"><Icon name="x" size="xs" /></button>
+            </label>
+        </div>
+
+        <div :id="bodyId"
+             ref="bodyElement"
+             class="chat-gif-body"
+             :aria-busy="search.status === 'loading' ? 'true' : undefined"
+             @scroll="onBodyScroll">
+            <template v-if="search.status === 'idle'">
+                <p class="chat-gif-label">Try a search</p>
+                <div class="chat-gif-chips">
+                    <button v-for="word in gifSuggestions"
+                            :key="word"
+                            type="button"
+                            class="chat-gif-chip"
+                            data-testid="gif-suggestion"
+                            @click="onSuggestion(word)">{{ word }}</button>
+                </div>
+            </template>
+
+            <div v-else-if="search.status === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
+                <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
+                    <span v-for="shape in column" :key="shape" class="chat-gif-tile is-loading" :style="{ aspectRatio: shape }"></span>
+                </div>
+            </div>
+
+            <div v-else-if="search.status === 'results'" class="chat-gif-masonry">
+                <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="chat-gif-column" data-testid="gif-column">
+                    <button v-for="tile in column"
+                            :key="tile.item.slug"
+                            type="button"
+                            class="chat-gif-tile"
+                            :class="{ 'is-loading': !loaded.has(tile.item.slug) }"
+                            data-testid="gif-tile"
+                            :data-slug="tile.item.slug"
+                            :data-index="tile.index"
+                            :aria-label="tile.item.title || 'GIF'"
+                            :tabindex="tile.index === stop ? 0 : -1"
+                            :style="tileStyle(tile.item)"
+                            @click="pick(tile.item)">
+                        <img :src="tile.item.preview.url"
+                             alt=""
+                             referrerpolicy="no-referrer"
+                             decoding="async"
+                             @load="onTileLoad(tile.item.slug)" />
+                    </button>
+                </div>
+            </div>
+
+            <div v-else-if="search.status === 'empty'" class="chat-gif-state" data-testid="gif-empty">
+                <span class="chat-gif-state-icon"><Icon name="search" /></span>
+                <b>No GIFs found</b>
+                <span>Try another word, like Thanks or Amen.</span>
+            </div>
+
+            <div v-else class="chat-gif-state" data-testid="gif-error">
+                <span class="chat-gif-state-icon"><Icon name="alert" /></span>
+                <template v-if="search.status === 'busy'">
+                    <b>{{ search.busyText }}</b>
+                </template>
+                <template v-else>
+                    <b>GIFs can't load right now</b>
+                    <span>Check your connection, then try again.</span>
+                </template>
+                <button type="button" class="chat-ls-btn chat-gif-retry" data-testid="gif-retry" @click="search.retry()"><Icon name="refresh" size="xs" />Try again</button>
+            </div>
+        </div>
+
+        <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
+
+        <div class="chat-sr-only" aria-live="polite">{{ liveLine }}</div>
+    </PickerShell>
+</template>
+
+<style scoped>
+.chat-gif-head {
+    flex: none;
+    padding: 10px 10px 6px;
+}
+
+.chat-gif.is-sheet .chat-gif-head {
+    padding: 6px 12px 8px;
+}
+
+/* The emoji picker's search box, so the two pickers read as siblings. */
+.chat-gif-search {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    height: 34px;
+    padding: 0 10px;
+    margin: 0;
+    font-weight: 400;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: 10px;
+}
+
+.chat-gif-clear {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    color: var(--chat-icon);
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: 50%;
+}
+
+.chat-gif-clear:hover {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+}
+
+/* One height for every state, so the picker does not change size under the pointer as it searches. */
+.chat-gif-body {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 300px;
+    padding: 2px 10px 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+}
+
+.chat-gif.is-sheet .chat-gif-body {
+    height: auto;
+    padding: 2px 12px 8px;
+}
+
+.chat-gif-label {
+    padding: 6px 2px 8px;
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 13px;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.chat-gif-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.chat-gif-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    white-space: nowrap;
+    cursor: pointer;
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-gif-chip:hover {
+    color: var(--chat-text);
+    background: var(--chat-hover);
+    border-color: var(--chat-line-strong);
+}
+
+/* Two columns, each GIF whole at its own shape, the next one going in the shorter column. */
+.chat-gif-masonry {
+    display: flex;
+    gap: 4px;
+    align-items: flex-start;
+}
+
+.chat-gif-column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+/* KLIPY's blurred stand-in fills the tile while its preview loads, pulsing until it does. */
+.chat-gif-tile {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    overflow: hidden;
+    cursor: pointer;
+    background-color: var(--chat-bubble);
+    background-position: center;
+    background-size: cover;
+    border: 0;
+    border-radius: var(--chat-r-md);
+}
+
+.chat-gif-tile img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-gif-tile.is-loading {
+    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+}
+
+.chat-gif-tile.is-loading img {
+    opacity: 0;
+}
+
+/* A hovered or focused tile takes the grid's ring, drawn over the GIF. */
+.chat-gif-tile::after {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    content: "";
+    border-radius: inherit;
+    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-gif-tile:hover::after,
+.chat-gif-tile:focus-visible::after {
+    box-shadow: inset 0 0 0 2px var(--chat-brand-fill), inset 0 0 0 4px var(--chat-brand-ring);
+}
+
+.chat-gif-tile:focus-visible {
+    outline: none;
+}
+
+/* Nothing found, a failure and busy: a word or two and what to do, in the body's middle. */
+.chat-gif-state {
+    display: grid;
+    gap: 6px;
+    place-items: center;
+    align-content: center;
+    height: 100%;
+    padding: 0 24px;
+    text-align: center;
+}
+
+.chat-gif-state b {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+}
+
+.chat-gif-state span {
+    font-size: 12.5px;
+    color: var(--chat-muted);
+}
+
+.chat-gif-state .chat-gif-state-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 4px;
+    color: var(--chat-icon);
+    background: var(--chat-bubble);
+    border-radius: 14px;
+}
+
+.chat-gif-retry {
+    margin-top: 6px;
+}
+
+/* KLIPY named at the foot, as its terms ask. */
+.chat-gif-foot {
+    display: flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
+    justify-content: flex-end;
+    height: 28px;
+    padding: 0 12px;
+    font-size: 11px;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-gif.is-sheet .chat-gif-foot {
+    height: 34px;
+    padding-bottom: 6px;
+}
+
+.chat-gif-foot b {
+    font-weight: 800;
+    color: var(--chat-text-2);
+    letter-spacing: .04em;
+}
+
+/* Reduced motion: the loading tiles hold still. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-gif-tile.is-loading {
+        animation: none;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref } from "vue";
+    import Icon from "../ui/icon.partial.obs";
+    import PickerShell from "./pickerShell.partial.obs";
+    import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
+    import { GifResult } from "../types.partial";
+
+    const props = defineProps({
+        /** The session's GIF search. */
+        gifs: {
+            type: Object as PropType<Gifs>,
+            required: true
+        },
+
+        /** What opened the picker, which it is placed above and hands focus back to. */
+        anchor: {
+            type: Object as PropType<HTMLElement | null>,
+            default: null
+        },
+
+        /** Whether it is drawn as a bottom sheet, as on a phone. */
+        isSheet: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** A GIF was chosen, for the composer to stage. */
+        (e: "pick", result: GifResult): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    /** How near the body's end a scroll asks the next page, in pixels. */
+    const loadMoreWithinPx = 200;
+
+    /** The shapes the loading tiles take, two columns of GIF-like sizes, so the wait looks like what comes. */
+    const loadingColumns = [["16 / 9", "1 / 1", "4 / 3"], ["3 / 4", "16 / 10", "1 / 1"]];
+
+    /** Names this picker's body, so its search can say what it controls. */
+    const bodyId = `chat-gif-body-${getCurrentInstance()?.uid ?? 0}`;
+
+    const shell = ref<InstanceType<typeof PickerShell>>();
+    const searchElement = ref<HTMLInputElement>();
+    const bodyElement = ref<HTMLElement>();
+
+    /** The search this picker holds while it is open. */
+    const search = createGifSearch(props.gifs);
+
+    /** The GIFs whose preview has loaded, which stop showing the blurred stand-in. */
+    const loaded = reactive(new Set<string>());
+
+    /** The tile the arrows move from and Tab lands on, by its place in KLIPY's order. */
+    const stop = ref(0);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const columns = computed((): MasonryTile[][] => masonry(search.items));
+
+    /** What a screen reader hears as a search settles. */
+    const liveLine = computed((): string => {
+        if (search.status === "results") {
+            return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
+        }
+
+        return search.status === "empty" ? "No GIFs found" : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSearchInput(event: Event): void {
+        stop.value = 0;
+        search.setQuery((event.target as HTMLInputElement).value);
+    }
+
+    /** Enter searches at once; Down goes to the first GIF. */
+    function onSearchKeydown(event: KeyboardEvent): void {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            search.setQuery((event.target as HTMLInputElement).value, true);
+        }
+        else if (event.key === "ArrowDown" && search.status === "results") {
+            event.preventDefault();
+            focusTile(0);
+        }
+    }
+
+    /** The arrows move between GIFs by the columns, Up from the top goes back to the search, and Enter picks. */
+    function onKeydown(event: KeyboardEvent): void {
+        const target = event.target as HTMLElement;
+        const index = Number(target.dataset?.index);
+        if (!target.classList?.contains("chat-gif-tile") || Number.isNaN(index)) {
+            return;
+        }
+
+        if (event.key === "Enter" || event.key === " ") {
+            // Handled here so the choice does not depend on the browser turning a key into a click.
+            event.preventDefault();
+            pick(search.items[index]);
+            return;
+        }
+
+        if (!event.key.startsWith("Arrow")) {
+            return;
+        }
+
+        event.preventDefault();
+        const next = nextInMasonry(columns.value, index, event.key);
+        if (next !== null) {
+            focusTile(next);
+        }
+        else if (event.key === "ArrowUp") {
+            searchElement.value?.focus();
+        }
+    }
+
+    function onSuggestion(word: string): void {
+        stop.value = 0;
+        search.setQuery(word, true);
+    }
+
+    function onClear(): void {
+        search.setQuery("");
+        searchElement.value?.focus();
+    }
+
+    function onTileLoad(slug: string): void {
+        loaded.add(slug);
+    }
+
+    /** Near the end of what is drawn, the next page is asked. */
+    function onBodyScroll(): void {
+        const body = bodyElement.value;
+        if (body && body.scrollTop + body.clientHeight >= body.scrollHeight - loadMoreWithinPx) {
+            search.loadMore();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** A tile's shape before its preview loads, and KLIPY's blurred stand-in behind it. */
+    function tileStyle(item: GifResult): Record<string, string> {
+        const width = item.preview.width || item.width || 1;
+        const height = item.preview.height || item.height || 1;
+        return {
+            aspectRatio: `${width} / ${height}`,
+            ...(item.blur ? { backgroundImage: `url("${item.blur}")` } : {})
+        };
+    }
+
+    /** Moves the arrows' stop to a tile and focus with it, scrolled just into view. */
+    async function focusTile(index: number): Promise<void> {
+        stop.value = index;
+        await nextTick();
+        const element = bodyElement.value?.querySelector<HTMLElement>(`[data-index="${index}"]`);
+        element?.focus({ preventScroll: true });
+        element?.scrollIntoView?.({ block: "nearest" });
+    }
+
+    function pick(item: GifResult | undefined): void {
+        if (!item || shell.value?.isClosing) {
+            return;
+        }
+
+        emit("pick", item);
+        void shell.value?.close(true);
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    // Focus goes to the search, unless the screen is touch only, where it would raise the keyboard
+    // over the GIFs; the dialog takes it there and Escape still reaches it.
+    onMounted(async () => {
+        await nextTick();
+        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
+        (isTouch ? shell.value?.element : searchElement.value)?.focus({ preventScroll: true });
+    });
+
+    onBeforeUnmount(() => {
+        search.stop();
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

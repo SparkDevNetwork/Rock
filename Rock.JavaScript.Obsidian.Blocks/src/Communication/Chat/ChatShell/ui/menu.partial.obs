@@ -246,7 +246,7 @@
 
     // #endregion Types
 
-    defineProps({
+    const props = defineProps({
         /** The icon on the button that opens the menu. */
         icon: {
             type: String as PropType<string>,
@@ -281,6 +281,12 @@
         heading: {
             type: String,
             default: ""
+        },
+
+        /** Where the menu opens from its button: below it at its end by default, or above it at its start, as at the foot of the chat. */
+        placement: {
+            type: String as PropType<"bottom-end" | "top-start">,
+            default: "bottom-end"
         }
     });
 
@@ -303,7 +309,7 @@
     // Placed by left and top, since a transform here would override the pop motion's own and the
     // menu would only fade in and out.
     const { floatingStyles, placement, x } = useFloating(anchorElement, menuElement, {
-        placement: "bottom-end",
+        placement: props.placement,
         strategy: "fixed",
         transform: false,
         middleware: [offset(8), flip(), shift({ padding: 8 })],
@@ -341,10 +347,15 @@
             return;
         }
 
-        anchorElement.value = anchor.value?.buttonElement ?? undefined;
-        isOpen.value = true;
-        await nextTick();
-        menuItems()[0]?.focus();
+        await open("first");
+    }
+
+    /** Down on the closed button opens the menu on its first item, Up on its last, as a menu button does. */
+    function onAnchorKeydown(event: KeyboardEvent): void {
+        if (!isOpen.value && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+            event.preventDefault();
+            void open(event.key === "ArrowDown" ? "first" : "last");
+        }
     }
 
     /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves. */
@@ -373,6 +384,13 @@
             event.preventDefault();
             items[current].click();
         }
+        else if (event.key.length === 1 && /\p{L}/u.test(event.key)) {
+            // A letter goes to the next item that starts with it, round from the end.
+            const letter = event.key.toLocaleLowerCase();
+            const next = [...items.slice(current + 1), ...items.slice(0, current + 1)]
+                .find(item => item.textContent?.trim().toLocaleLowerCase().startsWith(letter));
+            next?.focus();
+        }
     }
 
     /** A press anywhere outside the menu and its button closes it, leaving focus where the press put it. */
@@ -388,6 +406,14 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    async function open(at: "first" | "last"): Promise<void> {
+        anchorElement.value = anchor.value?.buttonElement ?? undefined;
+        isOpen.value = true;
+        await nextTick();
+        const items = menuItems();
+        items[at === "first" ? 0 : items.length - 1]?.focus();
+    }
 
     function menuItems(): HTMLElement[] {
         return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
@@ -428,13 +454,23 @@
 
     // #region Lifecycle Hooks
 
+    // The opening keys are listened for on the button directly, outside Vue's own event handling:
+    // Vue drops an event at a listener attached in the same millisecond its first listener saw it,
+    // so a toolbar holding the button, as a message's tools do, could miss its own arrows.
     onMounted(() => {
         overlayHost.value = overlayHostOf(anchor.value?.buttonElement);
+        anchor.value?.buttonElement?.addEventListener("keydown", onAnchorKeydown);
     });
 
     onBeforeUnmount(() => {
         document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        anchor.value?.buttonElement?.removeEventListener("keydown", onAnchorKeydown);
     });
 
     // #endregion Lifecycle Hooks
+
+    /** The button that opens the menu, for what it opens next to be placed by and hand focus back to. */
+    const buttonElement = computed((): HTMLElement | null => anchor.value?.buttonElement ?? null);
+
+    defineExpose({ buttonElement });
 </script>

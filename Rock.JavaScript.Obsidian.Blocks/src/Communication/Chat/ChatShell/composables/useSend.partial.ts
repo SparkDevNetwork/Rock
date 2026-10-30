@@ -32,7 +32,7 @@
 // nothing more is sent, a wait to send again sends nothing, and no answer still on its way
 // reaches the screen.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { AttachmentItem, ChatError, DisplayPiece, FailureWords, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
+import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
@@ -51,6 +51,9 @@ const joinRequiredCode = "authz.join_required";
 
 /** The refusal of a send naming an upload the platform no longer holds. */
 const attachmentMissingCode = "rpc.attachment_missing";
+
+/** The refusal of a GIF in a church that has GIFs off, which hides them at once. */
+const gifsOffCode = "rpc.gifs_off";
 
 /** A try that reached nothing: a call that threw, or one a stopped sender never made. */
 const notSent: SendResult = { ok: false, error: { code: "rpc.transport", severity: "failed" } };
@@ -294,6 +297,39 @@ export function newLocalId(): string | null {
     return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+/**
+ * The send's arguments for what a message carries: a GIF goes as the token the platform's search
+ * signed it with, which the platform builds the stored GIF from; files go as their uploads.
+ *
+ * @param items What the message carries, or nothing.
+ *
+ * @returns The arguments to add to the send's own.
+ */
+export function mediaArgs(items: AttachmentItem[] | undefined): Record<string, unknown> {
+    const gif = items?.find(isGifItem);
+    if (gif?.token) {
+        return { p_gif: gif.token };
+    }
+
+    const files = items?.filter(isFileItem) ?? [];
+    return files.length > 0 ? { p_attachments: files.map(file => file.id) } : {};
+}
+
+/**
+ * What a message carries as the timeline keeps it: a GIF without the token it was sent with,
+ * which is the sender's alone and of no use once the message is stored.
+ */
+function storedMedia(items: AttachmentItem[]): AttachmentItem[] {
+    return items.map(item => {
+        if (!isGifItem(item) || item.token === undefined) {
+            return item;
+        }
+
+        const { token: _token, ...stored } = item;
+        return stored;
+    });
+}
+
 /** A reply's place: the root it answers, and whether it is also sent to the conversation. */
 export type ReplyTarget = {
     parentId: number;
@@ -340,6 +376,9 @@ export type SenderDependencies = {
 
     /** A fresh identifier for a pending row, a UUID, since it is also the send's key; null when none can be made. */
     newLocalId: () => string | null;
+
+    /** The platform refused a GIF because the church has GIFs off, which hides them at once. */
+    onGifsOff?: () => void;
 };
 
 /** How one try of a message that is tried again on its own is sent. */
@@ -563,6 +602,9 @@ export function createSender(dependencies: SenderDependencies): Sender {
             if (!isLast) {
                 return false;
             }
+            if (result.error.code === gifsOffCode) {
+                dependencies.onGifsOff?.();
+            }
             row.status = "failed";
             row.errorCode = result.error.code;
             failures.last = { localId: row.localId, count: (failures.last?.count ?? 0) + 1 };
@@ -594,7 +636,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             pieces: result.pieces ?? null,
             blocks: result.blocks ?? null,
             // the files as stored, under the keys the platform answered
-            ...(row.attachments?.length ? { attachments: result.attachments ?? row.attachments } : {}),
+            ...(row.attachments?.length ? { attachments: storedMedia(result.attachments ?? row.attachments) } : {}),
             created_at: result.createdAt,
             notice: result.notice ?? null,
             client_key: row.localId
