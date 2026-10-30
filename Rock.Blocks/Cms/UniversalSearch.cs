@@ -331,7 +331,9 @@ namespace Rock.Blocks.Cms
             if ( GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean() )
             {
                 mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                mergeFields.Add( "Results", results );
+
+                // Only pass the results the person is allowed to view, matching the standard results below.
+                mergeFields.Add( "Results", results.Where( r => r.IsViewAllowed( RequestContext.CurrentPerson, RockContext ) ).ToList() );
 
                 return GetAttributeValue( AttributeKey.LavaResultTemplate )
                     .ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.CustomResultsCommands ) );
