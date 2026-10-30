@@ -5314,6 +5314,8 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.NoContent )]
+        [ProducesResponse( HttpStatusCode.NotFound )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "FFE635FE-3988-4286-AEC6-0ADFAC162A58" )]
         public IActionResult EmailEditorRegisterRsvpRecipients( [FromBody] EmailEditorRegisterRsvpRecipientsOptionsBag options )
         {
@@ -5329,6 +5331,18 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var occurrence = new AttendanceOccurrenceService( rockContext ).Get( options.OccurrenceId );
+
+                if ( occurrence?.Group == null )
+                {
+                    return NotFound();
+                }
+
+                if ( !IsGroupAllowedForRsvp( occurrence.Group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var attendanceService = new AttendanceService( rockContext );
 
                 attendanceService.RegisterRSVPRecipients( options.OccurrenceId, options.PersonIds );
@@ -5384,6 +5398,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( List<ListItemBag> ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "25C14E2A-36A2-46C6-8B22-848D83A6D2C9" )]
         public IActionResult EmailEditorGetFutureAttendanceOccurrences( EmailEditorGetFutureAttendanceOccurrencesOptionsBag bag )
         {
@@ -5399,10 +5414,17 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                // Load with proxies on so IsAuthorized can walk parent group security.
+                var group = new GroupService( rockContext ).Get( bag.GroupGuid );
+
+                if ( !IsGroupAllowedForRsvp( group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var previousProxyCreationEnabled = rockContext.Configuration.ProxyCreationEnabled;
                 rockContext.Configuration.ProxyCreationEnabled = false;
 
-                var group = new GroupService( rockContext ).Get( bag.GroupGuid );
                 var occurrences = new AttendanceOccurrenceService( rockContext )
                     .GetFutureGroupOccurrences( group, null )
                     .Select( OccurrenceAsListItemBag )
@@ -5422,6 +5444,7 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( EmailEditorAttendanceOccurrenceBag ) )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "2A8A1319-3A64-4449-876D-480FD500EAEC" )]
         public IActionResult EmailEditorCreateAttendanceOccurrence( [FromBody] EmailEditorCreateAttendanceOccurrenceOptionsBag bag )
         {
@@ -5437,6 +5460,13 @@ namespace Rock.Rest.v2
 
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
+                var group = new GroupService( rockContext ).Get( bag.GroupId );
+
+                if ( !IsGroupAllowedForRsvp( group, GetPerson() ) )
+                {
+                    return Unauthorized();
+                }
+
                 var occurrence = new AttendanceOccurrenceService( rockContext )
                     .GetOrAdd( bag.OccurrenceDate, bag.GroupId, bag.LocationId, bag.ScheduleId );
 
@@ -5470,6 +5500,24 @@ namespace Rock.Rest.v2
                 ThumbnailBinaryFile = emailSection.ThumbnailBinaryFile.ToListItemBag(),
                 UsageSummary = emailSection.UsageSummary
             };
+        }
+
+        /// <summary>
+        /// Determines whether the person can use the group for email RSVPs, matching the RSVP group picker.
+        /// </summary>
+        /// <param name="group">The group the RSVP occurrence belongs to.</param>
+        /// <param name="person">The signed-in person making the request, or <c>null</c> when no one is signed in.</param>
+        /// <returns><c>true</c> if a person is signed in, the group's type has RSVP enabled and the person can view the group; otherwise <c>false</c>.</returns>
+        private static bool IsGroupAllowedForRsvp( Rock.Model.Group group, Person person )
+        {
+            if ( group == null || person == null )
+            {
+                return false;
+            }
+
+            var groupType = GroupTypeCache.Get( group.GroupTypeId );
+
+            return groupType?.EnableRSVP == true && group.IsAuthorized( Authorization.VIEW, person );
         }
 
         private static ListItemBag OccurrenceAsListItemBag( AttendanceOccurrence attendanceOccurrence )

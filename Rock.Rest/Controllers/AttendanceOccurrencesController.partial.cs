@@ -70,7 +70,17 @@ namespace Rock.Rest.Controllers
         [Rock.SystemGuid.RestActionGuid( "07AE6B44-790D-42C5-AA02-BBEFA63E97ED" )]
         public AttendanceOccurrence CreateGroupOccurrence( int groupId, DateTime occurrenceDate, int? scheduleId = null, int? locationId = null )
         {
-            return new AttendanceOccurrenceService( RockApp.Current.CreateRockContext() ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
+            var rockContext = RockApp.Current.CreateRockContext();
+            var group = new GroupService( rockContext ).Get( groupId );
+            var groupType = group != null ? GroupTypeCache.Get( group.GroupTypeId ) : null;
+            var person = GetPerson();
+
+            if ( person == null || groupType?.EnableRSVP != true || !group.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+            {
+                throw new HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            return new AttendanceOccurrenceService( rockContext ).GetOrAdd( occurrenceDate, groupId, locationId, scheduleId );
         }
 
         /// <summary>
