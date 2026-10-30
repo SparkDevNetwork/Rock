@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -88,6 +89,13 @@ namespace Rock.Model
         public virtual CommunicationRecipient CommunicationRecipient { get; set; }
 
         #endregion Navigation Properties
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => this.CommunicationFlowInstanceCommunication ?? base.ParentAuthority;
+
+        #endregion ISecured
     }
 
     #region Entity Configuration

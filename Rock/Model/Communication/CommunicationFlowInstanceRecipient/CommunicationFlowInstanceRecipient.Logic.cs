@@ -18,11 +18,19 @@ using System;
 using System.Linq.Expressions;
 
 using Rock.Enums.Communication;
+using Rock.Security;
 
 namespace Rock.Model
 {
     public partial class CommunicationFlowInstanceRecipient
     {
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => this.CommunicationFlowInstance ?? base.ParentAuthority;
+
+        #endregion ISecured
+
         // In-memory versions, compiled once per AppDomain
         private static readonly Func<CommunicationFlowInstanceRecipient, bool> _isUnsubscribedFromCommunicationFunc =
             CommunicationFlowInstanceRecipientPredicates.IsUnsubscribedFromCommunicationExpr.Compile();
