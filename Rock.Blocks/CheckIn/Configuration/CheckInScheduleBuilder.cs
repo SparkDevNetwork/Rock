@@ -27,6 +27,8 @@ using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder;
 using Rock.ViewModels.Utility;
@@ -197,6 +199,26 @@ namespace Rock.Blocks.CheckIn.Configuration
         public override object GetObsidianBlockInitialization()
         {
             return GetBoxOptions();
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            /*
+                10/30/2026 - MSE
+
+                The Parent Location picker calls the Controls API, which rejects users that
+                lack Execute Read on the endpoint unless a security grant covers it. Anyone
+                who can load this block needs the picker to work, so the grant is issued
+                without an Edit check. Each location is still checked for View access.
+
+                Reason: Parent Location picker returned 401 for non-staff users.
+            */
+            var grant = new SecurityGrant();
+
+            grant.AddRule( new LocationItemPickerSecurityGrantRule() );
+
+            return grant.ToToken();
         }
 
         #endregion RockBlockType Implementation
@@ -377,13 +399,23 @@ namespace Rock.Blocks.CheckIn.Configuration
             {
                 HasValidCheckInConfigurationPageParam = GroupTypeIdFromPageParameter.HasValue,
                 GroupTypes = new List<Guid>(),
-                Areas = new List<ListItemBag>()
+                GroupTypeItems = new List<ListItemBag>(),
+                Areas = new List<ListItemBag>(),
+                SecurityGrantToken = RenewSecurityGrantToken()
             };
 
             var groupTypes = GetTopGroupTypes();
             foreach ( var groupType in groupTypes )
             {
                 bag.GroupTypes.Add( groupType.Guid );
+
+                // The Group Type filter is a plain dropdown fed from this list, because the
+                // Controls API group type picker is not available to non-staff users.
+                bag.GroupTypeItems.Add( new ListItemBag
+                {
+                    Text = groupType.Name,
+                    Value = groupType.Guid.ToString()
+                } );
             }
 
             var groupTypeService = new GroupTypeService( RockContext );

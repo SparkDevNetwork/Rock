@@ -43,6 +43,16 @@ namespace Rock.ViewModels.Blocks.CheckIn.Configuration.CheckInScheduleBuilder
         public List<Guid> GroupTypes { get; set; }
 
         /// <summary>
+        /// The list of GroupTypes that can be chosen from, as list items for the Group Type filter.
+        /// </summary>
+        public List<ListItemBag> GroupTypeItems { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token that allows the location picker to load locations.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
+
+        /// <summary>
         /// The list of Areas that can be chosen from
         /// </summary>
         public List<ListItemBag> Areas { get; set; }
