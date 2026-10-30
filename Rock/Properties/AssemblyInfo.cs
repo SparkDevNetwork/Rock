@@ -44,6 +44,7 @@ using System.Runtime.CompilerServices;
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Oidc" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions.RockQueue" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
