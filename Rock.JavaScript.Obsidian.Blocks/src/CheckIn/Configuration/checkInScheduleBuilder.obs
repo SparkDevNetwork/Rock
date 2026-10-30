@@ -22,17 +22,18 @@
         <template #subheaderLeft>
             <div class="check-in-schedule-builder-filters row">
                 <div v-if="!config.hasValidCheckInConfigurationPageParam" class="col-md-4">
-                    <GroupTypePicker v-model="groupType"
-                                     label="Group Type"
-                                     :groupTypes="[...groupTypeItems]"
-                                     :showBlankItem="true"
-                                     blankValue="All" />
+                    <DropDownList v-model="selectedGroupType"
+                                  label="Group Type"
+                                  :items="groupTypeItems"
+                                  :showBlankItem="true"
+                                  blankValue="All" />
                 </div>
 
                 <div class="col-md-4">
                     <LocationItemPicker v-model="parentLocation"
                                         label="Parent Location"
                                         :rootLocationGuid="campusRootLocationGuid"
+                                        :securityGrantToken="securityGrant.token.value"
                                         inputClasses="input-width-xl" />
                 </div>
 
@@ -118,7 +119,6 @@
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import LocationItemPicker from "@Obsidian/Controls/locationItemPicker.obs";
@@ -132,10 +132,9 @@
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import { Guid } from "@Obsidian/Types";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
-    import { onConfigurationValuesChanged, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { PageMessages } from "@Obsidian/Utility/browserBus";
     import { ICancellationToken } from "@Obsidian/Utility/cancellation";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
@@ -154,6 +153,9 @@
     const browserBus = useBlockBrowserBus();
     const contextEntities = useContextEntities();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+
+    provideSecurityGrant(securityGrant);
 
     onConfigurationValuesChanged(useReloadBlock());
 
@@ -202,7 +204,7 @@
     const quickFilterValue = ref<string>("");
     const campusRootLocationGuid = ref<string | null>(null);
     const areaItems = ref<ListItemBag[]>(config.areas ?? []);
-    const groupTypeItems = ref<Guid[]>(config.groupTypes ?? []);
+    const groupTypeItems = ref<ListItemBag[]>(config.groupTypeItems ?? []);
     const groupType = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedGroupType) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedGroupType)) : {});
     const parentLocation = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedParentLocation) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedParentLocation)) : {});
     const scheduleCategory = ref<ListItemBag>(blockPreferences.getValue(PreferenceKey.SelectedCategory) ? JSON.parse(blockPreferences.getValue(PreferenceKey.SelectedCategory)) : (config.defaultScheduleCategory ?? {}));
@@ -235,6 +237,17 @@
     // #endregion Values
 
     // #region Computed Values
+
+    /**
+     * Bridges the Group Type dropdown value to the group type list item, so the
+     * saved preference format and the panel title keep using the list item.
+     */
+    const selectedGroupType = computed({
+        get: (): string => groupType.value?.value ?? "",
+        set: (value: string): void => {
+            groupType.value = groupTypeItems.value.find(item => item.value === value) ?? {};
+        }
+    });
 
     /** Gets the panel title. */
     const panelTitle = computed((): string => {
