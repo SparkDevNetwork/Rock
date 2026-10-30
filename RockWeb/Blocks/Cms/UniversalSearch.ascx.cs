@@ -24,6 +24,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch;
 using Rock.Web.UI;
@@ -419,7 +420,12 @@ namespace RockWeb.Blocks.Cms
                 if ( GetAttributeValue( AttributeKey.UseCustomResults ).AsBoolean() )
                 {
                     var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( null );
-                    mergeFields.Add( "Results", results );
+
+                    // Only pass the results the person is allowed to view, matching the standard results below.
+                    using ( var rockContext = new RockContext() )
+                    {
+                        mergeFields.Add( "Results", results.Where( r => r.IsViewAllowed( CurrentPerson, rockContext ) ).ToList() );
+                    }
 
                     lResults.Text = GetAttributeValue( AttributeKey.LavaResultTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.CustomResultsCommands ) );
                 }
