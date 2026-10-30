@@ -353,6 +353,12 @@
     cursor: default;
 }
 
+/* The "+" keeps its open look while the GIF picker it opened is up, as it has while its menu is. */
+.chat-composer-box :deep(.chat-icon-btn.is-open) {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-wash);
+}
+
 /* The staged GIF: 120px high at its own shape, its badge and a way to take it out on the GIF. */
 .chat-composer-gif {
     position: relative;
