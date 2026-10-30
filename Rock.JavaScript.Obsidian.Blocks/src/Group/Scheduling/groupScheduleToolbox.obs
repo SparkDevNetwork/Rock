@@ -9,6 +9,10 @@
            title="Schedule Toolbox"
            class="schedule-toolbox">
 
+        <NotificationBox v-if="limitedAuthorizationMessage" :alertType="AlertType.Warning">
+            {{ limitedAuthorizationMessage }}
+        </NotificationBox>
+
         <div class="row">
             <div v-if="isActionsColumnVisible" class="col-sm-12 col-md-4 col-md-push-8 mt-3 mt-sm-0 mb-2 schedule-toolbox-actions-column">
                 <DropDownList v-if="isFamilyMemberSelectorVisible"
@@ -125,6 +129,7 @@
 
     const blockErrorMessage = ref<string | undefined | null>(config.errorMessage);
     const blockActionErrorMessage = ref("");
+    const limitedAuthorizationMessage = ref<string | undefined | null>(config.limitedAuthorizationMessage);
 
     const scrollContainer = ref<HTMLElement | null>(null);
 
