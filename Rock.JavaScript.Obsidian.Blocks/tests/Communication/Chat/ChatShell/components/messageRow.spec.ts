@@ -227,9 +227,9 @@ describe("the states, in Conversational", () => {
         expect(plain(wrapper.get("[data-testid='message-meta']").text())).toBe("9:02 AM");
     });
 
-    // The choices for a failed send are the strip's, over the composer, which also says it aloud;
-    // the message only says it was not sent, where Sending… was.
-    test("failed: Not sent under the bubble, where Sending… was, and nothing to press", () => {
+    // The strip over the composer says it aloud and acts on every failed send; the message says it
+    // was not sent, where Sending… was, and its marker is the one control for this message alone.
+    test("failed: Not sent under the bubble, where Sending… was, as the one thing to press", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "network" }), isOwn: true });
         const meta = wrapper.get("[data-testid='message-meta']");
 
@@ -237,7 +237,7 @@ describe("the states, in Conversational", () => {
         expect(root(wrapper).getAttribute("data-status")).toBe("failed");
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
         expect(meta.find(".chat-fail-mark").exists()).toBe(true);
-        expect(meta.findAll("button")).toHaveLength(0);
+        expect(meta.findAll("button")).toHaveLength(1);
         expect(wrapper.find("[aria-live]").exists()).toBe(false);
     });
 
@@ -429,7 +429,7 @@ describe("Community, in a channel", () => {
         expect(sent.get("[data-testid='message-state']").text()).toBe("Sent");
     });
 
-    test("a failed send's Not sent rides inline after the text, where Sending… was, with nothing to press", () => {
+    test("a failed send's Not sent rides inline after the text, where Sending… was, as the one thing to press", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true });
         const state = wrapper.get(".chat-cm-text .chat-cm-state");
 
@@ -438,7 +438,7 @@ describe("Community, in a channel", () => {
         expect(state.find(".chat-fail-mark").exists()).toBe(true);
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
         expect(wrapper.find("[data-testid='message-meta']").exists()).toBe(false);
-        expect(wrapper.findAll(".chat-cm-main button")).toHaveLength(0);
+        expect(wrapper.findAll(".chat-cm-main button")).toHaveLength(1);
         expect(wrapper.find("[aria-live]").exists()).toBe(false);
     });
 
@@ -882,7 +882,7 @@ describe("a failed send's row", () => {
     test.each([["a direct message", false], ["a channel", true]] as const)("a failed send's own reason rides its Not sent marker in %s", (_kind, isChannel) => {
         const reason = "You're offline. Try again when you're back.";
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport", reason: { alone: reason, besideRetry: "You're offline.", canRetry: true } }), isOwn: true, isChannel, position: "single" });
-        const marker = wrapper.get("[data-testid='message-state']").element.parentElement as HTMLElement;
+        const marker = wrapper.get("[data-testid='message-state']").element.closest(".chat-meta, .chat-cm-state") as HTMLElement;
 
         expect(marker.getAttribute("title")).toBe(reason);
         expect(marker.querySelector(".chat-sr-only")?.textContent).toBe(`. ${reason}`);
@@ -890,7 +890,7 @@ describe("a failed send's row", () => {
 
     test("a failed send that said nothing has no reason on its marker", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.unknown" }), isOwn: true, position: "single" });
-        const marker = wrapper.get("[data-testid='message-state']").element.parentElement as HTMLElement;
+        const marker = wrapper.get("[data-testid='message-state']").element.closest(".chat-meta, .chat-cm-state") as HTMLElement;
 
         expect(marker.hasAttribute("title")).toBe(false);
         expect(marker.querySelector(".chat-sr-only")).toBeNull();
@@ -1554,5 +1554,103 @@ describe("a message's files", () => {
         expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
         expect(wrapper.find(".chat-bubble").exists()).toBe(false);
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Sending…");
+    });
+});
+
+// Each failed send is its own to mend: the Not sent marker is the one thing to press on the row,
+// and opens Try again and Delete for that message alone, so one failure among several is dealt
+// with where it stands. A send refused for good offers Delete alone, as the strip does. The strip
+// over the composer keeps acting on all of a place's failures.
+describe("a failed send's own choices", () => {
+    const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
+    const failed = (extra: Partial<PendingMessage> = {}): PendingMessage => pendingRow({ status: "failed", errorCode: "rpc.transport", ...extra });
+
+    function drawAttached(props: RowProps): VueWrapper {
+        return mount(MessageRow, { props: { personAliasGuid: me, ...props }, attachTo: document.body });
+    }
+
+    async function press(wrapper: VueWrapper): Promise<void> {
+        await wrapper.get("[data-testid='message-failed-actions']").trigger("click");
+        await nextTick();
+    }
+
+    const labels = (wrapper: VueWrapper): string[] => wrapper.findAll("[role='menuitem']").map(item => item.text());
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("the Not sent marker is a button on a failed row in %s, and on no other row", (_kind, isChannel) => {
+        const wrapper = draw({ pending: failed(), isOwn: true, isChannel, position: "single" });
+        const marker = wrapper.get("[data-testid='message-failed-actions']");
+
+        expect(marker.element.tagName).toBe("BUTTON");
+        expect(marker.text()).toContain("Not sent");
+        expect(marker.attributes("aria-haspopup")).toBe("menu");
+
+        expect(draw({ pending: pendingRow(), isOwn: true, isChannel }).find("[data-testid='message-failed-actions']").exists()).toBe(false);
+        expect(draw({ message: ownConfirmed(), isOwn: true, isChannel }).find("[data-testid='message-failed-actions']").exists()).toBe(false);
+        expect(draw({ message: message(), isChannel }).find("[data-testid='message-failed-actions']").exists()).toBe(false);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("pressing it offers Try again and Delete for this message in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ pending: failed(), isOwn: true, isChannel, position: "single" });
+
+        expect(wrapper.find("[role='menu']").exists()).toBe(false);
+        await press(wrapper);
+
+        expect(labels(wrapper)).toEqual(["Try again", "Delete"]);
+    });
+
+    test("Try again asks the owner to send this one message, by its key", async () => {
+        const wrapper = draw({ pending: failed({ localId: "b" }), isOwn: true, position: "single" });
+
+        await press(wrapper);
+        await wrapper.findAll("[role='menuitem']")[0].trigger("click");
+
+        expect(wrapper.emitted("retry")).toEqual([[["b"]]]);
+        expect(wrapper.emitted("discard")).toBeUndefined();
+        expect(wrapper.find("[role='menu']").exists()).toBe(false);
+    });
+
+    test("Delete asks the owner to drop this one message, by its key", async () => {
+        const wrapper = draw({ pending: failed({ localId: "b" }), isOwn: true, isChannel: true, position: "single" });
+
+        await press(wrapper);
+        await wrapper.findAll("[role='menuitem']")[1].trigger("click");
+
+        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+        expect(wrapper.emitted("retry")).toBeUndefined();
+    });
+
+    test("a send refused for good offers Delete alone", async () => {
+        const wrapper = draw({ pending: failed({ errorCode: refusal.code, refusal, reason: { alone: refusal.text, besideRetry: refusal.text, canRetry: false } }), isOwn: true, position: "single" });
+
+        await press(wrapper);
+
+        expect(labels(wrapper)).toEqual(["Delete"]);
+    });
+
+    test("Enter on the marker opens the choices and Escape closes them, with focus back on the marker", async () => {
+        const wrapper = drawAttached({ pending: failed(), isOwn: true, position: "single" });
+        const marker = wrapper.get("[data-testid='message-failed-actions']");
+
+        (marker.element as HTMLElement).focus();
+        await marker.trigger("click");
+        await nextTick();
+        expect(wrapper.find("[role='menu']").exists()).toBe(true);
+        expect(document.activeElement?.textContent?.trim()).toBe("Try again");
+
+        await wrapper.get("[role='menu']").trigger("keydown", { key: "Escape" });
+        await nextTick();
+
+        expect(wrapper.find("[role='menu']").exists()).toBe(false);
+        expect(document.activeElement).toBe(marker.element);
+        wrapper.unmount();
+    });
+
+    test("the marker keeps its reason for a screen reader and a hover, now on the control that names it", () => {
+        const reason = "You're offline. Try again when you're back.";
+        const wrapper = draw({ pending: failed({ reason: { alone: reason, besideRetry: "You're offline.", canRetry: true } }), isOwn: true, isChannel: true, position: "single" });
+        const state = wrapper.get(".chat-cm-state.is-failed");
+
+        expect(state.attributes("title")).toBe(reason);
+        expect(state.find(".chat-sr-only").text()).toBe(`. ${reason}`);
     });
 });

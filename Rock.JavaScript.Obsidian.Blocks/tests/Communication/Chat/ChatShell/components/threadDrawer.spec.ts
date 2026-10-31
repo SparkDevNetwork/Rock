@@ -935,3 +935,26 @@ describe("the person's failed replies", () => {
         expect(w.find("[data-testid='composer-failed']").exists()).toBe(false);
     });
 });
+
+// The thread's failed replies are mended one at a time from their own Not sent marker, as a
+// conversation's are, and reach the drawer's owner by the same two events as the strip.
+describe("a failed reply's own choices", () => {
+    const failedReply = (localId: string): Record<string, unknown> =>
+        ({ localId, channelId: "c1", body: localId, status: "failed", errorCode: "rpc.transport", parentId: 40, isShownInChannel: false });
+
+    test("Try again on one reply asks for that reply alone, and Delete drops that reply alone", async () => {
+        const w = draw({ pending: [failedReply("a"), failedReply("b")] });
+        const markers = w.findAll("[data-testid='message-failed-actions']");
+        expect(markers).toHaveLength(2);
+
+        await markers[1].trigger("click");
+        await nextTick();
+        await w.findAll("[role='menuitem']")[0].trigger("click");
+        expect(w.emitted("retry")).toEqual([[["b"]]]);
+
+        await w.findAll("[data-testid='message-failed-actions']")[0].trigger("click");
+        await nextTick();
+        await w.findAll("[role='menuitem']")[1].trigger("click");
+        expect(w.emitted("discard")).toEqual([["a"]]);
+    });
+});

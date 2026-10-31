@@ -639,7 +639,7 @@ describe("the first message", () => {
         const pending = w.get("[data-testid='nd-pending']");
         expect(pending.get("[data-testid='nd-phase']").text()).toBe("Not sent");
         expect(pending.find(".chat-fail-mark").exists()).toBe(true);
-        expect(pending.findAll("button")).toHaveLength(0);
+        expect(pending.findAll("button")).toHaveLength(1);
 
         const strip = w.get("[data-testid='composer-failed']");
         expect(strip.get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
@@ -852,5 +852,25 @@ describe("a refused start", () => {
         await settle();
 
         expect(editor(w).textContent).toBe("Want to help Saturday?");
+    });
+});
+
+// The first message of a conversation being started is marked Not sent as any message is, and its
+// marker is the control for it: Try again and Delete, as the strip's are.
+describe("the first message's own choices", () => {
+    test("pressing Not sent offers Try again and Delete, which ask as the strip's do", async () => {
+        const w = mountView({ chosen: [caleb], lookup: fresh, draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
+
+        await w.get("[data-testid='message-failed-actions']").trigger("click");
+        await nextTick();
+        expect(w.findAll("[role='menuitem']").map(item => item.text())).toEqual(["Try again", "Delete"]);
+
+        await w.findAll("[role='menuitem']")[0].trigger("click");
+        expect(w.emitted("retry")).toHaveLength(1);
+
+        await w.get("[data-testid='message-failed-actions']").trigger("click");
+        await nextTick();
+        await w.findAll("[role='menuitem']")[1].trigger("click");
+        expect(w.emitted("discard")).toHaveLength(1);
     });
 });
