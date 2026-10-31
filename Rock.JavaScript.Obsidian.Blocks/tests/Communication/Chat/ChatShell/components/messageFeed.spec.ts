@@ -90,13 +90,22 @@ class FakeIntersectionObserver {
     }
 }
 
-/** Gives the feed's scroller the sizes a browser would, and puts the reader at a scroll position. */
+/**
+ * Gives the feed's scroller the sizes a browser would, and puts the reader at a scroll position.
+ * The first time, the scroller is laid out where the feed scrolled itself as it mounted, at its
+ * newest message, which the browser reports with a scroll before the reader moves from there.
+ */
 function placeScroll(wrapper: VueWrapper, scrollTop: number, scrollHeight = 2000, clientHeight = 500): void {
     const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-    let top = scrollTop;
+    const isFirstLayout = !Object.getOwnPropertyDescriptor(scroller, "scrollHeight");
+    let top = isFirstLayout ? scrollHeight - clientHeight : scroller.scrollTop;
     Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => scrollHeight });
     Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => clientHeight });
     Object.defineProperty(scroller, "scrollTop", { configurable: true, get: () => top, set: (value: number) => top = value });
+    if (isFirstLayout) {
+        scroller.dispatchEvent(new Event("scroll"));
+    }
+    top = scrollTop;
     scroller.dispatchEvent(new Event("scroll"));
 }
 
@@ -1370,7 +1379,11 @@ describe("a feed holding its reader at the newest message", () => {
         window.ResizeObserver = previous;
     });
 
-    /** The scroller's sizes as a browser lays them out, changeable as content settles; a scroll is clamped to them. */
+    /**
+     * The scroller's sizes as a browser lays them out, changeable as content settles; a scroll is
+     * clamped to them. It is laid out where the feed scrolled itself as it mounted, at its newest
+     * message, which the browser reports with a scroll.
+     */
     function layOut(wrapper: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
         Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
@@ -1378,8 +1391,28 @@ describe("a feed holding its reader at the newest message", () => {
         Object.defineProperty(scroller, "scrollTop", {
             configurable: true,
             get: () => sizes.scrollTop,
-            set: (value: number) => sizes.scrollTop = Math.min(value, sizes.scrollHeight - sizes.clientHeight)
+            set: (value: number) => sizes.scrollTop = Math.max(0, Math.min(value, sizes.scrollHeight - sizes.clientHeight))
         });
+        sizes.scrollTop = Math.max(0, sizes.scrollHeight - sizes.clientHeight);
+        scroller.dispatchEvent(new Event("scroll"));
+    }
+
+    /**
+     * Lets the feed's own smooth scrolls start but not finish, as on the frames after one is asked
+     * for: each request is recorded and the scroller stays where it is.
+     */
+    function holdSmoothScrolls(wrapper: VueWrapper): number[] {
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        const requested: number[] = [];
+        scroller.scrollTo = ((options: ScrollToOptions) => {
+            requested.push(options.top ?? 0);
+        }) as typeof scroller.scrollTo;
+        return requested;
+    }
+
+    /** A scroll event with the scroller where it is, as the browser reports a frame after the feed scrolled itself. */
+    function echoScroll(wrapper: VueWrapper): void {
+        wrapper.get("[data-testid='message-feed']").element.dispatchEvent(new Event("scroll"));
     }
 
     /** Scrolls the reader to a place, as their own scrolling does. */
@@ -1488,6 +1521,116 @@ describe("a feed holding its reader at the newest message", () => {
         await nextTick();
         expect(sizes.scrollTop).toBe(700);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+    });
+
+    // The browser reports a scroll the feed made a frame later, after the frame's layout. A row
+    // that grew in that frame puts the reader more than the margin above the bottom by then, but
+    // the reader has not moved, so they are still at the newest message and kept there.
+    test("the feed's scroll to follow a message, reported after the next row grew, leaves the reader at the newest message", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]);
+        const wrapper = draw({ timeline: state });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+
+        state.messages.push(message(3, anna, at(14, 2)));
+        sizes.scrollHeight = 2100;
+        await nextTick();
+        await nextTick();
+        expect(sizes.scrollTop).toBe(1600);
+
+        sizes.scrollHeight = 2300;
+        echoScroll(wrapper);
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1800);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("a photo that loads in the frame after the feed was kept at the newest message for the one before it keeps the reader there", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+
+        sizes.scrollHeight = 2200;
+        await resize();
+        expect(sizes.scrollTop).toBe(1700);
+
+        // the next photo decodes before the browser reports the scroll that kept the reader there
+        sizes.scrollHeight = 2350;
+        echoScroll(wrapper);
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1850);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // A jump is the feed taking the reader somewhere: they are where it goes from the moment it
+    // starts, so neither its smooth scroll's first frames, still near the bottom, nor rows settling
+    // on the way pull them back to the newest message.
+    test("a jump to an older message is not pulled back to the newest message as rows settle on the way", async () => {
+        const wrapper = draw({ timeline: timeline([1, 2, 3, 4, 5].map(id => message(id, anna, at(14, id)))) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        const requested = holdSmoothScrolls(wrapper);
+        const row = wrapper.get("[data-message-id='2']").element;
+        row.getBoundingClientRect = () => ({ top: -700, bottom: -660, height: 40, left: 0, right: 100, width: 100, x: 0, y: -700, toJSON: () => ({}) });
+
+        await wrapper.setProps({ landOnId: 2 });
+        await nextTick();
+        await nextTick();
+        await nextTick();
+
+        // the scroll has moved a few pixels, and a photo in the rows above decodes
+        sizes.scrollTop = 1495;
+        echoScroll(wrapper);
+        sizes.scrollHeight = 2300;
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1495);
+        // the row is brought to the middle of the feed
+        expect(requested).toEqual([1500 - 700 - (500 - 40) / 2]);
+    });
+
+    test("the unread strip's jump up to the New divider is not pulled back to the newest message as rows settle on the way", async () => {
+        const wrapper = draw({
+            timeline: timeline([1, 2, 3, 4, 5].map(id => message(id, anna, at(14, id))), { readCursor: 1, unreadCount: 4, firstUnreadId: 2 })
+        });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        const requested = holdSmoothScrolls(wrapper);
+        const divider = wrapper.get("[data-testid='unread-divider']").element;
+        divider.getBoundingClientRect = () => ({ top: -600, bottom: -580, height: 20, left: 0, right: 100, width: 100, x: 0, y: -600, toJSON: () => ({}) });
+        FakeIntersectionObserver.report(divider, false);
+        await nextTick();
+
+        await wrapper.get(".chat-strip-jump").trigger("click");
+        sizes.scrollTop = 1496;
+        echoScroll(wrapper);
+        sizes.scrollHeight = 2300;
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1496);
+        expect(requested).toEqual([1500 - 600 - 52]);
+    });
+
+    test("Jump to latest takes the reader to the newest message, so rows settling on the way keep them going there", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 400);
+        await nextTick();
+        const requested = holdSmoothScrolls(wrapper);
+
+        await wrapper.get("[data-testid='jump-latest']").trigger("click");
+        // the scroll down has begun, and a photo above decodes
+        sizes.scrollTop = 450;
+        echoScroll(wrapper);
+        sizes.scrollHeight = 2300;
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1800);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+        expect(requested).toEqual([1500]);
     });
 });
 
