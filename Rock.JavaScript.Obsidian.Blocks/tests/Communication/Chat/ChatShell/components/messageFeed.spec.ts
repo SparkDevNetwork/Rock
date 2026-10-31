@@ -1657,6 +1657,25 @@ describe("a feed holding its reader at the newest message", () => {
         expect(sizes.scrollTop).toBe(1500);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
     });
+
+    test("a reader the browser leaves a rounding's width short of the end, as zoom and high-density screens do, is at the newest message", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]);
+        const wrapper = draw({ timeline: state });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 1440);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+
+        // the content shrinks and the clamped scroll lands 1.4px above the whole-pixel end, the
+        // sum of the sizes' and the scroll's roundings
+        sizes.scrollHeight = 1900;
+        sizes.scrollTop = 1398.6;
+        echoScroll(wrapper);
+        await nextTick();
+
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
 });
 
 describe("a block post's buttons", () => {

@@ -44,6 +44,13 @@ export const skeletonDelayMs = 1000;
  */
 export const nearBottomPx = 48;
 
+/**
+ * How far from the whole-pixel end a feed still counts as at it. The sizes the browser reports are
+ * rounded whole numbers while the scroll is fractional at page zoom and on dense screens, so a
+ * reader the browser has clamped to the true end can read up to a pixel or so short of it.
+ */
+export const endSlackPx = 2;
+
 /** The two presentations of one timeline. */
 export type FeedLayout = "conversational" | "community";
 

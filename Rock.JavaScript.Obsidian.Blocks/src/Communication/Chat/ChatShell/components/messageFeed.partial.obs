@@ -665,7 +665,7 @@
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
-    import { FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
+    import { endSlackPx, FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -1152,7 +1152,7 @@
         const top = feed.value?.scrollTop ?? 0;
         const isNear = isNearBottom();
         const element = feed.value;
-        const isAtEnd = !element || element.scrollHeight - top - element.clientHeight < 1;
+        const isAtEnd = !element || element.scrollHeight - top - element.clientHeight <= endSlackPx;
         if (isNear && (top > readerTop || isAtEnd)) {
             isAtNewest.value = true;
         }
