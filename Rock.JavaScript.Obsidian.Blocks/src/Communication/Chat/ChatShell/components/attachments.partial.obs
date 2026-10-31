@@ -172,6 +172,13 @@
     gap: 6px;
     align-items: flex-start;
     min-width: 0;
+
+    /*
+     * Capped by the column it sits in. A column that starts its items at the left sizes each to its
+     * content, and a photo grid's own width reads as content, so without this cap a single photo
+     * would run past a narrow column instead of shrinking to it.
+     */
+    max-width: 100%;
 }
 
 .chat-attach.is-own {
