@@ -23,8 +23,9 @@
 import { ComponentPublicInstance, computed, Ref, UnwrapNestedRefs } from "vue";
 import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "./useHistory.partial";
 import { MessageRowRequests } from "./useMessageActions.partial";
+import { ReactionReader } from "./useReactions.partial";
 import { RowPosition, timeLabel } from "../feedLayout.partial";
-import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
 
 /** What the row is drawing, which is also the marker the styles and the screenshots key on. */
 export type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card";
@@ -76,6 +77,16 @@ export type MessageRowViewSource = {
     isPreviewing: boolean;
 };
 
+/** The reactions row's props, the same in both looks. */
+export type MessageRowReactionsProps = {
+    message: TimelineMessage;
+    isPreviewing: boolean;
+    isPhone: boolean;
+    reader: ReactionReader;
+    listReactors: (code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>;
+    isCardDisabled: boolean;
+};
+
 /** What the row lends its look of what can be done to the message and of the row's own motion. */
 export type MessageRowSurface = {
     /** The editor takes the text's place. */
@@ -90,8 +101,7 @@ export type MessageRowSurface = {
     /** The editor's save is out, so Save is held. */
     isEditSaving: Readonly<Ref<boolean>>;
 
-    /** The reactions row's props. */
-    reactionsProps: Readonly<Ref<Record<string, unknown>>>;
+    reactionsProps: Readonly<Ref<MessageRowReactionsProps>>;
 
     /** An edit, a delete or a hide just replaced the text, so it crossfades once. */
     isCrossfading: Readonly<Ref<boolean>>;

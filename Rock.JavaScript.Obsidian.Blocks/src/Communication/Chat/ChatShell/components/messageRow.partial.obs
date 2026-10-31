@@ -277,7 +277,7 @@
     import MessageRowBubble from "./messageRowBubble.partial.obs";
     import MessageRowCommunity from "./messageRowCommunity.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { MessageRowHandlers, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
+    import { MessageRowHandlers, MessageRowReactionsProps, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
@@ -567,7 +567,7 @@
      * a touch screen has no add chip, and no chip's card shows while the picker is open on this
      * message; asked by message, so the picker opening wakes no other row.
      */
-    const reactionsProps = computed(() => ({
+    const reactionsProps = computed((): MessageRowReactionsProps => ({
         message: props.message as TimelineMessage,
         isPreviewing: props.isPreviewing,
         isPhone: isTouchLayout.value,
