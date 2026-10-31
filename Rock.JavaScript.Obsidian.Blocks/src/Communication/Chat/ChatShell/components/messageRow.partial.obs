@@ -18,7 +18,7 @@
         <template v-if="state === 'system'">
             <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
-                <MessageBody :text="display.text" :pieces="serverPieces" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" />
+                <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
         </template>
@@ -35,11 +35,11 @@
                         <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                         <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
                     </div>
-                    <BlockCard :text="display.text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
+                    <BlockCard :text="text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
                 </div>
             </template>
             <BlockCard v-else
-                       :text="display.text"
+                       :text="text"
                        :blocks="message?.blocks ?? null"
                        :head="{ face, name: displayName, time }"
                        :personAliasGuid="personAliasGuid"
@@ -90,7 +90,7 @@
                                v-on="editorHandlers" />
                 <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
                     <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
+                    <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
@@ -156,7 +156,7 @@
                             <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                         </div>
                         <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                        <MessageBody :text="display.text" :pieces="drawnPieces" :personAliasGuid="personAliasGuid" isConversation :isPersonOpenable="!!message" @person="onPerson" />
+                        <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" isConversation :isPersonOpenable="!!message" @person="onPerson" />
                     </div>
                     <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isOwn="isOwn" :isPending="!!pending" />
                     <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
@@ -996,23 +996,13 @@
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import FailedMarker from "./failedMarker.partial.obs";
-    import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
+    import { useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition, timeLabel } from "../feedLayout.partial";
-    import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
-
-    // #region Types
-
-    /** What the row is drawing, which is also the marker the styles and the screenshots key on. */
-    type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card";
-
-    /** One face, in the avatar's own shape. */
-    type Face = { name: string, photoUrl: string | null };
-
-    // #endregion Types
+    import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition } from "../feedLayout.partial";
+    import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
         /** The stored message, or null for a send that is not stored yet. */
@@ -1177,13 +1167,6 @@
         renamed: "pencil"
     };
 
-    /** One to six emoji and nothing else, joined sequences and skin tones included. */
-    const jumboPattern = new RegExp("^(?:\\p{Extended_Pictographic}|\\p{Emoji_Modifier}|\\u{FE0F}|\\u{200D})+$", "u");
-    const pictograph = new RegExp("\\p{Extended_Pictographic}", "gu");
-
-    /** When a pending row was first drawn, the time it shows until the platform gives it one. */
-    const drawnAt = new Date();
-
     const rowElement = ref<HTMLElement>();
 
     /** Where the column's one bar is drawn while it is on this message. */
@@ -1224,37 +1207,18 @@
 
     // #region Computed Values
 
+    /** What the message shows, worked out once and lent to the look it draws in. */
+    const facts = useMessageRowView(props);
+    const {
+        state, text, pieces, files, isTomb, tombIcon, isEdited, isAnnouncement, isJumbo, hasThread, isHead, displayName,
+        authorGuid, face, at, time, readerMention, isReactable, isThreadReply, isQuoteShown, isSendingShown, failedReason, canRetryFailed
+    } = facts;
+
     /** The look the conversation's kind picks, which the row draws in. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
-    /** What the server decided the message shows; a pending send is its own text. */
-    const display = computed((): MessageDisplay => props.message
-        ? messageDisplay(props.message)
-        : { kind: "message", text: props.pending?.body ?? "" });
-
-    /** The files the message carries, none where its text is withheld; a send still going, those it was given. */
-    const files = computed((): AttachmentItem[] => {
-        if (props.pending) {
-            return props.pending.attachments ?? [];
-        }
-
-        return display.value.kind === "message" ? props.message?.attachments ?? [] : [];
-    });
-
     /** A message of files alone draws no empty bubble; every other message draws its bubble. */
-    const isBubbleShown = computed((): boolean => files.value.length === 0 || !!display.value.text?.trim());
-
-    const isBlockPost = computed((): boolean => Array.isArray(props.message?.blocks) && (props.message?.blocks?.length ?? 0) > 0);
-
-    /**
-     * Why a failed send failed, where anything was said. The strip over the composer says one
-     * reason for all of a place's failures, so each message keeps its own on its marker, for a
-     * screen reader and a pointer resting on it.
-     */
-    const failedReason = computed((): string | null => props.pending?.status === "failed" ? props.pending.reason?.alone ?? null : null);
-
-    /** Try again is offered unless the send was refused for good, which the same text under the same key can only meet again. */
-    const canRetryFailed = computed((): boolean => !props.pending?.refusal);
+    const isBubbleShown = computed((): boolean => files.value.length === 0 || !!text.value?.trim());
 
     function onRetryFailed(): void {
         if (props.pending) {
@@ -1268,44 +1232,6 @@
         }
     }
 
-    const state = computed((): RowState => {
-        if (props.pending) {
-            return props.pending.status === "failed" ? "failed" : "sending";
-        }
-
-        const message = props.message;
-        if (!message) {
-            return "message";
-        }
-
-        if (display.value.kind === "deleted") {
-            return "deleted";
-        }
-
-        if (display.value.kind === "notice") {
-            return message.visibility === "removed" ? "removed" : "hidden";
-        }
-
-        if (isBlockPost.value) {
-            return "card";
-        }
-
-        if (message.message_type === "system") {
-            return "system";
-        }
-
-        // A type a newer platform sends is drawn by the text it carries, marked so it reads as such.
-        if (message.message_type !== "text" && message.message_type !== "announcement") {
-            return "unknown";
-        }
-
-        return props.isJustSent ? "sent" : "message";
-    });
-
-    const isTomb = computed((): boolean => state.value === "deleted" || state.value === "hidden" || state.value === "removed");
-
-    const isAnnouncement = computed((): boolean => !isTomb.value && props.message?.message_type === "announcement");
-
     /**
      * The Leader pill beside the name: a fact about the sender in this channel now, so only a
      * channel's rows draw it. Those are always Community rows, so the bubbles never need it. A
@@ -1317,118 +1243,23 @@
         ? props.isPersonLeader
         : props.message?.sender_is_leader === true && props.message.sender_listed !== false));
 
-    const isEdited = computed((): boolean => !isTomb.value && !props.pending && !!props.message?.edited_at);
-
     const isLastOfGroup = computed((): boolean => props.position === "last" || props.position === "single");
-
-    const isHead = computed((): boolean => props.position === "first" || props.position === "single");
 
     /** Bubbles name another person's group once, over its first message, and never in a direct message. */
     const isNameShown = computed((): boolean => !props.isOwn && !props.isDirectMessage && isHead.value);
-
-    /** A send says "Sending…" only once it has gone quiet; a quick one goes straight to "Sent". */
-    const isSendingShown = computed((): boolean => state.value === "sending" && props.isSendingSlow);
 
     /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
     const isMetaShown = computed((): boolean => isLastOfGroup.value || state.value === "failed" || isSendingShown.value);
 
     const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
 
-    /** The server's pieces, which only a stored message that is shown has. */
-    const serverPieces = computed((): DisplayPiece[] | null => {
-        const kind = display.value.kind;
-        return props.message && (kind === "message" || kind === "system") ? props.message.pieces ?? null : null;
-    });
-
-    /**
-     * What the body draws. A send not stored yet has no pieces from the server, so its mention
-     * tokens are drawn as the names this client holds, never as chips and never raw.
-     */
-    const drawnPieces = computed((): DisplayPiece[] | null => props.pending
-        ? pendingPieces(props.pending.body, props.senderNames)
-        : serverPieces.value);
-
-    /** The sender's name from the message, else the reader's own name for their own message. */
-    const displayName = computed((): string => {
-        const message = props.message;
-        const name = [message?.sender_nick_name, message?.sender_last_name].filter(part => !!part).join(" ");
-
-        if (name) {
-            return name;
-        }
-
-        // The reader's own row, a send not stored yet above all, carries no sender of its own and
-        // is never the church's, whatever the session left out.
-        if (props.isOwn) {
-            return props.personName || "You";
-        }
-
-        if (!message?.person_alias_guid && props.organizationName) {
-            return props.organizationName;
-        }
-
-        return "Someone";
-    });
-
     /** Community's face fills its gutter, which is narrower on a phone. */
     const communityFaceSize = computed((): number => props.isPhone ? 32 : 36);
-
-    /**
-     * The author whose card the name and face open: a stored message's sender. A send not stored
-     * yet, a line from the church and a sender the church no longer lists name no one to open.
-     */
-    const authorGuid = computed((): string | null => {
-        const message = props.message;
-        return message?.person_alias_guid && message.sender_listed !== false ? message.person_alias_guid : null;
-    });
-
-    const face = computed((): Face => ({
-        name: displayName.value,
-        photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? props.personPhotoUrl : null)
-    }));
-
-    const at = computed((): Date => {
-        const created = props.message ? new Date(props.message.created_at) : drawnAt;
-        return isNaN(created.getTime()) ? drawnAt : created;
-    });
-
-    const time = computed((): string => timeLabel(at.value));
 
     const gutterTime = computed((): string => gutterTimeLabel(at.value));
 
     /** The head time's tooltip, such as "Today at 9:02 AM". */
     const longTime = computed((): string => `${dayLabel(at.value, new Date())} at ${time.value}`);
-
-    /**
-     * Whom the message names that reaches the reader: "you" by name, else "everyone" by @all, else
-     * nothing. Never the reader's own message, nor one deleted; and never "everyone" for a person
-     * only previewing the room, who is not among them until they join.
-     */
-    const mentionOfReader = computed((): "you" | "everyone" | null => {
-        const me = props.personAliasGuid.toLowerCase();
-        if (props.isOwn || isTomb.value) {
-            return null;
-        }
-
-        const mentions = (serverPieces.value ?? []).filter(piece => piece.type === "mention");
-        if (!!me && mentions.some(piece => typeof piece.person_alias_guid === "string" && piece.person_alias_guid.toLowerCase() === me)) {
-            return "you";
-        }
-
-        return !props.isPreviewing && mentions.some(isRoomMention) ? "everyone" : null;
-    });
-
-    /**
-     * Community's "Mentioned you" or "Mentioned everyone", on a message only. A direct message's
-     * bubbles draw neither it nor the wash: the whole conversation reaches the reader, and the
-     * chip already says who was named. A system line is a quiet note of what happened and a card a
-     * post from the church, neither a message to the reader, so they draw neither either.
-     */
-    const readerMention = computed((): "you" | "everyone" | null => layout.value === "community"
-        && state.value !== "system"
-        && state.value !== "card"
-        ? mentionOfReader.value
-        : null);
 
     const ariaLabel = computed((): string => {
         const who = props.isOwn ? "You" : displayName.value;
@@ -1436,53 +1267,8 @@
         return `${who}, ${time.value}${mentions}`;
     });
 
-    /** One to six emoji and nothing else draws large, from the text the body would draw. */
-    const isJumbo = computed((): boolean => {
-        if (isTomb.value || state.value === "system" || state.value === "card") {
-            return false;
-        }
-
-        const pieces = drawnPieces.value;
-        const text = (pieces && pieces.length > 0
-            ? pieces.map(piece => piece.type === "emoji" && typeof piece.emoji === "string" ? piece.emoji : piece.text).join("")
-            : display.value.text ?? "").trim();
-
-        if (!text || !jumboPattern.test(text)) {
-            return false;
-        }
-
-        const count = text.match(pictograph)?.length ?? 0;
-        return count >= 1 && count <= 6;
-    });
-
-    /**
-     * A root with a reply draws its thread under it, a deleted or hidden root included, since
-     * its replies are still there.
-     */
-    const hasThread = computed((): boolean => {
-        const message = props.message;
-        return !!message && !props.isInThread && !message.parent_id && (message.reply_count ?? 0) > 0
-            && state.value !== "system" && state.value !== "card";
-    });
-
-    /**
-     * A message that can carry chips: a live one, never a system line, a card or a tombstone. Its
-     * reactions part is mounted before the first chip, so the reader's first reaction, added in
-     * place, is seen arriving and pops rather than being drawn as a page draws one.
-     */
-    const isReactable = computed((): boolean => !!props.message && !isTomb.value && state.value !== "system" && state.value !== "card");
-
     /** Chips to draw under the message. */
     const hasReactions = computed((): boolean => isReactable.value && (props.message?.reactions?.length ?? 0) > 0);
-
-    /** A reply also sent to the conversation, which says so above it and opens its thread. */
-    const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
-
-    /** A message that quotes another draws the quote above it, unless it is a tombstone itself. */
-    const isQuoteShown = computed((): boolean => !!props.message?.quoted_message_id && !isTomb.value
-        && state.value !== "system" && state.value !== "card");
-
-    const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 
     /**
      * A system line's icon: in Community's gutter, by the kind Rock gave the line as it posted it,
