@@ -1001,6 +1001,13 @@
             kinds[row.channel_id] = row.room_kind;
         }
 
+        // the open room may be one the list holds no row for, which only its facts place
+        const open = shell.value.state.activeChannelId;
+        const openKind = open && !kinds[open] ? shell.value.roomKindOf(open) : null;
+        if (open && openKind) {
+            kinds[open] = openKind;
+        }
+
         return kinds;
     });
 

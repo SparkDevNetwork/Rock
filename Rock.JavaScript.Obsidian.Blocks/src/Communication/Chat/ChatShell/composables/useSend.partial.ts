@@ -35,7 +35,7 @@ import { onBeforeUnmount, reactive, Ref, watch } from "vue";
 import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, RoomKind, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { failureWords, finalRefusals, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
+import { failureWords, finalRefusals, finalWords, inRoomKind, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings } from "./useSession.partial";
 
@@ -638,8 +638,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
             failures.last = { localId: row.localId, count: (failures.last?.count ?? 0) + 1 };
             // The kind of room is stamped as the row ends, the one moment the refusal is in hand,
             // so the row, the strip and the toast all word it for that kind.
-            const roomKind = dependencies.roomKind?.(row.channelId);
-            const error = roomKind ? { ...result.error, roomKind } : result.error;
+            const error = inRoomKind(result.error, dependencies.roomKind?.(row.channelId));
             const isFinal = isFinalRefusal(error, row.isFirstMessage === true);
             if (isFinal) {
                 row.refusal = error;

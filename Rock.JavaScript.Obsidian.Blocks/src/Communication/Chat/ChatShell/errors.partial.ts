@@ -20,7 +20,7 @@
 // A released client is in use for years while the platform keeps adding codes, so a code from
 // any family is kept, and the sentence the server writes for it travels with it: a code this
 // client was never built to know still reaches the person as something they can read.
-import { ChatError, FailureWords } from "./types.partial";
+import { ChatError, FailureWords, RoomKind } from "./types.partial";
 
 /**
  * An error as the platform's API returns it: our code in message, the reason in details, and the
@@ -105,6 +105,19 @@ export function classifyPlatformError(error: PlatformErrorLike | unknown): ChatE
  */
 export function messageForError(error: ChatError): string {
     return answeredWords(error).alone;
+}
+
+/**
+ * A refusal stamped with the kind of room it met, so it is worded for a person, a group or a
+ * channel. A room of unknown kind leaves the refusal as it was, with the server's words.
+ *
+ * @param error The failure.
+ * @param roomKind The room's kind, where the shell knows it.
+ *
+ * @returns The failure, carrying the kind when there is one.
+ */
+export function inRoomKind(error: ChatError, roomKind: RoomKind | null | undefined): ChatError {
+    return roomKind ? { ...error, roomKind } : error;
 }
 
 /** What asks the person to try a failure again where no Try again stands beside it. */
