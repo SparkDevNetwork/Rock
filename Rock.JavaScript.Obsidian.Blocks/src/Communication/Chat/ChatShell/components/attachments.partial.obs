@@ -54,7 +54,7 @@
                         data-testid="attachment-image"
                         :data-unavailable="linkOf(item)?.isUnavailable ? 'true' : undefined"
                         :aria-label="`Open photo ${item.name}`"
-                        :style="images.length === 1 ? singleStyle : undefined"
+                        :style="images.length === 1 ? { aspectRatio: singleStyle.aspectRatio } : undefined"
                         @click="openViewer(index)">
                     <span v-if="linkOf(item)?.isUnavailable && !imageSource(item)" class="chat-attach-unavailable"><Icon name="eye-off" size="sm" />Unavailable</span>
                     <img v-else-if="imageSource(item)"
@@ -333,6 +333,7 @@
 }
 
 .chat-attach-grid[data-layout="1"] {
+    grid-template-columns: minmax(0, 1fr);
     width: auto;
     max-width: 100%;
 }
@@ -693,7 +694,9 @@ a.chat-attach-file:focus-visible {
 
     /**
      * A single photo's box, sized from its declared size before it loads, within the largest
-     * width and height, so the feed never moves when it arrives.
+     * width and height, so the feed never moves when it arrives. The grid carries the width alone
+     * and its one column follows it, so a narrow screen shrinks the whole box and the tile only
+     * keeps the photo's shape.
      */
     const singleStyle = computed((): Record<string, string> => boxStyle(images.value[0]?.width, images.value[0]?.height));
 
