@@ -56,6 +56,23 @@ namespace Rock.Model
             }
         }
 
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /*
+                10/30/2026 - CLAUDE
+
+                The parent authority walk only reads the metric's saved rules, so it
+                skips the category security that lives in Metric.IsAuthorized. Defer
+                to the metric, the same way the metric blocks do.
+
+                Reason: Metric values must honor their metric's category security.
+            */
+            var metric = Metric ?? new MetricService( new Rock.Data.RockContext() ).Get( MetricId );
+
+            return metric?.IsAuthorized( action, person ) ?? base.IsAuthorized( action, person );
+        }
+
         /// <summary>
         /// Gets the metric value datetime as a javascript time stamp (handy for chart apis)
         /// </summary>
