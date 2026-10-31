@@ -45,7 +45,7 @@
       unit tests can read what ships without a database. A migration that alters the procedure moves
       this link to its own file.
     -->
-    <EmbeddedResource Include="..\Rock.Migrations\Migrations\Version 20.0\202610211200000_AddChatAdministratorToChatSync_spChat_SyncProjection.sql" LogicalName="spChat_SyncProjection.sql" />
+    <EmbeddedResource Include="..\Rock.Migrations\Migrations\Version 20.0\202610301300000_FixChatSyncProjectionBlankNames_spChat_SyncProjection.sql" LogicalName="spChat_SyncProjection.sql" />
   </ItemGroup>
 
 </Project>

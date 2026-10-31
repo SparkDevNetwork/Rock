@@ -306,6 +306,20 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         /// <summary>
+        /// Writes a group type's name past Rock's own validation, for the states a row can only
+        /// reach from outside Rock.
+        /// </summary>
+        /// <param name="groupTypeId">The group type this fixture made.</param>
+        /// <param name="name">The name to write.</param>
+        public void SetGroupTypeNameDirectly( int groupTypeId, string name )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                rockContext.Database.ExecuteSqlCommand( "UPDATE [GroupType] SET [Name] = @p1 WHERE [Id] = @p0", groupTypeId, name );
+            }
+        }
+
+        /// <summary>
         /// Gives a group an icon, as a file of a binary file type made for it.
         /// </summary>
         /// <param name="channelGuid">The group.</param>
