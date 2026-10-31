@@ -268,6 +268,7 @@ function fakeShell(): Record<string, unknown> {
         threads,
         mentions,
         rooms,
+        roomKindOf: (channelId: string) => (rooms as unknown as ReturnType<typeof roomsOf>).state.facts[channelId]?.room_kind ?? null,
         members: fakeMembers(),
         prefs: fakePrefs(),
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them

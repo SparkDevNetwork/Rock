@@ -107,7 +107,7 @@
                         <div class="chat-nd-bubble">{{ pendingText }}</div>
                         <!-- Not sent where Sending… was; what to do about it waits over the composer. -->
                         <div v-if="isPhaseShown" class="chat-nd-meta" :class="{ 'is-failed': pendingPhase === 'failed' }" data-testid="nd-phase">
-                            <template v-if="pendingPhase === 'failed'"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>Not sent</template>
+                            <FailedMarker v-if="pendingPhase === 'failed'" @retry="emit('retry')" @discard="emit('discard')" />
                             <template v-else-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
                             <template v-else-if="pendingPhase === 'waiting'"><Icon name="clock" size="xs" />Still setting it up…</template>
                             <template v-else><Icon name="clock" size="xs" />Sending…</template>
@@ -555,6 +555,7 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
+    import FailedMarker from "./failedMarker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
     import { SendFailure, SendFailureNews, useSlowSend } from "../composables/useSend.partial";
     import { failedWords } from "../errors.partial";

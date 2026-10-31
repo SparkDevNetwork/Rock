@@ -17,13 +17,17 @@
 // Every failure the shell meets becomes a stable code and a severity. The platform puts its own
 // code in the error's message (authz.not_readable and the rest), so that is what is read; a
 // message that is not one of our codes is never shown or branched on.
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import {
     classifyActionFailure,
     classifyPlatformError,
     classifyRealtimeMessage,
     classifyRealtimeStatus,
+    conversationTexts,
     failedWords,
     failureWords,
+    finalRefusals,
     finalWords,
     isOfflineFailure,
     isRefusedForGood,
@@ -406,5 +410,74 @@ describe("failureWords", () => {
             besideRetry: "This conversation can't be renamed right now.",
             canRetry: false
         });
+    });
+});
+
+// The refusals no client offers Try again for, and the sentences a conversation is refused in,
+// are the wire contract's own data: one list the platform publishes and the engine reads too.
+// This client carries them as constants the way it carries the attachment preview words, and
+// these cells hold the constants and the contract together in both directions, so a code added
+// to the contract is a decision here and never a silent difference between the clients.
+describe("the refusals and sentences the wire contract publishes", () => {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    type Contract = {
+        error_codes: { codes: string[] };
+        final_refusals: { codes: string[], passable: string[], room_refusals: string[] };
+        conversation_texts: Record<string, string>;
+    };
+    /* eslint-enable @typescript-eslint/naming-convention */
+
+    const contractPath = resolve(__dirname, "../../../../../Rock/Communication/Chat/Platform/Contract/chat-wire-contract.json");
+    const contract = JSON.parse(readFileSync(contractPath, "utf8")) as Contract;
+
+    test("the constants are the contract's lists, both ways", () => {
+        expect(finalRefusals.codes).toEqual(contract.final_refusals.codes);
+        expect(finalRefusals.passable).toEqual(contract.final_refusals.passable);
+        expect(finalRefusals.roomRefusals).toEqual(contract.final_refusals.room_refusals);
+        expect(conversationTexts).toEqual(contract.conversation_texts);
+    });
+
+    test("every final code is refused for good whatever severity it came with, and no passable one is", () => {
+        for (const code of contract.final_refusals.codes) {
+            expect(isRefusedForGood({ code, severity: "failed" })).toBe(true);
+        }
+        for (const code of contract.final_refusals.passable) {
+            expect(isRefusedForGood({ code, severity: "permission" })).toBe(false);
+        }
+    });
+
+    test("Rock refusing one of the block's own actions with 403 is refused for good, though no platform call answers it", () => {
+        expect(isRefusedForGood(classifyActionFailure(403))).toBe(true);
+        expect(isRefusedForGood(classifyActionFailure(500))).toBe(false);
+    });
+
+    test("a code the lists do not name can be tried again, whatever family it came from", () => {
+        expect(isRefusedForGood({ code: "authz.added_later", severity: "permission" })).toBe(false);
+        expect(isRefusedForGood({ code: "door.added_later", severity: "permission" })).toBe(false);
+        expect(isRefusedForGood({ code: "auth.expired", severity: "session" })).toBe(true);
+    });
+
+    test.each([
+        "authz.not_member",
+        "authz.no_announcement_right",
+        "authz.no_mention_all_right",
+        "authz.not_readable",
+        "rt.read_revoked"
+    ])("%s says conversation for a person and for a group, and the server's channel words for a channel or a room of no known kind", code => {
+        const server = "You can't do that in this channel.";
+        const conversation = contract.conversation_texts[code];
+        const channelWords = code === "rt.read_revoked" ? "You no longer have access to this channel." : server;
+
+        for (const roomKind of ["person", "group"] as const) {
+            expect(messageForError({ code, severity: "permission", text: server, roomKind })).toBe(conversation);
+            expect(failureWords({ code, severity: "permission", text: server, roomKind })).toEqual(finalWords(conversation));
+        }
+        expect(messageForError({ code, severity: "permission", text: server, roomKind: "channel" })).toBe(channelWords);
+        expect(messageForError({ code, severity: "permission", text: server })).toBe(channelWords);
+    });
+
+    test("a code with no conversation sentence keeps the server's words in a conversation", () => {
+        expect(messageForError({ code: "authz.not_author", severity: "permission", text: "Only the author may do that.", roomKind: "person" }))
+            .toBe("Only the author may do that.");
     });
 });

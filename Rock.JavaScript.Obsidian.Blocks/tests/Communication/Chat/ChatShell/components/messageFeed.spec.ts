@@ -1937,3 +1937,23 @@ describe("the action bar", () => {
         expect(barOn(w)).toBeNull();
     });
 });
+
+// A failed send's own Not sent marker reaches the feed's owner as the one message's Try again or
+// Delete, by its key, so one failure among several is mended alone.
+describe("a failed send's own choices", () => {
+    test("Try again and Delete on one failed message ask the owner for that message alone", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a", "failed"), pendingRow("b", "failed"), pendingRow("c", "failed")] });
+        const markers = wrapper.findAll("[data-testid='message-failed-actions']");
+        expect(markers).toHaveLength(3);
+
+        await markers[1].trigger("click");
+        await nextTick();
+        await wrapper.findAll("[role='menuitem']")[0].trigger("click");
+        expect(wrapper.emitted("retry")).toEqual([[["b"]]]);
+
+        await wrapper.findAll("[data-testid='message-failed-actions']")[1].trigger("click");
+        await nextTick();
+        await wrapper.findAll("[role='menuitem']")[1].trigger("click");
+        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+    });
+});

@@ -29,9 +29,9 @@
 // stopped nothing new is called and no answer still on its way reaches the screen.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
-import { messageForError } from "../errors.partial";
+import { inRoomKind, messageForError } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
-import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
+import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
 import { Timelines } from "./useHistory.partial";
@@ -65,6 +65,12 @@ export type ReactionsDependencies = {
 
     /** Shows a toast. */
     notify: (notice: ReactionNotice) => void;
+
+    /**
+     * What kind of room a channel is, where the shell knows, so a refusal is worded for a person,
+     * a group or a channel as a send's is. Without it the server's words stand.
+     */
+    roomKind?: (channelId: string) => RoomKind | null | undefined;
 
     /** The bootstrap's favorites, in order. */
     favorites: ReactionFavorite[];
@@ -645,7 +651,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         }
 
         if (!result.ok) {
-            dependencies.notify({ code: result.error.code, text: messageForError(result.error), icon: "alert" });
+            dependencies.notify({ code: result.error.code, text: messageForError(inRoomKind(result.error, dependencies.roomKind?.(channelId))), icon: "alert" });
 
             // Only the press is taken back, to where the server last left the reader's reaction,
             // so a reaction someone else made meanwhile stays; a press noted meanwhile was never

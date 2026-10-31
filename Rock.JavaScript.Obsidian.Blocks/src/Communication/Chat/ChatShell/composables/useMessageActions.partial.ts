@@ -25,10 +25,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
-import { messageForError } from "../errors.partial";
+import { inRoomKind, messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
-import { ChatError, DisplayPiece, MessageAction, TimelineMessage } from "../types.partial";
+import { ChatError, DisplayPiece, MessageAction, RoomKind, TimelineMessage } from "../types.partial";
 import { Timelines } from "./useHistory.partial";
 import { Threads, ThreadPlace, threadPlaceOf } from "./useThreads.partial";
 
@@ -69,6 +69,12 @@ export type MessageActionsDependencies = {
 
     /** Shows a toast. */
     notify: (notice: ActionNotice) => void;
+
+    /**
+     * What kind of room a channel is, where the shell knows, so a refusal is worded for a person,
+     * a group or a channel as a send's is. Without it the server's words stand.
+     */
+    roomKind?: (channelId: string) => RoomKind | null | undefined;
 
     /** Writes to the clipboard; absent where there is none. */
     writeText?: (text: string) => Promise<void>;
@@ -315,8 +321,8 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
     let editTurn = 0;
 
     /** Toasts a refusal: the server's sentence, or the client's own for its severity. */
-    function notifyRefusal(error: ChatError): void {
-        dependencies.notify({ code: error.code, text: messageForError(error), icon: "alert" });
+    function notifyRefusal(channelId: string, error: ChatError): void {
+        dependencies.notify({ code: error.code, text: messageForError(inRoomKind(error, dependencies.roomKind?.(channelId))), icon: "alert" });
     }
 
     /** Lays an answer over every copy the client holds: the timeline's, and the open thread's. */
@@ -388,7 +394,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             if (!result.ok) {
                 // The editor stays with the text the person typed, so they can fix it or cancel.
                 editing.isSaving = false;
-                editing.error = result.error;
+                editing.error = inRoomKind(result.error, dependencies.roomKind?.(editing.channelId));
                 return false;
             }
 
@@ -433,7 +439,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             }
 
             if (!result.ok) {
-                notifyRefusal(result.error);
+                notifyRefusal(confirming.channelId, result.error);
                 return false;
             }
 
@@ -447,7 +453,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             return true;
         },
 
-        runAction: async (_channelId: string, messageId: number, action: MessageAction): Promise<void> => {
+        runAction: async (channelId: string, messageId: number, action: MessageAction): Promise<void> => {
             if (isStopped || !isActionCall(action.call)) {
                 return;
             }
@@ -458,7 +464,7 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
             }
 
             if (!result.ok) {
-                notifyRefusal(result.error);
+                notifyRefusal(channelId, result.error);
                 return;
             }
 

@@ -1,0 +1,75 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Menu icon="bang"
+          :label="label"
+          :items="items"
+          :anchorAttrs="anchorAttrs"
+          :isSheet="isPhone"
+          @select="onSelect">
+        <template #anchor><span class="chat-fail-btn-words" data-testid="message-state">Not sent</span></template>
+    </Menu>
+    <span v-if="reason" :id="reasonId" class="chat-sr-only">{{ reason }}</span>
+</template>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
+    import { isPhoneKey } from "../ui/viewport.partial";
+
+    // The Not sent marker of a failed message: a red mark and the words, which open that
+    // message's own choices, Try again unless it was refused for good, and Delete. One part draws
+    // it for every place a message can fail, a feed row in either layout, a thread's reply and a
+    // conversation's first message, so a change to its words or look lands once. The reason also sits
+    // in a span beside the button, which the button's aria-describedby names, so a screen reader
+    // hears it when the marker takes focus.
+    const props = defineProps({
+        /** Whether Try again is offered: not for a message the server refused for good, which the same text can only meet again. */
+        canRetry: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        /** Why the send failed, where anything was said: the marker's tooltip and its description for a screen reader. */
+        reason: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "retry"): void;
+        (e: "discard"): void;
+    }>();
+
+    const isPhone = inject(isPhoneKey, ref(false));
+
+    const reasonId = `chat-fail-reason-${newGuid()}`;
+
+    const items = computed((): MenuItem[] => [
+        ...(props.canRetry ? [{ key: "retry", label: "Try again", icon: "refresh" }] : []),
+        { key: "discard", label: "Delete", icon: "trash", isDanger: true }
+    ]);
+
+    /** The marker's name for a screen reader, saying what it offers. */
+    const label = computed((): string => props.canRetry ? "Not sent. Try again or delete" : "Not sent. Delete");
+
+    /**
+     * The button's attributes: the class and test id the styles and tests find it by, the reason as
+     * its one tooltip (so no title doubles it) and as its description, where there is one.
+     */
+    const anchorAttrs = computed((): Record<string, unknown> => ({
+        class: "chat-fail-btn",
+        "data-testid": "message-failed-actions",
+        ...(props.reason ? { tooltip: props.reason, "aria-describedby": reasonId } : {})
+    }));
+
+    function onSelect(key: string): void {
+        if (key === "retry") {
+            emit("retry");
+        }
+        else {
+            emit("discard");
+        }
+    }
+</script>

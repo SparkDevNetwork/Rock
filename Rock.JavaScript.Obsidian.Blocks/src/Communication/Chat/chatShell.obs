@@ -147,7 +147,9 @@
                                  @loadOlder="shell.loadOlder"
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
-                                 @messageAction="onMessageAction($event, null)" />
+                                 @messageAction="onMessageAction($event, null)"
+                                 @retry="onRetry"
+                                 @discard="shell.sender.discard" />
                     <!-- With the first sidebar failed there is nothing to choose; the sidebar says why. -->
                     <div v-else class="chat-shell-empty" data-testid="main-empty" :aria-busy="shell.state.isOpening ? 'true' : undefined">
                         {{ shell.state.isOpening || shell.channels.loadState === "failed" ? "" : "Choose a conversation." }}
@@ -744,6 +746,7 @@
     import { rowPeople } from "./ChatShell/ui/face.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
+    import { isPhoneKey } from "./ChatShell/ui/viewport.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
@@ -891,6 +894,10 @@
         }
     });
 
+    // A message's Not sent marker sits deep in the feed, a thread and a draft, and opens its menu as
+    // a sheet on a phone as the composer's menus do, so it reads the flag from here.
+    provide(isPhoneKey, isPhone);
+
     const { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation } = useJump({
         shell,
         activeChannelId,
@@ -997,6 +1004,13 @@
         const kinds: Record<string, HeaderRoomKind> = {};
         for (const row of shell.value.channels.rows) {
             kinds[row.channel_id] = row.room_kind;
+        }
+
+        // the open room may be one the list holds no row for, which only its facts place
+        const open = shell.value.state.activeChannelId;
+        const openKind = open && !kinds[open] ? shell.value.roomKindOf(open) : null;
+        if (open && openKind) {
+            kinds[open] = openKind;
         }
 
         return kinds;

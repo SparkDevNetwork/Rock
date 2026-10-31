@@ -23,7 +23,7 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey, inRoomKind, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
@@ -55,7 +55,7 @@ import {
     writeRememberedKind
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -259,6 +259,9 @@ export type ChatShell = {
 
     /** Browse channels, each open room's facts, Join, and a previewed room's sidebar row. */
     rooms: Rooms;
+    /** What kind of room a channel is, from its sidebar row or else its facts; null where neither is held. */
+    roomKindOf: (channelId: string) => RoomKind | null;
+
     /** The members panel's roster and its search. */
     members: Members;
 
@@ -693,11 +696,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isOffline: () => state.connection !== null
     });
 
+    /**
+     * What kind of room a channel is, for every place a refusal is worded: the sidebar's row first,
+     * which every room in the list has, then the room's own facts for one opened outside the list.
+     */
+    function roomKindOf(channelId: string): RoomKind | null {
+        return channels.rows.find(row => row.channel_id === channelId)?.room_kind ?? rooms.factsOf(channelId)?.room_kind ?? null;
+    }
+
     const messageActions = createMessageActions({
         call,
         timelines,
         threads,
         personAliasGuid,
+        roomKind: roomKindOf,
         notify: notice => options.notify?.(notice),
         // the clipboard is only there on a secure page; without it copy says it isn't available
         writeText: globalThis.navigator?.clipboard ? text => globalThis.navigator.clipboard.writeText(text) : undefined
@@ -711,6 +723,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         timelines,
         threads,
         personAliasGuid,
+        roomKind: roomKindOf,
         notify: notice => options.notify?.(notice),
         favorites,
         churchKey: tenantId,
@@ -878,6 +891,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         newLocalId,
         isOffline: () => state.connection !== null,
+        roomKind: roomKindOf,
+        onRoomRefused: (channelId, error) => channels.applyPosting(channelId, {
+            can_post: false,
+            can_post_code: error.code,
+            can_post_reason: messageForError(error)
+        }),
         onGifsOff: () => gifs.turnOff(),
         onGifExpired: row => {
             // The text goes back where it was written, with the quote and the also-send choice the
@@ -1331,6 +1350,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reactions,
         mentions,
         rooms,
+        roomKindOf,
         members,
         prefs,
         drafts,
@@ -1451,12 +1471,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     if (error?.code === "rt.read_revoked") {
                         // Only the shell knows which room was open, so it names the room's kind
                         // before closing it.
-                        const roomKind = channels.rows.find(row => row.channel_id === state.activeChannelId)?.room_kind ?? null;
+                        const roomKind = state.activeChannelId ? roomKindOf(state.activeChannelId) : null;
 
                         // Nothing is open any more, so choosing the channel again, once the
                         // person may read it, opens it afresh.
                         closeActive();
-                        report({ ...error, roomKind });
+                        report(inRoomKind(error, roomKind));
                         void loadSidebar().catch(() => undefined);
                         return;
                     }

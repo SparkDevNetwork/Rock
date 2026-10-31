@@ -23,7 +23,7 @@ import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
-import { noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { FakeRequest, limits as attachmentLimits, nextUpload } from "./attachmentFakes";
@@ -2479,6 +2479,29 @@ describe("the live sidebar", () => {
         expect(messageForError(revoked!)).toBe("You no longer have access to this conversation.");
     });
 
+    // A room opened from a link has no sidebar row, so only its own facts know it is a conversation.
+    test("a read revoked from a room the sidebar holds no row for is worded by the room's facts", async () => {
+        const h = build();
+        h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm", room_kind: "group", name: null });
+        const rows = snapshot();
+        rows.channels = rows.channels.filter(row => row.channel_id !== channelA);
+        h.bootstrap.value = rows;
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+
+        const revoked = h.shell.state.errors.find(e => e.code === "rt.read_revoked");
+        expect(messageForError(revoked!)).toBe("You no longer have access to this conversation.");
+    });
+
     test("a read revoked from an open channel keeps the channel's sentence", async () => {
         const h = await startedLive();
 
@@ -3575,5 +3598,99 @@ describe("a send whose GIF expired", () => {
 
         expect(h.shell.messageActions.state.quotes[quoteKey(channelA, 10)]).toEqual(quoted);
         expect(h.shell.drafts.of(quoteKey(channelA, 10))).toMatchObject({ text: "yay", isAlsoSent: true });
+    });
+});
+
+// A refusal is worded for the kind of room it was met in, and one that closes a room closes its
+// composer at once through the row's own posting fields, the ones every sidebar read owns.
+describe("a send refused in a conversation", () => {
+    const refusal = (code: string, hint: string): { status: number, body: unknown } => ({ status: 403, body: { code: "42501", message: code, hint } });
+
+    /** A direct message row, as far as a send and its composer read it. */
+    function dmRow(extra: Record<string, unknown> = {}): SidebarRow {
+        return {
+            channel_id: channelA, name: null, channel_type: "dm", is_public: false, is_member: true, room_kind: "person", title: "Ben Okafor",
+            can_post: true, can_post_code: null, can_post_reason: null, ...extra
+        } as unknown as SidebarRow;
+    }
+
+    async function startedIn(row: SidebarRow): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.bootstrap.value = { channels: [row], reactions: [], me: { unread_mentions: [] } };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        return h;
+    }
+
+    const rowOf = (h: ReturnType<typeof build>): SidebarRow => h.shell.channels.rows.find(r => r.channel_id === channelA) as SidebarRow;
+
+    test("is worded for a conversation by the sidebar row's kind, never channel", async () => {
+        const h = await startedIn(dmRow());
+        h.sendRefusals.value = [refusal("authz.not_member", "You're not a member of this channel.")];
+
+        await h.shell.send("hello");
+        await settle();
+
+        expect(h.shell.sender.pending(channelA)[0].reason?.alone).toBe("You're not in this conversation.");
+    });
+
+    test("is worded for a conversation by the room's facts when the sidebar holds no row for it", async () => {
+        const h = build();
+        h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm", room_kind: "group", name: null });
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        h.sendRefusals.value = [refusal("authz.no_mention_all_right", "You can't mention everyone in this channel.")];
+
+        await h.shell.send("hello <@all>");
+        await settle();
+
+        expect(h.shell.sender.pending(channelA)[0].reason?.alone).toBe("You can't mention everyone in this conversation.");
+    });
+
+    test("the other person being unavailable closes the composer at once, in the row's own posting fields", async () => {
+        const h = await startedIn(dmRow());
+        h.sendRefusals.value = [refusal("authz.dm_unavailable", "This person can't be messaged.")];
+
+        await h.shell.send("hello");
+        await settle();
+
+        expect(rowOf(h)).toMatchObject({ can_post: false, can_post_code: "authz.dm_unavailable", can_post_reason: "This person can't be messaged." });
+        expect(lockedReason(rowOf(h))).toBe("This person can't be messaged.");
+        expect(h.shell.sender.pending(channelA)[0]).toMatchObject({ status: "failed", refusal: { code: "authz.dm_unavailable" } });
+    });
+
+    test("a later sidebar read that says the person may post opens the composer again", async () => {
+        const h = await startedIn(dmRow());
+        h.sendRefusals.value = [refusal("authz.dm_unavailable", "This person can't be messaged.")];
+        await h.shell.send("hello");
+        await settle();
+        expect(lockedReason(rowOf(h))).not.toBeNull();
+
+        h.bootstrap.value = { channels: [dmRow()], reactions: [], me: { unread_mentions: [] } };
+        personal(h, "membership.changed", { channel_id: channelA });
+        await settle();
+
+        expect(rowOf(h)).toMatchObject({ can_post: true, can_post_code: null });
+        expect(lockedReason(rowOf(h))).toBeNull();
+    });
+
+    test("not being a member does not close the composer: a room opened just before Rock's add lands may pass", async () => {
+        const h = await startedIn(dmRow());
+        h.sendRefusals.value = [refusal("authz.not_member", "You're not a member of this channel.")];
+
+        await h.shell.send("hello");
+        await settle();
+
+        expect(rowOf(h).can_post).toBe(true);
+        expect(lockedReason(rowOf(h))).toBeNull();
     });
 });

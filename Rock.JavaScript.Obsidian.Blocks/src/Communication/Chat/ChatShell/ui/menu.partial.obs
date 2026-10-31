@@ -7,7 +7,9 @@
                 aria-haspopup="menu"
                 :aria-expanded="isOpen ? 'true' : 'false'"
                 :isTooltipDisabled="isOpen"
-                @click="onAnchorClick" />
+                @click="onAnchorClick">
+        <slot name="anchor"></slot>
+    </IconButton>
 
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving">
@@ -250,7 +252,7 @@
     // #endregion Types
 
     const props = defineProps({
-        /** The icon on the button that opens the menu. */
+        /** The icon on the button that opens the menu; the anchor slot adds words beside it, as a failed send's Not sent marker does. */
         icon: {
             type: String as PropType<string>,
             required: true

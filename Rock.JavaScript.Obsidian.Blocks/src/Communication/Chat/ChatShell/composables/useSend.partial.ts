@@ -32,10 +32,10 @@
 // nothing more is sent, a wait to send again sends nothing, and no answer still on its way
 // reaches the screen.
 import { onBeforeUnmount, reactive, Ref, watch } from "vue";
-import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, SidebarRow, TimelineMessage } from "../types.partial";
+import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGifItem, MessageBlock, PendingMessage, RoomKind, SidebarRow, TimelineMessage } from "../types.partial";
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { failureWords, finalWords, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
+import { failureWords, finalRefusals, finalWords, inRoomKind, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
 import { sendKey, Timelines } from "./useHistory.partial";
 import { ChatSettings } from "./useSession.partial";
 
@@ -374,6 +374,19 @@ export type SenderDependencies = {
     /** The person sending, as the platform knows them. */
     personAliasGuid: string;
 
+    /**
+     * What kind of room a channel is, where the shell knows, so a refusal is worded for a person,
+     * a group or a channel. Without it, or for a room it does not know, the server's words stand.
+     */
+    roomKind?: (channelId: string) => RoomKind | null | undefined;
+
+    /**
+     * A send was refused by something about the room itself, one of the contract's room refusals,
+     * which closes the room to posting. The shell writes it into the room's posting fields, the
+     * ones the sidebar read owns, so the composer locks at once and the next read replaces it.
+     */
+    onRoomRefused?: (channelId: string, error: ChatError) => void;
+
     /** Whether the live connection is lost, which decides whether a send that reached nothing says the person is offline. */
     isOffline?: () => boolean;
 
@@ -623,13 +636,19 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
             failures.last = { localId: row.localId, count: (failures.last?.count ?? 0) + 1 };
-            const isFinal = isFinalRefusal(result.error, row.isFirstMessage === true);
+            // The kind of room is stamped as the row ends, the one moment the refusal is in hand,
+            // so the row, the strip and the toast all word it for that kind.
+            const error = inRoomKind(result.error, dependencies.roomKind?.(row.channelId));
+            const isFinal = isFinalRefusal(error, row.isFirstMessage === true);
             if (isFinal) {
-                row.refusal = result.error;
+                row.refusal = error;
             }
-            const reason = failureReason(result.error, isFinal, dependencies.isOffline?.());
+            const reason = failureReason(error, isFinal, dependencies.isOffline?.());
             if (reason) {
                 row.reason = reason;
+            }
+            if (finalRefusals.roomRefusals.includes(error.code)) {
+                dependencies.onRoomRefused?.(row.channelId, error);
             }
             return false;
         }

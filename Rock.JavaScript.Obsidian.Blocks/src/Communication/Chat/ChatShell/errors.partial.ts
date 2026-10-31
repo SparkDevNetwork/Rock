@@ -20,7 +20,7 @@
 // A released client is in use for years while the platform keeps adding codes, so a code from
 // any family is kept, and the sentence the server writes for it travels with it: a code this
 // client was never built to know still reaches the person as something they can read.
-import { ChatError, FailureWords } from "./types.partial";
+import { ChatError, FailureWords, RoomKind } from "./types.partial";
 
 /**
  * An error as the platform's API returns it: our code in message, the reason in details, and the
@@ -107,6 +107,19 @@ export function messageForError(error: ChatError): string {
     return answeredWords(error).alone;
 }
 
+/**
+ * A refusal stamped with the kind of room it met, so it is worded for a person, a group or a
+ * channel. A room of unknown kind leaves the refusal as it was, with the server's words.
+ *
+ * @param error The failure.
+ * @param roomKind The room's kind, where the shell knows it.
+ *
+ * @returns The failure, carrying the kind when there is one.
+ */
+export function inRoomKind(error: ChatError, roomKind: RoomKind | null | undefined): ChatError {
+    return roomKind ? { ...error, roomKind } : error;
+}
+
 /** What asks the person to try a failure again where no Try again stands beside it. */
 const tryAgainLater = "Try again in a moment.";
 
@@ -126,51 +139,79 @@ export const maintenanceSentence = "Chat is down for maintenance. Try again late
 export const offlineWords: FailureWords = { alone: offlineSentence, besideRetry: "You're offline.", canRetry: true };
 
 /**
- * The refusals another ask can only meet again, whatever severity they came with: the ask itself
- * is wrong, or what it names is gone or will not change. Rock's door words its own refusals, and
- * a place may hand one over with any severity, so the code decides.
+ * What the wire contract publishes about refusals, carried as a constant the way the attachment
+ * preview words are: a spec holds it to the contract's own copy in both directions, so the lists
+ * are one fact the platform states and every client reads, never a hand list of this client's.
+ * codes are the refusals another ask of the same can only meet again, whatever severity they came
+ * with: the ask itself is wrong, what it names is gone or will not change, or a right is missing.
+ * passable are the authz refusals another ask can pass, as a send into a room the person may join
+ * once the join lands. roomRefusals are the ones that close a room to posting until its posting
+ * fields say otherwise. A code in none of them, including one added after this release, can be
+ * tried again.
  */
-const refusedForGoodCodes = new Set([
-    "rpc.bad_request",
-    "rpc.bad_body",
-    "rpc.bad_message_type",
-    "rpc.bad_parent",
-    "rpc.bad_quote",
-    "rpc.bad_blocks",
-    "rpc.bad_reaction",
-    "rpc.channel_not_found",
-    "rpc.message_not_found",
-    "rpc.message_deleted",
-    "rpc.message_hidden",
-    "rpc.not_editable",
-    "rpc.person_not_found",
-    // a file's type, size or count, or the uploads a send names, refused as they are
-    "rpc.attachment_type",
-    "rpc.attachment_size",
-    "rpc.attachment_count",
-    "rpc.bad_attachments",
-    // a GIF whose signed token the send cannot take, or a church that has GIFs off
-    "rpc.bad_gif",
-    "rpc.gifs_off",
-    // the same key was first sent with other text, so the same ask is refused every time
-    "rpc.idempotency_mismatch",
-    "door.bad_request",
-    "door.forbidden",
-    "door.not_allowed",
-    "door.not_found",
-    "door.not_member",
-    "door.self",
-    "door.target_not_eligible"
-]);
+export const finalRefusals = {
+    codes: [
+        "authz.wrong_scope",
+        "authz.wrong_tenant",
+        "authz.dm_unavailable",
+        "authz.no_announcement_right",
+        "authz.no_mention_all_right",
+        "authz.no_roster_right",
+        "authz.not_author",
+        "authz.not_eligible",
+        "authz.not_live_person",
+        "authz.not_member",
+        "authz.not_readable",
+        "authz.sender_not_allowed",
+        "rpc.bad_request",
+        "rpc.bad_body",
+        "rpc.bad_message_type",
+        "rpc.bad_parent",
+        "rpc.bad_quote",
+        "rpc.bad_blocks",
+        "rpc.bad_reaction",
+        "rpc.channel_not_found",
+        "rpc.message_not_found",
+        "rpc.message_deleted",
+        "rpc.message_hidden",
+        "rpc.not_editable",
+        "rpc.person_not_found",
+        "rpc.attachment_type",
+        "rpc.attachment_size",
+        "rpc.attachment_count",
+        "rpc.bad_attachments",
+        "rpc.bad_gif",
+        "rpc.gifs_off",
+        "rpc.idempotency_mismatch",
+        "door.bad_request",
+        "door.not_allowed",
+        "door.not_found",
+        "door.not_member",
+        "door.self",
+        "door.target_not_eligible"
+    ],
+    passable: ["authz.join_required"],
+    roomRefusals: ["authz.dm_unavailable"]
+};
 
 /**
- * The refusals of a right that another ask can still pass: a send into a room the person may join
- * passes once the join lands, and Rock's door that could not be asked may answer next time.
+ * The refusal this client makes for itself, which no platform call answers and the contract does
+ * not list: Rock refusing one of the block's own actions with 403. The same ask is refused again.
  */
-const passableRefusalCodes = new Set([
-    "authz.join_required",
-    "door.unavailable"
-]);
+const finalRefusalCodes = new Set([...finalRefusals.codes, "door.forbidden"]);
+
+/**
+ * The sentences a direct message or a group is refused in, from the wire contract: the server's
+ * say channel because it does not know the kind of room at every place it refuses, and a
+ * conversation is never called a channel. Held to the contract's copy by the same spec.
+ */
+export const conversationTexts: Record<string, string> = {
+    "authz.no_announcement_right": "You can't post announcements in this conversation.",
+    "authz.no_mention_all_right": "You can't mention everyone in this conversation.",
+    "authz.not_member": "You're not in this conversation.",
+    "authz.not_readable": "You don't have access to this conversation.",
+    "rt.read_revoked": "You no longer have access to this conversation."
+};
 
 /**
  * The client's own words beside a Try again for the failures another try can pass. The server's
@@ -185,24 +226,16 @@ const besideRetryWords: Record<string, string> = {
 };
 
 /**
- * Whether no later ask of the same can pass: the refusals that only repeat, a refusal for want of
- * a right, and an ended session, which needs the page refreshed. The one rule every place asks
- * before it offers Try again, and the one a send asks before it ends its message.
+ * Whether no later ask of the same can pass: the contract's final refusals, and an ended session,
+ * which needs the page refreshed. The one rule every place asks before it offers Try again, and
+ * the one a send asks before it ends its message.
  *
  * @param error The classified failure.
  *
  * @returns True when asking again can only be refused again.
  */
 export function isRefusedForGood(error: ChatError): boolean {
-    if (refusedForGoodCodes.has(error.code)) {
-        return true;
-    }
-
-    if (passableRefusalCodes.has(error.code)) {
-        return false;
-    }
-
-    return error.severity === "permission" || error.severity === "session";
+    return finalRefusalCodes.has(error.code) || error.severity === "session";
 }
 
 /**
@@ -228,12 +261,16 @@ function isServiceClosed(error: ChatError): boolean {
  * @returns The words.
  */
 function answeredWords(error: ChatError): FailureWords {
+    // A direct message or group conversation is never called a channel; a room of unknown kind
+    // keeps the channel's wording, which is what most rooms are.
+    const isConversation = error.roomKind === "person" || error.roomKind === "group";
+    const conversationSentence = isConversation ? conversationTexts[error.code] : undefined;
+    if (conversationSentence) {
+        return finalWords(conversationSentence);
+    }
+
     if (error.code === "rt.read_revoked") {
-        // A direct message or group conversation is never called a channel; a room of unknown
-        // kind keeps the channel's wording, which is what most rooms are.
-        return finalWords(error.roomKind === "person" || error.roomKind === "group"
-            ? "You no longer have access to this conversation."
-            : "You no longer have access to this channel.");
+        return finalWords("You no longer have access to this channel.");
     }
 
     if (error.severity === "session") {
