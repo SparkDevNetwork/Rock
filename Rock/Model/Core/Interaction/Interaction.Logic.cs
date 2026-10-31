@@ -174,5 +174,11 @@ namespace Rock.Model
             this.CampaignValueId = utmValueId;
             this.Campaign = utmValueText.Truncate( 50 );
         }
+
+        /// <summary>
+        /// Gets the parent authority. Interactions inherit their component's security, which inherits the channel's.
+        /// </summary>
+        [System.ComponentModel.DataAnnotations.Schema.NotMapped]
+        public override Rock.Security.ISecured ParentAuthority => Rock.Web.Cache.InteractionComponentCache.Get( InteractionComponentId ) ?? base.ParentAuthority;
     }
 }
