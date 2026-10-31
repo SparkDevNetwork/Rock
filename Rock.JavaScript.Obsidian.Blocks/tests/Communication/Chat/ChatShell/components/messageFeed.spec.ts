@@ -1337,6 +1337,160 @@ describe("the feed giving height to the composer", () => {
     });
 });
 
+// A conversation opens at its newest message and a reader there stays there. Whether the reader is
+// at the newest message is theirs to change by scrolling, not something to measure again whenever
+// the feed happens to change, so rows that grow (a photo, a font, a reaction) and a page that
+// replaces the held one at the same count keep a reader at the newest message and leave a reader
+// scrolled up alone.
+describe("a feed holding its reader at the newest message", () => {
+    const channel = "c0000001-0000-4000-8000-000000000000";
+    let observers: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+    let previous: typeof ResizeObserver;
+
+    beforeEach(() => {
+        observers = [];
+        previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                observers.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+    });
+
+    afterEach(() => {
+        window.ResizeObserver = previous;
+    });
+
+    /** The scroller's sizes as a browser lays them out, changeable as content settles; a scroll is clamped to them. */
+    function layOut(wrapper: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
+        Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+        Object.defineProperty(scroller, "scrollTop", {
+            configurable: true,
+            get: () => sizes.scrollTop,
+            set: (value: number) => sizes.scrollTop = Math.min(value, sizes.scrollHeight - sizes.clientHeight)
+        });
+    }
+
+    /** Scrolls the reader to a place, as their own scrolling does. */
+    function scrollReader(wrapper: VueWrapper, top: number): void {
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        scroller.scrollTop = top;
+        scroller.dispatchEvent(new Event("scroll"));
+    }
+
+    /** Tells every size observer its target changed, as the browser does after layout. */
+    async function resize(): Promise<void> {
+        for (const observer of observers) {
+            observer.callback([], observer as unknown as ResizeObserver);
+        }
+        await nextTick();
+    }
+
+    function page(ids: number[], hasMore: boolean) {
+        return {
+            messages: [...ids].sort((a, b) => b - a).map(id => message(id, anna, at(14, id % 60))),
+            read_cursor: null,
+            unread_count: 0,
+            first_unread_id: null,
+            has_more: hasMore
+        };
+    }
+
+    test("a held conversation whose newest page replaces it at the same count opens at the newest message, its new rows watched", async () => {
+        let answer = page([1, 2, 3], true);
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        await timelines.loadNewest(channel);
+        timelines.leave(channel);
+
+        const wrapper = draw({ timeline: timelines.state(channel) });
+        const sizes = { scrollHeight: 600, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 600);
+        expect(sizes.scrollTop).toBe(100);
+
+        // the room was busy, so the newest page replaces the held one, and its rows are taller
+        answer = page([20, 21, 22], true);
+        await timelines.loadNewest(channel);
+        sizes.scrollHeight = 900;
+        await nextTick();
+        await nextTick();
+
+        const rows = wrapper.findAll("[data-message-id]");
+        expect(rows.map(row => row.attributes("data-message-id"))).toEqual(["20", "21", "22"]);
+        expect(rows.every(row => row.attributes("data-observed") === "true")).toBe(true);
+        expect(sizes.scrollTop).toBe(400);
+    });
+
+    test("a row that grows after the feed is drawn keeps a reader at the newest message", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) });
+        const sizes = { scrollHeight: 600, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 600);
+        expect(sizes.scrollTop).toBe(100);
+
+        // no new message and the feed's own box unchanged: an image decoding, a font swapping in
+        sizes.scrollHeight = 760;
+        await resize();
+
+        expect(sizes.scrollTop).toBe(260);
+        // the content, not only the box, is what is watched
+        const watched = observers.flatMap(observer => observer.targets);
+        expect(watched.some(target => (target as HTMLElement).dataset.testid === "feed-content")).toBe(true);
+    });
+
+    test("a reader at the newest message whose last row grew still follows the next message, and Jump stays hidden", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]);
+        const wrapper = draw({ timeline: state });
+        const sizes = { scrollHeight: 600, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 600);
+
+        // the last row grows well past the near-the-bottom margin with no scroll, then someone sends
+        sizes.scrollHeight = 760;
+        state.messages.push(message(3, anna, at(14, 2)));
+        await nextTick();
+        sizes.scrollHeight = 820;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(320);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("a reader scrolled up stays where they are when content grows and when the timeline is replaced", async () => {
+        let answer = page([1, 2, 3], true);
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        await timelines.loadNewest(channel);
+
+        const wrapper = draw({ timeline: timelines.state(channel) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 700);
+
+        sizes.scrollHeight = 2300;
+        await resize();
+        expect(sizes.scrollTop).toBe(700);
+
+        answer = page([20, 21, 22], true);
+        await timelines.loadNewest(channel);
+        await nextTick();
+        await nextTick();
+        expect(sizes.scrollTop).toBe(700);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+    });
+});
+
 describe("a block post's buttons", () => {
     test("a press reaches the feed's owner as the message's server action", async () => {
         const card = message(7, anna, at(14, 50), {
