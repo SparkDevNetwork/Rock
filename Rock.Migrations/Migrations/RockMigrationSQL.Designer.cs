@@ -2291,6 +2291,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure calling a name blank by what survives the sync writer..
+        /// </summary>
+        public static string _202610301300000_FixChatSyncProjectionBlankNames_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202610301300000_FixChatSyncProjectionBlankNames_spChat_SyncProjection", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {
