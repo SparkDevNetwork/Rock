@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+using System;
+using System.Threading.Tasks;
+
 using Rock.Bus;
 using Rock.Configuration;
 using Rock.Data;
@@ -34,17 +37,50 @@ namespace Rock.Tasks
         /// <param name="message"></param>
         public override void Execute( Message message )
         {
-            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            /*
+                10/30/2026 - MSE
+
+                This consumer is synchronous and RunNow waits for the job to complete, so running the job inline
+                here holds a start task queue consumer for the whole job and stalls the other tasks waiting on
+                that queue. Offload the work to the thread pool so this consumer returns right away. The offloaded
+                work uses its own RockContext and reloads the job because the consumer's context must not be
+                shared across threads. It awaits RunNowAsync directly instead of the blocking RunNow wrapper so
+                it does not hold an extra thread pool thread for the whole job. All exceptions are caught and
+                logged so the task can never fault unobserved.
+
+                Reason: Prevent a long running Run Now job from blocking all other bus started tasks.
+            */
+            var jobId = message.JobId;
+
+            Task.Run( async () => await RunJobAsync( jobId ) );
+        }
+
+        /// <summary>
+        /// Loads the job using a new <see cref="RockContext"/> and runs it, completing when the job finishes.
+        /// Any exception is logged so it is never left unobserved.
+        /// </summary>
+        /// <param name="jobId">The job identifier.</param>
+        private static async Task RunJobAsync( int jobId )
+        {
+            try
             {
-                var jobService = new ServiceJobService( rockContext );
-                var job = jobService.Get( message.JobId );
-
-                if ( job == null )
+                // The context stays alive until the job finishes so lazy loading works for the job entity.
+                using ( var rockContext = RockApp.Current.CreateRockContext() )
                 {
-                    return;
-                }
+                    var jobService = new ServiceJobService( rockContext );
+                    var job = jobService.Get( jobId );
 
-                jobService.RunNow( job );
+                    if ( job == null )
+                    {
+                        return;
+                    }
+
+                    await ServiceJobService.RunNowAsync( job );
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
             }
         }
 
