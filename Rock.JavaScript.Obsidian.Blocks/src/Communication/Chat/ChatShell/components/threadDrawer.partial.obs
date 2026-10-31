@@ -123,7 +123,9 @@
                                 :reactionHost="reactionHost"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @jump="emit('jump', $event)"
-                                @messageAction="emit('messageAction', $event)" />
+                                @messageAction="emit('messageAction', $event)"
+                                @retry="emit('retry', $event)"
+                                @discard="emit('discard', $event)" />
                 </div>
             </template>
 

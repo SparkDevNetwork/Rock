@@ -94,7 +94,12 @@
                     <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
                     <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                     <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
-                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed" :title="failedReason ?? undefined"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span><span class="chat-cm-state-words" data-testid="message-state">Not sent</span><span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span></span>
+                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed" :title="failedReason ?? undefined">
+                        <Menu icon="bang" :label="failedLabel" :items="failedItems" :anchorAttrs="failedAnchor" @select="onFailedSelect">
+                            <template #anchor><span class="chat-cm-state-words chat-fail-btn-words" data-testid="message-state">Not sent</span></template>
+                        </Menu>
+                        <span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span>
+                    </span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
                     <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
                 </div>
@@ -169,8 +174,9 @@
             <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
             <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" :title="state === 'failed' ? failedReason ?? undefined : undefined" data-testid="message-meta">
                 <template v-if="state === 'failed'">
-                    <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
-                    <span data-testid="message-state">Not sent</span>
+                    <Menu icon="bang" :label="failedLabel" :items="failedItems" :anchorAttrs="failedAnchor" @select="onFailedSelect">
+                        <template #anchor><span class="chat-fail-btn-words" data-testid="message-state">Not sent</span></template>
+                    </Menu>
                     <span v-if="failedReason" class="chat-sr-only">. {{ failedReason }}</span>
                 </template>
                 <template v-else-if="isSendingShown">
@@ -995,6 +1001,7 @@
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../composables/useHistory.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
@@ -1158,7 +1165,11 @@
     const emit = defineEmits<{
         (e: "openThread", place: ThreadPlace): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void
+        (e: "messageAction", request: MessageActionRequest): void,
+        /** Try this one failed send again, by its key, as the strip's Try again asks for every one. */
+        (e: "retry", localIds: string[]): void,
+        /** Drop this one failed send, by its key. */
+        (e: "discard", localId: string): void
     }>();
 
     // #region Values
@@ -1247,6 +1258,34 @@
      * screen reader and a pointer resting on it.
      */
     const failedReason = computed((): string | null => props.pending?.status === "failed" ? props.pending.reason?.alone ?? null : null);
+
+    /**
+     * What this failed send's marker offers: Try again unless the send was refused for good, which
+     * the same text under the same key can only meet again, and Delete.
+     */
+    const failedItems = computed((): MenuItem[] => [
+        ...(props.pending?.refusal ? [] : [{ key: "retry", label: "Try again", icon: "refresh" }]),
+        { key: "discard", label: "Delete", icon: "trash", isDanger: true }
+    ]);
+
+    /** The marker's name for a screen reader and its tooltip, saying what it offers. */
+    const failedLabel = computed((): string => props.pending?.refusal ? "Not sent. Delete" : "Not sent. Try again or delete");
+
+    /** The marker is a button the shell's tests and styles find by its own name. */
+    const failedAnchor = { class: "chat-fail-btn", "data-testid": "message-failed-actions" };
+
+    function onFailedSelect(key: string): void {
+        if (!props.pending) {
+            return;
+        }
+
+        if (key === "retry") {
+            emit("retry", [props.pending.localId]);
+        }
+        else {
+            emit("discard", props.pending.localId);
+        }
+    }
 
     const state = computed((): RowState => {
         if (props.pending) {

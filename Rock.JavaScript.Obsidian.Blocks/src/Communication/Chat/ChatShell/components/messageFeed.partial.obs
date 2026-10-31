@@ -116,7 +116,9 @@
                                     :data-message-id="row.message?.id"
                                     @openThread="emit('openThread', $event)"
                                     @jump="emit('jump', $event)"
-                                    @messageAction="emit('messageAction', $event)" />
+                                    @messageAction="emit('messageAction', $event)"
+                                    @retry="emit('retry', $event)"
+                                    @discard="emit('discard', $event)" />
                     </div>
                 </template>
             </section>
@@ -794,7 +796,11 @@
         (e: "markRead", messageId: number): void,
         (e: "openThread", place: ThreadPlace): void,
         (e: "jump", quotedMessageId: number): void,
-        (e: "messageAction", request: MessageActionRequest): void
+        (e: "messageAction", request: MessageActionRequest): void,
+        /** Try one failed send again, by its key, from its own Not sent marker. */
+        (e: "retry", localIds: string[]): void,
+        /** Drop one failed send, by its key, from its own Not sent marker. */
+        (e: "discard", localId: string): void
     }>();
 
     // #region Values

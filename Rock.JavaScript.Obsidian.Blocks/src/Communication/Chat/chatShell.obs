@@ -147,7 +147,9 @@
                                  @loadOlder="shell.loadOlder"
                                  @openThread="onOpenThread"
                                  @jump="onJump($event, false)"
-                                 @messageAction="onMessageAction($event, null)" />
+                                 @messageAction="onMessageAction($event, null)"
+                                 @retry="onRetry"
+                                 @discard="shell.sender.discard" />
                     <!-- With the first sidebar failed there is nothing to choose; the sidebar says why. -->
                     <div v-else class="chat-shell-empty" data-testid="main-empty" :aria-busy="shell.state.isOpening ? 'true' : undefined">
                         {{ shell.state.isOpening || shell.channels.loadState === "failed" ? "" : "Choose a conversation." }}

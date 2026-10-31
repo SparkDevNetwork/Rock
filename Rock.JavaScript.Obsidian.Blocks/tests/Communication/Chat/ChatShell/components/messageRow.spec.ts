@@ -236,7 +236,7 @@ describe("the states, in Conversational", () => {
         expect(root(wrapper).getAttribute("data-state")).toBe("failed");
         expect(root(wrapper).getAttribute("data-status")).toBe("failed");
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
-        expect(meta.find(".chat-fail-mark").exists()).toBe(true);
+        expect(meta.find(".chat-fail-btn").exists()).toBe(true);
         expect(meta.findAll("button")).toHaveLength(1);
         expect(wrapper.find("[aria-live]").exists()).toBe(false);
     });
@@ -435,7 +435,7 @@ describe("Community, in a channel", () => {
 
         expect(root(wrapper).getAttribute("data-state")).toBe("failed");
         expect(state.classes()).toContain("is-failed");
-        expect(state.find(".chat-fail-mark").exists()).toBe(true);
+        expect(state.find(".chat-fail-btn").exists()).toBe(true);
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Not sent");
         expect(wrapper.find("[data-testid='message-meta']").exists()).toBe(false);
         expect(wrapper.findAll(".chat-cm-main button")).toHaveLength(1);

@@ -638,7 +638,7 @@ describe("the first message", () => {
 
         const pending = w.get("[data-testid='nd-pending']");
         expect(pending.get("[data-testid='nd-phase']").text()).toBe("Not sent");
-        expect(pending.find(".chat-fail-mark").exists()).toBe(true);
+        expect(pending.find(".chat-fail-btn").exists()).toBe(true);
         expect(pending.findAll("button")).toHaveLength(1);
 
         const strip = w.get("[data-testid='composer-failed']");

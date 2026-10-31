@@ -898,6 +898,44 @@
 }
 
 /*
+    The Not sent marker as the button that opens a failed message's choices: the same red mark and
+    the words beside it, on the line of the text around it, with no button look of its own. The
+    button is the menu's icon button, so its icon is drawn as the mark.
+*/
+button.chat-icon-btn.chat-fail-btn {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    width: auto;
+    height: auto;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border-radius: var(--chat-r-item, 6px);
+    --chat-ic-size: calc(var(--chat-fail-mark-s, 14px) * 5 / 7);
+    --chat-ic-stroke: 3;
+}
+
+button.chat-icon-btn.chat-fail-btn:hover,
+button.chat-icon-btn.chat-fail-btn[aria-expanded="true"] {
+    color: inherit;
+    background: transparent;
+}
+
+button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
+    text-decoration: underline;
+}
+
+.chat-fail-btn > .chat-ic {
+    box-sizing: content-box;
+    padding: calc((var(--chat-fail-mark-s, 14px) - var(--chat-ic-size)) / 2);
+    color: var(--chat-on-danger);
+    background: var(--chat-danger);
+    border-radius: 50%;
+}
+
+/*
     A mention chip, shared by a message's body, the editor and the lists. A flex box as tall as its
     name's line, which gives it the name's baseline, so the name sits on the text's baseline. Its
     lead, a person's face or the room's group mark, is centred in the pill by the box rather than

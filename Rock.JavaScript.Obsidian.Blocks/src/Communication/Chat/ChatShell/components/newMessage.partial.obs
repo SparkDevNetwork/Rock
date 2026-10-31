@@ -107,7 +107,14 @@
                         <div class="chat-nd-bubble">{{ pendingText }}</div>
                         <!-- Not sent where Sending… was; what to do about it waits over the composer. -->
                         <div v-if="isPhaseShown" class="chat-nd-meta" :class="{ 'is-failed': pendingPhase === 'failed' }" data-testid="nd-phase">
-                            <template v-if="pendingPhase === 'failed'"><span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>Not sent</template>
+                            <Menu v-if="pendingPhase === 'failed'"
+                                  icon="bang"
+                                  label="Not sent. Try again or delete"
+                                  :items="failedItems"
+                                  :anchorAttrs="{ class: 'chat-fail-btn', 'data-testid': 'message-failed-actions' }"
+                                  @select="onFailedSelect">
+                                <template #anchor><span class="chat-fail-btn-words">Not sent</span></template>
+                            </Menu>
                             <template v-else-if="pendingPhase === 'asking'"><span class="chat-spinner"></span>Starting your conversation…</template>
                             <template v-else-if="pendingPhase === 'waiting'"><Icon name="clock" size="xs" />Still setting it up…</template>
                             <template v-else><Icon name="clock" size="xs" />Sending…</template>
@@ -564,6 +571,7 @@
     import GroupFace from "../ui/groupFace.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
 
     const props = defineProps({
@@ -732,6 +740,16 @@
 
     /** The first message's one key to its strip, which has no row of the sender's. */
     const draftKey = "first-message";
+
+    /** What the first message's Not sent marker offers, as the strip over its composer does. */
+    const failedItems: MenuItem[] = [
+        { key: "retry", label: "Try again", icon: "refresh" },
+        { key: "discard", label: "Delete", icon: "trash", isDanger: true }
+    ];
+
+    function onFailedSelect(key: string): void {
+        emit(key === "retry" ? "retry" : "discard");
+    }
 
     /** The first message failed with nothing more said: one message, which can be tried again. */
     const draftFailure: SendFailure = { count: 1, reason: null, canRetry: true, localIds: [draftKey] };
