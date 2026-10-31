@@ -24,86 +24,7 @@
         </template>
 
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
-        <template v-else-if="layout === 'community'">
-            <!-- A block post: a card from its sender, or from the church when nobody sent it. -->
-            <template v-if="state === 'card'">
-                <div class="chat-cm-gutter">
-                    <span class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
-                </div>
-                <div class="chat-cm-main">
-                    <div class="chat-cm-head" data-testid="message-head">
-                        <span class="chat-cm-name" data-testid="sender-name">{{ displayName }}</span>
-                        <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
-                        <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
-                    </div>
-                    <BlockCard :text="text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
-                </div>
-            </template>
-            <template v-else>
-                <button v-if="isThreadReply"
-                        type="button"
-                        class="chat-thread-label"
-                        data-testid="thread-reply-label"
-                        @click="onOpenOwnThread">
-                    <Icon name="thread" size="xs" />Replied to a thread
-                </button>
-                <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
-                <div class="chat-cm-gutter">
-                    <template v-if="isHead">
-                        <button v-if="authorGuid"
-                                type="button"
-                                class="chat-cm-av chat-person-opener"
-                                data-testid="sender-avatar"
-                                :aria-label="displayName"
-                                @click="onAuthor"><Avatar :people="[face]" :size="communityFaceSize" /></button>
-                        <span v-else class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
-                    </template>
-                    <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
-                </div>
-                <div class="chat-cm-main">
-                    <div v-if="isHead" class="chat-cm-head" data-testid="message-head">
-                        <component :is="authorGuid ? 'button' : 'span'"
-                                   :type="authorGuid ? 'button' : undefined"
-                                   class="chat-cm-name"
-                                   :class="{ 'chat-person-opener': !!authorGuid }"
-                                   data-testid="sender-name"
-                                   @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
-                        <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
-                        <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
-                        <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
-                        <span v-if="readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
-                    </div>
-                    <MessageEditor v-if="isEditorShown && message"
-                                   :message="message"
-                                   :error="editError"
-                                   :isSaving="isEditSaving"
-                                   isCommunity
-                                   v-on="editorHandlers" />
-                    <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
-                        <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                        <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
-                        <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
-                        <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
-                        <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
-                        <span v-else-if="state === 'failed'" class="chat-cm-state is-failed">
-                            <FailedMarker :canRetry="canRetryFailed" :reason="failedReason" @retry="onRetryFailed" @discard="onDiscardFailed" />
-                        </span>
-                        <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
-                        <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
-                    </div>
-                    <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isPending="!!pending" />
-                    <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
-                    <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
-                    <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
-                        <template v-if="hasThread" #default>
-                            <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
-                        </template>
-                    </MessageReactions>
-                </div>
-                <!-- The column's bar docks here, on the row's top right, placed against the row itself. -->
-                <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
-            </template>
-        </template>
+        <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isFlashing="isFlashing" />
@@ -189,10 +110,6 @@
     animation: chat-cm-flash var(--chat-d-flash) var(--chat-ease-state);
 }
 
-.is-crossfading {
-    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-state);
-}
-
 /* Conversational. */
 .chat-msg.is-conversational {
     align-items: flex-start;
@@ -200,120 +117,6 @@
 
 .chat-msg.is-conversational.is-own {
     align-items: flex-end;
-}
-
-/*
-    An author's name or face that opens their card keeps its look: the button gives up its own face,
-    and the name underlines on hover as a link would.
-*/
-.chat-person-opener {
-    padding: 0;
-    font: inherit;
-    color: inherit;
-    text-align: inherit;
-    cursor: pointer;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-xs);
-}
-
-.chat-cm-name.chat-person-opener {
-    font-size: 14.5px;
-    font-weight: 700;
-}
-
-.chat-cm-name.chat-person-opener:hover {
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
-/* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the row. */
-.chat-tools-dock {
-    display: contents;
-}
-
-.is-sending .chat-cm-text {
-    opacity: .62;
-}
-
-.is-unknown .chat-cm-text {
-    color: var(--chat-muted);
-}
-
-/* "(edited)" slides in only for an edit that lands while it is on screen. */
-.is-swapping {
-    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
-}
-
-/* An inline label takes no transform, so a channel's "(edited)" is a box while it slides. */
-.chat-cm-edited.is-swapping {
-    display: inline-block;
-}
-
-.chat-notice {
-    padding: 1px 12px 0;
-    font-size: 12px;
-    color: var(--chat-muted);
-}
-
-/*
-    The row under a bubble tucks 4px up into the bubble's bottom padding, which grows to make room,
-    so it overlaps the bubble's edge and never its text. Another person's row starts 10px in from
-    the bubble, past the face column and its gap; the reader's own mirrors it from the right.
-*/
-.chat-reacts {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    align-items: center;
-    max-width: 100%;
-    margin-top: -4px;
-    padding: 0 0 0 52px;
-}
-
-/* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 4px below it. */
-.chat-msg.is-community .chat-reacts {
-    flex-direction: row;
-    margin-top: 4px;
-    padding: 0;
-}
-
-.chat-msg.is-community .chat-reacts :deep(.chat-tsum-dot) {
-    right: -1px;
-    left: auto;
-}
-
-/* "Replied to a thread", in the quote label's recipe, over the bubble's side or the text column. */
-.chat-thread-label {
-    --chat-ic-size: 12px;
-    display: inline-flex;
-    gap: 4px;
-    align-items: center;
-    padding: 0 12px 3px;
-    font-size: 11.5px;
-    font-weight: 500;
-    line-height: 16px;
-    color: var(--chat-muted);
-    background: none;
-    border: 0;
-    transition: color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-thread-label :deep(.chat-ic) {
-    color: var(--chat-icon);
-}
-
-.chat-thread-label:hover {
-    color: var(--chat-text-2);
-}
-
-/* In Community it takes the text column's first line, so the face and the head stay together under it. */
-.is-community .chat-thread-label {
-    grid-column: 2;
-    justify-self: start;
-    padding: 0 0 3px;
 }
 
 /*
@@ -408,175 +211,6 @@
     margin-right: calc(-1 * var(--chat-cm-inset));
 }
 
-.chat-cm-gutter {
-    display: flex;
-    justify-content: center;
-    min-width: 0;
-}
-
-/* The face sits 2px down, so its middle meets the name's line rather than the row's top. */
-.chat-cm-av {
-    padding-top: 2px;
-    line-height: 0;
-}
-
-/* One line as tall as the text's, so the time sits on the text it belongs to. */
-.chat-cm-gutter-time {
-    width: 100%;
-    font-size: 10.5px;
-    font-variant-numeric: tabular-nums;
-    line-height: 22px;
-    color: var(--chat-muted);
-    text-align: center;
-    white-space: nowrap;
-    opacity: 0;
-}
-
-.chat-msg:hover .chat-cm-gutter-time,
-.chat-msg:focus-within .chat-cm-gutter-time {
-    opacity: 1;
-}
-
-.chat-cm-main {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-width: 0;
-}
-
-/* The head line is 22px whatever sits in it, so a pill beside the name never moves the text. */
-.chat-cm-head {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    column-gap: 8px;
-    max-width: 100%;
-    min-height: 22px;
-    line-height: 22px;
-}
-
-.chat-cm-head .chat-pill {
-    align-self: center;
-}
-
-.chat-cm-name {
-    max-width: 100%;
-    overflow: hidden;
-    font-size: 14.5px;
-    font-weight: 700;
-    color: var(--chat-text);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-.chat-cm-time {
-    font-size: 12px;
-    font-variant-numeric: tabular-nums;
-    color: var(--chat-muted);
-    white-space: nowrap;
-}
-
-/*
-    "Mentioned you" or "Mentioned everyone", the wash's words, so the signal is never color alone.
-    Hidden from a screen reader, which hears ", mentions you" or ", mentions everyone" in the row's
-    label instead of twice.
-*/
-.chat-cm-mention {
-    display: inline-flex;
-    gap: 3px;
-    align-items: center;
-    align-self: center;
-    font-size: 11.5px;
-    font-weight: 600;
-    line-height: 1;
-    color: var(--chat-warning-ink);
-    white-space: nowrap;
-}
-
-.chat-cm-mention.is-inline {
-    margin-left: 8px;
-    vertical-align: 1px;
-}
-
-.chat-cm-text {
-    max-width: 100%;
-    font-size: 14.5px;
-    line-height: 1.5;
-    color: var(--chat-text);
-    overflow-wrap: anywhere;
-    transition: opacity var(--chat-t-base) var(--chat-ease-state);
-}
-
-/* The body runs inline, so (edited), Sending… and Sent ride at its end and never move the rows below. */
-.chat-cm-text :deep(.chat-message-body),
-.chat-cm-text :deep(.chat-body-text) {
-    display: inline;
-}
-
-.chat-cm-text.is-jumbo {
-    font-size: 32px;
-    line-height: 1.25;
-}
-
-.chat-cm-text.is-tomb {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 13.5px;
-    font-style: italic;
-    color: var(--chat-muted);
-}
-
-.chat-cm-edited,
-.chat-cm-state {
-    margin-left: 6px;
-    font-size: 12px;
-    line-height: 1;
-    color: var(--chat-muted);
-    white-space: nowrap;
-}
-
-/*
-    Sending…, Sent and Not sent ride the text's line by the mention chip's rule: a flex box whose
-    words alone set its baseline, so they sit on the text's baseline, and whose mark is centred on
-    the words by the box. Lifted a set pixel instead, the state sat off the line in other fonts.
-*/
-.chat-cm-state {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    margin-left: 8px;
-}
-
-.chat-cm-state-words {
-    align-self: baseline;
-}
-
-.chat-cm-state.is-failed {
-    gap: 4px;
-    font-weight: 700;
-    color: var(--chat-danger-ink);
-}
-
-.chat-cm-text.is-jumbo .chat-cm-edited,
-.chat-cm-text.is-jumbo .chat-cm-state {
-    vertical-align: middle;
-}
-
-.chat-cm-state.is-sent {
-    color: var(--chat-success);
-    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
-}
-
-.is-community .chat-meta {
-    min-height: 0;
-    padding: 2px 0 0;
-}
-
-.is-community .chat-notice {
-    padding: 1px 0 0;
-}
-
 /* A system line. */
 .chat-msg.is-system {
     flex-direction: row;
@@ -634,33 +268,21 @@
         background-color: var(--chat-flash);
     }
 }
-
-/* A message's files under its text, a little apart from it. */
-.chat-msg-files {
-    margin-top: 4px;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, proxyRefs, ref, toRef, watch } from "vue";
     import ActionSheet from "./actionSheet.partial.obs";
-    import Attachments from "./attachments.partial.obs";
-    import BlockCard from "./blockCard.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
-    import MessageEditor from "./messageEditor.partial.obs";
-    import MessageQuote from "./messageQuote.partial.obs";
-    import MessageReactions from "./messageReactions.partial.obs";
-    import ThreadSummary from "./threadSummary.partial.obs";
-    import Avatar from "../ui/avatar.partial.obs";
-    import Icon from "../ui/icon.partial.obs";
-    import FailedMarker from "./failedMarker.partial.obs";
     import MessageRowBubble from "./messageRowBubble.partial.obs";
+    import MessageRowCommunity from "./messageRowCommunity.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
     import { MessageRowHandlers, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { dayLabel, FeedLayout, gutterTimeLabel, RowPosition } from "../feedLayout.partial";
+    import { FeedLayout, RowPosition } from "../feedLayout.partial";
     import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -868,10 +490,7 @@
 
     /** What the message shows, worked out once and lent to the look it draws in. */
     const facts = useMessageRowView(props);
-    const {
-        state, text, pieces, files, isTomb, tombIcon, isEdited, isAnnouncement, isJumbo, hasThread, isHead, displayName,
-        authorGuid, face, at, time, readerMention, isReactable, isThreadReply, isQuoteShown, isSendingShown, failedReason, canRetryFailed
-    } = facts;
+    const { state, text, pieces, isAnnouncement, isJumbo, hasThread, isHead, displayName, authorGuid, time, readerMention, isReactable } = facts;
 
     /** The look the conversation's kind picks, which the row draws in. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
@@ -887,25 +506,6 @@
             emit("discard", props.pending.localId);
         }
     }
-
-    /**
-     * The Leader pill beside the name: a fact about the sender in this channel now, so only a
-     * channel's rows draw it. Those are always Community rows, so the bubbles never need it. A
-     * sender who is not listed is drawn with no name, and a role would say who they are. The
-     * reader's own row reads the reader's own fact, as its name and face do: a send not stored yet
-     * has no copy to read, so reading the copy would pop the pill in when the stored copy lands.
-     */
-    const isLeaderShown = computed((): boolean => props.isChannel && (props.isOwn
-        ? props.isPersonLeader
-        : props.message?.sender_is_leader === true && props.message.sender_listed !== false));
-
-    /** Community's face fills its gutter, which is narrower on a phone. */
-    const communityFaceSize = computed((): number => props.isPhone ? 32 : 36);
-
-    const gutterTime = computed((): string => gutterTimeLabel(at.value));
-
-    /** The head time's tooltip, such as "Today at 9:02 AM". */
-    const longTime = computed((): string => `${dayLabel(at.value, new Date())} at ${time.value}`);
 
     const ariaLabel = computed((): string => {
         const who = props.isOwn ? "You" : displayName.value;

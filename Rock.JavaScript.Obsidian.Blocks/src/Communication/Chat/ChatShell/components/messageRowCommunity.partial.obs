@@ -1,0 +1,425 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <template v-if="view.state === 'card'">
+        <div class="chat-cm-gutter">
+            <span class="chat-cm-av"><Avatar :people="[view.face]" :size="faceSize" /></span>
+        </div>
+        <div class="chat-cm-main">
+            <div class="chat-cm-head" data-testid="message-head">
+                <span class="chat-cm-name" data-testid="sender-name">{{ view.displayName }}</span>
+                <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
+                <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ view.time }}</span>
+            </div>
+            <BlockCard :text="view.text" :blocks="view.message?.blocks ?? null" :personAliasGuid="view.personAliasGuid" :runAction="on.runBlockAction" />
+        </div>
+    </template>
+    <template v-else>
+        <button v-if="view.isThreadReply"
+                type="button"
+                class="chat-thread-label"
+                data-testid="thread-reply-label"
+                @click="on.openThread">
+            <Icon name="thread" size="xs" />Replied to a thread
+        </button>
+        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" isCommunity @jump="on.jump" />
+        <div class="chat-cm-gutter">
+            <template v-if="view.isHead">
+                <button v-if="view.authorGuid"
+                        type="button"
+                        class="chat-cm-av chat-person-opener"
+                        data-testid="sender-avatar"
+                        :aria-label="view.displayName"
+                        @click="on.author"><Avatar :people="[view.face]" :size="faceSize" /></button>
+                <span v-else class="chat-cm-av"><Avatar :people="[view.face]" :size="faceSize" /></span>
+            </template>
+            <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
+        </div>
+        <div class="chat-cm-main">
+            <div v-if="view.isHead" class="chat-cm-head" data-testid="message-head">
+                <component :is="view.authorGuid ? 'button' : 'span'"
+                           :type="view.authorGuid ? 'button' : undefined"
+                           class="chat-cm-name"
+                           :class="{ 'chat-person-opener': !!view.authorGuid }"
+                           data-testid="sender-name"
+                           @click="view.authorGuid && on.author($event)">{{ view.displayName }}</component>
+                <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
+                <span v-if="view.isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ view.time }}</span>
+                <span v-if="view.readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ view.readerMention }}</span>
+            </div>
+            <MessageEditor v-if="view.isEditorShown && view.message"
+                           :message="view.message"
+                           :error="view.editError"
+                           :isSaving="view.isEditSaving"
+                           isCommunity
+                           v-on="on.editor" />
+            <div v-else class="chat-cm-text" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading }">
+                <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
+                <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" :isPersonOpenable="!!view.message" @person="on.person" />
+                <span v-if="view.isEdited" class="chat-cm-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">(edited)</span>
+                <span v-if="view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                <span v-else-if="view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
+                <span v-else-if="view.state === 'failed'" class="chat-cm-state is-failed">
+                    <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
+                </span>
+                <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
+                <span v-if="view.readerMention && !view.isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ view.readerMention }}</span>
+            </div>
+            <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :items="view.files" :isPending="view.isPending" />
+            <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
+            <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
+            <MessageReactions v-if="view.message && (view.hasThread || view.isReactable)" v-bind="view.reactionsProps" isCommunity v-on="on.reactions">
+                <template v-if="view.hasThread" #default>
+                    <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" @open="on.openThread" />
+                </template>
+            </MessageReactions>
+        </div>
+        <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
+    </template>
+</template>
+
+<style scoped>
+/*
+    A channel's row: flat, a head with the name over each group, the rest in the gutter's time.
+    The row's own sheet lays out its grid, its wash and its focus; this one draws what sits in it.
+*/
+.is-crossfading {
+    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-state);
+}
+
+/*
+    An author's name or face that opens their card keeps its look: the button gives up its own face,
+    and the name underlines on hover as a link would.
+*/
+.chat-person-opener {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-xs);
+}
+
+.chat-cm-name.chat-person-opener {
+    font-size: 14.5px;
+    font-weight: 700;
+}
+
+.chat-cm-name.chat-person-opener:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+/*
+    Where the column's one bar is drawn while it is on this message, on the row's top right; no
+    box, so the bar is placed against the row itself.
+*/
+.chat-tools-dock {
+    display: contents;
+}
+
+.is-sending .chat-cm-text {
+    opacity: .62;
+}
+
+.is-unknown .chat-cm-text {
+    color: var(--chat-muted);
+}
+
+/* "(edited)" slides in only for an edit that lands while it is on screen. */
+.is-swapping {
+    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* An inline label takes no transform, so a channel's "(edited)" is a box while it slides. */
+.chat-cm-edited.is-swapping {
+    display: inline-block;
+}
+
+.is-community .chat-notice {
+    padding: 1px 0 0;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+/* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 4px below it. */
+.chat-msg.is-community .chat-reacts {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    max-width: 100%;
+    margin-top: 4px;
+    padding: 0;
+}
+
+.chat-msg.is-community .chat-reacts :deep(.chat-tsum-dot) {
+    right: -1px;
+    left: auto;
+}
+
+/*
+    "Replied to a thread", in the quote label's recipe. It takes the text column's first line, so
+    the face and the head stay together under it.
+*/
+.is-community .chat-thread-label {
+    --chat-ic-size: 12px;
+    display: inline-flex;
+    grid-column: 2;
+    justify-self: start;
+    gap: 4px;
+    align-items: center;
+    padding: 0 0 3px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-thread-label :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+/* Weighs the same as the label's own rule, so it comes after it. */
+.chat-thread-label:hover {
+    color: var(--chat-text-2);
+}
+
+.chat-cm-gutter {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+}
+
+/* The face sits 2px down, so its middle meets the name's line rather than the row's top. */
+.chat-cm-av {
+    padding-top: 2px;
+    line-height: 0;
+}
+
+/* One line as tall as the text's, so the time sits on the text it belongs to. */
+.chat-cm-gutter-time {
+    width: 100%;
+    font-size: 10.5px;
+    font-variant-numeric: tabular-nums;
+    line-height: 22px;
+    color: var(--chat-muted);
+    text-align: center;
+    white-space: nowrap;
+    opacity: 0;
+}
+
+.chat-msg:hover .chat-cm-gutter-time,
+.chat-msg:focus-within .chat-cm-gutter-time {
+    opacity: 1;
+}
+
+.chat-cm-main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+}
+
+/* The head line is 22px whatever sits in it, so a pill beside the name never moves the text. */
+.chat-cm-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 8px;
+    max-width: 100%;
+    min-height: 22px;
+    line-height: 22px;
+}
+
+.chat-cm-head .chat-pill {
+    align-self: center;
+}
+
+.chat-cm-name {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--chat-text);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-cm-time {
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+/*
+    "Mentioned you" or "Mentioned everyone", the wash's words, so the signal is never color alone.
+    Hidden from a screen reader, which hears ", mentions you" or ", mentions everyone" in the row's
+    label instead of twice.
+*/
+.chat-cm-mention {
+    display: inline-flex;
+    gap: 3px;
+    align-items: center;
+    align-self: center;
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--chat-warning-ink);
+    white-space: nowrap;
+}
+
+.chat-cm-mention.is-inline {
+    margin-left: 8px;
+    vertical-align: 1px;
+}
+
+.chat-cm-text {
+    max-width: 100%;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--chat-text);
+    overflow-wrap: anywhere;
+    transition: opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* The body runs inline, so (edited), Sending… and Sent ride at its end and never move the rows below. */
+.chat-cm-text :deep(.chat-message-body),
+.chat-cm-text :deep(.chat-body-text) {
+    display: inline;
+}
+
+.chat-cm-text.is-jumbo {
+    font-size: 32px;
+    line-height: 1.25;
+}
+
+.chat-cm-text.is-tomb {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--chat-muted);
+}
+
+.chat-cm-edited,
+.chat-cm-state {
+    margin-left: 6px;
+    font-size: 12px;
+    line-height: 1;
+    color: var(--chat-muted);
+    white-space: nowrap;
+}
+
+/*
+    Sending…, Sent and Not sent ride the text's line by the mention chip's rule: a flex box whose
+    words alone set its baseline, so they sit on the text's baseline, and whose mark is centred on
+    the words by the box. Lifted a set pixel instead, the state sat off the line in other fonts.
+*/
+.chat-cm-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    margin-left: 8px;
+}
+
+.chat-cm-state-words {
+    align-self: baseline;
+}
+
+.chat-cm-state.is-failed {
+    gap: 4px;
+    font-weight: 700;
+    color: var(--chat-danger-ink);
+}
+
+.chat-cm-text.is-jumbo .chat-cm-edited,
+.chat-cm-text.is-jumbo .chat-cm-state {
+    vertical-align: middle;
+}
+
+.chat-cm-state.is-sent {
+    color: var(--chat-success);
+    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* A message's files under its text, a little apart from it. */
+.chat-msg-files {
+    margin-top: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Attachments from "./attachments.partial.obs";
+    import BlockCard from "./blockCard.partial.obs";
+    import MessageBody from "./messageBody.partial.obs";
+    import MessageEditor from "./messageEditor.partial.obs";
+    import MessageQuote from "./messageQuote.partial.obs";
+    import MessageReactions from "./messageReactions.partial.obs";
+    import ThreadSummary from "./threadSummary.partial.obs";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import FailedMarker from "./failedMarker.partial.obs";
+    import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";
+    import { dayLabel, gutterTimeLabel } from "../feedLayout.partial";
+
+    const props = defineProps({
+        /** What the message shows and what can be done to it, as the row worked them out. */
+        view: {
+            type: Object as PropType<MessageRowView>,
+            required: true
+        },
+
+        /** The row's handlers, each request wired once by the row. */
+        on: {
+            type: Object as PropType<MessageRowHandlers>,
+            required: true
+        },
+
+        /** Whether the chat is in its one-pane phone layout, where the gutter and faces are smaller. */
+        isPhone: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the reader leads this channel, for the Leader pill on their own messages. */
+        isPersonLeader: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    /** The face fills the gutter, which is narrower on a phone. */
+    const faceSize = computed((): number => props.isPhone ? 32 : 36);
+
+    const gutterTime = computed((): string => gutterTimeLabel(props.view.at));
+
+    /** The head time's tooltip, such as "Today at 9:02 AM". */
+    const longTime = computed((): string => `${dayLabel(props.view.at, new Date())} at ${props.view.time}`);
+
+    /**
+     * The Leader pill beside the name: a fact about the sender in this channel now, which only a
+     * channel's rows, this look's, draw. A sender who is not listed is drawn with no name, and a
+     * role would say who they are. The reader's own row reads the reader's own fact, as its name
+     * and face do: a send not stored yet has no copy to read, so reading the copy would pop the
+     * pill in when the stored copy lands.
+     */
+    const isLeaderShown = computed((): boolean => props.view.isOwn
+        ? props.isPersonLeader
+        : props.view.message?.sender_is_leader === true && props.view.message.sender_listed !== false);
+
+    // #endregion Computed Values
+</script>
