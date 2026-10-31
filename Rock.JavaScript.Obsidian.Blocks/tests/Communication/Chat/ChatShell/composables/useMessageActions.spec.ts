@@ -60,6 +60,7 @@
 import { canEditMessage, createMessageActions } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
+import { messageForError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 // #region Fixtures
@@ -126,7 +127,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * The actions over real timelines holding the given messages in the open channel, a call path
  * answering each call with the next answer, a deferred one when the test resolves it by hand.
  */
-async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { writeText?: (text: string) => Promise<void>, threads?: unknown } = {}): Promise<{
+async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { writeText?: (text: string) => Promise<void>, threads?: unknown, roomKind?: (channelId: string) => "channel" | "person" | "group" | null } = {}): Promise<{
     actions: ReturnType<typeof createMessageActions>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -558,5 +559,48 @@ describe("a reply in the open thread", () => {
     test("the person's own reply shown only in its thread may be edited", () => {
         expect(canEditMessage(reply(42), me)).toBe(true);
         expect(canEditMessage(message(43, { parent_id: root }), me)).toBe(false);
+    });
+});
+
+describe("a refusal worded for the room's kind", () => {
+    const notMember = refused("authz.not_member", "You're not a member of this channel.");
+    const conversation = "You're not in this conversation.";
+    const kindOf = (channelId: string): "group" | null => channelId === channel ? "group" : null;
+
+    test("a delete refused in a group conversation says conversation, not channel", async () => {
+        const target = own(42);
+        const { actions, notices } = await setup([target], [notMember], { roomKind: kindOf });
+
+        actions.askDelete(channel, target);
+        await actions.confirmDelete();
+
+        expect(noticeTexts(notices)).toEqual([conversation]);
+    });
+
+    test("an edit refused in a group conversation keeps the editor's error in the conversation's words", async () => {
+        const { actions } = await setup([own(42)], [notMember], { roomKind: kindOf });
+
+        actions.startEdit(channel, 42);
+        await actions.saveEdit("changed");
+
+        expect(messageForError(actions.state.editing!.error!)).toBe(conversation);
+    });
+
+    test("an action refused in a group conversation says conversation", async () => {
+        const { actions, notices } = await setup([message(42)], [notMember], { roomKind: kindOf });
+
+        await actions.runAction(channel, 42, { id: "approve", label: "Approve", call: "chat_action_approve" });
+
+        expect(noticeTexts(notices)).toEqual([conversation]);
+    });
+
+    test("a room of no known kind keeps the server's sentence", async () => {
+        const target = own(42);
+        const { actions, notices } = await setup([target], [notMember]);
+
+        actions.askDelete(channel, target);
+        await actions.confirmDelete();
+
+        expect(noticeTexts(notices)).toEqual(["You're not a member of this channel."]);
     });
 });

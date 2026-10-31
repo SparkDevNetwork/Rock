@@ -168,7 +168,7 @@ function memoryStorage(initial: Record<string, string> = {}): FakeStorage {
  * The reactions over real timelines holding the given messages in the open channel, a call path
  * answering each call with the next answer, a deferred one when the test resolves it by hand.
  */
-async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { threads?: unknown, storage?: unknown } = {}): Promise<{
+async function setup(messages: TimelineMessage[], answers: Array<CallResult | Deferred<CallResult>> = [], options: { threads?: unknown, storage?: unknown, roomKind?: (channelId: string) => "channel" | "person" | "group" | null } = {}): Promise<{
     reactions: ReturnType<typeof createReactions>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -194,7 +194,8 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
         favorites,
         churchKey: church,
         storage: "storage" in options ? options.storage : memoryStorage(),
-        ...("threads" in options ? { threads: options.threads } : {})
+        ...("threads" in options ? { threads: options.threads } : {}),
+        ...("roomKind" in options ? { roomKind: options.roomKind } : {})
     } as unknown as Parameters<typeof createReactions>[0]);
 
     return { reactions, timelines, calls, notices };
@@ -1105,5 +1106,23 @@ describe("after stop", () => {
 
         expect(calls).toEqual([]);
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
+    });
+});
+
+describe("a refusal worded for the room's kind", () => {
+    test("a reaction refused in a group conversation says conversation, not channel", async () => {
+        const { reactions, notices } = await setup([message(42, [rx("heart", 4)])], [refused("authz.not_member", "You're not a member of this channel.")], { roomKind: () => "group" });
+
+        await reactions.toggle(channel, 42, glyph("joy"));
+
+        expect(noticeTexts(notices)).toEqual(["You're not in this conversation."]);
+    });
+
+    test("a room of no known kind keeps the server's sentence", async () => {
+        const { reactions, notices } = await setup([message(42, [rx("heart", 4)])], [refused("authz.not_member", "You're not a member of this channel.")]);
+
+        await reactions.toggle(channel, 42, glyph("joy"));
+
+        expect(noticeTexts(notices)).toEqual(["You're not a member of this channel."]);
     });
 });

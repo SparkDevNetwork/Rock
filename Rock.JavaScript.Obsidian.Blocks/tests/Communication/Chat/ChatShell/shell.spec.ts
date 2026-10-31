@@ -2479,6 +2479,29 @@ describe("the live sidebar", () => {
         expect(messageForError(revoked!)).toBe("You no longer have access to this conversation.");
     });
 
+    // A room opened from a link has no sidebar row, so only its own facts know it is a conversation.
+    test("a read revoked from a room the sidebar holds no row for is worded by the room's facts", async () => {
+        const h = build();
+        h.channelFacts[channelA] = memberFacts(channelA, { channel_type: "dm", room_kind: "group", name: null });
+        const rows = snapshot();
+        rows.channels = rows.channels.filter(row => row.channel_id !== channelA);
+        h.bootstrap.value = rows;
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+
+        const revoked = h.shell.state.errors.find(e => e.code === "rt.read_revoked");
+        expect(messageForError(revoked!)).toBe("You no longer have access to this conversation.");
+    });
+
     test("a read revoked from an open channel keeps the channel's sentence", async () => {
         const h = await startedLive();
 
