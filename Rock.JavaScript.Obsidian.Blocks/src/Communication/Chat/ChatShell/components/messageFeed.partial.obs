@@ -41,85 +41,92 @@
              @pointermove="actionBar.onPointerMove"
              @focusin="actionBar.onFocusIn"
              @focusout="actionBar.onFocusOut">
-            <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
-                Show older messages
-            </button>
-
-            <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
-            <ChannelIntro v-if="isIntroShown && facts"
-                          :facts="facts"
-                          :campuses="campuses"
-                          :notifyMode="notifyMode"
-                          :isEmpty="timeline.messages.length === 0 && pending.length === 0"
-                          :isJoinRefused="isJoinRefused"
-                          :isPhone="isPhone" />
-
             <!--
-                The room above the messages, so a short conversation sits at the bottom by the composer
-                as a longer one does, while the intro keeps the top; it shrinks to nothing once the
-                messages fill the feed, so scrolling is untouched.
+                Everything the feed draws stands in one box, so the feed can watch its content grow: a
+                photo, a font or a reaction settling in rows already drawn changes no scroll and no
+                message count, and a reader at the newest message is kept there through it.
             -->
-            <div class="chat-feed-fill" data-testid="feed-fill" aria-hidden="true"></div>
+            <div ref="content" class="chat-feed-content" data-testid="feed-content">
+                <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
+                    Show older messages
+                </button>
 
-            <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
-                <div class="chat-day-pill" :class="{ 'is-carried': section.key === carried?.key }" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
+                <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
+                <ChannelIntro v-if="isIntroShown && facts"
+                              :facts="facts"
+                              :campuses="campuses"
+                              :notifyMode="notifyMode"
+                              :isEmpty="timeline.messages.length === 0 && pending.length === 0"
+                              :isJoinRefused="isJoinRefused"
+                              :isPhone="isPhone" />
 
-                <template v-for="item in section.items" :key="item.key">
-                    <div v-if="item.kind === 'divider'"
-                         :ref="setDivider"
-                         class="chat-new-divider"
-                         :class="{ 'is-read': isMarkedRead }"
-                         role="separator"
-                         data-testid="unread-divider">
-                        <span>New</span>
-                    </div>
+                <!--
+                    The room above the messages, so a short conversation sits at the bottom by the composer
+                    as a longer one does, while the intro keeps the top; it shrinks to nothing once the
+                    messages fill the feed, so scrolling is untouched.
+                -->
+                <div class="chat-feed-fill" data-testid="feed-fill" aria-hidden="true"></div>
 
-                    <MessageRow v-else-if="item.kind !== 'group'"
-                                :message="item.message"
-                                :personAliasGuid="personAliasGuid"
-                                :personName="personName"
-                                :personPhotoUrl="personPhotoUrl"
-                                :organizationName="organizationName"
-                                :isChannel="isChannel"
-                                :isPhone="isPhone"
-                                :isArriving="isRowArriving(item.key, item.message)"
-                                :isFlashing="item.message.id === flashingId"
-                                :reactionHost="reactionHost"
-                                :data-message-id="item.message.id"
-                                @messageAction="emit('messageAction', $event)" />
+                <section v-for="section in sections" :key="section.key" class="chat-day" data-testid="day-section">
+                    <div class="chat-day-pill" :class="{ 'is-carried': section.key === carried?.key }" role="separator" data-testid="day-pill"><span>{{ section.label }}</span></div>
 
-                    <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
-                        <MessageRow v-for="row in item.rows"
-                                    :key="row.key"
-                                    :message="row.message"
-                                    :pending="row.pending"
-                                    :isOwn="item.isOwn"
+                    <template v-for="item in section.items" :key="item.key">
+                        <div v-if="item.kind === 'divider'"
+                             :ref="setDivider"
+                             class="chat-new-divider"
+                             :class="{ 'is-read': isMarkedRead }"
+                             role="separator"
+                             data-testid="unread-divider">
+                            <span>New</span>
+                        </div>
+
+                        <MessageRow v-else-if="item.kind !== 'group'"
+                                    :message="item.message"
                                     :personAliasGuid="personAliasGuid"
                                     :personName="personName"
                                     :personPhotoUrl="personPhotoUrl"
-                                    :isPersonLeader="isPersonLeader"
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
-                                    :position="row.position"
                                     :isPhone="isPhone"
-                                    :isDirectMessage="isDirectMessage"
-                                    :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
-                                    :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
-                                    :isArriving="isRowArriving(row.key, row.message)"
-                                    :isFlashing="!!row.message && row.message.id === flashingId"
-                                    :senderNames="senderNames"
-                                    :isPreviewing="isPreviewing"
-                                    :isEditing="!!row.message && row.message.id === editingId"
-                                    :editError="editError"
-                                    :isEditSaving="isEditSaving"
+                                    :isArriving="isRowArriving(item.key, item.message)"
+                                    :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
-                                    :data-message-id="row.message?.id"
-                                    @openThread="emit('openThread', $event)"
-                                    @jump="emit('jump', $event)"
+                                    :data-message-id="item.message.id"
                                     @messageAction="emit('messageAction', $event)" />
-                    </div>
-                </template>
-            </section>
+
+                        <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
+                            <MessageRow v-for="row in item.rows"
+                                        :key="row.key"
+                                        :message="row.message"
+                                        :pending="row.pending"
+                                        :isOwn="item.isOwn"
+                                        :personAliasGuid="personAliasGuid"
+                                        :personName="personName"
+                                        :personPhotoUrl="personPhotoUrl"
+                                        :isPersonLeader="isPersonLeader"
+                                        :organizationName="organizationName"
+                                        :isChannel="isChannel"
+                                        :position="row.position"
+                                        :isPhone="isPhone"
+                                        :isDirectMessage="isDirectMessage"
+                                        :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
+                                        :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
+                                        :isArriving="isRowArriving(row.key, row.message)"
+                                        :isFlashing="!!row.message && row.message.id === flashingId"
+                                        :senderNames="senderNames"
+                                        :isPreviewing="isPreviewing"
+                                        :isEditing="!!row.message && row.message.id === editingId"
+                                        :editError="editError"
+                                        :isEditSaving="isEditSaving"
+                                        :reactionHost="reactionHost"
+                                        :data-message-id="row.message?.id"
+                                        @openThread="emit('openThread', $event)"
+                                        @jump="emit('jump', $event)"
+                                        @messageAction="emit('messageAction', $event)" />
+                        </div>
+                    </template>
+                </section>
+            </div>
         </div>
 
         <!--
@@ -228,6 +235,13 @@
 .chat-feed-skeleton {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
+}
+
+/* The one box around what the feed draws, which takes the feed's spare height so a short conversation still sits at the bottom. */
+.chat-feed-content {
+    display: flex;
+    flex: 1 0 auto;
+    flex-direction: column;
 }
 
 .chat-feed-fill {
@@ -800,6 +814,9 @@
     // #region Values
 
     const feed = ref<HTMLElement | null>(null);
+
+    /** The box around everything the feed draws, watched for growth. */
+    const content = ref<HTMLElement | null>(null);
     const dayFloat = ref<HTMLElement | null>(null);
 
     /**
@@ -817,13 +834,11 @@
     let dividerObserver: IntersectionObserver | null = null;
 
     /**
-     * Watches the feed's own box, which changes with no scroll: the composer below growing with its
-     * text, its strip of files or its failure strip, or the column resizing.
+     * Watches the feed's own box and the content in it, which change with no scroll: the composer
+     * below growing with its text, its strip of files or its failure strip, the column resizing, or
+     * a row growing as its photo, font or reactions settle.
      */
     let sizeObserver: ResizeObserver | null = null;
-
-    /** The feed's height when its box was last seen, so only a change of height moves the reader. */
-    let feedHeight = 0;
     let dividerElement: Element | null = null;
 
     /** Whether the New divider is out of view, and on which side, as the browser last reported. */
@@ -840,7 +855,18 @@
      */
     const clearedThroughId = ref<number | null>(null);
 
-    const isScrolledUp = ref(false);
+    /**
+     * Whether the reader is at the newest message, which is the reader's to change: scrolling away
+     * from it clears it and coming back to it, or any of the feed's own scrolls to the newest
+     * message, sets it. Nothing else moves it, so content growing under a reader at the newest
+     * message, which makes no scroll, leaves them there to be kept there.
+     */
+    const isAtNewest = ref(true);
+
+    const isScrolledUp = computed((): boolean => !isAtNewest.value);
+
+    /** Where the feed was scrolled to when the reader's place was last read, so a scroll the browser has not reported yet shows. */
+    let readerTop = 0;
 
     /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
     const newCount = ref(0);
@@ -967,8 +993,8 @@
     function onScroll(): void {
         actionBar.onScroll();
         placeTopDay();
-        isScrolledUp.value = !isNearBottom();
-        if (!isScrolledUp.value) {
+        readReader();
+        if (isAtNewest.value) {
             newCount.value = 0;
         }
     }
@@ -1085,19 +1111,16 @@
     }
 
     /**
-     * The feed's box changed size. The day label is placed again, since the pills moved with no
-     * scroll; and when the feed's height changed, a reader at the newest message is kept there, as
-     * the browser keeps a scroll's top and would leave the newest rows under the composer.
+     * The feed's box or its content changed size. The day label is placed again, since the pills
+     * moved with no scroll; and a reader at the newest message is kept there, as the browser keeps a
+     * scroll's top and would leave the newest rows under the composer, or above the foot of a row
+     * that grew.
      */
     function onFeedResize(): void {
         placeTopDay();
 
-        const height = feed.value?.clientHeight ?? 0;
-        if (height !== feedHeight) {
-            feedHeight = height;
-            if (!isScrolledUp.value) {
-                scrollToBottom();
-            }
+        if (isAtNewest.value) {
+            scrollToBottom();
         }
     }
 
@@ -1107,10 +1130,18 @@
         return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
     }
 
-    /** Scrolls to the newest message. */
+    /** Takes the reader's place from where the feed is scrolled to, as their own scrolling leaves it. */
+    function readReader(): void {
+        isAtNewest.value = isNearBottom();
+        readerTop = feed.value?.scrollTop ?? 0;
+    }
+
+    /** Scrolls to the newest message, where the reader is then. */
     function scrollToBottom(): void {
         if (feed.value) {
             feed.value.scrollTop = feed.value.scrollHeight;
+            isAtNewest.value = true;
+            readerTop = feed.value.scrollTop;
         }
     }
 
@@ -1212,11 +1243,16 @@
 
     // #region Watchers
 
-    watch(() => props.timeline.messages.length, async (length, previous) => {
-        const shouldFollow = previous === 0 || isNearBottom();
-        if (!shouldFollow) {
-            isScrolledUp.value = true;
+    // Keyed on the messages at either end, not their count: the newest page replaces a held one
+    // of the same size when more than a page arrived meanwhile, and its rows still need watching,
+    // counting and following.
+    watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
+        // a message can land mid-scroll, before the scroll event for where the reader now is has run
+        if (feed.value && feed.value.scrollTop !== readerTop) {
+            readReader();
         }
+
+        const shouldFollow = isAtNewest.value;
         noteArrivals(!shouldFollow);
         await nextTick();
         observeRows();
@@ -1225,7 +1261,7 @@
             scrollToBottom();
         }
 
-        if (length > 0) {
+        if (props.timeline.messages.length > 0) {
             emit("firstShown");
         }
     });
@@ -1322,9 +1358,11 @@
         }
 
         if (typeof ResizeObserver !== "undefined" && feed.value) {
-            feedHeight = feed.value.clientHeight;
             sizeObserver = new ResizeObserver(onFeedResize);
             sizeObserver.observe(feed.value);
+            if (content.value) {
+                sizeObserver.observe(content.value);
+            }
         }
 
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
