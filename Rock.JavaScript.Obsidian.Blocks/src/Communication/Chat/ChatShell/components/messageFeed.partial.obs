@@ -856,16 +856,19 @@
     const clearedThroughId = ref<number | null>(null);
 
     /**
-     * Whether the reader is at the newest message, which is the reader's to change: scrolling away
-     * from it clears it and coming back to it, or any of the feed's own scrolls to the newest
-     * message, sets it. Nothing else moves it, so content growing under a reader at the newest
-     * message, which makes no scroll, leaves them there to be kept there.
+     * Whether the reader is at the newest message. It is the reader's state, changed only by a
+     * move: the reader scrolling up out of the newest message's reach clears it and scrolling down
+     * into it sets it, and the feed taking the reader somewhere (a jump, a follow) sets it from
+     * where they are going. A scroll with no move, as the browser reports a frame after the feed
+     * scrolled itself and content grew meanwhile, changes nothing, so a reader at the newest
+     * message is kept there through growth and a reader on their way to an older message is not
+     * pulled back.
      */
     const isAtNewest = ref(true);
 
     const isScrolledUp = computed((): boolean => !isAtNewest.value);
 
-    /** Where the feed was scrolled to when the reader's place was last read, so a scroll the browser has not reported yet shows. */
+    /** Where the feed was scrolled to when the reader's place was last read, which tells a move up from a move down. */
     let readerTop = 0;
 
     /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
@@ -1018,8 +1021,7 @@
 
         // Just below the band the day label keeps once the strip has gone, which the divider coming
         // into view puts away, so the divider is the first thing read.
-        const top = feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52;
-        feed.value.scrollTo?.({ top: Math.max(0, top), behavior: scrollBehavior() });
+        moveReaderTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
     }
 
     /** A row's flash plays once: the flash goes from the row as it ends. */
@@ -1031,7 +1033,7 @@
 
     function onJump(event: Event): void {
         if (feed.value) {
-            feed.value.scrollTo?.({ top: feed.value.scrollHeight, behavior: scrollBehavior() });
+            moveReaderTo(feed.value.scrollHeight);
         }
         newCount.value = 0;
 
@@ -1058,13 +1060,15 @@
         flashingId.value = id;
         await nextTick();
 
-        const row = feed.value?.querySelector<HTMLElement>(`[data-message-id='${id}']`);
-        if (!row) {
+        const scroller = feed.value;
+        const row = scroller?.querySelector<HTMLElement>(`[data-message-id='${id}']`);
+        if (!scroller || !row) {
             flashingId.value = null;
             return;
         }
 
-        row.scrollIntoView?.({ block: "center", behavior: scrollBehavior() });
+        const box = row.getBoundingClientRect();
+        moveReaderTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
         row.focus({ preventScroll: true });
     }
 
@@ -1111,17 +1115,17 @@
     }
 
     /**
-     * The feed's box or its content changed size. The day label is placed again, since the pills
-     * moved with no scroll; and a reader at the newest message is kept there, as the browser keeps a
-     * scroll's top and would leave the newest rows under the composer, or above the foot of a row
-     * that grew.
+     * The feed's box or its content changed size. A reader at the newest message is kept there, as
+     * the browser keeps a scroll's top and would leave the newest rows under the composer, or above
+     * the foot of a row that grew; then the day label is placed for where the reader now is, since
+     * the pills moved with no scroll.
      */
     function onFeedResize(): void {
-        placeTopDay();
-
         if (isAtNewest.value) {
             scrollToBottom();
         }
+
+        placeTopDay();
     }
 
     /** Whether the person is at, or near, the bottom of the feed. */
@@ -1130,10 +1134,39 @@
         return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
     }
 
-    /** Takes the reader's place from where the feed is scrolled to, as their own scrolling leaves it. */
+    /**
+     * Reads the reader's place from where the feed is scrolled to: a move down into the newest
+     * message's reach puts them at it and a move up out of it takes them from it. With no move,
+     * nothing changes, whatever the content did meanwhile.
+     */
     function readReader(): void {
-        isAtNewest.value = isNearBottom();
-        readerTop = feed.value?.scrollTop ?? 0;
+        const top = feed.value?.scrollTop ?? 0;
+        const isNear = isNearBottom();
+        if (isNear && top > readerTop) {
+            isAtNewest.value = true;
+        }
+        else if (!isNear && top < readerTop) {
+            isAtNewest.value = false;
+        }
+        readerTop = top;
+    }
+
+    /**
+     * Takes the reader to a place in the feed, as a jump does. They are where it goes from the
+     * moment it starts, so a smooth scroll's first frames, still near the bottom, and rows settling
+     * on the way neither read as the reader at the newest message nor pull them back to it.
+     */
+    function moveReaderTo(top: number): void {
+        const scroller = feed.value;
+        if (!scroller) {
+            return;
+        }
+
+        const end = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+        const target = Math.min(Math.max(0, top), end);
+        isAtNewest.value = end - target < nearBottomPx;
+        readerTop = scroller.scrollTop;
+        scroller.scrollTo?.({ top: target, behavior: scrollBehavior() });
     }
 
     /** Scrolls to the newest message, where the reader is then. */
@@ -1248,9 +1281,7 @@
     // counting and following.
     watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
-        if (feed.value && feed.value.scrollTop !== readerTop) {
-            readReader();
-        }
+        readReader();
 
         const shouldFollow = isAtNewest.value;
         noteArrivals(!shouldFollow);
