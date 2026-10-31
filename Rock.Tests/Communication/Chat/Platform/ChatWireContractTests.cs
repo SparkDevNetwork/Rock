@@ -470,6 +470,7 @@ namespace Rock.Tests.Communication.Chat.Platform
             CollectionAssert.IsSubsetOf( final, listed );
             CollectionAssert.IsSubsetOf( passable, listed );
             CollectionAssert.IsSubsetOf( room, listed );
+            CollectionAssert.IsSubsetOf( room, final );
             Assert.AreEqual( 0, final.Intersect( passable ).Count(), "a refusal is final or passable, never both" );
 
             foreach ( var code in listed.Where( c => c.StartsWith( "authz.", StringComparison.Ordinal ) ) )
@@ -505,7 +506,9 @@ namespace Rock.Tests.Communication.Chat.Platform
         /// <summary>
         /// Finds the repository root from where the tests run.
         /// </summary>
-        /// <returns>The folder that holds the Rock project.</returns>
+        /// <returns>
+        /// The folder that holds the Rock project.
+        /// </returns>
         private static string RepositoryRoot()
         {
             var directory = new DirectoryInfo( AppDomain.CurrentDomain.BaseDirectory );
