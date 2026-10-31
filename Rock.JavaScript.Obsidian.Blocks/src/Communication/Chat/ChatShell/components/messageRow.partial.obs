@@ -1311,8 +1311,7 @@
      * channel's rows draw it. Those are always Community rows, so the bubbles never need it. A
      * sender who is not listed is drawn with no name, and a role would say who they are. The
      * reader's own row reads the reader's own fact, as its name and face do: a send not stored yet
-     * has no copy to read, and a room that hides its roster sends its live copy saying no for
-     * everyone, so reading the copy would pop the pill in, or drop it, as the copies replace it.
+     * has no copy to read, so reading the copy would pop the pill in when the stored copy lands.
      */
     const isLeaderShown = computed((): boolean => props.isChannel && (props.isOwn
         ? props.isPersonLeader
