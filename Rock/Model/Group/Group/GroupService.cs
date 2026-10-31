@@ -903,14 +903,33 @@ namespace Rock.Model
                 qryGroupMembers = qryGroupMembers.Where( a => a.GroupMemberStatus == GroupMemberStatus.Active );
             }
 
+            /*
+                10/30/2026 - MSE
+
+                A group requirement only applies to members that match its role, its age
+                classification and its Applies To Data View. This method used to check only
+                role and age (and only in the "lacks requirements" test), so members excluded
+                by the data view were reported as not meeting the requirement. The Group
+                Scheduler, Group Schedule Toolbox, mobile sign up, sign-up attendee list and
+                the requirements notification job all rely on this method, so they blocked or
+                flagged people the requirement does not apply to. The member list, member
+                detail and the Calculate Group Requirements job already honor the data view.
+
+                Each data view is evaluated once per call (not once per member) and only for
+                this group's members, so groups without data view requirements run the same
+                queries as before.
+
+                Reason: Honor the requirement's Applies To Data View when checking group members.
+            */
+            var applicablePersonIdsByRequirementId = GetAppliesToDataViewPersonIdsByRequirementId( qryGroupRequirements, qryGroupMembers );
+
             var groupMemberList = qryGroupMembers.Include( a => a.GroupMemberRequirements ).ToList();
 
             // get a list of group member ids that don't meet all the requirements
             List<int> groupMemberIdsThatLackGroupRequirementsList = groupMemberList
                 .Where( a =>
                     !qryGroupRequirements
-                        .Where( r => !r.GroupRoleId.HasValue || r.GroupRoleId.Value == a.GroupRoleId )
-                        .Where( r => r.AppliesToAgeClassification == AppliesToAgeClassification.All || r.AppliesToAgeClassification.ConvertToInt() == a.Person.AgeClassification.ConvertToInt() )
+                        .Where( r => IsGroupRequirementApplicable( r, a, applicablePersonIdsByRequirementId ) )
                         .Select( x => x.Id )
                         .All( r =>
                             a.GroupMemberRequirements
@@ -935,7 +954,9 @@ namespace Rock.Model
             var groupMemberWithIssuesList = membersWithIssuesList.Select( a => new
             {
                 GroupMember = a,
-                GroupRequirementStatuses = groupMemberRequirementList.Where( x => x.GroupMemberId == a.Id )
+                // Ignore status rows for requirements that do not apply to this member (for
+                // example, rows created before the requirement's data view was set).
+                GroupRequirementStatuses = groupMemberRequirementList.Where( x => x.GroupMemberId == a.Id && IsGroupRequirementApplicable( x.GroupRequirement, a, applicablePersonIdsByRequirementId ) )
             } ).ToList();
 
             var currentDateTime = RockDateTime.Now;
@@ -975,6 +996,11 @@ namespace Rock.Model
                 // also add any groupRequirements that they don't have statuses for (and therefore haven't met)
                 foreach ( var groupRequirement in qryGroupRequirements )
                 {
+                    if ( !IsGroupRequirementApplicable( groupRequirement, groupMemberWithIssues.GroupMember, applicablePersonIdsByRequirementId ) )
+                    {
+                        continue;
+                    }
+
                     if ( !statuses.Any( x => x.Key.GroupRequirement.Id == groupRequirement.Id ) )
                     {
                         PersonGroupRequirementStatus status = new PersonGroupRequirementStatus();
@@ -994,6 +1020,87 @@ namespace Rock.Model
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Gets the person ids, limited to the specified group members, that match the
+        /// Applies To Data View of each group requirement that has one. Requirements
+        /// without a data view are not included in the result and so apply to everyone.
+        /// </summary>
+        /// <param name="groupRequirements">The group requirements to check.</param>
+        /// <param name="groupMemberQry">The group members being evaluated.</param>
+        /// <returns>A dictionary of applicable person ids keyed by group requirement id.</returns>
+        private Dictionary<int, HashSet<int>> GetAppliesToDataViewPersonIdsByRequirementId( List<GroupRequirement> groupRequirements, IQueryable<GroupMember> groupMemberQry )
+        {
+            var applicablePersonIdsByRequirementId = new Dictionary<int, HashSet<int>>();
+            var rockContext = this.Context as RockContext;
+
+            foreach ( var groupRequirement in groupRequirements.Where( r => r.AppliesToDataViewId.HasValue ) )
+            {
+                try
+                {
+                    var appliesToDataView = groupRequirement.AppliesToDataView;
+                    if ( appliesToDataView == null )
+                    {
+                        continue;
+                    }
+
+                    var appliesToDataViewPersonService = new PersonService( rockContext );
+                    var appliesToDataViewParamExpression = appliesToDataViewPersonService.ParameterExpression;
+                    var appliesToDataViewWhereExpression = appliesToDataView.GetExpression( appliesToDataViewPersonService, appliesToDataViewParamExpression );
+                    var appliesToDataViewPersonIdQry = appliesToDataViewPersonService.Get( appliesToDataViewParamExpression, appliesToDataViewWhereExpression ).Select( p => p.Id );
+
+                    // Use the data view as an unexecuted subquery against this group's members so
+                    // the result is bounded by the size of the group.
+                    var applicablePersonIds = groupMemberQry
+                        .Select( gm => gm.PersonId )
+                        .Where( personId => appliesToDataViewPersonIdQry.Contains( personId ) )
+                        .Distinct()
+                        .ToList();
+
+                    applicablePersonIdsByRequirementId.Add( groupRequirement.Id, new HashSet<int>( applicablePersonIds ) );
+                }
+                catch ( Exception ex )
+                {
+                    // Intentionally not rethrown: a broken data view should not break the scheduler
+                    // and the other callers. Leaving the requirement out of the dictionary makes it
+                    // apply to everyone, which is how this method behaved before data views were checked.
+                    ExceptionLogService.LogException( new Exception( $"Unable to evaluate the Applies To Data View (Id: {groupRequirement.AppliesToDataViewId}) for group requirement Id {groupRequirement.Id}. The requirement will be treated as applying to all group members.", ex ) );
+                }
+            }
+
+            return applicablePersonIdsByRequirementId;
+        }
+
+        /// <summary>
+        /// Determines whether the group requirement applies to the group member, based on the
+        /// requirement's group role, age classification and Applies To Data View.
+        /// </summary>
+        /// <param name="groupRequirement">The group requirement.</param>
+        /// <param name="groupMember">The group member.</param>
+        /// <param name="applicablePersonIdsByRequirementId">The applicable person ids for requirements that have an Applies To Data View.</param>
+        /// <returns><c>true</c> if the group requirement applies to the group member; otherwise, <c>false</c>.</returns>
+        private static bool IsGroupRequirementApplicable( GroupRequirement groupRequirement, GroupMember groupMember, Dictionary<int, HashSet<int>> applicablePersonIdsByRequirementId )
+        {
+            if ( groupRequirement.GroupRoleId.HasValue && groupRequirement.GroupRoleId.Value != groupMember.GroupRoleId )
+            {
+                return false;
+            }
+
+            var isAgeClassificationApplicable = groupRequirement.AppliesToAgeClassification == AppliesToAgeClassification.All
+                || groupRequirement.AppliesToAgeClassification.ConvertToInt() == groupMember.Person.AgeClassification.ConvertToInt();
+
+            if ( !isAgeClassificationApplicable )
+            {
+                return false;
+            }
+
+            if ( applicablePersonIdsByRequirementId.TryGetValue( groupRequirement.Id, out var applicablePersonIds ) )
+            {
+                return applicablePersonIds.Contains( groupMember.PersonId );
+            }
+
+            return true;
         }
 
         /// <summary>
