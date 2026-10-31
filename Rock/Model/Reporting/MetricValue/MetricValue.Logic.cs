@@ -18,6 +18,8 @@
 using System.Linq;
 using System.Runtime.Serialization;
 
+using Rock.Configuration;
+
 namespace Rock.Model
 {
     public partial class MetricValue
@@ -68,7 +70,7 @@ namespace Rock.Model
 
                 Reason: Metric values must honor their metric's category security.
             */
-            var metric = Metric ?? new MetricService( new Rock.Data.RockContext() ).Get( MetricId );
+            var metric = Metric ?? new MetricService( RockApp.Current.CreateRockContext() ).Get( MetricId );
 
             return metric?.IsAuthorized( action, person ) ?? base.IsAuthorized( action, person );
         }
