@@ -900,7 +900,9 @@
 /*
     The Not sent marker as the button that opens a failed message's choices: the same red mark and
     the words beside it, on the line of the text around it, with no button look of its own. The
-    button is the menu's icon button, so its icon is drawn as the mark.
+    button is the menu's icon button, so its icon is drawn as the mark. It is the only control for
+    one message, so it is 24px tall at the least, with the negative margin taking back what that
+    adds to its line.
 */
 button.chat-icon-btn.chat-fail-btn {
     display: inline-flex;
@@ -908,7 +910,10 @@ button.chat-icon-btn.chat-fail-btn {
     align-items: center;
     width: auto;
     height: auto;
+    min-height: 24px;
     padding: 0;
+    margin-block: -4px;
+    align-self: baseline;
     font: inherit;
     color: inherit;
     background: transparent;

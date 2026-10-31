@@ -746,6 +746,7 @@
     import { rowPeople } from "./ChatShell/ui/face.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
+    import { isPhoneKey } from "./ChatShell/ui/viewport.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
@@ -892,6 +893,10 @@
             landingReplyId.value = null;
         }
     });
+
+    // A message's Not sent marker sits deep in the feed, a thread and a draft, and opens its menu as
+    // a sheet on a phone as the composer's menus do, so it reads the flag from here.
+    provide(isPhoneKey, isPhone);
 
     const { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation } = useJump({
         shell,
