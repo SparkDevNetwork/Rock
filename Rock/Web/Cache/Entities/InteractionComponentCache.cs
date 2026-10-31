@@ -116,6 +116,9 @@ namespace Rock.Web.Cache
         /// </value>
         public InteractionChannelCache InteractionChannel => InteractionChannelCache.Get( InteractionChannelId );
 
+        /// <inheritdoc cref="Rock.Model.InteractionComponent.ParentAuthority" />
+        public override Rock.Security.ISecured ParentAuthority => InteractionChannel ?? base.ParentAuthority;
+
         #endregion
 
         #region Public Methods
