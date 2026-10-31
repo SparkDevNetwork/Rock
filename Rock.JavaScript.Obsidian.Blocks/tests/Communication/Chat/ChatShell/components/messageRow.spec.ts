@@ -20,7 +20,7 @@
 // jumping from a list below the timeline. Every state draws its words and a marker the styles and
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
 // admitted, a pending body above all, is plain text and never the raw token.
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive } from "vue";
@@ -99,6 +99,17 @@ function draw(props: RowProps): VueWrapper {
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
 function plain(text: string | undefined): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+/** The sources of the row and of the looks it draws in, each a file whose name starts with the row's. */
+function rowSources(): string[] {
+    const components = join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components");
+    return readdirSync(components).filter(name => /^messageRow\w*\.partial\.obs$/.test(name)).map(name => readFileSync(join(components, name), "utf8"));
+}
+
+/** The style blocks of the row's files, each taken from its own file and then joined. */
+function rowStyles(): string {
+    return rowSources().map(source => source.slice(source.indexOf("<style"), source.indexOf("</style>"))).join("\n");
 }
 
 /** The row's outermost element, which carries its role, label and markers. */
@@ -855,8 +866,8 @@ describe("a reply also sent to the conversation", () => {
 // links on the row. A send refused for good is marked the same; its sentence is the strip's.
 describe("a failed send's row", () => {
     const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
-    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
-    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+    const source = rowSources().join("\n");
+    const style = rowStyles();
 
     /** The declarations of every rule written for exactly this selector, alone. */
     function rule(selector: string): string {
@@ -1524,8 +1535,7 @@ describe("the Leader pill", () => {
 
 describe("the author's face, with no quote connector to paint over", () => {
     test("the face takes no stacking position, since nothing is drawn under it any more", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = rowStyles();
 
         expect(style).toMatch(/\.chat-cm-av\s*\{/);
         expect(style).not.toMatch(/\.chat-cm-av\s*\{[^}]*position:/);

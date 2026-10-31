@@ -21,8 +21,8 @@
 // theme that lacks it; and the dark values apply under exactly the conditions Rock's own dark
 // theme does: the theme attribute set to dark, or the system asking for dark when the page sets
 // no theme or asks to follow the system.
-import { readFileSync } from "fs";
-import { resolve } from "path";
+import { readdirSync, readFileSync } from "fs";
+import { basename, resolve } from "path";
 import { brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 
 // A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
@@ -530,6 +530,15 @@ describe("the components' own styles", () => {
     const feedPath = resolve(components, "messageFeed.partial.obs");
     const rowPath = resolve(components, "messageRow.partial.obs");
 
+    /** The row and the looks it draws in, each a file of its own whose name starts with the row's. */
+    const rowPaths = readdirSync(components).filter(name => /^messageRow\w*\.partial\.obs$/.test(name)).map(name => resolve(components, name));
+
+    /** The rules of the row's files, read as one sheet. */
+    function rowSheet(): Sheet {
+        const sheets = rowPaths.map(path => readSheet(path));
+        return { styleTags: sheets.flatMap(s => s.styleTags), rules: sheets.flatMap(s => s.rules), keyframes: sheets.flatMap(s => s.keyframes) };
+    }
+
     /** The body of a keyframes block in a component, by its name. */
     function keyframesBody(path: string, name: string): string | null {
         const source = readFileSync(path, "utf8");
@@ -571,10 +580,27 @@ describe("the components' own styles", () => {
     // A send shows at reduced strength while it is on its way and eases to full as it settles,
     // rather than snapping, in the bubble and in Community's text alike.
     test.each([".chat-bubble", ".chat-cm-text"])("%s eases its strength as a send settles", selector => {
-        const rule = selectorsOf(readSheet(rowPath)).find(s => s.rule.media === "" && s.selector === selector)?.rule;
+        const rule = selectorsOf(rowSheet()).find(s => s.rule.media === "" && s.selector === selector)?.rule;
         const transitions = splitTopLevel(rule?.declarations.get("transition") ?? "", ",").map(normalize);
 
         expect(transitions).toContain(normalize("opacity var(--chat-t-base) var(--chat-ease-state)"));
+    });
+
+    // A scoped sheet renames the keyframes it defines and only its own references to them, so an
+    // animation a row's file names that neither it nor the token sheet defines runs nothing. No
+    // test renderer and no still screenshot sees that: a bubble's flash whose fade is lost stays
+    // washed for good.
+    test.each(rowPaths.map(path => [basename(path), path]))("every animation %s names resolves to keyframes it or the token sheet holds", (_name, path) => {
+        const own = readSheet(path);
+        const known = new Set([...own.keyframes, ...readSheet().keyframes]);
+        const keywords = /^(none|both|forwards|backwards|infinite|alternate|alternate-reverse|reverse|normal|running|paused|linear|ease|ease-in|ease-out|ease-in-out|step-start|step-end|initial|inherit|unset)$/;
+        const names = own.rules.flatMap(rule => ["animation", "animation-name"].map(property => rule.declarations.get(property) ?? ""))
+            .flatMap(value => splitTopLevel(value, ","))
+            .flatMap(single => single.split(/\s+(?![^(]*\))/))
+            .filter(token => /^-?[a-z_][\w-]*$/i.test(token) && !keywords.test(token));
+
+        expect(names.length).toBeGreaterThan(0);
+        expect(names.filter(name => !known.has(name))).toEqual([]);
     });
 
     // The spacer is an element after the channel's intro, so the intro keeps the top; the feed's
