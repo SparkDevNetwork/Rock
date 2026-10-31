@@ -440,7 +440,7 @@ namespace Rock.Tests.Communication.Chat.Platform
             var listed = ReadEmbeddedContract()["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
             var chatFolder = Path.Combine( RepositoryRoot(), "Rock", "Communication", "Chat" );
             var raised = Directory.GetFiles( chatFolder, "*.cs", SearchOption.AllDirectories )
-                .SelectMany( file => Regex.Matches( File.ReadAllText( file ), "\"(door\.[a-z][a-z0-9_]*)\"" ).Cast<Match>() )
+                .SelectMany( file => Regex.Matches( File.ReadAllText( file ), "\"(door\\.[a-z][a-z0-9_]*)\"" ).Cast<Match>() )
                 .Select( m => m.Groups[1].Value )
                 .Distinct()
                 .ToList();

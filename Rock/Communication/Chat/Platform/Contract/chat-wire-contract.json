@@ -1,6 +1,6 @@
 {
   "artifact": "chat-wire-contract",
-  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, the error codes are the one vocabulary every layer branches on, and the limits are the group size, name length, body length, page sizes and attachment limits every client and Rock enforce, and the attachment previews are the words a message of files alone is shown by. Generated from the database the migrations produce; never edited by hand.",
+  "purpose": "The wire between Rock and the chat platform. The column lists are the positional order of the sync payload rows, the enum value lists are what each side mirrors as a typed vocabulary, the headers are what a submission carries, the push is the key set of an immediate push body, the claim names are what a person token carries, the error codes are the one vocabulary every layer branches on, and the limits are the group size, name length, body length, page sizes and attachment limits every client and Rock enforce, the attachment previews are the words a message of files alone is shown by, the final refusals are the answers no client offers Try again for, and the conversation texts are the sentences a direct message or a group is refused in. Generated from the database the migrations produce; never edited by hand.",
   "hash_recipe": "SHA-256, lowercase hex, over the UTF-8 bytes of one line per table in the order the tables array gives: the table name, a colon, the wire column names joined by commas, each line closed by a line feed. The JSON is deliberately not what is hashed, so no key order, whitespace or string escaping rule has to be agreed between the languages that compute it. The hash covers the column lists and nothing else: it is compared at ingest, so anything it covered would refuse every submission from every church still on the previous Rock build the moment it changed, and an added enum value is meant to ship to the platform first and leave those churches working.",
   "wire_hash": "c13ba8c3928d213cdc48556abc5c19e0ebc25a638aa49cbbbdd69da067d872e6",
   "jwt_claims": {
@@ -438,7 +438,13 @@
       "rpc.system_author_missing",
       "push.dispatch_failed",
       "push.no_credential",
-      "push.provider_failed"
+      "push.provider_failed",
+      "door.bad_request",
+      "door.not_allowed",
+      "door.not_found",
+      "door.not_member",
+      "door.self",
+      "door.target_not_eligible"
     ]
   },
   "limits": {
@@ -476,5 +482,61 @@
     "files": "{count} files",
     "photo": "Photo",
     "photos": "{count} photos"
+  },
+  "final_refusals": {
+    "carries": "codes are the refusals another ask of the same can only meet again, so a client offers no Try again; passable are the authz refusals another ask can pass; room_refusals are the ones that close a room to posting until its posting fields say otherwise. A code in none of the lists, including one added after a client was built, can be tried again. A first message refused with authz.not_member is a room opened just before Rock added the person, and a client may try it again; an ended session is a rule each client keeps for itself.",
+    "codes": [
+      "authz.wrong_scope",
+      "authz.wrong_tenant",
+      "authz.dm_unavailable",
+      "authz.no_announcement_right",
+      "authz.no_mention_all_right",
+      "authz.no_roster_right",
+      "authz.not_author",
+      "authz.not_eligible",
+      "authz.not_live_person",
+      "authz.not_member",
+      "authz.not_readable",
+      "authz.sender_not_allowed",
+      "rpc.bad_request",
+      "rpc.bad_body",
+      "rpc.bad_message_type",
+      "rpc.bad_parent",
+      "rpc.bad_quote",
+      "rpc.bad_blocks",
+      "rpc.bad_reaction",
+      "rpc.channel_not_found",
+      "rpc.message_not_found",
+      "rpc.message_deleted",
+      "rpc.message_hidden",
+      "rpc.not_editable",
+      "rpc.person_not_found",
+      "rpc.attachment_type",
+      "rpc.attachment_size",
+      "rpc.attachment_count",
+      "rpc.bad_attachments",
+      "rpc.bad_gif",
+      "rpc.gifs_off",
+      "rpc.idempotency_mismatch",
+      "door.bad_request",
+      "door.not_allowed",
+      "door.not_found",
+      "door.not_member",
+      "door.self",
+      "door.target_not_eligible"
+    ],
+    "passable": [
+      "authz.join_required"
+    ],
+    "room_refusals": [
+      "authz.dm_unavailable"
+    ]
+  },
+  "conversation_texts": {
+    "authz.no_announcement_right": "You can't post announcements in this conversation.",
+    "authz.no_mention_all_right": "You can't mention everyone in this conversation.",
+    "authz.not_member": "You're not in this conversation.",
+    "authz.not_readable": "You don't have access to this conversation.",
+    "rt.read_revoked": "You no longer have access to this conversation."
   }
 }
