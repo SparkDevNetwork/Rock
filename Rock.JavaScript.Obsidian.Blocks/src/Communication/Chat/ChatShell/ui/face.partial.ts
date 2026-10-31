@@ -55,6 +55,18 @@ export function rowPeople(row: Pick<SidebarRow, "dm_people" | "dm_names">): Chat
     return row.dm_people ?? (row.dm_names ?? []).map(name => ({ person_alias_guid: "", nick_name: name, last_name: null, avatar_url: null }));
 }
 
+/**
+ * A head count in words, "1 person" or "4 people", so the header and the details of a group read
+ * the same count alike.
+ *
+ * @param count The number of people.
+ *
+ * @returns The count with its noun.
+ */
+export function peopleCountWords(count: number): string {
+    return `${count.toLocaleString()} ${count === 1 ? "person" : "people"}`;
+}
+
 /** The photos already asked for on this page, so each is fetched once. */
 const preloaded = new Set<string>();
 
