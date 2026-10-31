@@ -191,10 +191,11 @@ describe("file cards", () => {
  * has no navigation, so each is held back once recorded; a card clicked over and over is taken off
  * the page after a few, so a loop ends and fails rather than hanging the run.
  */
-function recordClicks(card: Element): Array<{ href: string | null, isPrevented: boolean }> & { stop: () => void } {
-    const clicks: Array<{ href: string | null, isPrevented: boolean }> = [];
+function recordClicks(card: Element): Array<{ href: string | null, isPrevented: boolean, ctrlKey: boolean, button: number }> & { stop: () => void } {
+    const clicks: Array<{ href: string | null, isPrevented: boolean, ctrlKey: boolean, button: number }> = [];
     const record = (event: Event): void => {
-        clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented });
+        const mouse = event as MouseEvent;
+        clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented, ctrlKey: mouse.ctrlKey, button: mouse.button });
         event.preventDefault();
         if (clicks.length > 5) {
             card.remove();
@@ -257,6 +258,132 @@ describe("links over time", () => {
         }
         finally {
             document.removeEventListener("click", record);
+        }
+    });
+
+    // The browser opens whatever href the card holds for a gesture the chat cannot follow up (a
+    // middle click, the context menu), so the card asks for a fresh link as the person's pointer or
+    // focus reaches it, before any gesture is made.
+    test.each(["pointerenter", "focus", "touchstart"])("a card reached by %s as its link nears its end is given a fresh link before any click", async gesture => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']");
+
+        const working = h.signAnswer.value;
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(9 * 60 * 1000 + 5 * 1000);
+        h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+        const signed = h.signs.length;
+
+        card.element.dispatchEvent(new Event(gesture));
+        await settle();
+        await nextTick();
+
+        expect(h.signs).toHaveLength(signed + 1);
+        expect(card.attributes("href")).toContain("-fresh&download=a.pdf");
+
+        // a card with a good link is not signed again
+        card.element.dispatchEvent(new Event(gesture));
+        await settle();
+        expect(h.signs).toHaveLength(signed + 1);
+    });
+
+    test("a card whose fresh signing fails as the pointer reaches it keeps the link it has", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']");
+
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(9 * 60 * 1000 + 5 * 1000);
+
+        card.element.dispatchEvent(new Event("pointerenter"));
+        await settle();
+        await nextTick();
+
+        expect(card.attributes("href")).toContain("token=t-0001&download=a.pdf");
+    });
+
+    test("a card clicked with a modifier as its link nears its end is followed from the fresh link with the same modifier", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            const working = h.signAnswer.value;
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
+            expect(clicks[1].ctrlKey).toBe(true);
+            expect(clicks[1].href).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test("a card middle clicked as its link nears its end is held, then followed from the fresh link as a middle click", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            const working = h.signAnswer.value;
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+
+            const isAllowed = card.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button: 1 }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(isAllowed).toBe(false);
+            expect(clicks).toHaveLength(1);
+            expect(clicks[0].button).toBe(1);
+            expect(clicks[0].href).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test("a card right clicked is left to the browser", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            h.signAnswer.value = () => {
+                throw new TypeError("Failed to fetch");
+            };
+            await h.advance(9 * 60 * 1000 + 5 * 1000);
+
+            const isAllowed = card.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button: 2 }));
+            await settle();
+
+            expect(isAllowed).toBe(true);
+            expect(clicks).toHaveLength(0);
+        }
+        finally {
+            clicks.stop();
         }
     });
 
