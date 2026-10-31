@@ -1632,6 +1632,31 @@ describe("a feed holding its reader at the newest message", () => {
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
         expect(requested).toEqual([1500]);
     });
+
+    test("a reader just above the bottom whom shrinking content leaves at the end is at the newest message, so Jump to latest hides and an arrival is followed", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]);
+        const wrapper = draw({ timeline: state });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 1440);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+
+        // content gets shorter (a deletion), and the browser clamps the reader to the end
+        sizes.scrollHeight = 1900;
+        sizes.scrollTop = 1400;
+        echoScroll(wrapper);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+
+        state.messages.push(message(3, anna, at(14, 2)));
+        sizes.scrollHeight = 2000;
+        await nextTick();
+        await resize();
+
+        expect(sizes.scrollTop).toBe(1500);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
 });
 
 describe("a block post's buttons", () => {
