@@ -116,7 +116,11 @@
                        :href="isPending ? undefined : linkOf(item)?.downloadUrl ?? undefined"
                        :rel="isPending || !linkOf(item)?.downloadUrl ? undefined : 'noopener'"
                        :aria-label="isPending || !linkOf(item)?.downloadUrl ? undefined : `Download ${item.name}, ${formatFileSize(item.size)}`"
-                       @click="onLinkClick($event, item)">
+                       @click="onLinkClick($event, item)"
+                       @auxclick="onLinkClick($event, item)"
+                       @pointerenter="renewLink(item)"
+                       @focus="renewLink(item)"
+                       @touchstart.passive="renewLink(item)">
                 <span class="chat-attach-file-icon" aria-hidden="true"><Icon name="file" /></span>
                 <span class="chat-attach-file-main">
                     <span class="chat-attach-file-name" data-testid="attachment-file-name">{{ item.name }}</span>
@@ -142,7 +146,11 @@
                                :href="linkOf(viewed)?.downloadUrl ?? undefined"
                                rel="noopener"
                                :aria-label="`Download ${viewed.name}`"
-                               @click="onLinkClick($event, viewed)"><Icon name="download" /></a>
+                               @click="onLinkClick($event, viewed)"
+                               @auxclick="onLinkClick($event, viewed)"
+                               @pointerenter="renewLink(viewed)"
+                               @focus="renewLink(viewed)"
+                               @touchstart.passive="renewLink(viewed)"><Icon name="download" /></a>
                             <IconButton icon="x" label="Close" data-testid="attachment-viewer-close" @click="viewerIndex = null" />
                         </template>
                         <img v-if="viewed && imageSource(viewed)"
@@ -716,15 +724,29 @@ a.chat-attach-file:focus-visible {
     }
 
     /**
-     * A download whose link is near its end waits for a fresh one, then is followed from it, so
-     * a link renewed late, or not at all while the network was away, never fails the click. When
-     * no fresh link can be had, the one still held is followed while it lasts; past its end the
-     * click does nothing, and the card is drawn as text once its link is gone. A card is followed
-     * once however often it is clicked while it waits.
+     * A card or download link is given a fresh link as the person's pointer or focus reaches it,
+     * so the address the browser opens for a middle click or the context menu, which the chat
+     * cannot follow up, is a live one. It is the renewal a click would wait for, started earlier.
+     */
+    function renewLink(item: FileItem): void {
+        if (views && !props.isPending && !views.links.isFresh(item)) {
+            void views.links.fresh(item);
+        }
+    }
+
+    /**
+     * A download whose link is near its end waits for a fresh one, then is followed from it with
+     * the gesture the person made (a new tab for a modified or middle click), so a link renewed
+     * late, or not at all while the network was away, never fails the click. When no fresh link
+     * can be had, the one still held is followed while it lasts; past its end the click does
+     * nothing, and the card is drawn as text once its link is gone. A card is followed once
+     * however often it is clicked while it waits. Only the primary and middle buttons open a
+     * link; the context menu's button is left to the browser.
      */
     function onLinkClick(event: MouseEvent, item: FileItem): void {
         const anchor = event.currentTarget;
-        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following) {
+        if (!views || props.isPending || !(anchor instanceof HTMLAnchorElement) || anchor === following
+            || (event.type === "auxclick" && event.button !== 1)) {
             return;
         }
 
@@ -738,6 +760,8 @@ a.chat-attach-file:focus-visible {
         }
 
         event.preventDefault();
+        // read now, as the event is spent by the time the fresh link lands
+        const { ctrlKey, metaKey, shiftKey, altKey, button } = event;
         waiting.add(anchor);
         const links = views.links;
         void links.fresh(item).then(async fresh => {
@@ -753,7 +777,7 @@ a.chat-attach-file:focus-visible {
             // followed once, as it now reads, never held back again
             following = anchor;
             try {
-                anchor.click();
+                anchor.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window, ctrlKey, metaKey, shiftKey, altKey, button }));
             }
             finally {
                 following = null;
