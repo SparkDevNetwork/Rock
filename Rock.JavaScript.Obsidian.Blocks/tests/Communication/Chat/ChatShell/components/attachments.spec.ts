@@ -98,6 +98,19 @@ describe("the photo grid", () => {
         expect(img.attributes("alt")).toBe("photo-1.jpg");
     });
 
+    // The grid alone owns a single photo's width, and its one column follows the grid. A tile
+    // that carried a width of its own would stretch an auto column past the grid's clamp at phone
+    // width, and the grid would cut the photo off instead of shrinking it. jsdom cannot lay out, so
+    // this pins the cause; the browser cell measures the box.
+    test("a single photo's tile carries only its shape, and the grid's one column follows the grid", async () => {
+        const { wrapper } = await mountFiles([image(1, { width: 1200, height: 900 })]);
+
+        const tile = wrapper.get("[data-testid='attachment-image']").element as HTMLElement;
+        expect(tile.style.width).toBe("");
+        expect((wrapper.get("[data-testid='attachment-grid']").element as HTMLElement).style.width).toBe("320px");
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-grid[data-layout=\"1\"]")["grid-template-columns"]).toBe("minmax(0, 1fr)");
+    });
+
     // The image waits, hidden, in its held box until the browser has decoded it; one message's
     // photos reveal together.
     test("a message's photos stay hidden until all are decoded, then show together", async () => {
