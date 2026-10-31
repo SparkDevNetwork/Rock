@@ -882,18 +882,23 @@ describe("a failed send's row", () => {
     test.each([["a direct message", false], ["a channel", true]] as const)("a failed send's own reason rides its Not sent marker in %s", (_kind, isChannel) => {
         const reason = "You're offline. Try again when you're back.";
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.transport", reason: { alone: reason, besideRetry: "You're offline.", canRetry: true } }), isOwn: true, isChannel, position: "single" });
-        const marker = wrapper.get("[data-testid='message-state']").element.closest(".chat-meta, .chat-cm-state") as HTMLElement;
+        const button = wrapper.get("[data-testid='message-failed-actions']").element;
+        const description = button.getAttribute("aria-describedby");
 
-        expect(marker.getAttribute("title")).toBe(reason);
-        expect(marker.querySelector(".chat-sr-only")?.textContent).toBe(`. ${reason}`);
+        // the reason sits on the control that names it, once: a description, never a second title
+        expect(description).toBeTruthy();
+        expect(wrapper.element.querySelector(`#${description}`)?.textContent).toBe(reason);
+        expect(wrapper.element.querySelector(".chat-cm-state [title], .chat-meta [title]")).toBeNull();
+        expect(wrapper.element.querySelector(".chat-cm-state[title], .chat-meta[title]")).toBeNull();
     });
 
     test("a failed send that said nothing has no reason on its marker", () => {
         const wrapper = draw({ pending: pendingRow({ status: "failed", errorCode: "rpc.unknown" }), isOwn: true, position: "single" });
-        const marker = wrapper.get("[data-testid='message-state']").element.closest(".chat-meta, .chat-cm-state") as HTMLElement;
+        const button = wrapper.get("[data-testid='message-failed-actions']").element;
 
-        expect(marker.hasAttribute("title")).toBe(false);
-        expect(marker.querySelector(".chat-sr-only")).toBeNull();
+        expect(button.hasAttribute("aria-describedby")).toBe(false);
+        expect(wrapper.element.querySelector(".chat-sr-only")).toBeNull();
+        expect(wrapper.element.querySelector(".chat-cm-state[title], .chat-meta[title]")).toBeNull();
     });
 
     test("its look has no tint, edge, ring or links of its own", () => {
@@ -914,12 +919,16 @@ describe("a failed send's row", () => {
 
         const states = [
             draw({ pending: pendingRow(), isOwn: true, isChannel: true, isSendingSlow: true }),
-            draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true }),
-            draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true })
+            draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, isChannel: true })
         ];
         for (const wrapper of states) {
             expect(wrapper.get(".chat-cm-state [data-testid='message-state']").classes()).toContain("chat-cm-state-words");
         }
+
+        // Not sent is the marker's button, which is the flex child that takes the baseline, its
+        // words inside it (the marker's own cells hold the rule).
+        const failed = draw({ pending: pendingRow({ status: "failed" }), isOwn: true, isChannel: true });
+        expect(failed.find(".chat-cm-state > [data-testid='message-failed-actions']").exists()).toBe(true);
     });
 });
 
@@ -1632,6 +1641,8 @@ describe("a failed send's own choices", () => {
         const marker = wrapper.get("[data-testid='message-failed-actions']");
 
         (marker.element as HTMLElement).focus();
+        // a native button turns Enter into a click, which jsdom does not, so the press is both
+        await marker.trigger("keydown", { key: "Enter" });
         await marker.trigger("click");
         await nextTick();
         expect(wrapper.find("[role='menu']").exists()).toBe(true);
@@ -1648,9 +1659,9 @@ describe("a failed send's own choices", () => {
     test("the marker keeps its reason for a screen reader and a hover, now on the control that names it", () => {
         const reason = "You're offline. Try again when you're back.";
         const wrapper = draw({ pending: failed({ reason: { alone: reason, besideRetry: "You're offline.", canRetry: true } }), isOwn: true, isChannel: true, position: "single" });
-        const state = wrapper.get(".chat-cm-state.is-failed");
+        const button = wrapper.get("[data-testid='message-failed-actions']").element;
 
-        expect(state.attributes("title")).toBe(reason);
-        expect(state.find(".chat-sr-only").text()).toBe(`. ${reason}`);
+        expect(wrapper.element.querySelector(`#${button.getAttribute("aria-describedby")}`)?.textContent).toBe(reason);
+        expect(wrapper.element.querySelector(".chat-cm-state[title], .chat-meta[title]")).toBeNull();
     });
 });
