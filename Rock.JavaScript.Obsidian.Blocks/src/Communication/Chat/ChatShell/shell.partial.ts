@@ -23,7 +23,7 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
@@ -878,6 +878,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         newLocalId,
         isOffline: () => state.connection !== null,
+        // the sidebar's row first, which every room in the list has; the room's own facts for one
+        // opened outside the list
+        roomKind: channelId => channels.rows.find(row => row.channel_id === channelId)?.room_kind ?? rooms.factsOf(channelId)?.room_kind ?? null,
+        onRoomRefused: (channelId, error) => channels.applyPosting(channelId, {
+            can_post: false,
+            can_post_code: error.code,
+            can_post_reason: messageForError(error)
+        }),
         onGifsOff: () => gifs.turnOff(),
         onGifExpired: row => {
             // The text goes back where it was written, with the quote and the also-send choice the

@@ -125,6 +125,13 @@ export type ChannelStore = {
 
     /** The person's own star, hide or notify mode on a room, shown at once and sorted as the platform sorts. */
     applyPrefs: (channelId: string, changes: RowPrefs) => void;
+
+    /**
+     * What a refused send learned about whether the room takes posts, written into the row's own
+     * posting fields the sidebar read owns, so the composer answers it at once and the next read
+     * replaces it.
+     */
+    applyPosting: (channelId: string, posting: Pick<SidebarRow, "can_post" | "can_post_code" | "can_post_reason">) => void;
 };
 
 /** Where the first sidebar stands. */
@@ -451,6 +458,13 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
             Object.assign(row, changes);
             if (changes.is_favorite !== undefined) {
                 sortRows();
+            }
+        },
+
+        applyPosting: (channelId: string, posting: Pick<SidebarRow, "can_post" | "can_post_code" | "can_post_reason">): void => {
+            const row = find(channelId);
+            if (row) {
+                Object.assign(row, posting);
             }
         },
 

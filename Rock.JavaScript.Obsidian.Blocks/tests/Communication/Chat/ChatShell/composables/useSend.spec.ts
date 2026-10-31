@@ -16,7 +16,7 @@
 //
 // Sending: a pending row at once, a timeline message once confirmed, and a failed send that
 // keeps its text so it can be sent again.
-import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation, isOwnedByConversation, JoinResult, lockedReason, newLocalId, sendFailure, SendResult, SenderDependencies, textAfterSend } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { mount } from "@vue/test-utils";
 import { defineComponent, reactive } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
@@ -34,7 +34,7 @@ function deferred<T>(): Deferred<T> {
     return { promise, resolve };
 }
 
-async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOffline?: () => boolean): Promise<{
+async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOffline?: () => boolean, extra: Partial<SenderDependencies> = {}): Promise<{
     sender: ReturnType<typeof createSender>,
     timelines: ReturnType<typeof createTimelines>,
     sent: string[]
@@ -53,7 +53,8 @@ async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOfflin
         timelines,
         personAliasGuid: me,
         newLocalId: () => `local-${++next}`,
-        ...(isOffline ? { isOffline } : {})
+        ...(isOffline ? { isOffline } : {}),
+        ...extra
     });
 
     return { sender, timelines, sent };
@@ -1830,5 +1831,63 @@ describe("a send with a GIF", () => {
 
         expect(onGifsOff).toHaveBeenCalledTimes(1);
         expect(sender.pending(channel)[0].refusal?.code).toBe("rpc.gifs_off");
+    });
+});
+
+// A refusal is worded for the kind of room it was met in, and one that closes a room is told to
+// the shell so the composer locks at once; both are the sender's to say, at the moment it ends
+// a row, since only then is the refusal in hand.
+describe("a send refused in a room of a kind", () => {
+    const channelWords = "You're not a member of this channel.";
+    const refused = (code: string, text = channelWords): SendResult => ({ ok: false, error: { code, severity: "permission", text } });
+
+    test.each(["person", "group"] as const)("a refusal in a %s conversation says conversation on the row and the strip", async roomKind => {
+        const { sender } = await setup([refused("authz.not_member")], undefined, { roomKind: () => roomKind });
+
+        await sender.send(channel, "hello");
+
+        const [row] = sender.pending(channel);
+        expect(row.refusal).toMatchObject({ code: "authz.not_member", roomKind });
+        expect(row.reason).toEqual({ alone: "You're not in this conversation.", besideRetry: "You're not in this conversation.", canRetry: false });
+        expect(sendFailure(sender.pending(channel))?.reason?.alone).toBe("You're not in this conversation.");
+    });
+
+    test("a refusal in a channel, or in a room of no known kind, keeps the server's words", async () => {
+        const inChannel = await setup([refused("authz.not_member")], undefined, { roomKind: () => "channel" });
+        await inChannel.sender.send(channel, "hello");
+        expect(inChannel.sender.pending(channel)[0].reason?.alone).toBe(channelWords);
+
+        const unknown = await setup([refused("authz.not_member")], undefined, { roomKind: () => null });
+        await unknown.sender.send(channel, "hello");
+        expect(unknown.sender.pending(channel)[0].reason?.alone).toBe(channelWords);
+
+        const unasked = await setup([refused("authz.not_member")]);
+        await unasked.sender.send(channel, "hello");
+        expect(unasked.sender.pending(channel)[0].reason?.alone).toBe(channelWords);
+    });
+
+    test("a refusal that closes the room is told to the shell with the room, once, and the row stays final", async () => {
+        const told: Array<[string, string]> = [];
+        const { sender, sent } = await setup([refused("authz.dm_unavailable", "This person can't be messaged.")], undefined, {
+            roomKind: () => "person",
+            onRoomRefused: (channelId, error) => told.push([channelId, error.code])
+        });
+
+        await sender.send(channel, "hello");
+
+        expect(told).toEqual([[channel, "authz.dm_unavailable"]]);
+        expect(sender.pending(channel)[0]).toMatchObject({ status: "failed", refusal: { code: "authz.dm_unavailable" } });
+        expect(await sender.retryAll(["local-1"])).toBe(false);
+        expect(sent).toHaveLength(1);
+    });
+
+    test("any other refusal, not a member among them, leaves the room as it was", async () => {
+        const told: string[] = [];
+        for (const code of ["authz.not_member", "authz.no_mention_all_right", "rpc.bad_body", "rpc.rate_limited"]) {
+            const { sender } = await setup([refused(code)], undefined, { onRoomRefused: (_c, error) => told.push(error.code) });
+            await sender.send(channel, "hello");
+        }
+
+        expect(told).toEqual([]);
     });
 });

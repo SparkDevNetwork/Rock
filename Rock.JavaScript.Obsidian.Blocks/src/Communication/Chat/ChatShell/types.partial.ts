@@ -151,6 +151,13 @@ export type ChannelFacts = {
     can_post_reason: string | null;
     max_length: number;
     can_leave: boolean;
+
+    /**
+     * What kind of room it is by the platform's own head count, so a room opened outside the
+     * sidebar's list is worded by its kind as the list's rows are; absent from a platform older
+     * than this field.
+     */
+    room_kind?: RoomKind;
     description: string | null;
     group_type_name: string | null;
     campus_id: string | null;
