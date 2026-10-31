@@ -54,5 +54,15 @@ namespace Rock.Model
         }
 
         #endregion
+
+        #region ISecured
+
+        /// <summary>
+        /// Gets the parent authority. Components inherit their interaction channel's security.
+        /// </summary>
+        [NotMapped]
+        public override Rock.Security.ISecured ParentAuthority => InteractionChannelCache.Get( InteractionChannelId ) ?? base.ParentAuthority;
+
+        #endregion
     }
 }
