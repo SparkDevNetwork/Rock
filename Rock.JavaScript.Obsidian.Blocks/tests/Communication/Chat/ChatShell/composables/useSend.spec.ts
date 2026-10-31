@@ -483,7 +483,7 @@ describe("a send refused for good", () => {
         ["authz.no_mention_all_right", "permission", "You can't mention everyone in this channel."],
         ["authz.no_announcement_right", "permission", "You can't post announcements in this channel."],
         ["authz.wrong_scope", "permission", "This sign-in can't be used for chat."],
-        ["authz.some_later_code", "permission", "Not for you."],
+        ["authz.not_eligible", "permission", "You can't use chat."],
         ["rpc.idempotency_mismatch", "failed", "This message could not be sent. Try sending it again."],
         ["rpc.bad_body", "failed", "A message needs some text, up to 5,000 characters."],
         ["auth.expired", "session", "Your chat session expired. Reconnecting."],
@@ -515,7 +515,9 @@ describe("a send refused for good", () => {
         ["rpc.read_only", "failed"],
         ["rpc.maintenance", "failed"],
         ["authz.join_required", "permission"],
-        ["door.unavailable", "permission"]
+        ["door.unavailable", "permission"],
+        // a code the contract's lists do not name, added after this release, can be tried again
+        ["authz.some_later_code", "permission"]
     ] as const)("%s keeps the row's retry", async (code, severity) => {
         const { sender, sent } = await setup([
             { ok: false, error: { code, severity, text: "Not now." } },

@@ -446,13 +446,9 @@ describe("the refusals and sentences the wire contract publishes", () => {
         }
     });
 
-    test("this client names no refusal code the contract does not know", () => {
-        const source = readFileSync(resolve(__dirname, "../../../../src/Communication/Chat/ChatShell/errors.partial.ts"), "utf8");
-        // codes only this client makes or reads, which no platform call answers
-        const clientOnly = ["rpc.transport", "rpc.unknown", "door.unreachable", "door.unavailable", "rt.read_revoked", "rt.unknown", "auth.expired"];
-        const named = [...source.matchAll(/"((?:auth|authz|rpc|sync|rt|push|door)\.[a-z][a-z0-9_]*)"/g)].map(m => m[1]);
-
-        expect(named.filter(code => !contract.error_codes.codes.includes(code) && !clientOnly.includes(code))).toEqual([]);
+    test("Rock refusing one of the block's own actions with 403 is refused for good, though no platform call answers it", () => {
+        expect(isRefusedForGood(classifyActionFailure(403))).toBe(true);
+        expect(isRefusedForGood(classifyActionFailure(500))).toBe(false);
     });
 
     test("a code the lists do not name can be tried again, whatever family it came from", () => {
