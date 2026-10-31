@@ -56,17 +56,15 @@
                         <NotificationBox v-if="isSavedMessage" alertType="success">{{ isSavedMessage }}</NotificationBox>
                         <NotificationBox v-if="areNoServiceTimesLoaded" alertType="warning">No services exist for the selected campus and date. Change the date or campus to find the desired service.</NotificationBox>
                         <div v-else>
-                            <div class="form-horizontal label-xl">
-                                <MetricItemTree v-if="config.showMetricCategorySubtotals"
-                                                v-for="category of metricCategories"
-                                                :areDuplicateMetricsIncludedInCategorySubtotals="config.areDuplicateMetricsIncludedInCategorySubtotals"
-                                                :category="category"
-                                                :items="metricItems ?? []" />
-                                <MetricItem v-else
-                                            v-for="item of metricItems"
-                                            :disabled="isGettingServiceMetrics || isSaving"
-                                            :item="item" />
-                            </div>
+                            <MetricItemTree v-if="config.showMetricCategorySubtotals"
+                                            v-for="category of metricCategories"
+                                            :areDuplicateMetricsIncludedInCategorySubtotals="config.areDuplicateMetricsIncludedInCategorySubtotals"
+                                            :category="category"
+                                            :items="metricItems ?? []" />
+                            <MetricItem v-else
+                                        v-for="item of metricItems"
+                                        :disabled="isGettingServiceMetrics || isSaving"
+                                        :item="item" />
                             <TextBox v-model="notesOrEmptyString"
                                      :disabled="isGettingServiceMetrics || isSaving"
                                      label="Note"
