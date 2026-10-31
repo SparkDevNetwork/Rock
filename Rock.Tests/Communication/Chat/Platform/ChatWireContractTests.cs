@@ -428,6 +428,95 @@ namespace Rock.Tests.Communication.Chat.Platform
             Assert.AreEqual( "GIF", contract["attachment_previews"]?["gif"]?.Value<string>() );
             Assert.IsNull( contract["jwt_claims"]["gifs"], "no reader function reads the GIF claim, so the contract does not list it" );
         }
+
+        /// <summary>
+        /// Every door code Rock raises is a code the contract lists, so a client that branches on
+        /// the final refusals sees every refusal Rock's doors can answer. The codes are read from
+        /// the chat code itself, so a door code added there and not listed here goes red.
+        /// </summary>
+        [TestMethod]
+        public void ErrorCodes_EveryDoorCodeRockRaises_IsListed()
+        {
+            var listed = ReadEmbeddedContract()["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
+            var chatFolder = Path.Combine( RepositoryRoot(), "Rock", "Communication", "Chat" );
+            var raised = Directory.GetFiles( chatFolder, "*.cs", SearchOption.AllDirectories )
+                .SelectMany( file => Regex.Matches( File.ReadAllText( file ), "\"(door\.[a-z][a-z0-9_]*)\"" ).Cast<Match>() )
+                .Select( m => m.Groups[1].Value )
+                .Distinct()
+                .ToList();
+
+            Assert.IsTrue( raised.Count >= 6, "the door's codes were not found in the chat code" );
+            CollectionAssert.IsSubsetOf( raised, listed );
+        }
+
+        /// <summary>
+        /// The final refusals the clients share: every code named is an error code the contract
+        /// lists, a final code is never also passable, every authz code is decided one way, and the
+        /// door codes and the two GIF refusals sit in the final list.
+        /// </summary>
+        [TestMethod]
+        public void FinalRefusals_AreListedCodes_AndEveryAuthzCodeIsDecidedOnce()
+        {
+            var contract = ReadEmbeddedContract();
+            var listed = contract["error_codes"]["codes"].Select( c => c.Value<string>() ).ToList();
+            var section = contract["final_refusals"];
+
+            Assert.IsNotNull( section, "the contract carries no final refusals" );
+
+            var final = section["codes"].Select( c => c.Value<string>() ).ToList();
+            var passable = section["passable"].Select( c => c.Value<string>() ).ToList();
+            var room = section["room_refusals"].Select( c => c.Value<string>() ).ToList();
+
+            CollectionAssert.IsSubsetOf( final, listed );
+            CollectionAssert.IsSubsetOf( passable, listed );
+            CollectionAssert.IsSubsetOf( room, listed );
+            Assert.AreEqual( 0, final.Intersect( passable ).Count(), "a refusal is final or passable, never both" );
+
+            foreach ( var code in listed.Where( c => c.StartsWith( "authz.", StringComparison.Ordinal ) ) )
+            {
+                Assert.AreEqual( 1, new[] { final.Contains( code ), passable.Contains( code ) }.Count( x => x ), $"{code} is not decided as final or passable exactly once" );
+            }
+
+            CollectionAssert.IsSubsetOf( new[] { "door.bad_request", "door.not_allowed", "door.not_found", "door.not_member", "door.self", "door.target_not_eligible", "rpc.bad_gif", "rpc.gifs_off" }, final );
+            CollectionAssert.AreEqual( new[] { "authz.dm_unavailable" }, room );
+        }
+
+        /// <summary>
+        /// The sentences a direct message or a group is refused in say conversation and never
+        /// channel; the clients carry the same five as a constant and compare it to this copy.
+        /// </summary>
+        [TestMethod]
+        public void ConversationTexts_TheFiveRefusals_SayConversation()
+        {
+            var texts = (JObject) ReadEmbeddedContract()["conversation_texts"];
+
+            Assert.IsNotNull( texts, "the contract carries no conversation texts" );
+            CollectionAssert.AreEquivalent(
+                new[] { "authz.no_announcement_right", "authz.no_mention_all_right", "authz.not_member", "authz.not_readable", "rt.read_revoked" },
+                texts.Properties().Select( p => p.Name ).ToArray() );
+
+            foreach ( var property in texts.Properties() )
+            {
+                StringAssert.Contains( property.Value.Value<string>(), "conversation" );
+                Assert.IsFalse( property.Value.Value<string>().IndexOf( "channel", StringComparison.OrdinalIgnoreCase ) >= 0, property.Name );
+            }
+        }
+
+        /// <summary>
+        /// Finds the repository root from where the tests run.
+        /// </summary>
+        /// <returns>The folder that holds the Rock project.</returns>
+        private static string RepositoryRoot()
+        {
+            var directory = new DirectoryInfo( AppDomain.CurrentDomain.BaseDirectory );
+            while ( directory != null && !Directory.Exists( Path.Combine( directory.FullName, "Rock", "Communication", "Chat" ) ) )
+            {
+                directory = directory.Parent;
+            }
+
+            Assert.IsNotNull( directory, "the test runs outside the repository" );
+            return directory.FullName;
+        }
         #endregion
     }
 }
