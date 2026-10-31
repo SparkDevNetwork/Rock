@@ -27,6 +27,7 @@ import { defineComponent, nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import BlockCard from "../../../../../src/Communication/Chat/ChatShell/components/blockCard.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -1673,5 +1674,96 @@ describe("a failed send's own choices", () => {
 
         expect(wrapper.element.querySelector(`#${button.getAttribute("aria-describedby")}`)?.textContent).toBe(reason);
         expect(wrapper.element.querySelector(".chat-cm-state[title], .chat-meta[title]")).toBeNull();
+    });
+});
+
+// The row clears its one-off motion classes when the keyframes it started finish. The keyframes
+// are global (chat.css), so the row keys on their plain names; a renamed keyframe would leave a
+// class stuck and the next edit would replay nothing.
+describe("a row's one-off motion", () => {
+    function animationEnd(wrapper: VueWrapper, animationName: string): void {
+        const event = new Event("animationend", { bubbles: true });
+        Object.defineProperty(event, "animationName", { value: animationName });
+        root(wrapper).dispatchEvent(event);
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ message: message(), isChannel, position: "single" });
+
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+
+        animationEnd(wrapper, "chat-crossfade");
+        await nextTick();
+        expect(wrapper.findAll(".is-crossfading").length).toBe(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+
+        animationEnd(wrapper, "chat-meta-in");
+        await nextTick();
+        expect(wrapper.findAll(".is-swapping").length).toBe(0);
+    });
+
+    test("an unrelated animation's end clears nothing", async () => {
+        const wrapper = draw({ message: message(), position: "single" });
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+
+        animationEnd(wrapper, "chat-flash-fade");
+        await nextTick();
+
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+    });
+});
+
+// Each request a look can make is wired once in the row, so each is driven through both looks.
+describe("a row's requests, in both looks", () => {
+    const quotedMessage = { id: 40, person_alias_guid: lee, sender_nick_name: "Lee", sender_last_name: "Leader", sender_avatar_url: null, body: "Doors open at 6", pieces: null, visibility: "visible", visibility_notice: null, created_at: nineOhTwo, deleted_at: null };
+    const failedRow = (): PendingMessage => pendingRow({ localId: "b", status: "failed", errorCode: "rpc.transport", reason: { alone: "x", besideRetry: "x", canRetry: true } } as Partial<PendingMessage>);
+
+    async function chooseFailed(wrapper: VueWrapper, index: number): Promise<void> {
+        await wrapper.get("[data-testid='message-failed-actions']").trigger("click");
+        await nextTick();
+        await wrapper.findAll("[role='menuitem']")[index].trigger("click");
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a jump from the quote is passed on in %s", (_kind, isChannel) => {
+        const wrapper = draw({ message: message({ quoted_message_id: 40, quoted: quotedMessage } as Partial<TimelineMessage>), isChannel, position: "single" });
+
+        wrapper.findComponent(MessageQuote).vm.$emit("jump", 40);
+
+        expect(wrapper.emitted("jump")).toEqual([[40]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("Try again is passed on in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ pending: failedRow(), isOwn: true, isChannel, position: "single" });
+
+        await chooseFailed(wrapper, 0);
+
+        expect(wrapper.emitted("retry")).toEqual([[["b"]]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("Delete is passed on in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ pending: failedRow(), isOwn: true, isChannel, position: "single" });
+
+        await chooseFailed(wrapper, 1);
+
+        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a block card's button asks for the server action on its own message in %s", async (_kind, isChannel) => {
+        const card = message({ message_type: "system", person_alias_guid: null, blocks: [{ type: "text", text: "hi", pieces: null, fallback: { type: "text", text: "hi" } }] } as Partial<TimelineMessage>);
+        const wrapper = draw({ message: card, isChannel, position: "first" });
+        const run = wrapper.findComponent(BlockCard).props("runAction") as (action: { id: string, label: string, call: unknown }) => Promise<void>;
+        const action = { id: "go", label: "Go", call: {} };
+
+        const settled = run(action);
+        const request = wrapper.emitted("messageAction")?.[0]?.[0] as { kind: string, message: TimelineMessage, action: unknown, onSettled: () => void };
+
+        expect(request.kind).toBe("server");
+        expect(request.message.id).toBe(card.id);
+        expect(request.action).toEqual(action);
+        request.onSettled();
+        await expect(settled).resolves.toBeUndefined();
     });
 });
