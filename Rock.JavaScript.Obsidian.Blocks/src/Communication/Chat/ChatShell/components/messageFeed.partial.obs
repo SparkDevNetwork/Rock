@@ -1136,13 +1136,18 @@
 
     /**
      * Reads the reader's place from where the feed is scrolled to: a move down into the newest
-     * message's reach puts them at it and a move up out of it takes them from it. With no move,
-     * nothing changes, whatever the content did meanwhile.
+     * message's reach, or a scroll that lands at the very end whoever moved it (the browser clamps
+     * a reader to the end when content shrinks), puts them at it, and only a move up out of the
+     * reach takes them from it. With no move, nothing changes, whatever the content did meanwhile.
+     * The first frames of a smooth scroll up are still in reach but not at the end, so they stay
+     * a move up.
      */
     function readReader(): void {
         const top = feed.value?.scrollTop ?? 0;
         const isNear = isNearBottom();
-        if (isNear && top > readerTop) {
+        const element = feed.value;
+        const isAtEnd = !element || element.scrollHeight - top - element.clientHeight < 1;
+        if (isNear && (top > readerTop || isAtEnd)) {
             isAtNewest.value = true;
         }
         else if (!isNear && top < readerTop) {
