@@ -23,9 +23,10 @@
             </span>
         </template>
 
-        <!-- A block post: a card from its sender, or from the church when nobody sent it. -->
-        <template v-else-if="state === 'card'">
-            <template v-if="layout === 'community'">
+        <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
+        <template v-else-if="layout === 'community'">
+            <!-- A block post: a card from its sender, or from the church when nobody sent it. -->
+            <template v-if="state === 'card'">
                 <div class="chat-cm-gutter">
                     <span class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                 </div>
@@ -38,156 +39,74 @@
                     <BlockCard :text="text" :blocks="message?.blocks ?? null" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" :runAction="runBlockAction" />
                 </div>
             </template>
-            <BlockCard v-else
-                       :text="text"
-                       :blocks="message?.blocks ?? null"
-                       :head="{ face, name: displayName, time }"
-                       :personAliasGuid="personAliasGuid"
-                       :isConversation="!isChannel"
-                       :runAction="runBlockAction" />
-        </template>
-
-        <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
-        <template v-else-if="layout === 'community'">
-            <button v-if="isThreadReply"
-                    type="button"
-                    class="chat-thread-label"
-                    data-testid="thread-reply-label"
-                    @click="onOpenOwnThread">
-                <Icon name="thread" size="xs" />Replied to a thread
-            </button>
-            <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
-            <div class="chat-cm-gutter">
-                <template v-if="isHead">
-                    <button v-if="authorGuid"
-                            type="button"
-                            class="chat-cm-av chat-person-opener"
-                            data-testid="sender-avatar"
-                            :aria-label="displayName"
-                            @click="onAuthor"><Avatar :people="[face]" :size="communityFaceSize" /></button>
-                    <span v-else class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
-                </template>
-                <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
-            </div>
-            <div class="chat-cm-main">
-                <div v-if="isHead" class="chat-cm-head" data-testid="message-head">
-                    <component :is="authorGuid ? 'button' : 'span'"
-                               :type="authorGuid ? 'button' : undefined"
-                               class="chat-cm-name"
-                               :class="{ 'chat-person-opener': !!authorGuid }"
-                               data-testid="sender-name"
-                               @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
-                    <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
-                    <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
-                    <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
-                    <span v-if="readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
-                </div>
-                <MessageEditor v-if="isEditorShown && message"
-                               :message="message"
-                               :error="editError"
-                               :isSaving="isEditSaving"
-                               isCommunity
-                               v-on="editorHandlers" />
-                <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
-                    <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
-                    <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
-                    <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
-                    <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
-                    <span v-else-if="state === 'failed'" class="chat-cm-state is-failed">
-                        <FailedMarker :canRetry="canRetryFailed" :reason="failedReason" @retry="onRetryFailed" @discard="onDiscardFailed" />
-                    </span>
-                    <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
-                    <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
-                </div>
-                <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isPending="!!pending" />
-                <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
-                <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
-                <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
-                    <template v-if="hasThread" #default>
-                        <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
-                    </template>
-                </MessageReactions>
-            </div>
-            <!-- The column's bar docks here, on the row's top right, placed against the row itself. -->
-            <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
-        </template>
-
-        <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
-        <template v-else>
-            <div v-if="isNameShown" class="chat-msg-name">
-                <component :is="authorGuid ? 'button' : 'span'"
-                           :type="authorGuid ? 'button' : undefined"
-                           :class="{ 'chat-person-opener': !!authorGuid }"
-                           data-testid="sender-name"
-                           @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
-            </div>
-            <button v-if="isThreadReply"
-                    type="button"
-                    class="chat-thread-label"
-                    data-testid="thread-reply-label"
-                    @click="onOpenOwnThread">
-                <Icon name="thread" size="xs" />Replied to a thread
-            </button>
-            <!-- The ghost of the message quoted, the bubble overlapping its foot. -->
-            <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" @jump="emit('jump', $event)" />
-            <div class="chat-msg-line">
-                <span v-if="!isOwn" class="chat-msg-face">
-                    <template v-if="isLastOfGroup">
+            <template v-else>
+                <button v-if="isThreadReply"
+                        type="button"
+                        class="chat-thread-label"
+                        data-testid="thread-reply-label"
+                        @click="onOpenOwnThread">
+                    <Icon name="thread" size="xs" />Replied to a thread
+                </button>
+                <MessageQuote v-if="isQuoteShown && message" :message="message" :isOwn="isOwn" :personAliasGuid="personAliasGuid" isCommunity @jump="emit('jump', $event)" />
+                <div class="chat-cm-gutter">
+                    <template v-if="isHead">
                         <button v-if="authorGuid"
                                 type="button"
-                                class="chat-person-opener"
+                                class="chat-cm-av chat-person-opener"
                                 data-testid="sender-avatar"
                                 :aria-label="displayName"
-                                @click="onAuthor"><Avatar :people="[face]" :size="34" /></button>
-                        <Avatar v-else :people="[face]" :size="34" />
+                                @click="onAuthor"><Avatar :people="[face]" :size="communityFaceSize" /></button>
+                        <span v-else class="chat-cm-av"><Avatar :people="[face]" :size="communityFaceSize" /></span>
                     </template>
-                </span>
-                <!-- The bubble's box, which its bar is placed beside, level with its top. -->
-                <div class="chat-bub-anchor">
+                    <span v-else class="chat-cm-gutter-time" data-testid="gutter-time" aria-hidden="true">{{ gutterTime }}</span>
+                </div>
+                <div class="chat-cm-main">
+                    <div v-if="isHead" class="chat-cm-head" data-testid="message-head">
+                        <component :is="authorGuid ? 'button' : 'span'"
+                                   :type="authorGuid ? 'button' : undefined"
+                                   class="chat-cm-name"
+                                   :class="{ 'chat-person-opener': !!authorGuid }"
+                                   data-testid="sender-name"
+                                   @click="authorGuid && onAuthor($event)">{{ displayName }}</component>
+                        <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
+                        <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                        <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
+                        <span v-if="readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
+                    </div>
                     <MessageEditor v-if="isEditorShown && message"
                                    :message="message"
                                    :error="editError"
                                    :isSaving="isEditSaving"
+                                   isCommunity
                                    v-on="editorHandlers" />
-                    <div v-else-if="isBubbleShown"
-                         class="chat-bubble" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading, 'is-flashing': isFlashing }">
-                        <div v-if="isAnnouncement" class="chat-bubble-label">
-                            <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
-                        </div>
+                    <div v-else class="chat-cm-text" :class="{ 'is-tomb': isTomb, 'is-jumbo': isJumbo, 'is-crossfading': isCrossfading }">
                         <Icon v-if="isTomb" :name="tombIcon" size="sm" class="chat-tomb-icon" />
-                        <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" isConversation :isPersonOpenable="!!message" @person="onPerson" />
+                        <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isPersonOpenable="!!message" @person="onPerson" />
+                        <span v-if="isEdited" class="chat-cm-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">(edited)</span>
+                        <span v-if="isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
+                        <span v-else-if="state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
+                        <span v-else-if="state === 'failed'" class="chat-cm-state is-failed">
+                            <FailedMarker :canRetry="canRetryFailed" :reason="failedReason" @retry="onRetryFailed" @discard="onDiscardFailed" />
+                        </span>
+                        <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
+                        <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
                     </div>
-                    <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isOwn="isOwn" :isPending="!!pending" />
-                    <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
+                    <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isPending="!!pending" />
+                    <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
+                    <!-- The same pill and chips as a direct message's, under the text at the text column's left edge. -->
+                    <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" isCommunity v-on="reactionsHandlers">
+                        <template v-if="hasThread" #default>
+                            <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
+                        </template>
+                    </MessageReactions>
                 </div>
-            </div>
-            <!-- The reactions row, tucked into the bubble's foot, the thread pill first at its aligned edge. -->
-            <MessageReactions v-if="message && (hasThread || isReactable)" v-bind="reactionsProps" v-on="reactionsHandlers">
-                <template v-if="hasThread" #default>
-                    <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
-                </template>
-            </MessageReactions>
-            <div v-if="isEditedUnder && !isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</div>
-            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': state === 'failed' }" data-testid="message-meta">
-                <template v-if="state === 'failed'">
-                    <FailedMarker :canRetry="canRetryFailed" :reason="failedReason" @retry="onRetryFailed" @discard="onDiscardFailed" />
-                </template>
-                <template v-else-if="isSendingShown">
-                    <Icon name="clock" size="xs" />
-                    <span data-testid="message-state">Sending…</span>
-                </template>
-                <template v-else>
-                    <span class="chat-meta-time">{{ time }}</span>
-                    <span v-if="state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
-                    <template v-else-if="isEdited">
-                        <span aria-hidden="true">·</span>
-                        <span class="chat-meta-edited" :class="{ 'is-swapping': isEditedNow }" data-testid="message-edited">Edited</span>
-                    </template>
-                </template>
-            </div>
-            <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
+                <!-- The column's bar docks here, on the row's top right, placed against the row itself. -->
+                <span v-if="isBarOffered" ref="barDock" class="chat-tools-dock"></span>
+            </template>
         </template>
+
+        <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
+        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isFlashing="isFlashing" />
 
         <!-- A phone's actions, from a tap on the message; drawn over the whole chat. -->
         <ActionSheet v-if="isSheetSurface"
@@ -223,24 +142,18 @@
     outline: none;
 }
 
-.chat-msg.is-conversational:focus-visible .chat-bubble,
-.chat-msg.is-conversational.is-system:focus-visible,
-.chat-msg.is-conversational.is-card:focus-visible .chat-card {
+.chat-msg.is-conversational.is-system:focus-visible {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
 }
 
-.chat-msg.is-conversational:focus .chat-bubble,
-.chat-msg.is-conversational.is-system:focus,
-.chat-msg.is-conversational.is-card:focus .chat-card {
+.chat-msg.is-conversational.is-system:focus {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
 }
 
 @supports selector(:focus-visible) {
-    .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bubble,
-    .chat-msg.is-conversational.is-system:focus:not(:focus-visible),
-    .chat-msg.is-conversational.is-card:focus:not(:focus-visible) .chat-card {
+    .chat-msg.is-conversational.is-system:focus:not(:focus-visible) {
         outline: none;
     }
 
@@ -270,24 +183,10 @@
 /*
     A message jumped to flashes the church's wash, held for most of its length and then let go, so
     the eye finds it before it fades. A channel's row fades it out of its own background; a bubble
-    fades a wash laid just past its edge. Reduced motion keeps it, being a color fade only.
+    fades its own. Reduced motion keeps it, being a color fade only.
 */
 .chat-msg.is-community.is-flashing {
     animation: chat-cm-flash var(--chat-d-flash) var(--chat-ease-state);
-}
-
-.chat-bubble.is-flashing {
-    position: relative;
-}
-
-.chat-bubble.is-flashing::after {
-    position: absolute;
-    inset: -3px;
-    pointer-events: none;
-    content: "";
-    background: var(--chat-flash);
-    border-radius: inherit;
-    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
 .is-crossfading {
@@ -301,15 +200,6 @@
 
 .chat-msg.is-conversational.is-own {
     align-items: flex-end;
-}
-
-/* The name, every bubble and the time stand 2px apart, as one column. */
-.chat-msg-name {
-    padding: 0 12px 1px 54px;
-    margin-bottom: 2px;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--chat-text-2);
 }
 
 /*
@@ -332,205 +222,25 @@
     font-weight: 700;
 }
 
-.chat-cm-name.chat-person-opener:hover,
-.chat-msg-name .chat-person-opener:hover {
+.chat-cm-name.chat-person-opener:hover {
     text-decoration: underline;
     text-underline-offset: 2px;
 }
 
-.chat-msg-face > .chat-person-opener {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    line-height: 0;
-    border-radius: 50%;
-}
-
-.chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
-    position: static;
-}
-
-.chat-msg-line {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    max-width: 100%;
-}
-
-/*
-    The face hangs from the bubble's bottom edge and adds no height of its own, so a bubble shorter
-    than the face, a deleted message or a large emoji, sits right under the name like any other.
-*/
-.chat-msg-face {
-    position: relative;
-    flex: none;
-    align-self: stretch;
-    width: 34px;
-}
-
-.chat-msg-face > :deep(.chat-pile) {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-}
-
-/* A quoted message's bubble comes up over the ghost's foot by 4px, drawn above it. */
-.chat-quote + .chat-msg-line {
-    position: relative;
-    z-index: 1;
-    margin-top: -4px;
-}
-
-.chat-msg[data-position="middle"] > .chat-quote,
-.chat-msg[data-position="last"] > .chat-quote {
-    margin-top: 6px;
-}
-
-/* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
-.chat-bub-anchor {
-    position: relative;
-    display: flex;
-    min-width: 0;
-    max-width: 100%;
-}
-
-/* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble or the row. */
+/* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the row. */
 .chat-tools-dock {
     display: contents;
 }
 
-/* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
-.chat-bubble {
-    min-width: 0;
-    max-width: 100%;
-    padding: 6px 13px 7px;
-    font-size: 14.5px;
-    line-height: 1.45;
-    color: var(--chat-text);
-    background: var(--chat-bubble);
-    border-radius: var(--chat-r-bubble);
-    /* A send eases from its sending strength to full as it settles, rather than snapping. */
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
-    background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
-}
-
-/* Within a group the corners toward the sender's side tighten, so the bubbles read as one run. */
-.is-conversational[data-position="first"] .chat-bubble {
-    border-bottom-left-radius: var(--chat-r-tail);
-}
-
-.is-conversational[data-position="middle"] .chat-bubble {
-    border-top-left-radius: var(--chat-r-tail);
-    border-bottom-left-radius: var(--chat-r-tail);
-}
-
-.is-conversational[data-position="last"] .chat-bubble {
-    border-top-left-radius: var(--chat-r-tail);
-}
-
-.is-conversational.is-own[data-position] .chat-bubble {
-    border-radius: var(--chat-r-bubble);
-}
-
-.is-conversational.is-own[data-position="first"] .chat-bubble {
-    border-bottom-right-radius: var(--chat-r-tail);
-}
-
-.is-conversational.is-own[data-position="middle"] .chat-bubble {
-    border-top-right-radius: var(--chat-r-tail);
-    border-bottom-right-radius: var(--chat-r-tail);
-}
-
-.is-conversational.is-own[data-position="last"] .chat-bubble {
-    border-top-right-radius: var(--chat-r-tail);
-}
-
-/* The person's own: a soft tint of the church color, never solid, and chips one step deeper. */
-.is-own .chat-bubble {
-    --chat-mn-bg: var(--chat-mn-bg-own);
-    --chat-mn-bg-hover: var(--chat-mn-bg-own);
-    background-color: var(--chat-brand-tint);
-    box-shadow: inset 0 0 0 1px var(--chat-own-hairline);
-}
-
-.is-announcement .chat-bubble {
-    background-color: var(--chat-surface);
-    box-shadow: inset 0 0 0 1px var(--chat-announcement-ring);
-}
-
-.chat-bubble-label {
-    margin: 2px 0 4px;
-}
-
-.chat-bubble.is-jumbo {
-    padding: 0 4px;
-    font-size: 40px;
-    line-height: 1.15;
-    background: none;
-    box-shadow: none;
-}
-
-.chat-bubble.is-tomb {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 13.5px;
-    font-style: italic;
-    color: var(--chat-muted);
-    background: none;
-    box-shadow: inset 0 0 0 1px var(--chat-line-strong);
-}
-
-.is-sending .chat-bubble,
 .is-sending .chat-cm-text {
     opacity: .62;
 }
 
-.is-unknown .chat-bubble,
 .is-unknown .chat-cm-text {
     color: var(--chat-muted);
 }
 
-.chat-meta,
-.chat-msg-edited {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 16px;
-    padding: 1px 12px 0;
-    font-size: 11.5px;
-    font-variant-numeric: tabular-nums;
-    color: var(--chat-muted);
-}
-
-.is-conversational .chat-meta {
-    margin-top: 2px;
-}
-
-.is-conversational:not(.is-own) .chat-meta,
-.is-conversational:not(.is-own) .chat-msg-edited {
-    padding-left: 54px;
-}
-
-/* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
-.chat-meta.is-failed {
-    gap: 4px;
-    font-weight: 700;
-    color: var(--chat-danger-ink);
-}
-
-.chat-meta-sent,
-.chat-meta-edited {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-}
-
-/* "Sent" always arrives fresh; "Edited" slides in only for an edit that lands while it is on screen. */
-.chat-meta-sent,
+/* "(edited)" slides in only for an edit that lands while it is on screen. */
 .is-swapping {
     animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
 }
@@ -538,10 +248,6 @@
 /* An inline label takes no transform, so a channel's "(edited)" is a box while it slides. */
 .chat-cm-edited.is-swapping {
     display: inline-block;
-}
-
-.chat-meta-sent {
-    color: var(--chat-success);
 }
 
 .chat-notice {
@@ -565,27 +271,6 @@
     max-width: 100%;
     margin-top: -4px;
     padding: 0 0 0 52px;
-}
-
-.is-own .chat-reacts {
-    flex-direction: row-reverse;
-    padding: 0 10px 0 0;
-}
-
-.has-thread.is-conversational .chat-bubble:not(.is-jumbo),
-.has-reactions.is-conversational .chat-bubble:not(.is-jumbo) {
-    padding-bottom: 10px;
-}
-
-/* A large emoji or an announcement has no padding to tuck into, so the row sits below it. */
-.is-jumbo .chat-reacts,
-.is-announcement .chat-reacts {
-    margin-top: 4px;
-}
-
-.is-own .chat-reacts :deep(.chat-tsum-dot) {
-    right: auto;
-    left: -1px;
 }
 
 /* A channel does not mirror the reader's own messages, so its row starts at the text's left edge, 4px below it. */
@@ -622,10 +307,6 @@
 
 .chat-thread-label:hover {
     color: var(--chat-text-2);
-}
-
-.is-conversational:not(.is-own) .chat-thread-label {
-    margin-left: 42px;
 }
 
 /* In Community it takes the text column's first line, so the face and the head stay together under it. */
@@ -946,19 +627,6 @@
     }
 }
 
-@keyframes chat-crossfade {
-    from {
-        opacity: 0;
-    }
-}
-
-@keyframes chat-meta-in {
-    from {
-        opacity: 0;
-        transform: translateY(-3px);
-    }
-}
-
 /* The row's own background is where the flash ends, so no last frame is named. */
 @keyframes chat-cm-flash {
     0%,
@@ -967,16 +635,6 @@
     }
 }
 
-@keyframes chat-flash-fade {
-    0%,
-    55% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
-    }
-}
 /* A message's files under its text, a little apart from it. */
 .chat-msg-files {
     margin-top: 4px;
@@ -984,7 +642,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, proxyRefs, ref, toRef, watch } from "vue";
     import ActionSheet from "./actionSheet.partial.obs";
     import Attachments from "./attachments.partial.obs";
     import BlockCard from "./blockCard.partial.obs";
@@ -996,7 +654,8 @@
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import FailedMarker from "./failedMarker.partial.obs";
-    import { useMessageRowView } from "../composables/useMessageRowView.partial";
+    import MessageRowBubble from "./messageRowBubble.partial.obs";
+    import { MessageRowHandlers, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
@@ -1217,9 +876,6 @@
     /** The look the conversation's kind picks, which the row draws in. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
-    /** A message of files alone draws no empty bubble; every other message draws its bubble. */
-    const isBubbleShown = computed((): boolean => files.value.length === 0 || !!text.value?.trim());
-
     function onRetryFailed(): void {
         if (props.pending) {
             emit("retry", [props.pending.localId]);
@@ -1242,16 +898,6 @@
     const isLeaderShown = computed((): boolean => props.isChannel && (props.isOwn
         ? props.isPersonLeader
         : props.message?.sender_is_leader === true && props.message.sender_listed !== false));
-
-    const isLastOfGroup = computed((): boolean => props.position === "last" || props.position === "single");
-
-    /** Bubbles name another person's group once, over its first message, and never in a direct message. */
-    const isNameShown = computed((): boolean => !props.isOwn && !props.isDirectMessage && isHead.value);
-
-    /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
-    const isMetaShown = computed((): boolean => isLastOfGroup.value || state.value === "failed" || isSendingShown.value);
-
-    const isEditedUnder = computed((): boolean => isEdited.value && !isMetaShown.value);
 
     /** Community's face fills its gutter, which is narrower on a phone. */
     const communityFaceSize = computed((): number => props.isPhone ? 32 : 36);
@@ -1377,6 +1023,42 @@
         pickerAnchor,
         messageAnchor
     });
+
+    /**
+     * What the look draws: the facts, and what the row lends it of what can be done to the
+     * message and of its own motion. Made once and never replaced, so a look draws again only
+     * when a member it reads changes; each member is unwrapped one level, so the look hands its
+     * children the same message, files and pieces the row holds.
+     */
+    const view = proxyRefs({
+        ...facts,
+        isEditorShown,
+        isBarOffered,
+        editError: toRef(props, "editError"),
+        isEditSaving: toRef(props, "isEditSaving"),
+        reactionsProps,
+        isCrossfading,
+        isEditedNow,
+        isThreadStartedHere
+    }) as MessageRowView;
+
+    /** What the look calls, each request wired here once rather than in each look. */
+    const on: MessageRowHandlers = {
+        author: onAuthor,
+        person: onPerson,
+        openThread: onOpenOwnThread,
+        retry: onRetryFailed,
+        discard: onDiscardFailed,
+        jump: quotedMessageId => emit("jump", quotedMessageId),
+        editor: editorHandlers,
+        reactions: reactionsHandlers,
+        runBlockAction,
+        // The look's dock arrives as it mounts and goes as it unmounts, during the patch, before
+        // the watcher that lends it to the bar reads it.
+        setDock: element => {
+            barDock.value = element instanceof HTMLElement ? element : undefined;
+        }
+    };
 
     /** A page of who reacted to this message, asked of the reactions the shell holds. */
     function listReactors(code: string | null, after: ReactorsCursor | null): Promise<ReactorsPage | null> {

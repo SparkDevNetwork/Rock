@@ -724,6 +724,14 @@
     }
 }
 
+/* A state's words arriving, such as a message's "Sent" or "Edited", in either look. */
+@keyframes chat-meta-in {
+    from {
+        opacity: 0;
+        transform: translateY(-3px);
+    }
+}
+
 /* Reduced motion: the badge fades in rather than springing. */
 @media (prefers-reduced-motion: reduce) {
     .chat-badge {

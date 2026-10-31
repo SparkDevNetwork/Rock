@@ -1,0 +1,514 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <BlockCard v-if="view.state === 'card'"
+               :text="view.text"
+               :blocks="view.message?.blocks ?? null"
+               :head="{ face: view.face, name: view.displayName, time: view.time }"
+               :personAliasGuid="view.personAliasGuid"
+               isConversation
+               :runAction="on.runBlockAction" />
+    <template v-else>
+        <div v-if="isNameShown" class="chat-msg-name">
+            <component :is="view.authorGuid ? 'button' : 'span'"
+                       :type="view.authorGuid ? 'button' : undefined"
+                       :class="{ 'chat-person-opener': !!view.authorGuid }"
+                       data-testid="sender-name"
+                       @click="view.authorGuid && on.author($event)">{{ view.displayName }}</component>
+        </div>
+        <button v-if="view.isThreadReply"
+                type="button"
+                class="chat-thread-label"
+                data-testid="thread-reply-label"
+                @click="on.openThread">
+            <Icon name="thread" size="xs" />Replied to a thread
+        </button>
+        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
+        <div class="chat-msg-line">
+            <span v-if="!view.isOwn" class="chat-msg-face">
+                <template v-if="isLastOfGroup">
+                    <button v-if="view.authorGuid"
+                            type="button"
+                            class="chat-person-opener"
+                            data-testid="sender-avatar"
+                            :aria-label="view.displayName"
+                            @click="on.author"><Avatar :people="[view.face]" :size="34" /></button>
+                    <Avatar v-else :people="[view.face]" :size="34" />
+                </template>
+            </span>
+            <!-- The bubble's box, which its bar is placed beside, level with its top. -->
+            <div class="chat-bub-anchor">
+                <MessageEditor v-if="view.isEditorShown && view.message"
+                               :message="view.message"
+                               :error="view.editError"
+                               :isSaving="view.isEditSaving"
+                               v-on="on.editor" />
+                <div v-else-if="isBubbleShown"
+                     class="chat-bubble" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
+                    <div v-if="view.isAnnouncement" class="chat-bubble-label">
+                        <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                    </div>
+                    <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
+                    <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
+                </div>
+                <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
+                <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
+            </div>
+        </div>
+        <MessageReactions v-if="view.message && (view.hasThread || view.isReactable)" v-bind="view.reactionsProps" v-on="on.reactions">
+            <template v-if="view.hasThread" #default>
+                <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" @open="on.openThread" />
+            </template>
+        </MessageReactions>
+        <div v-if="isEditedUnder && !view.isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</div>
+        <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': view.state === 'failed' }" data-testid="message-meta">
+            <template v-if="view.state === 'failed'">
+                <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
+            </template>
+            <template v-else-if="view.isSendingShown">
+                <Icon name="clock" size="xs" />
+                <span data-testid="message-state">Sending…</span>
+            </template>
+            <template v-else>
+                <span class="chat-meta-time">{{ view.time }}</span>
+                <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                <template v-else-if="view.isEdited">
+                    <span aria-hidden="true">·</span>
+                    <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
+                </template>
+            </template>
+        </div>
+        <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
+    </template>
+</template>
+
+<style scoped>
+/*
+    A direct message's row: bubbles, the name over another person's group, their face at its last,
+    and the time under the group. A focus from a jump rings what the person reads, the bubble or
+    the card; the row's own sheet holds the rest of the ring's rule and why it is written twice.
+*/
+.chat-msg.is-conversational:focus-visible .chat-bubble,
+.chat-msg.is-conversational.is-card:focus-visible .chat-card {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+.chat-msg.is-conversational:focus .chat-bubble,
+.chat-msg.is-conversational.is-card:focus .chat-card {
+    outline: 2px solid var(--chat-brand-ink);
+    outline-offset: 2px;
+}
+
+@supports selector(:focus-visible) {
+    .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bubble,
+    .chat-msg.is-conversational.is-card:focus:not(:focus-visible) .chat-card {
+        outline: none;
+    }
+}
+
+/*
+    A bubble jumped to fades a wash laid just past its edge, held for most of its length and then
+    let go. Reduced motion keeps it, being a color fade only.
+*/
+.chat-bubble.is-flashing {
+    position: relative;
+}
+
+.chat-bubble.is-flashing::after {
+    position: absolute;
+    inset: -3px;
+    pointer-events: none;
+    content: "";
+    background: var(--chat-flash);
+    border-radius: inherit;
+    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) forwards;
+}
+
+.is-crossfading {
+    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* The name, every bubble and the time stand 2px apart, as one column. */
+.chat-msg-name {
+    padding: 0 12px 1px 54px;
+    margin-bottom: 2px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+/*
+    An author's name or face that opens their card keeps its look: the button gives up its own face,
+    and the name underlines on hover as a link would.
+*/
+.chat-person-opener {
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-align: inherit;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-xs);
+}
+
+.chat-msg-name .chat-person-opener:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.chat-msg-face > .chat-person-opener {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    line-height: 0;
+    border-radius: 50%;
+}
+
+.chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
+    position: static;
+}
+
+.chat-msg-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 100%;
+}
+
+/*
+    The face hangs from the bubble's bottom edge and adds no height of its own, so a bubble shorter
+    than the face, a deleted message or a large emoji, sits right under the name like any other.
+*/
+.chat-msg-face {
+    position: relative;
+    flex: none;
+    align-self: stretch;
+    width: 34px;
+}
+
+.chat-msg-face > :deep(.chat-pile) {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+/*
+    The ghost of a quoted message stands over the bubble, which comes up over its foot by 4px,
+    drawn above it.
+*/
+.chat-quote + .chat-msg-line {
+    position: relative;
+    z-index: 1;
+    margin-top: -4px;
+}
+
+.chat-msg[data-position="middle"] > .chat-quote,
+.chat-msg[data-position="last"] > .chat-quote {
+    margin-top: 6px;
+}
+
+/* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
+.chat-bub-anchor {
+    position: relative;
+    display: flex;
+    min-width: 0;
+    max-width: 100%;
+}
+
+/* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble. */
+.chat-tools-dock {
+    display: contents;
+}
+
+/* The zero minimum lets the bubble shrink to the line beside the face rather than push past it. */
+.chat-bubble {
+    min-width: 0;
+    max-width: 100%;
+    padding: 6px 13px 7px;
+    font-size: 14.5px;
+    line-height: 1.45;
+    color: var(--chat-text);
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-bubble);
+    /* A send eases from its sending strength to full as it settles, rather than snapping. */
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-base) var(--chat-ease-state);
+}
+
+.chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
+    background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
+}
+
+/* Within a group the corners toward the sender's side tighten, so the bubbles read as one run. */
+.is-conversational[data-position="first"] .chat-bubble {
+    border-bottom-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational[data-position="middle"] .chat-bubble {
+    border-top-left-radius: var(--chat-r-tail);
+    border-bottom-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational[data-position="last"] .chat-bubble {
+    border-top-left-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position] .chat-bubble {
+    border-radius: var(--chat-r-bubble);
+}
+
+.is-conversational.is-own[data-position="first"] .chat-bubble {
+    border-bottom-right-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position="middle"] .chat-bubble {
+    border-top-right-radius: var(--chat-r-tail);
+    border-bottom-right-radius: var(--chat-r-tail);
+}
+
+.is-conversational.is-own[data-position="last"] .chat-bubble {
+    border-top-right-radius: var(--chat-r-tail);
+}
+
+/* The person's own: a soft tint of the church color, never solid, and chips one step deeper. */
+.is-own .chat-bubble {
+    --chat-mn-bg: var(--chat-mn-bg-own);
+    --chat-mn-bg-hover: var(--chat-mn-bg-own);
+    background-color: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1px var(--chat-own-hairline);
+}
+
+.is-announcement .chat-bubble {
+    background-color: var(--chat-surface);
+    box-shadow: inset 0 0 0 1px var(--chat-announcement-ring);
+}
+
+.chat-bubble-label {
+    margin: 2px 0 4px;
+}
+
+.chat-bubble.is-jumbo {
+    padding: 0 4px;
+    font-size: 40px;
+    line-height: 1.15;
+    background: none;
+    box-shadow: none;
+}
+
+.chat-bubble.is-tomb {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13.5px;
+    font-style: italic;
+    color: var(--chat-muted);
+    background: none;
+    box-shadow: inset 0 0 0 1px var(--chat-line-strong);
+}
+
+.is-sending .chat-bubble {
+    opacity: .62;
+}
+
+.is-unknown .chat-bubble {
+    color: var(--chat-muted);
+}
+
+.chat-meta,
+.chat-msg-edited {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 16px;
+    padding: 1px 12px 0;
+    font-size: 11.5px;
+    font-variant-numeric: tabular-nums;
+    color: var(--chat-muted);
+}
+
+.is-conversational .chat-meta {
+    margin-top: 2px;
+}
+
+.is-conversational:not(.is-own) .chat-meta,
+.is-conversational:not(.is-own) .chat-msg-edited {
+    padding-left: 54px;
+}
+
+/* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
+.chat-meta.is-failed {
+    gap: 4px;
+    font-weight: 700;
+    color: var(--chat-danger-ink);
+}
+
+.chat-meta-sent,
+.chat-meta-edited {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+/* "Sent" always arrives fresh; "Edited" slides in only for an edit that lands while it is on screen. */
+.chat-meta-sent,
+.is-swapping {
+    animation: chat-meta-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-meta-sent {
+    color: var(--chat-success);
+}
+
+.chat-notice {
+    padding: 1px 12px 0;
+    font-size: 12px;
+    color: var(--chat-muted);
+}
+
+/*
+    The row under a bubble tucks 4px up into the bubble's bottom padding, which grows to make room,
+    so it overlaps the bubble's edge and never its text. Another person's row starts 10px in from
+    the bubble, past the face column and its gap; the reader's own mirrors it from the right.
+*/
+.chat-reacts {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+    max-width: 100%;
+    margin-top: -4px;
+    padding: 0 0 0 52px;
+}
+
+.is-own .chat-reacts {
+    flex-direction: row-reverse;
+    padding: 0 10px 0 0;
+}
+
+.has-thread.is-conversational .chat-bubble:not(.is-jumbo),
+.has-reactions.is-conversational .chat-bubble:not(.is-jumbo) {
+    padding-bottom: 10px;
+}
+
+/* A large emoji or an announcement has no padding to tuck into, so the row sits below it. */
+.is-jumbo .chat-reacts,
+.is-announcement .chat-reacts {
+    margin-top: 4px;
+}
+
+.is-own .chat-reacts :deep(.chat-tsum-dot) {
+    right: auto;
+    left: -1px;
+}
+
+/* "Replied to a thread", in the quote label's recipe, over the bubble's side. */
+.chat-thread-label {
+    --chat-ic-size: 12px;
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+    padding: 0 12px 3px;
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 16px;
+    color: var(--chat-muted);
+    background: none;
+    border: 0;
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-thread-label :deep(.chat-ic) {
+    color: var(--chat-icon);
+}
+
+.chat-thread-label:hover {
+    color: var(--chat-text-2);
+}
+
+.is-conversational:not(.is-own) .chat-thread-label {
+    margin-left: 42px;
+}
+
+@keyframes chat-flash-fade {
+    0%,
+    55% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* A message's files under its text, a little apart from it. */
+.chat-msg-files {
+    margin-top: 4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Attachments from "./attachments.partial.obs";
+    import BlockCard from "./blockCard.partial.obs";
+    import MessageBody from "./messageBody.partial.obs";
+    import MessageEditor from "./messageEditor.partial.obs";
+    import MessageQuote from "./messageQuote.partial.obs";
+    import MessageReactions from "./messageReactions.partial.obs";
+    import ThreadSummary from "./threadSummary.partial.obs";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import FailedMarker from "./failedMarker.partial.obs";
+    import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";
+    import { RowPosition } from "../feedLayout.partial";
+
+    const props = defineProps({
+        /** What the message shows and what can be done to it, as the row worked them out. */
+        view: {
+            type: Object as PropType<MessageRowView>,
+            required: true
+        },
+
+        /** The row's handlers, each request wired once by the row. */
+        on: {
+            type: Object as PropType<MessageRowHandlers>,
+            required: true
+        },
+
+        /** A direct message names nobody over a bubble: the header already says who it is with. */
+        isDirectMessage: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The row's place in its group. */
+        position: {
+            type: String as PropType<RowPosition>,
+            default: "single"
+        },
+
+        /** The message was jumped to, so its bubble flashes. */
+        isFlashing: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const isLastOfGroup = computed((): boolean => props.position === "last" || props.position === "single");
+
+    /** Bubbles name another person's group once, over its first message, and never in a direct message. */
+    const isNameShown = computed((): boolean => !props.view.isOwn && !props.isDirectMessage && props.view.isHead);
+
+    /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
+    const isMetaShown = computed((): boolean => isLastOfGroup.value || props.view.state === "failed" || props.view.isSendingShown);
+
+    const isEditedUnder = computed((): boolean => props.view.isEdited && !isMetaShown.value);
+
+    /** A message of files alone draws no empty bubble; every other message draws its bubble. */
+    const isBubbleShown = computed((): boolean => props.view.files.length === 0 || !!props.view.text?.trim());
+
+    // #endregion Computed Values
+</script>
