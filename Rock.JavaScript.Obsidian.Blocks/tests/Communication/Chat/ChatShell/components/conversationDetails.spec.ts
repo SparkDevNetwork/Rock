@@ -379,6 +379,14 @@ describe("a group's identity", () => {
         expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["4 people", "Group message"]);
     });
 
+    // The header words the same count by the same rule, so a group left with only the reader listed
+    // reads alike in both.
+    test("counts a group left with one person listed as one person, never 1 people", () => {
+        const w = mountGroup({ title: "Group message", facts: groupFacts({ member_count: 1, people: [] }) });
+
+        expect(w.findAll("[data-testid='details-meta-item']").map(item => item.text())).toEqual(["1 person", "Group message"]);
+    });
+
     test("draws a named group's first two and a count of everyone else by its head count", () => {
         const people = [person(5, "Caleb", "Brooks"), person(6, "Hannah", "Diaz"), person(7, "Luis", "Romero"), person(8, "Mia", "Ford"), person(9, "Noah", "Kent")];
         const w = mountGroup({ title: "Trail crew", facts: groupFacts({ name: "Trail crew", member_count: 9, people }) });

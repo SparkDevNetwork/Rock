@@ -98,6 +98,19 @@ describe("the photo grid", () => {
         expect(img.attributes("alt")).toBe("photo-1.jpg");
     });
 
+    // The grid alone owns a single photo's width, and its one column follows the grid. A tile
+    // that carried a width of its own would stretch an auto column past the grid's clamp at phone
+    // width, and the grid would cut the photo off instead of shrinking it. jsdom cannot lay out, so
+    // this pins the cause; the browser cell measures the box.
+    test("a single photo's tile carries only its shape, and the grid's one column follows the grid", async () => {
+        const { wrapper } = await mountFiles([image(1, { width: 1200, height: 900 })]);
+
+        const tile = wrapper.get("[data-testid='attachment-image']").element as HTMLElement;
+        expect(tile.style.width).toBe("");
+        expect((wrapper.get("[data-testid='attachment-grid']").element as HTMLElement).style.width).toBe("320px");
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-grid[data-layout=\"1\"]")["grid-template-columns"]).toBe("minmax(0, 1fr)");
+    });
+
     // The image waits, hidden, in its held box until the browser has decoded it; one message's
     // photos reveal together.
     test("a message's photos stay hidden until all are decoded, then show together", async () => {
@@ -178,10 +191,11 @@ describe("file cards", () => {
  * has no navigation, so each is held back once recorded; a card clicked over and over is taken off
  * the page after a few, so a loop ends and fails rather than hanging the run.
  */
-function recordClicks(card: Element): Array<{ href: string | null, isPrevented: boolean }> & { stop: () => void } {
-    const clicks: Array<{ href: string | null, isPrevented: boolean }> = [];
+function recordClicks(card: Element): Array<{ href: string | null, isPrevented: boolean, ctrlKey: boolean, button: number }> & { stop: () => void } {
+    const clicks: Array<{ href: string | null, isPrevented: boolean, ctrlKey: boolean, button: number }> = [];
     const record = (event: Event): void => {
-        clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented });
+        const mouse = event as MouseEvent;
+        clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented, ctrlKey: mouse.ctrlKey, button: mouse.button });
         event.preventDefault();
         if (clicks.length > 5) {
             card.remove();
@@ -189,6 +203,14 @@ function recordClicks(card: Element): Array<{ href: string | null, isPrevented: 
     };
     document.addEventListener("click", record);
     return Object.assign(clicks, { stop: () => document.removeEventListener("click", record) });
+}
+
+/**
+ * The tab slept past a card's link's end: time moved on and no timer ran, so the card still holds
+ * the link it had, as a browser holding back a hidden tab's timers leaves it.
+ */
+function sleepPastEnd(h: Harness): void {
+    h.now.value += 11 * 60 * 1000;
 }
 
 describe("links over time", () => {
@@ -212,28 +234,117 @@ describe("links over time", () => {
         expect(h.timers).toEqual([]);
     });
 
-    test("a card clicked as its link nears its end waits for a fresh link, then downloads from it", async () => {
+    // The browser opens whatever href the card holds for a gesture the chat cannot follow up (a
+    // middle click, the context menu), so the card asks for a fresh link as the person's pointer or
+    // focus reaches it, before any gesture is made.
+    test.each(["pointerenter", "focus", "touchstart"])("a card reached by %s as its link nears its end is given a fresh link before any click", async gesture => {
         const h = harness();
         const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
-        const clicks: Array<{ href: string | null, isPrevented: boolean }> = [];
-        const record = (event: Event): void => {
-            clicks.push({ href: (event.target as Element).closest("a")?.getAttribute("href") ?? null, isPrevented: event.defaultPrevented });
-            // jsdom has no navigation
-            event.preventDefault();
+        const card = wrapper.get("[data-testid='attachment-file']");
+
+        const working = h.signAnswer.value;
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
         };
-        document.addEventListener("click", record);
+        await h.advance(9 * 60 * 1000 + 5 * 1000);
+        h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+        const signed = h.signs.length;
+
+        card.element.dispatchEvent(new Event(gesture));
+        await settle();
+        await nextTick();
+
+        expect(h.signs).toHaveLength(signed + 1);
+        expect(card.attributes("href")).toContain("-fresh&download=a.pdf");
+
+        // a card with a good link is not signed again
+        card.element.dispatchEvent(new Event(gesture));
+        await settle();
+        expect(h.signs).toHaveLength(signed + 1);
+    });
+
+    test("a card whose fresh signing fails as the pointer reaches it keeps the link it has", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']");
+
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(9 * 60 * 1000 + 5 * 1000);
+
+        card.element.dispatchEvent(new Event("pointerenter"));
+        await settle();
+        await nextTick();
+
+        expect(card.attributes("href")).toContain("token=t-0001&download=a.pdf");
+    });
+
+    // A link signed for ten minutes still opens in its last minute, when it is renewed, so a card
+    // clicked then is opened by the browser from the link it holds, whatever the gesture: a new
+    // tab, a new window, the same tab.
+    test.each([
+        ["a plain click", {}],
+        ["a ctrl-click", { ctrlKey: true }],
+        ["a command-click", { metaKey: true }],
+        ["a shift-click", { shiftKey: true }]
+    ])("%s on a card whose link is near its end but still works is left to the browser, at the link the card holds", async (_, modifiers) => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
 
         try {
-            // its renewal was not answered, so the link left is near its end
-            const working = h.signAnswer.value;
             h.signAnswer.value = () => {
                 throw new TypeError("Failed to fetch");
             };
             await h.advance(9 * 60 * 1000 + 5 * 1000);
+            const signed = h.signs.length;
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ...modifiers }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(clicks.map(c => c.isPrevented)).toEqual([false]);
+            expect(clicks[0].href).toContain("token=t-0001&download=a.pdf");
+            expect(h.signs).toHaveLength(signed);
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test.each([1, 2])("a card clicked with mouse button %i while its link still works is left to the browser", async button => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(9 * 60 * 1000 + 5 * 1000);
+
+        expect(card.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button }))).toBe(true);
+    });
+
+    // A tab the browser held back, or a computer that slept, keeps drawing a card whose link ended
+    // with no timer run to say so. A plain click on it waits for a fresh link and is followed from
+    // it, in the same tab, which a download needs anyway.
+    test("a card clicked after its link ended unseen waits for a fresh link, then downloads from it", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            sleepPastEnd(h);
+            expect(card.getAttribute("href")).toContain("token=t-0001");
+            const working = h.signAnswer.value;
             h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
             const signed = h.signs.length;
 
-            wrapper.get("[data-testid='attachment-file']").element.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
             await settle();
             await nextTick();
             await settle();
@@ -243,22 +354,71 @@ describe("links over time", () => {
             expect(clicks[1].href).toContain("-fresh&download=a.pdf");
         }
         finally {
-            document.removeEventListener("click", record);
+            clicks.stop();
         }
     });
 
-    test("a card double clicked as its link nears its end signs once and downloads once", async () => {
+    // A click made after an await is not the person's to the browser, which may block or misread
+    // a new tab opened from it, so a gesture that asks for one is never made again for them: it is
+    // held, the card takes its fresh link, and the person's next gesture opens it.
+    test("a card ctrl-clicked after its link ended unseen is held and given a fresh link, with no click made in the person's name", async () => {
         const h = harness();
         const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
         const card = wrapper.get("[data-testid='attachment-file']").element;
         const clicks = recordClicks(card);
 
         try {
+            sleepPastEnd(h);
             const working = h.signAnswer.value;
-            h.signAnswer.value = () => {
-                throw new TypeError("Failed to fetch");
-            };
-            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+
+            card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ctrlKey: true }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(clicks.map(c => c.isPrevented)).toEqual([true]);
+            expect(wrapper.get("[data-testid='attachment-file']").attributes("href")).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test("a card middle clicked after its link ended unseen is held and given a fresh link, with no click made in the person's name", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            sleepPastEnd(h);
+            const working = h.signAnswer.value;
+            h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
+
+            const isAllowed = card.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button: 1 }));
+            await settle();
+            await nextTick();
+            await settle();
+
+            expect(isAllowed).toBe(false);
+            expect(clicks).toHaveLength(0);
+            expect(wrapper.get("[data-testid='attachment-file']").attributes("href")).toContain("-fresh&download=a.pdf");
+        }
+        finally {
+            clicks.stop();
+        }
+    });
+
+    test("a card double clicked after its link ended unseen signs once and downloads once", async () => {
+        const h = harness();
+        const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
+        const card = wrapper.get("[data-testid='attachment-file']").element;
+        const clicks = recordClicks(card);
+
+        try {
+            sleepPastEnd(h);
+            const working = h.signAnswer.value;
             h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
             const signed = h.signs.length;
 
@@ -278,17 +438,17 @@ describe("links over time", () => {
         }
     });
 
-    test("a card clicked as its link nears its end, whose fresh signing fails, downloads once from the link it still has", async () => {
+    test("a card clicked after its link ended unseen, whose fresh signing fails, never opens the ended link", async () => {
         const h = harness();
         const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
         const card = wrapper.get("[data-testid='attachment-file']").element;
         const clicks = recordClicks(card);
 
         try {
+            sleepPastEnd(h);
             h.signAnswer.value = () => {
                 throw new TypeError("Failed to fetch");
             };
-            await h.advance(9 * 60 * 1000 + 5 * 1000);
             const signed = h.signs.length;
 
             card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
@@ -297,15 +457,14 @@ describe("links over time", () => {
             await settle();
 
             expect(h.signs.length).toBeLessThanOrEqual(signed + 1);
-            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
-            expect(clicks[1].href).toContain("token=t-0001&download=a.pdf");
+            expect(clicks.map(c => c.isPrevented)).toEqual([true]);
         }
         finally {
             clicks.stop();
         }
     });
 
-    test("a card clicked as its link nears its end, with no session to sign by, asks once and follows the link it still has once", async () => {
+    test("a card clicked after its link ended unseen, with no session to sign by, asks once and opens nothing", async () => {
         const h = harness();
         const { wrapper } = await mountFiles([file(1, "a.pdf")], h);
         const card = wrapper.get("[data-testid='attachment-file']").element;
@@ -317,16 +476,15 @@ describe("links over time", () => {
                 asks++;
                 return null;
             };
-            await h.advance(9 * 60 * 1000 + 5 * 1000);
-            const asked = asks;
+            sleepPastEnd(h);
 
             card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
             await settle();
             await nextTick();
             await settle();
 
-            expect(asks).toBeLessThanOrEqual(asked + 1);
-            expect(clicks.map(c => c.isPrevented)).toEqual([true, false]);
+            expect(asks).toBe(1);
+            expect(clicks.map(c => c.isPrevented)).toEqual([true]);
         }
         finally {
             clicks.stop();
