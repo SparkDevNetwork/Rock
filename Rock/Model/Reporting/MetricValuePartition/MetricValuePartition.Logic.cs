@@ -26,6 +26,15 @@ namespace Rock.Model
         /// <inheritdoc/>
         public override ISecured ParentAuthority => MetricValue ?? base.ParentAuthority;
 
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            // Defer to the metric value, which defers to the metric so its category security applies.
+            var metricValue = MetricValue ?? ( MetricValueId.HasValue ? new MetricValueService( new Rock.Data.RockContext() ).Get( MetricValueId.Value ) : null );
+
+            return metricValue?.IsAuthorized( action, person ) ?? base.IsAuthorized( action, person );
+        }
+
         #endregion
     }
 }
