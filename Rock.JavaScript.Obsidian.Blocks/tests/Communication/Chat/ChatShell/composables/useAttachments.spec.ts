@@ -557,6 +557,44 @@ describe("download links", () => {
         expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
     });
 
+    // A hidden tab's timers are held back by the browser, and a sleeping computer runs none, so the
+    // renewal a minute before a link's end may never run. The page coming back into view does what
+    // the timer would have, so the cards a person returns to hold live links before they are reached.
+    test("a page coming back into view renews the links its timer could not, and stops listening once stopped", async () => {
+        const h = harness();
+        const listeners = new Set<() => void>();
+        const page = {
+            visibilityState: "visible",
+            addEventListener: (type: string, listener: () => void) => type === "visibilitychange" && listeners.add(listener),
+            removeEventListener: (type: string, listener: () => void) => type === "visibilitychange" && listeners.delete(listener)
+        };
+        const show = (state: string): void => {
+            page.visibilityState = state;
+            listeners.forEach(listener => listener());
+        };
+        const attachments = createAttachments(Object.assign(h.dependencies, { document: page }));
+        const pdf = file("d0000000-0000-4000-8000-0000000000b3", "a.pdf");
+        attachments.links.subscribe([pdf]);
+        await settle();
+        expect(h.signs).toHaveLength(1);
+
+        // the tab slept past the link's end: time moved on and no timer ran
+        h.now.value += 11 * 60 * 1000;
+        show("hidden");
+        await settle();
+        expect(h.signs).toHaveLength(1);
+
+        show("visible");
+        await settle();
+        expect(h.signs).toHaveLength(2);
+        expect(attachments.links.isFresh(pdf)).toBe(true);
+        // the one timer, for the renewed link's next renewal
+        expect(h.timers).toHaveLength(1);
+
+        attachments.stop();
+        expect(listeners.size).toBe(0);
+    });
+
     test("a link at its end is signed afresh for a click, which waits on it", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);
