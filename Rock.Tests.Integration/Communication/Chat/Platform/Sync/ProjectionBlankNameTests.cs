@@ -19,6 +19,7 @@ using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 using Rock.Data;
@@ -36,6 +37,12 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
     /// name (a nick name that was only emoji is stripped after the blank one is filled), and an import
     /// or a direct edit can store any of the three. Each value here is written straight to its
     /// column, because that is how the rows this protects against get there.
+    /// <para>
+    /// A name is blank when nothing in it would show: only spaces, tabs and line breaks, or only the
+    /// control characters the sync's writer takes out before the body is sent, which would otherwise
+    /// leave an empty string on the wire. The projection and the writer must agree on that, so each
+    /// value here goes through both.
+    /// </para>
     /// </remarks>
     [TestClass]
     public class ProjectionBlankNameTests : DatabaseTestsBase
@@ -45,6 +52,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         [TestMethod]
         [DataRow( "" )]
         [DataRow( "   " )]
+        [DataRow( "\u0001\u0002" )]
+        [DataRow( "\0" )]
+        [DataRow( "\t" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\u0001 " )]
         public void ABlankNickName_TravelsAsNothing( string blank )
         {
             using ( var fixture = new ChatSyncProjectionFixture() )
@@ -65,6 +77,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         [TestMethod]
         [DataRow( "" )]
         [DataRow( "   " )]
+        [DataRow( "\u0001\u0002" )]
+        [DataRow( "\0" )]
+        [DataRow( "\t" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\u0001 " )]
         public void ABlankLastName_TravelsAsNothing( string blank )
         {
             using ( var fixture = new ChatSyncProjectionFixture() )
@@ -102,11 +119,110 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 
         #endregion Person names
 
+        #region Channel names
+
+        [TestMethod]
+        [DataRow( "" )]
+        [DataRow( "   " )]
+        [DataRow( "\u0001\u0002" )]
+        [DataRow( "\0" )]
+        [DataRow( "\t" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\u0001 " )]
+        public void AChannelWithABlankName_IsProjectedWithTheFallbackName( string blank )
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Named on the way in" );
+                fixture.SetChannelNameDirectly( channelGuid, blank );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.IsNotNull( row, "the channel was not projected at all" );
+
+                var name = ( string ) payload.Value( "channels", row, "name" );
+
+                Assert.IsTrue( name.StartsWith( "Channel " ),
+                    "a channel with no visible name was sent as " + JsonConvert.ToString( name ) + ", and the far side refuses the whole church over it" );
+            }
+        }
+
+        /// <summary>
+        /// Only a blank name is replaced. A name with spaces at its edges loses them, as it always has.
+        /// </summary>
+        [TestMethod]
+        public void AChannelNameWithSpacesAroundIt_TravelsTrimmed()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Named on the way in" );
+                fixture.SetChannelNameDirectly( channelGuid, "  Youth  " );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.AreEqual( "Youth", ( string ) payload.Value( "channels", row, "name" ) );
+            }
+        }
+
+        #endregion Channel names
+
+        #region Group type names
+
+        [TestMethod]
+        [DataRow( "" )]
+        [DataRow( "   " )]
+        [DataRow( "\u0001\u0002" )]
+        [DataRow( "\0" )]
+        [DataRow( "\t" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\u0001 " )]
+        public void AGroupTypeWithABlankName_TravelsAsNothing( string blank )
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Typed" );
+                fixture.SetGroupTypeNameDirectly( fixture.SharedGroupTypeId, blank );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.AreEqual( JTokenType.Null, payload.Value( "channels", row, "group_type_name" ).Type,
+                    "a group type name that shows nothing was sent as text" );
+            }
+        }
+
+        /// <summary>
+        /// Only a blank name is dropped. A name with spaces at its edges loses them, as it always has.
+        /// </summary>
+        [TestMethod]
+        public void AGroupTypeNameWithSpacesAroundIt_TravelsTrimmed()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var channelGuid = fixture.AddChannel( fixture.SharedGroupTypeId, "Typed" );
+                fixture.SetGroupTypeNameDirectly( fixture.SharedGroupTypeId, "  Small groups  " );
+
+                var payload = fixture.Project();
+                var row = payload.Row( "channels", "channel_id", channelGuid );
+
+                Assert.AreEqual( "Small groups", ( string ) payload.Value( "channels", row, "group_type_name" ) );
+            }
+        }
+
+        #endregion Group type names
+
         #region Badge names
 
         [TestMethod]
         [DataRow( "" )]
         [DataRow( "   " )]
+        [DataRow( "\u0001\u0002" )]
+        [DataRow( "\0" )]
+        [DataRow( "\t" )]
+        [DataRow( "\r\n" )]
+        [DataRow( "\u0001 " )]
         public void ABadgeWithABlankName_IsProjectedWithAName( string blank )
         {
             using ( var fixture = new ChatSyncProjectionFixture() )
