@@ -340,7 +340,8 @@ namespace Rock.UniversalSearch.IndexModels
 
             // Load all index enabled attributes for the collection.
             // NOTE:  This is not fully bulk, but still much more efficient than loading attributes for each person.
-            people.LoadFilteredAttributes( a => a.IsIndexEnabled );
+            // Use the caller's context so this load gets the same command timeout as the other indexing queries.
+            people.LoadFilteredAttributes( rockContext, a => a.IsIndexEnabled );
 
             // Bulk queries to avoid spawning new queries for each Person record.
             var homeLocations = personQuery.GetHomeLocations( rockContext );

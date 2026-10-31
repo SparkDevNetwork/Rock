@@ -1954,20 +1954,20 @@ namespace Rock.Model
         private void IndexPeopleRecords( bool isBusiness = false )
         {            
             var bulkChunkSize = 1000;
-            var segmentCount = 8;
-            IndexBulkQueryInSegments( segmentCount, bulkChunkSize, isBusiness );
+            var pageSize = 1000;
+            IndexBulkQueryInPages( pageSize, bulkChunkSize, isBusiness );
         }
 
         /// <summary>
         /// Called by <see cref="IndexPeopleRecords( bool )"/> to process all matching records in a single thread,
-        /// batching them into fixed-size chunks for indexing.  Processes a very large person query in N disjoint
-        /// segments to limit memory usage. Segments are selected via modulo on Person.Id to avoid Skip/Take on
-        /// huge sets.
+        /// batching them into fixed-size chunks for indexing. Processes a very large person query in disjoint
+        /// pages of ascending Person.Id (keyset paging) so that every database command works on a bounded
+        /// number of rows.
         /// </summary>
-        /// <param name="segmentCount">Number of modulo-based segments (e.g., 8) to split the query into.</param>
+        /// <param name="pageSize">The maximum number of people to load from the database in a single page.</param>
         /// <param name="bulkChunkSize">The maximum number of documents to send to the index in a single batch operation.</param>
         /// <param name="isBusiness">If <c>true</c>, indexes business records instead of person records.</param>
-        private void IndexBulkQueryInSegments( int segmentCount, int bulkChunkSize, bool isBusiness )
+        private void IndexBulkQueryInPages( int pageSize, int bulkChunkSize, bool isBusiness )
         {
             var rockContext = RockApp.Current.CreateRockContext();
             rockContext.Database.SetCommandTimeout( 180 ); // Set a longer timeout for indexing operations
@@ -2003,11 +2003,29 @@ namespace Rock.Model
             {
                 var basePersonQuery = GetPersonIndexQuery( personService );
 
-                for ( int shard = 0; shard < segmentCount; shard++ )
-                {
-                    var shardQuery = basePersonQuery.Where( p => ( p.Id % segmentCount ) == shard );
+                /*
+                    10/30/2026 - MSE
 
-                    var personIndexes = PersonIndex.LoadByModelBulk( shardQuery, rockContext );
+                    This used to split the people into 8 shards with Id % 8 and load each
+                    shard in one call. Every command then worked on 1/8 of the Person table,
+                    which grows without limit and timed out on large databases (issue #7080).
+                    Keyset paging on the clustered Id keeps every command to at most one page
+                    of people, no matter how many people there are.
+
+                    The page query uses the same base query as before, so the documents
+                    produced are the same; only the batch each person is loaded in changes.
+
+                    Reason: Bound the work of each indexing command so large databases do not time out.
+                */
+                foreach ( var pageIds in GetPersonIdPages( basePersonQuery, pageSize ) )
+                {
+                    // Declared inside the loop so the query below captures this page's
+                    // values. LoadByModelBulk runs the page query several times.
+                    var firstPageId = pageIds[0];
+                    var lastPageId = pageIds[pageIds.Count - 1];
+                    var pageQuery = basePersonQuery.Where( p => p.Id >= firstPageId && p.Id <= lastPageId );
+
+                    var personIndexes = PersonIndex.LoadByModelBulk( pageQuery, rockContext );
                     var indexOperationCount = ( personIndexes.Count + bulkChunkSize - 1 ) / bulkChunkSize;
                     for ( int i = 0; i < indexOperationCount; i++ )
                     {
@@ -2017,6 +2035,51 @@ namespace Rock.Model
                         IndexContainer.IndexDocuments( bulkIndexes );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Gets the Ids of the people in the query in ascending pages of at most
+        /// <paramref name="pageSize"/> Ids each. Every Id in the query appears in
+        /// exactly one page. Each page is only queried when the caller asks for it.
+        /// </summary>
+        /// <param name="personQuery">The query of people to page through.</param>
+        /// <param name="pageSize">The maximum number of Ids in a single page.</param>
+        /// <returns>The pages of person Ids, each sorted ascending.</returns>
+        internal static IEnumerable<List<int>> GetPersonIdPages( IQueryable<Person> personQuery, int pageSize )
+        {
+            var lastPersonId = 0;
+
+            while ( true )
+            {
+                // Declared inside the loop so the query captures this iteration's value.
+                var afterPersonId = lastPersonId;
+
+                var pageIds = personQuery
+                    .Where( p => p.Id > afterPersonId )
+                    .OrderBy( p => p.Id )
+                    .Select( p => p.Id )
+                    .Take( pageSize )
+                    .ToList();
+
+                if ( !pageIds.Any() )
+                {
+                    yield break;
+                }
+
+                yield return pageIds;
+
+                /*
+                    10/30/2026 - MSE
+
+                    Advance from the Ids fetched here, never from the documents the
+                    caller built. LoadByModelBulk skips people that fail to load, so a
+                    page could produce no documents and paging from those would repeat
+                    the same page forever.
+
+                    Reason: Guarantee the paging always moves forward and ends.
+                */
+                lastPersonId = pageIds[pageIds.Count - 1];
             }
         }
 

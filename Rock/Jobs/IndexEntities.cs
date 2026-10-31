@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
@@ -76,36 +77,79 @@ namespace Rock.Jobs
                 }
             }            
 
+            var entityTypesToIndex = selectedEntityTypes.ToList();
+            var indexExceptions = new List<Exception>();
+
             string results = string.Empty;
             var timerTotal = System.Diagnostics.Stopwatch.StartNew();
-            foreach (var entityTypeCache in selectedEntityTypes )
+            foreach (var entityTypeCache in entityTypesToIndex )
             {
-                EntityTypeService entityTypeService = new EntityTypeService( rockContext );
-                var entityType = entityTypeService.Get( entityTypeCache.Id );
+                /*
+                    10/30/2026 - MSE
 
-                IndexContainer.DeleteIndex( entityType.IndexModelType );
-                IndexContainer.CreateIndex( entityType.IndexModelType );
+                    Each entity type is indexed in its own try/catch. Before this, one
+                    failure (for example a Person timeout on a large database, issue #7080)
+                    ended the job and every entity type after it was never indexed.
 
-                Type type = entityTypeCache.GetEntityType();
-                this.UpdateLastStatusMessage( $"Indexing {entityTypeCache.FriendlyName}..." );
+                    The failures are not logged here. They are thrown together at the end
+                    and RockJobListener logs each one to the Exception Log, the same way
+                    CalculateMetrics reports failed metrics.
 
-                if ( type != null )
+                    Reason: One failing entity type should not stop the others from indexing.
+                */
+                try
                 {
-                    object classInstance = Activator.CreateInstance( type, null );
-                    MethodInfo bulkItemsMethod = type.GetMethod( "BulkIndexDocuments" );
+                    EntityTypeService entityTypeService = new EntityTypeService( rockContext );
+                    var entityType = entityTypeService.Get( entityTypeCache.Id );
 
-                    if ( classInstance != null && bulkItemsMethod != null )
+                    IndexContainer.DeleteIndex( entityType.IndexModelType );
+                    IndexContainer.CreateIndex( entityType.IndexModelType );
+
+                    Type type = entityTypeCache.GetEntityType();
+                    this.UpdateLastStatusMessage( $"Indexing {entityTypeCache.FriendlyName}..." );
+
+                    if ( type != null )
                     {
-                        var timer = System.Diagnostics.Stopwatch.StartNew();
-                        bulkItemsMethod.Invoke( classInstance, null );
-                        timer.Stop();
-                        results += $"{entityType.FriendlyName}: {timer.ElapsedMilliseconds/1000}s,";
+                        object classInstance = Activator.CreateInstance( type, null );
+                        MethodInfo bulkItemsMethod = type.GetMethod( "BulkIndexDocuments" );
+
+                        if ( classInstance != null && bulkItemsMethod != null )
+                        {
+                            var timer = System.Diagnostics.Stopwatch.StartNew();
+                            bulkItemsMethod.Invoke( classInstance, null );
+                            timer.Stop();
+                            results += $"{entityType.FriendlyName}: {timer.ElapsedMilliseconds/1000}s,";
+                        }
                     }
+                }
+                catch ( Exception ex )
+                {
+                    // The reflection Invoke wraps the real error, so report the inner exception.
+                    var innerException = ex is TargetInvocationException && ex.InnerException != null ? ex.InnerException : ex;
+
+                    indexExceptions.Add( new Exception( $"Error indexing {entityTypeCache.FriendlyName}: {innerException.Message}", innerException ) );
+                    results += $"{entityTypeCache.FriendlyName}: failed,";
                 }
             }
 
             results += $"Total Time: {timerTotal.ElapsedMilliseconds / 1000}s,";
             this.Result = "Indexing results: " + results.Trim( ',' );
+
+            if ( indexExceptions.Any() )
+            {
+                var exceptionList = new AggregateException( "One or more entity types failed to index.", indexExceptions );
+
+                // Throw the aggregate exception if every entity type failed, otherwise report a warning
+                // so the job shows which entity types indexed and which failed.
+                if ( entityTypesToIndex.Count == indexExceptions.Count )
+                {
+                    throw exceptionList;
+                }
+                else
+                {
+                    throw new RockJobWarningException( "Universal Search Re-Index completed with errors.", exceptionList );
+                }
+            }
         }
     }
 }
