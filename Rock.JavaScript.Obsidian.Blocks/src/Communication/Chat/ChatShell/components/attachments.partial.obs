@@ -724,9 +724,9 @@ a.chat-attach-file:focus-visible {
     }
 
     /**
-     * A card or download link is given a fresh link as the person's pointer or focus reaches it,
-     * so the address the browser opens for a middle click or the context menu, which the chat
-     * cannot follow up, is a live one. It is the renewal a click would wait for, started earlier.
+     * A card or download link is given a fresh link as the person's pointer, focus or touch reaches
+     * it, so whatever gesture follows (a click, a new tab, the context menu) opens a link with its
+     * time ahead of it, opened by the browser itself.
      */
     function renewLink(item: FileItem): void {
         if (views && !props.isPending && !views.links.isFresh(item)) {
@@ -735,13 +735,14 @@ a.chat-attach-file:focus-visible {
     }
 
     /**
-     * A download whose link is near its end waits for a fresh one, then is followed from it with
-     * the gesture the person made (a new tab for a modified or middle click), so a link renewed
-     * late, or not at all while the network was away, never fails the click. When no fresh link
-     * can be had, the one still held is followed while it lasts; past its end the click does
-     * nothing, and the card is drawn as text once its link is gone. A card is followed once
-     * however often it is clicked while it waits. Only the primary and middle buttons open a
-     * link; the context menu's button is left to the browser.
+     * A card's link is the browser's to open, for every gesture, while it lasts: a link in its last
+     * minute, when it is renewed, still opens. Only a link that ended unseen, as in a tab the
+     * browser held back or a computer that slept, is held: the card waits for a fresh link, and a
+     * plain click is then followed from it, in the same tab, which a download needs anyway. A
+     * gesture asking for a new tab or window is not made again for the person, as a click made
+     * after an await is not theirs to the browser, which may block or misread it; the card takes
+     * the fresh link and their next gesture opens it. A card is followed once however often it is
+     * clicked while it waits. The context menu's button is left to the browser.
      */
     function onLinkClick(event: MouseEvent, item: FileItem): void {
         const anchor = event.currentTarget;
@@ -755,18 +756,16 @@ a.chat-attach-file:focus-visible {
             return;
         }
 
-        if (views.links.isFresh(item)) {
+        if (views.links.linkOf(item)?.downloadUrl) {
             return;
         }
 
         event.preventDefault();
-        // read now, as the event is spent by the time the fresh link lands
-        const { ctrlKey, metaKey, shiftKey, altKey, button } = event;
+        const isPlainClick = event.type === "click" && event.button === 0
+            && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey;
         waiting.add(anchor);
-        const links = views.links;
-        void links.fresh(item).then(async fresh => {
-            const link = fresh ?? links.linkOf(item);
-            if (!link?.downloadUrl || !anchor.isConnected) {
+        void views.links.fresh(item).then(async fresh => {
+            if (!isPlainClick || !fresh?.downloadUrl) {
                 return;
             }
             // the anchor takes the fresh link before it is followed
@@ -777,7 +776,7 @@ a.chat-attach-file:focus-visible {
             // followed once, as it now reads, never held back again
             following = anchor;
             try {
-                anchor.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, view: window, ctrlKey, metaKey, shiftKey, altKey, button }));
+                anchor.click();
             }
             finally {
                 following = null;

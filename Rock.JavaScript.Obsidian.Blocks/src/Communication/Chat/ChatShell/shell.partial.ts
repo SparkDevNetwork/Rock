@@ -826,7 +826,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         publishableKey,
         currentToken: session.currentToken,
         newRequest: options.newUploadRequest,
-        limits: () => session.settings().limits
+        limits: () => session.settings().limits,
+        document: options.pageTargets.document
     });
 
     const gifs = createGifs({

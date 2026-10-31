@@ -32,6 +32,7 @@ import { InjectionKey, markRaw, reactive, ref } from "vue";
 import { failedWords, failureWords, finalWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { AttachmentItem, FailureWords, FileItem, GifItem, GifResult, isFileItem } from "../types.partial";
+import { PageEventTargets } from "./useMarkRead.partial";
 import { AttachmentTypes, PlatformLimits } from "./useSession.partial";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -451,6 +452,12 @@ export type AttachmentDependencies = {
 
     /** The browser's timers unless a test stands in, for renewing links before they end. */
     timers?: { set: (run: () => void, ms: number) => unknown, clear: (handle: unknown) => void };
+
+    /**
+     * The page, whose coming back into view renews what the timers could not while the browser
+     * held them back in a hidden tab or the computer slept.
+     */
+    document?: PageEventTargets["document"];
 };
 
 /** What a row and the viewer read: local copies and the session's links. */
@@ -904,13 +911,24 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         }
     }
 
+    /**
+     * Moves the clock and asks for every watched link that is due: at the timer, or as the page
+     * comes back into view, when a timer the browser held back may not have run.
+     */
     function onWake(): void {
-        wake = null;
         const at = now();
         clock.value = at;
         ask(Array.from(watched.values(), entry => entry.item).filter(item => (retryAt.get(item.id) ?? 0) <= at));
         schedule();
     }
+
+    function onVisibility(): void {
+        if (dependencies.document?.visibilityState === "visible" && !isStopped) {
+            onWake();
+        }
+    }
+
+    dependencies.document?.addEventListener("visibilitychange", onVisibility);
 
     const linkCache: AttachmentLinks = {
         subscribe: (drawn: AttachmentItem[]): (() => void) => {
@@ -1068,6 +1086,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
         stop: (): void => {
             isStopped = true;
+            dependencies.document?.removeEventListener("visibilitychange", onVisibility);
             Array.from(uploading).forEach(request => request.abort());
             uploading.clear();
             schedule();
