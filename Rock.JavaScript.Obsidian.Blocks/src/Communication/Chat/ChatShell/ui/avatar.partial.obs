@@ -8,7 +8,7 @@
               data-testid="avatar"
               :style="faceStyle(person, index)">
             <img v-if="person.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="person.photoUrl" alt="" />
-            <template v-else-if="initialsOf(person.name)">{{ initialsOf(person.name) }}</template>
+            <template v-else-if="initialsOf(person.name, index)">{{ initialsOf(person.name, index) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
     </span>
@@ -68,8 +68,12 @@
 
     // #region Functions
 
-    /** The first letter of the first and last words, or one letter where two would not fit. */
-    function initialsOf(name: string): string {
+    /**
+     * The first letter of the first and last words, or one letter where two would not fit: on a
+     * face of 22px or less, and on a face in a pile that another overlaps, whose visible part is
+     * 0.82 of its width less the ring, which two initials centred on the whole face reach past.
+     */
+    function initialsOf(name: string, index: number): string {
         const words = name.trim().split(/\s+/).filter(word => word !== "");
         if (words.length === 0) {
             return "";
@@ -79,7 +83,9 @@
         const first = Array.from(words[0])[0].toUpperCase();
         const last = words.length > 1 ? Array.from(words[words.length - 1])[0].toUpperCase() : "";
 
-        return props.isOneLetter || props.size <= largestOneInitialSize ? first : first + last;
+        const isCovered = index < props.people.length - 1;
+
+        return props.isOneLetter || props.size <= largestOneInitialSize || isCovered ? first : first + last;
     }
 
     /** The face's size and hue, and its overlap with the face before it in a pile. */
