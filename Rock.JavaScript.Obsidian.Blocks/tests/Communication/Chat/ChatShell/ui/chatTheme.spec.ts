@@ -867,12 +867,18 @@ describe("the components' own styles", () => {
     });
 
     // A mention badge is a soft tint with the church's ink, never text on the church's fill, so no
-    // church color can leave it unreadable. It is its own compositor layer for its whole life: the
-    // pop is a transform, and a layer that is dropped when the pop ends repaints its text snapped to
-    // the pixel grid, so the digit visibly shifted. Every edge is a whole pixel for the same reason.
+    // church color can leave it unreadable. A badge that pops is its own compositor layer for its
+    // whole life: the pop is a transform, and a layer that is dropped when the pop ends repaints its
+    // text snapped to the pixel grid, so the digit visibly shifted. A badge that does not pop has no
+    // layer: a layer is rasterized wherever the badge happened to be when it was made, part way
+    // through a panel's slide, so the same badge drew differently from one load to the next. Every
+    // edge is a whole pixel.
     describe("the mention badge", () => {
         const sidebarPath = resolve(components, "channelSidebar.partial.obs");
+        const threadsPath = resolve(components, "threadsPanel.partial.obs");
         const sheetRule = (selector: string, property: string): string => declarationOf(sheetPath, selector, property);
+        /** The class lists of the badges a template draws. */
+        const badgeClasses = (path: string): string[] => [...readFileSync(path, "utf8").matchAll(/\sclass="(chat-badge\b[^"]*)"/g)].map(m => m[1]);
 
         test("is a soft tint with the church's ink and no filled brand color", () => {
             expect(sheetRule(".chat-badge", "background")).toBe(normalize("var(--chat-brand-tint)"));
@@ -886,8 +892,26 @@ describe("the components' own styles", () => {
             }
         });
 
-        test("stays in its own layer for its whole life, on whole pixels", () => {
-            expect(sheetRule(".chat-badge", "will-change")).toBe("transform");
+        test("pops, and stays in its own layer for its whole life, only where it is marked to pop", () => {
+            expect(sheetRule(".chat-badge.is-pop", "will-change")).toBe("transform");
+            expect(sheetRule(".chat-badge.is-pop", "animation")).toMatch(/^chat-badge-in /);
+            expect(sheetRule(".chat-badge", "will-change")).toBe("");
+            expect(sheetRule(".chat-badge", "animation")).toBe("");
+            expect(declarationOf(sheetPath, ".chat-badge.is-pop", "animation-name", r => r.media.includes("prefers-reduced-motion"))).toBe("chat-crossfade");
+        });
+
+        test("pops in the sidebar, where a new mention arrives, and not in the threads list, where it was already seen", () => {
+            const sidebar = badgeClasses(sidebarPath);
+            expect(sidebar.length).toBeGreaterThan(0);
+            for (const classes of sidebar) {
+                expect(classes.split(" ")).toContain("is-pop");
+            }
+            expect(badgeClasses(threadsPath)).toEqual(["chat-badge"]);
+            // Nothing in the threads list stops a pop, since its badge never starts one.
+            expect(declarationOf(threadsPath, ".chat-ls-foot .chat-badge", "animation")).toBe("");
+        });
+
+        test("sits on whole pixels", () => {
             expect(sheetRule(".chat-badge", "height")).toBe("20px");
             expect(sheetRule(".chat-badge", "line-height")).toBe("20px");
             expect(sheetRule(".chat-badge", "min-width")).toBe("22px");
@@ -905,6 +929,20 @@ describe("the components' own styles", () => {
                 for (const token of ["--chat-muted", "--chat-hover"]) {
                     expect(valuesOf(readSheet(sheetPath), token, condition).length).toBeGreaterThan(0);
                 }
+            }
+        });
+
+        // A long foot (three faces, a count, the start time, Following and the badge) once ran past
+        // the panel and cut the badge off at the window's edge. The start time is the one part that
+        // gives way, with an ellipsis; every other part keeps its width.
+        test("the threads list's foot gives way at its start time, so its badge is always drawn whole", () => {
+            const source = readFileSync(threadsPath, "utf8");
+            expect(source).toMatch(/<span class="chat-ls-started">Started \{\{ drawn\.started \}\}<\/span>/);
+            expect(declarationOf(threadsPath, ".chat-ls-started", "min-width")).toBe("0");
+            expect(declarationOf(threadsPath, ".chat-ls-started", "overflow")).toBe("hidden");
+            expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("ellipsis");
+            for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-sep", ".chat-ls-end"]) {
+                expect(declarationOf(threadsPath, part, "flex"), part).toBe("none");
             }
         });
 
