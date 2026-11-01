@@ -666,11 +666,12 @@
 }
 
 /*
-    A mention count: the mentions icon and the number on a soft tint of the church color, springing
-    in as it appears. No text sits on the church's fill, so no church color can make it unreadable.
-    The pop is a transform, which puts the badge in its own layer while it runs; a layer dropped when
-    it ends repaints its text snapped to the pixel grid and the digit visibly shifts, so the badge
-    keeps its layer for its whole life and every edge is a whole pixel (the line is the pill's height).
+    A mention count: the mentions icon and the number on a soft tint of the church color. No text
+    sits on the church's fill, so no church color can make it unreadable. Every edge is a whole pixel
+    (the line is the pill's height). A badge that does not pop is drawn with its row, no layer of its
+    own: a layer is rasterized wherever the badge was when the layer was made, which can be part way
+    through a panel's slide, and then the same badge draws a fraction of a pixel off, or soft, from
+    one load to the next.
 */
 .chat-badge {
     display: inline-flex;
@@ -687,10 +688,19 @@
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-radius: var(--chat-r-full);
-    will-change: transform;
-    animation: chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring);
     --chat-ic-size: 12px;
     --chat-ic-stroke: 2.3;
+}
+
+/*
+    A badge that springs in as it appears, where a new mention arrives. The pop is a transform, which
+    puts the badge in its own layer while it runs; a layer dropped when it ends repaints its text
+    snapped to the pixel grid and the digit visibly shifts, so a badge that pops keeps its layer for
+    its whole life.
+*/
+.chat-badge.is-pop {
+    will-change: transform;
+    animation: chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring);
 }
 
 /* A muted room's count, there but not calling for attention: neutral, the church color absent, so it
@@ -726,7 +736,7 @@
 
 /* Reduced motion: the badge fades in rather than springing. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-badge {
+    .chat-badge.is-pop {
         animation-name: chat-crossfade;
         animation-duration: var(--chat-t-fast);
     }

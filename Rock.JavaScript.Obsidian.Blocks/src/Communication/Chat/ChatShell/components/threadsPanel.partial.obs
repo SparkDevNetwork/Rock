@@ -110,7 +110,7 @@
                                     </span>
                                     <span class="chat-ls-count">{{ drawn.count }}</span>
                                     <span class="chat-ls-sep">&middot;</span>
-                                    <span>Started {{ drawn.started }}</span>
+                                    <span class="chat-ls-started">Started {{ drawn.started }}</span>
                                     <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
                                         <span v-if="drawn.status"
                                               class="chat-ls-fol"
@@ -224,7 +224,7 @@
     min-height: 20px;
     margin-top: 7px;
     font-size: 12px;
-    /* A whole-pixel line, so the badge's layer sits on the pixel grid. */
+    /* A whole-pixel line, so the badge sits on the pixel grid. */
     line-height: 20px;
     color: var(--chat-muted);
     white-space: nowrap;
@@ -232,6 +232,7 @@
 
 .chat-ls-faces {
     display: inline-flex;
+    flex: none;
 }
 
 /* 18px faces overlap 4px, ringed in the panel's own fill so an initial is never cut. */
@@ -245,17 +246,27 @@
 }
 
 .chat-ls-count {
+    flex: none;
     margin-left: 2px;
     font-weight: 600;
     color: var(--chat-text-2);
 }
 
 .chat-ls-sep {
+    flex: none;
     opacity: .7;
+}
+
+/* The one part of a long foot that gives way, so the Following status and the badge stay whole inside the row. */
+.chat-ls-started {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chat-ls-end {
     display: inline-flex;
+    flex: none;
     gap: 6px;
     align-items: center;
     margin-left: auto;
@@ -273,11 +284,6 @@
 .chat-ls-fol.is-off {
     font-weight: 500;
     color: var(--chat-muted);
-}
-
-/* A row's badge was already counted where the person saw it first, so it does not spring again. */
-.chat-ls-foot .chat-badge {
-    animation: none;
 }
 
 /* Bold is the only unread mark; the badge is for mentions alone. */

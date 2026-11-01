@@ -126,7 +126,7 @@
                                 <span class="chat-row-sub">
                                     <span class="chat-row-prev" data-testid="row-preview">{{ row.preview_line }}</span>
                                     <span class="chat-row-end">
-                                        <span v-if="mentionsOf(row) > 0" class="chat-badge" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
+                                        <span v-if="mentionsOf(row) > 0" class="chat-badge is-pop" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
                                             <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
                                         </span>
                                         <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
@@ -136,7 +136,7 @@
                         </template>
 
                         <span v-if="lookOf(row) === 'community'" class="chat-row-end">
-                            <span v-if="mentionsOf(row) > 0" class="chat-badge" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
+                            <span v-if="mentionsOf(row) > 0" class="chat-badge is-pop" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
                                 <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
                             </span>
                             <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
