@@ -20,13 +20,14 @@
 // jumping from a list below the timeline. Every state draws its words and a marker the styles and
 // the screenshots key on. A mention the server admitted is a chip; anything the server has not
 // admitted, a pending body above all, is plain text and never the raw token.
-import { readFileSync } from "fs";
+import { readdirSync, readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import BlockCard from "../../../../../src/Communication/Chat/ChatShell/components/blockCard.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -99,6 +100,17 @@ function draw(props: RowProps): VueWrapper {
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
 function plain(text: string | undefined): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+/** The sources of the row and of the looks it draws in, each a file whose name starts with the row's. */
+function rowSources(): string[] {
+    const components = join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components");
+    return readdirSync(components).filter(name => /^messageRow\w*\.partial\.obs$/.test(name)).map(name => readFileSync(join(components, name), "utf8"));
+}
+
+/** The style blocks of the row's files, each taken from its own file and then joined. */
+function rowStyles(): string {
+    return rowSources().map(source => source.slice(source.indexOf("<style"), source.indexOf("</style>"))).join("\n");
 }
 
 /** The row's outermost element, which carries its role, label and markers. */
@@ -855,8 +867,8 @@ describe("a reply also sent to the conversation", () => {
 // links on the row. A send refused for good is marked the same; its sentence is the strip's.
 describe("a failed send's row", () => {
     const refusal = { code: "authz.no_mention_all_right", severity: "permission" as const, text: "You can't mention everyone in this channel." };
-    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
-    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+    const source = rowSources().join("\n");
+    const style = rowStyles();
 
     /** The declarations of every rule written for exactly this selector, alone. */
     function rule(selector: string): string {
@@ -1524,8 +1536,7 @@ describe("the Leader pill", () => {
 
 describe("the author's face, with no quote connector to paint over", () => {
     test("the face takes no stacking position, since nothing is drawn under it any more", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = rowStyles();
 
         expect(style).toMatch(/\.chat-cm-av\s*\{/);
         expect(style).not.toMatch(/\.chat-cm-av\s*\{[^}]*position:/);
@@ -1663,5 +1674,96 @@ describe("a failed send's own choices", () => {
 
         expect(wrapper.element.querySelector(`#${button.getAttribute("aria-describedby")}`)?.textContent).toBe(reason);
         expect(wrapper.element.querySelector(".chat-cm-state[title], .chat-meta[title]")).toBeNull();
+    });
+});
+
+// The row clears its one-off motion classes when the keyframes it started finish. The keyframes
+// are global (chat.css), so the row keys on their plain names; a renamed keyframe would leave a
+// class stuck and the next edit would replay nothing.
+describe("a row's one-off motion", () => {
+    function animationEnd(wrapper: VueWrapper, animationName: string): void {
+        const event = new Event("animationend", { bubbles: true });
+        Object.defineProperty(event, "animationName", { value: animationName });
+        root(wrapper).dispatchEvent(event);
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ message: message(), isChannel, position: "single" });
+
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+
+        animationEnd(wrapper, "chat-crossfade");
+        await nextTick();
+        expect(wrapper.findAll(".is-crossfading").length).toBe(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+
+        animationEnd(wrapper, "chat-meta-in");
+        await nextTick();
+        expect(wrapper.findAll(".is-swapping").length).toBe(0);
+    });
+
+    test("an unrelated animation's end clears nothing", async () => {
+        const wrapper = draw({ message: message(), position: "single" });
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+
+        animationEnd(wrapper, "chat-flash-fade");
+        await nextTick();
+
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+    });
+});
+
+// Each request a look can make is wired once in the row, so each is driven through both looks.
+describe("a row's requests, in both looks", () => {
+    const quotedMessage = { id: 40, person_alias_guid: lee, sender_nick_name: "Lee", sender_last_name: "Leader", sender_avatar_url: null, body: "Doors open at 6", pieces: null, visibility: "visible", visibility_notice: null, created_at: nineOhTwo, deleted_at: null };
+    const failedRow = (): PendingMessage => pendingRow({ localId: "b", status: "failed", errorCode: "rpc.transport", reason: { alone: "x", besideRetry: "x", canRetry: true } } as Partial<PendingMessage>);
+
+    async function chooseFailed(wrapper: VueWrapper, index: number): Promise<void> {
+        await wrapper.get("[data-testid='message-failed-actions']").trigger("click");
+        await nextTick();
+        await wrapper.findAll("[role='menuitem']")[index].trigger("click");
+    }
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a jump from the quote is passed on in %s", (_kind, isChannel) => {
+        const wrapper = draw({ message: message({ quoted_message_id: 40, quoted: quotedMessage } as Partial<TimelineMessage>), isChannel, position: "single" });
+
+        wrapper.findComponent(MessageQuote).vm.$emit("jump", 40);
+
+        expect(wrapper.emitted("jump")).toEqual([[40]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("Try again is passed on in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ pending: failedRow(), isOwn: true, isChannel, position: "single" });
+
+        await chooseFailed(wrapper, 0);
+
+        expect(wrapper.emitted("retry")).toEqual([[["b"]]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("Delete is passed on in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ pending: failedRow(), isOwn: true, isChannel, position: "single" });
+
+        await chooseFailed(wrapper, 1);
+
+        expect(wrapper.emitted("discard")).toEqual([["b"]]);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a block card's button asks for the server action on its own message in %s", async (_kind, isChannel) => {
+        const card = message({ message_type: "system", person_alias_guid: null, blocks: [{ type: "text", text: "hi", pieces: null, fallback: { type: "text", text: "hi" } }] } as Partial<TimelineMessage>);
+        const wrapper = draw({ message: card, isChannel, position: "first" });
+        const run = wrapper.findComponent(BlockCard).props("runAction") as (action: { id: string, label: string, call: unknown }) => Promise<void>;
+        const action = { id: "go", label: "Go", call: {} };
+
+        const settled = run(action);
+        const request = wrapper.emitted("messageAction")?.[0]?.[0] as { kind: string, message: TimelineMessage, action: unknown, onSettled: () => void };
+
+        expect(request.kind).toBe("server");
+        expect(request.message.id).toBe(card.id);
+        expect(request.action).toEqual(action);
+        request.onSettled();
+        await expect(settled).resolves.toBeUndefined();
     });
 });
