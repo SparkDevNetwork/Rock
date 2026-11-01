@@ -80,7 +80,7 @@
                     <span v-if="isLeaderShown" class="chat-pill" data-testid="leader-pill">Leader</span>
                     <span v-if="isAnnouncement" class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ time }}</span>
-                    <span v-if="readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
+                    <span v-if="readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" /><span class="chat-cm-mention-words">Mentioned {{ readerMention }}</span></span>
                 </div>
                 <MessageEditor v-if="isEditorShown && message"
                                :message="message"
@@ -98,7 +98,7 @@
                         <FailedMarker :canRetry="canRetryFailed" :reason="failedReason" @retry="onRetryFailed" @discard="onDiscardFailed" />
                     </span>
                     <!-- A row with no head has no name line, so the words ride at the text's end, as (edited) does. -->
-                    <span v-if="readerMention && !isHead" class="chat-cm-mention is-inline" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" />Mentioned {{ readerMention }}</span>
+                    <span v-if="readerMention && !isHead" class="chat-cm-gap">{{ " " }}</span><span v-if="readerMention && !isHead" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" /><span class="chat-cm-mention-words">Mentioned {{ readerMention }}</span></span>
                 </div>
                 <Attachments v-if="files.length > 0 && !isEditorShown" class="chat-msg-files" :items="files" :isPending="!!pending" />
                 <div v-if="isOwn && message?.notice" class="chat-notice" data-testid="message-notice">{{ message.notice }}</div>
@@ -804,17 +804,30 @@
     display: inline-flex;
     gap: 3px;
     align-items: center;
-    align-self: center;
     font-size: 11.5px;
     font-weight: 600;
-    line-height: 1;
     color: var(--chat-warning-ink);
     white-space: nowrap;
 }
 
-.chat-cm-mention.is-inline {
-    margin-left: 8px;
-    vertical-align: 1px;
+/*
+    The words alone set the tag's baseline, so it sits on the baseline of the text or the time
+    beside it, and the icon is centred on them by the box. Both are as tall as the icon so their
+    centres are one; a flex box left to its first item would take the icon's bottom edge for a
+    baseline and sit the words above the line.
+*/
+.chat-cm-mention-words {
+    align-self: baseline;
+    line-height: 13px;
+}
+
+/*
+    The 8px between a row's text and its tag is a collapsible space with extra word spacing, so
+    where the tag wraps to a new line the gap goes with the break and the tag starts flush with the
+    text column; a margin on the tag would indent it.
+*/
+.chat-cm-gap {
+    word-spacing: 4px;
 }
 
 .chat-cm-text {
@@ -910,12 +923,13 @@
 
 /* In Community it sits on the text column, its icon in the gutter, a little roomier than a row. */
 .chat-msg.is-community.is-system {
-    align-items: center;
+    align-items: flex-start;
     justify-content: stretch;
     gap: 0 var(--chat-cm-gap);
     margin: 6px 0 0;
     padding: 3px var(--chat-cm-pad);
     font-size: 13px;
+    line-height: 20px;
     text-align: left;
 }
 
@@ -924,8 +938,11 @@
     color: var(--chat-icon);
 }
 
+/* As tall as the text's line, so a line that wraps keeps its icon beside the first line. */
 .is-community .chat-sys-icon {
+    align-items: center;
     justify-content: center;
+    height: 20px;
 }
 
 .chat-sys-text :deep(.chat-message-body),
@@ -933,8 +950,10 @@
     display: inline;
 }
 
+/* Kept whole, so a wrap never leaves "AM" alone on a line. */
 .chat-sys-time {
     margin-left: 8px;
+    white-space: nowrap;
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
 }
