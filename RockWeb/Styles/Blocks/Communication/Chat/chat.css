@@ -917,6 +917,8 @@
 button.chat-icon-btn.chat-fail-btn {
     display: inline-flex;
     gap: 4px;
+    flex-wrap: wrap;
+    align-content: center;
     align-items: center;
     width: auto;
     height: auto;
@@ -930,6 +932,17 @@ button.chat-icon-btn.chat-fail-btn {
     border-radius: var(--chat-r-item, 6px);
     --chat-ic-size: calc(var(--chat-fail-mark-s, 14px) * 5 / 7);
     --chat-ic-stroke: 3;
+}
+
+/*
+    The words alone set the marker's baseline, so it sits on the text's baseline, and the mark is
+    centred on them by the box; a flex box left to its first item takes the mark's bottom edge for
+    a baseline and sits the words above the line. The words are as tall as the mark so their
+    centres are one, and the line wraps (a single line) so the box centres it in the 24px target.
+*/
+.chat-fail-btn-words {
+    align-self: baseline;
+    line-height: var(--chat-fail-mark-s, 14px);
 }
 
 button.chat-icon-btn.chat-fail-btn:hover,
