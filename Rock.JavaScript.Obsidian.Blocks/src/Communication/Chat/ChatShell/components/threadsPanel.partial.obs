@@ -109,8 +109,7 @@
                                         <Avatar v-for="(face, faceIndex) in drawn.faces" :key="faceIndex" :people="[face]" :size="18" />
                                     </span>
                                     <span class="chat-ls-count">{{ drawn.count }}</span>
-                                    <span class="chat-ls-sep">&middot;</span>
-                                    <span class="chat-ls-started">Started {{ drawn.started }}</span>
+                                    <span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>
                                     <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
                                         <span v-if="drawn.status"
                                               class="chat-ls-fol"
@@ -253,15 +252,32 @@
 }
 
 .chat-ls-sep {
-    flex: none;
     opacity: .7;
 }
 
-/* The one part of a long foot that gives way, so the Following status and the badge stay whole inside the row. */
+/*
+    The one part of a long foot that gives way, so the Following status and the badge stay whole
+    inside the row. It gives way whole: the separator and the time are one nowrap unit, and the
+    unit wraps onto a second line this box hides when it no longer fits, so a time is never shown
+    clipped. The empty item before it, as tall as the box, holds the first line, so the unit has a
+    line to wrap from (a lone flex item never wraps) and the line it wraps to is the hidden one.
+*/
 .chat-ls-started {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
     min-width: 0;
+    height: 20px;
     overflow: hidden;
-    text-overflow: ellipsis;
+}
+
+.chat-ls-started::before {
+    content: "";
+    height: 100%;
+}
+
+.chat-ls-unit {
+    white-space: nowrap;
 }
 
 .chat-ls-end {

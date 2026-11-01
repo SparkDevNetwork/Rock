@@ -947,8 +947,10 @@ describe("the components' own styles", () => {
             expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("");
             // The unit never breaks inside itself, so it is shown whole or on the hidden line.
             expect(declarationOf(threadsPath, ".chat-ls-unit", "white-space")).toBe("nowrap");
-            // An empty item ahead of it gives the unit a line to wrap from, since a lone item never wraps.
-            expect(declarationOf(threadsPath, ".chat-ls-started::before", "content")).toBe('""');
+            // An empty item as tall as the box holds the first line, so the unit has a line to wrap from
+            // (a lone item never wraps) and the line it wraps to is the hidden one.
+            expect(declarationOf(threadsPath, ".chat-ls-started::before", "height")).toBe("100%");
+            expect(declarationOf(threadsPath, ".chat-ls-started::before", "content")).toMatch(/^(""|'')$/);
             for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-end"]) {
                 expect([part, declarationOf(threadsPath, part, "flex")]).toEqual([part, "none"]);
             }
