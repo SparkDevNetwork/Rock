@@ -187,8 +187,21 @@ describe("a pile", () => {
         const pile = faces(draw([{ name: "Anna Lee" }, { name: "Ben Lee" }], 32));
         const alone = faces(draw([{ name: "Ben Lee" }], 32))[0];
 
-        expect(pile.map(face => face.textContent!.trim())).toEqual(["AL", "BL"]);
+        // The first face is covered by the second, so it draws one initial; the last has nothing over it.
+        expect(pile.map(face => face.textContent!.trim())).toEqual(["A", "BL"]);
         expect(hueOf(pile[1])).toBe(hueOf(alone));
+    });
+
+    // A face the next one overlaps shows 0.82 of its width less the ring, which two initials
+    // centred in the whole face reach past: the header's 28px pile cut the R of "MR".
+    test.each([26, 28, 36])("draws one initial on every covered face at %ipx and two only on the last", size => {
+        const pile = faces(draw([{ name: "Marcus Reed" }, { name: "Anna Lee" }, { name: "Ben Cole" }], size));
+
+        expect(pile.map(face => face.textContent!.trim())).toEqual(["M", "A", "BC"]);
+    });
+
+    test("a single face still draws two initials at any size over 22px", () => {
+        expect(faces(draw([{ name: "Marcus Reed" }], 28))[0].textContent!.trim()).toBe("MR");
     });
 });
 

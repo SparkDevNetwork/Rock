@@ -934,14 +934,22 @@ describe("the components' own styles", () => {
 
         // A long foot (three faces, a count, the start time, Following and the badge) once ran past
         // the panel and cut the badge off at the window's edge. The start time is the one part that
-        // gives way, with an ellipsis; every other part keeps its width.
-        test("the threads list's foot gives way at its start time, so its badge is always drawn whole", () => {
+        // gives way, and it gives way whole: it wraps onto a second line the foot hides, so a time
+        // is never shown clipped ("Started 2:..."); every other part keeps its width.
+        test("the threads list's foot gives way at its start time whole, so its badge is always drawn whole", () => {
             const source = readFileSync(threadsPath, "utf8");
-            expect(source).toMatch(/<span class="chat-ls-started">Started \{\{ drawn\.started \}\}<\/span>/);
+            expect(source).toContain('<span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>');
             expect(declarationOf(threadsPath, ".chat-ls-started", "min-width")).toBe("0");
+            expect(declarationOf(threadsPath, ".chat-ls-started", "display")).toBe("flex");
+            expect(declarationOf(threadsPath, ".chat-ls-started", "flex-wrap")).toBe("wrap");
+            expect(declarationOf(threadsPath, ".chat-ls-started", "height")).toBe("20px");
             expect(declarationOf(threadsPath, ".chat-ls-started", "overflow")).toBe("hidden");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("ellipsis");
-            for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-sep", ".chat-ls-end"]) {
+            expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("");
+            // The unit never breaks inside itself, so it is shown whole or on the hidden line.
+            expect(declarationOf(threadsPath, ".chat-ls-unit", "white-space")).toBe("nowrap");
+            // An empty item ahead of it gives the unit a line to wrap from, since a lone item never wraps.
+            expect(declarationOf(threadsPath, ".chat-ls-started::before", "content")).toBe('""');
+            for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-end"]) {
                 expect([part, declarationOf(threadsPath, part, "flex")]).toEqual([part, "none"]);
             }
         });
@@ -982,6 +990,62 @@ describe("the components' own styles", () => {
             expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "background")).toBe(normalize("var(--chat-brand-fill)"));
             expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "color")).toBe(normalize("var(--chat-on-brand)"));
             expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-link", "color")).toBe(normalize("var(--chat-brand-ink)"));
+        });
+    });
+
+    // One rule for what rides the text's line in a Community row: its words alone set the baseline
+    // and its icon is centred on them by the box. A flex box left to its first item takes the icon's
+    // bottom edge for a baseline, which sat the mention tag and the Not sent marker above the text.
+    describe("what rides the text's line in a row", () => {
+        const rowPath = resolve(components, "messageRow.partial.obs");
+        const failedPath = resolve(components, "failedMarker.partial.obs");
+
+        test("the mention tag's words set its baseline and its icon is centred on them, on a head row and a continuation row alike", () => {
+            const source = readFileSync(rowPath, "utf8");
+            expect([...source.matchAll(/class="chat-cm-mention"/g)]).toHaveLength(2);
+            expect(source.split('<Icon name="at" size="xs" /><span class="chat-cm-mention-words">')).toHaveLength(3);
+            expect(declarationOf(rowPath, ".chat-cm-mention", "display")).toBe("inline-flex");
+            expect(declarationOf(rowPath, ".chat-cm-mention", "align-items")).toBe("center");
+            expect(declarationOf(rowPath, ".chat-cm-mention-words", "align-self")).toBe("baseline");
+            // The words are as tall as the 13px icon, so their centre and the icon's are one.
+            expect(declarationOf(rowPath, ".chat-cm-mention-words", "line-height")).toBe("13px");
+        });
+
+        test("the tag is never lifted a set number of pixels or centred against the head's baseline", () => {
+            // In the head row (a baseline flex) a centred tag sat 1 to 2px above the time.
+            expect(declarationOf(rowPath, ".chat-cm-mention", "align-self")).toBe("");
+            expect(declarationOf(rowPath, ".chat-cm-mention", "vertical-align")).toBe("");
+            expect(declarationOf(rowPath, ".chat-cm-mention.is-inline", "vertical-align")).toBe("");
+        });
+
+        test("a continuation row's tag is set off by a collapsible space, so a wrap starts it flush with the text", () => {
+            const source = readFileSync(rowPath, "utf8");
+            expect(source).toContain('<span v-if="readerMention && !isHead" class="chat-cm-gap">{{ " " }}</span><span v-if="readerMention && !isHead" class="chat-cm-mention"');
+            expect(declarationOf(rowPath, ".chat-cm-gap", "word-spacing")).toBe("4px");
+            // A margin would survive the wrap and indent the tag from the text.
+            expect(declarationOf(rowPath, ".chat-cm-mention", "margin-left")).toBe("");
+            expect(declarationOf(rowPath, ".chat-cm-mention.is-inline", "margin-left")).toBe("");
+        });
+
+        test("the Not sent marker's words set its baseline, with its 24px target centred on its line", () => {
+            const rule = (property: string): string => normalize(readSheet(sheetPath).rules
+                .filter(r => r.media === "" && r.selector.split(",").map(x => x.trim()).includes("button.chat-icon-btn.chat-fail-btn"))
+                .map(r => r.declarations.get(property) ?? "").filter(v => v !== "").pop() ?? "");
+
+            expect(declarationOf(sheetPath, ".chat-fail-btn-words", "align-self")).toBe("baseline");
+            expect(declarationOf(sheetPath, ".chat-fail-btn-words", "line-height")).toBe(normalize("var(--chat-fail-mark-s, 14px)"));
+            // A single line only has align-content when it may wrap; this centres the line in the 24px target.
+            expect(rule("flex-wrap")).toBe("wrap");
+            expect(rule("align-content")).toBe("center");
+            expect(readFileSync(failedPath, "utf8")).toContain('class="chat-fail-btn-words"');
+        });
+
+        test("a system line keeps its time whole and its icon on the first line", () => {
+            expect(declarationOf(rowPath, ".chat-sys-time", "white-space")).toBe("nowrap");
+            expect(declarationOf(rowPath, ".chat-msg.is-community.is-system", "align-items")).toBe("flex-start");
+            expect(declarationOf(rowPath, ".chat-msg.is-community.is-system", "line-height")).toBe("20px");
+            expect(declarationOf(rowPath, ".is-community .chat-sys-icon", "height")).toBe("20px");
+            expect(declarationOf(rowPath, ".is-community .chat-sys-icon", "align-items")).toBe("center");
         });
     });
 
