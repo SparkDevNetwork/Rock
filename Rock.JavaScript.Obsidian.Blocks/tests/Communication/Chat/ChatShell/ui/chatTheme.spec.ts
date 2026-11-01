@@ -1026,33 +1026,34 @@ describe("the components' own styles", () => {
     // bottom edge for a baseline, which sat the mention tag and the Not sent marker above the text.
     describe("what rides the text's line in a row", () => {
         const rowPath = resolve(components, "messageRow.partial.obs");
+        const communityPath = resolve(components, "messageRowCommunity.partial.obs");
         const failedPath = resolve(components, "failedMarker.partial.obs");
 
         test("the mention tag's words set its baseline and its icon is centred on them, on a head row and a continuation row alike", () => {
-            const source = readFileSync(rowPath, "utf8");
+            const source = readFileSync(communityPath, "utf8");
             expect([...source.matchAll(/class="chat-cm-mention"/g)]).toHaveLength(2);
             expect(source.split('<Icon name="at" size="xs" /><span class="chat-cm-mention-words">')).toHaveLength(3);
-            expect(declarationOf(rowPath, ".chat-cm-mention", "display")).toBe("inline-flex");
-            expect(declarationOf(rowPath, ".chat-cm-mention", "align-items")).toBe("center");
-            expect(declarationOf(rowPath, ".chat-cm-mention-words", "align-self")).toBe("baseline");
+            expect(declarationOf(communityPath, ".chat-cm-mention", "display")).toBe("inline-flex");
+            expect(declarationOf(communityPath, ".chat-cm-mention", "align-items")).toBe("center");
+            expect(declarationOf(communityPath, ".chat-cm-mention-words", "align-self")).toBe("baseline");
             // The words are as tall as the 13px icon, so their centre and the icon's are one.
-            expect(declarationOf(rowPath, ".chat-cm-mention-words", "line-height")).toBe("13px");
+            expect(declarationOf(communityPath, ".chat-cm-mention-words", "line-height")).toBe("13px");
         });
 
         test("the tag is never lifted a set number of pixels or centred against the head's baseline", () => {
             // In the head row (a baseline flex) a centred tag sat 1 to 2px above the time.
-            expect(declarationOf(rowPath, ".chat-cm-mention", "align-self")).toBe("");
-            expect(declarationOf(rowPath, ".chat-cm-mention", "vertical-align")).toBe("");
-            expect(declarationOf(rowPath, ".chat-cm-mention.is-inline", "vertical-align")).toBe("");
+            expect(declarationOf(communityPath, ".chat-cm-mention", "align-self")).toBe("");
+            expect(declarationOf(communityPath, ".chat-cm-mention", "vertical-align")).toBe("");
+            expect(declarationOf(communityPath, ".chat-cm-mention.is-inline", "vertical-align")).toBe("");
         });
 
         test("a continuation row's tag is set off by a collapsible space, so a wrap starts it flush with the text", () => {
-            const source = readFileSync(rowPath, "utf8");
-            expect(source).toContain('<span v-if="readerMention && !isHead" class="chat-cm-gap">{{ " " }}</span><span v-if="readerMention && !isHead" class="chat-cm-mention"');
-            expect(declarationOf(rowPath, ".chat-cm-gap", "word-spacing")).toBe("4px");
+            const source = readFileSync(communityPath, "utf8");
+            expect(source).toContain('<span v-if="view.readerMention && !view.isHead" class="chat-cm-gap">{{ " " }}</span><span v-if="view.readerMention && !view.isHead" class="chat-cm-mention"');
+            expect(declarationOf(communityPath, ".chat-cm-gap", "word-spacing")).toBe("4px");
             // A margin would survive the wrap and indent the tag from the text.
-            expect(declarationOf(rowPath, ".chat-cm-mention", "margin-left")).toBe("");
-            expect(declarationOf(rowPath, ".chat-cm-mention.is-inline", "margin-left")).toBe("");
+            expect(declarationOf(communityPath, ".chat-cm-mention", "margin-left")).toBe("");
+            expect(declarationOf(communityPath, ".chat-cm-mention.is-inline", "margin-left")).toBe("");
         });
 
         test("the Not sent marker's words set its baseline, with its 24px target centred on its line", () => {
