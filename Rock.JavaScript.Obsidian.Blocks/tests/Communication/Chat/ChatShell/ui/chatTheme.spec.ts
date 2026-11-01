@@ -894,7 +894,7 @@ describe("the components' own styles", () => {
 
         test("pops, and stays in its own layer for its whole life, only where it is marked to pop", () => {
             expect(sheetRule(".chat-badge.is-pop", "will-change")).toBe("transform");
-            expect(sheetRule(".chat-badge.is-pop", "animation")).toMatch(/^chat-badge-in /);
+            expect(sheetRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring)"));
             expect(sheetRule(".chat-badge", "will-change")).toBe("");
             expect(sheetRule(".chat-badge", "animation")).toBe("");
             expect(declarationOf(sheetPath, ".chat-badge.is-pop", "animation-name", r => r.media.includes("prefers-reduced-motion"))).toBe("chat-crossfade");
@@ -942,7 +942,7 @@ describe("the components' own styles", () => {
             expect(declarationOf(threadsPath, ".chat-ls-started", "overflow")).toBe("hidden");
             expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("ellipsis");
             for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-sep", ".chat-ls-end"]) {
-                expect(declarationOf(threadsPath, part, "flex"), part).toBe("none");
+                expect([part, declarationOf(threadsPath, part, "flex")]).toEqual([part, "none"]);
             }
         });
 
