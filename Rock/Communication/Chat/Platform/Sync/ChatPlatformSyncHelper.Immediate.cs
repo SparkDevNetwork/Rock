@@ -470,11 +470,16 @@ namespace Rock.Communication.Chat.Platform.Sync
             }
 
             // A ban, and a Chat Administrator's powers, are pushed from every path, because a
-            // workflow the job engine runs still bans someone or makes them an administrator. Every
+            // workflow the job engine runs still bans someone or makes them an administrator. That
+            // is a ban on the Ban List, and a room's ban set, moved or lifted on a membership, or
+            // any change to a row under one, such as the archive a removal now makes of it. Every
             // other save is pushed only from a request, so a job or an import is left to the full
             // sync rather than sending a push for each row it writes.
             var systemGroups = SystemGroups();
-            var isPushedFromEveryPath = member.GroupId == systemGroups.BanListId || member.GroupId == systemGroups.AdministratorsId;
+            var isPushedFromEveryPath = member.GroupId == systemGroups.BanListId
+                || member.GroupId == systemGroups.AdministratorsId
+                || member.IsChatBanned
+                || IsBanLifted( entry );
             if ( !isPushedFromEveryPath && RockRequestContextAccessor.Current == null )
             {
                 return;
@@ -962,6 +967,17 @@ namespace Rock.Communication.Chat.Platform.Sync
             {
                 changes.MemberKeys.Add( (guid.Value, personId) );
             }
+        }
+
+        /// <summary>
+        /// Whether a membership's save takes off a room ban it held before, read from the entry
+        /// alone. An added row had nothing before it to lift.
+        /// </summary>
+        private static bool IsBanLifted( IEntitySaveEntry entry )
+        {
+            return entry.State == EntityContextState.Modified
+                && !( ( GroupMember ) entry.Entity ).IsChatBanned
+                && !IsUnchanged( entry.OriginalValues, nameof( GroupMember.IsChatBanned ), false );
         }
 
         /// <summary>
