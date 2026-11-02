@@ -23,6 +23,7 @@ using System.Reflection;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Blocks;
 using Rock.Blocks.Group;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.Platform.Configuration;
