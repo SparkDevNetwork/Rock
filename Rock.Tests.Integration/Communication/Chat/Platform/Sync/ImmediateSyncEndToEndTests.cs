@@ -412,9 +412,210 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void ABanUntilATimeSavedThroughTheMemberScreenHidesAPublicRoomUntilThatTimePasses()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( var sync = ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                // The fixture's type makes every channel public.
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Timed ban channel" );
+                var personId = fixture.AddPerson( "TimedBan" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null ), "the membership never reached the platform" );
+
+                var token = PersonToken( personId, configuration );
+                Assert.IsTrue( CallAsPerson( configuration, token, "chat_get_history", channel ).IsSuccess, "a member reads the room before the ban" );
+
+                // Whole seconds, as the screen's picker sets them.
+                var until = RockDateTime.Now.AddDays( 1 );
+                until = until.AddTicks( -( until.Ticks % TimeSpan.TicksPerSecond ) );
+                var memberId = MemberId( channel, personId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                {
+                    var save = Blocks.GroupMemberDetailChatBanTests.SaveThroughBlock( memberId, bag =>
+                    {
+                        bag.IsChatBanned = true;
+                        bag.ChatBannedUntil = until.ToRockDateTimeOffset();
+                    } );
+                    Assert.AreEqual( System.Net.HttpStatusCode.OK, save.StatusCode, save.Error );
+                }
+
+                var banned = platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null && ( bool ) r["is_banned"] );
+                Assert.IsNotNull( banned, "the ban saved on the member screen never reached the platform" );
+                Assert.AreEqual( TimeZoneInfo.ConvertTimeToUtc( until, RockDateTime.OrgTimeZoneInfo ), ParseInstant( ( string ) banned["ban_expires_at"] ).UtcDateTime,
+                    "the platform holds the ban's end as the same instant Rock stored, in UTC" );
+
+                var refused = CallAsPerson( configuration, token, "chat_get_history", channel );
+                Assert.IsFalse( refused.IsSuccess, "a banned member reads a public room's history" );
+                StringAssert.Contains( refused.Body, "authz.not_readable" );
+
+                // The end moved behind now by a workflow, which a ban's edit pushes from any path.
+                using ( var rockContext = new RockContext() )
+                {
+                    var member = new GroupMemberService( rockContext ).Get( memberId );
+                    member.ChatBannedUntil = RockDateTime.Now.AddMinutes( -1 );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, alias,
+                    r => r != null && r["ban_expires_at"].Type != JTokenType.Null && ParseInstant( ( string ) r["ban_expires_at"] ) < DateTimeOffset.UtcNow ),
+                    "the ended ban never reached the platform" );
+                Assert.IsTrue( sync.WaitForPushes( TimeSpan.FromSeconds( 10 ) ) );
+
+                var read = CallAsPerson( configuration, token, "chat_get_history", channel );
+                Assert.IsTrue( read.IsSuccess, "once its time has passed the room reads again: " + read.Body );
+            }
+        }
+
+        [TestMethod]
+        public void ABannedMemberStaffRemoveStaysOutOfThePublicRoomAfterTryingToJoinAgain()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( var sync = ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Removed ban channel" );
+                var personId = fixture.AddPerson( "RemovedBan" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId );
+                    rockContext.SaveChanges();
+                    var member = new GroupMemberService( rockContext ).Queryable().Single( m => m.Group.Guid == channel && m.PersonId == personId );
+                    member.IsChatBanned = true;
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null && ( bool ) r["is_banned"] ), "the ban never reached the platform" );
+
+                // Staff remove her the way Rock's screens do, in a group that keeps no history.
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                {
+                    ChatBanRemovalTests.DeleteThroughRock( channel, personId );
+                }
+
+                Assert.IsTrue( sync.WaitForPushes( TimeSpan.FromSeconds( 10 ) ), "the removal's push did not finish" );
+                var kept = platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null );
+                Assert.IsTrue( kept["absent_since"].Type == JTokenType.Null && ( bool ) kept["is_banned"], "the platform still holds her ban after the removal" );
+
+                Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatMembershipResultBag joined;
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var person = new PersonService( rockContext ).Get( personId );
+                    var context = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.BuildSessionContext( person, configuration, rockContext );
+                    joined = Rock.Communication.Chat.Platform.Doors.ChatDoorHelper.JoinChannelAsync( person, channel, context, rockContext ).GetAwaiter().GetResult();
+                }
+
+                Assert.AreEqual( "door.not_allowed", joined.Code, "joining again does not step around the ban" );
+
+                var token = PersonToken( personId, configuration );
+                var refused = CallAsPerson( configuration, token, "chat_get_history", channel );
+                Assert.IsFalse( refused.IsSuccess, "the removed banned member reads the public room" );
+                StringAssert.Contains( refused.Body, "authz.not_readable" );
+
+                // Staff lift the ban on the archived row: she is no member, and the public room reads.
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    var member = new GroupMemberService( rockContext ).AsNoFilter().Single( m => m.Group.Guid == channel && m.PersonId == personId );
+                    member.IsChatBanned = false;
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null && r["absent_since"].Type != JTokenType.Null ),
+                    "the lifted ban never reached the platform" );
+
+                var read = CallAsPerson( configuration, token, "chat_get_history", channel );
+                Assert.IsTrue( read.IsSuccess, "with the ban lifted the public room reads: " + read.Body );
+            }
+        }
+
         #endregion Tests
 
         #region Support
+
+        private static readonly HttpClient _http = new HttpClient();
+
+        /// <summary>
+        /// The membership's id, archived or not.
+        /// </summary>
+        private static int MemberId( Guid groupGuid, int personId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return new GroupMemberService( rockContext ).AsNoFilter()
+                    .Where( m => m.Group.Guid == groupGuid && m.PersonId == personId )
+                    .Select( m => m.Id )
+                    .Single();
+            }
+        }
+
+        /// <summary>
+        /// Signs a person token with Rock's own code and exchanges it for the person's platform
+        /// token, as the Chat block does.
+        /// </summary>
+        private static string PersonToken( int personId, Rock.Communication.Chat.Platform.Configuration.ChatPlatformConfiguration configuration )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var person = new PersonService( rockContext ).Get( personId );
+                var context = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.BuildSessionContext( person, configuration, rockContext );
+                var minted = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.TryMintChurchToken( person, context, rockContext );
+                Assert.IsNotNull( minted.ChurchToken, "the person passes the session gates: " + minted.Gate );
+
+                var exchanged = Post( configuration, "/functions/v1/token-exchange", minted.ChurchToken, null );
+                Assert.IsTrue( exchanged.IsSuccess, "the token exchange refused: " + exchanged.Body );
+
+                return ( string ) JObject.Parse( exchanged.Body )["access_token"];
+            }
+        }
+
+        /// <summary>
+        /// Calls a platform function as the person, naming one room, as the browser does.
+        /// </summary>
+        private static (bool IsSuccess, string Body) CallAsPerson( Rock.Communication.Chat.Platform.Configuration.ChatPlatformConfiguration configuration, string token, string name, Guid channelGuid )
+        {
+            return Post( configuration, "/rest/v1/rpc/" + name, token, new JObject { ["p_channel_id"] = channelGuid.ToString() } );
+        }
+
+        private static (bool IsSuccess, string Body) Post( Rock.Communication.Chat.Platform.Configuration.ChatPlatformConfiguration configuration, string path, string bearer, JObject body )
+        {
+            using ( var request = new HttpRequestMessage( HttpMethod.Post, configuration.ProjectUrl.TrimEnd( '/' ) + path ) )
+            {
+                request.Headers.TryAddWithoutValidation( "apikey", configuration.PublishableKey );
+                request.Headers.TryAddWithoutValidation( "Authorization", "Bearer " + bearer );
+                request.Content = new StringContent( body?.ToString() ?? "{}", System.Text.Encoding.UTF8, "application/json" );
+
+                using ( var response = _http.SendAsync( request ).GetAwaiter().GetResult() )
+                {
+                    return (response.IsSuccessStatusCode, response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                }
+            }
+        }
 
         private static void AddMember( RockContext rockContext, Guid groupGuid, int personId )
         {

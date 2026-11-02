@@ -73,6 +73,10 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         private const int GroupId = 21;
 
+        private const int MemberPersonId = 31;
+
+        private static readonly Guid MemberGroupGuid = new Guid( "4c1d2e3f-5a6b-4c7d-8e9f-0a1b2c3d4e51" );
+
         #endregion Constants
 
         #region Next to nothing for a save chat cannot see
@@ -206,7 +210,128 @@ namespace Rock.Tests.Communication.Chat.Platform.Sync
 
         #endregion What passes
 
+        #region A ban from every path
+
+        [TestMethod]
+        public void AMembershipSaveOutsideARequestThatSetsChangesOrLiftsABanIsRecorded()
+        {
+            var saves = new Dictionary<string, Func<SaveEntry>>
+            {
+                ["a ban set"] = () => MemberSave( wasBanned: false, wasBannedUntil: null, member => member.IsChatBanned = true ),
+                ["a ban's end moved"] = () => MemberSave( wasBanned: true, wasBannedUntil: new DateTime( 2027, 1, 15 ), member => member.ChatBannedUntil = new DateTime( 2027, 2, 15 ) ),
+                ["a ban lifted"] = () => MemberSave( wasBanned: true, wasBannedUntil: null, member => member.IsChatBanned = false ),
+                ["a banned row archived, as removing it now does"] = () => MemberSave( wasBanned: true, wasBannedUntil: null, member => member.IsArchived = true ),
+                ["a row added already banned"] = () =>
+                {
+                    var entry = MemberSave( wasBanned: false, wasBannedUntil: null, member => member.IsChatBanned = true );
+                    entry.OriginalValues = new Dictionary<string, object>();
+                    entry.State = EntityContextState.Added;
+                    entry.PreSaveState = EntityContextState.Added;
+                    return entry;
+                }
+            };
+
+            foreach ( var save in saves )
+            {
+                using ( var app = TestHelper.CreateScopedRockApp() )
+                {
+                    var rockContext = ConfiguredContext( app );
+                    var entry = save.Value();
+                    entry.DataContext = rockContext;
+
+                    ChatPlatformSyncHelper.RecordGroupMemberSave( entry );
+
+                    CollectionAssert.Contains( RecordedMemberKeys( rockContext ), (MemberGroupGuid, MemberPersonId),
+                        $"{save.Key} by a workflow the job engine runs is a safety act, so it is pushed at once" );
+                }
+            }
+        }
+
+        [TestMethod]
+        public void AMembershipSaveOutsideARequestThatChangesOnlyANoteIsLeftToTheFullSync()
+        {
+            using ( var app = TestHelper.CreateScopedRockApp() )
+            {
+                var rockContext = ConfiguredContext( app );
+                var entry = MemberSave( wasBanned: false, wasBannedUntil: null, member => member.Note = "Moved to the second service" );
+                entry.DataContext = rockContext;
+
+                ChatPlatformSyncHelper.RecordGroupMemberSave( entry );
+
+                Assert.AreEqual( 0, RecordedMemberKeys( rockContext ).Count, "a job's ordinary membership saves wait for the full sync, as before" );
+            }
+        }
+
+        #endregion A ban from every path
+
         #region Support
+
+        /// <summary>
+        /// A context whose immediate sync has the church's chat settings already, as a context that
+        /// recorded an earlier key has, so recording reads nothing stored.
+        /// </summary>
+        private static RockContext ConfiguredContext( TestHelper.RockAppScope app )
+        {
+            var rockContext = AddGroupTypes( app );
+
+            rockContext.GetOrCreateOptions<ChatPlatformSyncHelper.ImmediateChanges>().Configuration = new Rock.Communication.Chat.Platform.Configuration.ChatPlatformConfiguration
+            {
+                TenantId = Guid.NewGuid(),
+                PrivateKey = "private-key",
+                ProjectUrl = "https://chat.example",
+                PublishableKey = "publishable-key"
+            };
+
+            return rockContext;
+        }
+
+        /// <summary>
+        /// The memberships the context will push after its commit.
+        /// </summary>
+        private static List<(Guid GroupGuid, int PersonId)> RecordedMemberKeys( RockContext rockContext )
+        {
+            return new List<(Guid GroupGuid, int PersonId)>( rockContext.GetOrCreateOptions<ChatPlatformSyncHelper.ImmediateChanges>().MemberKeys );
+        }
+
+        /// <summary>
+        /// A modified membership's save in a chat group, made outside any request, with one change
+        /// applied over values that were otherwise as saved.
+        /// </summary>
+        private static SaveEntry MemberSave( bool wasBanned, DateTime? wasBannedUntil, Action<GroupMember> change )
+        {
+            var member = new GroupMember
+            {
+                GroupId = GroupId,
+                GroupTypeId = ChatGroupTypeId,
+                Group = new Group { Id = GroupId, Guid = MemberGroupGuid, GroupTypeId = ChatGroupTypeId },
+                PersonId = MemberPersonId,
+                Note = "Sings in the choir",
+                IsArchived = false,
+                IsChatBanned = wasBanned,
+                ChatBannedUntil = wasBannedUntil
+            };
+
+            var originalValues = new Dictionary<string, object>
+            {
+                [nameof( GroupMember.GroupId )] = GroupId,
+                [nameof( GroupMember.PersonId )] = MemberPersonId,
+                [nameof( GroupMember.Note )] = "Sings in the choir",
+                [nameof( GroupMember.IsArchived )] = false,
+                [nameof( GroupMember.IsChatBanned )] = wasBanned,
+                [nameof( GroupMember.ChatBannedUntil )] = wasBannedUntil
+            };
+
+            change( member );
+
+            return new SaveEntry
+            {
+                Entity = member,
+                OriginalValues = originalValues,
+                State = EntityContextState.Modified,
+                PreSaveState = EntityContextState.Modified
+            };
+        }
+
 
         /// <summary>
         /// Puts one group type that allows chat and one that does not where the group type cache

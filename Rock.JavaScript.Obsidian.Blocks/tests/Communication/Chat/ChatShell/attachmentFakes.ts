@@ -15,8 +15,8 @@
 // </copyright>
 //
 // The stand-ins the attachment specs share, each in the shape its real caller produces: the
-// browser's XMLHttpRequest as an upload drives it, the platform's begin answer, Storage's sign
-// answer, and an image codec standing in for the browser's decoder and canvas.
+// browser's XMLHttpRequest as an upload drives it, the platform's begin answer, the platform's
+// signing function's answer, and an image codec standing in for the browser's decoder and canvas.
 import { CallResult } from "../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { AttachmentDependencies, AttachmentLimits, DecodedImage, ImageCodec } from "../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 
@@ -96,7 +96,7 @@ export class FakeRequest {
     }
 }
 
-/** A sign answer item, as Storage writes one: a relative link, or an error and no link. */
+/** A sign answer item, as the signing function writes one: Storage's relative link, or an error and no link. */
 export type SignItem = { path: string, signedURL: string | null, error: string | null };
 
 export type Harness = {
@@ -104,8 +104,11 @@ export type Harness = {
     requests: FakeRequest[];
     begins: Array<Record<string, unknown>>;
     beginAnswers: Array<CallResult | ((args: Record<string, unknown>) => CallResult)>;
-    signs: Array<{ url: string, init: RequestInit, body: { expiresIn: number, paths: string[] } }>;
+    signs: Array<{ path: string, body: { paths: string[] } }>;
     signAnswer: { value: (paths: string[]) => SignItem[] };
+
+    /** How long the signing function answers that its links last, in seconds. */
+    signSeconds: { value: number };
     now: { value: number };
     revoked: string[];
 
@@ -127,7 +130,8 @@ export function nextUpload(): { upload_id: string, key: string } {
 
 /**
  * Stands in for every call an attachment makes. Begin answers a fresh upload per file unless a
- * test queues an answer; sign answers every path with a link unless a test says otherwise.
+ * test queues an answer; the signing function answers every path with a five minute link unless a
+ * test says otherwise, and a sign answer that throws is a call that failed as a whole.
  */
 export function harness(codec: ImageCodec = fakeCodec()): Harness {
     const requests: FakeRequest[] = [];
@@ -137,6 +141,7 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
     const signAnswer: Harness["signAnswer"] = {
         value: paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=t-${path.slice(-4)}`, error: null }))
     };
+    const signSeconds = { value: 300 };
     const now = { value: Date.parse("2026-10-28T10:00:00Z") };
     const revoked: string[] = [];
     const timers: Harness["timers"] = [];
@@ -170,11 +175,16 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
             }
             return { ok: true, data: (args.p_files as unknown[]).map(() => nextUpload()) };
         },
-        fetch: async (url, init) => {
-            const body = JSON.parse(init.body as string) as { expiresIn: number, paths: string[] };
-            signs.push({ url, init, body });
-            const answer = signAnswer.value(body.paths);
-            return { ok: true, status: 200, headers: { get: () => null }, json: async () => answer } as unknown as Response;
+        callFunction: async (path, body) => {
+            signs.push({ path, body: body as { paths: string[] } });
+            try {
+                /* eslint-disable-next-line @typescript-eslint/naming-convention */
+                return { ok: true, data: { expires_in: signSeconds.value, links: signAnswer.value((body as { paths: string[] }).paths) } };
+            }
+            catch {
+                // the platform's call path answers a failure rather than throwing one
+                return { ok: false, status: 0, error: { code: "rpc.transport", severity: "degraded" }, retryAfterSeconds: null };
+            }
         },
         projectUrl,
         publishableKey,
@@ -203,7 +213,7 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
         }
     };
 
-    return { dependencies, requests, begins, beginAnswers, signs, signAnswer, now, revoked, timers, advance };
+    return { dependencies, requests, begins, beginAnswers, signs, signAnswer, signSeconds, now, revoked, timers, advance };
 }
 
 /** What the fake codec was asked to encode. */

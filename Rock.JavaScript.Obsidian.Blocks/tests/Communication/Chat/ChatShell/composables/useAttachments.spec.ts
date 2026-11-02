@@ -16,7 +16,7 @@
 //
 // Attachments: a picked file is typed, checked against the platform's limits, a photo re-encoded,
 // then begun and uploaded straight to Storage with its progress; a message's files are linked in
-// batches, each link kept until shortly before it expires.
+// batches by the platform's signing function, each link kept until shortly before the end it answers.
 import { readFileSync } from "fs";
 import { resolve } from "path";
 import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
@@ -447,7 +447,7 @@ describe("a tray's GIF", () => {
 });
 
 describe("download links", () => {
-    test("links asked for together are signed in one call, for ten minutes, and read as full addresses", async () => {
+    test("links asked for together are signed in one call to the platform's signing function, which picks their length, and read as full addresses", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);
         const photo = image("d0000000-0000-4000-8000-0000000000a1");
@@ -458,11 +458,9 @@ describe("download links", () => {
         await settle();
 
         expect(h.signs).toHaveLength(1);
-        expect(h.signs[0].url).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments`);
-        expect(h.signs[0].init.method).toBe("POST");
-        expect((h.signs[0].init.headers as Record<string, string>)["Authorization"]).toBe(`Bearer ${token}`);
-        expect((h.signs[0].init.headers as Record<string, string>)["apikey"]).toBe(publishableKey);
-        expect(h.signs[0].body).toEqual({ expiresIn: 600, paths: [photo.key, pdf.key] });
+        expect(h.signs[0].path).toBe("chat-sign-attachment");
+        // the keys alone: no client names how long a link lasts
+        expect(h.signs[0].body).toEqual({ paths: [photo.key, pdf.key] });
 
         const photoLink = attachments.links.linkOf(photo);
         expect(photoLink?.url).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments/${photo.key}?token=t-00a1`);
@@ -486,6 +484,36 @@ describe("download links", () => {
         expect(attachments.links.linkOf(gif("g1"))).toBeNull();
     });
 
+    test("a link lasts as long as the signing function answers, and is signed again a minute before that, inside four minutes", async () => {
+        const h = harness();
+        const attachments = createAttachments(h.dependencies);
+        const photo = image("d0000000-0000-4000-8000-0000000000a3");
+
+        attachments.links.subscribe([photo]);
+        await settle();
+        expect(h.signs).toHaveLength(1);
+
+        // a link of five minutes is renewed at four
+        await h.advance(4 * 60 * 1000 - 1);
+        expect(h.signs).toHaveLength(1);
+        await h.advance(1);
+        expect(h.signs).toHaveLength(2);
+
+        // the end is the platform's to choose: a shorter answer is renewed sooner
+        h.signSeconds.value = 120;
+        await h.advance(4 * 60 * 1000);
+        expect(h.signs).toHaveLength(3);
+        await h.advance(60 * 1000);
+        expect(h.signs).toHaveLength(4);
+
+        // past an end the platform answered, nothing is drawn from the link
+        h.signAnswer.value = () => {
+            throw new TypeError("Failed to fetch");
+        };
+        await h.advance(2 * 60 * 1000);
+        expect(attachments.links.linkOf(photo)).toBeNull();
+    });
+
     test("a link is kept by id, drawn until it ends, and asked again for a row only once it is near its end", async () => {
         const h = harness();
         const attachments = createAttachments(h.dependencies);
@@ -497,8 +525,8 @@ describe("download links", () => {
         await settle();
         expect(h.signs).toHaveLength(1);
 
-        // eight minutes into its life, the link held is still good for a row
-        h.now.value += 8 * 60 * 1000;
+        // three minutes into its life, the link held is still good for a row
+        h.now.value += 3 * 60 * 1000;
         attachments.links.subscribe([photo])();
         await settle();
         expect(h.signs).toHaveLength(1);
@@ -521,7 +549,7 @@ describe("download links", () => {
         await settle();
         expect(h.signs.map(s => s.body.paths.length)).toEqual([50, 10]);
 
-        await h.advance(8 * 60 * 1000);
+        await h.advance(3 * 60 * 1000);
         expect(h.signs).toHaveLength(2);
         await h.advance(70 * 1000);
         expect(h.signs.map(s => s.body.paths.length)).toEqual([50, 10, 50, 10]);
@@ -546,7 +574,7 @@ describe("download links", () => {
         h.signAnswer.value = () => {
             throw new TypeError("Failed to fetch");
         };
-        await h.advance(9 * 60 * 1000 + 1000);
+        await h.advance(4 * 60 * 1000 + 1000);
         expect(h.signs).toHaveLength(2);
         expect(attachments.links.linkOf(photo)?.url).toContain(photo.key);
 
@@ -579,7 +607,7 @@ describe("download links", () => {
         expect(h.signs).toHaveLength(1);
 
         // the tab slept past the link's end: time moved on and no timer ran
-        h.now.value += 11 * 60 * 1000;
+        h.now.value += 6 * 60 * 1000;
         show("hidden");
         await settle();
         expect(h.signs).toHaveLength(1);
@@ -605,7 +633,7 @@ describe("download links", () => {
         expect((await attachments.links.fresh(pdf))?.downloadUrl).toContain("download=a.pdf");
         expect(h.signs).toHaveLength(1);
 
-        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        h.now.value += 4 * 60 * 1000 + 30 * 1000;
         h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=again`, error: null }));
         const link = await attachments.links.fresh(pdf);
         expect(h.signs).toHaveLength(2);
@@ -620,7 +648,7 @@ describe("download links", () => {
         await settle();
         expect(h.signs).toHaveLength(1);
 
-        h.now.value += 9 * 60 * 1000 + 30 * 1000;
+        h.now.value += 4 * 60 * 1000 + 30 * 1000;
         h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=again`, error: null }));
         const [first, second] = await Promise.all([attachments.links.fresh(pdf), attachments.links.fresh(pdf)]);
 

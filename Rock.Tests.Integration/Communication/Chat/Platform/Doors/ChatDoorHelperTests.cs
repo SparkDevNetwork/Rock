@@ -440,6 +440,58 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void AConversationIsNotReopenedPastAnArchivedBanBesideAnActiveRow()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+
+                // Staff archived Bo's banned row and added him back with a new one, outside the
+                // doors, so the conversation's live rows hold no ban at all.
+                var existing = scene.Fixture.AddChannel( scene.Fixture.DirectMessageGroupTypeId, "Chat Direct Message" );
+                scene.Fixture.AddMember( existing, bo, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+                scene.Fixture.AddMember( existing, ada );
+                scene.Fixture.AddMember( existing, bo );
+
+                var started = scene.Start( ada, scene.Alias( bo ) );
+                Assert.AreEqual( "door.target_not_eligible", started.Code, "reopening says what a new start would" );
+                Assert.AreEqual( scene.Alias( bo ), started.PersonAliasGuid );
+
+                Assert.AreEqual( "door.target_not_eligible", scene.Start( bo, scene.Alias( ada ) ).Code, "and so it does for the banned person" );
+                Assert.AreEqual( 1, scene.DirectMessagesWithExactly( ada, bo ).Count, "and no new conversation starts beside it" );
+            }
+        }
+
+        [TestMethod]
+        public void AConversationTheCallerLeftIsNotTheirsToReopenSoANewOneStarts()
+        {
+            // A guard on a chosen edge: a ban stays on the conversation it was set in, and one the
+            // caller has left is not found through their row, so a new conversation of the same
+            // people starts beside it. Only the banned person's own start finds it through theirs.
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var left = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ) ).ChannelGuid.Value;
+
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        "UPDATE [GroupMember] SET [IsChatBanned] = 1 WHERE [PersonId] = @p0 AND [GroupId] IN ( SELECT [Id] FROM [Group] WHERE [Guid] = @p1 )", cy, left );
+                }
+
+                Assert.AreEqual( "ok", scene.Leave( ada, left ).Code );
+
+                var started = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ) );
+                Assert.AreEqual( "ok", started.Code, started.Message );
+                Assert.AreNotEqual( left, started.ChannelGuid, "the conversation Ada left is not reopened" );
+                Assert.IsTrue( scene.Memberships( left, cy ).Single().IsChatBanned, "and its ban stays where it was set" );
+            }
+        }
+
+        [TestMethod]
         public void ACallerWithoutTheRightToStartConversationsIsRefused()
         {
             // A Direct Message Access data view that no longer exists admits nobody.

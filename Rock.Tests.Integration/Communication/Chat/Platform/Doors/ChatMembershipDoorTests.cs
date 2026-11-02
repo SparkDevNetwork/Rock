@@ -1439,6 +1439,109 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #endregion Every door
 
+        #region A ban on the one managing
+
+        [TestMethod]
+        public void ALeaderBannedInTheRoomCannotManageItsMembersWhileABannedChatAdministratorStillCan()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var admin = scene.AddChatPerson( "Admin" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var di = scene.AddChatPerson( "Di" );
+                scene.MakeChatAdministrator( admin );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+
+                // Lee keeps the role that manages members in Rock; only the room's ban is new.
+                scene.Fixture.AddMember( room, lee, m => { m.GroupRoleId = manager; m.IsChatBanned = true; } );
+                scene.Fixture.AddMember( room, admin, m => m.IsChatBanned = true );
+                scene.Fixture.AddMember( room, bo );
+
+                Assert.IsFalse( scene.Rights( lee, room ).CanManageMembers, "a ban in the room takes away managing it" );
+                Assert.AreEqual( "door.not_allowed", scene.Add( lee, room, scene.Alias( cy ) ).Code, "so the add door refuses" );
+                Assert.AreEqual( "door.not_allowed", scene.Remove( lee, room, scene.Alias( bo ) ).Code, "and so does the remove door" );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( room ), cy );
+                CollectionAssert.Contains( scene.ActiveMembers( room ), bo );
+
+                // The administrator's right is the church's, not the room's.
+                Assert.IsTrue( scene.Rights( admin, room ).CanManageMembers, "a Chat Administrator manages a room they are banned from" );
+                Assert.AreEqual( "ok", scene.Add( admin, room, scene.Alias( di ) ).Code );
+                CollectionAssert.Contains( scene.ActiveMembers( room ), di );
+            }
+        }
+
+        [TestMethod]
+        public void ALeadersBanWhoseTimeHasPassedTakesNothingAway()
+        {
+            // A guard: a ban ends at its time on both sides, and the door reads the same answer.
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m =>
+                {
+                    m.GroupRoleId = manager;
+                    m.IsChatBanned = true;
+                    m.ChatBannedUntil = RockDateTime.Now.AddHours( -1 );
+                } );
+
+                Assert.IsTrue( scene.Rights( lee, room ).CanManageMembers, "a ban whose time has passed is no ban" );
+                Assert.AreEqual( "ok", scene.Add( lee, room, scene.Alias( cy ) ).Code );
+            }
+        }
+
+        #endregion A ban on the one managing
+
+        #region An archived banned row
+
+        [TestMethod]
+        public void LeavingAndRemovingGoPastAnArchivedBannedRowAndLeaveItBannedWhileJoiningAndAddingStillRefuseIt()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var lee = scene.AddChatPerson( "Lee" );
+                var ada = scene.AddChatPerson( "Ada" );
+                var bea = scene.AddChatPerson( "Bea" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Open room" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+
+                // Ada and Bea each hold a banned row staff archived and a live row staff added after
+                // it; Cy holds the archived banned row alone.
+                foreach ( var person in new[] { ada, bea, cy } )
+                {
+                    scene.Fixture.AddMember( room, person, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+                }
+
+                scene.Fixture.AddMember( room, ada );
+                scene.Fixture.AddMember( room, bea );
+
+                // Leaving and removing take only rows that are not archived, so the ban stays.
+                Assert.AreEqual( "ok", scene.Leave( ada, room ).Code, "the archived banned row is not what leaving takes" );
+                Assert.AreEqual( "ok", scene.Remove( lee, room, scene.Alias( bea ) ).Code, "nor what removing takes" );
+
+                foreach ( var person in new[] { ada, bea } )
+                {
+                    var rows = scene.Memberships( room, person );
+                    Assert.AreEqual( 1, rows.Count, "only the live row went, person " + person );
+                    Assert.IsTrue( rows[0].IsArchived && rows[0].IsChatBanned, "the archived ban is as staff left it, person " + person );
+                }
+
+                // Joining or being added would bring the archived row back, ban and all.
+                Assert.AreEqual( "door.not_allowed", scene.Join( cy, room ).Code );
+                Assert.AreEqual( "door.target_not_eligible", scene.Add( lee, room, scene.Alias( cy ) ).Code );
+                Assert.IsTrue( scene.Memberships( room, cy ).Single().IsArchived );
+            }
+        }
+
+        #endregion An archived banned row
+
         #region Support
 
         /// <summary>

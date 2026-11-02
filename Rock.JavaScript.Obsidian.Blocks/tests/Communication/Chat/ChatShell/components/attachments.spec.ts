@@ -210,7 +210,7 @@ function recordClicks(card: Element): Array<{ href: string | null, isPrevented: 
  * the link it had, as a browser holding back a hidden tab's timers leaves it.
  */
 function sleepPastEnd(h: Harness): void {
-    h.now.value += 11 * 60 * 1000;
+    h.now.value += 6 * 60 * 1000;
 }
 
 describe("links over time", () => {
@@ -219,7 +219,7 @@ describe("links over time", () => {
         expect(h.signs).toHaveLength(1);
 
         h.signAnswer.value = paths => paths.map(path => ({ path, signedURL: `/object/sign/chat-attachments/${path}?token=renewed`, error: null }));
-        await h.advance(9 * 60 * 1000 + 30 * 1000);
+        await h.advance(4 * 60 * 1000 + 30 * 1000);
         await nextTick();
 
         expect(h.signs).toHaveLength(2);
@@ -246,7 +246,7 @@ describe("links over time", () => {
         h.signAnswer.value = () => {
             throw new TypeError("Failed to fetch");
         };
-        await h.advance(9 * 60 * 1000 + 5 * 1000);
+        await h.advance(4 * 60 * 1000 + 5 * 1000);
         h.signAnswer.value = paths => working(paths).map(item => ({ ...item, signedURL: `${item.signedURL}-fresh` }));
         const signed = h.signs.length;
 
@@ -271,7 +271,7 @@ describe("links over time", () => {
         h.signAnswer.value = () => {
             throw new TypeError("Failed to fetch");
         };
-        await h.advance(9 * 60 * 1000 + 5 * 1000);
+        await h.advance(4 * 60 * 1000 + 5 * 1000);
 
         card.element.dispatchEvent(new Event("pointerenter"));
         await settle();
@@ -280,7 +280,7 @@ describe("links over time", () => {
         expect(card.attributes("href")).toContain("token=t-0001&download=a.pdf");
     });
 
-    // A link signed for ten minutes still opens in its last minute, when it is renewed, so a card
+    // A link signed for five minutes still opens in its last minute, when it is renewed, so a card
     // clicked then is opened by the browser from the link it holds, whatever the gesture: a new
     // tab, a new window, the same tab.
     test.each([
@@ -298,7 +298,7 @@ describe("links over time", () => {
             h.signAnswer.value = () => {
                 throw new TypeError("Failed to fetch");
             };
-            await h.advance(9 * 60 * 1000 + 5 * 1000);
+            await h.advance(4 * 60 * 1000 + 5 * 1000);
             const signed = h.signs.length;
 
             card.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true, ...modifiers }));
@@ -323,7 +323,7 @@ describe("links over time", () => {
         h.signAnswer.value = () => {
             throw new TypeError("Failed to fetch");
         };
-        await h.advance(9 * 60 * 1000 + 5 * 1000);
+        await h.advance(4 * 60 * 1000 + 5 * 1000);
 
         expect(card.dispatchEvent(new MouseEvent("auxclick", { bubbles: true, cancelable: true, button }))).toBe(true);
     });
