@@ -308,6 +308,19 @@ namespace Rock.Blocks.Engagement
             return queryable.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName );
         }
 
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            // The rows are StepParticipantRow objects, so the base class can't
+            // tell that the row keys identify Step records.
+            options.EntityTypeId = EntityTypeCache.GetId<Step>();
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
+
+            return options;
+        }
+
         protected override List<StepParticipantRow> GetListItems( IQueryable<StepParticipantRow> queryable, RockContext rockContext )
         {
             var stepParticipantData = queryable.ToList();

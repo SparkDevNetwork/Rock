@@ -346,6 +346,18 @@ Most styles are redundent from groupedPanel.obs */
         },
 
         /**
+         * Additional values to send with the CreateGridEntitySet and
+         * CreateGridCommunication block actions. Use this when the block
+         * needs extra state to rebuild the rows the person was shown, such
+         * as Dynamic Data page parameter overrides. The keys "entitySet"
+         * and "communication" are reserved and are always set by the grid.
+         */
+        gridActionArgs: {
+            type: Object as PropType<Record<string, unknown>>,
+            required: false
+        },
+
+        /**
          * Identifies the key that will be used to provide the tooltip text
          * for each row in the Grid. This property is not reactive.
          */
@@ -1418,7 +1430,8 @@ Most styles are redundent from groupedPanel.obs */
      * @param url The URL to redirect to after the communication has been created.
      */
     async function createCommunicationAndRedirect(communicationBag: GridCommunicationBag, url: string): Promise<void> {
-        const args = {
+        const args: Record<string, unknown> = {
+            ...(props.gridActionArgs ?? {}),
             communication: communicationBag
         };
 
@@ -1444,7 +1457,8 @@ Most styles are redundent from groupedPanel.obs */
      */
     async function createEntitySetAndRedirect(keyFields: string[], url: string, options: EntitySetOptions | undefined): Promise<void> {
         // Get the entity set to be sent to the server.
-        const args = {
+        const args: Record<string, unknown> = {
+            ...(props.gridActionArgs ?? {}),
             entitySet: await getEntitySetBag(gridState, keyFields, options)
         };
 
@@ -1702,7 +1716,11 @@ Most styles are redundent from groupedPanel.obs */
             return;
         }
 
-        await createEntitySetAndRedirect([props.personKeyField], url, undefined);
+        const options: EntitySetOptions = {
+            entityTypeGuid: EntityType.Person
+        };
+
+        await createEntitySetAndRedirect([props.personKeyField], url, options);
     }
 
     /**
@@ -1716,7 +1734,11 @@ Most styles are redundent from groupedPanel.obs */
         }
 
         if (props.mergeTemplateAsPerson && props.personKeyField) {
-            await createEntitySetAndRedirect([props.personKeyField], url, undefined);
+            const options: EntitySetOptions = {
+                entityTypeGuid: EntityType.Person
+            };
+
+            await createEntitySetAndRedirect([props.personKeyField], url, options);
         }
         else if (props.entityTypeGuid) {
             await createEntitySetAndRedirect([props.keyField], url, undefined);

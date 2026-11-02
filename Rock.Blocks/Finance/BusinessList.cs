@@ -197,6 +197,15 @@ namespace Rock.Blocks.Finance
             return items;
         }
 
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>()
+            };
+        }
+
         protected override GridBuilder<BusinessListBag> GetGridBuilder()
         {
             return new GridBuilder<BusinessListBag>()

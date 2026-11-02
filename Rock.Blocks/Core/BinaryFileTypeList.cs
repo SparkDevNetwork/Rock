@@ -165,6 +165,15 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.BinaryFileType>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BinaryFileTypeData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<BinaryFileTypeData>
