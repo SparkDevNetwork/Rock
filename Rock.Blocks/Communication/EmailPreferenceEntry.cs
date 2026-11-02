@@ -791,7 +791,6 @@ namespace Rock.Blocks.Communication
             }
 
             UnsubscribeLevel? unsubscribeLevel = null;
-            CommunicationChannel communicationChannel = null;
 
             /*
                 5/31/2024 - JMH
@@ -812,186 +811,73 @@ namespace Rock.Blocks.Communication
                 To prevent unintentional un-subscriptions, only unsubscribe a person from email automatically if
                 responding to a one-click unsubscribe request.
             */
-            if ( IsUnsubscribeMode && isFromPageParameter && ( IsOneClickUnsubscribeRequest() || IsGetRequest() ) )
+
+            /*
+                11/2/2026 - MSE
+
+                Email security gateways (such as Microsoft Defender Safe Links, Proofpoint, Mimecast and Barracuda)
+                open every link in an inbound email, including this block's unsubscribe link, often before the person
+                has even seen the email. When a plain GET request unsubscribed the person automatically, these
+                scanners unsubscribed people who never clicked anything, and each repeat scan stepped a person's
+                email preference down another level (e.g., Email Allowed > No Mass Emails > Do Not Email).
+
+                RFC 8058 (https://datatracker.ietf.org/doc/html/rfc8058#section-1) exists for this reason: an email
+                client's built-in [Unsubscribe] button sends a POST request with List-Unsubscribe=One-Click, and
+                links that are opened with a GET request are expected to show a page that asks for confirmation.
+
+                This restores the 5/31/2024 rule above (8334cf595f): only an RFC 8058 one-click request unsubscribes
+                the person automatically. Any other request (GET, HEAD, OPTIONS, etc.) never writes anything.
+                Instead, the page offers a single button that names the pending action, and clicking it calls the
+                ConfirmUnsubscribe block action, which runs the same unsubscribe logic as the one-click request. This
+                keeps the click-to-unsubscribe experience introduced with this block in v18.0 (one click on the
+                landing page) while making the link itself safe to open.
+
+                See https://github.com/SparkDevNetwork/Rock/issues/7034.
+
+                Reason: Email link scanners were unsubscribing people on GET requests.
+            */
+            if ( IsUnsubscribeMode && isFromPageParameter )
             {
                 // If we get into this block of code, this means:
                 //  1) There's a communication key in the query string and a matching communication was found: hence the
                 //     "Unsubscribe Mode".
                 //  2) There's a person identifier in the query string - either an [unsubscribe] action identifier or an
                 //     impersonation token - and a matching person was found.
-                //  3) This request is one of the following:
-                //      A) A one-click unsubscribe request triggered from the email client by the person when clicking
-                //         on the client's built-in [Unsubscribe] button.
-                //      B) The person actually clicked the unsubscribe link in the email, as opposed to an automated
-                //         HEAD or OPTIONS request sent by the email client.
-                //      C) The person reloaded the page after previously clicking on the email's unsubscribe link (or
-                //         clicked on the link a 2nd time).
+                var unsubscribeTarget = GetUnsubscribeTarget( person, communication );
 
-                var personService = new PersonService( RockContext );
-
-                if ( communication?.ListGroupId.HasValue == true )
+                if ( IsOneClickUnsubscribeRequest() )
                 {
-                    // Auto-unsubscribe from a specific communication list.
-                    var communicationListsQry = new GroupService( RockContext )
-                        .GetQueryableByKey( communication.ListGroupId.ToString() )
-                        .IsCommunicationList();
+                    // This is a one-click unsubscribe request triggered from the email client by the person when
+                    // clicking on the client's built-in [Unsubscribe] button, so unsubscribe them right away.
+                    ProcessUnsubscribe( person, unsubscribeTarget );
 
-                    personService.UnsubscribeFromEmail( person, communicationListsQry );
-
-                    unsubscribeLevel = UnsubscribeLevel.CommunicationList;
-
-                    // Get the list's name so we can provide it to the Lava templates.
-                    var communicationList = communication.ListGroup;
-                    communicationList.LoadAttributes();
-
-                    var communicationListName = communicationList.GetAttributeValue( AttributeKey.PublicName );
-                    if ( communicationListName.IsNullOrWhiteSpace() )
-                    {
-                        communicationListName = communicationList.Name;
-                    }
-
-                    communicationChannel = new CommunicationChannel { Name = communicationListName };
-
-                    var communicationListIdKey = communicationList.IdKey;
-                    box.UnsubscribedFromChannel = new CommunicationChannelBag
-                    {
-                        IdKey = communicationListIdKey,
-                        CommunicationChannelType = CommunicationChannelType.List,
-                        Name = communicationListName
-                    };
-
-                    TryStartUnsubscribeWorkflow(
-                        new UnsubscribeWorkflowArgs
-                        {
-                            ChannelIdKey = communicationListIdKey,
-                            CommunicationChannelType = CommunicationChannelType.List,
-                            Person = person
-                        }
+                    TryUpdateCommunicationRecipientUnsubscribeLevel(
+                        person,
+                        originalEmailPreference,
+                        communication,
+                        unsubscribeTarget.Level
                     );
                 }
-                else if ( communication != null )
+                else if ( !unsubscribeTarget.IsAlreadyUnsubscribed )
                 {
-                    // Is this communication from a flow?
-                    var communicationFlowInstance = new CommunicationFlowInstanceService( RockContext )
-                        .Queryable()
-                        .AsNoTracking()
-                        .Include( i => i.CommunicationFlow )
-                        .Where( i =>
-                            i.CommunicationFlowInstanceCommunications.Any( c => c.CommunicationId == communication.Id )
-                        )
-                        .FirstOrDefault();
-
-                    if ( communicationFlowInstance != null )
-                    {
-                        new CommunicationFlowService( RockContext )
-                            .UnsubscribePersonFromFlow(
-                                communicationFlowInstance.CommunicationFlowId,
-                                person.Id
-                            );
-
-                        unsubscribeLevel = UnsubscribeLevel.Flows;
-
-                        var communicationFlowName = communicationFlowInstance.CommunicationFlow.PublicName;
-                        if ( communicationFlowName.IsNullOrWhiteSpace() )
-                        {
-                            communicationFlowName = communicationFlowInstance.CommunicationFlow.Name;
-                        }
-
-                        communicationChannel = new CommunicationChannel { Name = communicationFlowName };
-
-                        box.UnsubscribedFromChannel = new CommunicationChannelBag
-                        {
-                            IdKey = communicationFlowInstance.CommunicationFlowId.AsIdKey(),
-                            CommunicationChannelType = CommunicationChannelType.Flow,
-                            Name = communicationFlowName
-                        };
-                    }
+                    // This request might not have come from the person (see the note above), so don't unsubscribe
+                    // them here. Instead, ask them to confirm the unsubscribe request.
+                    box.PendingUnsubscribeLevel = unsubscribeTarget.Level;
+                    box.PendingUnsubscribeFromChannel = unsubscribeTarget.ChannelBag;
                 }
 
-                // If we don't have a communication or the communication wasn't tied to a list or flow,
-                // auto-unsubscribe at the person level.
-                if ( !unsubscribeLevel.HasValue )
+                if ( !box.PendingUnsubscribeLevel.HasValue )
                 {
-                    personService.UnsubscribeFromEmail( person );
+                    // The person was either just unsubscribed or was already unsubscribed, so show them the
+                    // corresponding "unsubscribed" header.
+                    unsubscribeLevel = unsubscribeTarget.Level;
+                    box.UnsubscribedFromChannel = unsubscribeTarget.ChannelBag;
 
-                    switch ( person.EmailPreference )
-                    {
-                        case EmailPreference.DoNotEmail:
-                            unsubscribeLevel = UnsubscribeLevel.All;
-                            break;
-                        case EmailPreference.NoMassEmails:
-                            unsubscribeLevel = UnsubscribeLevel.Bulk;
-                            break;
-                    }
-                }
-
-                RockContext.SaveChanges();
-            }
-
-            if ( unsubscribeLevel.HasValue )
-            {
-                TryUpdateCommunicationRecipientUnsubscribeLevel(
-                    person,
-                    originalEmailPreference,
-                    communication,
-                    unsubscribeLevel.Value
-                );
-
-                mergeFields.Add( MergeFieldKey.UnsubscribeLevel, unsubscribeLevel.Value.ConvertToString() );
-            }
-
-            if ( communicationChannel != null )
-            {
-                mergeFields.Add( MergeFieldKey.Channel, communicationChannel );
-            }
-
-            box.EmailAddress = person.Email;
-            box.EmailPreference = person.EmailPreference;
-            box.IsRemovedFromChurchInvolvement = person.RecordStatusValueId == InactivePersonRecordStatusValueId;
-
-            if ( !box.IsRemovedFromChurchInvolvement )
-            {
-                var availableOptions = GetAttributeValue( AttributeKey.CommunicationConfigurationOptions )
-                    .SplitDelimitedValues( whitespace: false );
-
-                box.IsUpdateContactInfoEnabled = availableOptions.Contains( AvailableOption.UpdateContactInfo );
-                box.IsRemoveInvolvementEnabled = IsUnsubscribeMode && availableOptions.Contains( AvailableOption.RemoveInvolvement );
-                box.IsCurrentCommunicationChannelsSectionEnabled = availableOptions.Contains( AvailableOption.ManageChannelSubscriptions );
-                box.IsAvailableCommunicationChannelsSectionEnabled = availableOptions.Contains( AvailableOption.ManageChannelSubscriptions );
-
-                if ( box.IsRemoveInvolvementEnabled )
-                {
-                    box.IsDeactivatingFamilyEnabled = GetAttributeValue( AttributeKey.AllowDeactivatingFamily ).AsBoolean()
-                        && person.AgeClassification == AgeClassification.Adult
-                        && person.GetFamilies().Count() == 1;
-
-                    var inactiveReasonsToExclude = GetAttributeValues( AttributeKey.InactiveReasonsToExclude ).AsGuidList();
-
-                    box.InactiveReasons = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON )
-                        ?.DefinedValues
-                        ?.Where( av => !inactiveReasonsToExclude.Contains( av.Guid ) )
-                        ?.ToListItemBagList();
-
-                    if ( box.InactiveReasons?.Any() != true )
-                    {
-                        // If the admin hasn't allowed any inactive reasons, the person won't be able to deactivate their record.
-                        box.IsRemoveInvolvementEnabled = false;
-                    }
-                }
-
-                // Always load current and available channels (if enabled) in case they toggle their email preference in the UI.
-                if ( box.IsCurrentCommunicationChannelsSectionEnabled )
-                {
-                    box.CurrentCommunicationChannels = GetCurrentCommunicationChannels( person );
-                    box.MessageCountWindowDays = MessageCountWindowDays;
-                    box.ShowMediumPreference = ShowMediumPreference;
-                }
-
-                if ( !IsUnsubscribeMode && box.IsAvailableCommunicationChannelsSectionEnabled )
-                {
-                    box.AvailableCommunicationChannels = GetAvailableCommunicationChannels( person );
+                    AddUnsubscribeMergeFields( mergeFields, unsubscribeTarget );
                 }
             }
+
+            SetInitializationBoxPersonValues( box, person );
 
             SetInitializationBoxDisplayValues( box, unsubscribeLevel, mergeFields );
 
@@ -1274,6 +1160,88 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Confirms a pending unsubscribe request for the communication specified in the page parameters, and
+        /// unsubscribes the person in the same way a one-click unsubscribe request would.
+        /// </summary>
+        /// <param name="bag">The information needed to confirm the pending unsubscribe request.</param>
+        /// <returns>A bag containing information about the outcome of the request.</returns>
+        [BlockAction]
+        public BlockActionResult ConfirmUnsubscribe( ConfirmUnsubscribeRequestBag bag )
+        {
+            var errorMessagePrefix = "Unable to unsubscribe";
+
+            if ( bag == null )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}." );
+            }
+
+            var (person, isFromPageParameter) = GetPerson();
+            if ( person == null || !isFromPageParameter )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}, as we're not sure who you are." );
+            }
+
+            if ( !IsUnsubscribeMode )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}, as the communication cannot be found." );
+            }
+
+            var communication = CommunicationFromPageParameter;
+            var originalEmailPreference = person.EmailPreference;
+
+            // Determine the level from the communication and the person's current state, rather than trusting the
+            // level the client asked for. The requested level must match, so the client can never choose a deeper
+            // level than the person was offered. A repeat request for a level this person was already unsubscribed at
+            // as a result of this communication still matches, and changes nothing.
+            var unsubscribeTarget = GetUnsubscribeTarget( person, communication );
+            if ( bag.UnsubscribeLevel != unsubscribeTarget.Level )
+            {
+                return ActionBadRequest( $"{errorMessagePrefix}, as your email preferences have changed. Please reload the page and try again." );
+            }
+
+            ProcessUnsubscribe( person, unsubscribeTarget );
+
+            TryUpdateCommunicationRecipientUnsubscribeLevel(
+                person,
+                originalEmailPreference,
+                communication,
+                unsubscribeTarget.Level
+            );
+
+            // Resolve the display values using the same merge fields a one-click unsubscribe request would use, so
+            // every Lava template shows the same content it would have shown if the person had been unsubscribed
+            // upon block initialization.
+            var mergeFields = RequestContext.GetCommonMergeFields();
+            mergeFields.Add( MergeFieldKey.Communication, communication );
+
+            AddUnsubscribeMergeFields( mergeFields, unsubscribeTarget );
+
+            var box = new EmailPreferenceEntryInitializationBox
+            {
+                UnsubscribedFromChannel = unsubscribeTarget.ChannelBag
+            };
+
+            SetInitializationBoxPersonValues( box, person );
+
+            SetInitializationBoxDisplayValues( box, unsubscribeTarget.Level, mergeFields );
+
+            return ActionOk( new ConfirmUnsubscribeResponseBag
+            {
+                HeaderTitle = box.HeaderTitle,
+                HeaderDescriptionHtml = box.HeaderDescriptionHtml,
+                ResubscribedHeaderTitle = box.ResubscribedHeaderTitle,
+                ResubscribedHeaderDescriptionHtml = box.ResubscribedHeaderDescriptionHtml,
+                OptOutOptionsDescriptionHtml = box.OptOutOptionsDescriptionHtml,
+                CurrentCommunicationChannelsDescriptionHtml = box.CurrentCommunicationChannelsDescriptionHtml,
+                AvailableCommunicationChannelsDescriptionHtml = box.AvailableCommunicationChannelsDescriptionHtml,
+                RemoveInvolvementConfirmationDescriptionHtml = box.RemoveInvolvementConfirmationDescriptionHtml,
+                EmailPreference = box.EmailPreference,
+                UnsubscribedFromChannel = box.UnsubscribedFromChannel,
+                CurrentCommunicationChannels = box.CurrentCommunicationChannels
+            } );
+        }
+
+        /// <summary>
         /// Updates a person's communication preference for a communication channel.
         /// </summary>
         /// <param name="bag">The information needed to update the person's communication preference.</param>
@@ -1470,19 +1438,255 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// Determines if the current request is a GET request.
+        /// Gets what unsubscribing this person as a result of receiving the specified <see cref="Model.Communication"/>
+        /// would do, without making any changes.
         /// </summary>
-        /// <returns>
-        /// <see langword="true"/> if the current request is a GET request; otherwise, <see langword="false"/>.
-        /// </returns>
-        /// <remarks>
-        /// It's possible for an email client to send HEAD, OPTIONS or other requests to this URL without the person
-        /// actually interacting with the unsubscribe link in the email they received. Our goal with this check is to
-        /// prevent the initiation of auto-unsubscribe behavior unless they actually click the unsubscribe link.
-        /// </remarks>
-        private bool IsGetRequest()
+        /// <param name="person">The <see cref="Person"/> who received the <see cref="Model.Communication"/>.</param>
+        /// <param name="communication">The <see cref="Model.Communication"/> they received.</param>
+        /// <returns>An object describing the unsubscribe level and channel, and whether the person is already unsubscribed.</returns>
+        private UnsubscribeTarget GetUnsubscribeTarget( Person person, Model.Communication communication )
         {
-            return this.RequestContext.HttpMethod == "GET";
+            var personId = person.Id;
+
+            if ( communication?.ListGroupId.HasValue == true )
+            {
+                // Unsubscribe from a specific communication list.
+                var communicationListId = communication.ListGroupId.Value;
+
+                // Get the list's name so we can provide it to the Lava templates.
+                var communicationList = communication.ListGroup;
+                communicationList.LoadAttributes();
+
+                var communicationListName = communicationList.GetAttributeValue( AttributeKey.PublicName );
+                if ( communicationListName.IsNullOrWhiteSpace() )
+                {
+                    communicationListName = communicationList.Name;
+                }
+
+                // Only a member that isn't already inactive can be unsubscribed (see PersonService.UnsubscribeFromEmail()).
+                var isActiveListMember = GetCommunicationListQuery( communicationListId )
+                    .SelectMany( cl => cl.Members )
+                    .Any( m =>
+                        m.PersonId == personId
+                        && m.GroupMemberStatus != GroupMemberStatus.Inactive
+                    );
+
+                return new UnsubscribeTarget
+                {
+                    Level = UnsubscribeLevel.CommunicationList,
+                    IsAlreadyUnsubscribed = !isActiveListMember,
+                    CommunicationListId = communicationListId,
+                    CommunicationChannel = new CommunicationChannel { Name = communicationListName },
+                    ChannelBag = new CommunicationChannelBag
+                    {
+                        IdKey = communicationList.IdKey,
+                        CommunicationChannelType = CommunicationChannelType.List,
+                        Name = communicationListName
+                    }
+                };
+            }
+
+            if ( communication != null )
+            {
+                // Is this communication from a flow?
+                var communicationFlowInstance = new CommunicationFlowInstanceService( RockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Include( i => i.CommunicationFlow )
+                    .Where( i =>
+                        i.CommunicationFlowInstanceCommunications.Any( c => c.CommunicationId == communication.Id )
+                    )
+                    .FirstOrDefault();
+
+                if ( communicationFlowInstance != null )
+                {
+                    var communicationFlowId = communicationFlowInstance.CommunicationFlowId;
+
+                    var communicationFlowName = communicationFlowInstance.CommunicationFlow.PublicName;
+                    if ( communicationFlowName.IsNullOrWhiteSpace() )
+                    {
+                        communicationFlowName = communicationFlowInstance.CommunicationFlow.Name;
+                    }
+
+                    // Only an active flow recipient can be unsubscribed (see CommunicationFlowService.UnsubscribePersonFromFlow()).
+                    var isActiveFlowRecipient = new CommunicationFlowInstanceRecipientService( RockContext )
+                        .Queryable()
+                        .Any( r =>
+                            r.CommunicationFlowInstance.CommunicationFlowId == communicationFlowId
+                            && r.RecipientPersonAlias.PersonId == personId
+                            && r.Status == CommunicationFlowInstanceRecipientStatus.Active
+                        );
+
+                    return new UnsubscribeTarget
+                    {
+                        Level = UnsubscribeLevel.Flows,
+                        IsAlreadyUnsubscribed = !isActiveFlowRecipient,
+                        CommunicationFlowId = communicationFlowId,
+                        CommunicationChannel = new CommunicationChannel { Name = communicationFlowName },
+                        ChannelBag = new CommunicationChannelBag
+                        {
+                            IdKey = communicationFlowId.AsIdKey(),
+                            CommunicationChannelType = CommunicationChannelType.Flow,
+                            Name = communicationFlowName
+                        }
+                    };
+                }
+            }
+
+            // If we don't have a communication or the communication wasn't tied to a list or flow,
+            // unsubscribe at the person level.
+            switch ( person.EmailPreference )
+            {
+                case EmailPreference.EmailAllowed:
+                    return new UnsubscribeTarget
+                    {
+                        Level = UnsubscribeLevel.Bulk
+                    };
+                case EmailPreference.NoMassEmails:
+                    /*
+                        11/2/2026 - MSE
+
+                        A person-level unsubscribe steps the person's email preference down one level per request
+                        (see PersonService.UnsubscribeFromEmail()). Without a guard, repeat requests for the same
+                        communication (an email client retrying its one-click request, a double click, or reloading
+                        the page and clicking again) would step a person from Email Allowed all the way to Do Not
+                        Email, which also stops personal emails.
+
+                        If this person's recipient record for this communication already says they unsubscribed from
+                        bulk emails, and their email preference still says so, this communication was already acted
+                        on, so treat them as already unsubscribed. This guards on the current state rather than on
+                        the recipient record alone, because resubscribing doesn't clear the recipient record: a
+                        person who resubscribed (back to Email Allowed) and then unsubscribes again from the same
+                        email must still be unsubscribed.
+
+                        Reason: Prevent repeat requests for one communication from stepping down more than one level.
+                    */
+                    var wasUnsubscribedFromBulkByThisCommunication = WasUnsubscribedByCommunication(
+                        personId,
+                        communication,
+                        UnsubscribeLevel.Bulk
+                    );
+
+                    return new UnsubscribeTarget
+                    {
+                        Level = wasUnsubscribedFromBulkByThisCommunication ? UnsubscribeLevel.Bulk : UnsubscribeLevel.All,
+                        IsAlreadyUnsubscribed = wasUnsubscribedFromBulkByThisCommunication
+                    };
+                default:
+                    // The person is already at the most-restrictive email preference level.
+                    return new UnsubscribeTarget
+                    {
+                        Level = UnsubscribeLevel.All,
+                        IsAlreadyUnsubscribed = true
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Determines whether this person's <see cref="CommunicationRecipient"/> record for the specified
+        /// <see cref="Model.Communication"/> says they unsubscribed at the specified level.
+        /// </summary>
+        /// <param name="personId">The identifier of the <see cref="Person"/> who received the <see cref="Model.Communication"/>.</param>
+        /// <param name="communication">The <see cref="Model.Communication"/> they received.</param>
+        /// <param name="unsubscribeLevel">The <see cref="UnsubscribeLevel"/> to check for.</param>
+        /// <returns>
+        /// <see langword="true"/> if this person's recipient record says they unsubscribed at the specified level;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        private bool WasUnsubscribedByCommunication( int personId, Model.Communication communication, UnsubscribeLevel unsubscribeLevel )
+        {
+            if ( communication == null )
+            {
+                return false;
+            }
+
+            var communicationId = communication.Id;
+
+            return new CommunicationRecipientService( RockContext )
+                .Queryable()
+                .Any( cr =>
+                    cr.CommunicationId == communicationId
+                    && cr.PersonAliasId.HasValue
+                    && cr.PersonAlias.PersonId == personId
+                    && cr.UnsubscribeLevel == unsubscribeLevel
+                    && cr.UnsubscribeDateTime.HasValue
+                );
+        }
+
+        /// <summary>
+        /// Unsubscribes this person as described by the specified <see cref="UnsubscribeTarget"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is shared by RFC 8058 one-click unsubscribe requests and the <see cref="ConfirmUnsubscribe"/> block
+        /// action, so both unsubscribe a person in exactly the same way.
+        /// </remarks>
+        /// <param name="person">The <see cref="Person"/> who's unsubscribing.</param>
+        /// <param name="unsubscribeTarget">The object describing how to unsubscribe the person.</param>
+        private void ProcessUnsubscribe( Person person, UnsubscribeTarget unsubscribeTarget )
+        {
+            var personService = new PersonService( RockContext );
+
+            if ( unsubscribeTarget.Level == UnsubscribeLevel.CommunicationList )
+            {
+                // Unsubscribe from a specific communication list.
+                personService.UnsubscribeFromEmail( person, GetCommunicationListQuery( unsubscribeTarget.CommunicationListId.Value ) );
+
+                // Only start the workflow if the person was actually an active member of the list, so repeat
+                // requests don't start it again.
+                if ( !unsubscribeTarget.IsAlreadyUnsubscribed )
+                {
+                    TryStartUnsubscribeWorkflow(
+                        new UnsubscribeWorkflowArgs
+                        {
+                            ChannelIdKey = unsubscribeTarget.ChannelBag.IdKey,
+                            CommunicationChannelType = CommunicationChannelType.List,
+                            Person = person
+                        }
+                    );
+                }
+            }
+            else if ( unsubscribeTarget.Level == UnsubscribeLevel.Flows )
+            {
+                new CommunicationFlowService( RockContext )
+                    .UnsubscribePersonFromFlow(
+                        unsubscribeTarget.CommunicationFlowId.Value,
+                        person.Id
+                    );
+            }
+            else if ( !unsubscribeTarget.IsAlreadyUnsubscribed )
+            {
+                // Unsubscribe at the person level.
+                personService.UnsubscribeFromEmail( person );
+            }
+
+            RockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Gets a query for the communication list with the specified identifier.
+        /// </summary>
+        /// <param name="communicationListId">The identifier of the communication list <see cref="Model.Group"/>.</param>
+        /// <returns>A query for the communication list.</returns>
+        private IQueryable<Model.Group> GetCommunicationListQuery( int communicationListId )
+        {
+            return new GroupService( RockContext )
+                .GetQueryableByKey( communicationListId.ToString() )
+                .IsCommunicationList();
+        }
+
+        /// <summary>
+        /// Adds the merge fields that describe how this person was unsubscribed, for use in Lava templates.
+        /// </summary>
+        /// <param name="mergeFields">The merge fields to which the unsubscribe merge fields should be added.</param>
+        /// <param name="unsubscribeTarget">The object describing how the person was unsubscribed.</param>
+        private void AddUnsubscribeMergeFields( Dictionary<string, object> mergeFields, UnsubscribeTarget unsubscribeTarget )
+        {
+            mergeFields.Add( MergeFieldKey.UnsubscribeLevel, unsubscribeTarget.Level.ConvertToString() );
+
+            if ( unsubscribeTarget.CommunicationChannel != null )
+            {
+                mergeFields.Add( MergeFieldKey.Channel, unsubscribeTarget.CommunicationChannel );
+            }
         }
 
         /// <summary>
@@ -2140,6 +2344,62 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Sets the values on the initialization box that describe the person and which sections they may use.
+        /// </summary>
+        /// <param name="box">The initialization box on which to set the values.</param>
+        /// <param name="person">The <see cref="Person"/> whose preferences are being managed.</param>
+        private void SetInitializationBoxPersonValues( EmailPreferenceEntryInitializationBox box, Person person )
+        {
+            box.EmailAddress = person.Email;
+            box.EmailPreference = person.EmailPreference;
+            box.IsRemovedFromChurchInvolvement = person.RecordStatusValueId == InactivePersonRecordStatusValueId;
+
+            if ( !box.IsRemovedFromChurchInvolvement )
+            {
+                var availableOptions = GetAttributeValue( AttributeKey.CommunicationConfigurationOptions )
+                    .SplitDelimitedValues( whitespace: false );
+
+                box.IsUpdateContactInfoEnabled = availableOptions.Contains( AvailableOption.UpdateContactInfo );
+                box.IsRemoveInvolvementEnabled = IsUnsubscribeMode && availableOptions.Contains( AvailableOption.RemoveInvolvement );
+                box.IsCurrentCommunicationChannelsSectionEnabled = availableOptions.Contains( AvailableOption.ManageChannelSubscriptions );
+                box.IsAvailableCommunicationChannelsSectionEnabled = availableOptions.Contains( AvailableOption.ManageChannelSubscriptions );
+
+                if ( box.IsRemoveInvolvementEnabled )
+                {
+                    box.IsDeactivatingFamilyEnabled = GetAttributeValue( AttributeKey.AllowDeactivatingFamily ).AsBoolean()
+                        && person.AgeClassification == AgeClassification.Adult
+                        && person.GetFamilies().Count() == 1;
+
+                    var inactiveReasonsToExclude = GetAttributeValues( AttributeKey.InactiveReasonsToExclude ).AsGuidList();
+
+                    box.InactiveReasons = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON )
+                        ?.DefinedValues
+                        ?.Where( av => !inactiveReasonsToExclude.Contains( av.Guid ) )
+                        ?.ToListItemBagList();
+
+                    if ( box.InactiveReasons?.Any() != true )
+                    {
+                        // If the admin hasn't allowed any inactive reasons, the person won't be able to deactivate their record.
+                        box.IsRemoveInvolvementEnabled = false;
+                    }
+                }
+
+                // Always load current and available channels (if enabled) in case they toggle their email preference in the UI.
+                if ( box.IsCurrentCommunicationChannelsSectionEnabled )
+                {
+                    box.CurrentCommunicationChannels = GetCurrentCommunicationChannels( person );
+                    box.MessageCountWindowDays = MessageCountWindowDays;
+                    box.ShowMediumPreference = ShowMediumPreference;
+                }
+
+                if ( !IsUnsubscribeMode && box.IsAvailableCommunicationChannelsSectionEnabled )
+                {
+                    box.AvailableCommunicationChannels = GetAvailableCommunicationChannels( person );
+                }
+            }
+        }
+
+        /// <summary>
         /// Sets the UI display values on the initialization box.
         /// </summary>
         /// <param name="box">The initialization box on which to set the text values.</param>
@@ -2228,6 +2488,14 @@ namespace Rock.Blocks.Communication
             {
                 box.HeaderTitle = GetAttributeValue( titleKey );
                 box.HeaderDescriptionHtml = GetAttributeValue( descriptionKey ).ResolveMergeFields( mergeFields );
+            }
+            else if ( box.PendingUnsubscribeLevel.HasValue )
+            {
+                // The person hasn't been unsubscribed yet, as they still need to confirm the unsubscribe request.
+                // Show the Preference Mode header until they do, since the "Unsubscribe Mode" header templates all
+                // say that the person has already been unsubscribed.
+                box.HeaderTitle = preferenceModeHeaderTitle;
+                box.HeaderDescriptionHtml = preferenceModeHeaderDescriptionHtml;
             }
         }
 
@@ -2333,6 +2601,46 @@ namespace Rock.Blocks.Communication
             /// Gets or sets the <see cref="Model.Person"/> who's unsubscribing.
             /// </summary>
             public Person Person { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO to describe how a person would be unsubscribed as a result of receiving a particular
+        /// <see cref="Model.Communication"/>.
+        /// </summary>
+        private class UnsubscribeTarget
+        {
+            /// <summary>
+            /// Gets or sets the level at which the person would be unsubscribed.
+            /// </summary>
+            public UnsubscribeLevel Level { get; set; }
+
+            /// <summary>
+            /// Gets or sets whether the person is already unsubscribed at this level, meaning an unsubscribe request
+            /// would not change their subscription.
+            /// </summary>
+            public bool IsAlreadyUnsubscribed { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the communication list <see cref="Model.Group"/> to unsubscribe from,
+            /// if <see cref="Level"/> is <see cref="UnsubscribeLevel.CommunicationList"/>.
+            /// </summary>
+            public int? CommunicationListId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="CommunicationFlow"/> to unsubscribe from, if
+            /// <see cref="Level"/> is <see cref="UnsubscribeLevel.Flows"/>.
+            /// </summary>
+            public int? CommunicationFlowId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication channel to pass to Lava templates, if unsubscribing from a list or flow.
+            /// </summary>
+            public CommunicationChannel CommunicationChannel { get; set; }
+
+            /// <summary>
+            /// Gets or sets the communication channel to send to the client, if unsubscribing from a list or flow.
+            /// </summary>
+            public CommunicationChannelBag ChannelBag { get; set; }
         }
 
         #endregion Supporting Members
