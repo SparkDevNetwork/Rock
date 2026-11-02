@@ -1306,7 +1306,21 @@ Most styles are redundent from groupedPanel.obs */
         // Get the export data.
         const buffer = format === "xlsx"
             ? await workbook.xlsx.writeBuffer()
-            : await workbook.csv.writeBuffer();
+            : await workbook.csv.writeBuffer({
+                /*
+                    11/2/2026 - MSE
+
+                    getExportWorkbook() stores RockDateTime values as Dates whose
+                    UTC fields hold the wall-clock time (Excel is not timezone
+                    aware). The CSV writer defaults to formatting Dates in the
+                    browser's local zone with an offset, which shifts the value.
+                    Format in UTC with no offset so the CSV matches the screen.
+
+                    Reason: Prevent the CSV export from shifting dates by the browser UTC offset.
+                */
+                dateUTC: true,
+                dateFormat: "YYYY-MM-DD HH:mm:ss"
+            });
 
         const data = new Blob([buffer], {
             type: "application/octet-stream"
