@@ -143,6 +143,16 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.FollowingSuggested>(),
+                PersonKeyFieldPaths = new[] { "personIdKey" }
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersonSuggestionData> GetGridBuilder()
         {
             return new GridBuilder<PersonSuggestionData>()

@@ -400,6 +400,15 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialBatch>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BatchData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<BatchData>

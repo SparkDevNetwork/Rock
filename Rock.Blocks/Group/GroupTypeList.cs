@@ -164,6 +164,15 @@ namespace Rock.Blocks.Group
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.GroupType>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<GroupTypeWithGroupCounts> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<GroupTypeWithGroupCounts>
