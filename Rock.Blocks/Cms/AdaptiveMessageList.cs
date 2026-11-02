@@ -201,6 +201,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.AdaptiveMessage>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AdaptiveMessageData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<AdaptiveMessageData>

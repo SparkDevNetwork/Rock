@@ -172,6 +172,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.PersistedDataset>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersistedDatasetListBag> GetGridBuilder()
         {
             return new GridBuilder<PersistedDatasetListBag>()

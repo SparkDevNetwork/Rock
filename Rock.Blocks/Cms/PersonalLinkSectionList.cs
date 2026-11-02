@@ -147,6 +147,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.PersonalLinkSection>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersonalLinkSectionListBag> GetGridBuilder()
         {
             return new GridBuilder<PersonalLinkSectionListBag>()

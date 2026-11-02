@@ -834,7 +834,10 @@ namespace Rock.Blocks.Lms
                     return ActionBadRequest( "No entity set data was provided." );
                 }
 
-                var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+                var allowedEntityKeys = entitySet.EntityTypeKey.IsNotNullOrWhiteSpace()
+                    ? GetSecondaryGridEntityKeys( EntityTypeCache.GetId( entitySet.EntityTypeKey.AsGuid() ) )
+                    : null;
+                var rockEntitySet = GridHelper.CreateEntitySet( entitySet, allowedEntityKeys );
 
                 if ( rockEntitySet == null )
                 {
@@ -1417,6 +1420,51 @@ namespace Rock.Blocks.Lms
         #endregion
 
         #region Private methods
+
+        /// <summary>
+        /// Gets the entity keys in the secondary grid rows of one entity type that the current person may see.
+        /// </summary>
+        /// <param name="entityTypeId">The identifier of the entity type of the entity set being created.</param>
+        /// <returns>The entity keys that may be used by the grid entity set action.</returns>
+        private GridEntityKeys GetSecondaryGridEntityKeys( int? entityTypeId )
+        {
+            var keys = new GridEntityKeys();
+
+            // Each grid action checks VIEW on the class and returns no rows when it fails.
+            if ( entityTypeId == EntityTypeCache.GetId<LearningClassAnnouncement>() )
+            {
+                AddSecondaryGridEntityKeys( keys, GetAnnouncements(), entityTypeId );
+            }
+            else if ( entityTypeId == EntityTypeCache.GetId<LearningClassContentPage>() )
+            {
+                AddSecondaryGridEntityKeys( keys, GetContentPages(), entityTypeId );
+            }
+            else if ( entityTypeId == EntityTypeCache.GetId<LearningClassActivity>() )
+            {
+                AddSecondaryGridEntityKeys( keys, GetLearningPlan(), entityTypeId );
+            }
+            else if ( entityTypeId == EntityTypeCache.GetId<LearningParticipant>() )
+            {
+                AddSecondaryGridEntityKeys( keys, GetFacilitators(), entityTypeId );
+                AddSecondaryGridEntityKeys( keys, GetStudents(), entityTypeId );
+            }
+
+            return keys;
+        }
+
+        /// <summary>
+        /// Adds the entity keys in the rows of a secondary grid to the set of keys.
+        /// </summary>
+        /// <param name="keys">The set of keys to add to.</param>
+        /// <param name="gridResult">The result of the block action that loads the secondary grid.</param>
+        /// <param name="entityTypeId">The identifier of the entity type of the grid rows.</param>
+        private static void AddSecondaryGridEntityKeys( GridEntityKeys keys, BlockActionResult gridResult, int? entityTypeId )
+        {
+            if ( gridResult?.Content is GridDataBag gridData && entityTypeId.HasValue )
+            {
+                GridHelper.AddGridEntityKeys( keys, gridData, new GridEntityKeyOptions { EntityTypeId = entityTypeId } );
+            }
+        }
 
         /// <summary>
         /// Gets the identifier for the specified LearningClass (or Default LearningClass for the LearningCourse).

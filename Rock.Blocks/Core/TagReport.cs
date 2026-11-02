@@ -136,6 +136,18 @@ namespace Rock.Blocks.Core
                 .AddField( "entityId", a => a.EntityId.ToString() );
         }
 
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var tag = new TagService( RockContext ).Get( PageParameter( PageParameterKey.TagId ) );
+
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = tag?.EntityTypeId,
+                RowKeyFieldPaths = new[] { "entityId" }
+            };
+        }
+
         #endregion
 
         #region Block Actions

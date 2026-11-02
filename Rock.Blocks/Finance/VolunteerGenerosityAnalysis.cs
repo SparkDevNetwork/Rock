@@ -155,6 +155,15 @@ namespace Rock.Blocks.Finance
             return filteredPeople.AsQueryable();
         }
 
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Person>()
+            };
+        }
+
         protected override GridBuilder<VolunteerGenerosityDataBag> GetGridBuilder()
         {
             return new GridBuilder<VolunteerGenerosityDataBag>()

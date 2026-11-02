@@ -329,6 +329,15 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.AchievementAttempt>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<AchieverAttemptItem> GetGridBuilder()
         {
             return new GridBuilder<AchieverAttemptItem>()
