@@ -166,6 +166,48 @@ namespace Rock.Tests.Rest
         }
 
         [TestMethod]
+        public void ScheduledTransactionsController_AllowsOnlyScheduledTransactionDetails()
+        {
+            var controllerType = Assembly.Load( "Rock.Rest" ).GetType( "Rock.Rest.Controllers.FinancialScheduledTransactionsController", true );
+            var method = controllerType.GetMethod( "IsRelatedEntityCollectionAllowed", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.DeclaredOnly );
+
+            Assert.IsNotNull( method, "FinancialScheduledTransactionsController must allow ScheduledTransactionDetails to be posted inline." );
+
+            // The override reads no state, so the controller is not constructed (that would need a database).
+            var controller = System.Runtime.Serialization.FormatterServices.GetUninitializedObject( controllerType );
+            Func<string, bool> isAllowed = p => ( bool ) method.Invoke( controller, new object[] { p } );
+
+            var schedule = new FinancialScheduledTransaction();
+            schedule.ScheduledTransactionDetails.Add( new FinancialScheduledTransactionDetail { AccountId = 1, Amount = 25 } );
+            Assert.IsNull( GetUntrackedRelatedEntityPropertyName( schedule, isAllowed ) );
+
+            schedule.ScheduledTransactionDetails.First().Account = new FinancialAccount();
+            Assert.AreEqual( "ScheduledTransactionDetails.Account", GetUntrackedRelatedEntityPropertyName( schedule, isAllowed ) );
+
+            schedule = new FinancialScheduledTransaction();
+            schedule.Transactions.Add( new FinancialTransaction() );
+            Assert.AreEqual( nameof( FinancialScheduledTransaction.Transactions ), GetUntrackedRelatedEntityPropertyName( schedule, isAllowed ) );
+        }
+
+        [TestMethod]
+        public void ScheduledTransactionDetail_ParentAuthority_IsItsScheduledTransaction()
+        {
+            var detail = new FinancialScheduledTransactionDetail { ScheduledTransactionId = 5 };
+
+            var parent = detail.ParentAuthority as FinancialScheduledTransaction;
+            Assert.IsNotNull( parent );
+            Assert.AreEqual( 5, parent.Id );
+
+            var schedule = new FinancialScheduledTransaction { Id = 7 };
+            detail = new FinancialScheduledTransactionDetail { ScheduledTransactionId = 7, ScheduledTransaction = schedule };
+            Assert.AreSame( schedule, detail.ParentAuthority );
+
+            // A detail not yet linked to a schedule keeps the default parent authority.
+            detail = new FinancialScheduledTransactionDetail();
+            Assert.IsInstanceOfType( detail.ParentAuthority, typeof( Rock.Security.GlobalDefault ) );
+        }
+
+        [TestMethod]
         public void PersonWithAllowedPhoneNumbers_IsAllowed_ButLoginsAreRejected()
         {
             Func<string, bool> isAllowed = p => p == nameof( Person.PhoneNumbers );
