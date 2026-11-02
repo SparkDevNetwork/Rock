@@ -554,6 +554,70 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void APersonStaffAddBackBesideAnArchivedBanStaysOutOfThePublicRoomUntilThatBanEnds()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( var sync = ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Added back channel" );
+                var personId = fixture.AddPerson( "AddedBack" );
+                var alias = fixture.PrimaryAliasGuid( personId );
+
+                // Whole seconds, as the screen's picker sets them.
+                var until = RockDateTime.Now.AddDays( 1 );
+                until = until.AddTicks( -( until.Ticks % TimeSpan.TicksPerSecond ) );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId );
+                    rockContext.SaveChanges();
+                    var member = new GroupMemberService( rockContext ).Queryable().Single( m => m.Group.Guid == channel && m.PersonId == personId );
+                    member.IsChatBanned = true;
+                    member.ChatBannedUntil = until;
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null && ( bool ) r["is_banned"] ), "the ban never reached the platform" );
+
+                // Staff remove her, which archives the banned row, then add her back with a new row
+                // rather than restoring the old one.
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                {
+                    ChatBanRemovalTests.DeleteThroughRock( channel, personId );
+                }
+
+                Assert.IsTrue( sync.WaitForPushes( TimeSpan.FromSeconds( 10 ) ), "the removal's push did not finish" );
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, personId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsTrue( sync.WaitForPushes( TimeSpan.FromSeconds( 10 ) ), "the new row's push did not finish" );
+
+                var row = platform.WaitForMember( configuration.TenantId.Value, channel, alias, r => r != null && r["ban_expires_at"].Type != JTokenType.Null );
+                Assert.IsNotNull( row, "the platform never heard the ban's end once a live row stood behind it" );
+                Assert.IsTrue( row["absent_since"].Type == JTokenType.Null && ( bool ) row["is_banned"], "the platform holds her as a banned member, as the doors do" );
+                Assert.AreEqual( TimeZoneInfo.ConvertTimeToUtc( until, RockDateTime.OrgTimeZoneInfo ), ParseInstant( ( string ) row["ban_expires_at"] ).UtcDateTime,
+                    "until the archived row's ban ends" );
+
+                var token = PersonToken( personId, configuration );
+                var refused = CallAsPerson( configuration, token, "chat_get_history", channel );
+                Assert.IsFalse( refused.IsSuccess, "the person added back reads the public room past the ban" );
+                StringAssert.Contains( refused.Body, "authz.not_readable" );
+            }
+        }
+
         #endregion Tests
 
         #region Support

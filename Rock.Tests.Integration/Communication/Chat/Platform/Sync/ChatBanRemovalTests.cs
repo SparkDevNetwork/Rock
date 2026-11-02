@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Globalization;
 using System.Linq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -133,27 +134,60 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         [TestMethod]
-        public void AnArchivedRowWhoseBanHasEndedIsNotProjectedAndALiveRowBesideOneDecidesAlone()
+        public void AnArchivedRowWhoseBanHasEndedIsNotProjected()
         {
-            // A guard on both edges of the rule: an ended ban is no ban, and a person staff added
-            // back with a new row is the member that row says, as the doors treat them.
+            // A guard on the rule's edge: an ended ban is no ban.
             using ( var fixture = new ChatSyncProjectionFixture() )
             {
                 var room = fixture.AddChannel( fixture.SharedGroupTypeId, "Ended ban room" );
                 var ended = fixture.AddPerson( "Ended" );
-                var back = fixture.AddPerson( "Back" );
 
                 fixture.AddMember( room, ended, m => { m.IsChatBanned = true; m.ChatBannedUntil = RockDateTime.Now.AddHours( -1 ); m.IsArchived = true; } );
-                fixture.AddMember( room, back, m => { m.IsChatBanned = true; m.IsArchived = true; } );
-                fixture.AddMember( room, back );
 
                 var payload = fixture.Project();
 
                 Assert.IsNull( MembershipOf( payload, room, fixture.PrimaryAliasGuid( ended ) ), "an archived row whose ban has ended is nothing to carry" );
+            }
+        }
 
-                var backRow = MembershipOf( payload, room, fixture.PrimaryAliasGuid( back ) );
-                Assert.IsNotNull( backRow );
-                Assert.IsFalse( ( bool ) payload.Value( "members", backRow, "is_banned" ), "the live row decides" );
+        [TestMethod]
+        public void ABanInForceOnAnArchivedRowBesideALiveRowBansThePersonUntilThatBansEnd()
+        {
+            // The doors count a ban on any of the person's rows, so the platform must hear the same:
+            // a person staff added back with a new row, while the archived one still carries a ban,
+            // is the member the live row says and banned until the archived ban ends.
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var leader = fixture.AddRole( fixture.SharedGroupTypeId, "Leader", true );
+                var room = fixture.AddChannel( fixture.SharedGroupTypeId, "Added back room" );
+                var timed = fixture.AddPerson( "TimedBack" );
+                var open = fixture.AddPerson( "OpenBack" );
+                var until = RockDateTime.Now.AddDays( 3 );
+                until = until.AddTicks( -( until.Ticks % TimeSpan.TicksPerSecond ) );
+
+                fixture.AddMember( room, timed, m => { m.IsChatBanned = true; m.ChatBannedUntil = until; m.IsArchived = true; } );
+                fixture.AddMember( room, timed, m => m.GroupRoleId = leader );
+                fixture.AddMember( room, open, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+                fixture.AddMember( room, open );
+
+                var payload = fixture.Project();
+
+                var timedRow = MembershipOf( payload, room, fixture.PrimaryAliasGuid( timed ) );
+                Assert.IsNotNull( timedRow, "the person added back is a member" );
+                Assert.IsTrue( ( bool ) payload.Value( "members", timedRow, "is_banned" ), "and banned by the archived row's ban" );
+                Assert.IsTrue( ( bool ) payload.Value( "members", timedRow, "is_leader" ), "while the live row's role still leads" );
+
+                // A live row is a membership, so the ban may end by the clock and leave the member.
+                var written = ( string ) payload.Value( "members", timedRow, "ban_expires_at" );
+                Assert.IsNotNull( written, "with the archived ban's end, since a live row stands behind it" );
+                Assert.AreEqual( TimeZoneInfo.ConvertTimeToUtc( until, RockDateTime.OrgTimeZoneInfo ),
+                    DateTimeOffset.Parse( written, CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind ).UtcDateTime,
+                    "the end Rock stored on the archived row" );
+
+                var openRow = MembershipOf( payload, room, fixture.PrimaryAliasGuid( open ) );
+                Assert.IsNotNull( openRow );
+                Assert.IsTrue( ( bool ) payload.Value( "members", openRow, "is_banned" ), "an open-ended ban on the archived row bans too" );
+                Assert.AreEqual( JTokenType.Null, payload.Value( "members", openRow, "ban_expires_at" ).Type, "with no end" );
             }
         }
 
