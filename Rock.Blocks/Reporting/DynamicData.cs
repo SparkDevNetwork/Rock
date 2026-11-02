@@ -1656,18 +1656,80 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
+        /// Gets the person keys in the person key and communication recipient
+        /// columns of the grid rows the current person may see.
+        /// </summary>
+        /// <param name="pageParameterOverrides">The page parameter values the grid was last loaded with.</param>
+        /// <param name="allowedEntityKeys">On success, the entity keys found in the grid rows.</param>
+        /// <param name="errorResult">On failure, the action result to return to the client.</param>
+        /// <returns><c>true</c> if the grid rows were loaded; otherwise <c>false</c>.</returns>
+        private bool TryGetAuthorizedGridEntityKeys( Dictionary<string, string> pageParameterOverrides, out GridEntityKeys allowedEntityKeys, out BlockActionResult errorResult )
+        {
+            allowedEntityKeys = null;
+            errorResult = null;
+
+            ApplyPageParameterOverrides( pageParameterOverrides );
+
+            var dataResults = GetDataResultsForDisplay( forceLoadDataRows: true );
+            if ( dataResults.ErrorMessage.IsNotNullOrWhiteSpace() )
+            {
+                errorResult = ActionInternalServerError( dataResults.ErrorMessage );
+                return false;
+            }
+
+            var dataRows = new List<DataRow>();
+            if ( dataResults.DataSet != null && dataResults.DataSet.Tables.Count > 0 )
+            {
+                dataRows = dataResults.DataSet.Tables[0].Rows.OfType<DataRow>().ToList();
+            }
+
+            var gridDataBag = GetGridBuilder( dataResults ).Build( dataRows );
+            var gridResults = dataResults.GridResults;
+            var personKeyFieldPaths = new List<string> { gridResults?.PersonKeyField };
+
+            if ( gridResults?.CommunicationRecipientFields != null )
+            {
+                personKeyFieldPaths.AddRange( gridResults.CommunicationRecipientFields );
+            }
+
+            // Only person reports send typed entity sets, and their key field is
+            // the person key field, so the key column of other reports is never
+            // trusted as a key of any entity type.
+            var options = new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.Get<Person>().Id,
+                RowKeyFieldPaths = new string[0],
+                PersonKeyFieldPaths = personKeyFieldPaths
+            };
+
+            allowedEntityKeys = new GridEntityKeys();
+            GridHelper.AddGridEntityKeys( allowedEntityKeys, gridDataBag, options );
+
+            return true;
+        }
+
+        /// <summary>
         /// Creates an entity set for the subset of selected rows in the grid.
         /// </summary>
+        /// <param name="entitySet">The bag that describes the entity set.</param>
+        /// <param name="pageParameterOverrides">The page parameter values the grid was last loaded with.</param>
         /// <returns>An action result that contains identifier of the entity set.</returns>
         [BlockAction]
-        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet )
+        public BlockActionResult CreateGridEntitySet( GridEntitySetBag entitySet, Dictionary<string, string> pageParameterOverrides = null )
         {
             if ( entitySet == null )
             {
                 return ActionBadRequest( "No entity set data was provided." );
             }
 
-            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+            GridEntityKeys allowedEntityKeys = null;
+            if ( entitySet.EntityTypeKey.IsNotNullOrWhiteSpace()
+                && !TryGetAuthorizedGridEntityKeys( pageParameterOverrides, out allowedEntityKeys, out var errorResult ) )
+            {
+                return errorResult;
+            }
+
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet, allowedEntityKeys );
 
             if ( rockEntitySet == null )
             {
@@ -1680,16 +1742,23 @@ namespace Rock.Blocks.Reporting
         /// <summary>
         /// Creates a communication for the subset of selected rows in the grid.
         /// </summary>
+        /// <param name="communication">The bag that describes the communication.</param>
+        /// <param name="pageParameterOverrides">The page parameter values the grid was last loaded with.</param>
         /// <returns>An action result that contains identifier of the communication.</returns>
         [BlockAction]
-        public BlockActionResult CreateGridCommunication( GridCommunicationBag communication )
+        public BlockActionResult CreateGridCommunication( GridCommunicationBag communication, Dictionary<string, string> pageParameterOverrides = null )
         {
             if ( communication == null )
             {
                 return ActionBadRequest( "No communication data was provided." );
             }
 
-            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext );
+            if ( !TryGetAuthorizedGridEntityKeys( pageParameterOverrides, out var allowedEntityKeys, out var errorResult ) )
+            {
+                return errorResult;
+            }
+
+            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext, allowedEntityKeys );
 
             if ( rockCommunication == null )
             {

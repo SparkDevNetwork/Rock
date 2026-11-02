@@ -215,6 +215,16 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
+
+            return options;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Step> GetGridBuilder()
         {
             var inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );

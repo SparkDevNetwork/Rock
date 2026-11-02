@@ -203,6 +203,16 @@ namespace Rock.Blocks.Engagement
                 .AddPersonField( "person", a => a.PersonAlias?.Person );
         }
 
+        /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            options.PersonKeyFieldPaths = new[] { "personId" };
+
+            return options;
+        }
+
         /// <summary>
         /// Generates an engagement graph based on the person's engagement map.
         /// </summary>

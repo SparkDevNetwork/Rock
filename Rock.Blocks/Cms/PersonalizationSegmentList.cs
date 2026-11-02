@@ -151,6 +151,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.PersonalizationSegment>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PersonalizationSegmentListBag> GetGridBuilder()
         {
             return new GridBuilder<PersonalizationSegmentListBag>()

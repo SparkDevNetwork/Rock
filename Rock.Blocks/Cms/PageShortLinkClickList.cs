@@ -96,6 +96,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.Interaction>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Interaction> GetGridBuilder()
         {
             return new GridBuilder<Interaction>()

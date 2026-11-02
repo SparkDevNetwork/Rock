@@ -19,6 +19,7 @@
                   keyField="uniqueKey"
                   :personKeyField="personKeyField"
                   :communicationRecipientPersonKeyFields="communicationRecipientPersonKeyFields"
+                  :gridActionArgs="gridActionArgs"
                   :liveUpdates="true"
                   :stickyHeader="stickyHeader"
                   :entityTypeGuid="entityTypeGuid"
@@ -111,6 +112,13 @@
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
+    /**
+     * The page parameter overrides used for the most recent data load. These
+     * are sent with the grid's entity set and communication actions so the
+     * server rebuilds the same rows the person is looking at.
+     */
+    const lastPageParameterOverrides = ref<Record<string, string> | undefined>();
+
     const gridHeaderElement = ref<HTMLElement | null>(null);
     const gridFooterElement = ref<HTMLElement | null>(null);
 
@@ -144,6 +152,12 @@
 
     const communicationRecipientPersonKeyFields = computed((): string[] | undefined => {
         return gridResults.value?.communicationRecipientFields ?? undefined;
+    });
+
+    const gridActionArgs = computed((): Record<string, unknown> => {
+        return {
+            pageParameterOverrides: lastPageParameterOverrides.value
+        };
     });
 
     const stickyHeader = computed((): boolean | undefined => {
@@ -263,6 +277,7 @@
             return;
         }
 
+        lastPageParameterOverrides.value = pageParameterOverrides;
         lavaTemplateResults.value = result.data.lavaTemplateResults;
         gridResults.value = result.data.gridResults;
 

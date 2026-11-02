@@ -148,6 +148,15 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.SignatureDocumentTemplate>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<SignatureDocumentTemplateData> GetGridBuilder()
         {
             return new GridBuilder<SignatureDocumentTemplateData>()

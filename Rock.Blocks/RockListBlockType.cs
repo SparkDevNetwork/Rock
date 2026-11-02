@@ -113,6 +113,48 @@ namespace Rock.Blocks
             return GetGridBuilder().Build( items );
         }
 
+        /// <summary>
+        /// Gets the grid rows the current person may see, which limit the records
+        /// the grid entity set and communication actions will use.
+        /// </summary>
+        /// <returns>The grid data the current person may see.</returns>
+        /// <remarks>
+        /// Override this when the block's <see cref="GetGridData"/> action
+        /// returns rows that <see cref="GetGridDataBag(RockContext)"/> does not.
+        /// </remarks>
+        protected virtual GridDataBag GetAuthorizedGridDataBag()
+        {
+            return GetGridDataBag( RockContext );
+        }
+
+        /// <summary>
+        /// Gets the options that describe which grid row values identify records
+        /// the grid entity set and communication actions may use.
+        /// </summary>
+        /// <returns>The options for this block's grid rows.</returns>
+        /// <remarks>
+        /// The default options do not tie the row keys to an entity type, so
+        /// every key in a row is accepted for any entity type. Override this
+        /// to name the entity type of the rows and any plain person key values.
+        /// </remarks>
+        protected virtual GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions();
+        }
+
+        /// <summary>
+        /// Gets the entity keys in the grid rows the current person may see.
+        /// </summary>
+        /// <returns>The entity keys that may be used by the grid entity set and communication actions.</returns>
+        private GridEntityKeys GetAuthorizedGridEntityKeys()
+        {
+            var keys = new GridEntityKeys();
+
+            GridHelper.AddGridEntityKeys( keys, GetAuthorizedGridDataBag(), GetGridEntityKeyOptions() );
+
+            return keys;
+        }
+
         #endregion
 
         #region Block Actions
@@ -145,7 +187,10 @@ namespace Rock.Blocks
                 return ActionForbidden( "You are not allowed to create entity sets." );
             }
 
-            var rockEntitySet = GridHelper.CreateEntitySet( entitySet );
+            var allowedEntityKeys = entitySet.EntityTypeKey.IsNotNullOrWhiteSpace()
+                ? GetAuthorizedGridEntityKeys()
+                : null;
+            var rockEntitySet = GridHelper.CreateEntitySet( entitySet, allowedEntityKeys );
 
             if ( rockEntitySet == null )
             {
@@ -172,7 +217,7 @@ namespace Rock.Blocks
                 return ActionForbidden( "You are not allowed to create communications." );
             }
 
-            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext );
+            var rockCommunication = GridHelper.CreateCommunication( communication, RequestContext, GetAuthorizedGridEntityKeys() );
 
             if ( rockCommunication == null )
             {

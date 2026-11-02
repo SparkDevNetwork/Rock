@@ -257,6 +257,16 @@ namespace Rock.Blocks.Finance
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            options.PersonKeyFieldPaths = new[] { "donorIdKey" };
+
+            return options;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<FinancialTransactionDetail> GetGridBuilder()
         {
             var hiddenColumns = GetHiddenColumnKeys();

@@ -131,6 +131,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.ContentChannel>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<ContentChannelListBag> GetGridBuilder()
         {
             return new GridBuilder<ContentChannelListBag>()

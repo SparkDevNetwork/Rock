@@ -337,6 +337,15 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Person>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Person> GetGridBuilder()
         {
             return new GridBuilder<Person>()

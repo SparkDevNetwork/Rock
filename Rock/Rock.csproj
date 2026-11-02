@@ -1701,6 +1701,8 @@
     <Compile Include="Obsidian\UI\GridBuilder.cs" />
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
     <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
+    <Compile Include="Obsidian\UI\GridEntityKeyOptions.cs" />
+    <Compile Include="Obsidian\UI\GridEntityKeys.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
     <Compile Include="Oidc\OidcHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />

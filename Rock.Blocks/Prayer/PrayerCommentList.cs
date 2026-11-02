@@ -217,6 +217,15 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.Note>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<PrayerCommentData> GetGridBuilder()
         {
             return new GridBuilder<PrayerCommentData>()

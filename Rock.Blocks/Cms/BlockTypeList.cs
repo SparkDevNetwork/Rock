@@ -217,6 +217,15 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.BlockType>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BlockTypeListBag> GetGridBuilder()
         {
             return new GridBuilder<BlockTypeListBag>()
