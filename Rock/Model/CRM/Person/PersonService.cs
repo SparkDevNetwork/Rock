@@ -1974,6 +1974,23 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Determines whether the other person is a member of the person's
+        /// family or a business the person is a Business Contact for.
+        /// </summary>
+        /// <param name="personId">The identifier of the person.</param>
+        /// <param name="otherPersonId">The identifier of the family member or business to check.</param>
+        /// <returns><c>true</c> if the other person is in the person's family or is one of their businesses; otherwise <c>false</c>.</returns>
+        internal bool IsFamilyMemberOrBusinessOf( int personId, int otherPersonId )
+        {
+            if ( GetFamilyMembers( personId ).Any( gm => gm.PersonId == otherPersonId ) )
+            {
+                return true;
+            }
+
+            return GetBusinesses( personId ).Any( b => b.Id == otherPersonId );
+        }
+
+        /// <summary>
         /// Gets the families sorted by the person's GroupOrder (GroupMember.GroupOrder)
         /// </summary>
         /// <param name="personId">The person identifier.</param>
