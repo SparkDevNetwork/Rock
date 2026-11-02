@@ -6,7 +6,7 @@
           keyField="idKey"
           title="Learning Plan"
           itemTerm="Activity"
-          :entityTypeGuid="EntityType.LearningActivity"
+          :entityTypeGuid="EntityType.LearningClassActivity"
           :expectedRowCount="5"
           :isCountMessageVisible="false"
           tooltipField="name"
