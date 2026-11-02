@@ -2945,7 +2945,12 @@
     async function downloadWorkbook(workbook: import("@Obsidian/Libs/exceljs").Workbook, title: string, format: "csv" | "xlsx"): Promise<void> {
         const buffer = format === "xlsx"
             ? await workbook.xlsx.writeBuffer()
-            : await workbook.csv.writeBuffer();
+            : await workbook.csv.writeBuffer({
+                // Dates hold the wall-clock time in their UTC fields (see toExcelDate), so
+                // format them in UTC with no offset, the same as the Grid's CSV export.
+                dateUTC: true,
+                dateFormat: "YYYY-MM-DD HH:mm:ss"
+            });
 
         const data = new Blob([buffer], { type: "application/octet-stream" });
 
