@@ -20,6 +20,19 @@
                              v-html="headerDescriptionHtml"
                              class="email-preference-entry-header-description">
                         </div>
+                        <div v-if="showUnsubscribeButtonInHeader" class="email-preference-entry-header-actions">
+
+                            <NotificationBox v-if="unsubscribeConfirmationErrorMessage" :alertType="AlertType.Warning">
+                                {{ unsubscribeConfirmationErrorMessage }}
+                            </NotificationBox>
+
+                            <p class="email-preference-entry-header-confirm-prompt">{{ unsubscribeConfirmPromptText }}</p>
+
+                            <RockButton :btnType="BtnType.Primary" :btnSize="BtnSize.Large" @click="onConfirmUnsubscribeClick" :isLoading="isConfirmingUnsubscribe">
+                                Unsubscribe
+                            </RockButton>
+
+                        </div>
                         <div v-if="showResubscribeButtonInHeader" class="email-preference-entry-header-actions">
 
                             <NotificationBox v-if="resubscribeErrorMessage" :alertType="AlertType.Warning">
@@ -98,8 +111,8 @@
                                     icon="ti ti-mailbox-off"
                                     disableCollapse>
 
-                        <div v-if="config.optOutOptionsDescriptionHtml"
-                             v-html="config.optOutOptionsDescriptionHtml"
+                        <div v-if="optOutOptionsDescriptionHtml"
+                             v-html="optOutOptionsDescriptionHtml"
                              class="email-preference-entry-opt-out-options-description"></div>
 
                         <NotificationBox v-if="updateEmailPreferenceErrorMessage" :alertType="AlertType.Warning">
@@ -142,8 +155,8 @@
                                     icon="ti ti-speakerphone"
                                     disableCollapse>
 
-                        <div v-if="config.currentCommunicationChannelsDescriptionHtml"
-                             v-html="config.currentCommunicationChannelsDescriptionHtml"
+                        <div v-if="currentCommunicationChannelsDescriptionHtml"
+                             v-html="currentCommunicationChannelsDescriptionHtml"
                              class="email-preference-entry-current-communication-channels-description"></div>
 
                         <DisplayCardContainer>
@@ -163,8 +176,8 @@
                                     icon="ti ti-list-search"
                                     disableCollapse>
 
-                        <div v-if="config.availableCommunicationChannelsDescriptionHtml"
-                             v-html="config.availableCommunicationChannelsDescriptionHtml"
+                        <div v-if="availableCommunicationChannelsDescriptionHtml"
+                             v-html="availableCommunicationChannelsDescriptionHtml"
                              class="email-preference-entry-available-communication-channels-description"></div>
 
                         <DisplayCardContainer>
@@ -234,6 +247,14 @@
     margin-top: var(--spacing-medium);
 }
 
+.email-preference-entry-header-confirm-prompt {
+    font-weight: var(--font-weight-semibold);
+}
+
+.email-preference-entry-header-actions .btn-primary {
+    white-space: normal;
+}
+
 .email-preference-entry-header-actions .btn-link {
     font-weight: var(--font-weight-semibold);
     color: var(--color-primary);
@@ -278,6 +299,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { UnsubscribeLevel } from "@Obsidian/Enums/Communication/unsubscribeLevel";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
@@ -287,6 +309,8 @@
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
+    import { ConfirmUnsubscribeRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/confirmUnsubscribeRequestBag";
+    import { ConfirmUnsubscribeResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/confirmUnsubscribeResponseBag";
     import { DeactivateRecordRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/deactivateRecordRequestBag";
     import { DeactivateRecordResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/deactivateRecordResponseBag";
     import { EmailPreferenceEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/emailPreferenceEntryInitializationBox";
@@ -348,8 +372,19 @@
     const hasResubscribed = ref(false);
     const resubscribeErrorMessage = ref("");
 
+    const pendingUnsubscribeLevel = ref(config.pendingUnsubscribeLevel ?? null);
+    const pendingUnsubscribeFromChannel = ref(config.pendingUnsubscribeFromChannel ?? null);
+    const isConfirmingUnsubscribe = ref(false);
+    const unsubscribeConfirmationErrorMessage = ref("");
+
     const internalHeaderTitle = ref(config.headerTitle ?? "");
     const internalHeaderDescriptionHtml = ref(config.headerDescriptionHtml ?? "");
+    const resubscribedHeaderTitle = ref(config.resubscribedHeaderTitle ?? "");
+    const resubscribedHeaderDescriptionHtml = ref(config.resubscribedHeaderDescriptionHtml ?? "");
+    const removeInvolvementConfirmationDescriptionHtml = ref(config.removeInvolvementConfirmationDescriptionHtml ?? "");
+    const optOutOptionsDescriptionHtml = ref(config.optOutOptionsDescriptionHtml ?? "");
+    const currentCommunicationChannelsDescriptionHtml = ref(config.currentCommunicationChannelsDescriptionHtml ?? "");
+    const availableCommunicationChannelsDescriptionHtml = ref(config.availableCommunicationChannelsDescriptionHtml ?? "");
 
     const manageMyAccountPageUrl = ref(config.navigationUrls?.[NavigationUrlKey.ManageMyAccountPage]);
 
@@ -426,7 +461,7 @@
                 : "user-off";
             state = "warning";
         }
-        else if (isUnsubscribeMode.value && !hasResubscribed.value) {
+        else if (isUnsubscribeMode.value && !hasResubscribed.value && !isUnsubscribeConfirmationPending.value) {
             icon = "circle-check-filled";
             state = "success";
         }
@@ -445,7 +480,7 @@
             return config.removeInvolvementConfirmationTitle ?? "";
         }
         else if (isUnsubscribeMode.value && hasResubscribed.value) {
-            return config.resubscribedHeaderTitle ?? "";
+            return resubscribedHeaderTitle.value;
         }
 
         return internalHeaderTitle.value;
@@ -456,17 +491,51 @@
             return removedInvolvementSuccessDescriptionHtml.value;
         }
         else if (isConfirmingDeactivation.value) {
-            return config.removeInvolvementConfirmationDescriptionHtml ?? "";
+            return removeInvolvementConfirmationDescriptionHtml.value;
         }
         else if (isUnsubscribeMode.value && hasResubscribed.value) {
-            return config.resubscribedHeaderDescriptionHtml ?? "";
+            return resubscribedHeaderDescriptionHtml.value;
         }
 
         return internalHeaderDescriptionHtml.value;
     });
 
+    const isUnsubscribeConfirmationPending = computed((): boolean => {
+        return isUnsubscribeMode.value
+            && pendingUnsubscribeLevel.value !== null;
+    });
+
+    const showUnsubscribeButtonInHeader = computed((): boolean => {
+        // If the person changes their email preference below before confirming a
+        // person-level unsubscribe, the pending level is no longer accurate, so
+        // only keep offering a list or flow unsubscribe in that case. A person who
+        // was removed from involvement still gets the button, since the rest of the
+        // preference controls are hidden for them.
+        return isUnsubscribeConfirmationPending.value
+            && !isConfirmingDeactivation.value
+            && (
+                !hasResubscribed.value
+                || !!pendingUnsubscribeFromChannel.value
+            );
+    });
+
+    const unsubscribeConfirmPromptText = computed((): string => {
+        if (pendingUnsubscribeFromChannel.value?.name) {
+            return `Click below to unsubscribe from ${pendingUnsubscribeFromChannel.value.name}.`;
+        }
+        else if (pendingUnsubscribeLevel.value === UnsubscribeLevel.Bulk) {
+            return "Click below to unsubscribe from bulk emails.";
+        }
+        else if (pendingUnsubscribeLevel.value === UnsubscribeLevel.All) {
+            return "Click below to unsubscribe from all emails.";
+        }
+
+        return "Click below to finish unsubscribing.";
+    });
+
     const showResubscribeButtonInHeader = computed((): boolean => {
         return isUnsubscribeMode.value
+            && !isUnsubscribeConfirmationPending.value
             && !isRemovedFromChurchInvolvement.value
             && !isConfirmingDeactivation.value
             && !hasResubscribed.value
@@ -546,6 +615,69 @@
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /**
+     * Handles the "Unsubscribe" button click that confirms a pending unsubscribe.
+     */
+    async function onConfirmUnsubscribeClick(): Promise<void> {
+        if (isConfirmingUnsubscribe.value || pendingUnsubscribeLevel.value === null) {
+            return;
+        }
+
+        isConfirmingUnsubscribe.value = true;
+        unsubscribeConfirmationErrorMessage.value = "";
+
+        const bag: ConfirmUnsubscribeRequestBag = {
+            unsubscribeLevel: pendingUnsubscribeLevel.value
+        };
+
+        const result = await invokeBlockAction<ConfirmUnsubscribeResponseBag>("ConfirmUnsubscribe", { bag });
+        isConfirmingUnsubscribe.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            unsubscribeConfirmationErrorMessage.value = result.errorMessage || "Unknown error while trying to unsubscribe.";
+            return;
+        }
+
+        // Show the same header and descriptions the person would have seen if
+        // they had been unsubscribed when the block was initialized.
+        internalHeaderTitle.value = result.data.headerTitle ?? "";
+        internalHeaderDescriptionHtml.value = result.data.headerDescriptionHtml ?? "";
+        resubscribedHeaderTitle.value = result.data.resubscribedHeaderTitle ?? "";
+        resubscribedHeaderDescriptionHtml.value = result.data.resubscribedHeaderDescriptionHtml ?? "";
+        removeInvolvementConfirmationDescriptionHtml.value = result.data.removeInvolvementConfirmationDescriptionHtml ?? "";
+        optOutOptionsDescriptionHtml.value = result.data.optOutOptionsDescriptionHtml ?? "";
+        currentCommunicationChannelsDescriptionHtml.value = result.data.currentCommunicationChannelsDescriptionHtml ?? "";
+        availableCommunicationChannelsDescriptionHtml.value = result.data.availableCommunicationChannelsDescriptionHtml ?? "";
+
+        unsubscribedFromChannel.value = result.data.unsubscribedFromChannel;
+        currentCommunicationChannels.value = result.data.currentCommunicationChannels ?? [];
+
+        if (unsubscribedFromChannel.value?.idKey && !isManagingSubscriptionRefs.has(unsubscribedFromChannel.value.idKey)) {
+            isManagingSubscriptionRefs.set(unsubscribedFromChannel.value.idKey, ref(false));
+        }
+
+        currentCommunicationChannels.value
+            .filter(channel => channel.idKey && !isManagingSubscriptionRefs.has(channel.idKey))
+            .forEach(channel => {
+                isManagingSubscriptionRefs.set(channel.idKey!, ref(false));
+            });
+
+        pendingUnsubscribeLevel.value = null;
+        pendingUnsubscribeFromChannel.value = null;
+        hasResubscribed.value = false;
+
+        // Update the internal and button group values to match.
+        isUpdatingEmailPreference.value = true;
+        internalEmailPreference.value = result.data.emailPreference;
+        emailPreferenceItem.value = result.data.emailPreference.toString();
+
+        nextTick(() => {
+            // Wait one tick to set this back to false so we don't trigger the
+            // `onUpdateEmailPreference()` handler to fire.
+            isUpdatingEmailPreference.value = false;
+        });
+    }
 
     /**
      * Handles the "Resubscribe" button click.

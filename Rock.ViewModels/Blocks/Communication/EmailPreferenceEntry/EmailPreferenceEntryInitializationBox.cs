@@ -81,6 +81,18 @@ namespace Rock.ViewModels.Blocks.Communication.EmailPreferenceEntry
         /// </summary>
         public CommunicationChannelBag UnsubscribedFromChannel { get; set; }
 
+        /// <summary>
+        /// Gets or sets the level at which the person will be unsubscribed if they confirm the unsubscribe request.
+        /// A null value means no unsubscribe confirmation is pending.
+        /// </summary>
+        public UnsubscribeLevel? PendingUnsubscribeLevel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication channel the person will be unsubscribed from if they confirm the
+        /// unsubscribe request.
+        /// </summary>
+        public CommunicationChannelBag PendingUnsubscribeFromChannel { get; set; }
+
         #endregion Shared Initialization Settings
 
         #region Opt-Out Options Section
