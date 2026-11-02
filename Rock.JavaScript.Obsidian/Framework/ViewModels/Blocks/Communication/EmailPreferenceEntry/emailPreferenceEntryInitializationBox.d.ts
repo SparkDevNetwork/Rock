@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { UnsubscribeLevel } from "@Obsidian/Enums/Communication/unsubscribeLevel";
 import { EmailPreference } from "@Obsidian/Enums/Crm/emailPreference";
 import { CommunicationChannelBag } from "@Obsidian/ViewModels/Blocks/Communication/EmailPreferenceEntry/communicationChannelBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -101,6 +102,18 @@ export type EmailPreferenceEntryInitializationBox = {
 
     /** Gets or sets the HTML for the "Opt-Out Options" section description. */
     optOutOptionsDescriptionHtml?: string | null;
+
+    /**
+     * Gets or sets the communication channel the person will be unsubscribed from if they confirm the
+     * unsubscribe request.
+     */
+    pendingUnsubscribeFromChannel?: CommunicationChannelBag | null;
+
+    /**
+     * Gets or sets the level at which the person will be unsubscribed if they confirm the unsubscribe request.
+     * A null value means no unsubscribe confirmation is pending.
+     */
+    pendingUnsubscribeLevel?: UnsubscribeLevel | null;
 
     /**
      * Gets or sets the HTML for the header description to display to the person when they request to be removed
