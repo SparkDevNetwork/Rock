@@ -118,12 +118,13 @@ namespace Rock.Communication.Chat.Platform.Doors
 
                 // A ban on a row this removal would take is staff's to lift or keep, a moderator's act
                 // and not this one. A banned row already archived is not taken, so it keeps its ban.
-                if ( HoldsBannedRow( rockContext, room.GroupId, targetId.Value, isArchivedRowCounted: false ) )
+                var taken = RowsARemovalTakes( rockContext, room.GroupId, targetId.Value );
+                if ( taken.IsBanned )
                 {
                     return Membership( "door.not_allowed", "That person is banned here; lift the ban instead." );
                 }
 
-                if ( !room.LivePersonIds.Contains( targetId.Value ) )
+                if ( !taken.IsMember )
                 {
                     return Membership( "door.not_member", "That person isn't in this conversation." );
                 }

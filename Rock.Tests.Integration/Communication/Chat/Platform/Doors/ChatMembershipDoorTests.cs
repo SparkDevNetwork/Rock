@@ -1409,7 +1409,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
-        public void ABanOnASecondRowIsNotDeletedByLeavingOrRemovingAndAMemberJoiningAgainIsAnsweredOk()
+        public void ABanOnASecondRowIsNotDeletedByLeavingOrRemovingAndKeepsTheMemberFromJoiningAgain()
         {
             using ( var scene = new ChatDoorScene() )
             {
@@ -1429,7 +1429,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                     m.IsChatBanned = true;
                 } );
 
-                Assert.AreEqual( "ok", scene.Join( ada, room ).Code, "a member joining again is answered as done" );
+                // A ban on any of her rows bans her in the room, on the platform as at every door, so
+                // joining again is refused rather than answered as done.
+                Assert.AreEqual( "door.not_allowed", scene.Join( ada, room ).Code, "a member banned on another row joining again is refused" );
                 Assert.AreEqual( "door.not_allowed", scene.Leave( ada, room ).Code, "leaving would delete the banned row" );
                 Assert.AreEqual( "door.not_allowed", scene.Remove( lee, room, scene.Alias( ada ) ).Code, "and so would removing" );
                 Assert.AreEqual( 2, scene.Memberships( room, ada ).Count );

@@ -283,6 +283,9 @@ BEGIN
     -- banned stays kept out of its channel, and joining again cannot bring them past it. The
     -- ban's end is compared in the organization's time, which is how Rock stores it and what
     -- @StampedAt is. Read in one pass, so the extra rows cost the membership read nothing more.
+    -- Such a row beside a live one is kept too: the chat doors count a ban on any of a person's
+    -- rows in the group, so the platform must hear it, and the members section folds it into the
+    -- person's one row there.
     CREATE TABLE #MemberRows (
         [PersonId] INT NOT NULL,
         [GroupRoleId] INT NOT NULL,
@@ -317,20 +320,6 @@ BEGIN
     OPTION ( RECOMPILE );
 
     CREATE CLUSTERED INDEX [IX_MemberRows] ON #MemberRows ( [PersonId] );
-
-    -- A person with a live row in a channel is the member those rows say, as the chat doors treat
-    -- them: a banned row staff archived beside one they added back is left to Rock, and leaving or
-    -- removing that person takes the live row alone. Only a person with no live row is carried by
-    -- a ban on another row.
-    DELETE [MR]
-    FROM #MemberRows AS [MR]
-    WHERE [MR].[IsLive] = 0
-        AND EXISTS (
-            SELECT 1
-            FROM #MemberRows AS [L]
-            WHERE [L].[PersonId] = [MR].[PersonId]
-                AND [L].[ChannelGuid] = [MR].[ChannelGuid]
-                AND [L].[IsLive] = 1 );
 
     -- The people a scoped call returns aliases for: those it asks about, and those in the
     -- memberships it returns, so that no membership ships without its alias.
@@ -642,7 +631,8 @@ BEGIN
     -- A person carried only by a ban on a row that is no membership leads nothing and is sent with
     -- no end: the far side reads a ban whose end has passed as a membership, and a removed person
     -- must never become a member by the clock. The row leaves at the first reading after the ban
-    -- ends, when it is no longer staged.
+    -- ends, when it is no longer staged. Beside a live row the person is a membership, so the
+    -- folded ban keeps its end, an archived row's included, and the clock may lift it.
     SELECT
         [F].[ChannelGuid] AS [channel_id],
         [A].[AliasGuid] AS [person_alias_guid],

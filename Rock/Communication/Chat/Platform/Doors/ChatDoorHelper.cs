@@ -402,12 +402,13 @@ namespace Rock.Communication.Chat.Platform.Doors
             // Leaving takes every row the person holds here that is not archived, so a ban on one of
             // those is staff's to lift, not the person's to walk out of. A banned row staff already
             // archived is not taken and keeps its ban, so it does not stand in the way.
-            if ( HoldsBannedRow( rockContext, room.GroupId, caller.Id, isArchivedRowCounted: false ) )
+            var taken = RowsARemovalTakes( rockContext, room.GroupId, caller.Id );
+            if ( taken.IsBanned )
             {
                 return Membership( "door.not_allowed", "You can't leave this channel." );
             }
 
-            if ( !room.LivePersonIds.Contains( caller.Id ) )
+            if ( !taken.IsMember )
             {
                 return Membership( "door.not_member", "You're not in this conversation." );
             }
@@ -1278,11 +1279,40 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="rockContext">The context read in.</param>
         /// <param name="groupId">The group.</param>
         /// <param name="personId">The person.</param>
-        /// <param name="isArchivedRowCounted">False to ask only of the rows a removal would take, which an archived one is not.</param>
         /// <returns>True when such a row is held.</returns>
-        private static bool HoldsBannedRow( RockContext rockContext, int groupId, int personId, bool isArchivedRowCounted = true )
+        private static bool HoldsBannedRow( RockContext rockContext, int groupId, int personId )
         {
-            return FirstBannedPerson( rockContext, new List<int> { groupId }, new List<int> { personId }, isArchivedRowCounted ).HasValue;
+            return FirstBannedPerson( rockContext, new List<int> { groupId }, new List<int> { personId } ).HasValue;
+        }
+
+        /// <summary>
+        /// What leaving or a removal would take of a person's rows in the group, every row not
+        /// archived, read in one query: whether one is an active membership, and whether one carries
+        /// a ban still in force.
+        /// </summary>
+        /// <remarks>
+        /// Asked of Rock's rows rather than the projection, since the projection counts a ban on an
+        /// archived row as well, as every other door does, and so carries a person added back beside
+        /// one as banned rather than as the member whose row leaving would take.
+        /// </remarks>
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="groupId">The group.</param>
+        /// <param name="personId">The person.</param>
+        /// <returns>Whether a row taken is a membership, and whether one is banned.</returns>
+        private static (bool IsMember, bool IsBanned) RowsARemovalTakes( RockContext rockContext, int groupId, int personId )
+        {
+            var now = RockDateTime.Now;
+            // A deceased person's rows included, as the projection carries them until Rock ends them.
+            var rows = new GroupMemberService( rockContext ).Queryable( true )
+                .Where( m => m.GroupId == groupId && m.PersonId == personId )
+                .Select( m => new
+                {
+                    IsActive = m.GroupMemberStatus == GroupMemberStatus.Active,
+                    IsBanned = m.IsChatBanned && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now )
+                } )
+                .ToList();
+
+            return (rows.Any( r => r.IsActive ), rows.Any( r => r.IsBanned ));
         }
 
         /// <summary>
@@ -1292,9 +1322,8 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="rockContext">The context read in.</param>
         /// <param name="groupIds">The groups.</param>
         /// <param name="personIds">The people, in the order a refusal should name them.</param>
-        /// <param name="isArchivedRowCounted">False to leave archived rows out.</param>
         /// <returns>The person, or null.</returns>
-        private static int? FirstBannedPerson( RockContext rockContext, List<int> groupIds, IList<int> personIds, bool isArchivedRowCounted = true )
+        private static int? FirstBannedPerson( RockContext rockContext, List<int> groupIds, IList<int> personIds )
         {
             var now = RockDateTime.Now;
             // A list, because Entity Framework translates a list's Contains and not every collection's.
@@ -1303,8 +1332,7 @@ namespace Rock.Communication.Chat.Platform.Doors
             // Read without the archived filter, which would otherwise hide the rows a ban is kept on.
             var banned = new GroupMemberService( rockContext ).AsNoFilter()
                 .Where( m => groupIds.Contains( m.GroupId ) && people.Contains( m.PersonId ) && m.IsChatBanned
-                    && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now )
-                    && ( isArchivedRowCounted || !m.IsArchived ) )
+                    && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) )
                 .Select( m => m.PersonId )
                 .Distinct()
                 .ToList();
