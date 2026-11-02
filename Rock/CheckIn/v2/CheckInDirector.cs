@@ -317,6 +317,22 @@ namespace Rock.CheckIn.v2
                         Location = l
                     } ) )
                     .DistinctBy( glc => glc.GroupLocation.Id )
+                    /*
+                        11/2/2026 - MSE
+
+                        Groups that check-in will discard (not in one of the kiosk's areas) were
+                        loaded with GroupCache.Get just to read their GroupTypeId. Groups outside
+                        a check-in configuration have a 10 minute cache lifespan, so every
+                        kiosk call after expiry reloaded hundreds of them. The GroupTypeId is now
+                        carried on GroupLocationCache so the area check runs before GroupCache.Get.
+                        The IsActive check stays after the load. Group.SaveHook
+                        flushes the group's GroupLocationCache items when GroupTypeId changes.
+                        A GroupTypeId changed outside the entity save (raw SQL) needs a Group
+                        Location cache clear.
+
+                        Reason: Avoid GroupCache loads for groups check-in will not use (#7142).
+                    */
+                    .Where( glc => activeAreaIds.Contains( glc.GroupLocation.GroupTypeId ) )
                     .Where( glc =>
                     {
                         var groupCache = GroupCache.Get( glc.GroupLocation.GroupId, RockContext );
@@ -569,10 +585,11 @@ namespace Rock.CheckIn.v2
             // Get the distinct group types for those group locations that have
             // attendance enabled.
             return groupLocations
-                .Select( gl => GroupCache.Get( gl.GroupId, RockContext )?.GroupTypeId )
-                .Where( id => id.HasValue )
+                .Select( gl => gl.GroupTypeId )
+                // GroupTypeId is 0 only when the group no longer existed when the item was cached.
+                .Where( id => id != 0 )
                 .Distinct()
-                .Select( id => GroupTypeCache.Get( id.Value, RockContext ) )
+                .Select( id => GroupTypeCache.Get( id, RockContext ) )
                 .Where( gt => gt != null && gt.TakesAttendance )
                 .ToList();
         }
