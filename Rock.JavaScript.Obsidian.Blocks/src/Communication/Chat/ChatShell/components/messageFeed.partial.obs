@@ -500,7 +500,11 @@
 .chat-jump {
     position: absolute;
     bottom: 14px;
-    left: 50%;
+    /* Centred by layout, not by a transform of half its own width: its text changes with the count, and a width-dependent transform would slide it sideways as that changes while it fades in. */
+    left: 0;
+    right: 0;
+    width: fit-content;
+    margin-inline: auto;
     z-index: 3;
     display: inline-flex;
     align-items: center;
@@ -517,14 +521,14 @@
     opacity: 0;
     visibility: hidden;
     /* From the motion tokens, so under reduced motion the lift and the scale fall away to a fade. */
-    transform: translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale));
+    transform: translateY(var(--chat-rise)) scale(var(--chat-pop-scale));
     transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in), visibility var(--chat-t-base) linear;
 }
 
 .chat-jump.is-on {
     opacity: 1;
     visibility: visible;
-    transform: translate(-50%, 0);
+    transform: none;
 }
 
 .chat-jump.has-count {

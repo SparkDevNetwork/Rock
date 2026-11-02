@@ -703,8 +703,8 @@ describe("the components' own styles", () => {
     test("the unread strip comes from 4px above and Jump to latest from the rise below at the pop scale", () => {
         expect(declarationOf(feedPath, ".chat-unread-strip", "transform")).toBe(normalize("translateY(-4px)"));
         expect(declarationOf(feedPath, ".chat-unread-strip.is-on", "transform")).toBe("none");
-        expect(declarationOf(feedPath, ".chat-jump", "transform")).toBe(normalize("translate(-50%, var(--chat-rise)) scale(var(--chat-pop-scale))"));
-        expect(declarationOf(feedPath, ".chat-jump.is-on", "transform")).toBe(normalize("translate(-50%, 0)"));
+        expect(declarationOf(feedPath, ".chat-jump", "transform")).toBe(normalize("translateY(var(--chat-rise)) scale(var(--chat-pop-scale))"));
+        expect(declarationOf(feedPath, ".chat-jump.is-on", "transform")).toBe("none");
     });
 
     test("under reduced motion the unread strip fades in and out without sliding", () => {
