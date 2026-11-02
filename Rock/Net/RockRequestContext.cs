@@ -636,7 +636,12 @@ namespace Rock.Net
                 // allowed to view.
                 if ( entity is Rock.Security.ISecured securedEntity && !securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                 {
-                    return null;
+                    var isFamilyMemberOrBusiness = entity is Person contextPerson && IsFamilyMemberOrBusinessOfCurrentPerson( contextPerson );
+
+                    if ( !isFamilyMemberOrBusiness )
+                    {
+                        return null;
+                    }
                 }
 
                 if ( entity != null && entity is IHasAttributes attributedEntity )
@@ -773,6 +778,25 @@ namespace Rock.Net
         public virtual IDictionary<string, string> GetPageParameters()
         {
             return new Dictionary<string, string>( PageParameters, StringComparer.InvariantCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Determines whether the specified person is a member of the current
+        /// person's family or a business the current person is a Business Contact for.
+        /// </summary>
+        /// <param name="contextPerson">The person record from the context cookie.</param>
+        /// <returns><c>true</c> if the person is in the current person's family or is one of their businesses; otherwise <c>false</c>.</returns>
+        private bool IsFamilyMemberOrBusinessOfCurrentPerson( Person contextPerson )
+        {
+            if ( CurrentPerson == null || contextPerson == null )
+            {
+                return false;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new PersonService( rockContext ).IsFamilyMemberOrBusinessOf( CurrentPerson.Id, contextPerson.Id );
+            }
         }
 
         /// <summary>
