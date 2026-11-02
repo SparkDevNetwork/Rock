@@ -129,6 +129,22 @@ namespace Rock.CheckIn.v2
             var groupLocations = locations
                 .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ) )
                 .DistinctBy( glc => glc.Id )
+                /*
+                    11/2/2026 - MSE
+
+                    Groups that check-in will discard (not in one of the kiosk's areas) were
+                    loaded with GroupCache.Get just to read their GroupTypeId. Groups outside
+                    a check-in configuration have a 10 minute cache lifespan, so every
+                    kiosk call after expiry reloaded hundreds of them. The GroupTypeId is now
+                    carried on GroupLocationCache so the area check runs before GroupCache.Get.
+                    The IsActive and IsArchived checks stay after the load. Group.SaveHook
+                    flushes the group's GroupLocationCache items when GroupTypeId changes.
+                    A GroupTypeId changed outside the entity save (raw SQL) needs a Group
+                    Location cache clear.
+
+                    Reason: Avoid GroupCache loads for groups check-in will not use (#7142).
+                */
+                .Where( glc => activeAreaIds.Contains( glc.GroupTypeId ) )
                 .Where( glc =>
                 {
                     var groupCache = GroupCache.Get( glc.GroupId, rockContext );

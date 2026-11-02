@@ -62,6 +62,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public int GroupId { get; private set; }
 
+        /// <summary>
+        /// Gets the identifier of the <see cref="Rock.Model.GroupType"/> of the
+        /// group this location belongs to. This allows callers to filter by
+        /// group type without loading the <see cref="GroupCache"/> object.
+        /// </summary>
+        /// <value>The group type identifier.</value>
+        [DataMember]
+        internal int GroupTypeId { get; private set; }
+
         /// <inheritdoc cref="Rock.Model.GroupLocation.LocationId"/>
         [DataMember]
         public int LocationId { get; private set; }
@@ -176,6 +185,7 @@ namespace Rock.Web.Cache
             }
 
             GroupId = groupLocation.GroupId;
+            GroupTypeId = groupLocation.Group?.GroupTypeId ?? 0;
             LocationId = groupLocation.LocationId;
             GroupLocationTypeValueId = groupLocation.GroupLocationTypeValueId;
             IsMailingLocation = groupLocation.IsMailingLocation;
@@ -250,6 +260,30 @@ namespace Rock.Web.Cache
 
             ItemCache<GroupLocationCache>.Remove( key );
             _byLocationIdCache.Remove( key, entity.LocationId );
+        }
+
+        /// <summary>
+        /// Flushes the cached items for every group location of the specified
+        /// group. This should be called when a value that is copied from the
+        /// group, such as <see cref="GroupTypeId"/>, has changed.
+        /// </summary>
+        /// <param name="groupId">The group identifier.</param>
+        internal static void FlushByGroupId( int groupId )
+        {
+            using ( var rockContext = RockApp.Current.CreateRockContext() )
+            {
+                var groupLocationIds = new GroupLocationService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( gl => gl.GroupId == groupId )
+                    .Select( gl => gl.Id )
+                    .ToList();
+
+                foreach ( var groupLocationId in groupLocationIds )
+                {
+                    FlushItem( groupLocationId );
+                }
+            }
         }
 
         /// <summary>
