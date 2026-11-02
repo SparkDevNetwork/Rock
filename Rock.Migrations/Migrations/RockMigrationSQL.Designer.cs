@@ -2300,6 +2300,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure carrying a ban in force on a removed member..
+        /// </summary>
+        public static string _202611021200000_KeepChatBansOnRemovedMembers_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202611021200000_KeepChatBansOnRemovedMembers_spChat_SyncProjection", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {

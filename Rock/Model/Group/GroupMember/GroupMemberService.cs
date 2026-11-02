@@ -619,6 +619,17 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool Delete( GroupMember item )
         {
+            // A member under a chat ban still in force is archived whatever the group type keeps, so
+            // the ban outlives the removal: chat keeps the room from them, and joining again cannot
+            // bring the row back past it, until the ban ends or staff lift it on the archived row. A
+            // row never saved has nothing to keep.
+            var isChatBanInForce = item.Id != 0 && item.IsChatBanned && ( !item.ChatBannedUntil.HasValue || item.ChatBannedUntil.Value > RockDateTime.Now );
+            if ( isChatBanInForce )
+            {
+                this.Archive( item, null, false );
+                return true;
+            }
+
             var rockContext = this.Context as RockContext;
             int? groupTypeId = item.Group?.GroupTypeId;
 
