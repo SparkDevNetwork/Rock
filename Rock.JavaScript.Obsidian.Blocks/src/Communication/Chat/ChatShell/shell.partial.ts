@@ -24,7 +24,7 @@
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError, errorKey, inRoomKind, messageForError } from "./errors.partial";
-import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken } from "./platformCall.partial";
+import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
@@ -832,9 +832,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice)
     });
 
+    // The platform's own functions, through the same fresh token every other call has.
+    const callFunction: PlatformCall["callFunction"] = (path, body, callOptions) => session.withFreshToken(
+        () => platform.callFunction(path, body, callOptions),
+        answer => !answer.ok && answer.error.code === "auth.expired"
+    );
+
     const attachments = createAttachments({
         call,
-        fetch: options.fetch,
+        callFunction,
         projectUrl,
         publishableKey,
         currentToken: session.currentToken,
@@ -844,10 +850,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     const gifs = createGifs({
-        callFunction: (path, body, callOptions) => session.withFreshToken(
-            () => platform.callFunction(path, body, callOptions),
-            answer => !answer.ok && answer.error.code === "auth.expired"
-        ),
+        callFunction,
         isEnabled: () => session.settings().flags.gifs
     });
 

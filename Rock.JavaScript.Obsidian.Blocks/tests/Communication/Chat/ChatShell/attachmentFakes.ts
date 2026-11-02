@@ -176,6 +176,10 @@ export function harness(codec: ImageCodec = fakeCodec()): Harness {
             return { ok: true, data: (args.p_files as unknown[]).map(() => nextUpload()) };
         },
         callFunction: async (path, body) => {
+            // the platform's call path reads the person's token once, and without one sends nothing
+            if (!dependencies.currentToken()) {
+                return { ok: false, status: 401, error: { code: "auth.expired", severity: "session" }, retryAfterSeconds: null };
+            }
             signs.push({ path, body: body as { paths: string[] } });
             try {
                 /* eslint-disable-next-line @typescript-eslint/naming-convention */

@@ -22,15 +22,16 @@
 // so the send itself never waits on bytes. Photos are always drawn again before they go, which
 // is what strips their location, since a photo straight from a phone carries it.
 //
-// Reading a file needs a link Storage signs for the person, which it does only while they can
-// read the message; links last ten minutes, so they are kept by file, and the files of every row
-// on screen are signed again shortly before they expire, as many as can go in one call.
+// Reading a file needs a link the platform signs for the person, which it does only while they
+// can read the message. The platform picks how long a link lasts, five minutes, so a link minted
+// before a ban stops working soon after it; links are kept by file, and the files of every row on
+// screen are signed again a minute before the end the platform answered, as many as go in a call.
 //
 // This lives apart from the sender because its lifetime is not a send's: a tray outlives the
 // sends that take from it, and links outlive both.
 import { InjectionKey, markRaw, reactive, ref } from "vue";
 import { failedWords, failureWords, finalWords } from "../errors.partial";
-import { CallResult } from "../platformCall.partial";
+import { CallResult, PlatformCall } from "../platformCall.partial";
 import { AttachmentItem, FailureWords, FileItem, GifItem, GifResult, isFileItem } from "../types.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { AttachmentTypes, PlatformLimits } from "./useSession.partial";
@@ -60,14 +61,14 @@ const filesAloneNotice = "A GIF is sent on its own. Send the files or remove the
 /** The bucket every chat file lives in. */
 const bucket = "chat-attachments";
 
-/** How long a signed link lasts, in seconds, and how long before its end it is asked again. */
-const linkSeconds = 600;
+/** The platform's function that signs links, and how long before a link's end it is asked again. */
+const signFunction = "chat-sign-attachment";
 const linkRenewMs = 60 * 1000;
 
 /** How long after a signing that failed as a whole its files are asked again. */
 const linkRetryMs = 15 * 1000;
 
-/** The most keys Storage signs in one call. */
+/** The most keys the platform signs in one call. */
 const signBatch = 50;
 
 /** A photo's longest side once drawn again, and the JPEG quality it is drawn at. */
@@ -436,7 +437,9 @@ export type Attachments = {
 export type AttachmentDependencies = {
     /** Calls a platform function, as every other call does. */
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
-    fetch: (url: string, init: RequestInit) => Promise<Response>;
+
+    /** Calls one of the platform's own functions with a fresh token, as the GIF search does. */
+    callFunction: PlatformCall["callFunction"];
     projectUrl: string;
     publishableKey: string;
 
@@ -469,7 +472,30 @@ export const attachmentViewsKey: InjectionKey<AttachmentViews> = Symbol("chat-at
 /* eslint-disable @typescript-eslint/naming-convention */
 /** What an upload's record is answered with by begin. */
 type BeginAnswer = { upload_id?: string, key?: string };
+
+/** What the signing function answers: how long its links last, in seconds, and each file's link. */
+type SignAnswer = { expires_in?: unknown, links?: unknown };
 /* eslint-enable @typescript-eslint/naming-convention */
+
+/** One file's link as the signing function answers it: Storage's relative link, or why there is none. */
+type SignedLink = { path?: string, signedURL?: string | null, error?: string | null };
+
+/**
+ * Reads the signing function's answer: how long its links last and each file's link. Anything
+ * else is a call that failed as a whole.
+ *
+ * @param data The answer's body.
+ *
+ * @returns The links and their length, or null.
+ */
+function signAnswerOf(data: unknown): { expiresInSeconds: number, links: SignedLink[] } | null {
+    const body = data as SignAnswer | null;
+    if (typeof body?.expires_in !== "number" || body.expires_in <= 0 || !Array.isArray(body.links)) {
+        return null;
+    }
+
+    return { expiresInSeconds: body.expires_in, links: body.links as SignedLink[] };
+}
 
 /** A file kept for the session once uploaded: its bytes, so it can be uploaded again. */
 type KeptFile = { blob: Blob, item: FileItem };
@@ -824,25 +850,13 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         return signing;
     }
 
-    /** Asks Storage for files' links and writes what it answers. */
+    /** Asks the platform for files' links and writes what it answers. */
     async function requestLinks(items: FileItem[]): Promise<void> {
         const startedAt = now();
-        const token = dependencies.currentToken();
-        let answer: Array<{ path?: string, signedURL?: string | null, error?: string | null }> | null = null;
-        try {
-            if (token) {
-                const response = await dependencies.fetch(`${projectUrl}/storage/v1/object/sign/${bucket}`, {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${token}`, "apikey": dependencies.publishableKey, "Content-Type": "application/json" },
-                    body: JSON.stringify({ expiresIn: linkSeconds, paths: items.map(item => item.key) })
-                });
-                const body = await response.json().catch(() => null) as unknown;
-                answer = response.ok && Array.isArray(body) ? body : null;
-            }
-        }
-        catch {
-            answer = null;
-        }
+
+        // The keys alone: the platform decides how long a link lasts, never the browser.
+        const result = await dependencies.callFunction(signFunction, { paths: items.map(item => item.key) });
+        const answer = result.ok ? signAnswerOf(result.data) : null;
 
         if (isStopped) {
             return;
@@ -854,11 +868,12 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             return;
         }
 
-        const byPath = new Map(answer.map(entry => [entry.path, entry]));
+        // Counted from when the call began, so the time it took never stretches a link past its end.
+        const endsAt = startedAt + answer.expiresInSeconds * 1000;
+        const byPath = new Map(answer.links.map(entry => [entry.path, entry]));
         for (const item of items) {
             retryAt.delete(item.id);
             const signed = byPath.get(item.key);
-            const endsAt = startedAt + linkSeconds * 1000;
             if (!signed?.signedURL || signed.error) {
                 links.set(item.id, { link: { url: null, downloadUrl: null, isUnavailable: true }, endsAt });
                 continue;
