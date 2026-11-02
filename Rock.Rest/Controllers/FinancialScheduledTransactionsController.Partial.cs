@@ -274,5 +274,25 @@ namespace Rock.Rest.Controllers
             var response = ControllerContext.Request.CreateResponse( HttpStatusCode.OK, schedulesWithMostRecentTransaction );
             return response;
         }
+
+        /// <inheritdoc/>
+        protected override bool IsRelatedEntityCollectionAllowed( string propertyName )
+        {
+            /*
+                11/2/2026 - MSE
+
+                Giving integrations post a new scheduled transaction with its
+                ScheduledTransactionDetails (the account splits) in one request. A detail takes
+                its permissions from its scheduled transaction (see its ParentAuthority), which
+                the POST has already authorized, so these may still be inserted with the
+                schedule. The details' own related records, and every other collection, are
+                still rejected. Like TransactionDetails on FinancialTransactionsController,
+                security set on the FinancialScheduledTransactionDetail entity type itself is
+                not checked for these nested details.
+
+                Reason: Keep creating a schedule with its details in one request working.
+            */
+            return propertyName == nameof( FinancialScheduledTransaction.ScheduledTransactionDetails );
+        }
     }
 }
