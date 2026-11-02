@@ -447,6 +447,15 @@ namespace Rock.Blocks.Finance
 
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            return new GridEntityKeyOptions
+            {
+                EntityTypeId = EntityTypeCache.GetId<Rock.Model.FinancialScheduledTransaction>()
+            };
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<FinancialScheduledTransactionData> GetGridBuilder()
         {
             var blockOptions = new GridBuilderGridOptions<FinancialScheduledTransactionData>
