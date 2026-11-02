@@ -198,12 +198,15 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // An existing conversation is reopened even after someone turned Open DM off, but a
-            // ban in it is not stepped around by starting again.
+            // ban in it is not stepped around by starting again. Every row of its people is asked,
+            // not only the live ones the projection reads, so a ban staff left on an archived row
+            // beside one they added back refuses here as it would refuse a new start.
             if ( read.Existing.HasValue )
             {
-                var banned = others.FirstOrDefault( o => read.BannedPersonIds.Contains( o.PersonId ) );
-                if ( banned != null || read.BannedPersonIds.Contains( caller.Id ) )
+                var bannedPersonId = FirstBannedPerson( rockContext, new List<int> { read.ExistingGroupId }, personIds );
+                if ( bannedPersonId.HasValue )
                 {
+                    var banned = others.FirstOrDefault( o => o.PersonId == bannedPersonId.Value );
                     return NotEligible( banned?.Guid, banned?.NickName, banned?.LastName );
                 }
 
@@ -396,9 +399,10 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_found", "That channel could not be found." );
             }
 
-            // Leaving deletes every row the person holds here that is not archived, a banned one with
-            // the ban on it; an archived banned row refuses too, which staff can clear in Rock.
-            if ( room.BannedPersonIds.Contains( caller.Id ) || HoldsBannedRow( rockContext, room.GroupId, caller.Id ) )
+            // Leaving takes every row the person holds here that is not archived, so a ban on one of
+            // those is staff's to lift, not the person's to walk out of. A banned row staff already
+            // archived is not taken and keeps its ban, so it does not stand in the way.
+            if ( HoldsBannedRow( rockContext, room.GroupId, caller.Id, isArchivedRowCounted: false ) )
             {
                 return Membership( "door.not_allowed", "You can't leave this channel." );
             }
@@ -845,6 +849,11 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             public Guid? Existing { get; set; }
 
+            /// <summary>
+            /// The Rock group of the live conversation, when there is one.
+            /// </summary>
+            public int ExistingGroupId { get; set; }
+
             public HashSet<int> BannedPersonIds { get; } = new HashSet<int>();
 
             public HashSet<int> SharedPersonIds { get; } = new HashSet<int>();
@@ -877,14 +886,14 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .Where( g => g.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived ).Select( m => m.PersonId ).Distinct().Count() == count
                     && !g.Members.Any( m => m.GroupMemberStatus == GroupMemberStatus.Active && !m.IsArchived && !people.Contains( m.PersonId ) ) )
                 .OrderBy( g => g.Id )
-                .Select( g => g.Guid )
+                .Select( g => new { g.Id, g.Guid } )
                 .ToList();
 
             // Rock's membership only proposes; the projection decides which candidate is live and
             // who in it is banned, as the platform will see them.
             var changes = new ChatPlatformSyncHelper.ImmediateChanges();
             changes.PersonIds.UnionWith( personIds );
-            changes.GroupGuids.UnionWith( candidates );
+            changes.GroupGuids.UnionWith( candidates.Select( c => c.Guid ) );
 
             // Only the caller's and each person's own memberships of the groups they share are read,
             // so a room of thousands costs two rows, not its roster. The chat-allowed filter only
@@ -913,14 +922,15 @@ namespace Rock.Communication.Chat.Platform.Doors
             {
                 // Members come only from live channels, and a member who is not one of these people
                 // makes it a different conversation.
-                var inIt = projection.Members.Where( m => m.ChannelGuid == candidate ).ToList();
-                var isExact = projection.Channels.ContainsKey( candidate )
+                var inIt = projection.Members.Where( m => m.ChannelGuid == candidate.Guid ).ToList();
+                var isExact = projection.Channels.ContainsKey( candidate.Guid )
                     && inIt.All( m => m.PersonId.HasValue )
                     && new HashSet<int>( inIt.Select( m => m.PersonId.Value ) ).SetEquals( personIds );
 
                 if ( isExact )
                 {
-                    read.Existing = candidate;
+                    read.Existing = candidate.Guid;
+                    read.ExistingGroupId = candidate.Id;
                     read.BannedPersonIds.UnionWith( inIt.Where( m => m.IsBanned ).Select( m => m.PersonId.Value ) );
                     break;
                 }
@@ -1174,10 +1184,23 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_allowed", channelRefusal );
             }
 
-            // A Chat Administrator manages every shared channel. Otherwise Rock's own rule for who
-            // manages a group's members: security, or a group role that may manage members or edit.
-            var isManager = ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext )
-                || new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
+            // A Chat Administrator manages every shared channel, one they are banned from included,
+            // since that right is the church's and not the room's.
+            if ( ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ) )
+            {
+                return null;
+            }
+
+            // A ban in the room takes managing it away, whatever Rock lets the person do to the
+            // group. It is the projection's answer, the one the platform hides the room by.
+            if ( room.BannedPersonIds.Contains( caller.Id ) )
+            {
+                return Membership( "door.not_allowed", channelRefusal );
+            }
+
+            // Otherwise Rock's own rule for who manages a group's members: security, or a group
+            // role that may manage members or edit.
+            var isManager = new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
 
             return isManager ? null : Membership( "door.not_allowed", channelRefusal );
         }
@@ -1250,16 +1273,43 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         /// <summary>
         /// Whether the person holds a row in the group, active or not, under a ban still in force.
-        /// The projection reads only active rows, so a ban left on an inactive or archived row is
-        /// asked here, before that row is brought back.
+        /// A ban left on an inactive or archived row is asked here, before that row is brought back.
         /// </summary>
-        private static bool HoldsBannedRow( RockContext rockContext, int groupId, int personId )
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="groupId">The group.</param>
+        /// <param name="personId">The person.</param>
+        /// <param name="isArchivedRowCounted">False to ask only of the rows a removal would take, which an archived one is not.</param>
+        /// <returns>True when such a row is held.</returns>
+        private static bool HoldsBannedRow( RockContext rockContext, int groupId, int personId, bool isArchivedRowCounted = true )
+        {
+            return FirstBannedPerson( rockContext, new List<int> { groupId }, new List<int> { personId }, isArchivedRowCounted ).HasValue;
+        }
+
+        /// <summary>
+        /// The first of these people, in their order, who holds a row in any of these groups under
+        /// a ban still in force, read in one query over every row state; null when none does.
+        /// </summary>
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="groupIds">The groups.</param>
+        /// <param name="personIds">The people, in the order a refusal should name them.</param>
+        /// <param name="isArchivedRowCounted">False to leave archived rows out.</param>
+        /// <returns>The person, or null.</returns>
+        private static int? FirstBannedPerson( RockContext rockContext, List<int> groupIds, IList<int> personIds, bool isArchivedRowCounted = true )
         {
             var now = RockDateTime.Now;
+            // A list, because Entity Framework translates a list's Contains and not every collection's.
+            var people = personIds.ToList();
 
-            return new GroupMemberService( rockContext ).AsNoFilter()
-                .Any( m => m.GroupId == groupId && m.PersonId == personId && m.IsChatBanned
-                    && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now ) );
+            // Read without the archived filter, which would otherwise hide the rows a ban is kept on.
+            var banned = new GroupMemberService( rockContext ).AsNoFilter()
+                .Where( m => groupIds.Contains( m.GroupId ) && people.Contains( m.PersonId ) && m.IsChatBanned
+                    && ( !m.ChatBannedUntil.HasValue || m.ChatBannedUntil > now )
+                    && ( isArchivedRowCounted || !m.IsArchived ) )
+                .Select( m => m.PersonId )
+                .Distinct()
+                .ToList();
+
+            return people.Where( banned.Contains ).Select( id => ( int? ) id ).FirstOrDefault();
         }
 
         /// <summary>
@@ -1284,15 +1334,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .Select( g => g.Id )
                 .ToList();
 
-            foreach ( var personId in people )
-            {
-                if ( groupIds.Any( groupId => HoldsBannedRow( rockContext, groupId, personId ) ) )
-                {
-                    return personId;
-                }
-            }
-
-            return null;
+            return groupIds.Any() ? FirstBannedPerson( rockContext, groupIds, people ) : null;
         }
 
         /// <summary>
