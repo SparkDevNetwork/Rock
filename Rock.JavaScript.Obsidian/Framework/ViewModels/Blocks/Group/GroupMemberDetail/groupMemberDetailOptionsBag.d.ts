@@ -33,8 +33,8 @@ export type GroupMemberDetailOptionsBag = {
 
     /**
      * Gets or sets a value indicating whether the chat preference
-     * checkboxes are shown. True when chat is enabled globally and for
-     * this group.
+     * checkboxes are shown. True when either chat provider is
+     * configured and chat is enabled for this group.
      */
     areChatPreferencesShown: boolean;
 
@@ -76,6 +76,13 @@ export type GroupMemberDetailOptionsBag = {
      * viewed is itself archived. Drives the red Archived header label.
      */
     isArchived: boolean;
+
+    /**
+     * Gets or sets a value indicating whether the Chat Muted checkbox
+     * is shown. Only the chat provider Rock shipped before the chat
+     * platform reads it.
+     */
+    isChatMutedShown: boolean;
 
     /**
      * Gets or sets a value indicating whether the Communicate header

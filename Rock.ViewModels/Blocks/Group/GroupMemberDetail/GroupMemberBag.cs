@@ -76,6 +76,12 @@ namespace Rock.ViewModels.Blocks.Group.GroupMemberDetail
         public bool IsChatBanned { get; set; }
 
         /// <summary>
+        /// Gets or sets when this person's chat ban ends, in the
+        /// organization's time. Null for a ban with no end.
+        /// </summary>
+        public DateTimeOffset? ChatBannedUntil { get; set; }
+
+        /// <summary>
         /// Gets or sets the identifier of the schedule template this member
         /// follows for serving.
         /// </summary>

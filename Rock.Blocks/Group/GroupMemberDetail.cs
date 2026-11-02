@@ -24,6 +24,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Communication.Chat;
+using Rock.Communication.Chat.Platform.Configuration;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Security;
@@ -369,6 +370,21 @@ namespace Rock.Blocks.Group
         }
 
         /// <summary>
+        /// Whether the member's chat settings are shown and saved: either chat provider is
+        /// configured, and the group is in chat by the flag the chat sync reads.
+        /// </summary>
+        /// <param name="group">The group the member belongs to.</param>
+        /// <returns><c>true</c> when the section is shown.</returns>
+        /// <remarks>
+        /// Asked in two places that must agree, when the screen is built and when it is saved: a
+        /// section shown but not saved would take a ban and drop it.
+        /// </remarks>
+        private static bool IsChatSectionShown( Model.Group group )
+        {
+            return ChatPlatformConfigurationService.Read().IsChatSectionShown( ChatHelper.IsChatEnabled ) && group.GetIsChatEnabled();
+        }
+
+        /// <summary>
         /// Determines whether the current person is authorized to edit the
         /// group member. Edit rights come from block EDIT, group EDIT,
         /// group MANAGE_MEMBERS, or, in sign-up mode only, group SCHEDULE.
@@ -405,6 +421,7 @@ namespace Rock.Blocks.Group
             var group = entity.Group;
             var groupType = GroupTypeCache.Get( group.GroupTypeId );
             var isNewMember = entity.Id == 0;
+            var isChatSectionShown = IsChatSectionShown( group );
 
             var options = new GroupMemberDetailOptionsBag
             {
@@ -425,7 +442,11 @@ namespace Rock.Blocks.Group
                 // Form options.
                 StatusItems = typeof( GroupMemberStatus ).ToEnumListItemBag(),
                 CommunicationPreferenceItems = GetCommunicationPreferenceItems(),
-                AreChatPreferencesShown = ChatHelper.IsChatEnabled && group.GetIsChatEnabled(),
+                AreChatPreferencesShown = isChatSectionShown,
+
+                // The platform has no mute, so Chat Muted shows only while the provider Rock shipped
+                // before it is configured, which is the one that reads it.
+                IsChatMutedShown = isChatSectionShown && ChatHelper.IsChatEnabled,
 
                 // Scheduling.
                 IsSchedulingEnabled = groupType.IsSchedulingEnabled && !IsSignUpMode,
@@ -1205,6 +1226,7 @@ namespace Rock.Blocks.Group
                 IsNotified = entity.IsNotified,
                 IsChatMuted = entity.IsChatMuted,
                 IsChatBanned = entity.IsChatBanned,
+                ChatBannedUntil = entity.ChatBannedUntil?.ToRockDateTimeOffset(),
                 ScheduleTemplateId = entity.ScheduleTemplateId,
                 ScheduleStartDate = entity.ScheduleStartDate?.ToRockDateTimeOffset(),
                 ScheduleReminderEmailOffsetDays = entity.ScheduleReminderEmailOffsetDays
@@ -1732,14 +1754,28 @@ namespace Rock.Blocks.Group
                 }
             } );
 
-            // Chat preferences only apply when the section was shown: chat enabled globally and for the group (WebForms parity).
-            if ( ChatHelper.IsChatEnabled && entity.Group.GetIsChatEnabled() )
+            // Chat preferences only apply when the section was shown.
+            if ( IsChatSectionShown( entity.Group ) )
             {
-                box.IfValidProperty( nameof( box.Bag.IsChatMuted ), () =>
-                    entity.IsChatMuted = box.Bag.IsChatMuted );
+                // Only the provider Rock shipped before the chat platform reads a mute, so the box is
+                // shown, and saved, only while that provider is configured.
+                if ( ChatHelper.IsChatEnabled )
+                {
+                    box.IfValidProperty( nameof( box.Bag.IsChatMuted ), () =>
+                        entity.IsChatMuted = box.Bag.IsChatMuted );
+                }
 
                 box.IfValidProperty( nameof( box.Bag.IsChatBanned ), () =>
                     entity.IsChatBanned = box.Bag.IsChatBanned );
+
+                box.IfValidProperty( nameof( box.Bag.ChatBannedUntil ), () =>
+                    entity.ChatBannedUntil = box.Bag.ChatBannedUntil?.DateTime );
+
+                // A lifted ban keeps no end, so an old date never comes back with a later ban.
+                if ( !entity.IsChatBanned )
+                {
+                    entity.ChatBannedUntil = null;
+                }
             }
 
             box.IfValidProperty( nameof( box.Bag.SignedDocument ), () =>
@@ -1896,10 +1932,23 @@ namespace Rock.Blocks.Group
             // The archived-member check only applies when the person or role is changing.
             var previousPersonId = entity.PersonId;
             var previousRoleId = entity.GroupRoleId;
+            var previousChatBannedUntil = entity.ChatBannedUntil;
 
             if ( !UpdateEntityFromBox( entity, box ) )
             {
                 return ActionBadRequest( "Invalid data." );
+            }
+
+            // An end set now that has already passed would ban nobody. One stored earlier that has
+            // since passed is the ban having ended, and the member can still be edited.
+            var isChatBanEndPast = entity.IsChatBanned
+                && entity.ChatBannedUntil.HasValue
+                && entity.ChatBannedUntil != previousChatBannedUntil
+                && entity.ChatBannedUntil.Value <= RockDateTime.Now;
+
+            if ( isChatBanEndPast )
+            {
+                return ActionBadRequest( "Chat Banned Until must be in the future." );
             }
 
             if ( entity.PersonId == 0 )

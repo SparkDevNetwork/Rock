@@ -43,6 +43,12 @@ export type GroupMemberBag = {
     attributeValues?: Record<string, string> | null;
 
     /**
+     * Gets or sets when this person's chat ban ends, in the
+     * organization's time. Null for a ban with no end.
+     */
+    chatBannedUntil?: string | null;
+
+    /**
      * Gets or sets how this member prefers to receive group
      * communications.
      */
