@@ -30,7 +30,9 @@
                 <span data-testid="blocked-text">{{ blockedText }}</span>
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
-            <ThreadSummary v-if="hasThread && message" class="chat-blocked-thread" :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
+            <div v-if="hasThread && message" class="chat-blocked-thread">
+                <ThreadSummary :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
+            </div>
         </template>
 
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
@@ -235,7 +237,8 @@
 
 /*
     A message by someone the reader blocked draws as a system line does, quiet and with no one's
-    name, so it never draws the eye; a thread under it wraps onto its own line.
+    name, so it never draws the eye; a thread under it wraps onto its own line, where the row
+    places the pill and the pill keeps its own width, as it does under any root.
 */
 .chat-msg.is-blocked {
     flex-flow: row wrap;
@@ -249,7 +252,9 @@
 }
 
 .chat-msg.is-blocked .chat-blocked-thread {
+    display: flex;
     flex-basis: 100%;
+    justify-content: center;
 }
 
 .chat-msg.is-community.is-blocked {
@@ -266,6 +271,7 @@
 
 .chat-msg.is-community.is-blocked .chat-blocked-thread {
     grid-column: 2;
+    justify-content: flex-start;
 }
 
 /* In Community it sits on the text column, its icon in the gutter, a little roomier than a row. */

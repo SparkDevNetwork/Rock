@@ -581,3 +581,27 @@ describe("the list's entrance", () => {
         expect(entered(w).isEntering).toBe(true);
     });
 });
+
+// A root by someone the reader blocked reads as the feed's quiet line does: no name and no face of
+// theirs, the blank face in its place, and the body withheld.
+describe("a root by someone the reader blocked", () => {
+    const withheld = { sender_nick_name: null, sender_last_name: null, sender_avatar_url: null, body: null, pieces: null, blocked: true };
+
+    test("draws no name and the blank face, never initials from a word standing in for a name", () => {
+        const w = draw({ rows: [row(80, {}, withheld)] });
+
+        const drawn = w.get("[data-testid='thread-row']");
+        expect(drawn.find(".chat-ls-head b").exists()).toBe(false);
+        const face = drawn.get(".chat-ls-avw");
+        expect(plain(face.text())).toBe("");
+        expect(face.findAllComponents(Icon).map(i => i.props("name"))).toEqual(["users"]);
+        expect(plain(drawn.get(".chat-ls-text").text())).toBe("Message from someone you blocked");
+    });
+
+    test("is said as someone's, and its bell names no one", () => {
+        const w = draw({ rows: [row(80, {}, withheld)] });
+
+        expect(w.get("[data-testid='thread-row-open']").attributes("aria-label")).toMatch(/^Someone in /);
+        expect(w.get("[data-testid='thread-row-follow']").attributes("aria-label")).toBe("Unfollow thread by Someone");
+    });
+});

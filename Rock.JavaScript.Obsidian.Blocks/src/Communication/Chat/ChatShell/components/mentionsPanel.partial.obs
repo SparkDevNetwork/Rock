@@ -552,7 +552,8 @@
             channelId: row.channel_id,
             rootId: row.parent_id,
             who,
-            author: { name: who, photoUrl: message.sender_avatar_url ?? null },
+            // a face with no name is the blank face, never initials drawn from a word standing in for one
+            author: { name, photoUrl: message.sender_avatar_url ?? null },
             room,
             roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
             time: date ? timeLabel(date) : "",

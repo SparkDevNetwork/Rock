@@ -4,7 +4,7 @@
          role="group"
          :aria-label="`Who reacted with ${reaction.label}`"
          data-testid="reaction-card">
-        <div class="chat-rx-card-head">
+        <div class="chat-rx-card-head" :class="{ 'is-alone': card.people.length === 0 && !card.isMoreShown }">
             <img v-if="reaction.image_url" class="chat-rx-card-e is-image" :src="reaction.image_url" alt="" />
             <span v-else class="chat-rx-card-e" aria-hidden="true">{{ reaction.emoji }}</span>
             <span class="chat-rx-card-title">
@@ -64,6 +64,13 @@
     padding: 0 8px 8px;
     margin-bottom: 4px;
     border-bottom: 1px solid var(--chat-line);
+}
+
+/* With no one to name under it, the count is the whole card, so nothing is ruled off. */
+.chat-rx-card-head.is-alone {
+    padding-bottom: 4px;
+    margin-bottom: 0;
+    border-bottom: 0;
 }
 
 .chat-rx-card-e {

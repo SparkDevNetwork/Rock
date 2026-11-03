@@ -94,7 +94,7 @@
                             <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
                             <div class="chat-ls-main">
                                 <div class="chat-ls-head">
-                                    <b>{{ drawn.who }}</b>
+                                    <b v-if="drawn.who">{{ drawn.who }}</b>
                                     <span v-if="tab === 'all'" class="chat-ls-sub">
                                         <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
                                         <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
@@ -125,7 +125,7 @@
 
                         <IconButton class="chat-ls-follow"
                                     :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
-                                    :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.who}`"
+                                    :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
                                     data-testid="thread-row-follow"
                                     tabindex="-1"
                                     :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
@@ -418,7 +418,12 @@
     type DrawnRow = {
         rootId: number;
         channelId: string;
+
+        /** The author's name as drawn: none for someone the reader blocked, as the feed's line draws none. */
         who: string;
+
+        /** The author as a sentence says it, where an unnamed one is someone. */
+        spokenWho: string;
         author: AvatarPerson;
         room: string;
         /** False where the author already names the conversation, a two-person one's other person. */
@@ -744,7 +749,8 @@
         const isShown = display.kind === "message" || display.kind === "system";
         const isMine = !!props.personAliasGuid && root.person_alias_guid?.toLowerCase() === props.personAliasGuid.toLowerCase();
         const name = fullName(root.sender_nick_name, root.sender_last_name);
-        const who = isMine ? "You" : name || "Someone";
+        const spokenWho = isMine ? "You" : name || "Someone";
+        const who = display.kind === "blocked" ? "" : spokenWho;
         const room = props.roomTitles[row.channel_id] ?? "";
         const roomKind = props.roomKinds[row.channel_id];
         const count = replyCountText(row.reply_count);
@@ -767,13 +773,15 @@
         // its author, so the conversation goes unnamed rather than naming them twice.
         const isAuthorTheTitle = roomKind === "person" && !isMine;
         const where = roomKind !== "person" ? room : isAuthorTheTitle ? "your conversation" : `your conversation with ${room}`;
-        const label = `${row.has_unread ? "New replies. " : ""}${who} in ${where}: ${spokenText(root)} ${count}, last reply ${lastSaid}${mentionWords}${followWords}. Open thread`;
+        const label = `${row.has_unread ? "New replies. " : ""}${spokenWho} in ${where}: ${spokenText(root)} ${count}, last reply ${lastSaid}${mentionWords}${followWords}. Open thread`;
 
         return {
             rootId,
             channelId: row.channel_id,
             who,
-            author: { name: name || who, photoUrl: root.sender_avatar_url ?? null },
+            spokenWho,
+            // a face with no name is the blank face, never initials drawn from a word standing in for one
+            author: { name, photoUrl: root.sender_avatar_url ?? null },
             room,
             isRoomNamed: !isAuthorTheTitle,
             roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,

@@ -61,6 +61,17 @@ describe("the card", () => {
         expect(w.get("[data-testid='reaction-card-count']").text()).toBe("12 people");
     });
 
+    test("with no one it may name and nothing more to see, as when every reactor is someone blocked, it is the head alone, ruled off from nothing", () => {
+        const blank = { ...person(anna, "Anna", "Reyes"), nick_name: null, last_name: null };
+        const alone = draw(pray(2, false, [blank, { ...blank, person_alias_guid: david, reactor_person_alias_guid: david }]));
+        const named = draw(pray(1, false, [person(anna, "Anna", "Reyes")]));
+
+        expect(alone.get("[data-testid='reaction-card-count']").text()).toBe("2 people");
+        expect(alone.findAll("[data-testid='reaction-card-person']")).toHaveLength(0);
+        expect(alone.get(".chat-rx-card-head").classes()).toContain("is-alone");
+        expect(named.get(".chat-rx-card-head").classes()).not.toContain("is-alone");
+    });
+
     test("leads with You and the reader's photo on the reader's chip, then two others", () => {
         const w = draw(pray(12, true, [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor"), person("a0000004-0000-4000-8000-000000000000", "Cara", "Lin")]));
 
