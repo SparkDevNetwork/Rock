@@ -3312,6 +3312,27 @@ describe("block confirm focus", () => {
         expect(document.activeElement).toBe(document.body);
     });
 
+    test("a block confirmed and then the block unmounted waits no longer to take focus", async () => {
+        const { w } = await askFromMessage();
+        const blocks = mockShell!.blocks as Record<string, jest.Mock>;
+        const timeline = timelineOf(team.channel_id);
+        blocks.confirm.mockImplementationOnce(async () => {
+            (blocks.state as unknown as { confirming: unknown }).confirming = null;
+            return true;
+        });
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await fadeOut();
+
+        w.unmount();
+        // a wait still running would look at where focus is once the line is drawn
+        const focusLooks = jest.spyOn(document, "activeElement", "get");
+        timeline.messages.splice(timeline.messages.findIndex(m => m.id === 7), 1, storedMessage(7, { person_alias_guid: sam, sender_nick_name: null, sender_last_name: null, body: null, blocked: true }));
+        await fadeOut();
+
+        expect(focusLooks).not.toHaveBeenCalled();
+        focusLooks.mockRestore();
+    });
+
     test("Cancel after Block from a card gives focus to what opened the card", async () => {
         const w = await mountBlock(1200, true);
         await openRow(w, team.channel_id);

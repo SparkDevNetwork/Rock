@@ -844,6 +844,47 @@ describe("a resync, as when the people blocked change", () => {
         expect(h.threads.state.thread?.replies[0]).toMatchObject({ id: 2, blocked: true, body: null });
     });
 
+    test("an older page asked before the change and answered after the reread landed never shows the blocked person's words", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1), reply(3, 1, { person_alias_guid: ben })], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        const older = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [older, threadAnswer(root(1), [reply(4, 1), reply(3, 1, { person_alias_guid: ben, ...blocked })], { has_more: true })];
+
+        const loading = h.threads.loadOlderReplies();
+        await settle();
+        h.threads.resync();
+        await settle();
+        older.resolve(threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben, body: "words" })], { has_more: false }));
+        await loading;
+        await settle();
+
+        const replies = h.threads.state.thread?.replies ?? [];
+        expect(replies.some(r => r.body === "words")).toBe(false);
+        expect(replies.map(r => r.id)).toEqual([3, 4]);
+        expect(replies[0]).toMatchObject({ blocked: true, body: null });
+        expect(h.threads.state.thread?.hasMore).toBe(true);
+    });
+
+    test("an older page landing while the reread is still out is let go, so the next scroll asks again through the new set", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1), reply(3, 1)], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        const older = deferred<CallResult>();
+        const reread = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [older, reread];
+
+        const loading = h.threads.loadOlderReplies();
+        await settle();
+        h.threads.resync();
+        await settle();
+        older.resolve(threadAnswer(root(1), [reply(2, 1)], { has_more: false }));
+        await loading;
+
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([3, 4]);
+        expect(h.threads.state.thread?.hasMore).toBe(true);
+    });
+
     test("a page still on its way when the resync asks lands first, and the resync's is laid over it", async () => {
         const h = await setup();
         const first = deferred<CallResult>();

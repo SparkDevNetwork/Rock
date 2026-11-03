@@ -855,6 +855,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
 
             const thisOpen = threadOpen;
+            const thisRead = threadRead;
             if (olderLoad && olderLoad.beforeId === oldest.id && olderLoad.open === thisOpen) {
                 return olderLoad.done;
             }
@@ -864,8 +865,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             load.done = (async (): Promise<void> => {
                 try {
                     const result = await dependencies.call("chat_get_thread_history", { p_root_id: thread.rootId, p_before_id: oldest.id, p_limit: dependencies.limits().history_page_size });
-                    // dropped when the thread was left, or another older page got there first
-                    if (isStopped || thisOpen !== threadOpen || !state.thread || state.thread.replies[0]?.id !== oldest.id) {
+                    // dropped when the thread was left, another older page got there first, or the thread was
+                    // read again since the ask (as when the people blocked changed): the page was masked before
+                    // that change, and the reread covers what is held, so the next scroll asks again through it
+                    if (isStopped || thisOpen !== threadOpen || thisRead !== threadRead || !state.thread || state.thread.replies[0]?.id !== oldest.id) {
                         return;
                     }
                     if (!result.ok) {
