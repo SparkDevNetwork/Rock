@@ -237,7 +237,7 @@ namespace Rock.Blocks.Engagement
         {
             var options = base.GetGridEntityKeyOptions();
 
-            options.PersonKeyFieldPaths = new[] { "personId" };
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
 
             return options;
         }

@@ -423,6 +423,16 @@ namespace Rock.Blocks.Event
         }
 
         /// <inheritdoc/>
+        protected override GridEntityKeyOptions GetGridEntityKeyOptions()
+        {
+            var options = base.GetGridEntityKeyOptions();
+
+            options.PersonKeyFieldPaths = new[] { "personIdKey" };
+
+            return options;
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Registration> GetGridBuilder()
         {
             return new GridBuilder<Registration>()
