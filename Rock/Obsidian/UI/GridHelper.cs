@@ -248,6 +248,17 @@ namespace Rock.Obsidian.UI
         }
 
         /// <summary>
+        /// Creates an entity set along with all the set items, allowing every supplied key.
+        /// </summary>
+        /// <param name="entitySetBag">The bag that describes the entity set.</param>
+        /// <returns>An instance of <see cref="EntitySet"/> or <c>null</c> if the set would have been empty.</returns>
+        /// <seealso cref="CreateEntitySet(GridEntitySetBag, GridEntityKeys)"/>
+        public static EntitySet CreateEntitySet( GridEntitySetBag entitySetBag )
+        {
+            return CreateEntitySet( entitySetBag, null );
+        }
+
+        /// <summary>
         /// <para>
         /// Creates an entity set along with all the set items.
         /// </para>
@@ -342,6 +353,18 @@ namespace Rock.Obsidian.UI
             }
 
             return entitySet;
+        }
+
+        /// <summary>
+        /// Creates a transient communication along with all the recipients, allowing every supplied key.
+        /// </summary>
+        /// <param name="communicationBag">The bag that describes the entity set.</param>
+        /// <param name="requestContext">The current request object.</param>
+        /// <returns>An instance of <see cref="Rock.Model.Communication"/> or <c>null</c> if there would have been no recipients.</returns>
+        /// <seealso cref="CreateCommunication(GridCommunicationBag, RockRequestContext, GridEntityKeys)"/>
+        public static Rock.Model.Communication CreateCommunication( GridCommunicationBag communicationBag, RockRequestContext requestContext )
+        {
+            return CreateCommunication( communicationBag, requestContext, null );
         }
 
         /// <summary>
