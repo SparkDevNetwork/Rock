@@ -20,7 +20,7 @@
 // in, the conversation or the open thread, and moves focus as each action ends, so it needs the
 // block's frame and elements, which the shell's half never sees.
 
-import { computed, ComputedRef, nextTick, Ref, watch, WatchStopHandle } from "vue";
+import { computed, ComputedRef, getCurrentScope, nextTick, Ref, watch, WatchStopHandle } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import { ChatShell } from "../shell.partial";
@@ -91,7 +91,7 @@ export type MessageActionsView = {
      * Opens the block confirmation for a person, from their card or one of their messages, with
      * what focus goes back to: what opened the card, else the message.
      */
-    askBlock: (person: ChatPerson, anchor: HTMLElement | null, messageId: number | null) => void;
+    askBlock: (person: ChatPerson, anchor: HTMLElement | null, messageId: number | null, isInThread?: boolean) => void;
 
     /** What the block confirmation gives focus back to as it closes. */
     blockReturnTarget: () => HTMLElement | null;
@@ -112,11 +112,17 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
 
     // #region Values
 
-    /** What the block confirmation open now was asked from: the card's opener, and the message it sits in or was asked on. */
-    let blockReturn: { anchor: HTMLElement | null, messageId: number | null } = { anchor: null, messageId: null };
+    /**
+     * What the block confirmation open now was asked from: the card's opener, the message it sits
+     * in or was asked on, and whether that is in the thread drawer or the conversation.
+     */
+    let blockReturn: { anchor: HTMLElement | null, messageId: number | null, isInThread: boolean } = { anchor: null, messageId: null, isInThread: false };
 
     /** The wait for a just-blocked message to be drawn again, which finds focus again there. */
     let stopBlockRefocus: WatchStopHandle | null = null;
+
+    // The block's own scope, so a wait begun once a block lands still ends when the block goes.
+    const viewScope = getCurrentScope();
 
     // #endregion Values
 
@@ -218,7 +224,7 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
                     nick_name: request.message.sender_nick_name ?? null,
                     last_name: request.message.sender_last_name ?? null,
                     avatar_url: request.message.sender_avatar_url ?? null
-                }, null, request.message.id);
+                }, null, request.message.id, rootId !== null);
                 break;
 
             case "server":
@@ -313,34 +319,30 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
     }
 
     /**
-     * The message's row by id in the conversation or the thread, or the quiet line of the run of
-     * blocked messages it has folded into, which carries the run's newest id.
+     * The message's row by id where it was asked, the thread drawer or the conversation, or the
+     * quiet line of the run of blocked messages it has folded into there, which names every id it
+     * holds. A later blocked line, or the same person's in the other place, is never taken for it.
      */
-    function messageElement(messageId: number): HTMLElement | null {
-        const root = rootElement.value;
-        const row = root?.querySelector<HTMLElement>(`[data-message-id='${messageId}'], [data-reply-id='${messageId}']`);
-        if (row || !root) {
-            return row ?? null;
-        }
-
-        const lines = Array.from(root.querySelectorAll<HTMLElement>("[data-state='blocked'][data-message-id], [data-state='blocked'][data-reply-id]"));
-        return lines.find(line => Number(line.dataset.messageId ?? line.dataset.replyId) >= messageId) ?? null;
+    function messageElement(messageId: number, isInThread: boolean): HTMLElement | null {
+        const place = isInThread ? panelElement.value : rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main']");
+        return place?.querySelector<HTMLElement>(`[data-message-id='${messageId}'], [data-reply-id='${messageId}'], [data-state='blocked'][data-blocked-ids~='${messageId}']`) ?? null;
     }
 
-    function askBlock(person: ChatPerson, anchor: HTMLElement | null, messageId: number | null): void {
+    function askBlock(person: ChatPerson, anchor: HTMLElement | null, messageId: number | null, isInThread = !!anchor && !!panelElement.value?.contains(anchor)): void {
         stopBlockRefocus?.();
+        stopBlockRefocus = null;
         const row = anchor?.closest<HTMLElement>("[data-message-id], [data-reply-id]");
         const anchorMessage = row ? Number(row.dataset.messageId ?? row.dataset.replyId) : null;
-        blockReturn = { anchor, messageId: messageId ?? anchorMessage };
+        blockReturn = { anchor, messageId: messageId ?? anchorMessage, isInThread };
         shell.value.blocks.ask(person);
     }
 
     function blockReturnTarget(): HTMLElement | null {
-        const { anchor, messageId } = blockReturn;
+        const { anchor, messageId, isInThread } = blockReturn;
         if (anchor?.isConnected) {
             return anchor;
         }
-        return messageId === null ? null : messageElement(messageId);
+        return messageId === null ? null : messageElement(messageId, isInThread);
     }
 
     function onCancelBlock(): void {
@@ -350,26 +352,37 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
     /**
      * Blocks the person. Their message is drawn again as a quiet line once the screen has been read
      * again, which replaces the row focus went back to, so focus is found again there if it fell.
+     * The wait ends with the block, and once the reader has moved to another conversation or
+     * thread, where taking focus later would pull them away from what they went to.
      */
     function onConfirmBlock(): void {
         const messageId = blockReturn.messageId;
         void shell.value.blocks.confirm().then(isTaken => {
-            if (!isTaken || messageId === null) {
+            if (!isTaken || messageId === null || viewScope?.active === false) {
                 return;
             }
 
+            const channelId = activeChannelId.value;
+            const rootId = drawnThread.value?.rootId ?? null;
+            const isMoved = (): boolean => activeChannelId.value !== channelId || (drawnThread.value?.rootId ?? null) !== rootId;
             const isBlockedCopy = (): boolean => [
-                ...(activeChannelId.value ? shell.value.timelines.state(activeChannelId.value).messages : []),
+                ...(channelId ? shell.value.timelines.state(channelId).messages : []),
                 ...(drawnThread.value?.replies ?? []),
                 ...(drawnThread.value?.root ? [drawnThread.value.root] : [])
             ].some(message => message.id === messageId && message.blocked === true);
 
-            stopBlockRefocus = watch(isBlockedCopy, isBlocked => {
-                if (!isBlocked) {
+            // ended once: the first look, made at once, may already find the outcome
+            let isEnded = false;
+            const wait = (): WatchStopHandle => watch(() => isMoved() ? "moved" : isBlockedCopy() ? "drawn" : "waiting", outcome => {
+                if (outcome === "waiting" || isEnded) {
                     return;
                 }
+                isEnded = true;
                 stopBlockRefocus?.();
                 stopBlockRefocus = null;
+                if (outcome === "moved") {
+                    return;
+                }
                 void nextTick(() => {
                     const active = document.activeElement;
                     if (!active || active === document.body || !active.isConnected) {
@@ -377,6 +390,13 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
                     }
                 });
             }, { immediate: true });
+            const stop = viewScope ? viewScope.run(wait) ?? null : wait();
+            if (isEnded) {
+                stop?.();
+            }
+            else {
+                stopBlockRefocus = stop;
+            }
         });
     }
 

@@ -3260,6 +3260,58 @@ describe("block confirm focus", () => {
         expect(document.activeElement).toBe(line);
     });
 
+    test("Block confirmed on a reply folded into a run in the drawer gives focus to that run's line, not a later one in the conversation", async () => {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        const timeline = timelineOf(team.channel_id);
+        timeline.messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        mockThreadPages = { newest: [41, 42], older: [] };
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        const thread = (mockShell!.threads as unknown as { state: { thread: { replies: TimelineMessage[] } } }).state.thread;
+        const blocks = mockShell!.blocks as Record<string, jest.Mock>;
+        blocks.confirm.mockImplementationOnce(async () => {
+            (blocks.state as unknown as { confirming: unknown }).confirming = null;
+            return true;
+        });
+        w.findComponent(ThreadDrawerComponent).vm.$emit("messageAction", { kind: "block", message: thread.replies[0] });
+        await settle();
+
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await fadeOut();
+        // the screen read again draws Sam's replies as one run and his later message in the conversation
+        const asBlocked = { person_alias_guid: sam, sender_nick_name: null, sender_last_name: null, body: null, blocked: true };
+        timeline.messages.push(storedMessage(60, asBlocked));
+        thread.replies.splice(0, 2, storedMessage(41, { parent_id: 40, ...asBlocked }), storedMessage(42, { parent_id: 40, ...asBlocked }));
+        (document.activeElement as HTMLElement | null)?.blur();
+        await fadeOut();
+
+        const line = w.get("[data-testid='frame-panel'] [data-reply-id='42']").element;
+        expect(line.getAttribute("data-state")).toBe("blocked");
+        expect(document.activeElement).toBe(line);
+    });
+
+    test("a block confirmed and then the conversation left waits no longer to take focus", async () => {
+        const { w } = await askFromMessage();
+        const blocks = mockShell!.blocks as Record<string, jest.Mock>;
+        const timeline = timelineOf(team.channel_id);
+        blocks.confirm.mockImplementationOnce(async () => {
+            (blocks.state as unknown as { confirming: unknown }).confirming = null;
+            return true;
+        });
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await fadeOut();
+
+        await openRow(w, dmAnna.channel_id);
+        await openRow(w, team.channel_id);
+        (document.activeElement as HTMLElement | null)?.blur();
+        timeline.messages.splice(timeline.messages.findIndex(m => m.id === 7), 1, storedMessage(7, { person_alias_guid: sam, sender_nick_name: null, sender_last_name: null, body: null, blocked: true }));
+        await fadeOut();
+
+        expect(document.activeElement).toBe(document.body);
+    });
+
     test("Cancel after Block from a card gives focus to what opened the card", async () => {
         const w = await mountBlock(1200, true);
         await openRow(w, team.channel_id);

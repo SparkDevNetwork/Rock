@@ -9,6 +9,7 @@
          :data-testid="pending ? 'pending-row' : 'message-row'"
          :data-status="pending ? pending.status : undefined"
          :data-state="state"
+         :data-blocked-ids="state === 'blocked' ? blockedIds : undefined"
          :data-position="position"
          :data-hot-id="isBarOffered ? message?.id : undefined"
          @click="onRowClick"
@@ -572,7 +573,13 @@
     }
 
     /** What a blocked row says: the run it stands for, or its one message. */
-    const blockedText = computed((): string => blockedRunText(props.blockedRun ?? (props.message ? [props.message] : [])));
+    /** The messages a blocked line stands for: its run, or the one message. */
+    const blockedMessages = computed((): TimelineMessage[] => props.blockedRun ?? (props.message ? [props.message] : []));
+
+    const blockedText = computed((): string => blockedRunText(blockedMessages.value));
+
+    // Every id the line stands for, so what was asked on one message folded into it finds it.
+    const blockedIds = computed((): string => blockedMessages.value.map(message => message.id).join(" "));
 
     const ariaLabel = computed((): string => {
         if (state.value === "blocked") {
