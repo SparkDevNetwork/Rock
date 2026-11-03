@@ -839,10 +839,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     // A change to whom the person blocked changes what every page shows them, so everything on
-    // screen, read through the old set, is read again.
+    // screen, read through the old set, is read again. A change named by a sidebar answer comes
+    // in the newest sidebar there is, so that read is the sidebar step rather than another.
     const blocks = createBlocks({
         call,
-        onChanged: () => resync(),
+        onChanged: isInSidebarAnswer => resync(isInSidebarAnswer ? sidebarRead : null),
         notify: notice => options.notify?.(notice)
     });
 
@@ -1218,10 +1219,13 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * room (a direct message with someone just blocked leaves it, and its composer then locks by
      * the facts' own sentence), the open thread, and the threads, mentions or members panel shown.
      * Nothing is reminted: what the person may read has not changed, only what is on screen.
+     *
+     * @param landingSidebar The sidebar read whose answer is landing and asked for this, which
+     * stands for the sidebar step; null reads the sidebar again.
      */
-    function resync(): void {
+    function resync(landingSidebar: Promise<unknown> | null = null): void {
         const channelId = state.activeChannelId;
-        void loadSidebar()
+        void (landingSidebar ?? loadSidebar())
             .catch(() => undefined)
             .then(() => {
                 if (channelId && state.activeChannelId === channelId) {

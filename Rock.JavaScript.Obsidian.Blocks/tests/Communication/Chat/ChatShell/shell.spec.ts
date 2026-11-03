@@ -3779,6 +3779,7 @@ describe("blocking", () => {
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ body: "hidden words" });
 
         // the first sidebar answer names Sam; the reads it asks for answer at once
+        const factsBefore = h.channelReads.filter(c => c === channelA).length;
         const first = h.heldBootstraps.value[0];
         h.heldBootstraps.value = null;
         h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [sam] } };
@@ -3792,6 +3793,10 @@ describe("blocking", () => {
         }
 
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ blocked: true, body: null });
+        // the sidebar answer that named the set is the newest sidebar, so it is not read twice,
+        // and the room's facts are read again after it
+        expect(h.counts.bootstraps).toBe(1);
+        expect(h.channelReads.filter(c => c === channelA).length).toBe(factsBefore + 1);
     });
 
     test("a confirmed block reads again the open thread, the panels shown and the open room's facts", async () => {

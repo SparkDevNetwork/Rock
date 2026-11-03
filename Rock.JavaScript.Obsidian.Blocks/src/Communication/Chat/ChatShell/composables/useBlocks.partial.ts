@@ -73,8 +73,11 @@ export type BlocksDependencies = {
     /** The shell's one call path. */
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
 
-    /** The set changed, so what is on screen, read through the old one, is read again. */
-    onChanged: () => void;
+    /**
+     * The set changed, so what is on screen, read through the old one, is read again: all of it,
+     * or, when the change came in a sidebar answer, all but the sidebar, which that answer is.
+     */
+    onChanged: (isInSidebarAnswer: boolean) => void;
 
     /** Shows a toast, for a block or unblock asked from a card or a message. */
     notify: (notice: ActionNotice) => void;
@@ -84,7 +87,7 @@ export type BlocksDependencies = {
 export type Blocks = {
     state: BlocksState;
 
-    /** The set as an answer names it: the bootstrap's me, or a block, unblock or list answer. */
+    /** The set as the sidebar's answer names it, in the bootstrap's me. */
     setAliases: (aliases: unknown) => void;
 
     /** Whether a message by this alias is hidden from the person. */
@@ -171,8 +174,8 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         return !!personAliasGuid && set.has(personAliasGuid.toLowerCase());
     }
 
-    /** Takes a set; a change asks the shell to read again what it shows. */
-    function setAliases(aliases: unknown): void {
+    /** Takes a set; a change asks the shell to read again what it shows, saying where the set came from. */
+    function takeSet(aliases: unknown, isInSidebarAnswer: boolean): void {
         if (isStopped || !Array.isArray(aliases)) {
             return;
         }
@@ -185,7 +188,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         set = next;
         state.aliases = [...next];
         if (isChanged) {
-            dependencies.onChanged();
+            dependencies.onChanged(isInSidebarAnswer);
         }
     }
 
@@ -200,7 +203,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
             state.people = answer.people;
             state.listState = "loaded";
         }
-        setAliases(answer?.blocked_aliases);
+        takeSet(answer?.blocked_aliases, false);
     }
 
     function key(person: ChatPerson): string {
@@ -266,7 +269,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
 
     return {
         state,
-        setAliases,
+        setAliases: aliases => takeSet(aliases, true),
         isBlocked,
 
         maskEvent: (event: string, payload: unknown): unknown => {
