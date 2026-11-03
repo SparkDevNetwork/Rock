@@ -452,7 +452,8 @@ namespace Rock.Tests.Communication.Chat.Platform
         /// <summary>
         /// The final refusals the clients share: every code named is an error code the contract
         /// lists, a final code is never also passable, every authz code is decided one way, and the
-        /// door codes and the two GIF refusals sit in the final list.
+        /// door codes and the two GIF refusals sit in the final list, and a direct message closed
+        /// by a block or by the other person being unavailable closes the room to posting.
         /// </summary>
         [TestMethod]
         public void FinalRefusals_AreListedCodes_AndEveryAuthzCodeIsDecidedOnce()
@@ -479,7 +480,7 @@ namespace Rock.Tests.Communication.Chat.Platform
             }
 
             CollectionAssert.IsSubsetOf( new[] { "door.bad_request", "door.not_allowed", "door.not_found", "door.not_member", "door.self", "door.target_not_eligible", "rpc.bad_gif", "rpc.gifs_off" }, final );
-            CollectionAssert.AreEqual( new[] { "authz.dm_unavailable" }, room );
+            CollectionAssert.AreEqual( new[] { "authz.dm_blocked", "authz.dm_unavailable" }, room );
         }
 
         /// <summary>
