@@ -1200,6 +1200,20 @@ describe("Jump to latest", () => {
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("3 new messages");
     });
 
+    test("a message by someone the reader blocked, arriving collapsed, is not news and is not counted", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 0);
+        await nextTick();
+
+        state.messages.push(message(2, anna, at(14, 1), { body: null, sender_nick_name: null, blocked: true }), message(3, anna, at(14, 2)));
+        await nextTick();
+        await nextTick();
+
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
+        expect(wrapper.findAll("[data-state='blocked']")).toHaveLength(1);
+    });
+
     // One near-bottom rule, the design's 48 px, decides both whether Jump shows and whether a new
     // message is followed, so Jump never shows and then vanishes as the feed snaps down anyway.
     test("a reader 60 px up stays put when another person sends, and Jump counts it", async () => {

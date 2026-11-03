@@ -446,6 +446,13 @@ describe("the refusals and sentences the wire contract publishes", () => {
         }
     });
 
+    test("a person's own block of the other person and the block limit are final, and the block closes the room as the Ban List's refusal does", () => {
+        expect(finalRefusals.codes).toEqual(expect.arrayContaining(["authz.dm_blocked", "rpc.block_limit"]));
+        expect(finalRefusals.roomRefusals).toEqual(["authz.dm_blocked", "authz.dm_unavailable"]);
+        expect(isRefusedForGood({ code: "authz.dm_blocked", severity: "permission" })).toBe(true);
+        expect(isRefusedForGood({ code: "rpc.block_limit", severity: "failed" })).toBe(true);
+    });
+
     test("Rock refusing one of the block's own actions with 403 is refused for good, though no platform call answers it", () => {
         expect(isRefusedForGood(classifyActionFailure(403))).toBe(true);
         expect(isRefusedForGood(classifyActionFailure(500))).toBe(false);

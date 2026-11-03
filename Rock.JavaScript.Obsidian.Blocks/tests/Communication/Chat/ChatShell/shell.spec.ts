@@ -146,8 +146,13 @@ function build(options: {
     heldExchange: { value: Deferred<void> | null },
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
-    uploads: FakeRequest[]
+    uploads: FakeRequest[],
+    blockCalls: Array<{ name: string, body: Record<string, unknown> }>,
+    blocksAnswer: { value: unknown }
 } {
+    // Every block, unblock and list read, each answered with the list as it stands.
+    const blockCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
+    const blocksAnswer: { value: unknown } = { value: { people: [], blocked_aliases: [] } };
     // Every attachment begun, and every upload to Storage, each answered by the test.
     const begins: Array<Record<string, unknown>> = [];
     const uploads: FakeRequest[] = [];
@@ -246,6 +251,11 @@ function build(options: {
             if (url.endsWith("/rest/v1/rpc/chat_attachment_begin")) {
                 begins.push(body);
                 return fakeResponse(200, (body.p_files as unknown[]).map(() => nextUpload()));
+            }
+            const blockCall = ["chat_list_blocks", "chat_block_person", "chat_unblock_person"].find(name => url.endsWith(`/rest/v1/rpc/${name}`));
+            if (blockCall) {
+                blockCalls.push({ name: blockCall, body });
+                return fakeResponse(200, blocksAnswer.value);
             }
             if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
                 deviceCalls.push({ name: "chat_register_device", body });
@@ -372,7 +382,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
     };
 }
@@ -3692,5 +3702,84 @@ describe("a send refused in a conversation", () => {
 
         expect(rowOf(h).can_post).toBe(true);
         expect(lockedReason(rowOf(h))).toBeNull();
+    });
+});
+
+// The people the person blocked: the sidebar names their aliases, a room's live events are read
+// through them, and a change from any page or device reads again what is on screen.
+describe("blocking", () => {
+    const sam = "a0000005-0000-4000-8000-000000000000";
+    const samRow = { channel_id: channelA, room_kind: "group", title: "Room", is_member: true, last_message_id: 10, last_message_preview: "m10", is_unread: false } as unknown as SidebarRow;
+
+    async function startedBlocking(aliases: string[]): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: aliases } };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+        return h;
+    }
+
+    test("the sidebar's set needs nothing read again, and a live message from someone in it lands collapsed, the sidebar row untouched", async () => {
+        const h = await startedBlocking([sam]);
+        const before = { bootstraps: h.counts.bootstraps, rows: JSON.stringify(h.shell.channels.rows) };
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
+            event: "message.created",
+            payload: { id: 11, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: sam, message_type: "text", body: "hidden words", pieces: null, sender_nick_name: "Sam", sender_last_name: "Ortiz", created_at: "2026-11-03T10:00:00Z" }
+        });
+        await settle();
+
+        const held = h.shell.timelines.state(channelA).messages.find(m => m.id === 11);
+        expect(held).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
+        expect(h.counts.bootstraps).toBe(before.bootstraps);
+        expect(JSON.stringify(h.shell.channels.rows)).toBe(before.rows);
+    });
+
+    test("blocks.changed reads the list again; a changed set reads the sidebar and the open room again", async () => {
+        const h = await startedBlocking([]);
+        const bootstraps = h.counts.bootstraps;
+        const pages = h.history[channelA]?.length ?? 0;
+        h.blocksAnswer.value = { people: [{ person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null }], blocked_aliases: [sam] };
+
+        personal(h, "blocks.changed", { id: "e1" });
+        await settle();
+
+        expect(h.blockCalls.map(c => c.name)).toEqual(["chat_list_blocks"]);
+        expect(h.shell.blocks.isBlocked(sam)).toBe(true);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
+        expect(h.history[channelA]?.length ?? 0).toBe(pages + 1);
+    });
+
+    test("blocks.changed with the same set, as one's own block echoed back, reads nothing more", async () => {
+        const h = await startedBlocking([sam]);
+        const bootstraps = h.counts.bootstraps;
+        h.blocksAnswer.value = { people: [], blocked_aliases: [sam] };
+
+        personal(h, "blocks.changed", { id: "e1" });
+        await settle();
+
+        expect(h.counts.bootstraps).toBe(bootstraps);
+    });
+
+    test("a block confirmed from a card or a message reads the sidebar and the open room again", async () => {
+        const h = await startedBlocking([]);
+        const bootstraps = h.counts.bootstraps;
+        h.blocksAnswer.value = { people: [], blocked_aliases: [sam] };
+
+        h.shell.blocks.ask({ person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null });
+        await h.shell.blocks.confirm();
+        await settle();
+
+        expect(h.blockCalls).toEqual([{ name: "chat_block_person", body: { p_person_alias_guid: sam } }]);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
     });
 });

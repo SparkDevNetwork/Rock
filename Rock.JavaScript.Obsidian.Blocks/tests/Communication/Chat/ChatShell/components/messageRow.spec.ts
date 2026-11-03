@@ -91,6 +91,7 @@ type RowProps = {
     isPreviewing?: boolean;
     isInThread?: boolean;
     reactionHost?: unknown;
+    blockedRun?: TimelineMessage[] | null;
 };
 
 function draw(props: RowProps): VueWrapper {
@@ -1765,5 +1766,44 @@ describe("a row's requests, in both looks", () => {
         expect(request.action).toEqual(action);
         request.onSettled();
         await expect(settled).resolves.toBeUndefined();
+    });
+});
+
+describe("a message by someone the reader blocked", () => {
+    const blocked = (extra: Partial<TimelineMessage> = {}): TimelineMessage => message({
+        sender_nick_name: null, sender_last_name: null, sender_avatar_url: null, body: null, pieces: null, actions: null, blocked: true, ...extra
+    });
+
+    test.each([true, false])("draws one quiet line with no one's name or face, in a channel %s and in a conversation", isChannel => {
+        const wrapper = draw({ message: blocked(), isChannel, position: "single" });
+
+        expect(root(wrapper).dataset.state).toBe("blocked");
+        expect(plain(wrapper.get("[data-testid='blocked-text']").text())).toBe("Message from someone you blocked");
+        expect(wrapper.find("[data-testid='sender-name']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='sender-avatar']").exists()).toBe(false);
+        expect(wrapper.findComponent(Avatar).exists()).toBe(false);
+    });
+
+    test("offers no actions, chips or quote: there is nothing of it to act on", () => {
+        const wrapper = draw({ message: blocked({ reactions: [{ code: "heart", count: 2, mine: false, emoji: "x", image_url: null, label: "Heart" }], quoted_message_id: 3 }), isChannel: true });
+
+        expect(root(wrapper).dataset.hotId).toBeUndefined();
+        expect(wrapper.find("[data-testid='message-quote']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='reaction-chip']").exists()).toBe(false);
+    });
+
+    test("a run it stands for says how many", () => {
+        const wrapper = draw({ message: blocked({ id: 44 }), isChannel: true, blockedRun: [blocked({ id: 43 }), blocked({ id: 44 })] });
+
+        expect(plain(wrapper.get("[data-testid='blocked-text']").text())).toBe("2 messages from someone you blocked");
+    });
+
+    test("a root with replies keeps its thread under the line, opened from there", async () => {
+        const wrapper = draw({ message: blocked({ reply_count: 2, last_reply_at: nineOhTwo, participant_count: 2, repliers: [] }), isChannel: true });
+
+        const pill = wrapper.get("[data-testid='thread-summary']");
+        await pill.trigger("click");
+
+        expect(wrapper.emitted("openThread")).toHaveLength(1);
     });
 });

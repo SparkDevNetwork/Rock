@@ -38,6 +38,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ActionSheet from "../../../../../src/Communication/Chat/ChatShell/components/actionSheet.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { isSenderBlockable } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -130,10 +131,22 @@ describe("the sheet's items", () => {
         expect(item(w, "Delete message").classes()).toContain("is-danger");
     });
 
-    test("for another person's message: Reply in thread, Quote and Copy only", async () => {
+    test("for another person's message: Reply in thread, Quote, Copy and Block", async () => {
         const w = await open({ message: message() });
 
-        expect(itemLabels(w)).toEqual(["Reply in thread", "Quote", "Copy text"]);
+        expect(itemLabels(w)).toEqual(["Reply in thread", "Quote", "Copy text", "Block"]);
+    });
+
+    test("Block asks for the sender as the bar's does, and is never offered on a system line or a post from the church", async () => {
+        const target = message();
+        const w = await open({ message: target });
+
+        await item(w, "Block").trigger("click");
+
+        expect(w.emitted("block")).toEqual([[target]]);
+        expect(isSenderBlockable(message({ message_type: "system" }), false)).toBe(false);
+        expect(isSenderBlockable(message({ person_alias_guid: null }), false)).toBe(false);
+        expect(isSenderBlockable(message(), true)).toBe(false);
     });
 
     test("leave out Reply in thread inside a thread", async () => {

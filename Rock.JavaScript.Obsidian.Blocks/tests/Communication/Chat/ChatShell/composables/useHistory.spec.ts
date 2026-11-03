@@ -1341,3 +1341,64 @@ describe("files follow the body", () => {
         expect(timelines.state(channel).messages[0].attachments).toBeNull();
     });
 });
+
+describe("a message by someone the reader blocked", () => {
+    /** A page's row of a blocked person's message, as the platform withholds it. */
+    function blockedRow(id: number): TimelineMessage {
+        return { ...message(id), sender_nick_name: null, body: null, pieces: null, blocked: true };
+    }
+
+    test("is drawn as the one blocked sentence, whatever became of it, before a delete or a hide", () => {
+        expect(messageDisplay(blockedRow(1))).toEqual({ kind: "blocked", text: "Message from someone you blocked" });
+        expect(messageDisplay({ ...blockedRow(1), deleted_at: "2026-11-03T10:00:00Z" }).kind).toBe("blocked");
+    });
+
+    test("an edit moves its time and brings back none of its words", () => {
+        const held = blockedRow(1);
+
+        applyMessageChange(held, "message.edited", { id: 1, channel_id: channel, body: "edited secret", pieces: [{ type: "text", text: "edited secret" }], edited_at: "2026-11-03T11:00:00Z" });
+
+        expect(held.body).toBeNull();
+        expect(held.pieces).toBeNull();
+        expect(held.edited_at).toBe("2026-11-03T11:00:00Z");
+    });
+
+    test("shown again after a hide, it stays withheld", () => {
+        const held = blockedRow(1);
+
+        applyMessageChange(held, "message.visibility", { id: 1, channel_id: channel, state: "visible", notice: null, body: "secret", pieces: null });
+
+        expect(held.body).toBeNull();
+    });
+
+    test("a live edit laid over a page read before it brings back nothing the page withheld", async () => {
+        const answer = deferred<HistoryPage>();
+        const timelines = createTimelines({ limits, fetchPage: () => answer.promise });
+        const loading = timelines.loadNewest(channel);
+
+        // the edit lands while the page is on its way, so it is laid over the page
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "edited secret", pieces: null, edited_at: "2026-11-03T11:00:00Z" });
+        answer.resolve({ messages: [blockedRow(1)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false });
+        await loading;
+
+        const held = timelines.state(channel).messages[0];
+        expect(held.blocked).toBe(true);
+        expect(held.body).toBeNull();
+    });
+
+    test("a page read after an unblock, which marks nothing, shows the message again in place", async () => {
+        const pages = [
+            { messages: [blockedRow(1)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false },
+            page([1])
+        ];
+        const timelines = createTimelines({ limits, fetchPage: async () => pages.shift() as HistoryPage });
+
+        await timelines.loadNewest(channel);
+        await timelines.loadNewest(channel);
+
+        const held = timelines.state(channel).messages[0];
+        expect(held.blocked).toBeUndefined();
+        expect(held.body).toBe("m1");
+        expect(held.sender_nick_name).toBe("Ada");
+    });
+});

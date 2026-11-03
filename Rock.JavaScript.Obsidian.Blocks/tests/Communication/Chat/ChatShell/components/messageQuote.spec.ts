@@ -242,3 +242,15 @@ describe("a quote of a GIF alone", () => {
         expect(wrapper.get("[data-testid='quote-body']").text()).toBe("GIF");
     });
 });
+
+describe("a quote of someone the reader blocked", () => {
+    const withheld = quoted({ sender_nick_name: null, sender_last_name: null, body: null, blocked: true });
+
+    test.each([false, true])("says no more of itself than the row would, and offers no jump (in a channel: %s)", isCommunity => {
+        const wrapper = draw(reply(ben, withheld), { isCommunity });
+
+        expect(wrapper.get("[data-testid='quote-body']").text()).toBe("Message from someone you blocked.");
+        expect(wrapper.find("button").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='quote-name']").exists()).toBe(false);
+    });
+});

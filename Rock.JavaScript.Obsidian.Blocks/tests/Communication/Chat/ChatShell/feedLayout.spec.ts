@@ -20,6 +20,7 @@
 // rules, read without mounting, so each layout draws the same groups. The clock and the locale are fixed here, so a test never depends on the
 // day it runs or the machine it runs on. Dates are built in local time, the time a reader sees.
 import {
+    blockedRunText,
     dayLabel,
     groupWindowMs,
     jumpLabel,
@@ -347,5 +348,38 @@ describe("the words", () => {
         expect(jumpLabel(1)).toBe("1 new message");
         expect(jumpLabel(3)).toBe("3 new messages");
         expect(jumpLabel(150)).toBe("99+ new messages");
+    });
+});
+
+describe("messages by people the reader blocked", () => {
+    const blocked = (id: number, sender: string, extra: Partial<TimelineMessage> = {}): TimelineMessage =>
+        message(id, sender, at(9, id), { body: null, sender_nick_name: null, sender_last_name: null, blocked: true, ...extra });
+
+    function items(messages: TimelineMessage[], newDividerBeforeId: number | null = null): Array<{ kind: string, ids: number[] }> {
+        return layoutFeed({ messages, pending: [], personAliasGuid: me, newDividerBeforeId, layout: "community", now, locale })[0].items
+            .map(item => ({ kind: item.kind, ids: item.kind === "blocked" ? item.messages.map(m => m.id) : item.kind === "group" ? item.rows.map(r => r.message?.id ?? 0) : item.kind === "divider" ? [] : [item.message.id] }));
+    }
+
+    test("a run of them folds into one line between the groups either side, keyed by its first message", () => {
+        const sections = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben), blocked(3, ben), message(4, anna, at(9, 5))], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale });
+
+        expect(sections[0].items.map(item => item.kind)).toEqual(["group", "blocked", "group"]);
+        const grown = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben)], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale });
+        expect(sections[0].items[1].key).toBe(grown[0].items[1].key);
+        expect(items([message(1, anna, at(9, 0)), blocked(2, ben), blocked(3, ben), message(4, anna, at(9, 5))])[1]).toEqual({ kind: "blocked", ids: [2, 3] });
+    });
+
+    test("the New divider parts a run, so the line never hides where new messages start", () => {
+        expect(items([blocked(2, ben), blocked(3, ben)], 3).map(i => i.kind)).toEqual(["blocked", "divider", "blocked"]);
+    });
+
+    test("a root with replies stands alone, so its thread can still be opened from under it", () => {
+        expect(items([blocked(2, ben), blocked(3, ben, { reply_count: 2 }), blocked(4, ben)]).map(i => i.ids)).toEqual([[2], [3], [4]]);
+    });
+
+    test("the line says how many and whether from one person or several, never who", () => {
+        expect(blockedRunText([blocked(2, ben)])).toBe("Message from someone you blocked");
+        expect(blockedRunText([blocked(2, ben), blocked(3, ben.toUpperCase())])).toBe("2 messages from someone you blocked");
+        expect(blockedRunText([blocked(2, ben), blocked(3, anna)])).toBe("2 messages from people you blocked");
     });
 });

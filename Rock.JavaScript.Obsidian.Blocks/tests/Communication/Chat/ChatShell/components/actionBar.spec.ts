@@ -227,12 +227,12 @@ describe("the menu", () => {
         expect(await menuOf(w)).toEqual(["Edit message", "Copy text", "---", "Approve", "---", "Delete message"]);
     });
 
-    test("on someone else's message: Copy and the server's actions only, never Mark unread", async () => {
+    test("on someone else's message: Copy, the server's actions, then Block apart, never Mark unread", async () => {
         const w = await shown({ message: message({ actions: [approve] }) });
 
         const items = await menuOf(w);
 
-        expect(items).toEqual(["Copy text", "---", "Approve"]);
+        expect(items).toEqual(["Copy text", "---", "Approve", "---", "Block"]);
         expect(items).not.toContain("Mark unread from here");
     });
 

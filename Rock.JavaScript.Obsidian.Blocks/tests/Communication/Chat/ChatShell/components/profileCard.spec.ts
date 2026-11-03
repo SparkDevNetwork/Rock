@@ -586,3 +586,39 @@ describe("Chat settings", () => {
         expect(w.find("[data-testid='profile-settings']").exists()).toBe(false);
     });
 });
+
+describe("blocking from the card", () => {
+    test("someone else's card offers Block after Message, quietly, and asks for it", async () => {
+        const w = mountCard(profile());
+
+        expect(w.findAll("[data-testid='profile-actions'] button").map(b => b.attributes("data-testid"))).toEqual(["profile-message", "profile-block"]);
+        await w.get("[data-testid='profile-block']").trigger("click");
+
+        expect(w.emitted("block")?.[0]?.[0]).toMatchObject({ person_alias_guid: "a0000002-0000-4000-8000-000000000000" });
+    });
+
+    test("a card of someone the person blocked says so and offers Unblock, not Message nor Block", async () => {
+        const w = mountCard(profile({ is_blocked: true, can_message: false }));
+
+        expect(w.get("[data-testid='profile-blocked']").text()).toContain("You blocked Anna.");
+        expect(w.find("[data-testid='profile-message']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-block']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-cannot-message']").exists()).toBe(false);
+        await w.get("[data-testid='profile-unblock']").trigger("click");
+
+        expect(w.emitted("unblock")).toHaveLength(1);
+    });
+
+    test("the person's own card offers neither", () => {
+        const w = mountCard(profile({ is_self: true }));
+
+        expect(w.find("[data-testid='profile-block']").exists()).toBe(false);
+        expect(w.find("[data-testid='profile-unblock']").exists()).toBe(false);
+    });
+
+    test("a block or unblock still out holds its button", () => {
+        const w = mountCard(profile({ is_blocked: true, can_message: false }), { isBlockBusy: true });
+
+        expect(w.get("[data-testid='profile-unblock']").attributes("disabled")).toBeDefined();
+    });
+});

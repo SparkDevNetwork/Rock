@@ -306,3 +306,43 @@ describe("this browser's notifications", () => {
         expect(w.get("[data-testid='settings-foot']").text()).toBe("Each conversation sets its own, from its name at the top.");
     });
 });
+
+describe("Blocked people", () => {
+    const sam = { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Sam", last_name: "Ortiz", avatar_url: null };
+    const gone = { person_alias_guid: "a0000006-0000-4000-8000-000000000000", nick_name: null, last_name: null, avatar_url: null };
+    const list = (extra: Record<string, unknown> = {}): Record<string, unknown> => ({ people: [sam, gone], listState: "loaded", busy: {}, notes: {}, ...extra });
+
+    test("lists each person blocked, one the church no longer lists as someone no longer in chat", () => {
+        const w = mountSettings({ blocked: list() });
+
+        const rows = w.findAll("[data-testid='blocked-row']").map(r => plain(r.text()));
+        expect(rows).toEqual(["Sam Ortiz Unblock", "Someone no longer in chat Unblock"]);
+    });
+
+    test("Unblock is one tap, with no confirmation, since everything comes back as it was", async () => {
+        const w = mountSettings({ blocked: list() });
+
+        await w.findAll("[data-testid='blocked-unblock']")[0].trigger("click");
+
+        expect(w.emitted("unblock")).toEqual([[sam]]);
+        expect(document.querySelector("[role='alertdialog']")).toBeNull();
+    });
+
+    test("an unblock still out holds its button, and a refused one shows its note on the row", () => {
+        const w = mountSettings({ blocked: list({ busy: { [sam.person_alias_guid]: true }, notes: { [gone.person_alias_guid]: { kind: "error", text: "Couldn't save." } } }) });
+
+        expect(w.findAll("[data-testid='blocked-unblock']")[0].attributes("disabled")).toBeDefined();
+        expect(w.findAll("[data-testid='blocked-row']")[1].text()).toContain("Couldn't save.");
+    });
+
+    test("says so when nobody is blocked, while the list loads, and when it failed, with Try again", async () => {
+        expect(plain(mountSettings({ blocked: list({ people: [] }) }).get("[data-testid='blocked-empty']").text())).toBe("You haven't blocked anyone. Block someone from their card or one of their messages.");
+        wrapper?.unmount();
+        expect(mountSettings({ blocked: list({ listState: "loading" }) }).find("[data-testid='blocked-loading']").exists()).toBe(true);
+        wrapper?.unmount();
+
+        const failed = mountSettings({ blocked: list({ listState: "failed" }) });
+        await failed.get("[data-testid='blocked-failed'] button").trigger("click");
+        expect(failed.emitted("retryBlocked")).toHaveLength(1);
+    });
+});
