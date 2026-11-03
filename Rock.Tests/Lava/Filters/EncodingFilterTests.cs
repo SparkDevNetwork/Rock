@@ -14,8 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Xml.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Lava;
 using Rock.Lava.Fluid;
 
 namespace Rock.Tests.Lava.Filters
@@ -84,6 +87,37 @@ Have you read &#39;The Lion, The Witch &amp; the Wardrobe by C.S. Lewis&#39;?
             TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
                 "1 &lt; 2 &amp; 3",
                 "{{ '1 &lt; 2 &amp; 3' | EscapeOnce }}" );
+        }
+
+        #endregion
+
+        #region XamlWrap
+
+        /// <summary>
+        /// Ensure that text containing a CDATA end sequence is read back exactly when the output is parsed as XML.
+        /// </summary>
+        [TestMethod]
+        public void XamlWrap_WithInputContainingCdataEndSequence_RemainsText()
+        {
+            var text = "One ]]> two <b>three</b>";
+            var mergeValues = new LavaDataDictionary { { "Text", text } };
+
+            var output = TestHelper.GetTemplateOutput( typeof( FluidEngine ), "{{ Text | XamlWrap }}", mergeValues );
+            var label = XElement.Parse( "<Label>" + output + "</Label>" );
+
+            Assert.AreEqual( text, label.Value );
+            Assert.IsFalse( label.HasElements );
+        }
+
+        /// <summary>
+        /// Ensure that text without a CDATA end sequence is wrapped in a single CDATA section.
+        /// </summary>
+        [TestMethod]
+        public void XamlWrap_WithPlainText_IsWrappedInCdata()
+        {
+            TestHelper.AssertTemplateOutput( typeof( FluidEngine ),
+                "<![CDATA[Fish & Chips <today>]]>",
+                "{{ 'Fish & Chips <today>' | XamlWrap }}" );
         }
 
         #endregion
