@@ -47,7 +47,7 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, platformMask, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
@@ -154,8 +154,8 @@ export type ThreadsDependencies = {
     /** Whether the live connection is lost, which decides whether a follow change that reached nothing says the person is offline. */
     isOffline?: () => boolean;
 
-    /** What the reader may see of a message, applied to every root and reply as it is written; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to every root and reply as it is written. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 };
 
 /** The threads a shell holds. */
@@ -264,7 +264,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         followError: null
     }) as ThreadsState;
     const me = dependencies.personAliasGuid.toLowerCase();
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     /** A message as the threads hold it: masked as the people blocked now stand, its key lowered. */
     const own = (message: TimelineMessage): TimelineMessage => withSendKey(mask(message));

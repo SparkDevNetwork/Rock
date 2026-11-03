@@ -25,6 +25,7 @@ import {
     isTextKeptOnSend,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { ChatError, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
@@ -66,6 +67,7 @@ function setup(overrides: Partial<DirectMessageDependencies & Waiting> = {}): {
 } {
     const calls: string[] = [];
     const dependencies: DirectMessageDependencies & Partial<Waiting> = {
+        mask: platformMask,
         search: async query => {
             calls.push(`search ${query}`);
             return { ok: true, people: [person(1), person(2)] };

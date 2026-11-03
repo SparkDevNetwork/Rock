@@ -63,7 +63,7 @@
 // ThreadListRow is chat_list_threads' row; TimelineMessage gains repliers, thread_following and
 // thread_unread, as chat_messages_json now answers them.
 import { createThreads, unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
-import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -195,12 +195,14 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const timelines = createTimelines({
+        mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => historyPage ?? { messages: [], read_cursor: null, unread_count: 0, has_more: false }
     });
     await timelines.loadNewest(channel);
 
     const threads = createThreads({
+        mask: platformMask,
         limits: threadLimits,
         call: (name, args) => {
             calls.push({ name, args });
@@ -1426,7 +1428,7 @@ describe("a block, as what the threads hold is masked where it is written", () =
         answers: Record<string, Array<CallResult | Deferred<CallResult>>>
     } {
         const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         // eslint-disable-next-line prefer-const
         let blocks: ReturnType<typeof createBlocks>;
         const threads = createThreads({

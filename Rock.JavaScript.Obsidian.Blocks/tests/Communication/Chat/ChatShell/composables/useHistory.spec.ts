@@ -20,7 +20,8 @@
 import {
     applyMessageChange,
     createTimelines,
-    messageDisplay
+    messageDisplay,
+    platformMask
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -63,6 +64,7 @@ describe("createTimelines", () => {
     test("the first page is held oldest first with the read position and unread count", async () => {
         const fetches: { limit: number, beforeId?: number }[] = [];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: async (_c, options) => {
                 fetches.push(options);
@@ -86,6 +88,7 @@ describe("createTimelines", () => {
         const fetches: { limit: number, beforeId?: number }[] = [];
         let size = 7;
         const timelines = createTimelines({
+            mask: platformMask,
             limits: () => ({ history_page_size: size }),
             fetchPage: async (_c, options) => {
                 fetches.push(options);
@@ -102,7 +105,7 @@ describe("createTimelines", () => {
 
     test("a live message before the first page is held, then applied after it, once", async () => {
         const first = deferred<HistoryPage>();
-        const timelines = createTimelines({ limits, fetchPage: () => first.promise });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: () => first.promise });
 
         const loading = timelines.loadNewest(channel);
         timelines.applyEvent(channel, "message.created", { ...message(5), channel_id: channel, parent_id: null, shown_in_channel: false });
@@ -119,6 +122,7 @@ describe("createTimelines", () => {
         const answers = [page([1, 2, 3]), page([4, 5])];
         const fetches: { limit: number, afterId?: number }[] = [];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: async (_c, options) => {
                 fetches.push(options);
@@ -135,7 +139,7 @@ describe("createTimelines", () => {
 
     test("a rejoin after a drop fetches again too", async () => {
         const answers = [page([1]), page([1, 2]), page([1, 2, 3])];
-        const timelines = createTimelines({ limits, fetchPage: async () => answers.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => answers.shift() as HistoryPage });
 
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
@@ -148,6 +152,7 @@ describe("createTimelines", () => {
         const first = deferred<HistoryPage>();
         const calls: number[] = [];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: (_c, options) => {
                 calls.push(options.limit);
@@ -166,7 +171,7 @@ describe("createTimelines", () => {
 
     test("an edit and a delete that arrived live are not undone by a page read before them", async () => {
         const answers = [page([1, 2]), page([1, 2])];
-        const timelines = createTimelines({ limits, fetchPage: async () => answers.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => answers.shift() as HistoryPage });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "changed", edited_at: "2026-09-23T10:05:00Z" });
@@ -194,6 +199,7 @@ describe("createTimelines", () => {
             rejoinPage
         ];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: () => {
                 const next = answers.shift() as HistoryPage | Deferred<HistoryPage>;
@@ -222,7 +228,7 @@ describe("createTimelines", () => {
     });
 
     test("a live event for a message not held is ignored for an edit and a delete", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.edited", { id: 9, channel_id: channel, body: "x", edited_at: "2026-09-23T10:05:00Z" });
@@ -232,7 +238,7 @@ describe("createTimelines", () => {
     });
 
     test("an event name it does not know is ignored", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.reacted", { id: 1 });
@@ -244,6 +250,7 @@ describe("createTimelines", () => {
         const fetches: { limit: number, beforeId?: number }[] = [];
         const answers = [page([4, 5], { has_more: true }), page([2, 3], { has_more: false })];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: async (_c, options) => {
                 fetches.push(options);
@@ -260,7 +267,7 @@ describe("createTimelines", () => {
     });
 
     test("upsert keeps one row per id", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.upsert(channel, message(2, "mine"));
@@ -271,6 +278,7 @@ describe("createTimelines", () => {
 
     test("a live message takes its sender's name and photo from that person's earlier messages", async () => {
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: async () => ({
                 messages: [{ ...message(1), sender_last_name: "Lovelace", sender_avatar_url: "/ada.png", sender_listed: true }],
@@ -298,7 +306,7 @@ describe("createTimelines", () => {
     });
 
     test("a live message that names its sender draws that name and photo, a newcomer's included", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.created", {
@@ -315,7 +323,7 @@ describe("createTimelines", () => {
     });
 
     test("a thread-only reply on the channel topic is not a timeline message", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.created", { ...message(2), channel_id: channel, parent_id: 1, shown_in_channel: false });
@@ -358,6 +366,7 @@ describe("catching up after a rejoin", () => {
         let newest = 3;
         const fetches: Fetch[] = [];
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => {
                 fetches.push(options as Fetch);
                 return history(newest)(options as Fetch);
@@ -383,6 +392,7 @@ describe("catching up after a rejoin", () => {
         let newest = 100;
         const fetches: Fetch[] = [];
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => {
                 fetches.push(options as Fetch);
                 return history(newest)(options as Fetch);
@@ -408,6 +418,7 @@ describe("catching up after a rejoin", () => {
         let newest = 3;
         const fetches: Fetch[] = [];
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => {
                 fetches.push(options as Fetch);
                 return history(newest)(options as Fetch);
@@ -436,6 +447,7 @@ describe("catching up after a rejoin", () => {
     test("loading older messages after a fresh reload keeps one run back to the first message", async () => {
         let newest = 3;
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => {
                 const fetch = options as Fetch;
                 if (fetch.beforeId !== undefined) {
@@ -462,6 +474,7 @@ describe("catching up after a rejoin", () => {
     test("reopening a channel after 60 new messages leaves no hole in what it holds", async () => {
         let newest = 3;
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => history(newest)(options as Fetch),
             catchUp: () => ({ page: 25, max: 500 })
         };
@@ -479,6 +492,7 @@ describe("catching up after a rejoin", () => {
     test("a resync after 70 messages it never heard live leaves no hole either", async () => {
         let newest = 3;
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => history(newest)(options as Fetch),
             catchUp: () => ({ page: 25, max: 500 })
         };
@@ -499,6 +513,7 @@ describe("catching up after a rejoin", () => {
     test("a channel whose first page was empty still reaches every message a rejoin finds", async () => {
         let newest = 0;
         const dependencies: CatchUpDependencies = {
+            mask: platformMask,
             fetchPage: async (_c, options) => history(newest)(options as Fetch),
             catchUp: () => ({ page: 25, max: 500 })
         };
@@ -514,7 +529,7 @@ describe("catching up after a rejoin", () => {
 
 describe("what the server adds later", () => {
     test("a live message keeps every field its payload carries, including ones this client does not know", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.created", {
@@ -535,7 +550,7 @@ describe("what the server adds later", () => {
     });
 
     test("a message hidden live shows the server's sentence in place of its body", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1, 2]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1, 2]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "This message is under review." });
@@ -546,7 +561,7 @@ describe("what the server adds later", () => {
     });
 
     test("a message hidden live and then shown again live draws its body again", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1, 2]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1, 2]) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Under review." });
@@ -562,7 +577,7 @@ describe("what the server adds later", () => {
             { messages: [removed], read_cursor: null, unread_count: 0, has_more: false },
             { messages: [{ ...message(1, "back again"), visibility: "visible", visibility_notice: null } as TimelineMessage], read_cursor: null, unread_count: 0, has_more: false }
         ];
-        const timelines = createTimelines({ limits, fetchPage: async () => answers.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => answers.shift() as HistoryPage });
         await timelines.loadNewest(channel);
 
         expect(messageDisplay(timelines.state(channel).messages[0])).toEqual({ kind: "notice", text: "Removed by a moderator." });
@@ -708,7 +723,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
 
         for (let id = 4; id <= 30; id++) {
@@ -734,7 +749,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("an older page asked for again while it is on its way is asked once, both asks ending with it", async () => {
         const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
         const fetches = controlled(platform, options => options.beforeId !== undefined);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
         const oldest = ids(timelines.state(channel).messages)[0];
 
@@ -752,7 +767,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("an older page asked for before the channel was reloaded is dropped when it arrives", async () => {
         const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
         const fetches = controlled(platform, options => options.beforeId !== undefined);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 50 }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 50 }) });
         await timelines.loadNewest(channel);
 
         const older = timelines.loadOlder(channel);
@@ -772,7 +787,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep, catchUp: () => ({ page: 25, max: 50 }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep, catchUp: () => ({ page: 25, max: 50 }) });
         await timelines.loadNewest(channel);
 
         for (let id = 4; id <= 1000; id++) {
@@ -792,7 +807,7 @@ describe("catching up when fetches fail or are overtaken", () => {
 
     test("a rejoin shows the edits, deletes and hides made while the socket was down", async () => {
         const platform = server([1, 2, 3, 4, 5]);
-        const timelines = createTimelines({ limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
 
@@ -813,7 +828,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("a channel opened again replaces a stale run even when a live message arrives before its newest page", async () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 500 }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 25, max: 500 }) });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
 
@@ -832,7 +847,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("a join confirmed while a channel is being opened again catches up from the fresh page, not under it", async () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && platform.ids().length > 3);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 5, max: 500 }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, catchUp: () => ({ page: 5, max: 500 }) });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
 
@@ -853,7 +868,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("a page asked for before a live hide does not bring the hidden body back", async () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId === undefined && options.beforeId === undefined && fetches.asked.length > 1);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
 
         const resyncing = timelines.loadNewest(channel);
@@ -871,7 +886,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("joins in quick succession run one catch-up at a time, and one more after it", async () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
 
         const first = timelines.onJoined(channel);
@@ -892,7 +907,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
 
         const joining = timelines.onJoined(channel);
@@ -911,7 +926,7 @@ describe("catching up when fetches fail or are overtaken", () => {
 
     test("a message committed late under a lower id than one held is picked up by the next rejoin", async () => {
         const platform = server([1, 2, 3, 5]);
-        const timelines = createTimelines({ limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
 
@@ -926,7 +941,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
 
         for (let id = 4; id <= 30; id++) {
@@ -946,7 +961,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
 
         const joining = timelines.onJoined(channel);
@@ -962,7 +977,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
 
         const joining = timelines.onJoined(channel);
@@ -984,7 +999,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         let holdNewest = false;
         const fetches = controlled(platform, options => holdNewest && options.afterId === undefined && options.beforeId === undefined);
         const backoff = waits();
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage, sleep: backoff.sleep });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
 
@@ -1006,7 +1021,7 @@ describe("catching up when fetches fail or are overtaken", () => {
 
     test("a channel opened again re-reads what it holds on the next join, so a removal well back is shown", async () => {
         const platform = server(Array.from({ length: 130 }, (_, i) => i + 1));
-        const timelines = createTimelines({ limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
         while (timelines.state(channel).hasMore) {
@@ -1035,7 +1050,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     ])("a message %s live while a page carrying it is on its way stays that way when the page lands", async (_what, event, change) => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, options => options.afterId !== undefined);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
 
         for (let id = 4; id <= 10; id++) {
@@ -1067,7 +1082,7 @@ describe("catching up when fetches fail or are overtaken", () => {
             holdNext = false;
             return isHeld;
         });
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
 
         holdNext = true;
@@ -1087,7 +1102,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("an older page asked for before the channel was left is dropped even when nothing held changed", async () => {
         const platform = server(Array.from({ length: 200 }, (_, i) => i + 1));
         const fetches = controlled(platform, options => options.beforeId !== undefined);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
         const before = ids(timelines.state(channel).messages);
 
@@ -1102,7 +1117,7 @@ describe("catching up when fetches fail or are overtaken", () => {
 
     test("leaving a channel before its first page lets go of the live events waiting for it", async () => {
         const platform = server([1, 2, 3]);
-        const timelines = createTimelines({ limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async (_c, options) => platform.read(options as Fetch) });
 
         timelines.applyEvent(channel, "message.edited", { id: 2, channel_id: channel, body: "stale", edited_at: "2026-10-05T09:00:00Z" });
         timelines.leave(channel);
@@ -1116,7 +1131,7 @@ describe("catching up when fetches fail or are overtaken", () => {
     test("once stopped, a join or a load starts nothing", async () => {
         const platform = server([1, 2, 3]);
         const fetches = controlled(platform, () => false);
-        const timelines = createTimelines({ limits, fetchPage: fetches.fetchPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
         const askedBefore = fetches.asked.length;
 
@@ -1149,6 +1164,7 @@ describe("catching up when fetches fail or are overtaken", () => {
 
             let failRate = 0.3;
             const timelines = createTimelines({
+                mask: platformMask,
                 limits,
                 fetchPage: async (_c, options) => {
                     const read = platform.read(options as Fetch);
@@ -1210,7 +1226,7 @@ describe("a message's pieces and blocks, live", () => {
 
     test("an edit replaces the pieces, and a page read before it does not undo that", async () => {
         const answers = [page([1]), page([1])];
-        const timelines = createTimelines({ limits, fetchPage: async () => answers.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => answers.shift() as HistoryPage });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "see https://x.org", pieces: linked, edited_at: "2026-10-09T10:05:00Z" });
@@ -1224,7 +1240,7 @@ describe("a message's pieces and blocks, live", () => {
 
     test("a delete and a hide clear the pieces and blocks with the body, and showing again brings them back", async () => {
         const held = { ...message(1, "see https://x.org"), pieces: linked, blocks } as TimelineMessage;
-        const timelines = createTimelines({ limits, fetchPage: async () => ({ messages: [held, { ...message(2), pieces: linked, blocks } as TimelineMessage], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => ({ messages: [held, { ...message(2), pieces: linked, blocks } as TimelineMessage], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
 
         timelines.applyEvent(channel, "message.deleted", { id: 1, channel_id: channel, deleted_at: "2026-10-09T10:06:00Z" });
@@ -1237,7 +1253,7 @@ describe("a message's pieces and blocks, live", () => {
         expect([timelines.state(channel).messages[1].pieces, timelines.state(channel).messages[1].blocks]).toEqual([linked, blocks]);
     });
     test("a late copy of a message does not pair an edit's body with older pieces, nor bring pieces back to a deleted one", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => page([1, 2]) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => page([1, 2]) });
         await timelines.loadNewest(channel);
         const created = (id: number): Record<string, unknown> => ({
             id, channel_id: channel, parent_id: null, shown_in_channel: false, person_alias_guid: "a0000001-0000-4000-8000-000000000000",
@@ -1257,7 +1273,7 @@ describe("a message's pieces and blocks, live", () => {
     test("a page copy of a deleted or hidden message never carries pieces or blocks", async () => {
         const gone = { ...message(1), deleted_at: "2026-10-09T10:06:00Z", pieces: linked, blocks } as TimelineMessage;
         const hidden = { ...message(2), visibility: "hidden", pieces: linked, blocks } as TimelineMessage;
-        const timelines = createTimelines({ limits, fetchPage: async () => ({ messages: [hidden, gone], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => ({ messages: [hidden, gone], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
 
         const [one, two] = timelines.state(channel).messages;
@@ -1274,6 +1290,7 @@ describe("a copy carrying a send's key, as it lands", () => {
     test("is reported whether it comes live, on a page, or put in place by the sender, and a message with no key is not", async () => {
         const landed: Array<[number, string | null | undefined]> = [];
         const timelines = createTimelines({
+            mask: platformMask,
             limits,
             fetchPage: async () => ({ messages: [keyed(2, "from-page"), keyed(1, null)], read_cursor: null, unread_count: 0, has_more: false }),
             onLanded: m => landed.push([m.id, m.client_key])
@@ -1289,7 +1306,7 @@ describe("a copy carrying a send's key, as it lands", () => {
     test("a live copy that came before the first page is reported once the page is in and it lands", async () => {
         const first = deferred<HistoryPage>();
         const landed: number[] = [];
-        const timelines = createTimelines({ limits, fetchPage: () => first.promise, onLanded: m => landed.push(m.id) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: () => first.promise, onLanded: m => landed.push(m.id) });
 
         const loading = timelines.loadNewest(channel);
         timelines.applyEvent(channel, "message.created", { ...keyed(5, "early"), channel_id: channel, parent_id: null, shown_in_channel: false });
@@ -1333,7 +1350,7 @@ describe("files follow the body", () => {
     });
 
     test("a live copy of a message held deleted does not bring its files back", async () => {
-        const timelines = createTimelines({ limits, fetchPage: async () => ({ messages: [held()], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => ({ messages: [held()], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         timelines.applyEvent(channel, "message.deleted", { id: 5, channel_id: channel, deleted_at: "2026-10-28T10:01:00Z" });
 
@@ -1374,7 +1391,7 @@ describe("a message by someone the reader blocked", () => {
 
     test("a live edit laid over a page read before it brings back nothing the page withheld", async () => {
         const answer = deferred<HistoryPage>();
-        const timelines = createTimelines({ limits, fetchPage: () => answer.promise });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: () => answer.promise });
         const loading = timelines.loadNewest(channel);
 
         // the edit lands while the page is on its way, so it is laid over the page
@@ -1392,7 +1409,7 @@ describe("a message by someone the reader blocked", () => {
             page([1]),
             { messages: [{ ...blockedRow(1), edited_at: null }], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false }
         ];
-        const timelines = createTimelines({ limits, fetchPage: async () => pages.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => pages.shift() as HistoryPage });
         await timelines.loadNewest(channel);
         // an edit held from before the block, newer than anything the next page says of it
         timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "edited words", pieces: [{ type: "text", text: "edited words" }], edited_at: "2026-11-03T11:00:00Z" });
@@ -1410,7 +1427,7 @@ describe("a message by someone the reader blocked", () => {
             { messages: [blockedRow(1)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false },
             page([1])
         ];
-        const timelines = createTimelines({ limits, fetchPage: async () => pages.shift() as HistoryPage });
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => pages.shift() as HistoryPage });
 
         await timelines.loadNewest(channel);
         await timelines.loadNewest(channel);
@@ -1646,6 +1663,105 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(readsBefore(h.fetches)).toEqual([10, 3]);
         expect(ids(h.timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
         expect(said(h.timelines.state(channel).messages)).toEqual(["2:dee 2:Dee", "9:dee 9:Dee"]);
+    });
+
+    /**
+     * Timelines of the open room holding Dee's rows 1 to 6, verified, then Ada's live 7 and 8, held
+     * and not yet verified by a page; answered as the platform answers after the unblock, with every
+     * row's words, the newest page being the newest three. The catch-up's page is 2 and its bound 3.
+     */
+    async function heldWithLiveRows(): Promise<{ timelines: ReturnType<typeof createTimelines>, blocks: ReturnType<typeof createBlocks>, fetches: Array<{ limit: number, beforeId?: number, afterId?: number }>, unblock: () => void }> {
+        let isUnblocked = false;
+        const fetches: Array<{ limit: number, beforeId?: number, afterId?: number }> = [];
+        const row = (id: number): TimelineMessage => id > 6 ? message(id) : isUnblocked ? deeMessage(id) : deeWithheld(id);
+        const { timelines, blocks } = masked(async (_c, options) => {
+            fetches.push(options);
+            const all = Array.from({ length: isUnblocked ? 8 : 6 }, (_, i) => row(i + 1));
+            let run: TimelineMessage[];
+            if (options.beforeId !== undefined) {
+                run = all.filter(m => m.id < (options.beforeId as number)).slice(-options.limit);
+                return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: run.length > 0 && run[0].id > 1 };
+            }
+            if (options.afterId !== undefined) {
+                run = all.filter(m => m.id > (options.afterId as number)).slice(0, options.limit);
+                return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: run.length > 0 && run[run.length - 1].id < all.length };
+            }
+            run = isUnblocked ? all.slice(-3) : all;
+            return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: isUnblocked };
+        }, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        timelines.applyEvent(channel, "message.created", { ...message(7), channel_id: channel });
+        timelines.applyEvent(channel, "message.created", { ...message(8), channel_id: channel });
+        fetches.length = 0;
+        return {
+            timelines, blocks, fetches, unblock: () => {
+                isUnblocked = true;
+                blocks.setAliases([]);
+            }
+        };
+    }
+
+    /** Opens a room as the shell does: the newest page, then the join's catch-up from it. */
+    async function openAsShell(timelines: ReturnType<typeof createTimelines>, channelId: string): Promise<void> {
+        await timelines.loadNewest(channelId);
+        await timelines.onJoined(channelId);
+        await settle();
+    }
+
+    const withheldLeft = (timelines: ReturnType<typeof createTimelines>, channelId: string): string[] => said(timelines.state(channelId).messages).filter(line => line.includes("null"));
+
+    test("an unblock in the open room gives back every row within the bound when the resync's newest page verifies live rows held since the last page", async () => {
+        const h = await heldWithLiveRows();
+
+        h.unblock();
+        h.timelines.release([dee], channel);
+        await openAsShell(h.timelines, channel);
+
+        // the live rows 7 and 8, verified by the newest page, would move the catch-up's own start past 4 and 5
+        expect(withheldLeft(h.timelines, channel)).toEqual([]);
+        expect(ids(h.timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    });
+
+    test("an unblock's rows are read once: the rejoin after the catch-up that read them starts where its own bound does", async () => {
+        const h = await heldWithLiveRows();
+        h.unblock();
+        h.timelines.release([dee], channel);
+        await openAsShell(h.timelines, channel);
+        h.fetches.length = 0;
+
+        await h.timelines.onJoined(channel);
+        await settle();
+
+        // eight settled rows at a bound of 3: from row 6 on
+        expect(h.fetches[0]).toEqual({ limit: 2, afterId: 5 });
+    });
+
+    test("an unblock in the open room, left before its catch-up ran, gives back every row within the bound when it is opened again", async () => {
+        const h = await heldWithLiveRows();
+
+        h.unblock();
+        h.timelines.release([dee], channel);
+        h.timelines.leave(channel);
+        await settle();
+        await openAsShell(h.timelines, channel);
+
+        expect(withheldLeft(h.timelines, channel)).toEqual([]);
+    });
+
+    test("an unblock gives back, in a room not on screen opened later, every row within the bound when its newest page verifies live rows held since its last page", async () => {
+        const h = await heldWithLiveRows();
+        h.timelines.leave(channel);
+
+        h.unblock();
+        h.timelines.release([dee], otherChannel);
+        await openAsShell(h.timelines, channel);
+
+        // what was past the bound was let go and is read again by scrolling; the rest is back
+        expect(ids(h.timelines.state(channel).messages)).toEqual([4, 5, 6, 7, 8]);
+        expect(h.timelines.state(channel).hasMore).toBe(true);
+        expect(withheldLeft(h.timelines, channel)).toEqual([]);
     });
 
     test("an unblock whose open room is then replaced by a newest page that does not join reads nothing of what was let go", async () => {

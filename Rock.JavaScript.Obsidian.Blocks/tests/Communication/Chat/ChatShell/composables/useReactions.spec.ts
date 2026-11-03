@@ -60,7 +60,7 @@
 // reacted_at, reactor_person_alias_guid, code }], has_more }; chat_list_emojis answers { emojis }.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
 import { createReactions, whoReacted, whoReactedLine } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
-import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -176,6 +176,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     notices: jest.Mock
 }> {
     const timelines = createTimelines({
+        mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => ({ messages, read_cursor: null, unread_count: 0, has_more: false })
     });
@@ -195,6 +196,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
         favorites,
         churchKey: church,
         storage: "storage" in options ? options.storage : memoryStorage(),
+        mask: platformMask,
         ...("threads" in options ? { threads: options.threads } : {}),
         ...("roomKind" in options ? { roomKind: options.roomKind } : {})
     } as unknown as Parameters<typeof createReactions>[0]);
@@ -695,7 +697,7 @@ describe("the full list", () => {
         const answer = deferred<CallResult>();
         const blocks = createBlocks({ call: async () => ({ ok: true, data: {} }), onChanged: () => undefined, remask: () => undefined, notify: () => undefined });
         blocks.setAliases([]);
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         const reactions = createReactions({
             call: () => answer.promise,
             timelines,
@@ -704,6 +706,7 @@ describe("the full list", () => {
             favorites,
             churchKey: church,
             storage: memoryStorage(),
+            mask: platformMask,
             maskFaces: people => blocks.maskFaces(people)
         } as unknown as Parameters<typeof createReactions>[0]);
 
@@ -945,9 +948,10 @@ describe("a page read before a reaction", () => {
                 pages.push(page);
                 return page.promise;
             },
-            applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload)
+            applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload),
+            mask: platformMask
         } as never);
-        const threads = createThreads({ limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me });
+        const threads = createThreads({ mask: platformMask, limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me });
         reactions = createReactions({
             call: () => {
                 const answer = answers.shift() ?? ok({});
@@ -959,7 +963,8 @@ describe("a page read before a reaction", () => {
             notify: jest.fn(),
             favorites,
             churchKey: church,
-            storage: null
+            storage: null,
+            mask: platformMask
         } as never);
 
         const deliver = (event: "reaction.added" | "reaction.removed", payload: unknown): void => {

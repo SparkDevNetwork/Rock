@@ -20,7 +20,7 @@ import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation,
 import { mount } from "@vue/test-utils";
 import { defineComponent, reactive } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
-import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { AttachmentItem, ChatErrorSeverity, GifItem, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -41,7 +41,7 @@ async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOfflin
 }> {
     const sent: string[] = [];
     let next = 0;
-    const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+    const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
     await timelines.loadNewest(channel);
 
     const sender = createSender({
@@ -94,7 +94,7 @@ describe("createSender", () => {
     });
 
     test("a send that rejects instead of answering leaves its row failed with its text, so it can be retried or discarded", async () => {
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
             send: () => Promise.reject(new Error("network")),
@@ -194,7 +194,7 @@ describe("a send the platform can recognise again", () => {
             { ok: false, error: { code: "rpc.transport", severity: "failed" } },
             { ok: true, id: 45, createdAt: "2026-10-05T10:00:00Z" }
         ];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
             send: (_c: string, _body: string, key?: string) => {
@@ -327,7 +327,7 @@ describe("a send into a room the person has not joined", () => {
         const joined: string[] = [];
         const waits: Array<Deferred<void>> = [];
         let next = 0;
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
 
         const sender = createSender({
@@ -613,7 +613,7 @@ describe("a send's key", () => {
 
     test("a sender with no key to give a message sends nothing and draws no row", async () => {
         const sent: string[] = [];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         const sender = createSender({
             send: async (_c, body) => {
                 sent.push(body);
@@ -686,7 +686,7 @@ describe("a reply in a thread", () => {
         sent: Sent[]
     }> {
         const sent: Sent[] = [];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
             send: ((_c: string, body: string, key?: string, reply?: Reply) => {
@@ -814,7 +814,7 @@ describe("a quoted send", () => {
         sent: Sent[]
     }> {
         const sent: Sent[] = [];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
             send: ((_c: string, body: string, key?: string, _reply?: unknown, quotedMessageId?: number) => {
@@ -888,6 +888,7 @@ describe("a send settles on the first copy of its message", () => {
         let next = 0;
         let sender: ReturnType<typeof createSender> | null = null;
         const timelines = createTimelines({
+            mask: platformMask,
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: pages.shift()?.messages ?? [], read_cursor: null, unread_count: 0, has_more: false }),
             onLanded: message => sender?.landed(message)
@@ -1458,7 +1459,7 @@ describe("a send with files", () => {
         sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }>
     }> {
         const sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }> = [];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         let next = 0;
         const sender = createSender({
@@ -1732,7 +1733,7 @@ describe("a send with a GIF", () => {
         sent: Array<Record<string, unknown>>
     }> {
         const sent: Array<Record<string, unknown>> = [];
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         let next = 0;
         const sender = createSender({

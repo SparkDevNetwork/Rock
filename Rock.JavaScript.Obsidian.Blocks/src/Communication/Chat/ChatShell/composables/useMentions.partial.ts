@@ -29,7 +29,7 @@
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
 import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, MentionRow, MentionSearchAnswer, SidebarRow, UnreadMention } from "../types.partial";
-import { maskHeld, MessageMask, platformMask } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "./useHistory.partial";
 import { LandingCheck } from "./useJump.partial";
 import { PlatformLimits } from "./useSession.partial";
 
@@ -141,8 +141,8 @@ export type MentionsDependencies = {
 
     toast: (notice: MentionNotice) => void;
 
-    /** What the reader may see of a message, applied to every row of the inbox as it is written; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to every row of the inbox as it is written. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 };
 
 /** The mentions a shell holds. */
@@ -269,7 +269,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
 
     const visitKey = `rock-chat:mentions-visit:${dependencies.tenantId.toLowerCase()}:${dependencies.personAliasGuid.toLowerCase()}`;
 
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     /**
      * The rows of a page as the reader may see them now: a mention by someone blocked is no row,

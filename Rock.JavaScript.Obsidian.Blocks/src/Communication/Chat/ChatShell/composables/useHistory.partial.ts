@@ -329,8 +329,8 @@ export type TimelineDependencies = {
      */
     applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
 
-    /** What the reader may see of a message, applied to every row as it is written; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to every row as it is written. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 
     /**
      * A live event as the reader may see it, applied again when an event held for the first page
@@ -513,6 +513,15 @@ type ChannelSync = {
      */
     hasJoined: boolean;
 
+    /**
+     * The oldest held row the next catch-up must read again, set by an unblock for the withheld
+     * rows it leaves to that catch-up. The catch-up owns where it starts, from what is verified
+     * when it runs, so the unblock tells it the row rather than predicting that start: live rows a
+     * newest page verifies in between move the start newer. Kept until a catch-up has read past it,
+     * and dropped when a newest page replaces what is held, since the rows it named are gone.
+     */
+    rereadFloor: number | null;
+
     /** Whether a newest page is being read; a join confirmed meanwhile is caught up after it. */
     isLoading: boolean;
     isJoinPending: boolean;
@@ -537,7 +546,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     const held = new Map<string, Array<{ event: string, payload: unknown, heldAt: number }>>();
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     // One counter for every page read and every live change, across channels, so each can be told
     // apart in time: a page read before a change, or before another page, must not undo it.
@@ -578,7 +587,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, rereadFloor: null, isLoading: false, isJoinPending: false, olderLoad: null };
             syncs.set(channelId, channelSync);
         }
 
@@ -799,6 +808,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             mergePage(channelId, page, readAt);
             channelSync.epoch++;
+            channelSync.rereadFloor = null;
             timeline.verifiedThrough = null;
         }
 
@@ -827,7 +837,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * One pass of catch-up: page forward until nothing newer is left. A rejoin starts from the
      * oldest held message, at most a bound's worth back, so an edit, a delete or a hide made while
      * the socket was down, and a message committed late under a lower id, are read again. Past the
-     * bound the channel is reloaded at its newest page and paging goes on from there. A failed
+     * bound the channel is reloaded at its newest page and paging goes on from there. A floor an
+     * unblock set starts it lower, at that row, and is done with once the pass is caught up. A failed
      * page is tried again with growing, randomised waits while this run still owns the channel;
      * meanwhile the channel says it is behind.
      */
@@ -841,9 +852,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         const verified = timeline.verifiedThrough ?? 0;
         const settled = timeline.messages.filter(m => m.id <= verified);
-        let afterId = isRejoin && settled.length > 0
+        const floor = channelSync.rereadFloor;
+        const start = isRejoin && settled.length > 0
             ? settled[Math.max(0, settled.length - max)].id - 1
             : verified;
+        let afterId = floor === null ? start : Math.min(start, floor - 1);
         let fetched = 0;
         let attempt = 0;
 
@@ -899,6 +912,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
             if (!answer.page.has_more || !range) {
                 timeline.isBehind = false;
+                // an unblock that set a lower floor meanwhile is read by the next pass
+                if (channelSync.rereadFloor === floor) {
+                    channelSync.rereadFloor = null;
+                }
                 return;
             }
             afterId = range.newest;
@@ -951,15 +968,16 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     }
 
     /**
-     * Reads again, in the open room, the rows an unblock left withheld older than the first row
-     * the catch-up reaches: newest first, skipping to the next withheld row so a page holding none
+     * Reads again, in the open room, the rows an unblock left withheld older than the floor it
+     * gave the next catch-up: newest first, skipping to the next withheld row so a page holding none
      * is never read, and stopping at a bound's worth of rows read. Whatever it does not read again,
      * because it reached the bound, a read failed or what is held was replaced or left, is let go
      * from that point back, so no withheld copy of someone no longer blocked stays held.
      *
      * @param channelId The open room.
      * @param isWithheld Whether a held row is withheld by an alias no longer blocked.
-     * @param reach The first row the catch-up reaches; only rows older than it are read here.
+     * @param reach The floor the unblock gave the next catch-up, which reads it and every row
+     * after it; only rows older than it are read here.
      */
     async function rereadPastBound(channelId: string, isWithheld: (message: TimelineMessage) => boolean, reach: number): Promise<void> {
         const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
@@ -1163,9 +1181,13 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     continue;
                 }
 
-                // the first row a rejoin's catch-up reads again, as catchUpPass finds it
+                // Within the bound the next catch-up reads the withheld rows again from the floor
+                // set here, never below the bound's edge of what is settled now, so it stays bounded.
                 const settled = positionOf(messages, (timeline.verifiedThrough ?? 0) + 1);
                 const reach = Math.max(0, settled - max);
+                const floor = messages[Math.max(oldest, reach)].id;
+                const channelSync = sync(channelId);
+                channelSync.rereadFloor = Math.min(channelSync.rereadFloor ?? floor, floor);
                 if (oldest >= reach) {
                     continue;
                 }

@@ -74,6 +74,7 @@
 //   warm(channel): asks a conversation's opening people ahead of its first @.
 //   forgetPeople(): forgets every conversation's held people, as a resync does.
 import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
@@ -230,6 +231,7 @@ function setup(options: { storage?: ReturnType<typeof memoryStorage>, storageThr
     };
 
     const mentions = createMentions({
+        mask: platformMask,
         limits: mentionLimits,
         call: (name, args) => {
             calls.push({ name, args });

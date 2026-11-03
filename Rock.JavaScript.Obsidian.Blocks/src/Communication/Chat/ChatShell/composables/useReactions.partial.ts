@@ -34,7 +34,7 @@ import { CallResult } from "../platformCall.partial";
 import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
-import { maskHeld, MessageMask, platformMask, Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask, Timelines } from "./useHistory.partial";
 import { Threads } from "./useThreads.partial";
 
 export type { CatalogEmoji, EmojiGlyph, Reaction, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
@@ -84,8 +84,8 @@ export type ReactionsDependencies = {
     /** People who reacted as the reader may see them, applied to every list of reactors as it lands; as they came by default. */
     maskFaces?: <T extends Reactor>(people: T[]) => T[];
 
-    /** What the reader may see of a message, applied to every copy a reaction changes; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to every copy a reaction changes. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 };
 
 /** What the reactions hold. */
@@ -406,7 +406,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         recents: readRecents(dependencies.storage, recentsKey)
     }) as ReactionsState;
 
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     let isStopped = false;
 

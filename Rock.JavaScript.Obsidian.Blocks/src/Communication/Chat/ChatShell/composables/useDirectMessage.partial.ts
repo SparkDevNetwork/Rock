@@ -45,7 +45,7 @@ import { reactive, toRaw } from "vue";
 import { failedWords } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
-import { defaultRetryDelay, maskHeld, MessageMask, platformMask } from "./useHistory.partial";
+import { defaultRetryDelay, maskHeld, MessageMask } from "./useHistory.partial";
 import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
 import { PlatformLimits } from "./useSession.partial";
 
@@ -172,8 +172,8 @@ export type DirectMessageDependencies = {
      */
     holdText?: (channelId: string, text: string) => void;
 
-    /** What the reader may see of a message, applied to the found conversation's look as it is written; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to the found conversation's look as it is written. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 };
 
 /** The direct messages a shell holds. */
@@ -316,7 +316,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     /** Conversations the person was added to while Rock had not answered yet. */
     const arrived = new Set<string>();

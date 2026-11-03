@@ -33,7 +33,7 @@ import MessageRow from "../../../../../src/Communication/Chat/ChatShell/componen
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -544,6 +544,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         const answer = deferred<SendResult>();
         let sender: ReturnType<typeof createSender> | null = null;
         const timelines = createTimelines({
+            mask: platformMask,
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: [message(1, anna, at(14, 50))], read_cursor: null, unread_count: 0, has_more: false }),
             onLanded: m => sender?.landed(m)
@@ -1456,7 +1457,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a held conversation whose newest page replaces it at the same count opens at the newest message, its new rows watched", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
         timelines.leave(channel);
 
@@ -1517,7 +1518,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a reader scrolled up stays where they are when content grows and when the timeline is replaced", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
 
         const wrapper = draw({ timeline: timelines.state(channel) });

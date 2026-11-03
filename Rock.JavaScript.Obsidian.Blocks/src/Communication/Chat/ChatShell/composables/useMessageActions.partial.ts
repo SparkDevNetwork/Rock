@@ -29,7 +29,7 @@ import { inRoomKind, messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError, DisplayPiece, MessageAction, RoomKind, TimelineMessage } from "../types.partial";
-import { maskHeld, MessageMask, platformMask, Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask, Timelines } from "./useHistory.partial";
 import { Threads, ThreadPlace, threadPlaceOf } from "./useThreads.partial";
 
 export type { MessageAction } from "../types.partial";
@@ -85,8 +85,8 @@ export type MessageActionsDependencies = {
      */
     threads?: Pick<Threads, "state" | "applyEvent">;
 
-    /** What the reader may see of a message, applied to a quote as it is started; the platform's own marks alone by default. */
-    mask?: MessageMask;
+    /** What the reader may see of a message, applied to a quote as it is started. Required, so a holder wired without the people blocked does not compile. */
+    mask: MessageMask;
 };
 
 /** What the actions hold. */
@@ -337,7 +337,7 @@ function copyText(message: TimelineMessage): string {
  */
 export function createMessageActions(dependencies: MessageActionsDependencies): MessageActions {
     const state = reactive<MessageActionsState>({ editing: null, confirmingDelete: null, quotes: {} }) as MessageActionsState;
-    const mask = dependencies.mask ?? platformMask;
+    const mask = dependencies.mask;
 
     let isStopped = false;
 
