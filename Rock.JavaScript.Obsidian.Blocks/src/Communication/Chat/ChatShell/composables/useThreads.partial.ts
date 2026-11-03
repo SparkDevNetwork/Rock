@@ -47,7 +47,7 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, combine, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, combine, defaultCatchUp, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
@@ -141,6 +141,9 @@ export type ThreadsDependencies = {
 
     /** The platform's limits, from the latest token exchange: a thread's page and the list's. */
     limits: () => Pick<PlatformLimits, "history_page_size" | "thread_page_size">;
+
+    /** How a reread pages back through the replies held, as the timeline's catch-up does: each page, and at most how many in all. */
+    catchUp?: () => { page: number, max: number };
 
     /**
      * Told of every copy of a reply sent under a key as it reaches the open thread, so the sender
@@ -290,6 +293,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // the root the page brings: the page may have been read before the reply it reports.
     let pendingRootUpdate: ThreadUpdatedEvent | null = null;
 
+    // Bumped by every reread of the open thread and by every open, close and stop, so of two
+    // rereads out at once only the newest asked lands.
+    let threadRead = 0;
+
     // Changes to the open thread's messages made while its page is on its way, run once it lands.
     let whileLoading: Array<() => void> = [];
 
@@ -370,6 +377,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
 
         const thisOpen = ++threadOpen;
+        threadRead++;
         state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null, olderError: null };
         newestSeen = null;
         lastSaved = null;
@@ -428,52 +436,64 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     }
 
     /**
-     * Reads the open thread's newest page again and lays it over what is held, by id, so the
-     * reader stays where they are. Each copy in the page is the platform's newest say about it,
-     * combined as the timeline combines a page; a live reply newer than the page stays. A held
-     * reply older than the page was read through what has since changed and nothing would read it
-     * again, so it is let go and comes back, as it now reads, when the drawer is scrolled to it.
+     * Reads again what the open thread holds and lays it over what is held, by id, so the reader
+     * stays where they are: the newest page, then pages before it back to the oldest reply held,
+     * at most the catch-up bound's worth. Each copy read is the platform's newest say about it,
+     * combined as the timeline combines a page; a live reply newer than the read stays. A held
+     * reply older than what was read is let go, and comes back, as it now reads, when the drawer
+     * is scrolled to it. Only the newest reread asked lands, so an answer read before a later
+     * change never draws over that change's.
      */
     async function rereadThread(): Promise<void> {
+        if (isStopped || !state.thread || state.thread.error) {
+            return;
+        }
+
+        const thisRead = ++threadRead;
+        if (state.thread.isLoading) {
+            // the oldest reply held is known only once the first page is in
+            await threadLoad;
+        }
         const open = state.thread;
-        if (isStopped || !open || open.error) {
+        if (isStopped || thisRead !== threadRead || !open || open.error) {
             return;
         }
 
-        const thisOpen = threadOpen;
-        const result = await dependencies.call("chat_get_thread_history", { p_root_id: open.rootId, p_limit: dependencies.limits().history_page_size });
-        if (isStopped || thisOpen !== threadOpen || !state.thread || !result.ok) {
-            // a failed read keeps what is on screen, as a failed resync of the conversation does
-            return;
-        }
-
-        const page = body<ThreadPage>(result);
-        // A first page still on its way lands first, and this one is laid over it.
-        const lay = (): void => {
-            const thread = state.thread;
-            if (!thread) {
+        const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
+        const oldestHeld = open.replies[0]?.id ?? null;
+        const read: TimelineMessage[] = [];
+        let root: TimelineMessage | null = null;
+        let hasMore = false;
+        let beforeId: number | null = null;
+        do {
+            const result: CallResult = await dependencies.call("chat_get_thread_history", beforeId === null
+                ? { p_root_id: open.rootId, p_limit: dependencies.limits().history_page_size }
+                : { p_root_id: open.rootId, p_before_id: beforeId, p_limit: pageSize });
+            if (isStopped || thisRead !== threadRead || state.thread !== open || !result.ok) {
+                // a failed read keeps what is on screen, as a failed resync of the conversation does
                 return;
             }
-            if (page.root && thread.root) {
-                thread.root = combine(thread.root, page.root);
-            }
-            const read = (page.messages ?? []).map(withSendKey).sort((a, b) => a.id - b.id);
-            const oldest = read[0]?.id ?? null;
-            const held = new Map(thread.replies.map(reply => [reply.id, reply]));
-            const isLetGo = (reply: TimelineMessage): boolean => oldest !== null && reply.id < oldest;
-            const readIds = new Set(read.map(message => message.id));
-            const live = thread.replies.filter(reply => !isLetGo(reply) && !readIds.has(reply.id));
-            thread.replies = [...read.map(message => held.has(message.id) ? combine(held.get(message.id) as TimelineMessage, message) : message), ...live]
-                .sort((a, b) => a.id - b.id);
-            thread.hasMore = page.has_more === true || [...held.values()].some(isLetGo);
-            reportLanded(read);
-        };
-        if (state.thread.isLoading) {
-            whileLoading.push(lay);
+
+            const page = body<ThreadPage>(result);
+            const messages = (page.messages ?? []).filter(message => beforeId === null || message.id < (beforeId as number));
+            root = root ?? page.root ?? null;
+            read.push(...messages.map(withSendKey));
+            hasMore = page.has_more === true;
+            beforeId = messages.length > 0 ? Math.min(...messages.map(message => message.id)) : null;
+        } while (hasMore && beforeId !== null && oldestHeld !== null && beforeId > oldestHeld && read.length < max);
+
+        if (root && open.root) {
+            open.root = combine(open.root, root);
         }
-        else {
-            lay();
-        }
+        read.sort((a, b) => a.id - b.id);
+        const oldest = read[0]?.id ?? null;
+        const held = new Map(open.replies.map(reply => [reply.id, reply]));
+        const readIds = new Set(read.map(message => message.id));
+        const live = open.replies.filter(reply => (oldest === null || reply.id >= oldest) && !readIds.has(reply.id));
+        open.replies = [...read.map(message => held.has(message.id) ? combine(held.get(message.id) as TimelineMessage, message) : message), ...live]
+            .sort((a, b) => a.id - b.id);
+        open.hasMore = hasMore;
+        reportLanded(read);
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -591,6 +611,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const saved = lastSaved;
 
         threadOpen++;
+        threadRead++;
         state.thread = null;
         newestSeen = null;
         lastSaved = null;
@@ -985,6 +1006,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             isStopped = true;
             listFetch++;
             threadOpen++;
+            threadRead++;
             whileLoading = [];
         }
     };

@@ -184,7 +184,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -211,6 +211,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
         },
         timelines,
         personAliasGuid: me,
+        catchUp: () => catchUp,
         onLanded,
         ...(isOffline ? { isOffline } : {})
     });
@@ -780,19 +781,67 @@ describe("a resync, as when the people blocked change", () => {
         expect(h.callsTo("chat_get_thread_history").at(-1)?.args).toEqual({ p_root_id: 1, p_limit: 23 });
     });
 
-    test("a held reply older than the page is let go, and the drawer has more to read", async () => {
+    test("a held reply older than the newest page is read again in place, so a reader scrolled up keeps their place", async () => {
         const h = await setup();
         h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1)], { has_more: true })];
         await h.threads.openThread(channel, 1);
-        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1)])];
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben })])];
         await h.threads.loadOlderReplies();
-        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1)])];
+        h.answers["chat_get_thread_history"] = [
+            threadAnswer(root(1), [reply(3, 1)], { has_more: true }),
+            threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben, ...blocked })])
+        ];
 
         h.threads.resync();
         await settle();
 
-        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([3]);
+        const replies = h.threads.state.thread?.replies ?? [];
+        expect(replies.map(r => r.id)).toEqual([2, 3]);
+        expect(replies[0]).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
+        expect(h.threads.state.thread?.hasMore).toBe(false);
+        expect(h.callsTo("chat_get_thread_history").slice(-2).map(c => c.args)).toEqual([
+            { p_root_id: 1, p_limit: 23 },
+            { p_root_id: 1, p_before_id: 3, p_limit: 19 }
+        ]);
+    });
+
+    test("past the bound the oldest held replies are let go, and the drawer has more to read", async () => {
+        const h = await setup(undefined, undefined, undefined, { page: 2, max: 3 });
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(5, 1), reply(4, 1)], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1), reply(1, 1)], { has_more: true })];
+        await h.threads.loadOlderReplies();
+        h.answers["chat_get_thread_history"] = [
+            threadAnswer(root(1), [reply(5, 1), reply(4, 1)], { has_more: true }),
+            threadAnswer(root(1), [reply(3, 1), reply(2, 1)], { has_more: true })
+        ];
+
+        h.threads.resync();
+        await settle();
+
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([2, 3, 4, 5]);
         expect(h.threads.state.thread?.hasMore).toBe(true);
+        expect(h.callsTo("chat_get_thread_history").length).toBe(4);
+    });
+
+    test("of two rereads out at once, an older answer landing last is dropped", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben })])];
+        await h.threads.openThread(channel, 1);
+        const unblockedRead = deferred<CallResult>();
+        const blockedRead = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [unblockedRead, blockedRead];
+
+        h.threads.resync();
+        await settle();
+        h.threads.resync();
+        await settle();
+        blockedRead.resolve(threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben, ...blocked })]));
+        await settle();
+        unblockedRead.resolve(threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben, body: "words" })]));
+        await settle();
+
+        expect(h.threads.state.thread?.replies[0]).toMatchObject({ id: 2, blocked: true, body: null });
     });
 
     test("a page still on its way when the resync asks lands first, and the resync's is laid over it", async () => {
