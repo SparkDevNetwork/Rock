@@ -414,8 +414,9 @@
                     :body="blockSentence"
                     confirmLabel="Block"
                     isDestructive
-                    @close="shell.blocks.cancel"
-                    @confirm="shell.blocks.confirm" />
+                    :returnFocus="blockReturnTarget"
+                    @close="onCancelBlock"
+                    @confirm="onConfirmBlock" />
 
             <!-- Changing who is in the room, asked from the members panel and drawn over the frame. -->
             <RemoveMember v-bind="removeView" :personAliasGuid="personAliasGuid" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
@@ -1052,7 +1053,8 @@
     /** The quotes, the editor and the delete confirm, and where a message's bar and menu send their actions. */
     const {
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
-        editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete
+        editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
+        askBlock, blockReturnTarget, onCancelBlock, onConfirmBlock
     } = useMessageActionsView({ shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker, openCard });
 
     /**
@@ -1382,10 +1384,14 @@
         shell.value.rooms.refreshCardDetails(shell.value.prefs.setSwitch("profile_details", value));
     }
 
-    /** The card's Block: the card goes first, so the confirmation never stands under it. */
+    /**
+     * The card's Block: the card goes first, so the confirmation never stands under it, and focus
+     * comes back to what opened the card.
+     */
     function onCardBlock(person: PersonProfile): void {
+        const anchor = cardAnchor.value;
         shell.value.rooms.closeCard();
-        shell.value.blocks.ask(person);
+        askBlock(person, anchor, null);
     }
 
     /** The card's Unblock, which needs no confirmation, since everything comes back as it was. */

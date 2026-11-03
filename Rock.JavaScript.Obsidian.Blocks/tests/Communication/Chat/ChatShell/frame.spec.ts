@@ -3200,6 +3200,93 @@ describe("delete confirm", () => {
     });
 });
 
+// The block confirmation is asked after the card or the menu that asked it has closed, so focus goes
+// back to what opened the card, else to the message, and is found again on the quiet line the
+// message is drawn as once the block has landed.
+describe("block confirm focus", () => {
+    const sam = "a0000005-0000-4000-8000-000000000000";
+
+    /** Lets the dialog's fade finish and the frames after it run, as a browser would. */
+    async function fadeOut(): Promise<void> {
+        await settle();
+        await new Promise(resolve => setTimeout(resolve, 50));
+        await settle();
+    }
+
+    /** Opens the confirmation from message 7's menu, whose More button then leaves with its bar. */
+    async function askFromMessage(): Promise<{ w: VueWrapper, target: TimelineMessage }> {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        const target = storedMessage(7, { person_alias_guid: sam, sender_nick_name: "Sam", sender_last_name: "Ortiz" });
+        timelineOf(team.channel_id).messages.push(target);
+        await settle();
+
+        const more = document.createElement("button");
+        shellRoot(w).appendChild(more);
+        more.focus();
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "block", message: target });
+        await settle();
+        more.remove();
+        expect(document.activeElement).toBe(w.get("[data-testid='dialog-cancel']").element);
+        return { w, target };
+    }
+
+    test("Escape after Block from a message's menu gives focus to the message", async () => {
+        const { w } = await askFromMessage();
+
+        await w.get("[data-testid='dialog']").trigger("keydown", { key: "Escape" });
+        await fadeOut();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
+    });
+
+    test("Block confirmed from a message's menu gives focus to its quiet line once it is drawn again", async () => {
+        const { w } = await askFromMessage();
+        const blocks = mockShell!.blocks as Record<string, jest.Mock>;
+        const timeline = timelineOf(team.channel_id);
+        blocks.confirm.mockImplementationOnce(async () => {
+            (blocks.state as unknown as { confirming: unknown }).confirming = null;
+            return true;
+        });
+
+        await w.get("[data-testid='dialog-confirm']").trigger("click");
+        await fadeOut();
+        // the screen read again draws the message as someone blocked
+        timeline.messages.splice(timeline.messages.findIndex(m => m.id === 7), 1, storedMessage(7, { person_alias_guid: sam, sender_nick_name: null, sender_last_name: null, body: null, blocked: true }));
+        await fadeOut();
+
+        const line = w.get("[data-testid='frame-main'] [data-message-id='7']").element;
+        expect(line.getAttribute("data-state")).toBe("blocked");
+        expect(document.activeElement).toBe(line);
+    });
+
+    test("Cancel after Block from a card gives focus to what opened the card", async () => {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        // an author's name, as a card opens from
+        const anchor = document.createElement("button");
+        shellRoot(w).appendChild(anchor);
+        w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "person", personAliasGuid: sam, anchor });
+        await settle();
+        roomsOf().state.card = {
+            personAliasGuid: sam,
+            channelId: team.channel_id,
+            person: { person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null, is_self: false, is_leader: false, is_blocked: false, details: null, can_message: true, dm_channel_id: null }
+        } as never;
+        await settle();
+        const block = document.querySelector<HTMLElement>("[data-testid='profile-block']")!;
+        block.focus();
+        block.click();
+        await settle();
+        expect(document.activeElement).toBe(w.get("[data-testid='dialog-cancel']").element);
+
+        await w.get("[data-testid='dialog-cancel']").trigger("click");
+        await fadeOut();
+
+        expect(document.activeElement).toBe(anchor);
+    });
+});
+
 describe("Browse channels", () => {
     const volunteers: SidebarRow = sidebarRow({ channel_id: "c0000011-0000-4000-8000-000000000000", name: "Volunteers", is_public: true, is_member: false });
 

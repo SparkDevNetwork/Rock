@@ -16,15 +16,15 @@
 //
 // What the block draws of the message actions, and where it sends a message's bar and menu: the
 // quote waiting in each composer, the editor open in a conversation or its thread, and the delete
-// confirm. The shell's message actions hold the state; this reads it for the place each part sits
+// confirm, and where focus goes back to after the block confirmation. The shell's message actions hold the state; this reads it for the place each part sits
 // in, the conversation or the open thread, and moves focus as each action ends, so it needs the
 // block's frame and elements, which the shell's half never sees.
 
-import { computed, ComputedRef, nextTick, Ref } from "vue";
+import { computed, ComputedRef, nextTick, Ref, watch, WatchStopHandle } from "vue";
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import { ChatShell } from "../shell.partial";
-import { ChatError, TimelineMessage } from "../types.partial";
+import { ChatError, ChatPerson, TimelineMessage } from "../types.partial";
 import { MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
 import { OpenThreadState } from "./useThreads.partial";
 
@@ -86,6 +86,18 @@ export type MessageActionsView = {
     onMessageAction: (request: MessageActionRequest, rootId: number | null) => void;
     onCancelDelete: () => void;
     onConfirmDelete: () => void;
+
+    /**
+     * Opens the block confirmation for a person, from their card or one of their messages, with
+     * what focus goes back to: what opened the card, else the message.
+     */
+    askBlock: (person: ChatPerson, anchor: HTMLElement | null, messageId: number | null) => void;
+
+    /** What the block confirmation gives focus back to as it closes. */
+    blockReturnTarget: () => HTMLElement | null;
+
+    onCancelBlock: () => void;
+    onConfirmBlock: () => void;
 };
 
 /**
@@ -97,6 +109,16 @@ export type MessageActionsView = {
  */
 export function useMessageActionsView(dependencies: MessageActionsViewDependencies): MessageActionsView {
     const { shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement } = dependencies;
+
+    // #region Values
+
+    /** What the block confirmation open now was asked from: the card's opener, and the message it sits in or was asked on. */
+    let blockReturn: { anchor: HTMLElement | null, messageId: number | null } = { anchor: null, messageId: null };
+
+    /** The wait for a just-blocked message to be drawn again, which finds focus again there. */
+    let stopBlockRefocus: WatchStopHandle | null = null;
+
+    // #endregion Values
 
     // #region Computed Values
 
@@ -191,12 +213,12 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
 
             // the confirmation names the sender as the message does
             case "block":
-                shell.value.blocks.ask({
+                askBlock({
                     person_alias_guid: request.message.person_alias_guid ?? "",
                     nick_name: request.message.sender_nick_name ?? null,
                     last_name: request.message.sender_last_name ?? null,
                     avatar_url: request.message.sender_avatar_url ?? null
-                });
+                }, null, request.message.id);
                 break;
 
             case "server":
@@ -290,6 +312,74 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
         });
     }
 
+    /**
+     * The message's row by id in the conversation or the thread, or the quiet line of the run of
+     * blocked messages it has folded into, which carries the run's newest id.
+     */
+    function messageElement(messageId: number): HTMLElement | null {
+        const root = rootElement.value;
+        const row = root?.querySelector<HTMLElement>(`[data-message-id='${messageId}'], [data-reply-id='${messageId}']`);
+        if (row || !root) {
+            return row ?? null;
+        }
+
+        const lines = Array.from(root.querySelectorAll<HTMLElement>("[data-state='blocked'][data-message-id], [data-state='blocked'][data-reply-id]"));
+        return lines.find(line => Number(line.dataset.messageId ?? line.dataset.replyId) >= messageId) ?? null;
+    }
+
+    function askBlock(person: ChatPerson, anchor: HTMLElement | null, messageId: number | null): void {
+        stopBlockRefocus?.();
+        const row = anchor?.closest<HTMLElement>("[data-message-id], [data-reply-id]");
+        const anchorMessage = row ? Number(row.dataset.messageId ?? row.dataset.replyId) : null;
+        blockReturn = { anchor, messageId: messageId ?? anchorMessage };
+        shell.value.blocks.ask(person);
+    }
+
+    function blockReturnTarget(): HTMLElement | null {
+        const { anchor, messageId } = blockReturn;
+        if (anchor?.isConnected) {
+            return anchor;
+        }
+        return messageId === null ? null : messageElement(messageId);
+    }
+
+    function onCancelBlock(): void {
+        shell.value.blocks.cancel();
+    }
+
+    /**
+     * Blocks the person. Their message is drawn again as a quiet line once the screen has been read
+     * again, which replaces the row focus went back to, so focus is found again there if it fell.
+     */
+    function onConfirmBlock(): void {
+        const messageId = blockReturn.messageId;
+        void shell.value.blocks.confirm().then(isTaken => {
+            if (!isTaken || messageId === null) {
+                return;
+            }
+
+            const isBlockedCopy = (): boolean => [
+                ...(activeChannelId.value ? shell.value.timelines.state(activeChannelId.value).messages : []),
+                ...(drawnThread.value?.replies ?? []),
+                ...(drawnThread.value?.root ? [drawnThread.value.root] : [])
+            ].some(message => message.id === messageId && message.blocked === true);
+
+            stopBlockRefocus = watch(isBlockedCopy, isBlocked => {
+                if (!isBlocked) {
+                    return;
+                }
+                stopBlockRefocus?.();
+                stopBlockRefocus = null;
+                void nextTick(() => {
+                    const active = document.activeElement;
+                    if (!active || active === document.body || !active.isConnected) {
+                        blockReturnTarget()?.focus({ preventScroll: true });
+                    }
+                });
+            }, { immediate: true });
+        });
+    }
+
     // #endregion Functions
 
     return {
@@ -308,6 +398,10 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
         onCancelQuote,
         onMessageAction,
         onCancelDelete,
+        askBlock,
+        blockReturnTarget,
+        onCancelBlock,
+        onConfirmBlock,
         onConfirmDelete
     };
 }

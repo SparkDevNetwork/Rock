@@ -72,7 +72,7 @@
         </SettingGroup>
         <p class="chat-ms-foot" data-testid="settings-foot">Each conversation sets its own, from its name at the top.</p>
 
-        <SettingGroup label="Blocked people" data-testid="settings-blocked">
+        <SettingGroup ref="blockedGroup" label="Blocked people" data-testid="settings-blocked">
             <SettingRow v-if="blocked.listState === 'failed'" sub="Couldn't load the people you blocked." data-testid="blocked-failed">
                 <button type="button" class="chat-ms-btn is-line" @click="emit('retryBlocked')">Try again</button>
             </SettingRow>
@@ -81,8 +81,8 @@
                     <i class="chat-skeleton chat-ms-sk" aria-hidden="true"></i>
                 </template>
             </SettingRow>
-            <SettingRow v-else-if="blocked.people.length === 0" sub="You haven't blocked anyone." data-testid="blocked-empty" />
-            <SettingRow v-for="person in shownBlocked"
+            <SettingRow v-else-if="blocked.people.length === 0" sub="You haven't blocked anyone." tabindex="-1" data-testid="blocked-empty" />
+            <SettingRow v-for="(person, index) in shownBlocked"
                         :key="person.person_alias_guid"
                         :title="blockedName(person)"
                         :note="blocked.notes[person.person_alias_guid.toLowerCase()] ?? null"
@@ -95,7 +95,7 @@
                         :aria-label="`Unblock ${blockedName(person)}`"
                         :disabled="!!blocked.busy[person.person_alias_guid.toLowerCase()]"
                         data-testid="blocked-unblock"
-                        @click="emit('unblock', person)">Unblock</button>
+                        @click="onUnblock(person, index)">Unblock</button>
             </SettingRow>
         </SettingGroup>
 
@@ -103,6 +103,7 @@
             <!-- The settings' news said while the dialog is open, keyed by count so the same words
                  are read twice; a save that failed is said at once. -->
             <span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span>
+            <span v-if="unblockedSaid" :key="`unblocked-${unblockedSaid.count}`">{{ unblockedSaid.text }}</span>
         </span>
         <span class="chat-sr-only" aria-live="assertive" data-testid="settings-alert"><span v-if="shownAnnouncement?.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
     </Dialog>
@@ -340,6 +341,15 @@
     /** The settings' announcement count as the dialog opened, so only news said since is read. */
     const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
 
+    /** The Blocked people group, whose rows focus moves along as one leaves. */
+    const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
+
+    /** The row whose Unblock was pressed, and where it stood, until it leaves the list or is refused. */
+    const unblocking = ref<{ guid: string, name: string, index: number } | null>(null);
+
+    /** The last unblock that landed, said in the dialog's own words, keyed so the same words are read twice. */
+    const unblockedSaid = ref<{ text: string, count: number } | null>(null);
+
     // #endregion Values
 
     // #region Computed Values
@@ -387,6 +397,11 @@
         return nameOf(person) || unnamedBlocked;
     }
 
+    function onUnblock(person: ChatPerson, index: number): void {
+        unblocking.value = { guid: person.person_alias_guid.toLowerCase(), name: blockedName(person), index };
+        emit("unblock", person);
+    }
+
     function onToggle(key: MeKey, value: boolean): void {
         emit("toggle", key, value);
     }
@@ -398,7 +413,32 @@
     // Each opening reads only the news said from then on.
     watch(() => props.isOpen, isOpen => {
         announcedBefore.value = isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY;
+        unblocking.value = null;
+        unblockedSaid.value = null;
     });
+
+    // An unblock that lands takes its row, and the button focused with it, out of the list: it is
+    // said, and focus goes to the row that took its place, else the one before, else the empty line,
+    // so a keyboard stays in the group. A refusal leaves the row with its note, and focus on it.
+    watch(() => [shownBlocked.value, unblocking.value ? props.blocked.notes[unblocking.value.guid] : null], () => {
+        const pressed = unblocking.value;
+        if (!pressed) {
+            return;
+        }
+        if (shownBlocked.value.some(person => person.person_alias_guid.toLowerCase() === pressed.guid)) {
+            if (props.blocked.notes[pressed.guid]) {
+                unblocking.value = null;
+            }
+            return;
+        }
+
+        unblocking.value = null;
+        unblockedSaid.value = { text: `Unblocked ${pressed.name}`, count: (unblockedSaid.value?.count ?? 0) + 1 };
+        const group = blockedGroup.value?.$el as HTMLElement | undefined;
+        const buttons = group?.querySelectorAll<HTMLElement>("[data-testid='blocked-unblock']") ?? [];
+        const next = buttons[Math.min(pressed.index, buttons.length - 1)] ?? group?.querySelector<HTMLElement>("[data-testid='blocked-empty']");
+        next?.focus();
+    }, { flush: "post" });
 
     // #endregion Watchers
 

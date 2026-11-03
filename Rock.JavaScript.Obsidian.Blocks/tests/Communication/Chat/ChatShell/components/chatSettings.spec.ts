@@ -329,6 +329,47 @@ describe("Blocked people", () => {
         expect(document.querySelector("[role='alertdialog']")).toBeNull();
     });
 
+    test("an unblock that lands says so and moves focus to the next row's Unblock, else the one before, else the empty line", async () => {
+        const ben = { person_alias_guid: "a0000008-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+        const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
+        // the dialog's own first focus, after its open
+        await nextTick();
+        const said = (): string => plain(w.get("[data-testid='settings-announcement']").text());
+        const unblock = async (index: number): Promise<void> => {
+            const button = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']")[index];
+            button.element.focus();
+            await button.trigger("click");
+        };
+
+        await unblock(0);
+        await w.setProps({ blocked: list({ people: [ben, gone] }) });
+        expect(said()).toBe("Unblocked Sam Ortiz");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Ben Okafor");
+
+        await unblock(1);
+        await w.setProps({ blocked: list({ people: [ben] }) });
+        expect(said()).toBe("Unblocked Someone no longer in chat");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Ben Okafor");
+
+        await unblock(0);
+        await w.setProps({ blocked: list({ people: [] }) });
+        expect(said()).toBe("Unblocked Ben Okafor");
+        expect(document.activeElement).toBe(w.get("[data-testid='blocked-empty']").element);
+    });
+
+    test("an unblock refused leaves the row, says nothing and keeps focus on its button", async () => {
+        const w = mountSettings({ blocked: list() });
+        await nextTick();
+        const button = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']")[0];
+        button.element.focus();
+        await button.trigger("click");
+
+        await w.setProps({ blocked: list({ notes: { [sam.person_alias_guid]: { kind: "error", text: "Couldn't save." } } }) });
+
+        expect(plain(w.get("[data-testid='settings-announcement']").text())).toBe("");
+        expect(document.activeElement).toBe(button.element);
+    });
+
     test("an unblock still out holds its button, and a refused one shows its note on the row", () => {
         const w = mountSettings({ blocked: list({ busy: { [sam.person_alias_guid]: true }, notes: { [gone.person_alias_guid]: { kind: "error", text: "Couldn't save." } } }) });
 

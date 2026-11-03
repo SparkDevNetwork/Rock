@@ -378,6 +378,15 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * Finds what focus goes back to on close, for a dialog whose opener was gone before it
+         * opened, as a card or a menu closed to ask it; what it finds wins over what had focus.
+         */
+        returnFocus: {
+            type: Function as PropType<(() => HTMLElement | null) | null>,
+            default: null
         }
     });
 
@@ -481,8 +490,9 @@
      * leaving the dialog, not reaching for the opener, so its tooltip or card does not rise.
      */
     function returnFocus(): void {
-        if (opener && opener.isConnected) {
-            focusQuietly(opener, { preventScroll: true });
+        const target = props.returnFocus?.() ?? opener;
+        if (target && target.isConnected) {
+            focusQuietly(target, { preventScroll: true });
         }
         opener = null;
     }
