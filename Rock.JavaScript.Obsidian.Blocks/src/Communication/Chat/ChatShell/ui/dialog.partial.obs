@@ -320,7 +320,7 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, ref, watch } from "vue";
+    import { nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { focusQuietly } from "./tooltip.partial";
 
@@ -385,7 +385,7 @@
          * opened, as a card or a menu closed to ask it; what it finds wins over what had focus.
          */
         returnFocus: {
-            type: Function as PropType<(() => HTMLElement | null) | null>,
+            type: Function as PropType<() => HTMLElement | null>,
             default: null
         }
     });
