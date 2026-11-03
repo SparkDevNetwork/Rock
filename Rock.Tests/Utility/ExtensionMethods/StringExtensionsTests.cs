@@ -325,6 +325,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "https://rock.church.org/page/1" )]
         [DataRow( "https://app.partner.org/" )]                         // Wildcard subdomain.
         [DataRow( "%2Fpage%2F1" )]                                      // Encoded local path.
+        [DataRow( "https://rock.church.org/?returnUrl=%2Fpage%2F1" )]   // Encoded query value on an allowed host.
         [TestMethod]
         public void IsSafeRedirectUrl_SafeInput( string input )
         {
@@ -350,6 +351,7 @@ namespace Rock.Tests.Utility.ExtensionMethods
         [DataRow( "page/1" )]                                           // Relative path without a leading slash.
         [DataRow( "/page?x=<script>" )]                                 // Script injection in a local path.
         [DataRow( "https://rock.church.org/?q=<b>" )]                   // Script injection on an allowed host.
+        [DataRow( "https://rock.church.org%2F@unsafe.com" )]            // Only the decoded copy names an allowed host.
         [TestMethod]
         public void IsSafeRedirectUrl_UnsafeInput( string input )
         {
