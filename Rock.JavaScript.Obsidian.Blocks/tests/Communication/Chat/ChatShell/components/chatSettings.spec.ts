@@ -357,6 +357,41 @@ describe("Blocked people", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='blocked-empty']").element);
     });
 
+    test("two unblocks out at once are each said as they land, and focus moves only once its own row has gone", async () => {
+        const ben = { person_alias_guid: "a0000008-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+        const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
+        await nextTick();
+        const said = (): string => plain(w.get("[data-testid='settings-announcement']").text());
+        const buttons = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']");
+        buttons[0].element.focus();
+        await buttons[0].trigger("click");
+        buttons[1].element.focus();
+        await buttons[1].trigger("click");
+
+        await w.setProps({ blocked: list({ people: [ben, gone] }) });
+        expect(said()).toBe("Unblocked Sam Ortiz");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Ben Okafor");
+
+        await w.setProps({ blocked: list({ people: [gone] }) });
+        expect(said()).toBe("Unblocked Ben Okafor");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Someone no longer in chat");
+    });
+
+    test("two unblocks landing together are both said", async () => {
+        const ben = { person_alias_guid: "a0000008-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
+        const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
+        await nextTick();
+        const buttons = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']");
+        await buttons[0].trigger("click");
+        buttons[1].element.focus();
+        await buttons[1].trigger("click");
+
+        await w.setProps({ blocked: list({ people: [gone] }) });
+
+        expect(plain(w.get("[data-testid='settings-announcement']").text())).toBe("Unblocked Sam Ortiz. Unblocked Ben Okafor");
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Someone no longer in chat");
+    });
+
     test("an unblock refused leaves the row, says nothing and keeps focus on its button", async () => {
         const w = mountSettings({ blocked: list() });
         await nextTick();

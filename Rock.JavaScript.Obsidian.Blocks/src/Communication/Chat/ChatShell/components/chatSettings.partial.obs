@@ -82,7 +82,7 @@
                 </template>
             </SettingRow>
             <SettingRow v-else-if="blocked.people.length === 0" sub="You haven't blocked anyone." tabindex="-1" data-testid="blocked-empty" />
-            <SettingRow v-for="(person, index) in shownBlocked"
+            <SettingRow v-for="person in shownBlocked"
                         :key="person.person_alias_guid"
                         :title="blockedName(person)"
                         :note="blocked.notes[person.person_alias_guid.toLowerCase()] ?? null"
@@ -95,7 +95,7 @@
                         :aria-label="`Unblock ${blockedName(person)}`"
                         :disabled="!!blocked.busy[person.person_alias_guid.toLowerCase()]"
                         data-testid="blocked-unblock"
-                        @click="onUnblock(person, index)">Unblock</button>
+                        @click="onUnblock(person)">Unblock</button>
             </SettingRow>
         </SettingGroup>
 
@@ -344,8 +344,8 @@
     /** The Blocked people group, whose rows focus moves along as one leaves. */
     const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
 
-    /** The row whose Unblock was pressed, and where it stood, until it leaves the list or is refused. */
-    const unblocking = ref<{ guid: string, name: string, index: number } | null>(null);
+    /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
+    const unblocking = ref<Array<{ guid: string, name: string }>>([]);
 
     /** The last unblock that landed, said in the dialog's own words, keyed so the same words are read twice. */
     const unblockedSaid = ref<{ text: string, count: number } | null>(null);
@@ -397,8 +397,9 @@
         return nameOf(person) || unnamedBlocked;
     }
 
-    function onUnblock(person: ChatPerson, index: number): void {
-        unblocking.value = { guid: person.person_alias_guid.toLowerCase(), name: blockedName(person), index };
+    function onUnblock(person: ChatPerson): void {
+        const guid = person.person_alias_guid.toLowerCase();
+        unblocking.value = [...unblocking.value.filter(pressed => pressed.guid !== guid), { guid, name: blockedName(person) }];
         emit("unblock", person);
     }
 
@@ -413,30 +414,40 @@
     // Each opening reads only the news said from then on.
     watch(() => props.isOpen, isOpen => {
         announcedBefore.value = isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY;
-        unblocking.value = null;
+        unblocking.value = [];
         unblockedSaid.value = null;
     });
 
     // An unblock that lands takes its row, and the button focused with it, out of the list: it is
     // said, and focus goes to the row that took its place, else the one before, else the empty line,
-    // so a keyboard stays in the group. A refusal leaves the row with its note, and focus on it.
-    watch(() => [shownBlocked.value, unblocking.value ? props.blocked.notes[unblocking.value.guid] : null], () => {
-        const pressed = unblocking.value;
-        if (!pressed) {
-            return;
+    // so a keyboard stays in the group. Unblocks out at once are each said as they land, and focus
+    // moves only when it went with a row, so one landing never pulls it off a row still there. A
+    // refusal leaves the row with its note, and focus on it.
+    watch(() => [shownBlocked.value, unblocking.value.map(pressed => props.blocked.notes[pressed.guid])] as const, (_now, before) => {
+        const shown = new Set(shownBlocked.value.map(person => person.person_alias_guid.toLowerCase()));
+        const landed = unblocking.value.filter(pressed => !shown.has(pressed.guid));
+        const waiting = unblocking.value.filter(pressed => shown.has(pressed.guid) && !props.blocked.notes[pressed.guid]);
+        // set only when one has settled, since setting it asks this again
+        if (waiting.length !== unblocking.value.length) {
+            unblocking.value = waiting;
         }
-        if (shownBlocked.value.some(person => person.person_alias_guid.toLowerCase() === pressed.guid)) {
-            if (props.blocked.notes[pressed.guid]) {
-                unblocking.value = null;
-            }
+        if (landed.length === 0) {
             return;
         }
 
-        unblocking.value = null;
-        unblockedSaid.value = { text: `Unblocked ${pressed.name}`, count: (unblockedSaid.value?.count ?? 0) + 1 };
+        unblockedSaid.value = { text: landed.map(pressed => `Unblocked ${pressed.name}`).join(". "), count: (unblockedSaid.value?.count ?? 0) + 1 };
+        const active = document.activeElement;
+        if (active && active !== document.body && active.isConnected) {
+            return;
+        }
+
+        // where the row pressed last stood, among the rows still listed
+        const previous = (before?.[0] ?? []).map(person => person.person_alias_guid.toLowerCase());
+        const last = previous.indexOf(landed[landed.length - 1].guid);
+        const index = previous.slice(0, Math.max(0, last)).filter(guid => shown.has(guid)).length;
         const group = blockedGroup.value?.$el as HTMLElement | undefined;
         const buttons = group?.querySelectorAll<HTMLElement>("[data-testid='blocked-unblock']") ?? [];
-        const next = buttons[Math.min(pressed.index, buttons.length - 1)] ?? group?.querySelector<HTMLElement>("[data-testid='blocked-empty']");
+        const next = buttons[Math.min(index, buttons.length - 1)] ?? group?.querySelector<HTMLElement>("[data-testid='blocked-empty']");
         next?.focus();
     }, { flush: "post" });
 
