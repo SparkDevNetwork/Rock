@@ -31,7 +31,7 @@
 import { reactive } from "vue";
 import { inRoomKind, messageForError } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
-import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
+import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
 import { Timelines } from "./useHistory.partial";
@@ -80,6 +80,9 @@ export type ReactionsDependencies = {
 
     /** Where the recents are kept; absent or null where there is none. Either call may throw. */
     storage?: Pick<Storage, "getItem" | "setItem"> | null;
+
+    /** People who reacted as the reader may see them, applied to every list of reactors as it lands; as they came by default. */
+    maskFaces?: <T extends Reactor>(people: T[]) => T[];
 };
 
 /** What the reactions hold. */
@@ -756,7 +759,8 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
                 return null;
             }
 
-            return { reactors: page.reactors, has_more: page.has_more === true };
+            // a list read before a block lands after it with the faces it may show now
+            return { reactors: dependencies.maskFaces?.(page.reactors) ?? page.reactors, has_more: page.has_more === true };
         },
 
         stop: (): void => {

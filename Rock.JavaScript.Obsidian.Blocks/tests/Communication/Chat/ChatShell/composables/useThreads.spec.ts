@@ -64,6 +64,7 @@
 // thread_unread, as chat_messages_json now answers them.
 import { createThreads, unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -885,6 +886,29 @@ describe("a resync, as when the people blocked change", () => {
         expect(h.threads.state.thread?.hasMore).toBe(true);
     });
 
+    test("an older page asked again once the reread is out asks afresh, rather than waiting on the one the reread drops", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1), reply(3, 1)], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        const older = deferred<CallResult>();
+        const reread = deferred<CallResult>();
+        const again = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [older, reread, again];
+
+        const first = h.threads.loadOlderReplies();
+        await settle();
+        h.threads.resync();
+        await settle();
+        const second = h.threads.loadOlderReplies();
+        older.resolve(threadAnswer(root(1), [reply(2, 1)], { has_more: true }));
+        again.resolve(threadAnswer(root(1), [reply(2, 1)], { has_more: false }));
+        await Promise.all([first, second]);
+
+        expect(h.callsTo("chat_get_thread_history").length).toBe(4);
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([2, 3, 4]);
+        expect(h.threads.state.thread?.hasMore).toBe(false);
+    });
+
     test("a page still on its way when the resync asks lands first, and the resync's is laid over it", async () => {
         const h = await setup();
         const first = deferred<CallResult>();
@@ -1391,5 +1415,122 @@ describe("a reply carrying a send's key, as it reaches the open thread", () => {
 
         expect(threads.state.thread?.replies.map(r => r.id)).toEqual([43]);
         expect(landed).toEqual([43, 43]);
+    });
+});
+
+describe("a block, as what the threads hold is masked where it is written", () => {
+    /** Threads over a fake call path, masked through the blocks as the shell wires them. */
+    function maskedThreads(): {
+        threads: ReturnType<typeof createThreads>,
+        blocks: ReturnType<typeof createBlocks>,
+        answers: Record<string, Array<CallResult | Deferred<CallResult>>>
+    } {
+        const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        // eslint-disable-next-line prefer-const
+        let blocks: ReturnType<typeof createBlocks>;
+        const threads = createThreads({
+            limits: threadLimits,
+            call: name => {
+                const next = answers[name]?.shift();
+                if (!next) {
+                    return Promise.resolve({ ok: true, data: {} } as CallResult);
+                }
+                return "promise" in next ? next.promise : Promise.resolve(next);
+            },
+            timelines,
+            personAliasGuid: me,
+            catchUp: () => ({ page: 19, max: 40 }),
+            mask: m => blocks.mask(m)
+        });
+        blocks = createBlocks({
+            call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
+            onChanged: () => undefined,
+            remask: () => threads.remask(),
+            notify: () => undefined
+        });
+        blocks.setAliases([]);
+        return { threads, blocks, answers };
+    }
+
+    const benSaid = (messages: TimelineMessage[]): unknown[] => messages.filter(m => m.person_alias_guid === ben).map(m => m.body ?? m.sender_nick_name ?? null);
+
+    test("a reread whose pages were read before the block and land after it shows none of his words", async () => {
+        const h = maskedThreads();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1, { person_alias_guid: ben })])];
+        await h.threads.openThread(channel, 1);
+        const reread = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [reread];
+
+        h.threads.resync();
+        await settle();
+        h.blocks.setAliases([ben]);
+        reread.resolve(threadAnswer(root(1, { repliers: [benReplier, annaReplier] }), [reply(3, 1), reply(2, 1, { person_alias_guid: ben, body: "words" })]));
+        await settle();
+
+        const thread = h.threads.state.thread;
+        expect(benSaid(thread?.replies ?? [])).toEqual([null]);
+        expect(thread?.root?.repliers?.[0]).toEqual({ ...benReplier, nick_name: null, last_name: null, avatar_url: null });
+    });
+
+    test("an older page asked before the block lands collapsed, kept in place", async () => {
+        const h = maskedThreads();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1)], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        const older = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [older];
+
+        const loading = h.threads.loadOlderReplies();
+        h.blocks.setAliases([ben]);
+        older.resolve(threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben, body: "words" })], { has_more: false }));
+        await loading;
+
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([2, 4]);
+        expect(h.threads.state.thread?.replies[0]).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
+    });
+
+    test("the counts that arrived while the drawer's page was on its way lay blank faces on the root written after a block", async () => {
+        const h = maskedThreads();
+        const first = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [first];
+        const opening = h.threads.openThread(channel, 1);
+        h.threads.applyEvent(channel, "thread.updated", threadUpdated(1, [benReplier], 3));
+
+        h.blocks.setAliases([ben]);
+        first.resolve(threadAnswer(root(1), [reply(2, 1)]));
+        await opening;
+
+        expect(h.threads.state.thread?.root?.repliers).toEqual([{ ...benReplier, nick_name: null, last_name: null, avatar_url: null }]);
+    });
+
+    test("what is held, the drawer's root and replies and the list's roots, is masked in place at the block, the same objects", async () => {
+        const h = maskedThreads();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben })])];
+        h.answers["chat_list_threads"] = [listAnswer([listRow(5, { root: root(5, { person_alias_guid: ben }) })])];
+        await h.threads.openThread(channel, 1);
+        await h.threads.openList(channel);
+        const heldReply = h.threads.state.thread?.replies[0];
+        const heldRoot = h.threads.state.list.rows[0].root;
+
+        h.blocks.setAliases([ben]);
+
+        expect(h.threads.state.thread?.replies[0]).toBe(heldReply);
+        expect(heldReply).toMatchObject({ blocked: true, body: null });
+        expect(h.threads.state.list.rows[0].root).toBe(heldRoot);
+        expect(heldRoot).toMatchObject({ blocked: true, body: null });
+        expect(h.threads.state.thread?.root?.repliers?.[1]).toEqual({ ...benReplier, nick_name: null, last_name: null, avatar_url: null });
+    });
+
+    test("a list page asked before the block lands with his roots collapsed", async () => {
+        const h = maskedThreads();
+        const list = deferred<CallResult>();
+        h.answers["chat_list_threads"] = [list];
+
+        const opening = h.threads.openList(channel);
+        h.blocks.setAliases([ben]);
+        list.resolve(listAnswer([listRow(5, { root: root(5, { person_alias_guid: ben }) })]));
+        await opening;
+
+        expect(h.threads.state.list.rows[0].root).toMatchObject({ blocked: true, body: null });
     });
 });

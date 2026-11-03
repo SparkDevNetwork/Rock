@@ -644,7 +644,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // A reaction moves the conversation's copy of its message when the timeline lets it
         // through, held like any other change until the channel's first page is in; the open
         // thread's copies are moved as the event arrives.
-        applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload)
+        applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload),
+        // every holder writes through the blocks' mask, made below and called only once running
+        mask: message => blocks.mask(message),
+        maskEvent: (event, payload) => blocks.maskEvent(event, payload)
     });
 
     // A reload asked while a rejoin's wait is pending is the one that wait will make. A failed
@@ -699,7 +702,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
         onLanded: message => sender.landed(message),
-        isOffline: () => state.connection !== null
+        isOffline: () => state.connection !== null,
+        mask: message => blocks.mask(message)
     });
 
     /**
@@ -718,7 +722,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         roomKind: roomKindOf,
         notify: notice => options.notify?.(notice),
         // the clipboard is only there on a secure page; without it copy says it isn't available
-        writeText: globalThis.navigator?.clipboard ? text => globalThis.navigator.clipboard.writeText(text) : undefined
+        writeText: globalThis.navigator?.clipboard ? text => globalThis.navigator.clipboard.writeText(text) : undefined,
+        mask: message => blocks.mask(message)
     });
 
     // The favorites come with the sidebar, after the reactions are made, so the list is filled in place.
@@ -733,7 +738,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice),
         favorites,
         churchKey: tenantId,
-        storage: options.storage
+        storage: options.storage,
+        maskFaces: people => blocks.maskFaces(people)
     });
 
     const mentions = createMentions({
@@ -752,7 +758,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         readCursor: channelId => channels.rows.find(row => row.channel_id === channelId)?.read_cursor ?? null,
         landInConversation: async (channelId, messageId) => options.mentionViews?.landInConversation(channelId, messageId) ?? "stop",
         openThread: async (channelId, rootId, messageId) => options.mentionViews?.openThread(channelId, rootId, messageId),
-        toast: notice => options.notify?.(notice)
+        toast: notice => options.notify?.(notice),
+        mask: message => blocks.mask(message)
     });
 
     /** One room's facts, read when it opens and again on its membership change. */
@@ -838,12 +845,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice)
     });
 
-    // A change to whom the person blocked changes what every page shows them, so everything on
-    // screen, read through the old set, is read again. A change named by a sidebar answer comes
-    // in the newest sidebar there is, so that read is the sidebar step rather than another.
+    // A change to whom the person blocked is masked in place by every holder at once; what the
+    // client cannot mask itself, and what an unblock gives back, is read again. A change named by
+    // a sidebar answer comes in the newest sidebar there is, so that read is the sidebar step
+    // rather than another.
     const blocks = createBlocks({
         call,
-        onChanged: isInSidebarAnswer => resync(isInSidebarAnswer ? sidebarRead : null),
+        onChanged: (isInSidebarAnswer, removed) => {
+            if (removed.length > 0) {
+                timelines.release(removed, state.activeChannelId);
+            }
+            resync(isInSidebarAnswer ? sidebarRead : null);
+        },
+        remask,
         notify: notice => options.notify?.(notice)
     });
 
@@ -1016,7 +1030,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
         limits: () => session.settings().limits,
         report,
-        holdText: (channelId, text) => drafts.append(quoteKey(channelId), text)
+        holdText: (channelId, text) => drafts.append(quoteKey(channelId), text),
+        mask: message => blocks.mask(message)
     });
 
     // A sidebar read is a snapshot taken some time after it is asked for, so only the newest asked
@@ -1245,6 +1260,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 .then(() => state.activeChannelId === channelId ? timelines.onJoined(channelId) : undefined)
                 .catch(error => report(classifyPlatformError(error)));
         }
+    }
+
+    /**
+     * The people blocked gained someone: every holder of messages masks again what it holds, in
+     * place, before anything else runs. The same holders resync reads again, beside it, so a
+     * holder added to one is added to the other.
+     */
+    function remask(): void {
+        timelines.remask();
+        threads.remask();
+        mentions.remask();
+        directMessages.remask();
+        messageActions.remask();
     }
 
     const storageKey = rememberedChannelKey(tenantId, personAliasGuid);

@@ -28,7 +28,7 @@
 // is dropped. A failed page is tried again with randomised, growing waits, and the channel says it
 // is behind meanwhile. A socket gone for hours can miss more than is worth paging through, so past
 // a bound the channel is opened fresh at its newest page.
-import { reactive } from "vue";
+import { reactive, toRaw } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
@@ -111,20 +111,69 @@ export const blockedSentence = "Message from someone you blocked";
  * @returns The message withheld and marked blocked.
  */
 export function blockedCopy<T extends Partial<TimelineMessage>>(message: T): T {
-    return {
-        ...message,
-        sender_nick_name: null,
-        sender_last_name: null,
-        sender_avatar_url: null,
-        body: null,
-        pieces: null,
-        blocks: null,
-        attachments: null,
-        metadata: null,
-        actions: null,
-        quoted: null,
-        blocked: true
-    };
+    const copy: Record<string, unknown> = { ...message, blocked: true };
+    for (const field of withheldFields) {
+        copy[field] = null;
+    }
+    return copy as T;
+}
+
+/** What a message by someone the reader blocked withholds, the one list every copy is read by. */
+const withheldFields = ["sender_nick_name", "sender_last_name", "sender_avatar_url", "body", "pieces", "blocks", "attachments", "metadata", "actions", "quoted"] as const;
+
+/** Every field a mask can change on a message: what it withholds, its mark, and the faces it carries. */
+const maskedFields: readonly string[] = [...withheldFields, "blocked", "repliers", "reactions"];
+
+/**
+ * Whether a message is already withheld as blockedCopy makes it, so masking it again writes
+ * nothing and wakes nothing that draws it.
+ *
+ * @param message The message as it is held.
+ *
+ * @returns True when it is marked blocked and every withheld field is empty.
+ */
+export function isWithheld(message: Partial<TimelineMessage>): boolean {
+    return message.blocked === true && withheldFields.every(field => message[field] === null || message[field] === undefined);
+}
+
+/**
+ * Turns a message into what the reader may see under the people they blocked, as they stand when
+ * it is written: the same object when nothing applies. Every holder of messages writes through
+ * one, so an answer read before a block is masked by the set that holds when it lands.
+ */
+export type MessageMask = <T extends Partial<TimelineMessage>>(message: T) => T;
+
+/**
+ * The mask of a holder given none: a copy the platform withheld stays withheld, whatever is laid
+ * over it, and anything else is as it came.
+ */
+export const platformMask: MessageMask = message => message.blocked && !isWithheld(message) ? blockedCopy(message) : message;
+
+/**
+ * Masks again the messages a holder keeps, writing on each row object itself rather than putting
+ * a copy in its place, so a quote waiting in a composer, a drawer or an open sheet holding the row
+ * shows the change too. The rows are read raw and only a row the mask changes is written, through
+ * its reactive copy, so a room with nothing to withhold costs a walk and wakes nothing.
+ *
+ * @param messages The rows held.
+ * @param mask The mask as the set now stands.
+ */
+export function maskHeld(messages: readonly Partial<TimelineMessage>[], mask: MessageMask): void {
+    for (const held of toRaw(messages)) {
+        const row = toRaw(held);
+        const masked = mask(row) as Record<string, unknown>;
+        if (masked === row) {
+            continue;
+        }
+        // only the fields the mask changed go through the reactive copy, which wakes what draws them
+        const shown = reactive(row) as Record<string, unknown>;
+        const raw = row as Record<string, unknown>;
+        for (const key of maskedFields) {
+            if (masked[key] !== raw[key]) {
+                shown[key] = masked[key];
+            }
+        }
+    }
 }
 
 /** A mention token as a person types it: a person's alias guid, or the whole room, in any case. */
@@ -279,6 +328,15 @@ export type TimelineDependencies = {
      * change until the channel's first page is in.
      */
     applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+
+    /** What the reader may see of a message, applied to every row as it is written; the platform's own marks alone by default. */
+    mask?: MessageMask;
+
+    /**
+     * A live event as the reader may see it, applied again when an event held for the first page
+     * is laid over it, since the people blocked may have changed while it waited.
+     */
+    maskEvent?: (event: string, payload: unknown) => unknown;
 };
 
 /** The timelines a shell holds. */
@@ -309,6 +367,16 @@ export type Timelines = {
 
     /** The root whose thread is open on screen, which every page shows read while it stays open; null once none is. */
     keepThreadRead: (rootId: number | null) => void;
+
+    /** The people blocked gained someone: every row of every room held is masked again, in place. */
+    remask: () => void;
+
+    /**
+     * The people blocked lost these aliases, whose withheld rows only a read gives back. The open
+     * room's next catch-up reads again from the oldest of them, so the reader keeps their place; a
+     * room not on screen lets go of what is held past the catch-up bound, read again at its next open.
+     */
+    release: (aliases: readonly string[], openChannelId: string | null) => void;
 
     /** The channel is no longer open: its catch-up stops and any answer on its way is dropped. */
     leave: (channelId: string) => void;
@@ -451,6 +519,9 @@ type ChannelSync = {
      * a second ask for the same page, the button's and the top of the feed's, ends with it.
      */
     olderLoad: { beforeId: number, epoch: number, done: Promise<void> } | null;
+
+    /** The oldest message an unblock left withheld, which the next catch-up reads again from; null for none. */
+    rereadFrom: number | null;
 };
 
 /**
@@ -466,6 +537,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     const held = new Map<string, Array<{ event: string, payload: unknown, heldAt: number }>>();
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
+    const mask = dependencies.mask ?? platformMask;
 
     // One counter for every page read and every live change, across channels, so each can be told
     // apart in time: a page read before a change, or before another page, must not undo it.
@@ -506,24 +578,27 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null, rereadFrom: null };
             syncs.set(channelId, channelSync);
         }
 
         return channelSync;
     }
 
-    /** Puts one message in place by id. */
+    /**
+     * Puts one message in place by id, masked as the people blocked now stand. The mask reads what
+     * is combined, so a field the newer copy does not carry, kept from what is held, is masked too.
+     */
     function upsert(channelId: string, arrived: TimelineMessage): void {
         const message = withSendKey(arrived);
         const messages = state(channelId).messages;
         const index = positionOf(messages, message.id);
 
         if (index < messages.length && messages[index].id === message.id) {
-            messages[index] = combine(messages[index], message);
+            messages[index] = mask(combine(messages[index], message));
         }
         else {
-            messages.splice(index, 0, message);
+            messages.splice(index, 0, mask(message));
         }
 
         // Every way a message comes in passes here, so whichever copy of a send lands first is
@@ -558,11 +633,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     incoming.deleted_at = message.deleted_at;
                 }
             }
-            if (incoming.blocked) {
-                // a live edit laid over a page never brings back what the page withheld
-                incoming = blockedCopy(incoming);
-            }
-            else if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
+            // a live edit laid over a page the platform withheld is withheld again by upsert's mask
+            if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
                 incoming = { ...incoming, body: null, pieces: null, blocks: null, attachments: null, metadata: null };
             }
             if (incoming.id === openThreadRootId && incoming.thread_unread === true) {
@@ -769,6 +841,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let afterId = isRejoin && settled.length > 0
             ? settled[Math.max(0, settled.length - max)].id - 1
             : verified;
+        // an unblock reads again every row it left withheld, however far back the reader is
+        if (channelSync.rereadFrom !== null) {
+            afterId = Math.min(afterId, channelSync.rereadFrom - 1);
+            channelSync.rereadFrom = null;
+        }
         let fetched = 0;
         let attempt = 0;
 
@@ -904,7 +981,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                         if (isReactionEvent(event) && heldAt < answer.readAt) {
                             continue;
                         }
-                        apply(channelId, event, payload);
+                        apply(channelId, event, dependencies.maskEvent?.(event, payload) ?? payload);
                     }
                 }
             }
@@ -1008,6 +1085,39 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         keepThreadRead: (rootId: number | null): void => {
             openThreadRootId = rootId;
+        },
+
+        remask: (): void => {
+            for (const timeline of states.values()) {
+                maskHeld(timeline.messages, mask);
+            }
+        },
+
+        release: (aliases: readonly string[], openChannelId: string | null): void => {
+            const released = new Set(aliases.map(alias => alias.toLowerCase()));
+            const isReleased = (alias: string | null | undefined): boolean => !!alias && released.has(alias.toLowerCase());
+            const max = (dependencies.catchUp?.() ?? defaultCatchUp).max;
+
+            for (const [channelId, timeline] of states) {
+                const messages = toRaw(timeline.messages);
+                const oldest = messages.findIndex(m => (m.blocked && isReleased(m.person_alias_guid)) || (m.quoted?.blocked && isReleased(m.quoted.person_alias_guid)));
+                if (oldest < 0) {
+                    continue;
+                }
+                if (channelId === openChannelId) {
+                    const channelSync = sync(channelId);
+                    channelSync.rereadFrom = Math.min(channelSync.rereadFrom ?? Infinity, messages[oldest].id);
+                    continue;
+                }
+
+                // what a catch-up from the bound would not reach is let go, and read again by scrolling
+                const settled = positionOf(messages, (timeline.verifiedThrough ?? 0) + 1);
+                const beyond = settled - max;
+                if (oldest < beyond) {
+                    timeline.messages.splice(0, beyond);
+                    timeline.hasMore = true;
+                }
+            }
         },
 
         leave,

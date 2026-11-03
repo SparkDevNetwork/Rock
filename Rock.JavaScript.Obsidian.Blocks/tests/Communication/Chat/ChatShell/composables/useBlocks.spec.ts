@@ -22,7 +22,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { blockSentence, createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
-import { ChatPerson, MessageCreatedEvent } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { ChatPerson, MessageCreatedEvent, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const sam = "a0000005-0000-4000-8000-000000000000";
 const samOther = "a0000015-0000-4000-8000-000000000000";
@@ -32,6 +32,12 @@ const channel = "c0000001-0000-4000-8000-000000000000";
 const samPerson: ChatPerson = { person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: "https://example.org/sam.jpg" };
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
+
+async function settle(): Promise<void> {
+    for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+    }
+}
 
 function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
@@ -63,19 +69,34 @@ function created(extra: Partial<MessageCreatedEvent> = {}): MessageCreatedEvent 
     };
 }
 
-function build(answers: CallResult[] = []): { blocks: ReturnType<typeof createBlocks>, calls: Array<{ name: string, args: Record<string, unknown> }>, changes: { count: number }, notices: string[] } {
+function build(answers: CallResult[] = []): {
+    blocks: ReturnType<typeof createBlocks>,
+    calls: Array<{ name: string, args: Record<string, unknown> }>,
+    changes: { count: number },
+    notices: string[],
+    order: string[],
+    removed: string[][]
+} {
     const calls: Array<{ name: string, args: Record<string, unknown> }> = [];
     const changes = { count: 0 };
     const notices: string[] = [];
+    // what the blocks asked of the shell, in order: what is held masked again, or read again
+    const order: string[] = [];
+    const removed: string[][] = [];
     const blocks = createBlocks({
         call: async (name, args) => {
             calls.push({ name, args });
             return answers.shift() ?? { ok: true, data: { people: [], blocked_aliases: [] } };
         },
-        onChanged: () => changes.count++,
+        onChanged: (_isInSidebarAnswer, aliases) => {
+            changes.count++;
+            order.push("onChanged");
+            removed.push([...(aliases ?? [])]);
+        },
+        remask: () => order.push("remask"),
         notify: notice => notices.push(notice.text)
     });
-    return { blocks, calls, changes, notices };
+    return { blocks, calls, changes, notices, order, removed };
 }
 
 const refusal: CallResult = { ok: false, status: 400, error: { code: "rpc.block_limit", severity: "failed", text: "You've blocked as many people as chat allows. Unblock someone to block another." }, retryAfterSeconds: null };
@@ -102,17 +123,18 @@ describe("the blocked set", () => {
         expect(changes.count).toBe(2);
     });
 
-    test("a live message let through before the first set is known asks for a reread once that set names someone", () => {
-        const { blocks, changes } = build();
+    test("a live message let through before the first set is known is masked in place once that set names someone, with nothing read again", () => {
+        const { blocks, changes, order } = build();
 
         // the room's live copy arrives before the sidebar has said who is blocked
         expect(blocks.maskEvent("message.created", created())).toMatchObject({ body: "hello" });
         blocks.setAliases([sam]);
 
-        expect(changes.count).toBe(1);
+        expect(order).toEqual(["remask"]);
+        expect(changes.count).toBe(0);
     });
 
-    test("a first set naming nobody, or one taken before any live event, asks nothing even after events", () => {
+    test("a first set naming nobody, or one taken before any live event, asks nothing read again even after events", () => {
         const empty = build();
         empty.blocks.maskEvent("reaction.added", { reactors: [] });
         empty.blocks.setAliases([]);
@@ -122,7 +144,21 @@ describe("the blocked set", () => {
         early.blocks.maskEvent("message.created", created());
 
         expect(empty.changes.count).toBe(0);
+        expect(empty.order).toEqual([]);
         expect(early.changes.count).toBe(0);
+        expect(early.order).toEqual(["remask"]);
+    });
+
+    test("a later addition masks what is held at once, then asks the rest read again; a removal alone only asks it read again, naming who", () => {
+        const { blocks, order, removed } = build();
+        blocks.setAliases([]);
+
+        blocks.setAliases([sam, samOther]);
+        expect(order).toEqual(["remask", "onChanged"]);
+
+        blocks.setAliases([sam]);
+        expect(order).toEqual(["remask", "onChanged", "onChanged"]);
+        expect(removed.at(-1)).toEqual([samOther]);
     });
 
     test("an answer with no set, as an older platform's sidebar, leaves the set as it was", () => {
@@ -225,6 +261,193 @@ describe("live events", () => {
     });
 });
 
+describe("a message as the person may see it", () => {
+    const samFace = { person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: "https://example.org/sam.jpg" };
+    const adaFace = { person_alias_guid: ada, nick_name: "Ada", last_name: "Lane", avatar_url: null };
+    const mention = (guid: string, name: string): Record<string, unknown> => ({ type: "mention", text: `@${name}`, person_alias_guid: guid, nick_name: name, last_name: "X", avatar_url: "https://example.org/face.jpg" });
+
+    /** Ada's held message: quoting Sam, mentioning Sam, replied to and reacted to by Sam. */
+    function adaMessage(): TimelineMessage {
+        return {
+            id: 8, person_alias_guid: ada, sender_nick_name: "Ada", sender_last_name: "Lane", message_type: "text", body: "hi", created_at: "2026-11-03T10:00:00Z",
+            pieces: [{ type: "text", text: "hi " }, mention(sam, "Sam"), mention(ada, "Ada")],
+            quoted: { id: 3, person_alias_guid: sam, sender_nick_name: "Sam", sender_last_name: "Ortiz", sender_avatar_url: "x", body: "secret", pieces: null, attachments: null, created_at: "2026-11-03T09:00:00Z" },
+            repliers: [samFace, adaFace],
+            reactions: [{ code: "heart", count: 2, mine: false, emoji: null, image_url: null, label: "heart", reactors: [{ ...samFace, reactor_person_alias_guid: samOther, reacted_at: "t" }, { ...adaFace, reactor_person_alias_guid: ada, reacted_at: "t" }] }]
+        } as TimelineMessage;
+    }
+
+    test("a message by someone in the set is withheld, its id, time and counts kept", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+
+        const shown = blocks.mask({ ...adaMessage(), id: 9, person_alias_guid: sam, sender_nick_name: "Sam", body: "secret", reply_count: 2 }) as unknown as Record<string, unknown>;
+
+        expect(shown).toMatchObject({ id: 9, reply_count: 2, blocked: true });
+        for (const field of ["body", "pieces", "blocks", "attachments", "metadata", "actions", "quoted", "sender_nick_name", "sender_last_name", "sender_avatar_url"]) {
+            expect(shown[field]).toBeNull();
+        }
+    });
+
+    test("someone else's message keeps its words and loses the face of someone in the set: the quote, the mention chip, the repliers and the chips' reactors", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam, samOther]);
+
+        const shown = blocks.mask(adaMessage());
+
+        expect(shown.body).toBe("hi");
+        expect(shown.quoted).toMatchObject({ id: 3, body: null, pieces: null, sender_nick_name: null, sender_last_name: null, sender_avatar_url: null, blocked: true });
+        expect(shown.pieces?.[1]).toEqual({ type: "mention", text: "@Sam", person_alias_guid: sam, nick_name: null, last_name: null, avatar_url: null });
+        expect(shown.pieces?.[2]).toEqual(adaMessage().pieces?.[2]);
+        expect(shown.repliers).toEqual([{ ...samFace, nick_name: null, last_name: null, avatar_url: null }, adaFace]);
+        expect(shown.reactions?.[0].reactors?.[0]).toMatchObject({ reactor_person_alias_guid: samOther, nick_name: null, last_name: null, avatar_url: null });
+        expect(shown.reactions?.[0].reactors?.[1]).toMatchObject(adaFace);
+        expect(shown.reactions?.[0].count).toBe(2);
+    });
+
+    test("a quote's own mention chip of someone in the set loses its face too", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+        const message = { ...adaMessage(), quoted: { id: 3, person_alias_guid: ada, sender_nick_name: "Ada", body: "hey Sam", pieces: [mention(sam, "Sam")], attachments: null, created_at: "t" } } as TimelineMessage;
+
+        const shown = blocks.mask(message);
+
+        expect(shown.quoted).toMatchObject({ body: "hey Sam", sender_nick_name: "Ada" });
+        expect(shown.quoted?.pieces?.[0]).toMatchObject({ text: "@Sam", nick_name: null, avatar_url: null });
+    });
+
+    test("a live message from someone else mentioning a person in the set draws no face in the chip", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+
+        const shown = blocks.maskEvent("message.created", created({ person_alias_guid: ada, pieces: [mention(sam, "Sam")] as never })) as MessageCreatedEvent;
+
+        expect(shown.pieces?.[0]).toMatchObject({ text: "@Sam", nick_name: null, last_name: null, avatar_url: null });
+    });
+
+    test("a copy the platform withheld is kept withheld, every field it withholds emptied, even for an alias the set does not name", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+
+        const shown = blocks.mask({ ...adaMessage(), id: 9, person_alias_guid: samOther, body: "laid over", blocked: true });
+
+        expect(shown).toMatchObject({ blocked: true, body: null, pieces: null, quoted: null, sender_nick_name: null });
+    });
+
+    test("the same object comes back when nothing applies, when it is already withheld, and when its faces are already blank, so nothing is written again", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+        const plain = { ...adaMessage(), quoted: null, pieces: null, repliers: [adaFace], reactions: [] } as TimelineMessage;
+        const withheld = blocks.mask({ ...adaMessage(), person_alias_guid: sam });
+        const blanked = blocks.mask(adaMessage());
+
+        expect(blocks.mask(plain)).toBe(plain);
+        expect(blocks.mask(withheld)).toBe(withheld);
+        expect(blocks.mask(blanked)).toBe(blanked);
+        expect(blocks.mask(blocks.mask(adaMessage()))).toEqual(blocks.mask(adaMessage()));
+    });
+
+    test("a system line is never withheld", () => {
+        const { blocks } = build();
+        blocks.setAliases([sam]);
+        const line = { ...adaMessage(), person_alias_guid: sam, message_type: "system", quoted: null, pieces: null, repliers: null, reactions: [] } as TimelineMessage;
+
+        expect(blocks.mask(line)).toBe(line);
+    });
+});
+
+describe("a copy withheld for someone the set does not name", () => {
+    const withheldBy = (guid: string): TimelineMessage => ({ id: 9, person_alias_guid: guid, message_type: "text", body: null, created_at: "t", blocked: true } as TimelineMessage);
+
+    test("reads the list first, then asks once what is held read again for that person, after the write", async () => {
+        const { blocks, calls, order, removed } = build([{ ok: true, data: { people: [], blocked_aliases: [] } }]);
+        blocks.setAliases([]);
+
+        blocks.mask(withheldBy(sam.toUpperCase()));
+        expect(calls).toEqual([]);
+        await settle();
+
+        expect(calls.map(c => c.name)).toEqual(["chat_list_blocks"]);
+        expect(order).toEqual(["onChanged"]);
+        expect(removed).toEqual([[sam]]);
+    });
+
+    test("asks nothing more for a second such copy until the set changes", async () => {
+        const { blocks, calls, changes } = build();
+        blocks.setAliases([]);
+        blocks.mask(withheldBy(sam));
+        await settle();
+
+        blocks.mask(withheldBy(sam));
+        blocks.mask({ ...withheldBy(ada), id: 10 });
+        await settle();
+        expect(calls.length).toBe(1);
+        expect(changes.count).toBe(1);
+
+        blocks.setAliases([ada]);
+        blocks.setAliases([]);
+        await settle();
+        blocks.mask(withheldBy(sam));
+        await settle();
+        expect(calls.length).toBe(2);
+    });
+
+    test("a quote withheld for someone the set does not name heals as a row does", async () => {
+        const { blocks, removed } = build();
+        blocks.setAliases([]);
+
+        blocks.mask({ id: 8, person_alias_guid: ada, message_type: "text", body: "hi", created_at: "t", quoted: { id: 3, person_alias_guid: sam, body: null, created_at: "t", blocked: true } } as TimelineMessage);
+        await settle();
+
+        expect(removed).toEqual([[sam]]);
+    });
+
+    test("when the list read names someone new, that change is the heal, and nothing more is asked", async () => {
+        const { blocks, order } = build([{ ok: true, data: { people: [], blocked_aliases: [sam] } }]);
+        blocks.setAliases([]);
+
+        blocks.mask(withheldBy(sam));
+        await settle();
+
+        expect(order).toEqual(["remask", "onChanged"]);
+        expect(blocks.isBlocked(sam)).toBe(true);
+    });
+
+    test("asks nothing for a copy of someone the set names, nor once stopped", async () => {
+        const named = build();
+        named.blocks.setAliases([sam]);
+        named.blocks.mask(withheldBy(sam));
+        const stopped = build();
+        stopped.blocks.setAliases([]);
+        stopped.blocks.mask(withheldBy(sam));
+        stopped.blocks.stop();
+        await settle();
+
+        expect(named.calls).toEqual([]);
+        expect(stopped.calls).toEqual([]);
+        expect(stopped.changes.count).toBe(0);
+    });
+
+    test("one seen before the first set heals once that set lands not naming its person, and not when it does", async () => {
+        // the list read the heal asks names the same set, so the copy is out of date
+        const unnamed = build([{ ok: true, data: { people: [], blocked_aliases: [ada] } }]);
+        unnamed.blocks.mask(withheldBy(sam));
+        await settle();
+        expect(unnamed.calls).toEqual([]);
+        unnamed.blocks.setAliases([ada]);
+        await settle();
+
+        const named = build();
+        named.blocks.mask(withheldBy(sam));
+        named.blocks.setAliases([sam]);
+        await settle();
+
+        expect(unnamed.calls.map(c => c.name)).toEqual(["chat_list_blocks"]);
+        expect(unnamed.removed).toEqual([[sam]]);
+        expect(named.calls).toEqual([]);
+    });
+});
+
 describe("block and unblock", () => {
     test("Block asks the one sentence first and calls nothing until it is confirmed", async () => {
         const { blocks, calls } = build();
@@ -290,7 +513,7 @@ describe("block and unblock", () => {
         const calls: string[] = [];
         const blocks = createBlocks({ call: (name) => {
             calls.push(name); return answer.promise;
-        }, onChanged: () => undefined, notify: () => undefined });
+        }, onChanged: () => undefined, remask: () => undefined, notify: () => undefined });
 
         const first = blocks.unblock(samPerson, true);
         expect(blocks.state.busy[sam]).toBe(true);
@@ -306,7 +529,7 @@ describe("block and unblock", () => {
         const list = deferred<CallResult>();
         const unblocked = deferred<CallResult>();
         const answers = [list.promise, unblocked.promise];
-        const blocks = createBlocks({ call: () => answers.shift() as Promise<CallResult>, onChanged: () => undefined, notify: () => undefined });
+        const blocks = createBlocks({ call: () => answers.shift() as Promise<CallResult>, onChanged: () => undefined, remask: () => undefined, notify: () => undefined });
         blocks.setAliases([sam]);
 
         const loading = blocks.load();
@@ -338,7 +561,7 @@ describe("block and unblock", () => {
         const answers = [list.promise, blocked.promise, unblocked.promise];
         const changes = { count: 0 };
         const notices: string[] = [];
-        const blocks = createBlocks({ call: () => answers.shift() as Promise<CallResult>, onChanged: () => changes.count++, notify: notice => notices.push(notice.text) });
+        const blocks = createBlocks({ call: () => answers.shift() as Promise<CallResult>, onChanged: () => changes.count++, remask: () => undefined, notify: notice => notices.push(notice.text) });
         blocks.setAliases([]);
 
         const loading = blocks.load();

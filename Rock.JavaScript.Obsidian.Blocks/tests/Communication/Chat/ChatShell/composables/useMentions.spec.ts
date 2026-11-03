@@ -76,6 +76,7 @@
 import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 
 // #region Fixtures
 
@@ -1341,5 +1342,85 @@ describe("channel.read from another device", () => {
         h.mentions.applyPersonalEvent("channel.read", { channel_id: channel, read_cursor: 50, last_message_id: 50, id: "5e000006-0000-4000-8000-000000000000" });
 
         expect(h.mentions.state.hasDot).toBe(false);
+    });
+});
+
+describe("a block, as the inbox holds no mention by the person blocked", () => {
+    /** Mentions over a fake call path, masked through the blocks as the shell wires them. */
+    function maskedMentions(): { mentions: ReturnType<typeof createMentions>, blocks: ReturnType<typeof createBlocks>, answers: Record<string, Array<CallResult | Deferred<CallResult>>> } {
+        const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
+        // eslint-disable-next-line prefer-const
+        let blocks: ReturnType<typeof createBlocks>;
+        const mentions = createMentions({
+            limits: mentionLimits,
+            call: name => {
+                const next = answers[name]?.shift();
+                if (!next) {
+                    return Promise.resolve({ ok: true, data: {} });
+                }
+                return "promise" in next ? next.promise : Promise.resolve(next);
+            },
+            tenantId: tenant,
+            personAliasGuid: me,
+            storage: () => memoryStorage(),
+            readCursor: () => null,
+            landInConversation: async () => "held",
+            openThread: async () => undefined,
+            toast: () => undefined,
+            mask: m => blocks.mask(m)
+        });
+        blocks = createBlocks({
+            call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
+            onChanged: () => undefined,
+            remask: () => mentions.remask(),
+            notify: () => undefined
+        });
+        blocks.setAliases([]);
+        return { mentions, blocks, answers };
+    }
+
+    /** Ben's mention of the reader, as a read made before the block carries it. */
+    function benRow(id: number, createdAt: string): MentionRow {
+        const row = mentionRow(id, createdAt);
+        return { ...row, message: { ...row.message, person_alias_guid: ben, sender_nick_name: "Ben", body: "ben's words" } };
+    }
+
+    test("his rows held go at the block, as the next read would answer, and the rest stay", async () => {
+        const h = maskedMentions();
+        h.answers["chat_list_mentions"] = [inboxAnswer([mentionRow(3, "2026-10-18T09:03:00Z"), benRow(2, "2026-10-18T09:02:00Z")])];
+        await h.mentions.openInbox();
+
+        h.blocks.setAliases([ben]);
+
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([3]);
+    });
+
+    test("an older page read before the block and landing after it brings none of his rows", async () => {
+        const h = maskedMentions();
+        h.answers["chat_list_mentions"] = [inboxAnswer([mentionRow(5, "2026-10-18T09:05:00Z")], true)];
+        await h.mentions.openInbox();
+        const older = deferred<CallResult>();
+        h.answers["chat_list_mentions"] = [older];
+
+        const loading = h.mentions.loadOlder();
+        h.blocks.setAliases([ben]);
+        older.resolve(inboxAnswer([benRow(4, "2026-10-18T09:04:00Z"), mentionRow(3, "2026-10-18T09:03:00Z")]));
+        await loading;
+
+        expect(h.mentions.state.inbox.rows.map(r => r.message.id)).toEqual([5, 3]);
+    });
+
+    test("a kept row's quote of him is withheld in place", async () => {
+        const h = maskedMentions();
+        const row = mentionRow(3, "2026-10-18T09:03:00Z");
+        row.message.quoted = { id: 1, person_alias_guid: ben, sender_nick_name: "Ben", body: "quoted words", pieces: null, attachments: null, created_at: "t" };
+        h.answers["chat_list_mentions"] = [inboxAnswer([row])];
+        await h.mentions.openInbox();
+        const held = h.mentions.state.inbox.rows[0].message;
+
+        h.blocks.setAliases([ben]);
+
+        expect(h.mentions.state.inbox.rows[0].message).toBe(held);
+        expect(held.quoted).toMatchObject({ body: null, sender_nick_name: null, blocked: true });
     });
 });

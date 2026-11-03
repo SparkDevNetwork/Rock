@@ -14,24 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-// The people the person blocked: the set of their aliases every live event is read through, the
-// list Chat settings draws, and block and unblock with the one sentence that confirms a block.
+// The people the person blocked: the set of their aliases every message is read through, the list
+// Chat settings draws, and block and unblock with the one sentence that confirms a block.
 //
 // The platform hides a blocked person's messages in every page it answers, but a room's live
-// events are one payload for every subscriber, so the client hides them itself: a message from
-// someone in the set arrives collapsed, and their face is blanked where they reacted or replied.
-// The set comes with every sidebar load and with every block, unblock and list answer, so another
-// device's change, told as blocks.changed on the person's own topic, is read the same way. When
-// the set changes, what is on screen was read through the old one, so the shell reads it again.
-// The blocked person is never told, and nothing here is ever sent to them.
+// events are one payload for every subscriber, and a page read before a block can land after it.
+// So the set the client holds is the authority on what is withheld, applied where each message is
+// written: every holder writes through mask, which collapses a message from someone in the set and
+// blanks their face wherever it rides on someone else's (a quote, a mention, a replier, a reactor).
+// A block masks again, in place, everything held, at once and with no read; what the client cannot
+// work out itself (the sidebar, a room's facts and composer, counts) is read again, and so is what
+// an unblock gives back, whose words the client never held. A copy the platform withheld for
+// someone the set does not name is out of date, read before an unblock or after a block from
+// another device not yet told; it asks, once for each set, that the list and then the screen be
+// read again. The set comes with every sidebar load and with every block, unblock and list answer,
+// so another device's change, told as blocks.changed on the person's own topic, is read the same
+// way. The blocked person is never told, and nothing here is ever sent to them.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { failureWords, messageForError } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
-import { ChatError, ChatPerson, ChipReactor, MessageCreatedEvent, QuotedMessage, Replier } from "../types.partial";
+import { ChatError, ChatPerson, ChipReactor, DisplayPiece, QuotedMessage, Reaction, Replier, TimelineMessage } from "../types.partial";
 import { personName } from "../ui/face.partial";
 import { Note } from "../ui/settingNote.partial.obs";
-import { blockedCopy } from "./useHistory.partial";
+import { blockedCopy, isWithheld, MessageMask } from "./useHistory.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { failureNote } from "./saveRule.partial";
 
@@ -74,10 +80,15 @@ export type BlocksDependencies = {
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
 
     /**
-     * The set changed, so what is on screen, read through the old one, is read again: all of it,
-     * or, when the change came in a sidebar answer, all but the sidebar, which that answer is.
+     * The set changed, or a withheld copy showed it out of date, so what the client cannot mask
+     * itself is read again: all of it, or, when the change came in a sidebar answer, all but the
+     * sidebar, which that answer is. The aliases no longer blocked are named, since only a read
+     * gives back what was withheld for them.
      */
-    onChanged: (isInSidebarAnswer: boolean) => void;
+    onChanged: (isInSidebarAnswer: boolean, removed: readonly string[]) => void;
+
+    /** The set gained someone: every holder masks again, in place, what it holds. */
+    remask: () => void;
 
     /** Shows a toast, for a block or unblock asked from a card or a message. */
     notify: (notice: ActionNotice) => void;
@@ -93,8 +104,14 @@ export type Blocks = {
     /** Whether a message by this alias is hidden from the person. */
     isBlocked: (personAliasGuid: string | null | undefined) => boolean;
 
+    /** A message as the person may see it, written by every holder; the same object when nothing applies. */
+    mask: MessageMask;
+
     /** A room's live event as the person may see it: a blocked sender's message collapsed, their face blank. */
     maskEvent: (event: string, payload: unknown) => unknown;
+
+    /** People who reacted, as the person may see them: the face of someone blocked blank. */
+    maskFaces: <T extends CarriedFace & { reactor_person_alias_guid?: string }>(people: T[]) => T[];
 
     /** Reads the list Chat settings draws. */
     load: () => Promise<void>;
@@ -118,20 +135,47 @@ export type Blocks = {
     stop: () => void;
 };
 
-/** The live events that can carry a blocked person's words or face. */
-const maskedEvents = new Set(["message.created", "reaction.added", "reaction.removed", "thread.updated"]);
+/** A face as a message carries one: a replier, a reactor, or a mention chip. */
+export type CarriedFace = { person_alias_guid?: unknown, nick_name?: unknown, last_name?: unknown, avatar_url?: unknown };
 
 /**
  * A face blanked when it is someone the person blocked: the act stays counted, but whose it was
- * is not shown, as the platform blanks them on every list it answers the person.
+ * is not shown, as the platform blanks them on every list it answers the person. One already
+ * blank is the same object, so nothing is written again.
  *
- * @param person The face as the payload carried it.
- * @param isBlocked Whether an alias is blocked.
+ * @param person The face as it was carried.
+ * @param isBlocked Whether the face is someone blocked.
  *
  * @returns The face, or the same with no name or photo.
  */
-function blankFace<T extends { nick_name: string | null, last_name: string | null, avatar_url: string | null }>(person: T, isBlocked: boolean): T {
-    return isBlocked ? { ...person, nick_name: null, last_name: null, avatar_url: null } : person;
+function blankFace<T extends object>(person: T, isBlocked: boolean): T {
+    const face = person as CarriedFace;
+    const isShown = face.nick_name != null || face.last_name != null || face.avatar_url != null;
+    return isBlocked && isShown ? { ...person, nick_name: null, last_name: null, avatar_url: null } : person;
+}
+
+/**
+ * Each of a list blanked by blankFace, the same list when none changed.
+ *
+ * @param list The faces, or whatever the field held.
+ * @param blank Blanks one face.
+ *
+ * @returns The list, or a new one with the faces blanked.
+ */
+function blankEach<T>(list: T[] | null | undefined, blank: (item: T) => T): T[] | null | undefined {
+    if (!Array.isArray(list)) {
+        return list;
+    }
+    // a copy only from the first face changed, so a list with nothing to blank allocates nothing
+    let blanked: T[] | null = null;
+    for (let i = 0; i < list.length; i++) {
+        const item = blank(list[i]);
+        if (item !== list[i] && !blanked) {
+            blanked = list.slice(0, i);
+        }
+        blanked?.push(item);
+    }
+    return blanked ?? list;
 }
 
 /**
@@ -157,11 +201,22 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
     let set = new Set<string>();
     let isStopped = false;
 
-    // Until the first set is known, a live event is let through as it came, since nobody is known
-    // to be blocked. The first set then changes what is on screen only if such an event was held
-    // and the set names someone; after it, any change does.
+    // Until the first set is known, a message is written as it came, since nobody is known to be
+    // blocked; the first set masks in place whatever was let through.
     let hasSet = false;
-    let isHeldUnmasked = false;
+
+    // Every change of the set has a number, and a heal is asked at most once for each, so a
+    // platform that keeps withholding an alias the set never names asks no more than once.
+    let setNumber = 0;
+    let healedNumber = -1;
+    let isHealQueued = false;
+
+    // The aliases of copies the platform withheld that the set does not name, waiting for the heal.
+    const stale = new Set<string>();
+
+    // While what is held is masked again: a held copy still withheld for someone just unblocked is
+    // being read again by that unblock, so it asks no heal of its own.
+    let isRemasking = false;
 
     // Each list read and each block or unblock has a number; only the newest answer sets the set,
     // so a slow answer never takes back a newer one. The order is the asking's, not the platform's:
@@ -170,26 +225,216 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
     let asked = 0;
     let applied = 0;
 
-    function isBlocked(personAliasGuid: string | null | undefined): boolean {
-        return !!personAliasGuid && set.has(personAliasGuid.toLowerCase());
+    // Every alias already looked up and not in the set, as written, so masking again every row
+    // held lowers no string twice; emptied whenever the set changes.
+    let notBlocked = new Set<string>();
+
+    function isBlocked(personAliasGuid: unknown): boolean {
+        if (typeof personAliasGuid !== "string" || set.size === 0 || notBlocked.has(personAliasGuid)) {
+            return false;
+        }
+        if (set.has(personAliasGuid) || set.has(personAliasGuid.toLowerCase())) {
+            return true;
+        }
+        notBlocked.add(personAliasGuid);
+        return false;
     }
 
-    /** Takes a set; a change asks the shell to read again what it shows, saying where the set came from. */
+    /**
+     * Takes a set. Someone added is masked at once, in place, before anything else runs, so their
+     * words go with no read; any change then asks the shell to read again what it cannot mask,
+     * saying where the set came from and who was let go. The first set masks what was let through
+     * before it, and reads nothing, since every page was already read through it.
+     */
     function takeSet(aliases: unknown, isInSidebarAnswer: boolean): void {
         if (isStopped || !Array.isArray(aliases)) {
             return;
         }
 
         const next = new Set(aliases.filter((a): a is string => typeof a === "string").map(a => a.toLowerCase()));
-        const isChanged = hasSet
-            ? next.size !== set.size || [...next].some(a => !set.has(a))
-            : isHeldUnmasked && next.size > 0;
+        const removed = [...set].filter(alias => !next.has(alias));
+        const isAdded = [...next].some(alias => !set.has(alias));
+        const isFirst = !hasSet;
+        if (!isFirst && !isAdded && removed.length === 0) {
+            return;
+        }
+
         hasSet = true;
         set = next;
+        notBlocked = new Set();
+        setNumber++;
         state.aliases = [...next];
-        if (isChanged) {
-            dependencies.onChanged(isInSidebarAnswer);
+        if (isAdded) {
+            isRemasking = true;
+            try {
+                dependencies.remask();
+            }
+            finally {
+                isRemasking = false;
+            }
         }
+
+        if (isFirst) {
+            // a copy withheld before the set was known heals now if the set does not name it
+            for (const alias of stale) {
+                if (next.has(alias)) {
+                    stale.delete(alias);
+                }
+            }
+            queueHeal();
+            return;
+        }
+        // this change reads again what is on screen, so whatever was waiting to heal is in it
+        stale.clear();
+        dependencies.onChanged(isInSidebarAnswer, removed);
+    }
+
+    /** A copy withheld for an alias the set does not name: noted, and healed once the write is done. */
+    function noteWithheld(personAliasGuid: unknown): void {
+        if (isRemasking || isStopped || typeof personAliasGuid !== "string" || isBlocked(personAliasGuid)) {
+            return;
+        }
+        stale.add(personAliasGuid.toLowerCase());
+        if (hasSet) {
+            queueHeal();
+        }
+    }
+
+    /** Asks the heal after the write that met the copy, so no read starts inside a holder's write. */
+    function queueHeal(): void {
+        if (isHealQueued || stale.size === 0 || healedNumber === setNumber) {
+            return;
+        }
+        isHealQueued = true;
+        queueMicrotask(() => void heal());
+    }
+
+    /**
+     * Reads the list first: when it changes the set, that change is the heal. When it still does
+     * not name them, the copies are out of date, read before an unblock, and what is held for
+     * those aliases is read again as an unblock reads it.
+     */
+    async function heal(): Promise<void> {
+        isHealQueued = false;
+        if (isStopped || healedNumber === setNumber) {
+            return;
+        }
+        const number = setNumber;
+        healedNumber = number;
+        await load();
+        if (isStopped || setNumber !== number) {
+            return;
+        }
+        const aliases = [...stale].filter(alias => !set.has(alias));
+        stale.clear();
+        if (aliases.length > 0) {
+            dependencies.onChanged(false, aliases);
+        }
+    }
+
+    /** A quote as the person may see it: withheld for someone blocked, its mention chips' faces blank. */
+    function maskQuote(quoted: QuotedMessage): QuotedMessage {
+        if (quoted.blocked && !isBlocked(quoted.person_alias_guid)) {
+            noteWithheld(quoted.person_alias_guid);
+        }
+        if (quoted.blocked || isBlocked(quoted.person_alias_guid)) {
+            const isAlreadyWithheld = quoted.blocked === true && [quoted.sender_nick_name, quoted.sender_last_name, quoted.sender_avatar_url, quoted.body, quoted.attachments, quoted.pieces]
+                .every(field => field === null || field === undefined);
+            return isAlreadyWithheld ? quoted : withheldQuote(quoted);
+        }
+        const pieces = blankEach(quoted.pieces, maskPiece);
+        return pieces === quoted.pieces ? quoted : { ...quoted, pieces };
+    }
+
+    /** A mention chip keeps the name written in the message and loses the face of someone blocked, as the platform answers it. */
+    function maskPiece(piece: DisplayPiece): DisplayPiece {
+        return piece.type === "mention" ? blankFace(piece, isBlocked(piece.person_alias_guid)) : piece;
+    }
+
+    function maskReactor<T extends CarriedFace & { reactor_person_alias_guid?: string }>(reactor: T): T {
+        return blankFace(reactor, isBlocked(reactor.reactor_person_alias_guid) || isBlocked(reactor.person_alias_guid));
+    }
+
+    function maskReaction(reaction: Reaction): Reaction {
+        const reactors = blankEach(reaction.reactors, maskReactor);
+        return reactors === reaction.reactors ? reaction : { ...reaction, reactors: reactors ?? undefined };
+    }
+
+    /**
+     * A message as the person may see it under the set as it stands now: by someone blocked, or
+     * withheld by the platform, it is withheld; otherwise the faces of the blocked that ride on it
+     * are blank. The same object when nothing applies, so a row already right is never written.
+     */
+    /** Whether a face of someone blocked is shown on any of these, read with no copy made. */
+    function isAnyFaceShown(faces: readonly object[] | null | undefined, kind?: "mention"): boolean {
+        if (!Array.isArray(faces)) {
+            return false;
+        }
+        for (const item of faces) {
+            const face = item as CarriedFace & { reactor_person_alias_guid?: unknown, type?: unknown };
+            const isTheirs = isBlocked(face.person_alias_guid) || isBlocked(face.reactor_person_alias_guid);
+            if (isTheirs && (kind === undefined || face.type === kind) && (face.nick_name != null || face.last_name != null || face.avatar_url != null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Whether the mask has anything to look at in a message: a mark of the platform's, or someone
+     * blocked who wrote it, wrote its quote or shows a face on it. Most messages have none, and
+     * this answers that with no copy made, so masking again every row held stays a quick walk.
+     */
+    function isMaskable(message: Partial<TimelineMessage>): boolean {
+        const quoted = message.quoted;
+        if (message.blocked || quoted?.blocked) {
+            return true;
+        }
+        if (set.size === 0) {
+            return false;
+        }
+        if (isBlocked(message.person_alias_guid) || (quoted && (isBlocked(quoted.person_alias_guid) || isAnyFaceShown(quoted.pieces, "mention")))) {
+            return true;
+        }
+        if (isAnyFaceShown(message.pieces, "mention") || isAnyFaceShown(message.repliers)) {
+            return true;
+        }
+        for (const reaction of message.reactions ?? []) {
+            if (isAnyFaceShown(reaction.reactors)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function mask<T extends Partial<TimelineMessage>>(message: T): T {
+        if (!isMaskable(message)) {
+            return message;
+        }
+        if (message.blocked && !isBlocked(message.person_alias_guid)) {
+            noteWithheld(message.person_alias_guid);
+        }
+
+        let shown: T = message;
+        const isTheirs = message.message_type !== "system" && (message.blocked === true || isBlocked(message.person_alias_guid));
+        if (isTheirs) {
+            shown = isWithheld(message) ? message : blockedCopy(message);
+        }
+        else {
+            const quoted = message.quoted ? maskQuote(message.quoted) : message.quoted;
+            const pieces = blankEach(message.pieces, maskPiece);
+            if (quoted !== message.quoted || pieces !== message.pieces) {
+                shown = { ...shown, quoted, pieces } as T;
+            }
+        }
+
+        // the faces of the blocked among its repliers and reactors, on a withheld message too, whose counts stay
+        const repliers = blankEach(shown.repliers, (r: Replier) => blankFace(r, isBlocked(r.person_alias_guid)));
+        const reactions = blankEach(shown.reactions, maskReaction);
+        if (repliers !== shown.repliers || reactions !== shown.reactions) {
+            shown = { ...shown, repliers, reactions: reactions ?? undefined } as T;
+        }
+        return shown;
     }
 
     /** Takes an answer, unless a newer ask has already answered. */
@@ -271,42 +516,35 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         state,
         setAliases: aliases => takeSet(aliases, true),
         isBlocked,
+        mask,
 
+        // The one entry every live consumer sits behind, so a message is masked before anything
+        // holds it; each holder masks again where it writes, which costs nothing on a masked copy.
         maskEvent: (event: string, payload: unknown): unknown => {
-            if (!hasSet && maskedEvents.has(event)) {
-                isHeldUnmasked = true;
-            }
             if (set.size === 0 || !payload || typeof payload !== "object") {
                 return payload;
             }
 
             if (event === "message.created") {
-                const created = payload as MessageCreatedEvent;
-                if (created.message_type !== "system" && isBlocked(created.person_alias_guid)) {
-                    return blockedCopy(created);
-                }
-                if (created.quoted && isBlocked(created.quoted.person_alias_guid)) {
-                    return { ...created, quoted: withheldQuote(created.quoted) };
-                }
-                return payload;
+                return mask(payload as Partial<TimelineMessage>);
             }
 
             if (event === "reaction.added" || event === "reaction.removed") {
                 const reaction = payload as { reactors?: ChipReactor[] };
-                return Array.isArray(reaction.reactors)
-                    ? { ...reaction, reactors: reaction.reactors.map(r => blankFace(r, isBlocked(r.reactor_person_alias_guid) || isBlocked(r.person_alias_guid))) }
-                    : payload;
+                const reactors = blankEach(reaction.reactors, maskReactor);
+                return reactors === reaction.reactors ? payload : { ...reaction, reactors };
             }
 
             if (event === "thread.updated") {
                 const thread = payload as { repliers?: Replier[] | null };
-                return Array.isArray(thread.repliers)
-                    ? { ...thread, repliers: thread.repliers.map(r => blankFace(r, isBlocked(r.person_alias_guid))) }
-                    : payload;
+                const repliers = blankEach(thread.repliers, (r: Replier) => blankFace(r, isBlocked(r.person_alias_guid)));
+                return repliers === thread.repliers ? payload : { ...thread, repliers };
             }
 
             return payload;
         },
+
+        maskFaces: people => blankEach(people, maskReactor) ?? people,
 
         load,
 

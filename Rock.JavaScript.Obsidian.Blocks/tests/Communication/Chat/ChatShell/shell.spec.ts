@@ -21,6 +21,7 @@
 import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
+import { toRaw } from "vue";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -266,7 +267,9 @@ function build(options: {
             const listCall = Object.keys(listAnswers).find(name => url.endsWith(`/rest/v1/rpc/${name}`));
             if (listCall) {
                 listCalls.push({ name: listCall, body });
-                return fakeResponse(200, listAnswers[listCall]);
+                // an answer a test gives as a function is asked of it, and may wait for the test
+                const answer = listAnswers[listCall];
+                return fakeResponse(200, typeof answer === "function" ? await answer(body) : answer);
             }
             if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
                 deviceCalls.push({ name: "chat_register_device", body });
@@ -329,14 +332,14 @@ function build(options: {
             if (url.endsWith("/rest/v1/rpc/chat_send_message")) {
                 sent.push({ channelId: body.p_channel_id, body: body.p_body, args: body });
                 const refusal = sendRefusals.value.shift();
-                if (refusal) {
-                    return fakeResponse(refusal.status, refusal.body);
-                }
                 const id = 900 + sent.length;
                 if (heldSends.value) {
                     const answer = deferred<void>();
                     heldSends.value.push(answer);
                     await answer.promise;
+                }
+                if (refusal) {
+                    return fakeResponse(refusal.status, refusal.body);
                 }
                 // chat_send_message's answer: a body naming Ada carries her mention piece, as the
                 // platform builds it; a person's send never carries blocks
@@ -3756,7 +3759,7 @@ describe("blocking", () => {
         expect(h.counts.bootstraps).toBe(before.bootstraps);
     });
 
-    test("a live message from someone before the sidebar has named the set is withheld once it does", async () => {
+    test("a live message from someone before the sidebar has named the set is withheld in place once it does", async () => {
         const h = build();
         h.heldBootstraps.value = [];
         const starting = h.shell.start();
@@ -3778,25 +3781,19 @@ describe("blocking", () => {
         await settle();
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ body: "hidden words" });
 
-        // the first sidebar answer names Sam; the reads it asks for answer at once
+        // the first sidebar answer names Sam: what is held is masked in place, with nothing read again
         const factsBefore = h.channelReads.filter(c => c === channelA).length;
+        const historyBefore = h.historyCalls.length;
         const first = h.heldBootstraps.value[0];
         h.heldBootstraps.value = null;
-        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [sam] } };
         first.resolve(fakeResponse(200, { channels: [samRow], me: { blocked_aliases: [sam] } }));
         await starting;
         await settle();
-        // the room is read again, and the platform's page withholds Sam's message
-        while (h.history[channelA]?.length) {
-            h.history[channelA].shift()?.resolve(fakeResponse(200, { messages: [{ id: 11, person_alias_guid: sam, message_type: "text", body: null, blocked: true, created_at: "2026-11-03T10:00:00Z" }], read_cursor: 10, unread_count: 0, has_more: false }));
-            await settle();
-        }
 
-        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ blocked: true, body: null });
-        // the sidebar answer that named the set is the newest sidebar, so it is not read twice,
-        // and the room's facts are read again after it
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
         expect(h.counts.bootstraps).toBe(1);
-        expect(h.channelReads.filter(c => c === channelA).length).toBe(factsBefore + 1);
+        expect(h.channelReads.filter(c => c === channelA).length).toBe(factsBefore);
+        expect(h.historyCalls.length).toBe(historyBefore);
     });
 
     test("a confirmed block reads again the open thread, the panels shown and the open room's facts", async () => {
@@ -3908,6 +3905,84 @@ describe("blocking", () => {
         expect(h.counts.bootstraps).toBe(bootstraps);
     });
 
+    /** Answers every history read of channel A waiting, by what it asks, until none waits. */
+    async function answerA(h: ReturnType<typeof build>, pageFor: (body: Record<string, unknown>) => HistoryPage): Promise<void> {
+        for (let round = 0; round < 10 && h.history[channelA]?.length; round++) {
+            const list = h.history[channelA];
+            const asked = h.historyCalls.filter(c => c.p_channel_id === channelA);
+            const body = asked[asked.length - list.length];
+            list.shift()?.resolve(fakeResponse(200, pageFor(body)));
+            await settle();
+        }
+    }
+
+    const samSays = (id: number, isWithheld: boolean): TimelineMessage => (isWithheld
+        ? { id, person_alias_guid: sam, sender_nick_name: null, message_type: "text", body: null, blocked: true, created_at: "2026-11-03T10:00:00Z" }
+        : { id, person_alias_guid: sam, sender_nick_name: "Sam", message_type: "text", body: `sam ${id}`, created_at: "2026-11-03T10:00:00Z" }) as TimelineMessage;
+
+    /** Room A's history with Sam's message 9 and Ada's 10, withheld or not, and his older 5 before them. */
+    const roomA = (isWithheld: boolean) => (body: Record<string, unknown>): HistoryPage => {
+        const all = [samSays(5, isWithheld), samSays(9, isWithheld), page(10).messages[0]];
+        const run = typeof body.p_before_id === "number"
+            ? all.filter(m => m.id < (body.p_before_id as number))
+            : typeof body.p_after_id === "number" ? all.filter(m => m.id > (body.p_after_id as number)) : all.filter(m => m.id >= 9);
+        return { messages: [...run].reverse(), read_cursor: 10, unread_count: 0, has_more: body.p_before_id === undefined && body.p_after_id === undefined && run.length > 0 && run[0].id > 5 };
+    };
+
+    async function unblocking(): Promise<{ h: ReturnType<typeof build>, bootstraps: number }> {
+        const h = build();
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [sam] } };
+        const starting = h.shell.start();
+        await settle();
+        await answerA(h, roomA(true));
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        await answerA(h, roomA(true));
+        expect(h.shell.timelines.state(channelA).messages.map(m => m.id)).toEqual([9, 10]);
+
+        // an older page is asked while he is still blocked, and is answered last
+        const older = h.shell.timelines.loadOlder(channelA);
+        await settle();
+        const olderAnswer = h.history[channelA].shift() as Deferred<Response>;
+        h.blocksAnswer.value = { people: [], blocked_aliases: [] };
+        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [] } };
+        await h.shell.blocks.unblock({ person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null }, true);
+        await settle();
+        await answerA(h, roomA(false));
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 9)).toMatchObject({ body: "sam 9" });
+        const bootstraps = h.counts.bootstraps;
+        olderAnswer.resolve(fakeResponse(200, roomA(true)({ p_before_id: 9 })));
+        await older;
+        return { h, bootstraps };
+    }
+
+    test("an unblock reads his messages back; an older page withheld before it, landing after, asks one read again of the list and then of the screen, which shows it", async () => {
+        const { h, bootstraps } = await unblocking();
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 5)).toMatchObject({ blocked: true });
+        await settle();
+
+        expect(h.blockCalls.map(c => c.name)).toEqual(["chat_unblock_person", "chat_list_blocks"]);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
+        await answerA(h, roomA(false));
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 5)).toMatchObject({ body: "sam 5", sender_nick_name: "Sam" });
+    });
+
+    test("a platform that keeps withholding him after the unblock is asked once, not again", async () => {
+        const { h } = await unblocking();
+        await settle();
+        const bootstraps = h.counts.bootstraps;
+
+        await answerA(h, roomA(true));
+        await settle();
+
+        expect(h.counts.bootstraps).toBe(bootstraps);
+        expect(h.blockCalls.filter(c => c.name === "chat_list_blocks").length).toBe(1);
+    });
+
     test("a block confirmed from a card or a message reads the sidebar and the open room again", async () => {
         const h = await startedBlocking([]);
         const bootstraps = h.counts.bootstraps;
@@ -3920,5 +3995,326 @@ describe("blocking", () => {
 
         expect(h.blockCalls).toEqual([{ name: "chat_block_person", body: { p_person_alias_guid: sam } }]);
         expect(h.counts.bootstraps).toBe(bootstraps + 1);
+    });
+});
+
+// The claim to break: once the set names a person, no read, landing in any order, shows a word or
+// a face of theirs anywhere the shell holds a message. Every read here is answered as a platform
+// that read before the block would answer it, so only the client's own mask can withhold.
+describe("a block, whatever order the reads land in", () => {
+    const dee = "a0000009-0000-4000-8000-000000000000";
+    const deeFace = { person_alias_guid: dee, nick_name: "Dee", last_name: "Vance", avatar_url: "https://example.org/dee.jpg" };
+    const adaGuid = "a0000001-0000-4000-8000-000000000000";
+    const rowOf = (channelId: string, kind: string): SidebarRow => ({ channel_id: channelId, room_kind: kind, title: "Room", is_member: true, last_message_id: 10, last_message_preview: "m", is_unread: false } as unknown as SidebarRow);
+    const rows = [rowOf(channelA, "group"), rowOf(channelB, "group")];
+
+    /** Dee's message, with his words and face, as a read made before the block answers it. */
+    function deeSays(id: number, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return { id, person_alias_guid: dee, sender_nick_name: "Dee", sender_last_name: "Vance", sender_avatar_url: deeFace.avatar_url, message_type: "text", body: `dee ${id}`, pieces: [{ type: "text", text: `dee ${id}` }], created_at: "2026-11-03T10:00:00Z", ...extra };
+    }
+
+    /** Ada's message carrying Dee's face every way a message can: a quote, a mention chip, a replier and a reactor. */
+    function adaCarriesDee(id: number, extra: Record<string, unknown> = {}): Record<string, unknown> {
+        return {
+            id, person_alias_guid: adaGuid, sender_nick_name: "Ada", message_type: "text", body: "hi Dee", created_at: "2026-11-03T10:00:00Z",
+            pieces: [{ type: "text", text: "hi " }, { type: "mention", text: "@Dee Vance", ...deeFace }],
+            quoted_message_id: 1,
+            quoted: { id: 1, person_alias_guid: dee, sender_nick_name: "Dee", sender_last_name: "Vance", sender_avatar_url: deeFace.avatar_url, body: "quoted", pieces: null, attachments: null, created_at: "t" },
+            reply_count: 1, participant_count: 1, repliers: [deeFace],
+            reactions: [{ code: "heart", count: 1, mine: false, emoji: null, image_url: null, label: "heart", reactors: [{ ...deeFace, reactor_person_alias_guid: dee, reacted_at: "t" }] }],
+            ...extra
+        };
+    }
+
+    /** chat_get_history as a read before the block answers it, by room and by what it asks. */
+    function historyAnswer(body: Record<string, unknown>): HistoryPage {
+        const answer = (messages: Array<Record<string, unknown>>, hasMore: boolean): HistoryPage => ({ messages: messages as TimelineMessage[], read_cursor: 11, unread_count: 0, has_more: hasMore });
+        if (body.p_channel_id === channelB) {
+            return answer([deeSays(20)], false);
+        }
+        if (body.p_channel_id === channelC) {
+            return answer([deeSays(30), adaCarriesDee(31)], false);
+        }
+        if (typeof body.p_before_id === "number") {
+            return answer([deeSays(6), adaCarriesDee(5)], false);
+        }
+        if (typeof body.p_after_id === "number") {
+            return answer([adaCarriesDee(11), deeSays(10)].filter(m => (m.id as number) > (body.p_after_id as number)), false);
+        }
+        return answer([adaCarriesDee(11), deeSays(10)], true);
+    }
+
+    /** Every other read, as a read before the block answers it. */
+    const listAnswer = (name: string, body: Record<string, unknown>): unknown => {
+        if (name === "chat_get_thread_history") {
+            return typeof body.p_before_id === "number"
+                ? { root: adaCarriesDee(11), messages: [deeSays(13, { parent_id: 11 })], has_more: false, following: true, read_cursor: 15 }
+                : { root: adaCarriesDee(11), messages: [deeSays(15, { parent_id: 11 }), deeSays(14, { parent_id: 11 })], has_more: true, following: true, read_cursor: 15 };
+        }
+        if (name === "chat_list_threads") {
+            const root = typeof body.p_before_id === "number" ? 7 : 10;
+            return { threads: [{ channel_id: channelA, root: deeSays(root, { repliers: [deeFace] }), reply_count: 1, last_reply_at: "t", last_reply_id: 12, participant_count: 1, following: true, has_unread: false, mention_count: 0 }], has_more: true };
+        }
+        return { mentions: [{ channel_id: channelA, parent_id: null, message: typeof body.p_before_id === "number" ? deeSays(17) : adaCarriesDee(16) }, { channel_id: channelA, parent_id: null, message: deeSays(18) }], has_more: true };
+    };
+
+    type Pending = { name: string, resolve: () => void };
+
+    /**
+     * Every outside read held until the test lets it land: the history pages through the
+     * harness's own wait, and the thread, threads list and mentions reads through these.
+     */
+    function holdReads(h: ReturnType<typeof build>, pending: Pending[]): void {
+        for (const name of ["chat_get_thread_history", "chat_list_threads", "chat_list_mentions"]) {
+            h.listAnswers[name] = (body: Record<string, unknown>) => new Promise(resolve => pending.push({ name, resolve: () => resolve(listAnswer(name, body)) }));
+        }
+    }
+
+    /** Lands every history read waiting, as a read before the block answers it. */
+    function heldHistory(h: ReturnType<typeof build>): Pending[] {
+        const waiting: Pending[] = [];
+        for (const [channelId, list] of Object.entries(h.history)) {
+            while (list.length > 0) {
+                const answer = list.shift() as Deferred<Response>;
+                const call = [...h.historyCalls].reverse().find(c => c.p_channel_id === channelId) as Record<string, unknown>;
+                const asked = h.historyCalls.filter(c => c.p_channel_id === channelId);
+                const body = asked[asked.length - 1 - list.length] ?? call;
+                waiting.push({ name: "chat_get_history", resolve: () => answer.resolve(fakeResponse(200, historyAnswer(body))) });
+            }
+        }
+        return waiting;
+    }
+
+    /** A seeded shuffle, so a failing order can be run again. */
+    function shuffled<T>(items: T[], seed: number): T[] {
+        const out = [...items];
+        let state = seed;
+        for (let i = out.length - 1; i > 0; i--) {
+            state = (state * 1103515245 + 12345) % 2147483648;
+            const j = state % (i + 1);
+            [out[i], out[j]] = [out[j], out[i]];
+        }
+        return out;
+    }
+
+    /**
+     * Everything reachable from the shell and the timelines of every room the test used, walked
+     * deep: every message-shaped object by Dee that is not withheld, and every face of his inside
+     * a message, found by path. Written over what the shell holds, not over the mask's code.
+     */
+    function deeShown(h: ReturnType<typeof build>): string[] {
+        const found: string[] = [];
+        const seen = new WeakSet<object>();
+        const isDee = (value: unknown): boolean => typeof value === "string" && value.toLowerCase() === dee;
+        const walk = (value: unknown, path: string, isInMessage: boolean): void => {
+            if (!value || typeof value !== "object") {
+                return;
+            }
+            const raw = toRaw(value as object);
+            if (seen.has(raw)) {
+                return;
+            }
+            seen.add(raw);
+            if (raw instanceof Map || raw instanceof Set) {
+                [...raw.values()].forEach((item, i) => walk(item, `${path}[${i}]`, isInMessage));
+                return;
+            }
+            const record = raw as Record<string, unknown>;
+            const isMessage = typeof record.id === "number" && "body" in record;
+            if (isMessage && isDee(record.person_alias_guid)) {
+                const said = ["body", "pieces", "blocks", "attachments", "sender_nick_name", "sender_last_name", "sender_avatar_url"].filter(key => record[key] !== null && record[key] !== undefined);
+                if (record.blocked !== true || said.length > 0) {
+                    found.push(`${path} says ${said.join(",") || "unmarked"}`);
+                }
+            }
+            if (isInMessage && !isMessage && (isDee(record.person_alias_guid) || isDee(record.reactor_person_alias_guid))) {
+                if (record.nick_name || record.last_name || record.avatar_url) {
+                    found.push(`${path} shows his face`);
+                }
+            }
+            for (const [key, child] of Object.entries(record)) {
+                if (typeof child !== "function") {
+                    walk(child, `${path}.${key}`, isInMessage || isMessage);
+                }
+            }
+        };
+        walk(h.shell, "shell", false);
+        for (const channelId of [channelA, channelB, channelC]) {
+            walk(h.shell.timelines.state(channelId), `timeline(${channelId.slice(0, 9)})`, false);
+        }
+        return found;
+    }
+
+    /** Reads room A's newest page again and lands it, so every row object held there is a new one and what kept the old is detached from it. */
+    async function readRoomAgain(h: ReturnType<typeof build>): Promise<void> {
+        void h.shell.timelines.loadNewest(channelA).catch(() => undefined);
+        await settle();
+        heldHistory(h).forEach(p => p.resolve());
+        await settle();
+    }
+
+    /**
+     * The shell with Dee's words held everywhere a message is held, and reads out when the block
+     * lands: room B read and left, room A open with an older page out, the threads and mentions
+     * panels with their next pages out, and a quote of Dee waiting in A's composer that a later page
+     * left holding a row no timeline holds any more. In the world "opening" the thread's first page
+     * and New message's look at a found conversation are out too; in the world "open" both landed,
+     * and the thread's older page is out.
+     */
+    async function heldEverywhere(world: "opening" | "open"): Promise<{ h: ReturnType<typeof build>, pending: Pending[] }> {
+        const h = build({ linkedChannelId: channelB });
+        const pending: Pending[] = [];
+        h.bootstrap.value = { channels: rows, me: { blocked_aliases: [] } };
+        const starting = h.shell.start();
+        await settle();
+        heldHistory(h).forEach(p => p.resolve());
+        await starting;
+        await settle();
+
+        const opening = h.shell.selectChannel(channelA);
+        await settle();
+        heldHistory(h).forEach(p => p.resolve());
+        await opening;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        heldHistory(h).forEach(p => p.resolve());
+        await settle();
+
+        holdReads(h, pending);
+        void h.shell.threads.openThread(channelA, 11);
+        const listOpening = h.shell.threads.openList(channelA);
+        const inboxOpening = h.shell.mentions.openInbox();
+        await settle();
+        const threadPage = world === "opening" ? pending.filter(p => p.name === "chat_get_thread_history") : [];
+        pending.splice(0).filter(p => !threadPage.includes(p)).forEach(p => p.resolve());
+        pending.push(...threadPage);
+        await Promise.all([listOpening, inboxOpening]);
+        await settle();
+        h.shell.messageActions.startQuote(quoteKey(channelA), h.shell.timelines.state(channelA).messages.find(m => m.id === 10) as TimelineMessage);
+        await readRoomAgain(h);
+
+        h.foundDm.value = channelC;
+        h.shell.directMessages.begin([{ person_alias_guid: dee, nick_name: "Dee", last_name: "Vance", avatar_url: null } as never]);
+        await settle();
+        if (world === "open") {
+            heldHistory(h).forEach(p => p.resolve());
+            await settle();
+            void h.shell.threads.loadOlderReplies();
+        }
+        void h.shell.timelines.loadOlder(channelA);
+        void h.shell.threads.loadMore();
+        void h.shell.mentions.loadOlder();
+        await settle();
+        expect(deeShown(h).length).toBeGreaterThan(0);
+        return { h, pending };
+    }
+
+    /** Dee writes in room A, a message and a reply in the open thread, after the block. */
+    function deeWritesLive(h: ReturnType<typeof build>): void {
+        const topic = topicOf(h, channelTopic(tenant, channelA));
+        topic.listeners["broadcast"]?.({ event: "message.created", payload: { ...deeSays(40), channel_id: channelA, parent_id: null, shown_in_channel: false } });
+        topic.listeners["broadcast"]?.({ event: "message.created", payload: { ...deeSays(41), channel_id: channelA, parent_id: 11, shown_in_channel: false } });
+    }
+
+    /**
+     * Lands every read out, and every read those ask in turn, in the order given, as reads before
+     * the block answer them. What is held is walked after each landing, so a word shown for a
+     * moment, until a later read covers it, is caught as well as one left at the end.
+     */
+    async function landAll(h: ReturnType<typeof build>, pending: Pending[], order: (items: Pending[]) => Pending[], shown: string[] = []): Promise<string[]> {
+        for (let round = 0; round < 20; round++) {
+            const waiting = [...pending.splice(0), ...heldHistory(h)];
+            if (waiting.length === 0) {
+                break;
+            }
+            for (const read of order(waiting)) {
+                read.resolve();
+                await settle();
+                shown.push(...deeShown(h).map(found => `after ${read.name}: ${found}`));
+            }
+            await settle();
+        }
+        return shown;
+    }
+
+    /**
+     * Pages asked once the block is known here, which the platform reads before the block is
+     * committed there (another device's block, told before it lands): the open thread's, room A's
+     * and both panels' next pages.
+     */
+    function asksAfterBlock(h: ReturnType<typeof build>): void {
+        void h.shell.threads.loadOlderReplies();
+        void h.shell.timelines.loadOlder(channelA);
+        void h.shell.threads.loadMore();
+        void h.shell.mentions.loadOlder();
+    }
+
+    const orders: Array<[string, (items: Pending[]) => Pending[]]> = [
+        ["as asked", items => items],
+        ["in reverse", items => [...items].reverse()],
+        ["shuffled, seed 7", items => shuffled(items, 7)],
+        ["shuffled, seed 42", items => shuffled(items, 42)],
+        ["shuffled, seed 1001", items => shuffled(items, 1001)]
+    ];
+    const worlds = ["opening", "open"] as const;
+    const cases = worlds.flatMap(world => orders.map(([name, order]) => [world, name, order] as const));
+
+    test.each(cases)("in the world %s, blocked from the dialog, every read landing %s: nothing held shows his words or face", async (world, _name, order) => {
+        const { h, pending } = await heldEverywhere(world);
+        h.blocksAnswer.value = { people: [], blocked_aliases: [dee] };
+        h.bootstrap.value = { channels: rows, me: { blocked_aliases: [dee] } };
+
+        h.shell.blocks.ask(deeFace);
+        // withheld before any read the block asks has answered
+        await h.shell.blocks.confirm();
+        expect(deeShown(h)).toEqual([]);
+
+        deeWritesLive(h);
+        asksAfterBlock(h);
+        expect(await landAll(h, pending, order)).toEqual([]);
+        expect(deeShown(h)).toEqual([]);
+    });
+
+    test.each(cases)("in the world %s, blocked on another device, told as blocks.changed and then the list's answer, every read landing %s: nothing held shows his words or face", async (world, _name, order) => {
+        const { h, pending } = await heldEverywhere(world);
+        h.blocksAnswer.value = { people: [deeFace], blocked_aliases: [dee] };
+        h.bootstrap.value = { channels: rows, me: { blocked_aliases: [dee] } };
+
+        personal(h, "blocks.changed", { id: "e1" });
+        await settle();
+        expect(deeShown(h)).toEqual([]);
+
+        deeWritesLive(h);
+        asksAfterBlock(h);
+        expect(await landAll(h, pending, order)).toEqual([]);
+        expect(deeShown(h)).toEqual([]);
+    });
+
+    test("a quote of his used up by a send whose GIF then expired comes back withheld when he was blocked meanwhile", async () => {
+        const { h, pending } = await heldEverywhere("open");
+        await landAll(h, pending, items => items);
+        // New message closed, so the send is the conversation's and takes its quote
+        h.shell.directMessages.close();
+        h.shell.trayOf(channelA).stageGif({ slug: "a", title: "A", url: "https://static.klipy.com/ii/md/a.mp4", still: "https://static.klipy.com/ii/md/a.jpg", width: 498, height: 280, token: "stale" });
+        h.shell.messageActions.startQuote(quoteKey(channelA), h.shell.timelines.state(channelA).messages.find(m => m.id === 10) as TimelineMessage);
+        h.heldSends.value = [];
+        h.sendRefusals.value = [{ status: 400, body: { code: "P0001", message: "rpc.bad_gif", hint: "That GIF can't be sent. Search again." } }];
+        const sending = h.shell.send("yay");
+        await settle();
+        // a later page puts a new copy of the row in place, so the quote the send took holds the old one alone
+        await readRoomAgain(h);
+        h.blocksAnswer.value = { people: [], blocked_aliases: [dee] };
+        h.bootstrap.value = { channels: rows, me: { blocked_aliases: [dee] } };
+        h.shell.blocks.ask(deeFace);
+        await h.shell.blocks.confirm();
+        await landAll(h, pending, items => items);
+
+        // the send was asked before the block; its refusal lands after it
+        h.heldSends.value?.forEach(answer => answer.resolve());
+        await sending;
+        await settle();
+
+        expect(h.shell.messageActions.state.quotes[quoteKey(channelA)]).toMatchObject({ id: 10, blocked: true, body: null, sender_nick_name: null });
     });
 });

@@ -45,7 +45,7 @@ import { reactive, toRaw } from "vue";
 import { failedWords } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
-import { defaultRetryDelay } from "./useHistory.partial";
+import { defaultRetryDelay, maskHeld, MessageMask, platformMask } from "./useHistory.partial";
 import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
 import { PlatformLimits } from "./useSession.partial";
 
@@ -171,6 +171,9 @@ export type DirectMessageDependencies = {
      * people now share, after what it holds; without it, the text is not put back.
      */
     holdText?: (channelId: string, text: string) => void;
+
+    /** What the reader may see of a message, applied to the found conversation's look as it is written; the platform's own marks alone by default. */
+    mask?: MessageMask;
 };
 
 /** The direct messages a shell holds. */
@@ -189,6 +192,9 @@ export type DirectMessages = {
 
     /** The last few messages of the conversation found, oldest first; null until read, or when the read failed. */
     recent: TimelineMessage[] | null;
+
+    /** The people blocked gained someone: the found conversation's look is masked again, in place. */
+    remask: () => void;
 
     /** A refusal Rock gave about one of the people chosen, for the strip that offers to take them out. */
     refused: { person: PersonRow, text: string } | null;
@@ -310,6 +316,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
 
     const sleep = dependencies.sleep ?? ((ms: number): Promise<void> => new Promise(resolve => setTimeout(resolve, ms)));
     const random = dependencies.random ?? Math.random;
+    const mask = dependencies.mask ?? platformMask;
 
     /** Conversations the person was added to while Rock had not answered yet. */
     const arrived = new Set<string>();
@@ -708,7 +715,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             messages = null;
         }
         if (!isStopped && generation === lookupGeneration) {
-            state.recent = messages;
+            state.recent = messages?.map(message => mask(message)) ?? null;
         }
     }
 
@@ -849,6 +856,12 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
     }
 
     return Object.assign(state, {
+        remask: (): void => {
+            if (state.recent) {
+                maskHeld(state.recent, mask);
+            }
+        },
+
         begin: (people: PersonRow[] = []): void => {
             reset();
             if (isStopped) {

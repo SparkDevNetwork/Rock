@@ -64,6 +64,7 @@ import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 
 // #region Fixtures
 
@@ -688,6 +689,29 @@ describe("the full list", () => {
         const { reactions } = await setup([message(42, [rx("pray", 3)])], [refused("rpc.message_not_found", "That message is no longer here.")]);
 
         expect(await reactions.listReactors(42, "pray", null)).toBeNull();
+    });
+
+    test("a page read before a block and landing after it shows the face of nobody now blocked", async () => {
+        const answer = deferred<CallResult>();
+        const blocks = createBlocks({ call: async () => ({ ok: true, data: {} }), onChanged: () => undefined, remask: () => undefined, notify: () => undefined });
+        blocks.setAliases([]);
+        const timelines = createTimelines({ limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const reactions = createReactions({
+            call: () => answer.promise,
+            timelines,
+            personAliasGuid: me,
+            notify: jest.fn(),
+            favorites,
+            churchKey: church,
+            storage: memoryStorage(),
+            maskFaces: people => blocks.maskFaces(people)
+        } as unknown as Parameters<typeof createReactions>[0]);
+
+        const listing = reactions.listReactors(42, "pray", null);
+        blocks.setAliases([anna]);
+        answer.resolve(ok({ reactors: [row], has_more: false }));
+
+        expect((await listing)?.reactors).toEqual([{ ...row, nick_name: null, last_name: null, avatar_url: null }]);
     });
 });
 

@@ -29,6 +29,7 @@
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
 import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, MentionRow, MentionSearchAnswer, SidebarRow, UnreadMention } from "../types.partial";
+import { maskHeld, MessageMask, platformMask } from "./useHistory.partial";
 import { LandingCheck } from "./useJump.partial";
 import { PlatformLimits } from "./useSession.partial";
 
@@ -139,6 +140,9 @@ export type MentionsDependencies = {
     openThread: (channelId: string, rootId: number, messageId: number) => Promise<void>;
 
     toast: (notice: MentionNotice) => void;
+
+    /** What the reader may see of a message, applied to every row of the inbox as it is written; the platform's own marks alone by default. */
+    mask?: MessageMask;
 };
 
 /** The mentions a shell holds. */
@@ -163,6 +167,9 @@ export type Mentions = {
      * shown, is read again.
      */
     resync: () => void;
+
+    /** The people blocked gained someone: the inbox lets go of their mentions and masks the rest again, in place. */
+    remask: () => void;
     jump: (row: MentionRow) => Promise<void>;
     setUnread: (entries: UnreadMention[]) => void;
     applyPersonalEvent: (event: string, payload: unknown) => void;
@@ -261,6 +268,22 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
     }) as MentionsState;
 
     const visitKey = `rock-chat:mentions-visit:${dependencies.tenantId.toLowerCase()}:${dependencies.personAliasGuid.toLowerCase()}`;
+
+    const mask = dependencies.mask ?? platformMask;
+
+    /**
+     * The rows of a page as the reader may see them now: a mention by someone blocked is no row,
+     * as the platform never lists one, and the rest are masked. A page read before a block lands
+     * after it this way.
+     */
+    function shown(rows: MentionRow[]): MentionRow[] {
+        return rows
+            .map(row => {
+                const message = mask(row.message);
+                return message === row.message ? row : { ...row, message };
+            })
+            .filter(row => !row.message.blocked);
+    }
 
     let isStopped = false;
 
@@ -472,7 +495,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         }
 
         const page = result.data as Partial<MentionListPage> | null;
-        state.inbox.rows = page?.mentions ?? [];
+        state.inbox.rows = shown(page?.mentions ?? []);
         state.inbox.hasMore = page?.has_more === true;
         state.inbox.olderError = null;
         markNew();
@@ -636,7 +659,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             // A mention written between pages can shift the keyset by a row; never draw it twice.
             const page = result.data as Partial<MentionListPage> | null;
             const held = new Set(state.inbox.rows.map(row => row.message.id));
-            state.inbox.rows = [...state.inbox.rows, ...(page?.mentions ?? []).filter(row => !held.has(row.message.id))];
+            state.inbox.rows = [...state.inbox.rows, ...shown(page?.mentions ?? []).filter(row => !held.has(row.message.id))];
             state.inbox.hasMore = page?.has_more === true;
             markNew();
         },
@@ -647,6 +670,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             forgetPeople();
             if (isInboxShown) {
                 void refreshInbox();
+            }
+        },
+
+        remask: (): void => {
+            maskHeld(state.inbox.rows.map(row => row.message), mask);
+            if (state.inbox.rows.some(row => row.message.blocked)) {
+                state.inbox.rows = state.inbox.rows.filter(row => !row.message.blocked);
             }
         },
 

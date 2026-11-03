@@ -22,6 +22,7 @@ import {
     createTimelines,
     messageDisplay
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -1418,5 +1419,158 @@ describe("a message by someone the reader blocked", () => {
         expect(held.blocked).toBeUndefined();
         expect(held.body).toBe("m1");
         expect(held.sender_nick_name).toBe("Ada");
+    });
+});
+
+describe("a block, as what is held is masked where it is written", () => {
+    const dee = "a0000009-0000-4000-8000-000000000000";
+    const otherChannel = "c0000002-0000-4000-8000-000000000000";
+
+    /** Dee's message, as a page read before the block carries it. */
+    function deeMessage(id: number): TimelineMessage {
+        return { ...message(id, `dee ${id}`), person_alias_guid: dee, sender_nick_name: "Dee" };
+    }
+
+    /** Dee's message as the platform withholds it once the reader blocked him. */
+    function deeWithheld(id: number): TimelineMessage {
+        return { ...deeMessage(id), sender_nick_name: null, body: null, blocked: true };
+    }
+
+    /** Timelines over a fetch the test answers, masked through the blocks as the shell wires them. */
+    function masked(fetchPage: (channelId: string, options: { limit: number, beforeId?: number, afterId?: number }) => Promise<HistoryPage>, catchUp = { page: 100, max: 500 }): {
+        timelines: ReturnType<typeof createTimelines>,
+        blocks: ReturnType<typeof createBlocks>,
+        changes: string[][]
+    } {
+        const changes: string[][] = [];
+        // eslint-disable-next-line prefer-const
+        let blocks: ReturnType<typeof createBlocks>;
+        const timelines = createTimelines({
+            limits,
+            fetchPage,
+            catchUp: () => catchUp,
+            mask: m => blocks.mask(m),
+            maskEvent: (event, payload) => blocks.maskEvent(event, payload)
+        });
+        blocks = createBlocks({
+            call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
+            onChanged: (_isInSidebarAnswer, removed) => changes.push([...(removed ?? [])]),
+            remask: () => timelines.remask(),
+            notify: () => undefined
+        });
+        blocks.setAliases([]);
+        return { timelines, blocks, changes };
+    }
+
+    const said = (messages: TimelineMessage[]): string[] => messages.filter(m => m.person_alias_guid === dee).map(m => `${m.id}:${m.body}:${m.sender_nick_name}`);
+
+    test("an older page asked before the block and answered after it with his words lands collapsed, nothing dropped", async () => {
+        const older = deferred<HistoryPage>();
+        const { timelines, blocks } = masked(async (_c, options) => options.beforeId ? older.promise : page([10, 11], { has_more: true }));
+        await timelines.loadNewest(channel);
+
+        const loading = timelines.loadOlder(channel);
+        blocks.setAliases([dee]);
+        older.resolve({ messages: [deeMessage(9), message(8)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false });
+        await loading;
+
+        const state = timelines.state(channel);
+        expect(ids(state.messages)).toEqual([8, 9, 10, 11]);
+        expect(said(state.messages)).toEqual(["9:null:null"]);
+        expect(state.messages[1].blocked).toBe(true);
+        expect(state.hasMore).toBe(false);
+    });
+
+    test("more held than the catch-up bound: every one of his messages collapses at the block, with no read", async () => {
+        const fetches: unknown[] = [];
+        const { timelines, blocks } = masked(async (_c, options) => {
+            fetches.push(options);
+            return { messages: Array.from({ length: 6 }, (_, i) => deeMessage(i + 1)), read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false };
+        }, { page: 2, max: 3 });
+        await timelines.loadNewest(channel);
+        fetches.length = 0;
+
+        blocks.setAliases([dee]);
+
+        expect(said(timelines.state(channel).messages)).toEqual(["1:null:null", "2:null:null", "3:null:null", "4:null:null", "5:null:null", "6:null:null"]);
+        expect(fetches).toEqual([]);
+    });
+
+    test("a room not on screen whose timeline is held shows none of his words the moment he is blocked", async () => {
+        const { timelines, blocks } = masked(async channelId => ({ messages: [deeMessage(channelId === channel ? 1 : 2)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false }));
+        await timelines.loadNewest(channel);
+        await timelines.loadNewest(otherChannel);
+        timelines.leave(otherChannel);
+
+        blocks.setAliases([dee]);
+
+        expect(said(timelines.state(otherChannel).messages)).toEqual(["2:null:null"]);
+        expect(said(timelines.state(channel).messages)).toEqual(["1:null:null"]);
+    });
+
+    test("the row object held is the one masked, so whatever holds a reference to it shows the withheld copy", async () => {
+        const { timelines, blocks } = masked(async () => page([1]));
+        timelines.upsert(channel, deeMessage(5));
+        const reference = timelines.state(channel).messages.find(m => m.id === 5) as TimelineMessage;
+
+        blocks.setAliases([dee]);
+
+        expect(timelines.state(channel).messages.find(m => m.id === 5)).toBe(reference);
+        expect(reference).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
+    });
+
+    test("a thread's counts that arrived before the first page, his face among them, land blank when he is blocked meanwhile", async () => {
+        const first = deferred<HistoryPage>();
+        const { timelines, blocks } = masked(() => first.promise);
+        const loading = timelines.loadNewest(channel);
+        timelines.applyEvent(channel, "thread.updated", { channel_id: channel, root_id: 1, reply_count: 1, last_reply_at: null, participant_count: 1, repliers: [{ person_alias_guid: dee, nick_name: "Dee", last_name: "Vance", avatar_url: "x" }] });
+
+        blocks.setAliases([dee]);
+        first.resolve(page([1]));
+        await loading;
+
+        expect(timelines.state(channel).messages[0].repliers).toEqual([{ person_alias_guid: dee, nick_name: null, last_name: null, avatar_url: null }]);
+    });
+
+    test("an unblock lets go, in a room not on screen, of what is held past the bound when his withheld rows are among it, so its next open reads them again", async () => {
+        const withheld = { messages: Array.from({ length: 6 }, (_, i) => deeWithheld(i + 1)), read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false };
+        const { timelines, blocks } = masked(async channelId => channelId === otherChannel ? withheld : page([1]), { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await timelines.loadNewest(channel);
+        await timelines.loadNewest(otherChannel);
+        timelines.leave(otherChannel);
+
+        blocks.setAliases([]);
+        timelines.release([dee], channel);
+
+        expect(ids(timelines.state(otherChannel).messages)).toEqual([4, 5, 6]);
+        expect(timelines.state(otherChannel).hasMore).toBe(true);
+        expect(ids(timelines.state(channel).messages)).toEqual([1]);
+    });
+
+    test("an unblock in the open room keeps the reader's place: its catch-up reads again from his oldest withheld row, past the bound", async () => {
+        const held = Array.from({ length: 6 }, (_, i) => deeWithheld(i + 1));
+        const fetches: Array<{ afterId?: number }> = [];
+        let isUnblocked = false;
+        const { timelines, blocks } = masked(async (_c, options) => {
+            fetches.push(options);
+            const all = isUnblocked ? held.map(m => deeMessage(m.id)) : held;
+            const after = options.afterId ?? 0;
+            const run = all.filter(m => m.id > after).slice(0, options.afterId === undefined ? 6 : 2);
+            return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: run.length > 0 && run[run.length - 1].id < 6 };
+        }, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        fetches.length = 0;
+
+        isUnblocked = true;
+        blocks.setAliases([]);
+        timelines.release([dee], channel);
+        await timelines.onJoined(channel);
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(said(timelines.state(channel).messages)).toEqual(["1:dee 1:Dee", "2:dee 2:Dee", "3:dee 3:Dee", "4:dee 4:Dee", "5:dee 5:Dee", "6:dee 6:Dee"]);
+        expect(fetches[0]).toEqual({ limit: 2, afterId: 0 });
     });
 });

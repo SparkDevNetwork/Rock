@@ -29,7 +29,7 @@ import { inRoomKind, messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError, DisplayPiece, MessageAction, RoomKind, TimelineMessage } from "../types.partial";
-import { Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask, platformMask, Timelines } from "./useHistory.partial";
 import { Threads, ThreadPlace, threadPlaceOf } from "./useThreads.partial";
 
 export type { MessageAction } from "../types.partial";
@@ -84,6 +84,9 @@ export type MessageActionsDependencies = {
      * over the thread's copy too, and Up in the thread's composer looks among its replies.
      */
     threads?: Pick<Threads, "state" | "applyEvent">;
+
+    /** What the reader may see of a message, applied to a quote as it is started; the platform's own marks alone by default. */
+    mask?: MessageMask;
 };
 
 /** What the actions hold. */
@@ -137,6 +140,12 @@ export type MessageActions = {
 
     /** Drops the quote of a conversation or thread. */
     cancelQuote: (key: string) => void;
+
+    /**
+     * The people blocked gained someone: each quote waiting is masked again, in place. A quote is
+     * the row it was started from, but a later page can have put a newer copy in that row's place.
+     */
+    remask: () => void;
 
     /** The open conversation changed: the editor and the confirm belong to the one left. */
     switchConversation: (channelId: string | null) => void;
@@ -328,6 +337,7 @@ function copyText(message: TimelineMessage): string {
  */
 export function createMessageActions(dependencies: MessageActionsDependencies): MessageActions {
     const state = reactive<MessageActionsState>({ editing: null, confirmingDelete: null, quotes: {} }) as MessageActionsState;
+    const mask = dependencies.mask ?? platformMask;
 
     let isStopped = false;
 
@@ -519,8 +529,13 @@ export function createMessageActions(dependencies: MessageActionsDependencies): 
 
         startQuote: (key: string, message: TimelineMessage): void => {
             if (!isStopped) {
-                state.quotes[key] = message;
+                // the message may be one kept since the people blocked changed, as a quote an expired GIF gives back
+                state.quotes[key] = mask(message);
             }
+        },
+
+        remask: (): void => {
+            maskHeld(Object.values(state.quotes), mask);
         },
 
         cancelQuote: (key: string): void => {
