@@ -965,6 +965,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const held = thread.root?.id === payload.id ? thread.root : thread.replies.find(r => r.id === payload.id);
             if (held) {
                 applyMessageChange(held, event, payload);
+                // a change in place is a write like any other: its pieces may name someone blocked
+                maskHeld([held], mask);
             }
         },
 

@@ -34,7 +34,7 @@ import { CallResult } from "../platformCall.partial";
 import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
-import { Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask, platformMask, Timelines } from "./useHistory.partial";
 import { Threads } from "./useThreads.partial";
 
 export type { CatalogEmoji, EmojiGlyph, Reaction, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
@@ -83,6 +83,9 @@ export type ReactionsDependencies = {
 
     /** People who reacted as the reader may see them, applied to every list of reactors as it lands; as they came by default. */
     maskFaces?: <T extends Reactor>(people: T[]) => T[];
+
+    /** What the reader may see of a message, applied to every copy a reaction changes; the platform's own marks alone by default. */
+    mask?: MessageMask;
 };
 
 /** What the reactions hold. */
@@ -403,6 +406,8 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         recents: readRecents(dependencies.storage, recentsKey)
     }) as ReactionsState;
 
+    const mask = dependencies.mask ?? platformMask;
+
     let isStopped = false;
 
     // The one fetch of the catalog still out, which every open while it is out shares.
@@ -445,20 +450,30 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     }
 
     /**
+     * Changes a copy of a message and masks it as the people blocked stand now: an answer or an
+     * event may have been read before a block, and its faces land after it.
+     */
+    function write(copy: TimelineMessage, apply: (copy: TimelineMessage) => void): void {
+        apply(copy);
+        maskHeld([copy], mask);
+    }
+
+    /**
      * Changes the conversation's copy of a message at once, its reactions then recorded so a page
      * read before the change does not take it back.
      */
     function changeTimeline(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
         const onTimeline = timelineCopy(channelId, messageId);
         if (onTimeline) {
-            apply(onTimeline);
+            write(onTimeline, apply);
             dependencies.timelines.recordReactions(messageId, onTimeline.reactions ?? []);
         }
     }
 
     /**
      * Changes the open thread's copies of a message once its page is in, leaving one the
-     * conversation also holds to the conversation's change, so it is changed once.
+     * conversation also holds to the conversation's change, so it is changed once. A change that
+     * waited for the page is masked when it is made, by the set as it stands then.
      */
     function changeThread(channelId: string, messageId: number, apply: (copy: TimelineMessage) => void): void {
         dependencies.threads?.whenLoaded(channelId, () => {
@@ -466,7 +481,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
                 return;
             }
             const onTimeline = timelineCopy(channelId, messageId);
-            threadCopies(channelId, messageId).filter(copy => copy !== onTimeline).forEach(apply);
+            threadCopies(channelId, messageId).filter(copy => copy !== onTimeline).forEach(copy => write(copy, apply));
         });
     }
 

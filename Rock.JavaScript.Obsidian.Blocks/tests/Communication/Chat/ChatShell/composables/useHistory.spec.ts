@@ -1519,6 +1519,21 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(reference).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
     });
 
+    test("a live edit or a showing again of someone else's message that mentions him lays no face of his in the chip", async () => {
+        const { timelines, blocks } = masked(async () => page([1, 2]));
+        await timelines.loadNewest(channel);
+        blocks.setAliases([dee]);
+        const mentionsDee = [{ type: "text", text: "hi " }, { type: "mention", text: "@Dee Vance", person_alias_guid: dee, nick_name: "Dee", last_name: "Vance", avatar_url: "https://example.org/dee.jpg" }];
+
+        // straight to the timeline, as the edit's own answer comes: the holder is the guard, not the live entry
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "hi <@dee>", pieces: mentionsDee, edited_at: "t" });
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "hi <@dee>", pieces: mentionsDee });
+
+        const chip = { type: "mention", text: "@Dee Vance", person_alias_guid: dee, nick_name: null, last_name: null, avatar_url: null };
+        expect(timelines.state(channel).messages.map(m => m.pieces?.[1])).toEqual([chip, chip]);
+        expect(timelines.state(channel).messages.map(m => m.body)).toEqual(["hi <@dee>", "hi <@dee>"]);
+    });
+
     test("a thread's counts that arrived before the first page, his face among them, land blank when he is blocked meanwhile", async () => {
         const first = deferred<HistoryPage>();
         const { timelines, blocks } = masked(() => first.promise);
@@ -1548,29 +1563,123 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(ids(timelines.state(channel).messages)).toEqual([1]);
     });
 
-    test("an unblock in the open room keeps the reader's place: its catch-up reads again from his oldest withheld row, past the bound", async () => {
-        const held = Array.from({ length: 6 }, (_, i) => deeWithheld(i + 1));
-        const fetches: Array<{ afterId?: number }> = [];
+    /**
+     * Timelines of one open room holding rows 1 to count, each withheld when it is Dee's, answered
+     * as the platform answers after the unblock: every row with its words. The catch-up's page is
+     * 2 and its bound 3; every read is recorded.
+     */
+    async function heldPastBound(count: number, isDees: (id: number) => boolean): Promise<{ timelines: ReturnType<typeof createTimelines>, blocks: ReturnType<typeof createBlocks>, fetches: Array<{ limit: number, beforeId?: number, afterId?: number }>, unblock: () => void }> {
+        const fetches: Array<{ limit: number, beforeId?: number, afterId?: number }> = [];
         let isUnblocked = false;
+        const row = (id: number): TimelineMessage => !isDees(id) ? message(id) : isUnblocked ? deeMessage(id) : deeWithheld(id);
+        const all = (): TimelineMessage[] => Array.from({ length: count }, (_, i) => row(i + 1));
         const { timelines, blocks } = masked(async (_c, options) => {
             fetches.push(options);
-            const all = isUnblocked ? held.map(m => deeMessage(m.id)) : held;
-            const after = options.afterId ?? 0;
-            const run = all.filter(m => m.id > after).slice(0, options.afterId === undefined ? 6 : 2);
-            return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: run.length > 0 && run[run.length - 1].id < 6 };
+            let run: TimelineMessage[];
+            if (options.beforeId !== undefined) {
+                run = all().filter(m => m.id < (options.beforeId as number)).slice(-options.limit);
+            }
+            else if (options.afterId !== undefined) {
+                run = all().filter(m => m.id > (options.afterId as number)).slice(0, options.limit);
+            }
+            else {
+                run = all();
+            }
+            return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: options.afterId !== undefined && run.length > 0 && run[run.length - 1].id < count };
+        }, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        fetches.length = 0;
+        return {
+            timelines, blocks, fetches, unblock: () => {
+                isUnblocked = true;
+                blocks.setAliases([]);
+                timelines.release([dee], channel);
+            }
+        };
+    }
+
+    /** Lets every answer already given land, and what each asks in turn. */
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 30; i++) {
+            await Promise.resolve();
+        }
+    }
+
+    const readsBefore = (fetches: Array<{ beforeId?: number }>): number[] => fetches.filter(f => f.beforeId !== undefined).map(f => f.beforeId as number);
+
+    test("an unblock in the open room keeps the reader's place: what is past the bound is read again, newest first, and the catch-up reads the rest", async () => {
+        const h = await heldPastBound(6, () => true);
+
+        h.unblock();
+        await h.timelines.onJoined(channel);
+        await settle();
+
+        expect(ids(h.timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(said(h.timelines.state(channel).messages)).toEqual(["1:dee 1:Dee", "2:dee 2:Dee", "3:dee 3:Dee", "4:dee 4:Dee", "5:dee 5:Dee", "6:dee 6:Dee"]);
+        expect(readsBefore(h.fetches)).toEqual([4, 2]);
+        expect(h.timelines.state(channel).hasMore).toBe(false);
+    });
+
+    test("an unblock in the open room far back reads again at most a bound's worth past it, and lets go of what is older, however much is held", async () => {
+        const h = await heldPastBound(12, () => true);
+
+        h.unblock();
+        await h.timelines.onJoined(channel);
+        await settle();
+
+        // the bound is 3 at a page of 2: two pages past it, never the five that reach row 1
+        expect(readsBefore(h.fetches)).toEqual([10, 8]);
+        expect(ids(h.timelines.state(channel).messages)).toEqual([6, 7, 8, 9, 10, 11, 12]);
+        expect(said(h.timelines.state(channel).messages).every(line => !line.includes("null"))).toBe(true);
+        expect(h.timelines.state(channel).hasMore).toBe(true);
+    });
+
+    test("an unblock in the open room reads only the pages that hold one of his rows, skipping those between", async () => {
+        const h = await heldPastBound(12, id => id === 2 || id === 9);
+
+        h.unblock();
+        await h.timelines.onJoined(channel);
+        await settle();
+
+        expect(readsBefore(h.fetches)).toEqual([10, 3]);
+        expect(ids(h.timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+        expect(said(h.timelines.state(channel).messages)).toEqual(["2:dee 2:Dee", "9:dee 9:Dee"]);
+    });
+
+    test("an unblock whose open room is then replaced by a newest page that does not join reads nothing of what was let go", async () => {
+        const fetches: Array<{ limit: number, beforeId?: number, afterId?: number }> = [];
+        const reread = deferred<HistoryPage>();
+        let isReplaced = false;
+        const held = Array.from({ length: 6 }, (_, i) => deeWithheld(i + 1));
+        const { timelines, blocks } = masked(async (_c, options) => {
+            fetches.push(options);
+            if (options.beforeId !== undefined) {
+                return reread.promise;
+            }
+            if (isReplaced) {
+                // the newest page, far past what was held, and the catch-up after it
+                const newest = [deeMessage(20), deeMessage(21)];
+                return { messages: options.afterId === undefined ? newest : [], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: options.afterId === undefined };
+            }
+            const run = options.afterId === undefined ? held : held.filter(m => m.id > (options.afterId as number)).slice(0, 2);
+            return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: options.afterId !== undefined && run.length > 0 && run[run.length - 1].id < 6 };
         }, { page: 2, max: 3 });
         blocks.setAliases([dee]);
         await timelines.loadNewest(channel);
         await timelines.onJoined(channel);
         fetches.length = 0;
 
-        isUnblocked = true;
         blocks.setAliases([]);
         timelines.release([dee], channel);
+        isReplaced = true;
+        await timelines.loadNewest(channel);
+        reread.resolve({ messages: [deeMessage(2), deeMessage(3)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: true });
         await timelines.onJoined(channel);
+        await settle();
 
-        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
-        expect(said(timelines.state(channel).messages)).toEqual(["1:dee 1:Dee", "2:dee 2:Dee", "3:dee 3:Dee", "4:dee 4:Dee", "5:dee 5:Dee", "6:dee 6:Dee"]);
-        expect(fetches[0]).toEqual({ limit: 2, afterId: 0 });
+        expect(ids(timelines.state(channel).messages)).toEqual([20, 21]);
+        expect(fetches.filter(f => f.afterId !== undefined && f.afterId < 20)).toEqual([]);
     });
 });

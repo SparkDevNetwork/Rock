@@ -4026,6 +4026,17 @@ describe("a block, whatever order the reads land in", () => {
         };
     }
 
+    /** Ada's message that says nothing of Dee, until a later change to it does. */
+    function adaPlain(id: number): Record<string, unknown> {
+        return { id, person_alias_guid: adaGuid, sender_nick_name: "Ada", message_type: "text", body: `ada ${id}`, pieces: [{ type: "text", text: `ada ${id}` }], created_at: "2026-11-03T10:00:00Z" };
+    }
+
+    /** The pieces of a message that mentions Dee, as the platform builds them for every subscriber: his name and photo in the chip. */
+    const mentionsDee = [{ type: "text", text: "hi " }, { type: "mention", text: "@Dee Vance", ...deeFace }];
+
+    /** A message's reactions as a read before the block answers them: Dee's face among the heart's newest. */
+    const heartWithDee = [{ code: "heart", count: 2, mine: true, emoji: null, image_url: null, label: "heart", reactors: [{ ...deeFace, reactor_person_alias_guid: dee, reacted_at: "t" }] }];
+
     /** chat_get_history as a read before the block answers it, by room and by what it asks. */
     function historyAnswer(body: Record<string, unknown>): HistoryPage {
         const answer = (messages: Array<Record<string, unknown>>, hasMore: boolean): HistoryPage => ({ messages: messages as TimelineMessage[], read_cursor: 11, unread_count: 0, has_more: hasMore });
@@ -4039,9 +4050,9 @@ describe("a block, whatever order the reads land in", () => {
             return answer([deeSays(6), adaCarriesDee(5)], false);
         }
         if (typeof body.p_after_id === "number") {
-            return answer([adaCarriesDee(11), deeSays(10)].filter(m => (m.id as number) > (body.p_after_id as number)), false);
+            return answer([adaPlain(19), adaPlain(12), adaCarriesDee(11), deeSays(10)].filter(m => (m.id as number) > (body.p_after_id as number)), false);
         }
-        return answer([adaCarriesDee(11), deeSays(10)], true);
+        return answer([adaPlain(19), adaPlain(12), adaCarriesDee(11), deeSays(10)], true);
     }
 
     /** Every other read, as a read before the block answers it. */
@@ -4055,6 +4066,12 @@ describe("a block, whatever order the reads land in", () => {
             const root = typeof body.p_before_id === "number" ? 7 : 10;
             return { threads: [{ channel_id: channelA, root: deeSays(root, { repliers: [deeFace] }), reply_count: 1, last_reply_at: "t", last_reply_id: 12, participant_count: 1, following: true, has_unread: false, mention_count: 0 }], has_more: true };
         }
+        if (name === "chat_add_reaction") {
+            return { reactions: heartWithDee };
+        }
+        if (name === "chat_edit_message") {
+            return { edited_at: "2026-11-03T10:05:00Z", pieces: mentionsDee };
+        }
         return { mentions: [{ channel_id: channelA, parent_id: null, message: typeof body.p_before_id === "number" ? deeSays(17) : adaCarriesDee(16) }, { channel_id: channelA, parent_id: null, message: deeSays(18) }], has_more: true };
     };
 
@@ -4065,7 +4082,7 @@ describe("a block, whatever order the reads land in", () => {
      * harness's own wait, and the thread, threads list and mentions reads through these.
      */
     function holdReads(h: ReturnType<typeof build>, pending: Pending[]): void {
-        for (const name of ["chat_get_thread_history", "chat_list_threads", "chat_list_mentions"]) {
+        for (const name of ["chat_get_thread_history", "chat_list_threads", "chat_list_mentions", "chat_add_reaction", "chat_edit_message"]) {
             h.listAnswers[name] = (body: Record<string, unknown>) => new Promise(resolve => pending.push({ name, resolve: () => resolve(listAnswer(name, body)) }));
         }
     }
@@ -4098,14 +4115,16 @@ describe("a block, whatever order the reads land in", () => {
     }
 
     /**
-     * Everything reachable from the shell and the timelines of every room the test used, walked
-     * deep: every message-shaped object by Dee that is not withheld, and every face of his inside
-     * a message, found by path. Written over what the shell holds, not over the mask's code.
+     * Everything reachable from the shell, walked deep, and then what the shell holds of each room
+     * behind its accessors (a room's timeline, its sends), for every room the walk meets: every
+     * message-shaped object by Dee that is not withheld, and every face of his inside a message,
+     * found by path. Written over what the shell holds, not over the mask's code or a list of rooms.
      */
-    function deeShown(h: ReturnType<typeof build>): string[] {
+    function deeShown(h: ReturnType<typeof build>, roomsMet: Set<string> = new Set()): string[] {
         const found: string[] = [];
         const seen = new WeakSet<object>();
         const isDee = (value: unknown): boolean => typeof value === "string" && value.toLowerCase() === dee;
+        const isRoomKey = (key: string): boolean => key === "channel_id" || key === "channelId" || key === "activeChannelId";
         const walk = (value: unknown, path: string, isInMessage: boolean): void => {
             if (!value || typeof value !== "object") {
                 return;
@@ -4133,14 +4152,21 @@ describe("a block, whatever order the reads land in", () => {
                 }
             }
             for (const [key, child] of Object.entries(record)) {
+                if (isRoomKey(key) && typeof child === "string") {
+                    roomsMet.add(child);
+                }
                 if (typeof child !== "function") {
                     walk(child, `${path}.${key}`, isInMessage || isMessage);
                 }
             }
         };
         walk(h.shell, "shell", false);
-        for (const channelId of [channelA, channelB, channelC]) {
-            walk(h.shell.timelines.state(channelId), `timeline(${channelId.slice(0, 9)})`, false);
+        // a room's holders behind an accessor are walked for every room met, the rooms they hold included
+        const walked = new Set<string>();
+        for (let room = [...roomsMet].find(id => !walked.has(id)); room; room = [...roomsMet].find(id => !walked.has(id))) {
+            walked.add(room);
+            walk(h.shell.timelines.state(room), `timeline(${room.slice(0, 9)})`, false);
+            walk(h.shell.sender.pending(room), `sends(${room.slice(0, 9)})`, false);
         }
         return found;
     }
@@ -4206,8 +4232,34 @@ describe("a block, whatever order the reads land in", () => {
         void h.shell.threads.loadMore();
         void h.shell.mentions.loadOlder();
         await settle();
-        expect(deeShown(h).length).toBeGreaterThan(0);
+
+        // Writes that are not pages: a reaction on Dee's reply, which waits for the drawer's first
+        // page in the world "opening"; the reader's heart on Ada's message and the reader's edit of
+        // another, each answer still out; and Ada's message 12 hidden, to be shown again after the block.
+        const topic = topicOf(h, channelTopic(tenant, channelA));
+        topic.listeners["broadcast"]?.({ event: "reaction.added", payload: { message_id: 15, channel_id: channelA, code: "heart", emoji: null, image_url: null, label: "heart", person_alias_guid: adaGuid, reactors: heartWithDee[0].reactors } });
+        topic.listeners["broadcast"]?.({ event: "message.visibility", payload: { id: 12, channel_id: channelA, state: "hidden", notice: null } });
+        void h.shell.reactions.toggleCode(channelA, 11, "heart");
+        h.shell.messageActions.startEdit(channelA, 19);
+        void h.shell.messageActions.saveEdit("hi <@dee>");
+        await settle();
+
+        const roomsMet = new Set<string>();
+        expect(deeShown(h, roomsMet).length).toBeGreaterThan(0);
+        // the walk finds every room by itself: the open one, the one left and the found conversation
+        expect([...roomsMet]).toEqual(expect.arrayContaining([channelA, channelB, channelC]));
         return { h, pending };
+    }
+
+    /**
+     * After the block, writes that change a row already held rather than add one: Ada edits her
+     * message 11 (the thread's root too) to mention Dee, and a moderator shows her message 12 again,
+     * which mentions him; each payload is one for every subscriber, his name and photo in the chip.
+     */
+    function othersMentionDeeLive(h: ReturnType<typeof build>): void {
+        const topic = topicOf(h, channelTopic(tenant, channelA));
+        topic.listeners["broadcast"]?.({ event: "message.edited", payload: { id: 11, channel_id: channelA, body: "hi <@dee>", pieces: mentionsDee, edited_at: "2026-11-03T10:06:00Z" } });
+        topic.listeners["broadcast"]?.({ event: "message.visibility", payload: { id: 12, channel_id: channelA, state: "visible", notice: null, body: "hi <@dee>", pieces: mentionsDee, blocks: null, attachments: null } });
     }
 
     /** Dee writes in room A, a message and a reply in the open thread, after the block. */
@@ -4271,6 +4323,8 @@ describe("a block, whatever order the reads land in", () => {
         expect(deeShown(h)).toEqual([]);
 
         deeWritesLive(h);
+        othersMentionDeeLive(h);
+        expect(deeShown(h)).toEqual([]);
         asksAfterBlock(h);
         expect(await landAll(h, pending, order)).toEqual([]);
         expect(deeShown(h)).toEqual([]);
@@ -4286,6 +4340,8 @@ describe("a block, whatever order the reads land in", () => {
         expect(deeShown(h)).toEqual([]);
 
         deeWritesLive(h);
+        othersMentionDeeLive(h);
+        expect(deeShown(h)).toEqual([]);
         asksAfterBlock(h);
         expect(await landAll(h, pending, order)).toEqual([]);
         expect(deeShown(h)).toEqual([]);

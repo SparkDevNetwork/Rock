@@ -1503,6 +1503,21 @@ describe("a block, as what the threads hold is masked where it is written", () =
         expect(h.threads.state.thread?.root?.repliers).toEqual([{ ...benReplier, nick_name: null, last_name: null, avatar_url: null }]);
     });
 
+    test("a live edit or a showing again of the root or a reply that mentions him lays no face of his in the chip", async () => {
+        const h = maskedThreads();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1)])];
+        await h.threads.openThread(channel, 1);
+        h.blocks.setAliases([ben]);
+        const mentionsBen = [{ type: "text", text: "hi " }, { type: "mention", text: "@Ben Okafor", ...benReplier, avatar_url: "https://example.org/ben.jpg" }];
+
+        h.threads.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "hi <@ben>", pieces: mentionsBen, edited_at: "t" });
+        h.threads.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "hi <@ben>", pieces: mentionsBen });
+
+        const chip = { type: "mention", text: "@Ben Okafor", person_alias_guid: ben, nick_name: null, last_name: null, avatar_url: null };
+        expect(h.threads.state.thread?.root?.pieces?.[1]).toEqual(chip);
+        expect(h.threads.state.thread?.replies[0].pieces?.[1]).toEqual(chip);
+    });
+
     test("what is held, the drawer's root and replies and the list's roots, is masked in place at the block, the same objects", async () => {
         const h = maskedThreads();
         h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { person_alias_guid: ben })])];

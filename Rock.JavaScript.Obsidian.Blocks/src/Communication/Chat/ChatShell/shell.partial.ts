@@ -739,7 +739,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         favorites,
         churchKey: tenantId,
         storage: options.storage,
-        maskFaces: people => blocks.maskFaces(people)
+        maskFaces: people => blocks.maskFaces(people),
+        mask: message => blocks.mask(message)
     });
 
     const mentions = createMentions({
@@ -1264,8 +1265,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /**
      * The people blocked gained someone: every holder of messages masks again what it holds, in
-     * place, before anything else runs. The same holders resync reads again, beside it, so a
-     * holder added to one is added to the other.
+     * place, before anything else runs. A holder added here is added to resync beside it when what
+     * it holds can be read again; the found conversation's look and a quote waiting in a composer
+     * are snapshots resync does not read, so after an unblock they stay withheld, the safe side,
+     * until the person looks again or quotes afresh.
      */
     function remask(): void {
         timelines.remask();

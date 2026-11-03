@@ -1150,3 +1150,87 @@ describe("a refusal worded for the room's kind", () => {
         expect(noticeTexts(notices)).toEqual(["You're not a member of this channel."]);
     });
 });
+
+// Every copy a reaction changes is masked as the people blocked stand when the change is made, so
+// an answer read before a block, or an event that waited for the drawer's page, lands no face of theirs.
+describe("a block, as what a reaction writes is masked", () => {
+    const anyFace = { nick_name: "Anna", last_name: "Reyes", avatar_url: "https://rock.example.org/anna.jpg" };
+    const annaReacted = { ...anyFace, person_alias_guid: anna, reactor_person_alias_guid: anna, reacted_at: "2026-10-16T09:01:00Z" };
+    const annaBlank = { ...annaReacted, nick_name: null, last_name: null, avatar_url: null };
+    const heartBy = (count: number, mine: boolean): ReactionRow => ({ ...rx("heart", count, mine), reactors: [annaReacted] } as unknown as ReactionRow);
+    const reactorsOf = (held: TimelineMessage | null | undefined): unknown[] => ((held as unknown as { reactions?: Array<{ reactors?: unknown[] }> } | null)?.reactions ?? []).flatMap(r => r.reactors ?? []);
+
+    /** The reactions over real timelines and threads, all masked through the blocks as the shell wires them; David wrote every message. */
+    async function maskedReactions(): Promise<{
+        reactions: ReturnType<typeof createReactions>,
+        timelines: ReturnType<typeof createTimelines>,
+        threads: ReturnType<typeof createThreads>,
+        blocks: ReturnType<typeof createBlocks>,
+        answers: Array<CallResult | Deferred<CallResult>>
+    }> {
+        const answers: Array<CallResult | Deferred<CallResult>> = [];
+        const next = (): Promise<CallResult> => {
+            const answer = answers.shift() ?? ok({});
+            return "promise" in answer ? answer.promise : Promise.resolve(answer);
+        };
+        // eslint-disable-next-line prefer-const
+        let blocks: ReturnType<typeof createBlocks>;
+        const mask = <T extends Partial<TimelineMessage>>(m: T): T => blocks.mask(m);
+        const timelines = createTimelines({
+            limits: () => ({ history_page_size: 50 }),
+            fetchPage: async () => ({ messages: [message(42, [rx("heart", 1)], { person_alias_guid: david })], read_cursor: null, unread_count: 0, has_more: false }),
+            mask
+        });
+        const threads = createThreads({ limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: next, timelines, personAliasGuid: me, mask } as never);
+        const reactions = createReactions({ call: next, timelines, threads, personAliasGuid: me, notify: jest.fn(), favorites, churchKey: church, storage: null, mask } as never);
+        blocks = createBlocks({
+            call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
+            onChanged: () => undefined,
+            remask: () => {
+                timelines.remask();
+                threads.remask();
+            },
+            notify: () => undefined
+        });
+        blocks.setAliases([]);
+        await timelines.loadNewest(channel);
+        return { reactions, timelines, threads, blocks, answers };
+    }
+
+    test("a press's answer read before the block and landing after it shows no face of hers", async () => {
+        const h = await maskedReactions();
+        const answer = deferred<CallResult>();
+        h.answers.push(answer);
+
+        const pressing = h.reactions.toggle(channel, 42, glyph("heart"));
+        h.blocks.setAliases([anna]);
+        answer.resolve(ok({ message_id: 42, reactions: [heartBy(2, true)] }));
+        await pressing;
+
+        const held = h.timelines.state(channel).messages.find(m => m.id === 42);
+        expect(chipsOf(h.timelines)).toEqual([{ code: "heart", count: 2, mine: true }]);
+        expect(reactorsOf(held)).toEqual([annaBlank]);
+    });
+
+    test("a reaction that waited for the drawer's first page lands no face of someone blocked while it waited", async () => {
+        const h = await maskedReactions();
+        const page = deferred<CallResult>();
+        h.answers.push(page);
+        const opening = h.threads.openThread(channel, 42);
+        await flush();
+
+        h.reactions.applyThreadEvent(channel, "reaction.added", { ...added("heart", anna, 43), reactors: [annaReacted] });
+        h.blocks.setAliases([anna]);
+        page.resolve(ok({ root: message(42, [], { person_alias_guid: david }), messages: [message(43, [], { parent_id: 42, person_alias_guid: david })], has_more: false, following: false, read_cursor: null }));
+        await opening;
+        await flush();
+
+        const reply = h.threads.state.thread?.replies.find(m => m.id === 43);
+        expect(threadChipsOf(reply)).toEqual([{ code: "heart", count: 1, mine: false }]);
+        expect(reactorsOf(reply)).toEqual([annaBlank]);
+    });
+
+    function threadChipsOf(held: TimelineMessage | null | undefined): Array<{ code: string, count: number, mine: boolean }> {
+        return ((held as unknown as { reactions?: ReactionRow[] } | null)?.reactions ?? []).map(r => ({ code: r.code, count: r.count, mine: r.mine }));
+    }
+});

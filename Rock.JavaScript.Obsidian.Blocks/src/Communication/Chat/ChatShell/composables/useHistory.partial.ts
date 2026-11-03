@@ -372,9 +372,12 @@ export type Timelines = {
     remask: () => void;
 
     /**
-     * The people blocked lost these aliases, whose withheld rows only a read gives back. The open
-     * room's next catch-up reads again from the oldest of them, so the reader keeps their place; a
-     * room not on screen lets go of what is held past the catch-up bound, read again at its next open.
+     * The people blocked lost these aliases, whose withheld rows only a read gives back. Within the
+     * catch-up bound the next catch-up reads them again. Past it, the open room reads again, newest
+     * first, the pages that hold one, up to a bound's worth of rows, so the reader keeps their place
+     * at a cost that follows what the unblock gives back rather than how far back they are; what it
+     * does not reach, and what is past the bound in a room not on screen, is let go and read again
+     * by scrolling.
      */
     release: (aliases: readonly string[], openChannelId: string | null) => void;
 
@@ -519,9 +522,6 @@ type ChannelSync = {
      * a second ask for the same page, the button's and the top of the feed's, ends with it.
      */
     olderLoad: { beforeId: number, epoch: number, done: Promise<void> } | null;
-
-    /** The oldest message an unblock left withheld, which the next catch-up reads again from; null for none. */
-    rereadFrom: number | null;
 };
 
 /**
@@ -578,7 +578,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null, rereadFrom: null };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null };
             syncs.set(channelId, channelSync);
         }
 
@@ -737,6 +737,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             const message = find(channelId, edited.id);
             if (message) {
                 applyMessageChange(message, event, edited);
+                // a change in place is a write like any other: its pieces may name someone blocked
+                maskHeld([message], mask);
             }
             recordLive(edited.id, { body: edited.body, pieces: edited.pieces ?? null, edited_at: edited.edited_at });
         }
@@ -753,6 +755,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             const message = find(channelId, changed.id);
             if (message) {
                 applyMessageChange(message, event, changed);
+                maskHeld([message], mask);
             }
             const shown = changed.state === "visible";
             recordLive(changed.id, {
@@ -841,11 +844,6 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let afterId = isRejoin && settled.length > 0
             ? settled[Math.max(0, settled.length - max)].id - 1
             : verified;
-        // an unblock reads again every row it left withheld, however far back the reader is
-        if (channelSync.rereadFrom !== null) {
-            afterId = Math.min(afterId, channelSync.rereadFrom - 1);
-            channelSync.rereadFrom = null;
-        }
         let fetched = 0;
         let attempt = 0;
 
@@ -940,6 +938,65 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         channelSync.running = run;
         return run;
+    }
+
+    /** Lets go of every message held older than this id; the feed reads them again by scrolling. */
+    function letGoBefore(channelId: string, id: number): void {
+        const timeline = state(channelId);
+        const count = positionOf(timeline.messages, id);
+        if (count > 0) {
+            timeline.messages.splice(0, count);
+            timeline.hasMore = true;
+        }
+    }
+
+    /**
+     * Reads again, in the open room, the rows an unblock left withheld older than the first row
+     * the catch-up reaches: newest first, skipping to the next withheld row so a page holding none
+     * is never read, and stopping at a bound's worth of rows read. Whatever it does not read again,
+     * because it reached the bound, a read failed or what is held was replaced or left, is let go
+     * from that point back, so no withheld copy of someone no longer blocked stays held.
+     *
+     * @param channelId The open room.
+     * @param isWithheld Whether a held row is withheld by an alias no longer blocked.
+     * @param reach The first row the catch-up reaches; only rows older than it are read here.
+     */
+    async function rereadPastBound(channelId: string, isWithheld: (message: TimelineMessage) => boolean, reach: number): Promise<void> {
+        const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
+        const newestWithheldBefore = (id: number): TimelineMessage | undefined => {
+            const messages = toRaw(state(channelId).messages);
+            for (let i = positionOf(messages, id) - 1; i >= 0; i--) {
+                if (isWithheld(messages[i])) {
+                    return messages[i];
+                }
+            }
+            return undefined;
+        };
+
+        let before = reach;
+        let read = 0;
+        try {
+            for (let next = newestWithheldBefore(before); next; next = newestWithheldBefore(before)) {
+                if (read >= max || isStopped) {
+                    break;
+                }
+                const answer = await fetchCurrent(channelId, { limit: pageSize, beforeId: next.id + 1 });
+                const range = answer ? bounds(answer.page) : null;
+                if (!answer || !range || isStopped) {
+                    break;
+                }
+                mergePage(channelId, answer.page, answer.readAt);
+                read += answer.page.messages.length;
+                before = range.oldest;
+            }
+        }
+        catch {
+            // a refused or failed read gives nothing back; what it would have read is let go below
+        }
+
+        if (newestWithheldBefore(before)) {
+            letGoBefore(channelId, before);
+        }
     }
 
     /** Lets go of a channel: any catch-up stops, and any answer still on its way is dropped. */
@@ -1096,26 +1153,27 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         release: (aliases: readonly string[], openChannelId: string | null): void => {
             const released = new Set(aliases.map(alias => alias.toLowerCase()));
             const isReleased = (alias: string | null | undefined): boolean => !!alias && released.has(alias.toLowerCase());
+            const isWithheldByReleased = (m: TimelineMessage): boolean => (!!m.blocked && isReleased(m.person_alias_guid)) || (!!m.quoted?.blocked && isReleased(m.quoted.person_alias_guid));
             const max = (dependencies.catchUp?.() ?? defaultCatchUp).max;
 
             for (const [channelId, timeline] of states) {
                 const messages = toRaw(timeline.messages);
-                const oldest = messages.findIndex(m => (m.blocked && isReleased(m.person_alias_guid)) || (m.quoted?.blocked && isReleased(m.quoted.person_alias_guid)));
+                const oldest = messages.findIndex(isWithheldByReleased);
                 if (oldest < 0) {
                     continue;
                 }
-                if (channelId === openChannelId) {
-                    const channelSync = sync(channelId);
-                    channelSync.rereadFrom = Math.min(channelSync.rereadFrom ?? Infinity, messages[oldest].id);
+
+                // the first row a rejoin's catch-up reads again, as catchUpPass finds it
+                const settled = positionOf(messages, (timeline.verifiedThrough ?? 0) + 1);
+                const reach = Math.max(0, settled - max);
+                if (oldest >= reach) {
                     continue;
                 }
-
-                // what a catch-up from the bound would not reach is let go, and read again by scrolling
-                const settled = positionOf(messages, (timeline.verifiedThrough ?? 0) + 1);
-                const beyond = settled - max;
-                if (oldest < beyond) {
-                    timeline.messages.splice(0, beyond);
-                    timeline.hasMore = true;
+                if (channelId === openChannelId) {
+                    void rereadPastBound(channelId, isWithheldByReleased, messages[reach].id);
+                }
+                else {
+                    letGoBefore(channelId, messages[reach].id);
                 }
             }
         },

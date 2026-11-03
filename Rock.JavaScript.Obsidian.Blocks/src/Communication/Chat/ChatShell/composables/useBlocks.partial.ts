@@ -360,11 +360,6 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         return reactors === reaction.reactors ? reaction : { ...reaction, reactors: reactors ?? undefined };
     }
 
-    /**
-     * A message as the person may see it under the set as it stands now: by someone blocked, or
-     * withheld by the platform, it is withheld; otherwise the faces of the blocked that ride on it
-     * are blank. The same object when nothing applies, so a row already right is never written.
-     */
     /** Whether a face of someone blocked is shown on any of these, read with no copy made. */
     function isAnyFaceShown(faces: readonly object[] | null | undefined, kind?: "mention"): boolean {
         if (!Array.isArray(faces)) {
@@ -407,6 +402,11 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         return false;
     }
 
+    /**
+     * A message as the person may see it under the set as it stands now: by someone blocked, or
+     * withheld by the platform, it is withheld; otherwise the faces of the blocked that ride on it
+     * are blank. The same object when nothing applies, so a row already right is never written.
+     */
     function mask<T extends Partial<TimelineMessage>>(message: T): T {
         if (!isMaskable(message)) {
             return message;
