@@ -1466,8 +1466,7 @@ describe("a block, as what is held is masked where it is written", () => {
             limits,
             fetchPage,
             catchUp: () => catchUp,
-            mask: m => blocks.mask(m),
-            maskEvent: (event, payload) => blocks.maskEvent(event, payload)
+            mask: m => blocks.mask(m)
         });
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
@@ -1560,6 +1559,17 @@ describe("a block, as what is held is masked where it is written", () => {
         blocks.setAliases([dee]);
         first.resolve(page([1]));
         await loading;
+
+        expect(timelines.state(channel).messages[0].repliers).toEqual([{ person_alias_guid: dee, nick_name: null, last_name: null, avatar_url: null }]);
+    });
+
+    test("a thread's counts laid live on a held root, his face among them, land blank", async () => {
+        const { timelines, blocks } = masked(async () => page([1]));
+        await timelines.loadNewest(channel);
+        blocks.setAliases([dee]);
+
+        // straight to the timeline, past the live entry: the holder is the guard
+        timelines.applyEvent(channel, "thread.updated", { channel_id: channel, root_id: 1, reply_count: 1, last_reply_at: null, participant_count: 1, repliers: [{ person_alias_guid: dee, nick_name: "Dee", last_name: "Vance", avatar_url: "x" }] });
 
         expect(timelines.state(channel).messages[0].repliers).toEqual([{ person_alias_guid: dee, nick_name: null, last_name: null, avatar_url: null }]);
     });

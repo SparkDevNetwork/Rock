@@ -197,6 +197,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
         churchKey: church,
         storage: "storage" in options ? options.storage : memoryStorage(),
         mask: platformMask,
+        maskFaces: people => people,
         ...("threads" in options ? { threads: options.threads } : {}),
         ...("roomKind" in options ? { roomKind: options.roomKind } : {})
     } as unknown as Parameters<typeof createReactions>[0]);
@@ -964,7 +965,8 @@ describe("a page read before a reaction", () => {
             favorites,
             churchKey: church,
             storage: null,
-            mask: platformMask
+            mask: platformMask,
+            maskFaces: people => people
         } as never);
 
         const deliver = (event: "reaction.added" | "reaction.removed", payload: unknown): void => {
@@ -1187,7 +1189,7 @@ describe("a block, as what a reaction writes is masked", () => {
             mask
         });
         const threads = createThreads({ limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: next, timelines, personAliasGuid: me, mask } as never);
-        const reactions = createReactions({ call: next, timelines, threads, personAliasGuid: me, notify: jest.fn(), favorites, churchKey: church, storage: null, mask } as never);
+        const reactions = createReactions({ call: next, timelines, threads, personAliasGuid: me, notify: jest.fn(), favorites, churchKey: church, storage: null, mask, maskFaces: people => people } as never);
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
             onChanged: () => undefined,

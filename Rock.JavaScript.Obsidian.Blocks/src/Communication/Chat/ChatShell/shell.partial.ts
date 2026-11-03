@@ -646,8 +646,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // thread's copies are moved as the event arrives.
         applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload),
         // every holder writes through the blocks' mask, made below and called only once running
-        mask: message => blocks.mask(message),
-        maskEvent: (event, payload) => blocks.maskEvent(event, payload)
+        mask: message => blocks.mask(message)
     });
 
     // A reload asked while a rejoin's wait is pending is the one that wait will make. A failed

@@ -331,12 +331,6 @@ export type TimelineDependencies = {
 
     /** What the reader may see of a message, applied to every row as it is written. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
-
-    /**
-     * A live event as the reader may see it, applied again when an event held for the first page
-     * is laid over it, since the people blocked may have changed while it waited.
-     */
-    maskEvent?: (event: string, payload: unknown) => unknown;
 };
 
 /** The timelines a shell holds. */
@@ -689,6 +683,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         const root = find(channelId, update.root_id);
         if (root) {
             Object.assign(root, fields);
+            // the repliers are faces, so this write is masked as every other one is, whenever the event arrived
+            maskHeld([root], mask);
             if (root.thread_following !== undefined) {
                 fields.thread_following = root.thread_following;
             }
@@ -1056,7 +1052,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                         if (isReactionEvent(event) && heldAt < answer.readAt) {
                             continue;
                         }
-                        apply(channelId, event, dependencies.maskEvent?.(event, payload) ?? payload);
+                        apply(channelId, event, payload);
                     }
                 }
             }

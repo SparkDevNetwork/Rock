@@ -81,8 +81,8 @@ export type ReactionsDependencies = {
     /** Where the recents are kept; absent or null where there is none. Either call may throw. */
     storage?: Pick<Storage, "getItem" | "setItem"> | null;
 
-    /** People who reacted as the reader may see them, applied to every list of reactors as it lands; as they came by default. */
-    maskFaces?: <T extends Reactor>(people: T[]) => T[];
+    /** People who reacted as the reader may see them, applied to every list of reactors as it lands. Required, so a holder wired without the people blocked does not compile. */
+    maskFaces: <T extends Reactor>(people: T[]) => T[];
 
     /** What the reader may see of a message, applied to every copy a reaction changes. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
@@ -775,7 +775,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
             }
 
             // a list read before a block lands after it with the faces it may show now
-            return { reactors: dependencies.maskFaces?.(page.reactors) ?? page.reactors, has_more: page.has_more === true };
+            return { reactors: dependencies.maskFaces(page.reactors), has_more: page.has_more === true };
         },
 
         stop: (): void => {
