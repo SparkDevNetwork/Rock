@@ -87,8 +87,8 @@ export type BlocksDependencies = {
      */
     onChanged: (isInSidebarAnswer: boolean, removed: readonly string[]) => void;
 
-    /** The set gained someone: every holder masks again, in place, what it holds. */
-    remask: () => void;
+    /** The set gained these aliases: every holder masks again, in place, what it holds. */
+    remask: (added: readonly string[]) => void;
 
     /** Shows a toast, for a block or unblock asked from a card or a message. */
     notify: (notice: ActionNotice) => void;
@@ -253,9 +253,9 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
 
         const next = new Set(aliases.filter((a): a is string => typeof a === "string").map(a => a.toLowerCase()));
         const removed = [...set].filter(alias => !next.has(alias));
-        const isAdded = [...next].some(alias => !set.has(alias));
+        const added = [...next].filter(alias => !set.has(alias));
         const isFirst = !hasSet;
-        if (!isFirst && !isAdded && removed.length === 0) {
+        if (!isFirst && added.length === 0 && removed.length === 0) {
             return;
         }
 
@@ -264,10 +264,10 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         notBlocked = new Set();
         setNumber++;
         state.aliases = [...next];
-        if (isAdded) {
+        if (added.length > 0) {
             isRemasking = true;
             try {
-                dependencies.remask();
+                dependencies.remask(added);
             }
             finally {
                 isRemasking = false;

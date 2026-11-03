@@ -1454,7 +1454,7 @@ describe("a block, as what is held is masked where it is written", () => {
     }
 
     /** Timelines over a fetch the test answers, masked through the blocks as the shell wires them. */
-    function masked(fetchPage: (channelId: string, options: { limit: number, beforeId?: number, afterId?: number }) => Promise<HistoryPage>, catchUp = { page: 100, max: 500 }): {
+    function masked(fetchPage: (channelId: string, options: { limit: number, beforeId?: number, afterId?: number }) => Promise<HistoryPage>, catchUp = { page: 100, max: 500 }, extra: Partial<Parameters<typeof createTimelines>[0]> = {}): {
         timelines: ReturnType<typeof createTimelines>,
         blocks: ReturnType<typeof createBlocks>,
         changes: string[][]
@@ -1466,12 +1466,13 @@ describe("a block, as what is held is masked where it is written", () => {
             limits,
             fetchPage,
             catchUp: () => catchUp,
-            mask: m => blocks.mask(m)
+            mask: m => blocks.mask(m),
+            ...extra
         });
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
             onChanged: (_isInSidebarAnswer, removed) => changes.push([...(removed ?? [])]),
-            remask: () => timelines.remask(),
+            remask: added => timelines.remask(added),
             notify: () => undefined
         });
         blocks.setAliases([]);
@@ -1574,20 +1575,29 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(timelines.state(channel).messages[0].repliers).toEqual([{ person_alias_guid: dee, nick_name: null, last_name: null, avatar_url: null }]);
     });
 
-    test("an unblock lets go, in a room not on screen, of what is held past the bound when his withheld rows are among it, so its next open reads them again", async () => {
-        const withheld = { messages: Array.from({ length: 6 }, (_, i) => deeWithheld(i + 1)), read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false };
-        const { timelines, blocks } = masked(async channelId => channelId === otherChannel ? withheld : page([1]), { page: 2, max: 3 });
+    test("an unblock leaves a room not on screen as it is, and its next open reads his rows again, newest first, a bound's worth, letting go of what is older", async () => {
+        const room = platformRoom(() => dee);
+        const { timelines, blocks } = masked((channelId, options) => channelId === otherChannel ? room.fetchPage(channelId, options) : Promise.resolve(page([1])), { page: 2, max: 3 });
         blocks.setAliases([dee]);
         await timelines.loadNewest(channel);
         await timelines.loadNewest(otherChannel);
         timelines.leave(otherChannel);
 
-        blocks.setAliases([]);
-        timelines.release([dee], channel);
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
 
-        expect(ids(timelines.state(otherChannel).messages)).toEqual([4, 5, 6]);
-        expect(timelines.state(otherChannel).hasMore).toBe(true);
+        expect(ids(timelines.state(otherChannel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, otherChannel)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(timelines.state(otherChannel).hasMore).toBe(false);
         expect(ids(timelines.state(channel).messages)).toEqual([1]);
+
+        room.newest = 1;
+        await openAsShell(timelines, otherChannel);
+
+        expect(withheldIds(timelines, otherChannel)).toEqual([]);
+        expect(readsBefore(room.reads)).toEqual([6, 4]);
+        expect(ids(timelines.state(otherChannel).messages)).toEqual([2, 3, 4, 5, 6]);
+        expect(timelines.state(otherChannel).hasMore).toBe(true);
     });
 
     /**
@@ -1622,7 +1632,7 @@ describe("a block, as what is held is masked where it is written", () => {
             timelines, blocks, fetches, unblock: () => {
                 isUnblocked = true;
                 blocks.setAliases([]);
-                timelines.release([dee], channel);
+                timelines.release([dee]);
             }
         };
     }
@@ -1722,29 +1732,32 @@ describe("a block, as what is held is masked where it is written", () => {
 
     const withheldLeft = (timelines: ReturnType<typeof createTimelines>, channelId: string): string[] => said(timelines.state(channelId).messages).filter(line => line.includes("null"));
 
-    test("an unblock in the open room gives back every row within the bound when the resync's newest page verifies live rows held since the last page", async () => {
+    test("an unblock in the open room gives back the rows the catch-up's span leaves when the resync's newest page verifies live rows held since the last page: read again newest first, a bound's worth, and what is older let go", async () => {
         const h = await heldWithLiveRows();
 
         h.unblock();
-        h.timelines.release([dee], channel);
+        h.timelines.release([dee]);
         await openAsShell(h.timelines, channel);
 
-        // the live rows 7 and 8, verified by the newest page, would move the catch-up's own start past 4 and 5
+        // the live rows 7 and 8, verified by the newest page, move the catch-up's start past 4 and 5,
+        // which are read again after it with 2 and 3; row 1 is past the reread's bound of 3
         expect(withheldLeft(h.timelines, channel)).toEqual([]);
-        expect(ids(h.timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+        expect(readsBefore(h.fetches)).toEqual([6, 4]);
+        expect(ids(h.timelines.state(channel).messages)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+        expect(h.timelines.state(channel).hasMore).toBe(true);
     });
 
     test("an unblock's rows are read once: the rejoin after the catch-up that read them starts where its own bound does", async () => {
         const h = await heldWithLiveRows();
         h.unblock();
-        h.timelines.release([dee], channel);
+        h.timelines.release([dee]);
         await openAsShell(h.timelines, channel);
         h.fetches.length = 0;
 
         await h.timelines.onJoined(channel);
         await settle();
 
-        // eight settled rows at a bound of 3: from row 6 on
+        // seven settled rows, 2 to 8, at a bound of 3: from row 6 on
         expect(h.fetches[0]).toEqual({ limit: 2, afterId: 5 });
     });
 
@@ -1752,7 +1765,7 @@ describe("a block, as what is held is masked where it is written", () => {
         const h = await heldWithLiveRows();
 
         h.unblock();
-        h.timelines.release([dee], channel);
+        h.timelines.release([dee]);
         h.timelines.leave(channel);
         await settle();
         await openAsShell(h.timelines, channel);
@@ -1760,18 +1773,19 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(withheldLeft(h.timelines, channel)).toEqual([]);
     });
 
-    test("an unblock gives back, in a room not on screen opened later, every row within the bound when its newest page verifies live rows held since its last page", async () => {
+    test("an unblock gives back, in a room not on screen opened later, the rows its catch-up's span leaves when its newest page verifies live rows held since its last page: read again newest first, a bound's worth, and what is older let go", async () => {
         const h = await heldWithLiveRows();
         h.timelines.leave(channel);
 
         h.unblock();
-        h.timelines.release([dee], otherChannel);
+        h.timelines.release([dee]);
         await openAsShell(h.timelines, channel);
 
-        // what was past the bound was let go and is read again by scrolling; the rest is back
-        expect(ids(h.timelines.state(channel).messages)).toEqual([4, 5, 6, 7, 8]);
-        expect(h.timelines.state(channel).hasMore).toBe(true);
+        // nothing is let go at the unblock; the open's reread lets go only of row 1, past its bound of 3
         expect(withheldLeft(h.timelines, channel)).toEqual([]);
+        expect(readsBefore(h.fetches)).toEqual([6, 4]);
+        expect(ids(h.timelines.state(channel).messages)).toEqual([2, 3, 4, 5, 6, 7, 8]);
+        expect(h.timelines.state(channel).hasMore).toBe(true);
     });
 
     test("an unblock whose open room is then replaced by a newest page that does not join reads nothing of what was let go", async () => {
@@ -1798,7 +1812,7 @@ describe("a block, as what is held is masked where it is written", () => {
         fetches.length = 0;
 
         blocks.setAliases([]);
-        timelines.release([dee], channel);
+        timelines.release([dee]);
         isReplaced = true;
         await timelines.loadNewest(channel);
         reread.resolve({ messages: [deeMessage(2), deeMessage(3)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: true });
@@ -1807,5 +1821,412 @@ describe("a block, as what is held is masked where it is written", () => {
 
         expect(ids(timelines.state(channel).messages)).toEqual([20, 21]);
         expect(fetches.filter(f => f.afterId !== undefined && f.afterId < 20)).toEqual([]);
+    });
+
+    const ada = "a0000001-0000-4000-8000-000000000000";
+    const sam = "a0000008-0000-4000-8000-000000000000";
+
+    type Read = { limit: number, beforeId?: number, afterId?: number };
+
+    /**
+     * A room on the platform as the test changes it: rows 1 to count, each by whoever authorOf
+     * names, withheld while that person is blocked or while the row is one the platform still
+     * withholds for another reason, and a quote of Dee's withheld while he is blocked. A page is
+     * answered as the platform stands when it is served, the newest page being the newest `newest`
+     * rows. Every read and the rows it carried are recorded; the next read `hold` names waits until
+     * the test lets it go, and a read `fail` names is refused with the error it gives.
+     */
+    type PlatformRoom = {
+        count: number,
+        newest: number,
+        blocked: Set<string>,
+        stillWithheld: Set<number>,
+        gone: Set<number>,
+        reads: Read[],
+        served: number,
+        held: Array<() => void>,
+        hold: (options: Read) => boolean,
+        fail: (options: Read) => unknown,
+        row: (id: number) => TimelineMessage,
+        answer: (options: Read) => HistoryPage,
+        fetchPage: (channelId: string, options: Read) => Promise<HistoryPage>,
+        unblock: (blocks: ReturnType<typeof createBlocks>, who: string) => void
+    };
+
+    function platformRoom(authorOf: (id: number) => string, quotesDee: (id: number) => boolean = () => false): PlatformRoom {
+        const room: PlatformRoom = {
+            count: 6,
+            newest: firstPageSize,
+            blocked: new Set<string>([dee]),
+            stillWithheld: new Set<number>(),
+            gone: new Set<number>(),
+            reads: [] as Read[],
+            served: 0,
+            held: [] as Array<() => void>,
+            hold: (_options: Read): boolean => false,
+            fail: (_options: Read): unknown => undefined,
+
+            row(id: number): TimelineMessage {
+                const who = authorOf(id);
+                const shown: TimelineMessage = who === dee ? deeMessage(id) : { ...message(id), person_alias_guid: who, sender_nick_name: who === sam ? "Sam" : "Ada" };
+                let row: TimelineMessage = room.blocked.has(who) || room.stillWithheld.has(id) ? { ...shown, sender_nick_name: null, body: null, blocked: true } : shown;
+                if (quotesDee(id)) {
+                    const quote = { id: 100 + id, person_alias_guid: dee, sender_nick_name: "Dee", body: "dee said", created_at: row.created_at };
+                    row = { ...row, quoted_message_id: quote.id, quoted: room.blocked.has(dee) ? { ...quote, sender_nick_name: null, body: null, blocked: true } : quote };
+                }
+                return row;
+            },
+
+            answer(options: Read): HistoryPage {
+                const all = Array.from({ length: room.count }, (_, i) => i + 1).filter(id => !room.gone.has(id)).map(id => room.row(id));
+                const oldest = all[0]?.id ?? 0;
+                const newest = all[all.length - 1]?.id ?? 0;
+                let run: TimelineMessage[];
+                let hasMore: boolean;
+                if (options.beforeId !== undefined) {
+                    run = all.filter(m => m.id < (options.beforeId as number)).slice(-options.limit);
+                    hasMore = run.length > 0 && run[0].id > oldest;
+                }
+                else if (options.afterId !== undefined) {
+                    run = all.filter(m => m.id > (options.afterId as number)).slice(0, options.limit);
+                    hasMore = run.length > 0 && run[run.length - 1].id < newest;
+                }
+                else {
+                    run = all.slice(-room.newest);
+                    hasMore = all.length > room.newest;
+                }
+                return { messages: run, read_cursor: null, unread_count: 0, first_unread_id: null, has_more: hasMore };
+            },
+
+            fetchPage: async (_channelId: string, options: Read): Promise<HistoryPage> => {
+                room.reads.push(options);
+                if (room.hold(options)) {
+                    room.hold = () => false;
+                    await new Promise<void>(resolve => room.held.push(resolve));
+                }
+                const error = room.fail(options);
+                if (error) {
+                    throw error;
+                }
+                const answer = room.answer(options);
+                room.served += answer.messages.length;
+                return answer;
+            },
+
+            /** The platform lets the person go and the client hears the set, as an unblock lands. */
+            unblock(blocks: ReturnType<typeof createBlocks>, who: string): void {
+                room.blocked.delete(who);
+                blocks.setAliases([...room.blocked]);
+            }
+        };
+        return room;
+    }
+
+    /** Every held row withheld, its own words or its quote's. */
+    function withheldIds(timelines: ReturnType<typeof createTimelines>, channelId: string): number[] {
+        return timelines.state(channelId).messages.filter(m => m.blocked || m.quoted?.blocked).map(m => m.id);
+    }
+
+    /** Lets every answer given land, through waits of any length the timelines chain. */
+    async function flush(): Promise<void> {
+        for (let i = 0; i < 20; i++) {
+            await new Promise(resolve => setTimeout(resolve, 0));
+        }
+    }
+
+    function liveRow(row: TimelineMessage): Record<string, unknown> {
+        return { ...row, channel_id: channel };
+    }
+
+    test("a second unblock while the first one's catch-up is on its way gives back the rows of the second person that pass read while they were still blocked", async () => {
+        const room = platformRoom(id => id === 4 ? dee : id === 6 ? sam : ada);
+        room.blocked.add(sam);
+        room.newest = 3;
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee, sam]);
+        await openAsShell(timelines, channel);
+        room.count = 8;
+        timelines.applyEvent(channel, "message.created", liveRow(room.row(7)));
+        timelines.applyEvent(channel, "message.created", liveRow(room.row(8)));
+
+        // Dee let go, and the resync's catch-up held at its second page
+        room.hold = options => options.afterId === 7;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const first = timelines.onJoined(channel);
+        await flush();
+
+        // while it waits, two live rows, and Sam let go
+        room.count = 10;
+        timelines.applyEvent(channel, "message.created", liveRow(room.row(9)));
+        timelines.applyEvent(channel, "message.created", liveRow(room.row(10)));
+        room.unblock(blocks, sam);
+        timelines.release([sam]);
+        await timelines.loadNewest(channel);
+        const second = timelines.onJoined(channel);
+        room.held.shift()?.();
+        await first;
+        await second;
+        await flush();
+
+        expect(withheldIds(timelines, channel)).toEqual([]);
+    });
+
+    test("an unblock in a room left again and again before its catch-up reads, on its next open, no more than a bound and a reread's worth", async () => {
+        const room = platformRoom(id => id <= 6 ? dee : ada);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        timelines.leave(channel);
+        room.newest = 3;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+
+        // each time: two live rows, a newest page that joins what is held, and left before its catch-up
+        for (let i = 0; i < 6; i++) {
+            room.count += 2;
+            timelines.applyEvent(channel, "message.created", liveRow(room.row(room.count - 1)));
+            timelines.applyEvent(channel, "message.created", liveRow(room.row(room.count)));
+            await timelines.loadNewest(channel);
+            timelines.leave(channel);
+        }
+        room.served = 0;
+        await openAsShell(timelines, channel);
+
+        // the newest page's 3, the catch-up's bound of 3 and the reread's 4: two pages past a bound of 3
+        expect(room.served).toBeLessThanOrEqual(10);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+    });
+
+    test("an unblock whose reread is on its way when the room is left lets nothing go, and the next open gives every row back", async () => {
+        const room = platformRoom(() => dee);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.hold = options => options.beforeId !== undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads)).toEqual([4]);
+
+        timelines.leave(channel);
+        room.held.shift()?.();
+        await joining;
+        await flush();
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([1, 2, 3]);
+
+        await openAsShell(timelines, channel);
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+    });
+
+    test("an unblock's reread that fails for a moment waits and tries again, without saying the room is behind, and gives every row back", async () => {
+        const room = platformRoom(() => dee);
+        const waiting: Array<() => void> = [];
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 }, { sleep: () => new Promise<void>(resolve => waiting.push(resolve)) });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        let failures = 1;
+        room.fail = options => options.beforeId !== undefined && failures-- > 0 ? { message: "rpc.unavailable", status: 503 } : undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await flush();
+
+        // caught up on what is new, so the room is not behind while the reread waits
+        expect(waiting).toHaveLength(1);
+        expect(timelines.state(channel).isBehind).toBe(false);
+        waiting.shift()?.();
+        await joining;
+        await flush();
+
+        expect(readsBefore(room.reads)).toEqual([4, 4, 2]);
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+    });
+
+    test("an unblock's reread refused ends the catch-up as a refusal does, and lets nothing go", async () => {
+        const room = platformRoom(() => dee);
+        const waiting: Array<() => void> = [];
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 }, { sleep: () => new Promise<void>(resolve => waiting.push(resolve)) });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.fail = options => options.beforeId !== undefined ? { message: "authz.not_member", status: 403 } : undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+
+        await expect(timelines.onJoined(channel)).rejects.toEqual({ message: "authz.not_member", status: 403 });
+
+        expect(waiting).toHaveLength(0);
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([1, 2, 3]);
+    });
+
+    test("an unblock lets go of a withheld row the platform no longer has, so no later catch-up reads for it again", async () => {
+        const room = platformRoom(() => dee);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.gone = new Set([2, 3]);
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await openAsShell(timelines, channel);
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+
+        const asked = room.reads.length;
+        await timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads.slice(asked))).toEqual([]);
+    });
+
+    test("a person blocked again while their rows are read again is not read for: answers with their words land withheld, and no later catch-up rereads", async () => {
+        const room = platformRoom(id => id <= 6 || id === 7 ? dee : ada);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.hold = options => options.beforeId !== undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads)).toEqual([4]);
+
+        // the client hears the block first; the page on its way was served before the platform's
+        blocks.setAliases([dee]);
+        const asked = room.reads.length;
+        room.held.shift()?.();
+        await joining;
+        await flush();
+        room.blocked.add(dee);
+        room.count = 7;
+        timelines.applyEvent(channel, "message.created", liveRow(deeMessage(7)));
+        await timelines.onJoined(channel);
+        await flush();
+
+        expect(readsBefore(room.reads.slice(asked))).toEqual([]);
+        expect(said(timelines.state(channel).messages).every(line => line.endsWith(":null:null"))).toBe(true);
+        expect(withheldIds(timelines, channel)).toEqual(ids(timelines.state(channel).messages).filter(id => id <= 7));
+    });
+
+    test("a row the platform still withholds after an unblock, for an alias still blocked, is read again once, not by every catch-up", async () => {
+        const room = platformRoom(() => dee);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.stillWithheld.add(2);
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await openAsShell(timelines, channel);
+
+        expect(readsBefore(room.reads)).toEqual([4, 2]);
+        expect(withheldIds(timelines, channel)).toEqual([2]);
+
+        const asked = room.reads.length;
+        await timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads.slice(asked))).toEqual([]);
+    });
+
+    test("an unblock gives back his quote in someone else's row past the catch-up's span", async () => {
+        const room = platformRoom(() => ada, id => id === 2);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        expect(withheldIds(timelines, channel)).toEqual([2]);
+        room.newest = 1;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await openAsShell(timelines, channel);
+
+        expect(readsBefore(room.reads)).toEqual([3]);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+        expect(timelines.state(channel).messages[1].quoted).toMatchObject({ body: "dee said", sender_nick_name: "Dee" });
+    });
+
+    test("an unblock gives back his live row the client withheld, which no page had read", async () => {
+        const room = platformRoom(id => id === 7 ? dee : ada);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.count = 8;
+        timelines.applyEvent(channel, "message.created", liveRow(deeMessage(7)));
+        timelines.applyEvent(channel, "message.created", liveRow(message(8)));
+        expect(withheldIds(timelines, channel)).toEqual([7]);
+
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.onJoined(channel);
+        await flush();
+
+        expect(withheldIds(timelines, channel)).toEqual([]);
+        expect(said(timelines.state(channel).messages)).toEqual(["7:dee 7:Dee"]);
+    });
+
+    test("a join confirmed while an unblock's reread is on its way is caught up after it", async () => {
+        const room = platformRoom(id => id <= 6 ? dee : ada);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.hold = options => options.beforeId !== undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads)).toEqual([4]);
+
+        // a message committed while the socket was away, which only that join's catch-up reads
+        room.count = 7;
+        const rejoining = timelines.onJoined(channel);
+        room.held.shift()?.();
+        await joining;
+        await rejoining;
+        await flush();
+
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+        expect(withheldIds(timelines, channel)).toEqual([]);
+    });
+
+    test("a stop while an unblock's reread is on its way reads nothing more and writes nothing", async () => {
+        const room = platformRoom(() => dee);
+        const { timelines, blocks } = masked(room.fetchPage, { page: 2, max: 3 });
+        blocks.setAliases([dee]);
+        await openAsShell(timelines, channel);
+        room.newest = 1;
+        room.hold = options => options.beforeId !== undefined;
+        room.unblock(blocks, dee);
+        timelines.release([dee]);
+        await timelines.loadNewest(channel);
+        const joining = timelines.onJoined(channel);
+        await flush();
+        expect(readsBefore(room.reads)).toEqual([4]);
+
+        timelines.stop();
+        const asked = room.reads.length;
+        room.held.shift()?.();
+        await joining;
+        await flush();
+
+        expect(room.reads.length).toBe(asked);
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4, 5, 6]);
+        expect(withheldIds(timelines, channel)).toEqual([1, 2, 3]);
     });
 });

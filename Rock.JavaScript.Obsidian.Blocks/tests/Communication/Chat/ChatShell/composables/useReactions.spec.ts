@@ -1193,8 +1193,8 @@ describe("a block, as what a reaction writes is masked", () => {
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
             onChanged: () => undefined,
-            remask: () => {
-                timelines.remask();
+            remask: added => {
+                timelines.remask(added);
                 threads.remask();
             },
             notify: () => undefined

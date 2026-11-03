@@ -27,7 +27,10 @@
 // channel as it was when asked, so an answer that arrives after the channel was replaced or left
 // is dropped. A failed page is tried again with randomised, growing waits, and the channel says it
 // is behind meanwhile. A socket gone for hours can miss more than is worth paging through, so past
-// a bound the channel is opened fresh at its newest page.
+// a bound the channel is opened fresh at its newest page. A row withheld for someone the reader has
+// since unblocked comes back only by being read again: a row read before its author was let go is
+// read again by the room's next caught-up pass, newest first, a bound's worth, and what is older
+// is let go and read again by scrolling.
 import { reactive, toRaw } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
@@ -362,18 +365,19 @@ export type Timelines = {
     /** The root whose thread is open on screen, which every page shows read while it stays open; null once none is. */
     keepThreadRead: (rootId: number | null) => void;
 
-    /** The people blocked gained someone: every row of every room held is masked again, in place. */
-    remask: () => void;
+    /**
+     * The people blocked gained these aliases: every row of every room held is masked again, in
+     * place, and nothing of theirs is read again for an earlier unblock.
+     */
+    remask: (added: readonly string[]) => void;
 
     /**
-     * The people blocked lost these aliases, whose withheld rows only a read gives back. Within the
-     * catch-up bound the next catch-up reads them again. Past it, the open room reads again, newest
-     * first, the pages that hold one, up to a bound's worth of rows, so the reader keeps their place
-     * at a cost that follows what the unblock gives back rather than how far back they are; what it
-     * does not reach, and what is past the bound in a room not on screen, is let go and read again
-     * by scrolling.
+     * The people blocked lost these aliases, whose withheld rows only a read gives back. A row read
+     * before now and withheld for one of them is read again by its room's next caught-up pass, so
+     * the room on screen gets them back from the resync the unblock starts, and a room not on screen
+     * from its next open.
      */
-    release: (aliases: readonly string[], openChannelId: string | null) => void;
+    release: (aliases: readonly string[]) => void;
 
     /** The channel is no longer open: its catch-up stops and any answer on its way is dropped. */
     leave: (channelId: string) => void;
@@ -507,15 +511,6 @@ type ChannelSync = {
      */
     hasJoined: boolean;
 
-    /**
-     * The oldest held row the next catch-up must read again, set by an unblock for the withheld
-     * rows it leaves to that catch-up. The catch-up owns where it starts, from what is verified
-     * when it runs, so the unblock tells it the row rather than predicting that start: live rows a
-     * newest page verifies in between move the start newer. Kept until a catch-up has read past it,
-     * and dropped when a newest page replaces what is held, since the rows it named are gone.
-     */
-    rereadFloor: number | null;
-
     /** Whether a newest page is being read; a join confirmed meanwhile is caught up after it. */
     isLoading: boolean;
     isJoinPending: boolean;
@@ -554,6 +549,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     // When the page that last set each message was read, so an older page cannot overwrite it.
     const pageReadAt = new Map<number, number>();
 
+    // When each alias was let go, on the same clock a page's read is taken from, so a row withheld
+    // for one of them is known to be out of date by when it was read rather than by where it sits.
+    const released = new Map<string, number>();
+
     // The root whose thread the reader has open. Its read position is saved only when the thread
     // closes, so until then any page, read before or after it opened, still says unread.
     let openThreadRootId: number | null = null;
@@ -581,7 +580,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let channelSync = syncs.get(channelId);
 
         if (!channelSync) {
-            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, rereadFloor: null, isLoading: false, isJoinPending: false, olderLoad: null };
+            channelSync = { epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null };
             syncs.set(channelId, channelSync);
         }
 
@@ -804,7 +803,6 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             mergePage(channelId, page, readAt);
             channelSync.epoch++;
-            channelSync.rereadFloor = null;
             timeline.verifiedThrough = null;
         }
 
@@ -833,10 +831,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * One pass of catch-up: page forward until nothing newer is left. A rejoin starts from the
      * oldest held message, at most a bound's worth back, so an edit, a delete or a hide made while
      * the socket was down, and a message committed late under a lower id, are read again. Past the
-     * bound the channel is reloaded at its newest page and paging goes on from there. A floor an
-     * unblock set starts it lower, at that row, and is done with once the pass is caught up. A failed
-     * page is tried again with growing, randomised waits while this run still owns the channel;
-     * meanwhile the channel says it is behind.
+     * bound the channel is reloaded at its newest page and paging goes on from there. Once caught
+     * up it reads again the rows read before an unblock. A failed page is tried again with growing,
+     * randomised waits while this run still owns the channel; meanwhile the channel says it is
+     * behind.
      */
     async function catchUpPass(channelId: string, token: number): Promise<void> {
         const timeline = state(channelId);
@@ -848,11 +846,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
         const verified = timeline.verifiedThrough ?? 0;
         const settled = timeline.messages.filter(m => m.id <= verified);
-        const floor = channelSync.rereadFloor;
-        const start = isRejoin && settled.length > 0
+        let afterId = isRejoin && settled.length > 0
             ? settled[Math.max(0, settled.length - max)].id - 1
             : verified;
-        let afterId = floor === null ? start : Math.min(start, floor - 1);
         let fetched = 0;
         let attempt = 0;
 
@@ -908,10 +904,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
 
             if (!answer.page.has_more || !range) {
                 timeline.isBehind = false;
-                // an unblock that set a lower floor meanwhile is read by the next pass
-                if (channelSync.rereadFloor === floor) {
-                    channelSync.rereadFloor = null;
-                }
+                // inside the pass, so the run owns it and a join confirmed meanwhile gets a pass after it
+                await rereadReleased(channelId, isOwner);
                 return;
             }
             afterId = range.newest;
@@ -963,53 +957,84 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
     }
 
+    /** Whether a row is withheld for someone let go after it was read, so only a read now gives it back. */
+    function isReadBeforeRelease(message: TimelineMessage): boolean {
+        if (released.size === 0 || (!message.blocked && !message.quoted?.blocked)) {
+            return false;
+        }
+        // a live row no page has read counts as read before any release
+        const readAt = pageReadAt.get(message.id) ?? 0;
+        const releasedAt = (alias: string | null | undefined): number => alias ? released.get(alias.toLowerCase()) ?? 0 : 0;
+        return (!!message.blocked && releasedAt(message.person_alias_guid) > readAt)
+            || (!!message.quoted?.blocked && releasedAt(message.quoted.person_alias_guid) > readAt);
+    }
+
+    /** The newest held row older than this id that was read before an unblock, if any. */
+    function newestStaleBefore(channelId: string, id: number): TimelineMessage | undefined {
+        const messages = toRaw(state(channelId).messages);
+        for (let i = positionOf(messages, id) - 1; i >= 0; i--) {
+            if (isReadBeforeRelease(messages[i])) {
+                return messages[i];
+            }
+        }
+        return undefined;
+    }
+
     /**
-     * Reads again, in the open room, the rows an unblock left withheld older than the floor it
-     * gave the next catch-up: newest first, skipping to the next withheld row so a page holding none
-     * is never read, and stopping at a bound's worth of rows read. Whatever it does not read again,
-     * because it reached the bound, a read failed or what is held was replaced or left, is let go
-     * from that point back, so no withheld copy of someone no longer blocked stays held.
-     *
-     * @param channelId The open room.
-     * @param isWithheld Whether a held row is withheld by an alias no longer blocked.
-     * @param reach The floor the unblock gave the next catch-up, which reads it and every row
-     * after it; only rows older than it are read here.
+     * The tail of a caught-up pass: reads again, newest first, the pages holding a row read before
+     * an unblock, skipping pages that hold none, up to a bound's worth of rows; past the bound what
+     * is older is let go and read by scrolling. A held row inside a page's span that the page does
+     * not carry is no longer on the timeline, so it is let go rather than asked for by every later
+     * pass. A failed read waits and tries again as the pass does, without saying the room is
+     * behind, since it is caught up on what is new; a refusal ends it as it ends the pass. A leave,
+     * a newer run, a replace or a stop ends it with the rows kept, still out of date, for the next
+     * pass.
      */
-    async function rereadPastBound(channelId: string, isWithheld: (message: TimelineMessage) => boolean, reach: number): Promise<void> {
+    async function rereadReleased(channelId: string, isOwner: () => boolean): Promise<void> {
         const { page: pageSize, max } = dependencies.catchUp?.() ?? defaultCatchUp;
-        const newestWithheldBefore = (id: number): TimelineMessage | undefined => {
-            const messages = toRaw(state(channelId).messages);
-            for (let i = positionOf(messages, id) - 1; i >= 0; i--) {
-                if (isWithheld(messages[i])) {
-                    return messages[i];
-                }
-            }
-            return undefined;
-        };
-
-        let before = reach;
+        const timeline = state(channelId);
+        let before = Number.MAX_SAFE_INTEGER;
         let read = 0;
-        try {
-            for (let next = newestWithheldBefore(before); next; next = newestWithheldBefore(before)) {
-                if (read >= max || isStopped) {
-                    break;
-                }
-                const answer = await fetchCurrent(channelId, { limit: pageSize, beforeId: next.id + 1 });
-                const range = answer ? bounds(answer.page) : null;
-                if (!answer || !range || isStopped) {
-                    break;
-                }
-                mergePage(channelId, answer.page, answer.readAt);
-                read += answer.page.messages.length;
-                before = range.oldest;
-            }
-        }
-        catch {
-            // a refused or failed read gives nothing back; what it would have read is let go below
-        }
+        let attempt = 0;
 
-        if (newestWithheldBefore(before)) {
-            letGoBefore(channelId, before);
+        for (let next = newestStaleBefore(channelId, before); next && isOwner(); next = newestStaleBefore(channelId, before)) {
+            if (read >= max) {
+                letGoBefore(channelId, before);
+                return;
+            }
+
+            let answer: { page: HistoryPage, readAt: number } | null;
+            try {
+                answer = await fetchCurrent(channelId, { limit: pageSize, beforeId: next.id + 1 });
+            }
+            catch (error) {
+                if (!isOwner()) {
+                    return;
+                }
+                if (!isTransient(error)) {
+                    throw error;
+                }
+                const delay = dependencies.retryDelay?.() ?? defaultRetryDelay;
+                await sleep(computeBackoff(attempt++, delay.baseMs, delay.capMs, random));
+                continue;
+            }
+            if (!answer || !isOwner()) {
+                return;
+            }
+            attempt = 0;
+
+            mergePage(channelId, answer.page, answer.readAt);
+            read += answer.page.messages.length;
+            // strictly falling, so whatever the platform answers the walk ends
+            const oldest = Math.min(bounds(answer.page)?.oldest ?? next.id, next.id);
+            const carried = new Set(answer.page.messages.map(m => m.id));
+            const messages = toRaw(timeline.messages);
+            for (let i = positionOf(messages, next.id + 1) - 1; i >= 0 && messages[i].id >= oldest; i--) {
+                if (!carried.has(messages[i].id) && isReadBeforeRelease(messages[i])) {
+                    timeline.messages.splice(i, 1);
+                }
+            }
+            before = oldest;
         }
     }
 
@@ -1158,41 +1183,21 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             openThreadRootId = rootId;
         },
 
-        remask: (): void => {
+        remask: (added: readonly string[]): void => {
+            // a person blocked again is withheld by the set from here on, so nothing is read for them
+            for (const alias of added) {
+                released.delete(alias.toLowerCase());
+            }
             for (const timeline of states.values()) {
                 maskHeld(timeline.messages, mask);
             }
         },
 
-        release: (aliases: readonly string[], openChannelId: string | null): void => {
-            const released = new Set(aliases.map(alias => alias.toLowerCase()));
-            const isReleased = (alias: string | null | undefined): boolean => !!alias && released.has(alias.toLowerCase());
-            const isWithheldByReleased = (m: TimelineMessage): boolean => (!!m.blocked && isReleased(m.person_alias_guid)) || (!!m.quoted?.blocked && isReleased(m.quoted.person_alias_guid));
-            const max = (dependencies.catchUp?.() ?? defaultCatchUp).max;
-
-            for (const [channelId, timeline] of states) {
-                const messages = toRaw(timeline.messages);
-                const oldest = messages.findIndex(isWithheldByReleased);
-                if (oldest < 0) {
-                    continue;
-                }
-
-                // Within the bound the next catch-up reads the withheld rows again from the floor
-                // set here, never below the bound's edge of what is settled now, so it stays bounded.
-                const settled = positionOf(messages, (timeline.verifiedThrough ?? 0) + 1);
-                const reach = Math.max(0, settled - max);
-                const floor = messages[Math.max(oldest, reach)].id;
-                const channelSync = sync(channelId);
-                channelSync.rereadFloor = Math.min(channelSync.rereadFloor ?? floor, floor);
-                if (oldest >= reach) {
-                    continue;
-                }
-                if (channelId === openChannelId) {
-                    void rereadPastBound(channelId, isWithheldByReleased, messages[reach].id);
-                }
-                else {
-                    letGoBefore(channelId, messages[reach].id);
-                }
+        release: (aliases: readonly string[]): void => {
+            // one moment for all of them: a row read before it is out of date, one read after it is not
+            const at = ++seq;
+            for (const alias of aliases) {
+                released.set(alias.toLowerCase(), at);
             }
         },
 

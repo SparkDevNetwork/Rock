@@ -853,7 +853,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         call,
         onChanged: (isInSidebarAnswer, removed) => {
             if (removed.length > 0) {
-                timelines.release(removed, state.activeChannelId);
+                timelines.release(removed);
             }
             resync(isInSidebarAnswer ? sidebarRead : null);
         },
@@ -1263,14 +1263,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     /**
-     * The people blocked gained someone: every holder of messages masks again what it holds, in
+     * The people blocked gained these aliases: every holder of messages masks again what it holds, in
      * place, before anything else runs. A holder added here is added to resync beside it when what
      * it holds can be read again; the found conversation's look and a quote waiting in a composer
      * are snapshots resync does not read, so after an unblock they stay withheld, the safe side,
      * until the person looks again or quotes afresh.
      */
-    function remask(): void {
-        timelines.remask();
+    function remask(added: readonly string[]): void {
+        timelines.remask(added);
         threads.remask();
         mentions.remask();
         directMessages.remask();
