@@ -271,6 +271,7 @@ function fakeShell(): Record<string, unknown> {
         roomKindOf: (channelId: string) => (rooms as unknown as ReturnType<typeof roomsOf>).state.facts[channelId]?.room_kind ?? null,
         members: fakeMembers(),
         prefs: fakePrefs(),
+        blocks: fakeBlocks(),
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -297,6 +298,31 @@ function fakeShell(): Record<string, unknown> {
  * The person's settings the shell holds, as usePrefs' createPrefs answers them, reduced to the
  * state the block draws and the saves it asks for.
  */
+/** The people the person blocked, as useBlocks holds them, with the calls the block makes. */
+function fakeBlocks(): Record<string, unknown> {
+    const state = reactive({ aliases: [] as string[], people: [] as unknown[], listState: "idle", confirming: null as unknown, busy: {}, notes: {} });
+    return {
+        state,
+        setAliases: jest.fn(),
+        isBlocked: () => false,
+        maskEvent: (_event: string, payload: unknown) => payload,
+        load: jest.fn(async () => undefined),
+        ask: jest.fn((person: unknown) => {
+            state.confirming = person;
+        }),
+        cancel: jest.fn(() => {
+            state.confirming = null;
+        }),
+        confirm: jest.fn(async () => {
+            state.confirming = null;
+            return true;
+        }),
+        unblock: jest.fn(async () => true),
+        changed: jest.fn(async () => undefined),
+        stop: jest.fn()
+    };
+}
+
 function fakePrefs(): Record<string, unknown> {
     const state = reactive({
         me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
@@ -4402,6 +4428,41 @@ describe("settings", () => {
         await settle();
         expect(settingsDialog()).toBeNull();
         expect(document.activeElement).toBe(w.get("[data-testid='sidebar-me']").element);
+    });
+
+    test("Chat settings reads the people blocked as it opens, and Unblock on a row reaches the shell with no confirmation", async () => {
+        const w = await mountBlock(1200);
+        const blocks = mockShell!.blocks as ReturnType<typeof fakeBlocks> & Record<string, jest.Mock> & { state: { people: unknown[], listState: string } };
+        const sam = { person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Sam", last_name: "Ortiz", avatar_url: null };
+        blocks.state.people = [sam];
+        blocks.state.listState = "loaded";
+
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        await settle();
+        expect(blocks.load).toHaveBeenCalledTimes(1);
+
+        document.querySelector<HTMLElement>("[data-testid='blocked-unblock']")!.click();
+        await settle();
+
+        expect(blocks.unblock.mock.calls).toEqual([[sam, true]]);
+        expect(document.querySelector("[data-testid='dialog-confirm']")).toBeNull();
+    });
+
+    test("Block asks its one sentence, naming the person, and only Block in it blocks", async () => {
+        await mountBlock(1200);
+        const blocks = mockShell!.blocks as Record<string, jest.Mock> & { ask: (person: unknown) => void };
+
+        blocks.ask({ person_alias_guid: "a0000005-0000-4000-8000-000000000000", nick_name: "Sam", last_name: "Ortiz", avatar_url: null });
+        await settle();
+
+        const dialog = document.querySelector<HTMLElement>("[data-testid='dialog']");
+        expect(dialog?.textContent).toContain("Block Sam Ortiz?");
+        expect(dialog?.textContent).toContain("They won't be told. You won't see their messages, and they can't message you.");
+        expect(blocks.confirm).not.toHaveBeenCalled();
+
+        document.querySelector<HTMLElement>("[data-testid='dialog-confirm']")!.click();
+        await settle();
+        expect(blocks.confirm).toHaveBeenCalledTimes(1);
     });
 
     test("Chat settings opens from the person's own card", async () => {

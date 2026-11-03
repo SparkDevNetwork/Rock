@@ -19,7 +19,7 @@
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
 // reason; the feed passes the browser's own.
-import { sendKey } from "./composables/useHistory.partial";
+import { blockedSentence, sendKey } from "./composables/useHistory.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
 /** Messages from one sender this close together share a group. */
@@ -65,9 +65,13 @@ export type FeedRow = {
     position: RowPosition;
 };
 
-/** One thing the feed draws in a day: a group of rows, the New divider, a system line or a block post. */
+/**
+ * One thing the feed draws in a day: a group of rows, the New divider, a system line, a block post,
+ * or a run of messages by people the reader blocked, drawn as one quiet line.
+ */
 export type FeedItem =
     | { kind: "divider", key: string }
+    | { kind: "blocked", key: string, messages: TimelineMessage[] }
     | { kind: "system", key: string, message: TimelineMessage }
     | { kind: "card", key: string, message: TimelineMessage }
     | { kind: "group", key: string, isOwn: boolean, senderGuid: string | null, rows: FeedRow[] };
@@ -179,7 +183,20 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
             group = null;
         }
 
-        if (message && hasBlocks(message)) {
+        const last = section.items[section.items.length - 1];
+        if (message?.blocked) {
+            // A run folds into one line, keyed by its first message so the line stays as the run
+            // grows. A root with replies stands alone, so the thread under it can still be opened.
+            const runEnd = last?.kind === "blocked" ? last.messages[last.messages.length - 1] : null;
+            if (last?.kind === "blocked" && runEnd && !hasReplies(runEnd) && !hasReplies(message)) {
+                last.messages.push(message);
+            }
+            else {
+                section.items.push({ kind: "blocked", key: entry.key, messages: [message] });
+            }
+            group = null;
+        }
+        else if (message && hasBlocks(message)) {
             section.items.push({ kind: "card", key: entry.key, message });
             group = null;
         }
@@ -211,6 +228,28 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
     }
 
     return sections;
+}
+
+/**
+ * What a folded run of messages by people the reader blocked says: how many, and whether they
+ * came from one person or several, never who.
+ *
+ * @param messages The run, oldest first.
+ *
+ * @returns The line's words.
+ */
+export function blockedRunText(messages: Pick<TimelineMessage, "person_alias_guid">[]): string {
+    if (messages.length <= 1) {
+        return blockedSentence;
+    }
+
+    const senders = new Set(messages.map(m => (m.person_alias_guid ?? "").toLowerCase()));
+    return `${messages.length.toLocaleString()} messages from ${senders.size > 1 ? "people" : "someone"} you blocked`;
+}
+
+/** Whether a message is a root with replies, whose thread is opened from under it. */
+function hasReplies(message: TimelineMessage): boolean {
+    return !message.parent_id && (message.reply_count ?? 0) > 0;
 }
 
 /**

@@ -343,7 +343,7 @@ img.chat-tool-glyph {
     import IconButton from "../ui/iconButton.partial.obs";
     import { PickerOpening } from "./emojiPicker.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
-    import { isActionCall, isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
+    import { isActionCall, isEditableMessage, isSenderBlockable, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
     import { ReactionFavorite, TimelineMessage } from "../types.partial";
 
@@ -428,6 +428,7 @@ img.chat-tool-glyph {
         (e: "edit", message: TimelineMessage): void;
         (e: "copy", message: TimelineMessage): void;
         (e: "delete", message: TimelineMessage): void;
+        (e: "block", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
         (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
@@ -542,6 +543,10 @@ img.chat-tool-glyph {
             items.push({ key: "delete", label: "Delete message", icon: "trash", isDanger: true, isSeparatorBefore: true });
         }
 
+        if (isSenderBlockable(message, props.isOwn)) {
+            items.push({ key: "block", label: "Block", icon: "ban", isSeparatorBefore: true });
+        }
+
         return items;
     });
 
@@ -589,6 +594,11 @@ img.chat-tool-glyph {
 
         if (key === "delete") {
             emit("delete", message);
+            return;
+        }
+
+        if (key === "block") {
+            emit("block", message);
             return;
         }
 

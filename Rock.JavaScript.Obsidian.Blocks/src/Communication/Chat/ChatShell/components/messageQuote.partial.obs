@@ -239,6 +239,7 @@ button.chat-quote:active .chat-quote-body {
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { attachmentsPreview } from "../composables/useAttachments.partial";
+    import { blockedSentence } from "../composables/useHistory.partial";
     import { TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -281,14 +282,17 @@ button.chat-quote:active .chat-quote-body {
      */
     const isGone = computed((): boolean => {
         const original = quoted.value;
-        return !original || !!original.deleted_at || (original.visibility ?? "visible") !== "visible";
+        return !original || !!original.deleted_at || (original.visibility ?? "visible") !== "visible" || !!original.blocked;
     });
 
     const isHidden = computed((): boolean => !!quoted.value && !quoted.value.deleted_at && (quoted.value.visibility ?? "visible") !== "visible");
 
-    const goneIcon = computed((): string => isHidden.value ? "eye-off" : "trash");
+    /** An original by someone the reader blocked, which says no more of itself than its row would. */
+    const isBlocked = computed((): boolean => !!quoted.value?.blocked);
 
-    const goneText = computed((): string => isHidden.value ? "Original message is unavailable." : "Original message was deleted.");
+    const goneIcon = computed((): string => isBlocked.value ? "ban" : isHidden.value ? "eye-off" : "trash");
+
+    const goneText = computed((): string => isBlocked.value ? `${blockedSentence}.` : isHidden.value ? "Original message is unavailable." : "Original message was deleted.");
 
     /** Aliases are compared in lower case, since the platform and Rock write guids in either. */
     const isQuoteOfReader = computed((): boolean => !!quoted.value && !!props.personAliasGuid

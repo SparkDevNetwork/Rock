@@ -72,6 +72,33 @@
         </SettingGroup>
         <p class="chat-ms-foot" data-testid="settings-foot">Each conversation sets its own, from its name at the top.</p>
 
+        <SettingGroup label="Blocked people" data-testid="settings-blocked">
+            <SettingRow v-if="blocked.listState === 'failed'" sub="Couldn't load the people you blocked." data-testid="blocked-failed">
+                <button type="button" class="chat-ms-btn is-line" @click="emit('retryBlocked')">Try again</button>
+            </SettingRow>
+            <SettingRow v-else-if="blocked.listState !== 'loaded'" aria-busy="true" data-testid="blocked-loading">
+                <template #text>
+                    <i class="chat-skeleton chat-ms-sk" aria-hidden="true"></i>
+                </template>
+            </SettingRow>
+            <SettingRow v-else-if="blocked.people.length === 0" sub="You haven't blocked anyone." data-testid="blocked-empty" />
+            <SettingRow v-for="person in shownBlocked"
+                        :key="person.person_alias_guid"
+                        :title="blockedName(person)"
+                        :note="blocked.notes[person.person_alias_guid.toLowerCase()] ?? null"
+                        data-testid="blocked-row">
+                <template #lead>
+                    <Avatar :people="[personFace(person)]" :size="28" />
+                </template>
+                <button type="button"
+                        class="chat-ms-btn is-line"
+                        :aria-label="`Unblock ${blockedName(person)}`"
+                        :disabled="!!blocked.busy[person.person_alias_guid.toLowerCase()]"
+                        data-testid="blocked-unblock"
+                        @click="emit('unblock', person)">Unblock</button>
+            </SettingRow>
+        </SettingGroup>
+
         <span class="chat-sr-only" aria-live="polite" data-testid="settings-announcement">
             <!-- The settings' news said while the dialog is open, keyed by count so the same words
                  are read twice; a save that failed is said at once. -->
@@ -123,6 +150,14 @@
     background: currentColor;
     border-radius: 50%;
     opacity: .55;
+}
+
+/* The list's one bar while it loads, a name's length, so the rows that land do not jump. */
+.chat-ms-sk {
+    display: block;
+    width: 45%;
+    height: 12px;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-ms-foot {
@@ -207,6 +242,9 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { MeKey, MeSettings, meTitles, PrefsState } from "../composables/usePrefs.partial";
+    import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
+    import { ChatPerson } from "../types.partial";
+    import { personFace, personName as nameOf } from "../ui/face.partial";
     import { PushState } from "../composables/usePush.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
@@ -272,6 +310,12 @@
         isPhone: {
             type: Boolean,
             default: false
+        },
+
+        /** The people the person blocked, read as the dialog opens. */
+        blocked: {
+            type: Object as PropType<Pick<BlocksState, "people" | "listState" | "busy" | "notes">>,
+            default: () => ({ people: [], listState: "idle", busy: {}, notes: {} })
         }
     });
 
@@ -285,6 +329,10 @@
         /** Turn on or Turn off for this browser. */
         (e: "pushOn"): void;
         (e: "pushOff"): void;
+
+        /** Unblock on a blocked person's row, which needs no confirmation; and Try again on a list that failed to load. */
+        (e: "unblock", person: ChatPerson): void;
+        (e: "retryBlocked"): void;
     }>();
 
     // #region Values
@@ -325,11 +373,19 @@
         }
     });
 
+    /** The rows of blocked people, once the list is read and holds anyone. */
+    const shownBlocked = computed((): ChatPerson[] => props.blocked.listState === "loaded" ? props.blocked.people : []);
+
     const shownAnnouncement = computed((): PrefsState["announcement"] => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
 
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /** A blocked person's name, or words for one the church no longer lists, who has none. */
+    function blockedName(person: ChatPerson): string {
+        return nameOf(person) || unnamedBlocked;
+    }
 
     function onToggle(key: MeKey, value: boolean): void {
         emit("toggle", key, value);

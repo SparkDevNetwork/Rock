@@ -4,7 +4,7 @@
                :type="isButton ? 'button' : undefined"
                class="chat-sg-row"
                :class="{ 'is-button': isButton, 'is-danger': isDanger }">
-        <Icon v-if="icon" :name="icon" class="chat-sg-ic" />
+        <slot name="lead"><Icon v-if="icon" :name="icon" class="chat-sg-ic" /></slot>
         <span class="chat-sg-txt">
             <!-- Spaced apart in words, so a reader never hears the label and its line as one. -->
             <b v-if="title" :id="`${baseId}-l`" class="chat-sg-title">{{ title }}</b>{{ " " }}

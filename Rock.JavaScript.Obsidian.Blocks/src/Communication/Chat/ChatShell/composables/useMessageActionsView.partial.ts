@@ -189,6 +189,16 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
                 actions.askDelete(channelId, request.message);
                 break;
 
+            // the confirmation names the sender as the message does
+            case "block":
+                shell.value.blocks.ask({
+                    person_alias_guid: request.message.person_alias_guid ?? "",
+                    nick_name: request.message.sender_nick_name ?? null,
+                    last_name: request.message.sender_last_name ?? null,
+                    avatar_url: request.message.sender_avatar_url ?? null
+                });
+                break;
+
             case "server":
                 void actions.runAction(channelId, request.message.id, request.action).finally(() => request.onSettled?.());
                 break;

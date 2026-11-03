@@ -408,6 +408,15 @@
                 </template>
             </Dialog>
 
+            <!-- Blocking a person, asked from their card or one of their messages; unblocking needs no confirmation. -->
+            <Dialog :isOpen="!!shell.blocks.state.confirming"
+                    :title="blockTitle"
+                    :body="blockSentence"
+                    confirmLabel="Block"
+                    isDestructive
+                    @close="shell.blocks.cancel"
+                    @confirm="shell.blocks.confirm" />
+
             <!-- Changing who is in the room, asked from the members panel and drawn over the frame. -->
             <RemoveMember v-bind="removeView" :personAliasGuid="personAliasGuid" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
             <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @add="shell.members.add" />
@@ -438,8 +447,11 @@
                          :ownDetailsNote="shell.prefs.state.meNotes.profile_details ?? null"
                          @close="shell.rooms.closeCard"
                          @message="onCardMessage"
+                         :isBlockBusy="!!shell.blocks.state.busy[shell.rooms.state.card.person.person_alias_guid.toLowerCase()]"
                          @settings="onCardSettings"
-                         @toggleDetails="onCardToggleDetails" />
+                         @toggleDetails="onCardToggleDetails"
+                         @block="onCardBlock"
+                         @unblock="onCardUnblock" />
 
             <!-- Kept mounted while the room's facts are held, so closing plays the dialog's exit. -->
             <ConversationDetails v-if="activeChannelId && activeFacts && activeKind"
@@ -484,7 +496,10 @@
                           :announcement="shell.prefs.state.announcement"
                           :push="shell.state.push"
                           :isPhone="isPhone"
+                          :blocked="shell.blocks.state"
                           @close="closeSettings"
+                          @unblock="onSettingsUnblock"
+                          @retryBlocked="shell.blocks.load"
                           @toggle="shell.prefs.setSwitch"
                           @pushOn="onTurnOnPush"
                           @pushOff="shell.turnOffPush" />
@@ -743,7 +758,8 @@
     import { refusalMessage } from "./ChatShell/shell.partial";
     import { joinNames } from "./ChatShell/stores/channelStore.partial";
     import { ChannelFacts, ChatPerson, DisplayPiece, PendingMessage, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
-    import { rowPeople } from "./ChatShell/ui/face.partial";
+    import { personName as nameOf, rowPeople } from "./ChatShell/ui/face.partial";
+    import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import { isPhoneKey } from "./ChatShell/ui/viewport.partial";
@@ -839,6 +855,20 @@
 
     /** Whether the person's Chat settings are open. */
     const isSettingsOpen = ref(false);
+
+    // The blocked people are read as Chat settings opens, so the list is never older than the dialog.
+    watch(isSettingsOpen, isOpen => {
+        if (isOpen) {
+            void shell.value.blocks.load();
+        }
+    });
+
+    /** The block's confirmation names the person, as the card or the message did. */
+    const blockTitle = computed((): string => {
+        const person = shell.value.blocks.state.confirming;
+        const name = person ? nameOf(person) : "";
+        return name ? `Block ${name}?` : "Block this person?";
+    });
 
     /** What asked for the profile card, which it is placed beside, and a count that draws each card afresh. */
     const cardAnchor = shallowRef<HTMLElement | null>(null);
@@ -1350,6 +1380,23 @@
      */
     function onCardToggleDetails(value: boolean): void {
         shell.value.rooms.refreshCardDetails(shell.value.prefs.setSwitch("profile_details", value));
+    }
+
+    /** The card's Block: the card goes first, so the confirmation never stands under it. */
+    function onCardBlock(person: PersonProfile): void {
+        shell.value.rooms.closeCard();
+        shell.value.blocks.ask(person);
+    }
+
+    /** The card's Unblock, which needs no confirmation, since everything comes back as it was. */
+    function onCardUnblock(person: PersonProfile): void {
+        shell.value.rooms.closeCard();
+        void shell.value.blocks.unblock(person, false);
+    }
+
+    /** A row of Chat settings' blocked people. */
+    function onSettingsUnblock(person: ChatPerson): void {
+        void shell.value.blocks.unblock(person, true);
     }
 
     /** The person's own card's Chat settings: the card goes first, so it never stands over the dialog. */

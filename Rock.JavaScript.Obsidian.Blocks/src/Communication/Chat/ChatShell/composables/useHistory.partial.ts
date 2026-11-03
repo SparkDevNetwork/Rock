@@ -42,7 +42,7 @@ export const defaultRetryDelay = { baseMs: 1000, capMs: 30000 };
 
 /** What a message row draws: what kind of row, and its text. */
 export type MessageDisplay = {
-    kind: "message" | "system" | "deleted" | "notice";
+    kind: "message" | "system" | "deleted" | "notice" | "blocked";
     text: string | null;
 };
 
@@ -82,6 +82,11 @@ export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(messa
  * @returns The kind of row and its text.
  */
 export function messageDisplay(message: TimelineMessage): MessageDisplay {
+    // Before a delete or a hide, which would tell the reader what became of it.
+    if (message.blocked) {
+        return { kind: "blocked", text: blockedSentence };
+    }
+
     if (message.deleted_at) {
         return { kind: "deleted", text: "This message was deleted." };
     }
@@ -91,6 +96,35 @@ export function messageDisplay(message: TimelineMessage): MessageDisplay {
     }
 
     return { kind: message.message_type === "system" ? "system" : "message", text: message.body };
+}
+
+/** What stands in place of a message by someone the reader blocked. */
+export const blockedSentence = "Message from someone you blocked";
+
+/**
+ * A message by someone the reader blocked, as the platform answers it on a page: its row, id, time
+ * and thread counts kept, and its sender and everything it says withheld. A live copy is one
+ * payload for every subscriber, so the client makes it so itself; the one list of what is withheld.
+ *
+ * @param message The message as it arrived.
+ *
+ * @returns The message withheld and marked blocked.
+ */
+export function blockedCopy<T extends Partial<TimelineMessage>>(message: T): T {
+    return {
+        ...message,
+        sender_nick_name: null,
+        sender_last_name: null,
+        sender_avatar_url: null,
+        body: null,
+        pieces: null,
+        blocks: null,
+        attachments: null,
+        metadata: null,
+        actions: null,
+        quoted: null,
+        blocked: true
+    };
 }
 
 /** A mention token as a person types it: a person's alias guid, or the whole room, in any case. */
@@ -140,7 +174,11 @@ export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean
 export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown): void {
     if (event === "message.edited") {
         const edited = payload as MessageEditedEvent;
-        if (!message.deleted_at) {
+        // an edit by someone the reader blocked moves its time and says nothing of its words
+        if (message.blocked) {
+            message.edited_at = edited.edited_at;
+        }
+        else if (!message.deleted_at) {
             message.body = edited.body;
             message.pieces = edited.pieces ?? null;
             message.edited_at = edited.edited_at;
@@ -168,7 +206,7 @@ export function applyMessageChange(message: TimelineMessage, event: string, payl
             message.attachments = null;
             message.metadata = null;
         }
-        else if (changed.body !== undefined && !message.deleted_at) {
+        else if (changed.body !== undefined && !message.deleted_at && !message.blocked) {
             // a message of files alone comes back with its body null and its files
             message.body = changed.body;
             message.pieces = changed.pieces ?? null;
@@ -312,7 +350,13 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
         }
     }
 
-    const isNewerEditHeld = !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
+    // Whether a message is withheld for a block is each copy's own say, since the platform marks only
+    // a withheld one: a newer copy without the mark, read after an unblock, shows it again.
+    if (held.blocked && !incoming.blocked) {
+        delete result.blocked;
+    }
+
+    const isNewerEditHeld = !held.blocked && !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
     if (isNewerEditHeld) {
         result.body = held.body;
         result.pieces = held.pieces;
@@ -512,7 +556,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     incoming.deleted_at = message.deleted_at;
                 }
             }
-            if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
+            if (incoming.blocked) {
+                // a live edit laid over a page never brings back what the page withheld
+                incoming = blockedCopy(incoming);
+            }
+            else if (incoming.deleted_at || (incoming.visibility !== undefined && incoming.visibility !== "visible")) {
                 incoming = { ...incoming, body: null, pieces: null, blocks: null, attachments: null, metadata: null };
             }
             if (incoming.id === openThreadRootId && incoming.thread_unread === true) {

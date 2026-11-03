@@ -28,7 +28,7 @@ import { RowPosition, timeLabel } from "../feedLayout.partial";
 import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
 
 /** What the row is drawing, which is also the marker the styles and the screenshots key on. */
-export type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card";
+export type RowState = "message" | "sending" | "sent" | "failed" | "deleted" | "hidden" | "removed" | "unknown" | "system" | "card" | "blocked";
 
 /** One face, in the avatar's own shape. */
 export type Face = { name: string, photoUrl: string | null };
@@ -209,6 +209,10 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
             return "message";
         }
 
+        if (display.value.kind === "blocked") {
+            return "blocked";
+        }
+
         if (display.value.kind === "deleted") {
             return "deleted";
         }
@@ -286,7 +290,7 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
      */
     const authorGuid = computed((): string | null => {
         const message = props.message;
-        return message?.person_alias_guid && message.sender_listed !== false ? message.person_alias_guid : null;
+        return message?.person_alias_guid && message.sender_listed !== false && !message.blocked ? message.person_alias_guid : null;
     });
 
     const face = computed((): Face => ({
@@ -371,14 +375,14 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
      * reactions part is mounted before the first chip, so the reader's first reaction, added in
      * place, is seen arriving and pops rather than being drawn as a page draws one.
      */
-    const isReactable = computed((): boolean => !!props.message && !isTomb.value && state.value !== "system" && state.value !== "card");
+    const isReactable = computed((): boolean => !!props.message && !isTomb.value && state.value !== "system" && state.value !== "card" && state.value !== "blocked");
 
     /** A reply also sent to the conversation, which says so above it and opens its thread. */
     const isThreadReply = computed((): boolean => !props.isInThread && !!props.message?.parent_id && !!props.message.shown_in_channel);
 
     /** A message that quotes another draws the quote above it, unless it is a tombstone itself. */
     const isQuoteShown = computed((): boolean => !!props.message?.quoted_message_id && !isTomb.value
-        && state.value !== "system" && state.value !== "card");
+        && state.value !== "system" && state.value !== "card" && state.value !== "blocked");
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
 

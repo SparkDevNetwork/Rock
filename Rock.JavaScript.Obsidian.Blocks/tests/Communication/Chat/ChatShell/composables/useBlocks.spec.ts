@@ -244,8 +244,9 @@ describe("block and unblock", () => {
         expect(blocks.isBlocked(sam)).toBe(false);
     });
 
-    test("Unblock from the list asks nothing first, and a refusal is noted on the row with Try again", async () => {
-        const { blocks, calls } = build([refusal, { ok: true, data: { people: [], blocked_aliases: [] } }]);
+    test("Unblock from the list asks nothing first, and a refusal another try can pass is noted on the row with Try again", async () => {
+        const unavailable: CallResult = { ok: false, status: 503, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null };
+        const { blocks, calls } = build([unavailable, { ok: true, data: { people: [], blocked_aliases: [] } }]);
         blocks.setAliases([sam]);
 
         expect(await blocks.unblock(samPerson, true)).toBe(false);

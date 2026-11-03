@@ -23,6 +23,16 @@
             </span>
         </template>
 
+        <!-- Someone the reader blocked: one quiet line for the message or a run of them, a thread under it still opened from there. -->
+        <template v-else-if="state === 'blocked'">
+            <span class="chat-sys-icon" aria-hidden="true"><Icon name="ban" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
+            <span class="chat-sys-text">
+                <span data-testid="blocked-text">{{ blockedText }}</span>
+                <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
+            </span>
+            <ThreadSummary v-if="hasThread && message" class="chat-blocked-thread" :message="message" :isRowOnScreen="isThreadStartedHere" @open="onOpenOwnThread" />
+        </template>
+
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
         <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
 
@@ -223,6 +233,41 @@
     text-align: center;
 }
 
+/*
+    A message by someone the reader blocked draws as a system line does, quiet and with no one's
+    name, so it never draws the eye; a thread under it wraps onto its own line.
+*/
+.chat-msg.is-blocked {
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 6px 24px;
+    font-size: 12.5px;
+    color: var(--chat-muted);
+    text-align: center;
+}
+
+.chat-msg.is-blocked .chat-blocked-thread {
+    flex-basis: 100%;
+}
+
+.chat-msg.is-community.is-blocked {
+    display: grid;
+    align-items: flex-start;
+    justify-content: stretch;
+    gap: 0 var(--chat-cm-gap);
+    margin: 2px 0 0;
+    padding: 3px var(--chat-cm-pad);
+    font-size: 13px;
+    line-height: 20px;
+    text-align: left;
+}
+
+.chat-msg.is-community.is-blocked .chat-blocked-thread {
+    grid-column: 2;
+}
+
 /* In Community it sits on the text column, its icon in the gutter, a little roomier than a row. */
 .chat-msg.is-community.is-system {
     align-items: flex-start;
@@ -282,13 +327,14 @@
     import MessageBody from "./messageBody.partial.obs";
     import MessageRowBubble from "./messageRowBubble.partial.obs";
     import MessageRowCommunity from "./messageRowCommunity.partial.obs";
+    import ThreadSummary from "./threadSummary.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { MessageRowHandlers, MessageRowReactionsProps, MessageRowSurface, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
-    import { FeedLayout, RowPosition } from "../feedLayout.partial";
+    import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
     import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -430,6 +476,12 @@
         reactionHost: {
             type: Object as PropType<ReactionHost | null>,
             default: null
+        },
+
+        /** The run of messages by people the reader blocked that this row stands for, oldest first; its own message alone when none is named. */
+        blockedRun: {
+            type: Array as PropType<TimelineMessage[] | null>,
+            default: null
         }
     });
 
@@ -513,7 +565,13 @@
         }
     }
 
+    /** What a blocked row says: the run it stands for, or its one message. */
+    const blockedText = computed((): string => blockedRunText(props.blockedRun ?? (props.message ? [props.message] : [])));
+
     const ariaLabel = computed((): string => {
+        if (state.value === "blocked") {
+            return `${blockedText.value}, ${time.value}`;
+        }
         const who = props.isOwn ? "You" : displayName.value;
         const mentions = readerMention.value ? `, mentions ${readerMention.value}` : "";
         return `${who}, ${time.value}${mentions}`;

@@ -49,7 +49,7 @@ export type ActionNotice = {
  * card, made from the author's name or face or a chip, which names no message.
  */
 export type MessageActionRequest =
-    | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit", message: TimelineMessage }
+    | { kind: "quote" | "edit" | "copy" | "delete" | "cancelEdit" | "block", message: TimelineMessage }
     | { kind: "saveEdit", message: TimelineMessage, body: string }
     | { kind: "server", message: TimelineMessage, action: MessageAction, onSettled?: () => void }
     | { kind: "react", message: TimelineMessage, code: string }
@@ -179,6 +179,19 @@ export function isEditableMessage(message: TimelineMessage): boolean {
 }
 
 /**
+ * Whether the sender of a message can be blocked from it: another person's message, signed by a
+ * person, so never the reader's own, a system line or a post from the church with no one's name.
+ *
+ * @param message The message.
+ * @param isOwn Whether the reader sent it.
+ *
+ * @returns True when its menu offers Block.
+ */
+export function isSenderBlockable(message: TimelineMessage, isOwn: boolean): boolean {
+    return !isOwn && !!message.person_alias_guid && message.message_type !== "system" && !message.blocked;
+}
+
+/**
  * Whether the person could edit a message in place: their own and editable, a reply shown only in
  * its thread included, which the drawer edits like any other.
  *
@@ -230,6 +243,7 @@ export type MessageRowRequests = {
         edit: (message: TimelineMessage) => void;
         copy: (message: TimelineMessage) => void;
         delete: (message: TimelineMessage) => void;
+        block: (message: TimelineMessage) => void;
         serverAction: (action: MessageAction) => void;
         react: (message: TimelineMessage, code: string) => void;
         openPicker: (message: TimelineMessage, anchor: HTMLElement, opening?: PickerOpening) => void;
@@ -270,6 +284,7 @@ export function messageRowRequests(place: MessageRowPlace): MessageRowRequests {
             edit: (message: TimelineMessage): void => place.request({ kind: "edit", message }),
             copy: (message: TimelineMessage): void => place.request({ kind: "copy", message }),
             delete: (message: TimelineMessage): void => place.request({ kind: "delete", message }),
+            block: (message: TimelineMessage): void => place.request({ kind: "block", message }),
             serverAction: (action: MessageAction): void => about(message => ({ kind: "server", message, action })),
             react: (message: TimelineMessage, code: string): void => place.request({ kind: "react", message, code }),
             openPicker: (message: TimelineMessage, anchor: HTMLElement, opening?: PickerOpening): void => place.request({ kind: "openPicker", message, anchor: place.pickerAnchor(anchor), ...(opening ? { opening } : {}) })

@@ -153,6 +153,7 @@ export const finalRefusals = {
     codes: [
         "authz.wrong_scope",
         "authz.wrong_tenant",
+        "authz.dm_blocked",
         "authz.dm_unavailable",
         "authz.no_announcement_right",
         "authz.no_mention_all_right",
@@ -183,6 +184,7 @@ export const finalRefusals = {
         "rpc.bad_gif",
         "rpc.gifs_off",
         "rpc.idempotency_mismatch",
+        "rpc.block_limit",
         "door.bad_request",
         "door.not_allowed",
         "door.not_found",
@@ -191,7 +193,7 @@ export const finalRefusals = {
         "door.target_not_eligible"
     ],
     passable: ["authz.join_required"],
-    roomRefusals: ["authz.dm_unavailable"]
+    roomRefusals: ["authz.dm_blocked", "authz.dm_unavailable"]
 };
 
 /**

@@ -3749,6 +3749,8 @@ describe("blocking", () => {
         const bootstraps = h.counts.bootstraps;
         const pages = h.history[channelA]?.length ?? 0;
         h.blocksAnswer.value = { people: [{ person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null }], blocked_aliases: [sam] };
+        // the sidebar read again names the same set, as the platform's would
+        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [sam] } };
 
         personal(h, "blocks.changed", { id: "e1" });
         await settle();
@@ -3774,6 +3776,7 @@ describe("blocking", () => {
         const h = await startedBlocking([]);
         const bootstraps = h.counts.bootstraps;
         h.blocksAnswer.value = { people: [], blocked_aliases: [sam] };
+        h.bootstrap.value = { channels: [samRow], me: { blocked_aliases: [sam] } };
 
         h.shell.blocks.ask({ person_alias_guid: sam, nick_name: "Sam", last_name: "Ortiz", avatar_url: null });
         await h.shell.blocks.confirm();

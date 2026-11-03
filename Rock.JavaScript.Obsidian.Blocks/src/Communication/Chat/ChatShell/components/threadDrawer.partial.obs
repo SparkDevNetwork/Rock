@@ -78,6 +78,22 @@
                      :style="{ '--chat-enter-i': index }"
                      data-testid="thread-divider">{{ dividerText }}</div>
 
+                <MessageRow v-else-if="item.kind === 'blocked'"
+                            class="chat-enter"
+                            :style="{ '--chat-enter-i': index }"
+                            :message="item.messages[item.messages.length - 1]"
+                            :blockedRun="item.messages"
+                            :personAliasGuid="personAliasGuid"
+                            :personName="personName"
+                            :personPhotoUrl="personPhotoUrl"
+                            :organizationName="organizationName"
+                            :isChannel="isChannel"
+                            :isPhone="isPhone"
+                            :isInThread="true"
+                            :reactionHost="reactionHost"
+                            :data-reply-id="item.isReply ? item.messages[item.messages.length - 1].id : undefined"
+                            @messageAction="emit('messageAction', $event)" />
+
                 <MessageRow v-else-if="item.kind !== 'group'"
                             class="chat-enter"
                             :style="{ '--chat-enter-i': index }"

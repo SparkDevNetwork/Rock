@@ -31,6 +31,7 @@ import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker }
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
+import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads } from "./composables/useThreads.partial";
@@ -267,6 +268,9 @@ export type ChatShell = {
 
     /** Each room's notify mode, star and hide, and the person's own switches. */
     prefs: Prefs;
+
+    /** The people the person blocked: the set live events are read through, the list, block and unblock. */
+    blocks: Blocks;
 
     /** What the person typed and has not sent, for each conversation and thread. */
     drafts: Drafts;
@@ -545,6 +549,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         rooms.stop();
         members.stop();
         prefs.stop();
+        blocks.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -829,6 +834,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
         savePersonSetting: options.savePersonSetting,
         channels,
         isOffline: () => state.connection !== null,
+        notify: notice => options.notify?.(notice)
+    });
+
+    // A change to whom the person blocked changes what every page shows them, so what is on screen,
+    // read through the old set, is read again: the sidebar, where a conversation with someone
+    // blocked leaves the list, and the open room.
+    const blocks = createBlocks({
+        call,
+        onChanged: () => resync(),
         notify: notice => options.notify?.(notice)
     });
 
@@ -1134,7 +1148,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
         // the bootstrap's own key names
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[] } } | null;
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[], blocked_aliases?: string[] } } | null;
         const rows = answer?.channels ?? [];
         // through the settings, which keep any room setting whose save is still out
         prefs.setRooms(rows);
@@ -1142,6 +1156,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mentions.setUnread(answer?.me?.unread_mentions ?? []);
         // the person's own switches, as another device may have changed them since
         prefs.setMe(answer?.me);
+        // whom they blocked, which only the sidebar call names: chat_set_prefs answers its own
+        // part of me and never this, so the set is the blocks' own and never read from a prefs answer
+        blocks.setAliases(answer?.me?.blocked_aliases);
         if (Array.isArray(answer?.reactions)) {
             favorites.splice(0, favorites.length, ...answer.reactions);
         }
@@ -1357,6 +1374,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         roomKindOf,
         members,
         prefs,
+        blocks,
         drafts,
         attachments,
         gifs,
@@ -1388,7 +1406,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 client,
                 tenantId,
                 personAliasGuid,
-                onChannelEvent: (channelId, event, payload) => {
+                onChannelEvent: (channelId, event, rawPayload) => {
+                    // A room's events are one payload for every subscriber, so a message by someone
+                    // the person blocked is collapsed, and their face blanked, before anything holds it.
+                    const payload = blocks.maskEvent(event, rawPayload);
                     if (event === "resync") {
                         resync();
                         return;
@@ -1427,6 +1448,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 onPersonalEvent: (event, payload) => {
                     if (event === "resync") {
                         resync();
+                        return;
+                    }
+                    // Another page or device changed whom the person blocked; the set is read again,
+                    // and a change reads again what is on screen.
+                    if (event === "blocks.changed") {
+                        void blocks.changed();
                         return;
                     }
                     channels.applyPersonalEvent(event, payload);
@@ -1670,6 +1697,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             rooms.stop();
             members.stop();
             prefs.stop();
+            blocks.stop();
             drafts.stop();
             attachments.stop();
 

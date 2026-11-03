@@ -95,7 +95,7 @@ img.chat-sheet-glyph {
     import { PickerOpening } from "./emojiPicker.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
-    import { isEditableMessage, MessageAction } from "../composables/useMessageActions.partial";
+    import { isEditableMessage, isSenderBlockable, MessageAction } from "../composables/useMessageActions.partial";
     import { ReactionFavorite, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -142,6 +142,7 @@ img.chat-sheet-glyph {
         (e: "edit", message: TimelineMessage): void;
         (e: "copy", message: TimelineMessage): void;
         (e: "delete", message: TimelineMessage): void;
+        (e: "block", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
         (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
@@ -202,6 +203,10 @@ img.chat-sheet-glyph {
 
         if (props.isOwn) {
             list.push({ key: "delete", label: "Delete message", icon: "trash", isDanger: true });
+        }
+
+        if (isSenderBlockable(message, props.isOwn)) {
+            list.push({ key: "block", label: "Block", icon: "ban" });
         }
 
         return list;
@@ -282,6 +287,9 @@ img.chat-sheet-glyph {
         }
         else if (key === "delete") {
             emit("delete", message);
+        }
+        else if (key === "block") {
+            emit("block", message);
         }
         else {
             const action = (message.actions ?? [])[Number(key.replace("action ", ""))];

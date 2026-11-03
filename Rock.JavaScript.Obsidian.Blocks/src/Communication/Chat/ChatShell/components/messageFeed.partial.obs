@@ -80,6 +80,21 @@
                             <span>New</span>
                         </div>
 
+                        <MessageRow v-else-if="item.kind === 'blocked'"
+                                    :message="item.messages[item.messages.length - 1]"
+                                    :blockedRun="item.messages"
+                                    :personAliasGuid="personAliasGuid"
+                                    :personName="personName"
+                                    :personPhotoUrl="personPhotoUrl"
+                                    :organizationName="organizationName"
+                                    :isChannel="isChannel"
+                                    :isPhone="isPhone"
+                                    :isArriving="isRowArriving(item.key, item.messages[item.messages.length - 1])"
+                                    :reactionHost="reactionHost"
+                                    :data-message-id="item.messages[item.messages.length - 1].id"
+                                    @openThread="emit('openThread', $event)"
+                                    @messageAction="emit('messageAction', $event)" />
+
                         <MessageRow v-else-if="item.kind !== 'group'"
                                     :message="item.message"
                                     :personAliasGuid="personAliasGuid"
@@ -1279,7 +1294,8 @@
         }
 
         const me = props.personAliasGuid.toLowerCase();
-        const arrived = props.timeline.messages.filter(m => m.id > previous);
+        // a message by someone the reader blocked is not news to them
+        const arrived = props.timeline.messages.filter(m => m.id > previous && !m.blocked);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
 
         if (isReaderUp) {

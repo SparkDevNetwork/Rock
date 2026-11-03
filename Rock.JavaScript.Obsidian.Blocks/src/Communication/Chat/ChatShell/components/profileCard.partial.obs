@@ -43,6 +43,17 @@
                         data-testid="profile-settings"
                         @click="emit('settings')"><Icon name="settings" size="xs" />Chat settings</button>
             </div>
+            <div v-else-if="person.is_blocked" class="chat-pc-acts" data-testid="profile-actions">
+                <div class="chat-pc-muted" data-testid="profile-blocked">
+                    <Icon name="ban" size="xs" />
+                    <span><b>You blocked {{ person.nick_name }}.</b> You won't see their messages, and they can't message you.</span>
+                </div>
+                <button type="button"
+                        class="chat-pc-btn is-line"
+                        :disabled="isBlockBusy"
+                        data-testid="profile-unblock"
+                        @click="emit('unblock', person)">Unblock</button>
+            </div>
             <div v-else class="chat-pc-acts" data-testid="profile-actions">
                 <button v-if="person.can_message"
                         type="button"
@@ -53,6 +64,11 @@
                     <Icon name="mail" size="xs" />
                     <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
                 </div>
+                <button type="button"
+                        class="chat-pc-btn is-quiet"
+                        :disabled="isBlockBusy"
+                        data-testid="profile-block"
+                        @click="emit('block', person)"><Icon name="ban" size="xs" />Block</button>
             </div>
 
             <!--
@@ -421,6 +437,23 @@
     color: var(--chat-icon);
 }
 
+/* Block, the quiet last action: no fill or edge, so it never competes with Message. */
+.chat-pc-btn.is-quiet {
+    height: 30px;
+    font-weight: 500;
+    color: var(--chat-muted);
+    background: transparent;
+}
+
+.chat-pc-btn.is-quiet:hover {
+    color: var(--chat-text);
+}
+
+.chat-pc-btn:disabled {
+    cursor: default;
+    opacity: .55;
+}
+
 .chat-pc-muted {
     display: flex;
     gap: 8px;
@@ -495,6 +528,12 @@
             default: () => []
         },
 
+        /** A block or unblock of this person is out, so its button waits for it. */
+        isBlockBusy: {
+            type: Boolean,
+            default: false
+        },
+
         /** The name, face or chip the card opens beside; drawn in place where there is none. */
         anchor: {
             type: Object as PropType<HTMLElement | null>,
@@ -533,6 +572,9 @@
         (e: "settings"): void;
         /** The person's own switch for their details, and the value it asks for. */
         (e: "toggleDetails", value: boolean): void;
+        /** Block, which a confirmation asks first, and Unblock, which needs none. */
+        (e: "block", person: PersonProfile): void;
+        (e: "unblock", person: PersonProfile): void;
     }>();
 
     // #region Values

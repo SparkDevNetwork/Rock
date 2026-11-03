@@ -342,6 +342,9 @@ export type QuotedMessage = {
     visibility_notice?: string | null;
     created_at: string;
     deleted_at?: string | null;
+
+    /** True on a quote of someone the reader blocked, which says nothing of what it quotes; absent otherwise. */
+    blocked?: boolean;
 };
 
 /** One message of a channel's timeline, as chat_get_history returns it. */
@@ -360,7 +363,7 @@ export type TimelineMessage = {
     is_own?: boolean;
 
     /** The actions the server lists on it; empty when it lists none. */
-    actions?: MessageAction[];
+    actions?: MessageAction[] | null;
 
     /** Its reactions as the server counts them, in the catalog's picker order; empty when none. */
     reactions?: Reaction[];
@@ -427,6 +430,12 @@ export type TimelineMessage = {
      * one. Every copy of a message carries it, so the sender's row and each copy are one message.
      */
     client_key?: string | null;
+
+    /**
+     * True on a message by someone the reader blocked, which keeps its row, id, time and thread
+     * counts and withholds its sender and everything it says; absent on every other message.
+     */
+    blocked?: boolean;
 };
 
 /**
@@ -625,8 +634,11 @@ export type PersonProfile = PersonRow & {
     /** Their badges, only when they show their details; null otherwise. */
     details: PersonDetails | null;
 
-    /** Whether the caller may message them: never themselves. */
+    /** Whether the caller may message them: never themselves, nor someone they blocked. */
     can_message: boolean;
+
+    /** Whether the caller blocked them, which the card offers to undo; never whether they blocked the caller. */
+    is_blocked?: boolean;
 
     /** The two-person conversation the caller already has with them, or null. */
     dm_channel_id: string | null;
@@ -756,7 +768,7 @@ export type MessageCreatedEvent = {
     quoted?: QuotedMessage | null;
 
     /** The actions the server lists on it, the same for every viewer. */
-    actions?: MessageAction[];
+    actions?: MessageAction[] | null;
 
     /** Whether the sender leads this channel now; false in a direct message and on a system line. */
     sender_is_leader?: boolean;

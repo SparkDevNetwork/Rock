@@ -315,8 +315,9 @@ describe("Blocked people", () => {
     test("lists each person blocked, one the church no longer lists as someone no longer in chat", () => {
         const w = mountSettings({ blocked: list() });
 
-        const rows = w.findAll("[data-testid='blocked-row']").map(r => plain(r.text()));
-        expect(rows).toEqual(["Sam Ortiz Unblock", "Someone no longer in chat Unblock"]);
+        const rows = w.findAll("[data-testid='blocked-row']").map(r => plain(r.get(".chat-sg-title").text()));
+        expect(rows).toEqual(["Sam Ortiz", "Someone no longer in chat"]);
+        expect(w.findAll("[data-testid='blocked-unblock']").map(b => b.attributes("aria-label"))).toEqual(["Unblock Sam Ortiz", "Unblock Someone no longer in chat"]);
     });
 
     test("Unblock is one tap, with no confirmation, since everything comes back as it was", async () => {
@@ -336,7 +337,7 @@ describe("Blocked people", () => {
     });
 
     test("says so when nobody is blocked, while the list loads, and when it failed, with Try again", async () => {
-        expect(plain(mountSettings({ blocked: list({ people: [] }) }).get("[data-testid='blocked-empty']").text())).toBe("You haven't blocked anyone. Block someone from their card or one of their messages.");
+        expect(plain(mountSettings({ blocked: list({ people: [] }) }).get("[data-testid='blocked-empty']").text())).toBe("You haven't blocked anyone.");
         wrapper?.unmount();
         expect(mountSettings({ blocked: list({ listState: "loading" }) }).find("[data-testid='blocked-loading']").exists()).toBe(true);
         wrapper?.unmount();

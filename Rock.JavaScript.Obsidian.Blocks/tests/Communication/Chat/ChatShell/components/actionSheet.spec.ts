@@ -216,7 +216,8 @@ describe("opening and closing", () => {
 
     test("Tab stays inside the sheet, from its last item back to its first reaction", async () => {
         const w = await open({ message: message() });
-        (item(w, "Copy text").element as HTMLElement).focus();
+        // Block is the last item on another person's message
+        (item(w, "Block").element as HTMLElement).focus();
 
         await sheet(w).trigger("keydown", { key: "Tab" });
 
