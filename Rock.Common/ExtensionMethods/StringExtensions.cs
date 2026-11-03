@@ -325,6 +325,19 @@ namespace Rock
                 return false;
             }
 
+            // Callers redirect to the string they passed, not the decoded copy, so that string must name the same host.
+            if ( !string.Equals( redirectUrl, decodedUrl, StringComparison.Ordinal ) )
+            {
+                if ( redirectUrl.Any( char.IsControl )
+                    || !Uri.TryCreate( redirectUrl, UriKind.Absolute, out var passedUri )
+                    || ( passedUri.Scheme != Uri.UriSchemeHttp && passedUri.Scheme != Uri.UriSchemeHttps )
+                    || passedUri.UserInfo.IsNotNullOrWhiteSpace()
+                    || !string.Equals( passedUri.Host, uri.Host, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return false;
+                }
+            }
+
             return allowedHosts.Any( allowedHost => IsRedirectHostMatch( uri.Host, allowedHost ) );
         }
 
