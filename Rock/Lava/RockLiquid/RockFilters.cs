@@ -4053,7 +4053,8 @@ namespace Rock.Lava
                 return input;
             }
 
-            return string.Format( "<![CDATA[{0}]]>", input );
+            // Split any CDATA end sequence across two sections so the text always stays inside CDATA.
+            return string.Format( "<![CDATA[{0}]]>", input.Replace( "]]>", "]]]]><![CDATA[>" ) );
         }
 
         /// <summary>
