@@ -1,0 +1,60 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Updates the default security on the Tags and Tagged Items REST controllers.
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 341, "17.8" )]
+    public class RemoveTagRestControllerAllUsersAuth : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            /*
+                11/02/26 - JMH
+
+                The rules are matched by their shipped Guids and shipped values,
+                so a rule an administrator added or changed is kept and the statement is safe to run again.
+
+                Reason: Only remove the unchanged default rules, never administrator-added or edited ones.
+            */
+            Sql( @"
+DELETE FROM [Auth]
+WHERE [Guid] IN (
+        '9D921716-A946-4DEF-9EF9-40A5CD3FFAA4',
+        'A9576D72-A98B-42AE-8A04-DEDCEEEF0671',
+        '6212376F-B47B-46E1-B5DC-47B317BEC5F5' )
+    AND [AllowOrDeny] = 'A'
+    AND [SpecialRole] = 1
+    AND [GroupId] IS NULL
+    AND [PersonAliasId] IS NULL;" );
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // Down migrations are not yet supported in plug-in migrations.
+        }
+    }
+}
