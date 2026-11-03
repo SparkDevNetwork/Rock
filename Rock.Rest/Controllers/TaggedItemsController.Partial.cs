@@ -52,11 +52,22 @@ namespace Rock.Rest.Controllers
 
             var person = GetPerson( ( Rock.Data.RockContext ) Service.Context );
 
+            if ( person == null )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
+
             var tagService = new TagService( ( Rock.Data.RockContext ) Service.Context );
 
             var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name, categoryGuid, includeInactive );
             if ( tag == null || !tag.IsAuthorized( Rock.Security.Authorization.TAG, person ) )
             {
+                // A new tag is a personal tag, so it may only be created for the current person.
+                if ( ownerId != person.Id )
+                {
+                    throw new HttpResponseException( HttpStatusCode.Unauthorized );
+                }
+
                 int? categoryId = null;
                 if ( categoryGuid.HasValue )
                 {
