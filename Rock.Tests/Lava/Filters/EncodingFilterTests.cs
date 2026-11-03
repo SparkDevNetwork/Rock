@@ -14,10 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Xml.Linq;
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Lava.Shared;
 
+using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Tests.Shared.Constants;
 
@@ -102,6 +105,42 @@ Have you read &#39;The Lion, The Witch &amp; the Wardrobe by C.S. Lewis&#39;?
                 var output = LavaRenderTestHelper.Render( engine, "{{ '1 &lt; 2 &amp; 3' | EscapeOnce }}" );
 
                 Assert.AreEqual( "1 &lt; 2 &amp; 3", output );
+            } );
+        }
+
+        #endregion
+
+        #region XamlWrap
+
+        /// <summary>
+        /// Ensure that text containing a CDATA end sequence is read back exactly when the output is parsed as XML.
+        /// </summary>
+        [TestMethod]
+        public void XamlWrap_WithInputContainingCdataEndSequence_RemainsText()
+        {
+            var text = "One ]]> two <b>three</b>";
+            var mergeValues = new LavaDataDictionary { { "Text", text } };
+            
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ Text | XamlWrap }}", new LavaRenderOptions { MergeFields = mergeValues } );
+                var label = XElement.Parse( "<Label>" + output + "</Label>" );
+
+                Assert.AreEqual( text, label.Value );
+                Assert.IsFalse( label.HasElements );
+            } );
+        }
+
+        /// <summary>
+        /// Ensure that text without a CDATA end sequence is wrapped in a single CDATA section.
+        /// </summary>
+        [TestMethod]
+        public void XamlWrap_WithPlainText_IsWrappedInCdata()
+        {
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
+            {
+                var output = LavaRenderTestHelper.Render( engine, "{{ 'Fish & Chips <today>' | XamlWrap }}" );
+                Assert.AreEqual( "<![CDATA[Fish & Chips <today>]]>", output );
             } );
         }
 
