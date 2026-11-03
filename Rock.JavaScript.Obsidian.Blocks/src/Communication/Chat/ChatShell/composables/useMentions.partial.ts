@@ -156,6 +156,13 @@ export type Mentions = {
     refreshInbox: () => Promise<void>;
     loadOlder: () => Promise<void>;
     closeInbox: () => void;
+
+    /**
+     * What the mentions hold may be out of date in a way no event describes, as when the people
+     * the person blocked change: the @ picker's held people are forgotten and the inbox, while
+     * shown, is read again.
+     */
+    resync: () => void;
     jump: (row: MentionRow) => Promise<void>;
     setUnread: (entries: UnreadMention[]) => void;
     applyPersonalEvent: (event: string, payload: unknown) => void;
@@ -256,6 +263,9 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
     const visitKey = `rock-chat:mentions-visit:${dependencies.tenantId.toLowerCase()}:${dependencies.personAliasGuid.toLowerCase()}`;
 
     let isStopped = false;
+
+    // Whether the inbox is on screen, from its open to its close, which a resync reads again.
+    let isInboxShown = false;
 
     // Each search, close and stop moves this on, so an answer to an older query is dropped.
     let searchGeneration = 0;
@@ -469,8 +479,26 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         return null;
     }
 
+    /** Reads the inbox's newest page again over the rows on screen. */
+    async function refreshInbox(): Promise<void> {
+        if (isStopped) {
+            return;
+        }
+
+        // A refresh replaces the rows, so an older page still on its way would land after them.
+        const generation = ++inboxGeneration;
+        state.inbox.isRefreshing = true;
+        state.inbox.isLoadingOlder = false;
+        const error = await loadFirstPage(generation);
+        if (generation === inboxGeneration && !isStopped) {
+            state.inbox.isRefreshing = false;
+            state.inbox.error = error;
+        }
+    }
+
     /** Empties the inbox and drops any page still on its way. */
     function resetInbox(): void {
+        isInboxShown = false;
         inboxGeneration++;
         Object.assign(state.inbox, { rows: [], hasMore: false, isLoading: false, isRefreshing: false, isLoadingOlder: false, error: null, olderError: null, newIds: [], currentId: null });
     }
@@ -561,6 +589,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             }
 
             resetInbox();
+            isInboxShown = true;
             openedIds.clear();
 
             // Opening is the visit: what came after the one before is New for this visit, and
@@ -580,21 +609,7 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
             }
         },
 
-        refreshInbox: async (): Promise<void> => {
-            if (isStopped) {
-                return;
-            }
-
-            // A refresh replaces the rows, so an older page still on its way would land after them.
-            const generation = ++inboxGeneration;
-            state.inbox.isRefreshing = true;
-            state.inbox.isLoadingOlder = false;
-            const error = await loadFirstPage(generation);
-            if (generation === inboxGeneration && !isStopped) {
-                state.inbox.isRefreshing = false;
-                state.inbox.error = error;
-            }
-        },
+        refreshInbox,
 
         loadOlder: async (): Promise<void> => {
             const last = state.inbox.rows[state.inbox.rows.length - 1];
@@ -627,6 +642,13 @@ export function createMentions(dependencies: MentionsDependencies): Mentions {
         },
 
         closeInbox: resetInbox,
+
+        resync: (): void => {
+            forgetPeople();
+            if (isInboxShown) {
+                void refreshInbox();
+            }
+        },
 
         jump: async (row): Promise<void> => {
             if (isStopped) {

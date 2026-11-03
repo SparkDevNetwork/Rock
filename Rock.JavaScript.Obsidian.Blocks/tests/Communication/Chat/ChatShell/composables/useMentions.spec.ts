@@ -871,6 +871,34 @@ describe("the picker's search", () => {
 });
 
 describe("the inbox", () => {
+    test("a resync reads the inbox again while it is shown, and not once it is closed", async () => {
+        const h = setup();
+        h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z"), mentionRow(40, "2026-10-17T09:00:00Z")]), inboxAnswer([mentionRow(40, "2026-10-17T09:00:00Z")])];
+        await h.mentions.openInbox();
+
+        h.mentions.resync();
+        await settle();
+        const shown = h.callsTo("chat_list_mentions").length;
+        h.mentions.closeInbox();
+        h.mentions.resync();
+        await settle();
+
+        expect(shown).toBe(2);
+        expect(h.callsTo("chat_list_mentions")).toHaveLength(2);
+    });
+
+    test("a resync forgets every room's held people too", async () => {
+        const h = setup();
+        h.answers.chat_search_mentionable = [peopleAnswer([annaPerson])];
+        h.mentions.warm(room);
+        await settle();
+
+        h.mentions.resync();
+        h.mentions.search(room, "");
+
+        expect(h.mentions.state.picker.isAwaitingFirstAnswer).toBe(true);
+    });
+
     test("fetches the newest page on open, from every conversation", async () => {
         const h = setup();
         h.answers.chat_list_mentions = [inboxAnswer([mentionRow(50, "2026-10-18T09:00:00Z"), mentionRow(40, "2026-10-17T09:00:00Z")], true)];

@@ -102,6 +102,29 @@ describe("the blocked set", () => {
         expect(changes.count).toBe(2);
     });
 
+    test("a live message let through before the first set is known asks for a reread once that set names someone", () => {
+        const { blocks, changes } = build();
+
+        // the room's live copy arrives before the sidebar has said who is blocked
+        expect(blocks.maskEvent("message.created", created())).toMatchObject({ body: "hello" });
+        blocks.setAliases([sam]);
+
+        expect(changes.count).toBe(1);
+    });
+
+    test("a first set naming nobody, or one taken before any live event, asks nothing even after events", () => {
+        const empty = build();
+        empty.blocks.maskEvent("reaction.added", { reactors: [] });
+        empty.blocks.setAliases([]);
+
+        const early = build();
+        early.blocks.setAliases([sam]);
+        early.blocks.maskEvent("message.created", created());
+
+        expect(empty.changes.count).toBe(0);
+        expect(early.changes.count).toBe(0);
+    });
+
     test("an answer with no set, as an older platform's sidebar, leaves the set as it was", () => {
         const { blocks } = build();
         blocks.setAliases([sam]);
@@ -306,6 +329,36 @@ describe("block and unblock", () => {
         expect(calls.map(c => c.name)).toEqual(["chat_list_blocks"]);
         expect(blocks.isBlocked(sam)).toBe(true);
         expect(changes.count).toBe(1);
+    });
+
+    test("once stopped, a list, block or unblock answering late changes nothing and tells nothing", async () => {
+        const list = deferred<CallResult>();
+        const blocked = deferred<CallResult>();
+        const unblocked = deferred<CallResult>();
+        const answers = [list.promise, blocked.promise, unblocked.promise];
+        const changes = { count: 0 };
+        const notices: string[] = [];
+        const blocks = createBlocks({ call: () => answers.shift() as Promise<CallResult>, onChanged: () => changes.count++, notify: notice => notices.push(notice.text) });
+        blocks.setAliases([]);
+
+        const loading = blocks.load();
+        blocks.ask(samPerson);
+        const blocking = blocks.confirm();
+        const unblocking = blocks.unblock({ ...samPerson, person_alias_guid: samOther }, false);
+        blocks.stop();
+        list.resolve({ ok: true, data: { people: [samPerson], blocked_aliases: [sam] } });
+        blocked.resolve({ ok: true, data: { people: [samPerson], blocked_aliases: [sam] } });
+        unblocked.resolve(refusal);
+
+        expect(await blocking).toBe(false);
+        expect(await unblocking).toBe(false);
+        await loading;
+        expect(blocks.isBlocked(sam)).toBe(false);
+        expect(blocks.state.people).toEqual([]);
+        expect(blocks.state.listState).not.toBe("loaded");
+        expect(changes.count).toBe(0);
+        expect(notices).toEqual([]);
+        expect(blocks.state.notes).toEqual({});
     });
 
     test("a list that fails to load says so until it loads", async () => {

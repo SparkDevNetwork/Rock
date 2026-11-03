@@ -1386,6 +1386,24 @@ describe("a message by someone the reader blocked", () => {
         expect(held.body).toBeNull();
     });
 
+    test("a visible message edited later than the page that then withholds it keeps none of its words", async () => {
+        const pages = [
+            page([1]),
+            { messages: [{ ...blockedRow(1), edited_at: null }], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false }
+        ];
+        const timelines = createTimelines({ limits, fetchPage: async () => pages.shift() as HistoryPage });
+        await timelines.loadNewest(channel);
+        // an edit held from before the block, newer than anything the next page says of it
+        timelines.applyEvent(channel, "message.edited", { id: 1, channel_id: channel, body: "edited words", pieces: [{ type: "text", text: "edited words" }], edited_at: "2026-11-03T11:00:00Z" });
+
+        await timelines.loadNewest(channel);
+
+        const held = timelines.state(channel).messages[0];
+        expect(held.blocked).toBe(true);
+        expect(held.body).toBeNull();
+        expect(held.pieces).toBeNull();
+    });
+
     test("a page read after an unblock, which marks nothing, shows the message again in place", async () => {
         const pages = [
             { messages: [blockedRow(1)], read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false },

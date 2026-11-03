@@ -47,7 +47,7 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, combine, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
@@ -208,6 +208,12 @@ export type Threads = {
      */
     whenLoaded: (channelId: string, change: () => void) => void;
 
+    /**
+     * What the threads hold on screen may be out of date in a way no event describes, as when the
+     * people the person blocked change: the list, while shown, and the open thread read again.
+     */
+    resync: () => void;
+
     /** Stops for good: nothing more is fetched and no answer reaches the screen. */
     stop: () => void;
 };
@@ -255,6 +261,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
     // Bumped by every fetch that replaces the list and by closing it, so an older answer is dropped.
     let listFetch = 0;
+
+    // Whether the list is on screen, from its open to its close, which a resync reads again.
+    let isListShown = false;
     let isLoadingMore = false;
 
     // Bumped by every thread opened or closed, so a page of a thread left is dropped.
@@ -416,6 +425,55 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         newestSeen = thread.readCursor;
         lastSaved = thread.readCursor;
         changes.forEach(change => change());
+    }
+
+    /**
+     * Reads the open thread's newest page again and lays it over what is held, by id, so the
+     * reader stays where they are. Each copy in the page is the platform's newest say about it,
+     * combined as the timeline combines a page; a live reply newer than the page stays. A held
+     * reply older than the page was read through what has since changed and nothing would read it
+     * again, so it is let go and comes back, as it now reads, when the drawer is scrolled to it.
+     */
+    async function rereadThread(): Promise<void> {
+        const open = state.thread;
+        if (isStopped || !open || open.error) {
+            return;
+        }
+
+        const thisOpen = threadOpen;
+        const result = await dependencies.call("chat_get_thread_history", { p_root_id: open.rootId, p_limit: dependencies.limits().history_page_size });
+        if (isStopped || thisOpen !== threadOpen || !state.thread || !result.ok) {
+            // a failed read keeps what is on screen, as a failed resync of the conversation does
+            return;
+        }
+
+        const page = body<ThreadPage>(result);
+        // A first page still on its way lands first, and this one is laid over it.
+        const lay = (): void => {
+            const thread = state.thread;
+            if (!thread) {
+                return;
+            }
+            if (page.root && thread.root) {
+                thread.root = combine(thread.root, page.root);
+            }
+            const read = (page.messages ?? []).map(withSendKey).sort((a, b) => a.id - b.id);
+            const oldest = read[0]?.id ?? null;
+            const held = new Map(thread.replies.map(reply => [reply.id, reply]));
+            const isLetGo = (reply: TimelineMessage): boolean => oldest !== null && reply.id < oldest;
+            const readIds = new Set(read.map(message => message.id));
+            const live = thread.replies.filter(reply => !isLetGo(reply) && !readIds.has(reply.id));
+            thread.replies = [...read.map(message => held.has(message.id) ? combine(held.get(message.id) as TimelineMessage, message) : message), ...live]
+                .sort((a, b) => a.id - b.id);
+            thread.hasMore = page.has_more === true || [...held.values()].some(isLetGo);
+            reportLanded(read);
+        };
+        if (state.thread.isLoading) {
+            whileLoading.push(lay);
+        }
+        else {
+            lay();
+        }
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -675,6 +733,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
             const list = state.list;
+            isListShown = true;
             // The tab is the person's choice for the page, kept across closing the panel and changing
             // conversation. All lists the same threads from any conversation, so it refreshes in place.
             const isSameList = list.tab === tab && (tab === "all" || list.channelId === channelId);
@@ -711,6 +770,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         },
 
         closeList: (): void => {
+            isListShown = false;
             listFetch++;
             state.list.isLoading = false;
             state.list.isRefreshing = false;
@@ -909,6 +969,16 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
             change();
+        },
+
+        resync: (): void => {
+            if (isStopped) {
+                return;
+            }
+            if (isListShown) {
+                void fetchList("refresh");
+            }
+            void rereadThread();
         },
 
         stop: (): void => {

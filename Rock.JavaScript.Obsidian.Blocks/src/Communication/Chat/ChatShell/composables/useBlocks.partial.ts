@@ -115,6 +115,9 @@ export type Blocks = {
     stop: () => void;
 };
 
+/** The live events that can carry a blocked person's words or face. */
+const maskedEvents = new Set(["message.created", "reaction.added", "reaction.removed", "thread.updated"]);
+
 /**
  * A face blanked when it is someone the person blocked: the act stays counted, but whose it was
  * is not shown, as the platform blanks them on every list it answers the person.
@@ -151,12 +154,16 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
     let set = new Set<string>();
     let isStopped = false;
 
-    // The first set is what everything on screen is read through from the start, so only a later
-    // one can change what was read.
+    // Until the first set is known, a live event is let through as it came, since nobody is known
+    // to be blocked. The first set then changes what is on screen only if such an event was held
+    // and the set names someone; after it, any change does.
     let hasSet = false;
+    let isHeldUnmasked = false;
 
     // Each list read and each block or unblock has a number; only the newest answer sets the set,
-    // so a slow answer never takes back a newer one.
+    // so a slow answer never takes back a newer one. The order is the asking's, not the platform's:
+    // a list read asked after a block but read before it committed can win, and the block's own
+    // blocks.changed then reads the list again, so no stale set stays.
     let asked = 0;
     let applied = 0;
 
@@ -171,7 +178,9 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         }
 
         const next = new Set(aliases.filter((a): a is string => typeof a === "string").map(a => a.toLowerCase()));
-        const isChanged = hasSet && (next.size !== set.size || [...next].some(a => !set.has(a)));
+        const isChanged = hasSet
+            ? next.size !== set.size || [...next].some(a => !set.has(a))
+            : isHeldUnmasked && next.size > 0;
         hasSet = true;
         set = next;
         state.aliases = [...next];
@@ -261,6 +270,9 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         isBlocked,
 
         maskEvent: (event: string, payload: unknown): unknown => {
+            if (!hasSet && maskedEvents.has(event)) {
+                isHeldUnmasked = true;
+            }
             if (set.size === 0 || !payload || typeof payload !== "object") {
                 return payload;
             }

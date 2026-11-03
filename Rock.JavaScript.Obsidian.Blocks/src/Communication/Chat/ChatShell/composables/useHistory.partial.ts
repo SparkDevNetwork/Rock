@@ -341,7 +341,7 @@ function hasId(payload: unknown): payload is { id: number } {
  * older body and a delete held is never undone. A live copy lacks the sender's name, so a field
  * the newer copy does not carry keeps what is held.
  */
-function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMessage {
+export function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMessage {
     const result: TimelineMessage = { ...held };
 
     for (const [key, value] of Object.entries(incoming)) {
@@ -356,7 +356,9 @@ function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMess
         delete result.blocked;
     }
 
-    const isNewerEditHeld = !held.blocked && !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
+    // A copy withheld for a block is final about its words, as a delete is: an edit held from before
+    // never puts them back.
+    const isNewerEditHeld = !held.blocked && !incoming.blocked && !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
     if (isNewerEditHeld) {
         result.body = held.body;
         result.pieces = held.pieces;

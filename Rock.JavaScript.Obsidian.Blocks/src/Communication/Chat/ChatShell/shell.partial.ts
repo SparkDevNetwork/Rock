@@ -837,9 +837,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         notify: notice => options.notify?.(notice)
     });
 
-    // A change to whom the person blocked changes what every page shows them, so what is on screen,
-    // read through the old set, is read again: the sidebar, where a conversation with someone
-    // blocked leaves the list, and the open room.
+    // A change to whom the person blocked changes what every page shows them, so everything on
+    // screen, read through the old set, is read again.
     const blocks = createBlocks({
         call,
         onChanged: () => resync(),
@@ -1212,14 +1211,26 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }
 
     /**
-     * The platform says what this client holds may be out of date in a way no other event
-     * describes, so the sidebar and the open channel are read again. Nothing is reminted: what the
-     * person may read has not changed, only what is on screen.
+     * What this client holds may be out of date in a way no other event describes: the platform
+     * says so, or the people the person blocked changed. Everything on screen is read again: the
+     * sidebar, the open channel, its facts once the sidebar has said whether it still lists the
+     * room (a direct message with someone just blocked leaves it, and its composer then locks by
+     * the facts' own sentence), the open thread, and the threads, mentions or members panel shown.
+     * Nothing is reminted: what the person may read has not changed, only what is on screen.
      */
     function resync(): void {
-        void loadSidebar().catch(() => undefined);
-        mentions.forgetPeople();
         const channelId = state.activeChannelId;
+        void loadSidebar()
+            .catch(() => undefined)
+            .then(() => {
+                if (channelId && state.activeChannelId === channelId) {
+                    rooms.roomChanged(channelId);
+                }
+            });
+        mentions.resync();
+        threads.resync();
+        // what the members hold of a room may have missed a change, as after a rejoin
+        members.rejoined();
         if (channelId) {
             // The newest page alone redraws only the latest messages, so the channel then catches up
             // from it, reading again what it holds, as a rejoin does.

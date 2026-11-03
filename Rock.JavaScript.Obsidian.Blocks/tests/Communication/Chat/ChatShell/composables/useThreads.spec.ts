@@ -761,6 +761,72 @@ describe("the thread page", () => {
     });
 });
 
+describe("a resync, as when the people blocked change", () => {
+    const blocked = { body: null, pieces: null, sender_nick_name: null, sender_last_name: null, sender_avatar_url: null, blocked: true };
+
+    test("the open thread's newest page is laid over what is held by id, and a live reply newer than it stays", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1, { person_alias_guid: ben })])];
+        await h.threads.openThread(channel, 1);
+        h.threads.applyEvent(channel, "message.created", { ...reply(4, 1), channel_id: channel });
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1, { person_alias_guid: ben, ...blocked })])];
+
+        h.threads.resync();
+        await settle();
+
+        const replies = h.threads.state.thread?.replies ?? [];
+        expect(replies.map(r => r.id)).toEqual([2, 3, 4]);
+        expect(replies[0]).toMatchObject({ blocked: true, body: null, sender_nick_name: null });
+        expect(h.callsTo("chat_get_thread_history").at(-1)?.args).toEqual({ p_root_id: 1, p_limit: 23 });
+    });
+
+    test("a held reply older than the page is let go, and the drawer has more to read", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1)], { has_more: true })];
+        await h.threads.openThread(channel, 1);
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1)])];
+        await h.threads.loadOlderReplies();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1)])];
+
+        h.threads.resync();
+        await settle();
+
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([3]);
+        expect(h.threads.state.thread?.hasMore).toBe(true);
+    });
+
+    test("a page still on its way when the resync asks lands first, and the resync's is laid over it", async () => {
+        const h = await setup();
+        const first = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [first, threadAnswer(root(1), [reply(2, 1, blocked)])];
+        const opening = h.threads.openThread(channel, 1);
+
+        h.threads.resync();
+        await settle();
+        first.resolve(threadAnswer(root(1), [reply(2, 1)]));
+        await opening;
+        await settle();
+
+        expect(h.threads.state.thread?.replies[0]).toMatchObject({ id: 2, blocked: true, body: null });
+    });
+
+    test("the list is read again only while it is shown", async () => {
+        const h = await setup();
+        await h.threads.openList(channel);
+        h.threads.resync();
+        await settle();
+        const shown = h.callsTo("chat_list_threads").length;
+        h.threads.closeList();
+
+        h.threads.resync();
+        await settle();
+
+        expect(shown).toBe(2);
+        expect(h.callsTo("chat_list_threads").length).toBe(2);
+        expect(h.callsTo("chat_get_thread_history").length).toBe(0);
+    });
+});
+
 describe("the thread's read position", () => {
     async function opened(readCursor: number | null): Promise<Awaited<ReturnType<typeof setup>>> {
         const harness = await setup();
