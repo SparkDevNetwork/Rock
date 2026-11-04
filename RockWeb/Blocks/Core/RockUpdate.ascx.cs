@@ -80,6 +80,22 @@ namespace RockWeb.Blocks.Core
             ";
 
             ScriptManager.RegisterStartupScript( pnlUpdateSuccess, pnlUpdateSuccess.GetType(), "restart-script", script, true );
+
+            /*
+                11/04/26 - JMH
+
+                The install runs inside the Yes postback and can take several minutes, so the
+                confirm dialog stays open the whole time. Each extra click starts another install
+                on the server while the first is still replacing files. Block any click after the first.
+                The Cancel and close links are disabled too, so the dialog can't be closed
+                and reopened from the release list to start a second install.
+
+                Reason: Prevent a second install from starting while one is running.
+            */
+            mdConfirmInstall.ServerSaveLink.Attributes["onclick"] = "if ( $(this).hasClass('disabled') ) { return false; } "
+                + "$(this).closest('.modal-content').find('.js-modaldialog-cancel-link, .js-modaldialog-close-link')"
+                + ".off('click').removeAttr('data-dismiss').addClass('disabled').css('pointer-events', 'none').on('click', function () { return false; }); "
+                + "$(this).addClass('disabled').html('Updating...'); return true;";
         }
 
         /// <summary>
