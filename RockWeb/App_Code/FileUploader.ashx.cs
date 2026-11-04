@@ -93,7 +93,9 @@ namespace RockWeb
                 if ( !string.IsNullOrWhiteSpace( authToken ) )
                 {
                     var userLoginService = new UserLoginService( RockApp.Current.CreateRockContext() );
-                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
+                    var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken
+                            && ( u.ApiKeyPurpose == null || u.ApiKeyPurpose != Rock.Enums.Security.ApiKeyPurpose.Mcp ) )
+                        .FirstOrDefault();
                     if ( userLogin != null )
                     {
                         var identity = new GenericIdentity( userLogin.UserName );
