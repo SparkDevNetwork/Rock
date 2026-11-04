@@ -156,7 +156,12 @@ namespace Rock.Rest.Filters
             {
                 var userLoginService = new UserLoginService( new Rock.Data.RockContext() );
                 var userLogin = userLoginService.Queryable().Where( u => u.ApiKey == authToken ).FirstOrDefault();
-                if ( userLogin != null )
+
+                // MCP keys are only valid on actions that accept the MCP scope.
+                var isKeyAllowedForAction = userLogin != null
+                    && ( userLogin.ApiKeyPurpose != Rock.Enums.Security.ApiKeyPurpose.Mcp || ActionHasRequiredScope( actionContext, "mcp:invoke" ) );
+
+                if ( isKeyAllowedForAction )
                 {
                     var identity = new GenericIdentity( userLogin.UserName );
                     principal = new GenericPrincipal( identity, null );
@@ -200,6 +205,19 @@ namespace Rock.Rest.Filters
                     return;
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether the requested action declares the specified scope in its <see cref="RequiredScopeAttribute"/>.
+        /// </summary>
+        /// <param name="actionContext">The context that describes the API action request.</param>
+        /// <param name="scope">The scope to look for.</param>
+        /// <returns><c>true</c> if the action accepts the scope; otherwise <c>false</c>.</returns>
+        private static bool ActionHasRequiredScope( HttpActionContext actionContext, string scope )
+        {
+            return actionContext.ActionDescriptor is ReflectedHttpActionDescriptor descriptor
+                && descriptor.MethodInfo.GetCustomAttribute<RequiredScopeAttribute>() is RequiredScopeAttribute attribute
+                && attribute.Scopes.Contains( scope );
         }
 
         /// <summary>
