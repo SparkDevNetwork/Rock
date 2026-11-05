@@ -345,37 +345,22 @@ namespace Rock.Communication.Medium
         /// <returns></returns>
         private int? GetCommunicationId( SystemPhoneNumberCache fromPhone, int fromPersonAliasId, int daysPastToSearch )
         {
-            // This is the last communication
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
-                var recipientService = new CommunicationRecipientService( rockContext );
-                var latestRecipientCommunication = recipientService
+                // Limit to SMS sent from this number so a later email or a
+                // text from another number doesn't hide the text being answered.
+                return new CommunicationRecipientService( rockContext )
                     .Queryable()
                     .AsNoTracking()
-                    .Where( r => r.PersonAliasId == fromPersonAliasId )
-                    .Where( r => r.CreatedDateTime >= DbFunctions.AddDays( RockDateTime.Now, -daysPastToSearch ) )
-                    .OrderByDescending( c => c.CreatedDateTime )
+                    .Where( r => r.PersonAliasId == fromPersonAliasId
+                        && r.MediumEntityTypeId == smsMediumEntityTypeId
+                        && r.Communication.SmsFromSystemPhoneNumberId == fromPhone.Id
+                        && r.CreatedDateTime >= DbFunctions.AddDays( RockDateTime.Now, -daysPastToSearch ) )
+                    .OrderByDescending( r => r.CreatedDateTime )
+                    .Select( r => ( int? ) r.CommunicationId )
                     .FirstOrDefault();
-
-                if ( latestRecipientCommunication == null )
-                {
-                    return null;
-                }
-
-                var communicationService = new CommunicationService( rockContext );
-                var communication = communicationService
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( c => c.SmsFromSystemPhoneNumberId == fromPhone.Id )
-                    .Where( c => c.Id == latestRecipientCommunication.Id )
-                    .FirstOrDefault();
-
-                if ( communication != null )
-                {
-                    return communication.Id;
-                }
-
-                return null;
             }
         }
 
