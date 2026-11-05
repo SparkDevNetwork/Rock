@@ -805,6 +805,19 @@ namespace Rock.Web.UI
                 {
                     /* Ignore any exceptions here and keep loading the page.  Earlier problems should have been logged by now. */
                 }
+
+                /*
+                    11/05/26 - JMH
+
+                    The master page doesn't exist yet when RockRouteHandler calls SetPage, so it gets the page here.
+                    This must run before the logout and impersonation checks, which can return early while the master still resolves its theme links in OnLoad.
+
+                    Reason: Keep early-returning requests from resolving theme assets against the wrong theme.
+                */
+                if ( this.Master is RockMasterPage rockMasterPage )
+                {
+                    rockMasterPage.SetPage( _pageCache );
+                }
             }
 
             bool canAdministratePage = false;
@@ -991,12 +1004,6 @@ namespace Rock.Web.UI
                 PageTitle = _pageCache.PageTitle;
                 PageIcon = _pageCache.IconCssClass;
                 BodyCssClass = _pageCache.BodyCssClass;
-
-                // If there's a master page, update its reference to Current Page
-                if ( this.Master is RockMasterPage )
-                {
-                    ( ( RockMasterPage ) this.Master ).SetPage( _pageCache );
-                }
 
                 // Add CSS class to body
                 if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
