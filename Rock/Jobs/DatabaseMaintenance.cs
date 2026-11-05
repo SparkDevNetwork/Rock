@@ -359,7 +359,7 @@ namespace Rock.Jobs
             int minimumIndexPageCount = GetAttributeValue( "MinimumIndexPageCount" ).AsInteger();
             int minimumFragmentationPercentage = GetAttributeValue( "MinimumFragmentationPercentage" ).AsInteger();
             int rebuildThresholdPercentage = GetAttributeValue( "RebuildThresholdPercentage" ).AsInteger();
-            bool useONLINEIndexRebuild = GetAttributeValue( "UseONLINEIndexRebuild" ).AsBoolean();
+            bool useONLINEIndexRebuild = GetAttributeValue( AttributeKey.UseOnlineIndexRebuild ).AsBoolean();
 
             if ( useONLINEIndexRebuild
                  && !( _databaseConfiguration.Platform == DatabasePlatform.AzureSql
