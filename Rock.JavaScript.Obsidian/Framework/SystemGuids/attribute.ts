@@ -101,8 +101,8 @@ export const Attribute = {
     CurrencyCodeSymbol: "1268AD58-5459-4C1C-A036-B7A6D948198F",
     /** The Display Location of the Color Picker Swatches Defined Type. */
     DefinedTypeColorPickerSwatchesDisplayLocation: "2B3F5FD0-52C1-48BD-B633-FA565E886A74",
-    /** The Currency type DefinedType &gt; IconCssClass DefinedValue Attribute Guid */
-    DefinedTypeCurrencyTypeIconcssclass: "CB1E9401-E1FD-4DBB-B15F-4E6994602723",
+    /** The Currency Type DefinedType &gt; IconCssClass DefinedValue Attribute Guid. */
+    DefinedTypeCurrencyTypeIconcssclass: "9617D1DC-6561-4314-83EB-7F0ACBA2E259",
     /** The Financial Frequency DefinedType &gt; Interval Days DefinedValue Attribute Guid */
     DefinedTypeFinancialFrequencyIntervalDays: "E18CB1D2-08A9-4D12-BCEA-33369193C869",
     /**
@@ -115,8 +115,8 @@ export const Attribute = {
     DefinedTypeTemplateIcon: "831403EB-262E-4BC5-8B5E-F16153493BF5",
     /** The Template DefinedType &gt; TemplateBlock DefinedValue Attribute Guid */
     DefinedTypeTemplateTemplateBlock: "0AAFF537-7EC6-4AA9-A987-68DA1FF8511D",
-    /** The Transaction Source DefinedType &gt; IconCssClass DefinedValue Attribute Guid */
-    DefinedTypeTransactionSourceIconcssclass: "9617D1DC-6561-4314-83EB-7F0ACBA2E259",
+    /** The Transaction Source DefinedType &gt; IconCssClass DefinedValue Attribute Guid. */
+    DefinedTypeTransactionSourceIconcssclass: "CB1E9401-E1FD-4DBB-B15F-4E6994602723",
     /** The defined value attribute for storing if a device type supports cameras. */
     DefinedValueDeviceTypeSupportsCameras: "79D1D843-4641-458D-A20B-37E0D7B4AEBE",
     /** The defined value attribute for storing a fundraising opportunity type's donation button text. */
