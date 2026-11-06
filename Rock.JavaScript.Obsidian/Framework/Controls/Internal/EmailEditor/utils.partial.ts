@@ -1687,6 +1687,73 @@ export function removeTemporaryAttributes(element: Document | Element): void {
         });
 }
 
+/**
+ * Writes Outlook-only padding onto each button cell so buttons keep their size in classic Outlook.
+ *
+ * @param sourceDocument The live editor document, used to read each button link's computed padding.
+ * @param exportDocument An unmodified clone of the source document that is being exported.
+ */
+export function addOutlookButtonPadding(sourceDocument: Document, exportDocument: Document): void {
+    const sourceWindow = sourceDocument.defaultView;
+    if (!sourceWindow) {
+        return;
+    }
+
+    const buttonLinkSelector = ".component-button .button-link";
+    const sourceButtonLinks = sourceDocument.querySelectorAll(buttonLinkSelector);
+    const exportButtonLinks = exportDocument.querySelectorAll(buttonLinkSelector);
+
+    // The export document is a fresh clone, so its links pair with the source links by index.
+    if (sourceButtonLinks.length !== exportButtonLinks.length) {
+        return;
+    }
+
+    /*
+        11/06/26 - JMH
+
+        Classic Outlook applies padding to a link only when the link also has a border,
+        so a button whose style has no border collapses to its text.
+        Outlook always honors mso-padding-alt on a table cell, so the link's padding is copied there.
+        mso-padding-alt: 0 on the link keeps a bordered button from getting the padding twice.
+        Other email clients ignore mso-* properties.
+
+        The browser's CSSOM drops mso-* properties,
+        so they are written into the style attribute text of the export copy.
+        They are recalculated from the link's current padding on every export.
+
+        Reason: Keep borderless email buttons from collapsing in classic Outlook.
+    */
+    exportButtonLinks.forEach((exportButtonLink, index) => {
+        const buttonContent = exportButtonLink.closest(".button-content");
+        if (!buttonContent) {
+            return;
+        }
+
+        const linkStyle = sourceWindow.getComputedStyle(sourceButtonLinks[index]);
+        const linkPadding = `${linkStyle.paddingTop} ${linkStyle.paddingRight} ${linkStyle.paddingBottom} ${linkStyle.paddingLeft}`;
+
+        setInlineStyleAttributeProperty(buttonContent, "mso-padding-alt", linkPadding);
+        setInlineStyleAttributeProperty(exportButtonLink, "mso-padding-alt", "0");
+    });
+}
+
+/**
+ * Sets a property in an element's style attribute text, replacing any existing value for that property.
+ *
+ * @param element The element whose style attribute is updated.
+ * @param propertyName The CSS property name in kebab-case.
+ * @param value The CSS value to write.
+ */
+function setInlineStyleAttributeProperty(element: Element, propertyName: string, value: string): void {
+    const existingPropertyPattern = new RegExp(`(^|;)\\s*${propertyName}\\s*:[^;]*;?`, "gi");
+    const style = (element.getAttribute("style") ?? "")
+        .replace(existingPropertyPattern, "$1")
+        .trim();
+    const separator = !style ? "" : style.endsWith(";") ? " " : "; ";
+
+    element.setAttribute("style", `${style}${separator}${propertyName}: ${value};`);
+}
+
 export function checkDropzoneSize(rect: DOMRectReadOnly, element: Element): void {
     if (rect.width < EmptyDropzoneSvgPixelWidth) {
         element.classList.add(SmallEmptyClass);

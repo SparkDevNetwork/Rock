@@ -27,6 +27,7 @@ iframe {
         createGlobalBackgroundColorProvider
     } from "./providers.partial";
     import {
+        addOutlookButtonPadding,
         checkDropzoneSize,
         bodyGlobalAdapter,
         createComponentElement,
@@ -575,6 +576,7 @@ iframe {
             // Clone before mutation so the live iframe document is untouched.
             const clonedDoc = sourceDoc.cloneNode(true) as Document;
 
+            addOutlookButtonPadding(sourceDoc, clonedDoc);
             removeTemporaryElements(clonedDoc);
             removeTemporaryAttributes(clonedDoc);
             removeTemporaryWrappers(clonedDoc);
