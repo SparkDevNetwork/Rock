@@ -1207,7 +1207,7 @@ namespace Rock.Blocks.Group
                     .ToList();
 
                 errorMessage = !blockAllowedGroupTypeIds.Contains( group.GroupTypeId )
-                    ? $"Groups with a '{groupTypeName}' group type cannot be saved here because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude')."
+                    ? $"Groups with a '{groupTypeName}' group type cannot be saved here because of this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option)."
                     : $"The '{System.Net.WebUtility.HtmlEncode( parentGroup.Name )}' group does not allow child groups with a '{groupTypeName}' group type.";
                 return false;
             }
@@ -2962,7 +2962,7 @@ namespace Rock.Blocks.Group
             var isAnyGroupTypeAllowedByBlock = GetAllowedGroupTypes( null, RockContext ).Any();
             if ( !isAnyGroupTypeAllowedByBlock )
             {
-                return "There are no group types available to select because of this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
+                return "There are no group types available to select because of this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option).";
             }
 
             var parentGroupName = parentGroup?.Name ?? string.Empty;
@@ -2975,7 +2975,7 @@ namespace Rock.Blocks.Group
                 return $"The '{parentGroupName}' group does not allow any child group types.";
             }
 
-            return $"The child group types allowed by the '{parentGroupName}' group are excluded by this block's group type settings (e.g. 'Group Types: Include' / 'Group Types: Exclude').";
+            return $"The child group types allowed by the '{parentGroupName}' group are excluded by this block's group type settings ('Group Types: Include', 'Group Types: Exclude', 'Security Role Groups Only' or 'Navigation Group Types Only', which requires the group type's 'Show in Group Navigation' option).";
         }
 
         /// <summary>
