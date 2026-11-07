@@ -4781,20 +4781,24 @@ describe("a shell rebuilt by a birthdate save", () => {
     test("the new shell's drafts are told the place of a composer focused before the save", async () => {
         const draftsModule = await import("../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial");
         const realCreate = draftsModule.createDrafts;
-        const focused: Array<string | null> = [];
+        // Each shell's drafts keep their own list, so a place told to the stopped shell shows as its own.
+        const focused = new Map<unknown, Array<string | null>>();
         const create = jest.spyOn(draftsModule, "createDrafts").mockImplementation(dependencies => {
-            const drafts = realCreate(dependencies);
-            return { ...drafts, focus: (place: string | null) => void focused.push(place) };
+            const places: Array<string | null> = [];
+            const drafts = { ...realCreate(dependencies), focus: (place: string | null) => void places.push(place) };
+            focused.set(drafts, places);
+            return drafts;
         });
 
         try {
             mockConfig.channelGuid = team.channel_id;
             const w = await mountBlock(1200);
+            const old = mockShell!;
             w.findComponent(ComposerComponent).vm.$emit("focus");
             await settle();
-            focused.length = 0;
+            focused.get(old.drafts)!.length = 0;
 
-            Object.assign(mockShell!.state as Record<string, unknown>, { phase: "refused", gate: "age_verification_required" });
+            Object.assign(old.state as Record<string, unknown>, { phase: "refused", gate: "age_verification_required" });
             await settle();
             mockInvoke.mockResolvedValue({ isSuccess: true, statusCode: 200, data: { session: mockConfig.session } });
             const prompt = (await import("../../../../src/Communication/Chat/ChatShell/components/birthdatePrompt.partial.obs")).default;
@@ -4802,7 +4806,9 @@ describe("a shell rebuilt by a birthdate save", () => {
             await settle();
             await settle();
 
-            expect(focused).toEqual([team.channel_id]);
+            expect(mockShell).not.toBe(old);
+            expect(focused.get(mockShell!.drafts)).toEqual([team.channel_id]);
+            expect(focused.get(old.drafts)).toEqual([]);
         }
         finally {
             create.mockRestore();
