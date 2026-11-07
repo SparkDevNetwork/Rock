@@ -4732,3 +4732,127 @@ describe("settings", () => {
         expect(w.text()).toContain("This message is over the 5,000 character limit.");
     });
 });
+
+describe("a shell rebuilt by a birthdate save", () => {
+    // A birthdate that lets the person in replaces the shell rather than loading the page again,
+    // so from then on every part of the frame reaches the new shell and never the stopped one.
+
+    /** Anna as chat_list_members answers her. */
+    const annaMember = { person_alias_guid: "a0000002-0000-4000-8000-000000000000", nick_name: "Anna", last_name: "Kim", avatar_url: null, is_leader: false, details: { badge_keys: [] }, can_message: true };
+
+    /** A part of a shell the test reads its calls from. */
+    function partOf(shell: Record<string, unknown>, name: string): Record<string, jest.Mock> & { state: Record<string, unknown> } {
+        return shell[name] as Record<string, jest.Mock> & { state: Record<string, unknown> };
+    }
+
+    /**
+     * Mounts the block on the Worship Team, has the shell ask for a birthdate, and saves one that
+     * lets the person in. Both shells open the Worship Team, as the link names it.
+     *
+     * @returns The block and the shell the save replaced.
+     */
+    async function mountRebuilt(): Promise<{ w: VueWrapper, old: Record<string, unknown> }> {
+        mockConfig.channelGuid = team.channel_id;
+        const w = await mountBlock(1200);
+        const old = mockShell!;
+        Object.assign(old.state as Record<string, unknown>, { phase: "refused", gate: "age_verification_required" });
+        await settle();
+
+        mockInvoke.mockResolvedValue({ isSuccess: true, statusCode: 200, data: { session: mockConfig.session } });
+        const prompt = (await import("../../../../src/Communication/Chat/ChatShell/components/birthdatePrompt.partial.obs")).default;
+        w.findComponent(prompt).vm.$emit("save", { year: 1990, month: 1, day: 1 });
+        await settle();
+        await settle();
+
+        expect(mockInvoke).toHaveBeenCalledWith("SaveBirthdate", expect.anything());
+        expect(mockShell).not.toBe(old);
+        return { w, old };
+    }
+
+    test("a composer's focus warms the new shell's @ picker", async () => {
+        const { w, old } = await mountRebuilt();
+
+        w.findComponent(ComposerComponent).vm.$emit("focus");
+
+        expect(partOf(mockShell!, "mentions").warm).toHaveBeenCalledWith(team);
+        expect(partOf(old, "mentions").warm).not.toHaveBeenCalled();
+    });
+
+    test("the new shell's drafts are told the place of a composer focused before the save", async () => {
+        const draftsModule = await import("../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial");
+        const realCreate = draftsModule.createDrafts;
+        const focused: Array<string | null> = [];
+        const create = jest.spyOn(draftsModule, "createDrafts").mockImplementation(dependencies => {
+            const drafts = realCreate(dependencies);
+            return { ...drafts, focus: (place: string | null) => void focused.push(place) };
+        });
+
+        try {
+            mockConfig.channelGuid = team.channel_id;
+            const w = await mountBlock(1200);
+            w.findComponent(ComposerComponent).vm.$emit("focus");
+            await settle();
+            focused.length = 0;
+
+            Object.assign(mockShell!.state as Record<string, unknown>, { phase: "refused", gate: "age_verification_required" });
+            await settle();
+            mockInvoke.mockResolvedValue({ isSuccess: true, statusCode: 200, data: { session: mockConfig.session } });
+            const prompt = (await import("../../../../src/Communication/Chat/ChatShell/components/birthdatePrompt.partial.obs")).default;
+            w.findComponent(prompt).vm.$emit("save", { year: 1990, month: 1, day: 1 });
+            await settle();
+            await settle();
+
+            expect(focused).toEqual([team.channel_id]);
+        }
+        finally {
+            create.mockRestore();
+        }
+    });
+
+    test("opening Chat settings reads the new shell's blocked people", async () => {
+        const { w, old } = await mountRebuilt();
+
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        await settle();
+
+        expect(partOf(mockShell!, "blocks").load).toHaveBeenCalledTimes(1);
+        expect(partOf(old, "blocks").load).not.toHaveBeenCalled();
+    });
+
+    test("a threads tab switch reaches the new shell's threads", async () => {
+        const { w, old } = await mountRebuilt();
+
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await settle();
+        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.text() === "All")!.trigger("click");
+        await settle();
+
+        expect(partOf(mockShell!, "threads").switchTab).toHaveBeenCalledWith("all");
+        expect(partOf(old, "threads").switchTab).not.toHaveBeenCalled();
+    });
+
+    test("a member row's Message reads the person from the new shell", async () => {
+        const { w, old } = await mountRebuilt();
+        (partOf(mockShell!, "rooms").state.facts as Record<string, ChannelFacts>)[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        partOf(mockShell!, "members").state.rows = [annaMember];
+        await settle();
+
+        await w.get("[data-testid='member-message']").trigger("click");
+        await settle();
+
+        expect(partOf(mockShell!, "rooms").readPerson).toHaveBeenCalledWith(annaMember.person_alias_guid, team.channel_id);
+        expect(partOf(old, "rooms").readPerson).not.toHaveBeenCalled();
+    });
+
+    test("the open conversation's title reads the new shell's sidebar", async () => {
+        const { w } = await mountRebuilt();
+
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.splice(0, 1, { ...team, title: "Worship Team Leaders" });
+        await settle();
+
+        expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team Leaders");
+    });
+});
