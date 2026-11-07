@@ -23,14 +23,14 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey, inRoomKind, messageForError } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
-import { createTimelines, isTimelineMessage, Timelines } from "./composables/useHistory.partial";
+import { createTimelines, Timelines } from "./composables/useHistory.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
-import { createPrefs, MeSettings, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
+import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
@@ -56,7 +56,8 @@ import {
     writeRememberedKind
 } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
-import { ChannelFacts, ChannelUnreadEvent, ChatBadge, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, MessageCreatedEvent, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, SidebarRow, TimelineMessage, UnreadMention } from "./types.partial";
+import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
+import { createShellLive } from "./shellLive.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -492,13 +493,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onEnded: () => void end()
     });
 
-    /**
-     * The longest a viewer waits before fetching a new token when the channel on screen changed,
-     * an estimate. Everyone watching the channel is told at once, and the wait spreads their token
-     * requests at Rock and their join checks at Realtime.
-     */
-    const channelChangedWaitMs = 5_000;
-
     /** Puts the session's latest settings on the page: the banner and whether the composer is open. */
     function showSettings(): void {
         const settings = session.settings();
@@ -508,9 +502,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.isComposerOpen = isComposerOpen(settings.service.state);
         state.limits = settings.limits;
     }
-
-    /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
-    let recheckTimer: ReturnType<typeof setTimeout> | null = null;
 
     /** Set once the shell is stopped or its session has ended; the page load goes no further. */
     let isStopped = false;
@@ -524,14 +515,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         void session.refresh();
     }
 
-    /** Cancels a recheck still waiting. */
-    function cancelRecheck(): void {
-        if (recheckTimer !== null) {
-            clearTimeout(recheckTimer);
-            recheckTimer = null;
-        }
-    }
-
     /**
      * Leaves every topic once the session holds no token, because Rock refused a refresh or the
      * token ran out, and shows why. Realtime would close the topics at the token's expiry anyway.
@@ -539,8 +522,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     async function end(): Promise<void> {
         isStopped = true;
         reveal.stop();
-        cancelRecheck();
-        cancelSidebarWait();
+        live.stop();
         timelines.stop();
         threads.stop();
         messageActions.stop();
@@ -649,13 +631,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mask: message => blocks.mask(message)
     });
 
-    // A reload asked while a rejoin's wait is pending is the one that wait will make. A failed
-    // read is reported where it fails, so nothing is left to catch here or at any other reload.
+    // The sidebar's reads are the live part's, made below and reached only once running.
     const channels = createChannelStore({
-        reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined,
+        reloadSidebar: () => live.reloadSidebar(),
         // A first visit's page load waits on the sidebar to choose its conversation, so a retry
         // with nothing open runs the page load again; with a conversation open, only the list is owed.
-        retryFirstLoad: () => state.activeChannelId === null ? void runPageLoad() : void loadSidebar().catch(() => undefined)
+        retryFirstLoad: () => state.activeChannelId === null ? void runPageLoad() : void live.loadSidebar().catch(() => undefined)
     });
 
     /** A save of the read position, applied to the row and the unread mentions. */
@@ -689,7 +670,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onSaved: (channelId, result) => {
             const sentAt = savesSentAt.get(result);
             applySave(channelId, result, sentAt);
-            sidebarJournal?.push({ channelId, result, sentAt });
+            live.noteSave(channelId, result, sentAt);
         }
     });
 
@@ -813,8 +794,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
         channels,
-        // a reload asked while a rejoin's wait is pending is the one that wait will make
-        reloadSidebar: () => sidebarWait === null ? void loadSidebar().catch(() => undefined) : undefined,
+        reloadSidebar: () => live.reloadSidebar(),
         limits: () => session.settings().limits,
         activeChannelId: () => state.activeChannelId,
         // a lost connection is told by its banner, and a door asked then would not be reached
@@ -846,18 +826,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
 
     // A change to whom the person blocked is masked in place by every holder at once; what the
-    // client cannot mask itself, and what an unblock gives back, is read again. A change named by
-    // a sidebar answer comes in the newest sidebar there is, so that read is the sidebar step
-    // rather than another.
+    // client cannot mask itself, and what an unblock gives back, is read again.
     const blocks = createBlocks({
         call,
-        onChanged: (isInSidebarAnswer, removed) => {
-            if (removed.length > 0) {
-                timelines.release(removed);
-            }
-            resync(isInSidebarAnswer ? sidebarRead : null);
-        },
-        remask,
+        onChanged: (isInSidebarAnswer, removed) => live.onBlocksChanged(isInSidebarAnswer, removed),
+        remask: added => live.remask(added),
         notify: notice => options.notify?.(notice)
     });
 
@@ -1034,26 +1007,29 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mask: message => blocks.mask(message)
     });
 
-    // A sidebar read is a snapshot taken some time after it is asked for, so only the newest asked
-    // for may land. One read is out at a time: an ask while one is out overtakes it, so its answer
-    // is dropped, and one more read follows it however many ask meanwhile, since every ask says
-    // only "read again" and one later read answers them all. Each overtaking ask moves the
-    // generation on. Every change that arrives while a read is out is applied at once and kept
-    // here, then replayed over its answer, which may predate it. Null while no read is out.
-    let sidebarGeneration = 0;
+    const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
 
-    /** The sidebar read out, which settles with its rows, or null once a later ask overtook it. */
-    let sidebarRead: Promise<SidebarRow[] | null> | null = null;
+    // From the shell's creation, which is the block's mount: the skeleton's wait and the ceiling run
+    // from here. It draws the look of the room opened last, as nothing else is known yet.
+    const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
+    const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
-    // What the newest ask answers with: the read out, or the one queued behind it. A read that was
-    // overtaken answers with it too, so a caller waiting on the sidebar, the page load above all,
-    // always gets the sidebar that landed.
-    let sidebarAnswer: Promise<SidebarRow[]> = Promise.resolve([]);
-    let isSidebarQueued = false;
-    let sidebarJournal: Array<{ event: string, payload: unknown } | { channelId: string, result: MarkReadResult, sentAt: number | undefined }> | null = null;
-
-    /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
-    const replayedEvents = new Set(["channel.unread", "channel.mention", "dm.preview", "channel.read"]);
+    const live = createShellLive({
+        state,
+        modules: { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages },
+        call,
+        report,
+        thrown,
+        applySave,
+        favorites,
+        isConnectionFailure,
+        recheck,
+        closeActive: () => closeActive(),
+        isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
+        mark: options.mark,
+        // one flag for the whole shell, read at each step, so nothing of a stopped shell lands
+        isStopped: () => isStopped
+    });
 
     /**
      * Opens the first conversation: the one a link names or this browser opened last, else the
@@ -1070,7 +1046,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const opened = await startPageLoad({
                 linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
                 rememberedChannelId: readRememberedChannel(options.storage, storageKey),
-                loadSidebar,
+                loadSidebar: () => live.loadSidebar(),
                 // The load decides the opening room, so one it opens answers nothing to the reveal
                 // when it is refused: the next row may still open, and the column must not reveal
                 // empty and then fill.
@@ -1093,196 +1069,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isOpening = false;
         }
     }
-
-    /**
-     * Fetches the sidebar and replaces the rows with it, or, while a read is out, has one more read
-     * follow it. A read a newer ask overtook answers with the newer one's sidebar.
-     */
-    function loadSidebar(): Promise<SidebarRow[]> {
-        if (isSidebarQueued) {
-            return sidebarAnswer;
-        }
-
-        const overtaken = sidebarRead;
-        if (overtaken === null) {
-            sidebarAnswer = startSidebarRead();
-            return sidebarAnswer;
-        }
-
-        isSidebarQueued = true;
-        sidebarGeneration++;
-        const next = (): Promise<SidebarRow[]> | SidebarRow[] => {
-            isSidebarQueued = false;
-            return isStopped ? channels.rows : startSidebarRead();
-        };
-        sidebarAnswer = overtaken.then(next, next);
-        return sidebarAnswer;
-    }
-
-    /** Sends one sidebar read, the only one out until it settles. */
-    function startSidebarRead(): Promise<SidebarRow[]> {
-        const read = readSidebar();
-        sidebarRead = read;
-        const settled = (): void => {
-            if (sidebarRead === read) {
-                sidebarRead = null;
-            }
-        };
-        read.then(settled, settled);
-        return read.then(rows => rows ?? sidebarAnswer);
-    }
-
-    /** One sidebar read, which lands unless a later ask overtook it, and then answers null. */
-    async function readSidebar(): Promise<SidebarRow[] | null> {
-        const generation = sidebarGeneration;
-        sidebarJournal = [];
-        const result = await call("chat_get_bootstrap", { p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
-        if (isStopped) {
-            return channels.rows;
-        }
-        if (generation !== sidebarGeneration) {
-            return null;
-        }
-        const journal = sidebarJournal;
-        sidebarJournal = null;
-        options.mark("chat:sidebar");
-
-        if (!result.ok) {
-            // The list's own line tells the failure, so the first load does not wait on it.
-            reveal.sidebarAnswered();
-            reveal.failed();
-
-            // Before the first sidebar has landed, the list's own line with Try again tells the
-            // failure, so the toast is kept for a session that ended, which the line cannot mend,
-            // and for a later read's failure, which nothing else shows.
-            if (channels.loadState === "loaded" || result.error.severity === "session") {
-                report(result.error);
-            }
-            channels.setLoadFailed();
-            throw thrown(result);
-        }
-
-        // the bootstrap's own key names
-        /* eslint-disable-next-line @typescript-eslint/naming-convention */
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[], blocked_aliases?: string[] } } | null;
-        const rows = answer?.channels ?? [];
-        // through the settings, which keep any room setting whose save is still out
-        prefs.setRooms(rows);
-        // every load restates the unread mentions, so one read elsewhere stops lighting the dot
-        mentions.setUnread(answer?.me?.unread_mentions ?? []);
-        // the person's own switches, as another device may have changed them since
-        prefs.setMe(answer?.me);
-        // whom they blocked, which only the sidebar call names: chat_set_prefs answers its own
-        // part of me and never this, so the set is the blocks' own and never read from a prefs answer
-        blocks.setAliases(answer?.me?.blocked_aliases);
-        if (Array.isArray(answer?.reactions)) {
-            favorites.splice(0, favorites.length, ...answer.reactions);
-        }
-        // a profile card names a person's badge keys by these
-        channels.setBadges(Array.isArray(answer?.badges) ? answer.badges : []);
-
-        // In arrival order, through the same handlers; each states a value, and a mention the
-        // answer already counted is not counted again.
-        for (const change of journal) {
-            if ("event" in change) {
-                channels.applyPersonalEvent(change.event, change.payload, true);
-                mentions.applyPersonalEvent(change.event, change.payload);
-            }
-            else {
-                applySave(change.channelId, change.result, change.sentAt);
-            }
-        }
-
-        // a join still settling is settled by the reload that shows the room as the person's
-        rooms.sidebarLoaded();
-        reveal.sidebarAnswered();
-        return channels.rows;
-    }
-
-    /** The wait before a rejoin's sidebar read, pending; null when none is. */
-    let sidebarWait: ReturnType<typeof setTimeout> | null = null;
-
-    /**
-     * Reads the sidebar again after the personal topic was joined again, after a random wait so a
-     * Realtime restart that rejoins every client at once does not read every sidebar in the same
-     * second. Live signals still apply meanwhile, and any reload asked during the wait is this one.
-     * What the members hold of a room's rights may have missed a change too, and goes with it.
-     */
-    function reloadAfterRejoin(): void {
-        if (sidebarWait !== null || isStopped) {
-            return;
-        }
-        sidebarWait = setTimeout(() => {
-            sidebarWait = null;
-            members.rejoined();
-            void loadSidebar().catch(() => undefined);
-        }, Math.random() * channelChangedWaitMs);
-    }
-
-    /** Cancels a rejoin's wait still pending. */
-    function cancelSidebarWait(): void {
-        if (sidebarWait !== null) {
-            clearTimeout(sidebarWait);
-            sidebarWait = null;
-        }
-    }
-
-    /**
-     * What this client holds may be out of date in a way no other event describes: the platform
-     * says so, or the people the person blocked changed. Everything on screen is read again: the
-     * sidebar, the open channel, its facts once the sidebar has said whether it still lists the
-     * room (a direct message with someone just blocked leaves it, and its composer then locks by
-     * the facts' own sentence), the open thread, and the threads, mentions or members panel shown.
-     * Nothing is reminted: what the person may read has not changed, only what is on screen.
-     *
-     * @param landingSidebar The sidebar read whose answer is landing and asked for this, which
-     * stands for the sidebar step; null reads the sidebar again.
-     */
-    function resync(landingSidebar: Promise<unknown> | null = null): void {
-        const channelId = state.activeChannelId;
-        void (landingSidebar ?? loadSidebar())
-            .catch(() => undefined)
-            .then(() => {
-                if (channelId && state.activeChannelId === channelId) {
-                    rooms.roomChanged(channelId);
-                }
-            });
-        mentions.resync();
-        threads.resync();
-        // what the members hold of a room may have missed a change, as after a rejoin
-        members.rejoined();
-        if (channelId) {
-            // The newest page alone redraws only the latest messages, so the channel then catches up
-            // from it, reading again what it holds, as a rejoin does.
-            // Only while it is still the channel on screen: one left, or whose access was revoked,
-            // while its page was on the way has nobody to catch up for.
-            void timelines.loadNewest(channelId)
-                .then(() => state.activeChannelId === channelId ? timelines.onJoined(channelId) : undefined)
-                .catch(error => report(classifyPlatformError(error)));
-        }
-    }
-
-    /**
-     * The people blocked gained these aliases: every holder of messages masks again what it holds, in
-     * place, before anything else runs. A holder added here is added to resync beside it when what
-     * it holds can be read again; the found conversation's look and a quote waiting in a composer
-     * are snapshots resync does not read, so after an unblock they stay withheld, the safe side,
-     * until the person looks again or quotes afresh.
-     */
-    function remask(added: readonly string[]): void {
-        timelines.remask(added);
-        threads.remask();
-        mentions.remask();
-        directMessages.remask();
-        messageActions.remask();
-    }
-
-    const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
-
-    // From the shell's creation, which is the block's mount: the skeleton's wait and the ceiling run
-    // from here. It draws the look of the room opened last, as nothing else is known yet.
-    const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
-    const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
     /**
      * Takes the open channel off the screen: its position is saved, its catch-up stops, and an
@@ -1448,124 +1234,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
                 realtimeOptions(session.settings().limits, Math.random));
 
-            hub = createRealtimeHub({
-                client,
-                tenantId,
-                personAliasGuid,
-                onChannelEvent: (channelId, event, rawPayload) => {
-                    // A room's events are one payload for every subscriber, so a message by someone
-                    // the person blocked is collapsed, and their face blanked, before anything holds it.
-                    const payload = blocks.maskEvent(event, rawPayload);
-                    if (event === "resync") {
-                        resync();
-                        return;
-                    }
-                    if (event === "channel.changed") {
-                        if (channelId === state.activeChannelId) {
-                            cancelRecheck();
-                            recheckTimer = setTimeout(recheck, Math.random() * channelChangedWaitMs);
-                        }
-                        return;
-                    }
-                    // A thread's counts move its root wherever it is held, and a reply reaches the
-                    // open thread. The threads go first: they set the root's marks, which the
-                    // timeline then records with the counts so a page read earlier cannot undo them.
-                    // The person's own new message goes straight in: it carries its send's key, so
-                    // it takes the place of the row still sending rather than standing beside it.
-                    // A reaction reaches the open thread's copies at once, by the thread's own page;
-                    // only the conversation's copy waits for the conversation's.
-                    threads.applyEvent(channelId, event, payload);
-                    if (event === "reaction.added" || event === "reaction.removed") {
-                        reactions.applyThreadEvent(channelId, event, payload);
-                    }
-                    timelines.applyEvent(channelId, event, payload);
-
-                    // Any copy settles the send, after the views have taken theirs: a reply shown
-                    // only in a thread that is not open is kept by no view, and with its answer
-                    // lost nothing else would settle it. A timeline message of a channel still
-                    // loading is held until its page is in and settles the send there; settling it
-                    // now would take the row away before the message that replaces it is drawn.
-                    const created = payload as Partial<MessageCreatedEvent> | null;
-                    if (event === "message.created" && typeof created?.id === "number" && created.client_key
-                        && (timelines.state(channelId).isLoaded || !isTimelineMessage(created))) {
-                        sender.landed({ id: created.id, client_key: created.client_key });
-                    }
-                },
-                onPersonalEvent: (event, payload) => {
-                    if (event === "resync") {
-                        resync();
-                        return;
-                    }
-                    // Another page or device changed whom the person blocked; the set is read again,
-                    // and a change reads again what is on screen.
-                    if (event === "blocks.changed") {
-                        void blocks.changed();
-                        return;
-                    }
-                    channels.applyPersonalEvent(event, payload);
-                    mentions.applyPersonalEvent(event, payload);
-                    if (replayedEvents.has(event)) {
-                        sidebarJournal?.push({ event, payload });
-                    }
-
-                    // Only the channel on screen is joined, so only a change to it can need a cut.
-                    const changed = (payload as Partial<Record<keyof ChannelUnreadEvent, unknown>> | null)?.channel_id;
-
-                    // A conversation Rock made before the platform had taken it may have arrived.
-                    if (event === "membership.changed") {
-                        void directMessages.membershipChanged(typeof changed === "string" ? changed : null);
-                    }
-                    // A room's facts change with its members and with its own name, description or kind.
-                    if (event === "membership.changed") {
-                        rooms.roomChanged(typeof changed === "string" ? changed : null);
-                    }
-                    if (event === "channel.updated") {
-                        rooms.channelUpdated(typeof changed === "string" ? changed : null);
-                    }
-                    if (event === "membership.changed" || event === "channel.updated") {
-                        members.roomChanged(typeof changed === "string" ? changed : null);
-                    }
-                    if (event === "session.recheck" || (event === "membership.changed" && changed === state.activeChannelId)) {
-                        recheck();
-                    }
-                },
-                onPersonalRejoined: reloadAfterRejoin,
-                onJoined: channelId => {
-                    options.mark("chat:join");
-                    timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
-                },
-                onUnknownError: () => {
-                    // Realtime words this client does not know may be a lost read it was not built
-                    // to recognise. A new token makes Realtime decide again, and the sidebar read
-                    // again shows what the person may still see; the refresh is shared with any
-                    // already running.
-                    recheck();
-                    void loadSidebar().catch(() => undefined);
-                },
-                onStatus: error => {
-                    // The hub has already left a channel whose read was revoked; the person is told,
-                    // and the list is loaded again without it.
-                    if (error?.code === "rt.read_revoked") {
-                        // Only the shell knows which room was open, so it names the room's kind
-                        // before closing it.
-                        const roomKind = state.activeChannelId ? roomKindOf(state.activeChannelId) : null;
-
-                        // Nothing is open any more, so choosing the channel again, once the
-                        // person may read it, opens it afresh.
-                        closeActive();
-                        report(inRoomKind(error, roomKind));
-                        void loadSidebar().catch(() => undefined);
-                        return;
-                    }
-                    state.connection = error;
-
-                    // A call that failed just before the drop was noticed was the same outage,
-                    // which the banner now explains.
-                    if (error) {
-                        state.errors = state.errors.filter(e => !isConnectionFailure(e));
-                    }
-                }
-            });
+            hub = createRealtimeHub({ client, tenantId, personAliasGuid, ...live.handlers });
 
             // The token is on the socket before the first join, which the hub does first.
             await hub.start();
@@ -1727,8 +1396,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             reveal.stop();
             push?.stop();
             state.isPushOffered = false;
-            cancelRecheck();
-            cancelSidebarWait();
+            live.stop();
             timelines.stop();
             sender.stop();
             directMessages.stop();
