@@ -722,12 +722,11 @@
     import ChannelDirectory from "./ChatShell/components/channelDirectory.partial.obs";
     import ChannelSidebar from "./ChatShell/components/channelSidebar.partial.obs";
     import PageVeil from "./ChatShell/components/pageVeil.partial.obs";
-    import ChatHeader, { HeaderRoomKind } from "./ChatShell/components/chatHeader.partial.obs";
+    import ChatHeader from "./ChatShell/components/chatHeader.partial.obs";
     import ChatSettings from "./ChatShell/components/chatSettings.partial.obs";
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
     import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
-    import { TimelineState } from "./ChatShell/composables/useHistory.partial";
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
@@ -752,14 +751,13 @@
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
+    import { useRoomsView } from "./ChatShell/composables/useRoomsView.partial";
     import { FollowError, ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
     import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
-    import { FeedLayout } from "./ChatShell/feedLayout.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
-    import { joinNames } from "./ChatShell/stores/channelStore.partial";
-    import { ChannelFacts, ChatPerson, DisplayPiece, PendingMessage, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
-    import { personName as nameOf, rowPeople } from "./ChatShell/ui/face.partial";
+    import { ChatPerson, DisplayPiece, PendingMessage, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
+    import { personName as nameOf } from "./ChatShell/ui/face.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -938,11 +936,14 @@
         closeThreadDrawer
     });
 
+    // One computed per fact of the open room, handed to every composable below that reads it.
+    const {
+        activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activeTitle, look, activeSubtitle, isActiveBehind,
+        roomTitles, roomKinds, publicRooms, threadRow, threadKind, foundTitle, foundRow, foundTimeline, isPreviewingRoom
+    } = useRoomsView({ shell, activeChannelId, drawnThread });
+
     /** The count on the app icon, from the sidebar, so reading what it counts clears it. */
     const appBadge = computed((): number => shell.value.appBadge());
-
-    /** Whether the open channel's catch-up failed and is trying again, so messages may be missing. */
-    const isActiveBehind = computed((): boolean => !!activeChannelId.value && shell.value.timelines.state(activeChannelId.value).isBehind);
 
     const isPromptShown = computed((): boolean => isBirthdatePromptShown(shell.value.state.phase, shell.value.state.gate));
 
@@ -956,96 +957,11 @@
         return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     });
 
-    /** The sidebar row of the open conversation, which carries everything the header draws. */
-    const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
-
-    /** What chat_get_channel last answered about the open conversation, or null before it lands. */
-    const activeFacts = computed((): ChannelFacts | null => activeChannelId.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
-
-    /**
-     * Whether the open channel is one the person is not in, where the join bar stands in the
-     * composer's place. A join stays here while pending, until the sidebar shows them a member.
-     */
-    const isJoinBarShown = computed((): boolean => activeKind.value === "channel" && !!activeRow.value && !activeRow.value.is_member);
-
     /** The open conversation's files waiting to go, or null where its composer takes none. */
     const conversationTray = computed((): AttachmentTray | null => isJoinBarShown.value ? null : trayOf(activeChannelId.value));
 
-    /** A conversation with one other person, where a name over each bubble would only repeat the header. */
-    const isActiveDirectMessage = computed((): boolean => activeRow.value?.room_kind === "person");
-
-    /** The other people of the open direct message, with their photos, as the sidebar sent them. */
-    const activePeople = computed((): ChatPerson[] => activeRow.value ? rowPeople(activeRow.value) : []);
-
-    const activeKind = computed((): HeaderRoomKind | null => activeRow.value?.room_kind ?? null);
-
-    const activeTitle = computed((): string => activeRow.value?.title ?? "");
-
-    /**
-     * The look the open conversation is drawn in, by its kind alone: a channel in Community's flat
-     * rows, a direct message in Conversational's bubbles.
-     */
-    const look = computed((): FeedLayout | null => {
-        if (!activeKind.value) {
-            return null;
-        }
-
-        return activeKind.value === "channel" ? "community" : "conversational";
-    });
-
-    /**
-     * The header's line until the room's facts are read, which the header then takes its subtitle
-     * from: a channel's description, as its sidebar row carries it, or an unnamed group's head count.
-     */
-    const activeSubtitle = computed((): string | null => {
-        if (activeKind.value === "channel") {
-            return activeRow.value?.description?.trim() || null;
-        }
-
-        if (activeKind.value !== "group") {
-            return null;
-        }
-
-        // The platform counts a room's people only when it has no name, so a named group arrives
-        // with 0 and has no count to show until the member count gets a field of its own.
-        const others = activeRow.value?.dm_other_count ?? activePeople.value.length;
-        if (others < 1) {
-            return null;
-        }
-
-        // A group always holds the reader and at least one other, so the count is never singular.
-        return `${others + 1} people`;
-    });
-
     /** The threads list the panel draws, as the shell's threads hold it. */
     const threadList = computed((): ThreadListState => shell.value.threads.state.list);
-
-    /** Each conversation's title by channel id, as the header writes it, for the rooms the threads list names. */
-    const roomTitles = computed((): Record<string, string> => {
-        const titles: Record<string, string> = {};
-        for (const row of shell.value.channels.rows) {
-            titles[row.channel_id] = row.title;
-        }
-
-        return titles;
-    });
-
-    /** Each conversation's kind by channel id, which picks the room's icon on the All tab. */
-    const roomKinds = computed((): Record<string, HeaderRoomKind> => {
-        const kinds: Record<string, HeaderRoomKind> = {};
-        for (const row of shell.value.channels.rows) {
-            kinds[row.channel_id] = row.room_kind;
-        }
-
-        // the open room may be one the list holds no row for, which only its facts place
-        const open = shell.value.state.activeChannelId;
-        const openKind = open && !kinds[open] ? shell.value.roomKindOf(open) : null;
-        if (open && openKind) {
-            kinds[open] = openKind;
-        }
-
-        return kinds;
-    });
 
     /** What the members panel, the remove confirm and Add people draw of the roster. */
     const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
@@ -1098,51 +1014,6 @@
 
     /** What the conversation's failed sends come to, for the strip over its composer. */
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
-
-    /** Whether each channel is public, which draws its hash rather than its lock on the All tab. */
-    const publicRooms = computed((): Record<string, boolean> => {
-        const isPublic: Record<string, boolean> = {};
-        for (const row of shell.value.channels.rows) {
-            isPublic[row.channel_id] = row.is_public;
-        }
-
-        return isPublic;
-    });
-
-    /** The sidebar row of the open thread's conversation, which says whether its composer offers the @ picker. */
-    const threadRow = computed((): SidebarRow | null => drawnThread.value ? shell.value.channels.rows.find(r => r.channel_id === drawnThread.value?.channelId) ?? null : null);
-
-    /** The open thread's conversation kind, which picks its look and its composer's foot. */
-    const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
-
-    /**
-     * The title New message's found strip names: the conversation's as the sidebar writes it, or
-     * the people chosen when it is not in the sidebar.
-     */
-    const foundTitle = computed((): string | null => {
-        const { lookup, chosen } = shell.value.directMessages;
-        if (!lookup.channelId) {
-            return null;
-        }
-
-        return roomTitles.value[lookup.channelId] ?? joinNames(chosen.map(person => `${person.nick_name} ${person.last_name}`), 0);
-    });
-
-    /** The sidebar row of the conversation New message found, which says how its feed is drawn. */
-    const foundRow = computed((): SidebarRow | null => {
-        const channelId = shell.value.directMessages.lookup.channelId;
-        return channelId ? shell.value.channels.rows.find(r => r.channel_id === channelId) ?? null : null;
-    });
-
-    /** The found conversation's last few messages as a feed draws a timeline: all of it read, nothing unread. */
-    const foundTimeline = computed((): TimelineState | null => {
-        const messages = shell.value.directMessages.recent;
-        if (!messages || messages.length === 0) {
-            return null;
-        }
-
-        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: messages[messages.length - 1].id };
-    });
 
     // #endregion Computed Values
 
@@ -1585,12 +1456,6 @@
     /** Whether an element is inside a full view in the conversation's place or the room's details. */
     function isInViewOrDetails(element: Element): boolean {
         return !!element.closest("[data-testid='main-view']") || !!element.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']");
-    }
-
-    /** Whether the person is reading a channel they have not joined, where they cannot act on its messages. */
-    function isPreviewingRoom(channelId: string): boolean {
-        const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
-        return !!row && !row.is_member;
     }
 
     /**
