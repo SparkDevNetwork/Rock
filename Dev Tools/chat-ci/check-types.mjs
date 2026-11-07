@@ -10,15 +10,18 @@
 // The bag comparison holds each chat view model bag in C# to its TypeScript declaration by member
 // name, both ways. The declarations are written by a code generator a person runs by hand, so a
 // member added in C# and never generated is invisible to the type check: nothing typed reads it.
-// The generator writes every public instance property, inherited ones included, under its name in
-// Rock's camelCase, which lowers a leading acronym whole (RSVPReminderOffsetDays is
-// rsvpReminderOffsetDays); the comparison applies the same two rules.
+// The generator writes every property reflection calls public (the class's own, static ones
+// included, and the instance ones it inherits, whatever their body), under its name in Rock's
+// camelCase, which lowers a leading acronym whole (RSVPReminderOffsetDays is
+// rsvpReminderOffsetDays); the comparison applies the same rules.
 //
 //   node check-types.mjs                                     both halves over the chat
 //   node check-types.mjs --project <tsconfig> --chat <dir>   the type check of another project
+//   node check-types.mjs ... --checker <script>              the type check run by a stand-in for vue-tsc
 //   node check-types.mjs --cs <dir> --ts <dir> --folder <f>  the bag comparison of another tree
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -40,17 +43,51 @@ const DIAGNOSTIC = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
 // #region Type check
 
 /**
+ * A path as the file system knows it, so a listed file and a walked one meet whatever their
+ * slashes, case or short Windows names (a temp folder is often reached as MAXWEL~1).
+ */
+function pathKey(file) {
+  let real = resolve(file);
+  try {
+    real = realpathSync.native(real);
+  }
+  catch {
+    // a listed file that is gone is compared as written
+  }
+  return process.platform === 'win32' ? real.toLowerCase() : real;
+}
+
+/**
  * Runs the type check over a project and sorts its errors into the chat's and everyone else's.
  * Paths are printed relative to the blocks package, where the checker runs.
+ *
+ * Counting errors cannot tell a clean chat from a chat never read, so the same run proves it read
+ * the chat: every chat file must be in the program it lists, and vue must resolve from the
+ * project's folder, the one condition on which the checker sets up template checking (it asks
+ * require.resolve for vue/package.json from there, and without it checks scripts alone).
  */
-function checkTypes(project, chat) {
-  if (!existsSync(vueTsc)) {
-    return { failed: [`no type checker at ${vueTsc}: install the blocks package (npm ci in Rock.JavaScript.Obsidian.Blocks)`], notes: [] };
+function checkTypes(project, chat, checker) {
+  if (!existsSync(checker)) {
+    return { failed: [`no type checker at ${checker}: install the blocks package (npm ci in Rock.JavaScript.Obsidian.Blocks)`], notes: [], read: 0 };
   }
 
-  const run = spawnSync(process.execPath, [vueTsc, '--noEmit', '-p', project], { cwd: blocksPackage, encoding: 'utf8' });
+  const failed = [];
+  const chatFiles = walk(chat, (name) => name.endsWith('.ts') || name.endsWith('.obs'));
+  if (chatFiles.length === 0) {
+    failed.push(`no chat files under ${chat}: the type check would pass having read none`);
+  }
+
+  try {
+    createRequire(import.meta.url).resolve('vue/package.json', { paths: [dirname(project)] });
+  }
+  catch {
+    failed.push(`vue does not resolve from ${dirname(project)}: the type checker would skip every template (install the blocks package)`);
+  }
+
+  const run = spawnSync(process.execPath, [checker, '--noEmit', '--listFiles', '-p', project], { cwd: blocksPackage, encoding: 'utf8' });
   const lines = `${run.stdout ?? ''}${run.stderr ?? ''}`.split(/\r?\n/);
   const errors = [];
+  const listed = new Set();
   for (const line of lines) {
     const match = DIAGNOSTIC.exec(line);
     if (match) {
@@ -61,21 +98,34 @@ function checkTypes(project, chat) {
       // tsc explains an error on indented lines under it
       errors[errors.length - 1].text += `\n      ${line.trim()}`;
     }
+    else if (isAbsolute(line.trim())) {
+      // --listFiles prints each file in the program on a line of its own, as an absolute path
+      listed.add(pathKey(line.trim()));
+    }
+  }
+
+  const unread = chatFiles.filter((file) => !listed.has(pathKey(file)));
+  if (unread.length > 0) {
+    failed.push(`chat files the type check never read (the project's include no longer reaches them):\n${unread.map((file) => `      ${relative(blocksPackage, file)}`).join('\n')}`);
   }
 
   const inChat = (file) => {
     const fromChat = relative(chat, resolve(blocksPackage, file));
     return fromChat !== '' && !fromChat.startsWith('..') && !isAbsolute(fromChat);
   };
-  const failed = errors.filter((error) => inChat(error.file)).map((error) => error.text);
+  failed.push(...errors.filter((error) => inChat(error.file)).map((error) => error.text));
   const notes = errors.filter((error) => !inChat(error.file)).map((error) => error.text);
 
-  // A checker that fails without naming an error (a missing config, a crash) has checked nothing.
-  if (run.status !== 0 && errors.length === 0) {
-    failed.push(`the type checker exited ${run.status} without naming an error:\n${lines.join('\n').trim()}`);
+  // The checker is believed only when its exit agrees with what it printed: tsc under --noEmit ends
+  // 0 having found nothing and 2 having found errors. Anything else is a run that did not finish
+  // (a missing config, or a crash, which node ends 1), whatever errors it had named by then.
+  const finished = errors.length === 0 ? run.status === 0 : run.status === 2;
+  if (!finished) {
+    const output = lines.filter((line) => !isAbsolute(line.trim())).join('\n').trim();
+    failed.push(`the type checker exited ${run.status} having named ${errors.length === 1 ? 'one error' : `${errors.length} errors`}, so its run did not finish:\n${output}`);
   }
 
-  return { failed, notes };
+  return { failed, notes, read: chatFiles.length - unread.length };
 }
 
 // #endregion
@@ -124,8 +174,15 @@ function walk(folder, isWanted) {
 }
 
 /**
- * A C# class's name, the class it extends and its public instance properties. A base list that
- * names only interfaces gives no base: an interface's members are declared again on the class.
+ * One public property declaration: any modifiers and type, then a name or an indexer, then a body
+ * of accessors (any of them may carry its own access modifier) or an expression.
+ */
+const PROPERTY = /^[ \t]*(?:\[[^\]\n]*\][ \t]*)*public\s+([\w.<>,?\[\]()\s]+?)\s+(\w+|this\s*\[[^\]]*\])\s*(?:\{\s*(?:(?:private|protected|internal)\s+)*(?:get|set|init)\b|=>)/gm;
+
+/**
+ * A C# class's name, the class it extends and its public properties, instance and static apart. A
+ * base list that names only interfaces gives no base: an interface's members are declared again on
+ * the class.
  */
 function readClass(text) {
   const source = code(text);
@@ -137,15 +194,15 @@ function readClass(text) {
   const first = head[2]?.split(',')[0].trim().replace(/<.*$/, '').split('.').pop();
   const base = first && !/^I[A-Z]/.test(first) ? first : null;
 
-  const properties = [];
-  for (const match of source.matchAll(/^\s*public\s+[\w.<>,?\[\]\s]+?\s+(\w+)\s*\{\s*(?:get|set|init)\b/gm)) {
-    // the generator reads instance properties only
-    if (!/\bstatic\b/.test(match[0])) {
-      properties.push(match[1]);
-    }
+  const instance = [];
+  const statics = [];
+  for (const [, prefix, name] of source.matchAll(PROPERTY)) {
+    // An indexer is a property named Item to reflection, so the generator writes it as item.
+    const property = name.startsWith('this') ? 'Item' : name;
+    (/\bstatic\b/.test(prefix) ? statics : instance).push(property);
   }
 
-  return { name: head[1], base, properties };
+  return { name: head[1], base, instance, statics };
 }
 
 /** The members of a declaration's exported object type. */
@@ -161,9 +218,14 @@ function compareBags(csRoot, tsRoot, folder) {
   const problems = [];
   let agreed = 0;
 
-  /** A class's properties with every base class's, as the generator reads them. */
+  /**
+   * A class's properties as the generator reads them, through Type.GetProperties() with no flags:
+   * the class's own, static ones included, and the public instance properties of every class it
+   * extends. A base class's statics are left out, as reflection leaves them out without
+   * FlattenHierarchy. An override is one property, so the names are a set.
+   */
   const propertiesOf = (cls, where) => {
-    const own = [...cls.properties];
+    const own = new Set([...cls.instance, ...cls.statics]);
     let base = cls.base;
     while (base) {
       const file = classFiles.get(base);
@@ -172,10 +234,10 @@ function compareBags(csRoot, tsRoot, folder) {
         problems.push(`${where}: its base ${base} is not a class under ${csRoot}`);
         return null;
       }
-      own.push(...parent.properties);
+      parent.instance.forEach((property) => own.add(property));
       base = parent.base;
     }
-    return own;
+    return [...own];
   };
 
   for (const file of walk(resolve(csRoot, folder), (name) => name.endsWith('.cs')).sort()) {
@@ -239,18 +301,18 @@ if (!bagsOnly) {
     process.exit(1);
   }
 
-  const { failed, notes } = checkTypes(project, chat);
+  const { failed, notes, read } = checkTypes(project, chat, resolve(flag('--checker') ?? vueTsc));
   if (notes.length > 0) {
     console.log('type errors outside the chat, not failing:');
     for (const note of notes) console.log(`  ${note}`);
   }
   if (failed.length > 0) {
-    console.error('type errors in the chat client:');
+    console.error('the chat client fails its type check:');
     for (const error of failed) console.error(`  ${error}`);
     isFailed = true;
   }
   else {
-    console.log('no type errors in the chat client');
+    console.log(`no type errors in the chat client, ${read} chat files read, templates included`);
   }
 }
 

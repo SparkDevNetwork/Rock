@@ -1,0 +1,14 @@
+<template>
+    <div>{{ box.organizationName }}</div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        box: {
+            type: Object as PropType<{ organizationName?: string | null }>,
+            required: true
+        }
+    });
+</script>

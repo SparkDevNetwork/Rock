@@ -14,5 +14,15 @@ namespace Rock.ViewModels.Blocks.Chat.Disagrees
         /// Gets or sets the nick name, which the declaration does not have.
         /// </summary>
         public string NickName { get; set; }
+
+        /// <summary>
+        /// Gets the full name, an expression-bodied member the declaration does not have.
+        /// </summary>
+        public string FullName => Name;
+
+        /// <summary>
+        /// Gets the default name, a static member the declaration does not have.
+        /// </summary>
+        public static string DefaultName { get; } = "none";
     }
 }

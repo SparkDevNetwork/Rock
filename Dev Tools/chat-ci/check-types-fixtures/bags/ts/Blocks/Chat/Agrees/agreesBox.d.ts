@@ -5,10 +5,18 @@ export type AgreesBox = {
 
     errorMessage?: string | null;
 
+    item?: string | null;
+
+    kind?: string | null;
+
+    label?: string | null;
+
     navigationUrls?: Record<string, string> | null;
 
     /** Gets or sets the organization name. */
     organizationName?: string | null;
 
     rsvpReminderOffsetDays: number;
+
+    summary?: string | null;
 };
