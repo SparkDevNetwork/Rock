@@ -345,6 +345,7 @@
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
+    import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -390,7 +391,7 @@
 
         /** This thread's newest refused follow change: the change asked, which Try again asks again, and why. */
         followError: {
-            type: Object as PropType<{ isFollowing: boolean, text: string } | null>,
+            type: Object as PropType<FollowError | null>,
             default: null
         },
 

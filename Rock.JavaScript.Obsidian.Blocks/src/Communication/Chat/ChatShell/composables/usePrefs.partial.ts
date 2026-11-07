@@ -228,7 +228,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return state.rooms[channelId] ??= { notes: {} };
     }
 
-    function rowOf(channelId: string): RowPrefs | undefined {
+    /** The room's sidebar row, whose star is always known; a save's patch reads it whole. */
+    function rowOf(channelId: string): SidebarRow | undefined {
         return dependencies.channels.rows.find(row => row.channel_id === channelId);
     }
 
