@@ -728,7 +728,6 @@
     import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
     import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
-    import { MentionPickerSource } from "./ChatShell/components/mentionPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
     import { shownMembers } from "./ChatShell/composables/useMembers.partial";
@@ -743,8 +742,7 @@
     import ProfileCard from "./ChatShell/components/profileCard.partial.obs";
     import ThreadDrawer from "./ChatShell/components/threadDrawer.partial.obs";
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
-    import { ComposerDraft } from "./ChatShell/composables/useDrafts.partial";
-    import { attachmentViewsKey, AttachmentTray, canAttach } from "./ChatShell/composables/useAttachments.partial";
+    import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
     import { gifsKey } from "./ChatShell/composables/useGifs.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
@@ -753,10 +751,11 @@
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { useRoomsView } from "./ChatShell/composables/useRoomsView.partial";
     import { useThreadsPanel } from "./ChatShell/composables/useThreadsPanel.partial";
+    import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
-    import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
+    import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
-    import { ChatPerson, DisplayPiece, PendingMessage, PersonProfile, SidebarRow } from "./ChatShell/types.partial";
+    import { ChatPerson, PersonProfile } from "./ChatShell/types.partial";
     import { personName as nameOf } from "./ChatShell/ui/face.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
@@ -954,9 +953,6 @@
         return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     });
 
-    /** The open conversation's files waiting to go, or null where its composer takes none. */
-    const conversationTray = computed((): AttachmentTray | null => isJoinBarShown.value ? null : trayOf(activeChannelId.value));
-
     /** What the members panel, the remove confirm and Add people draw of the roster. */
     const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
 
@@ -971,37 +967,11 @@
         threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, onThreadsLoadMore, onFollowFromList, onFollowThread, onLoadOlderReplies
     } = useThreadsPanel({ shell, activeChannelId, drawnThread, showNotice });
 
-    /**
-     * What the conversation's box holds, kept by the shell for the conversation, so text typed in
-     * one never shows in another; a thread's reply is its own, under the thread's key.
-     */
-    const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
-    const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
-
-    /** The box focus is in, if either. */
-    const focusedComposer = ref<"conversation" | "thread" | null>(null);
-
-    // The drafts are told the place being typed in, as the room or thread under a focused box
-    // changes too, so another tab's write never replaces the text the person is typing.
-    watch([focusedComposer, conversationQuoteKey, threadQuoteKey, shell], () => {
-        const place = focusedComposer.value === "conversation" ? conversationQuoteKey.value
-            : focusedComposer.value === "thread" ? threadQuoteKey.value
-                : null;
-        shell.value.drafts.focus(place ?? null);
-    });
-
-    /**
-     * The person's sends, still going or failed, whose failure the conversation's strip speaks
-     * for: those it draws, a reply only when also sent there and not while the drawer is open on
-     * its thread and in view, whose own strip has it then.
-     */
-    const conversationSends = computed((): PendingMessage[] => {
-        const openRootId = panelKind.value === "thread" && !isPanelHidden.value ? drawnThread.value?.rootId ?? null : null;
-        return activeChannelId.value ? shell.value.sender.pending(activeChannelId.value).filter(row => isOwnedByConversation(row, openRootId)) : [];
-    });
-
-    /** What the conversation's failed sends come to, for the strip over its composer. */
-    const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
+    const {
+        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure,
+        onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
+        onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
+    } = useComposers({ shell, activeChannelId, activeRow, isJoinBarShown, drawnThread, panelKind, isPanelHidden, conversationQuoteKey, threadQuoteKey });
 
     // #endregion Computed Values
 
@@ -1118,76 +1088,6 @@
         notices.value = notices.value.filter(n => n.code !== notice.code);
     }
 
-    /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
-    function onMentionQuery(row: SidebarRow | null, query: string | null): void {
-        if (row && query !== null) {
-            shell.value.mentions.search(row, query);
-        }
-        else {
-            shell.value.mentions.closeSearch();
-        }
-    }
-
-    /**
-     * A composer took focus: the @ picker's first people for its conversation are fetched now, so
-     * the first @ there draws them at once. Focus, not opening, so a person who only reads asks nothing.
-     */
-    function onComposerFocus(row: SidebarRow | null, box: "conversation" | "thread"): void {
-        focusedComposer.value = box;
-        if (row) {
-            shell.value.mentions.warm(row);
-        }
-    }
-
-    function onComposerBlur(): void {
-        focusedComposer.value = null;
-    }
-
-    /** A box's text changed: it is kept for the conversation or thread the box types into. */
-    function onDraftText(place: string | null, text: string): void {
-        if (place) {
-            shell.value.drafts.write(place, text);
-        }
-    }
-
-    /** A thread reply's also-send choice changed: it is kept with that thread's draft. */
-    function onDraftAlsoSent(place: string | null, isAlsoSent: boolean): void {
-        if (place) {
-            shell.value.drafts.setAlsoSent(place, isAlsoSent);
-        }
-    }
-
-    /** A chip was drawn in a box: its name and photo are kept with that place's draft. */
-    function onDraftMention(place: string | null, piece: DisplayPiece): void {
-        if (place) {
-            shell.value.drafts.addMention(place, piece);
-        }
-    }
-
-    /** A drag carrying files may be dropped anywhere on the conversation, where its composer takes files. */
-    function onConversationDragOver(event: DragEvent): void {
-        if (conversationTray.value && isConversationOpenToFiles() && event.dataTransfer?.types?.includes("Files")) {
-            event.preventDefault();
-        }
-    }
-
-    /** Files dropped on the feed go to the conversation's composer, as files dropped on the composer do. */
-    function onConversationDrop(event: DragEvent): void {
-        const files = event.dataTransfer?.files;
-        if (event.defaultPrevented || !conversationTray.value || !isConversationOpenToFiles() || !files?.length) {
-            return;
-        }
-
-        event.preventDefault();
-        conversationTray.value.add(Array.from(files));
-    }
-
-    function onSendReply(body: string, isShownInChannel: boolean): void {
-        if (drawnThread.value) {
-            void shell.value.sendReply(drawnThread.value.rootId, body, isShownInChannel);
-        }
-    }
-
     function onTurnOnPush(): void {
         void shell.value.turnOnPush();
     }
@@ -1275,30 +1175,6 @@
         }
     }
 
-    /** A composer's picker opened: its categories are fetched once for the page. */
-    function onEmojiPickerOpen(): void {
-        void shell.value.reactions.loadCatalog();
-    }
-
-    function onEmojiChosen(code: string): void {
-        shell.value.reactions.recordRecent(code);
-    }
-
-    /** Try again on a strip: its failed sends, oldest first, which the sender sends one at a time in that order. */
-    function onRetry(localIds: string[]): void {
-        void shell.value.sender.retryAll(localIds);
-    }
-
-    /** Try again on the conversation's strip. */
-    function onRetryFailed(sends: PendingMessage[]): void {
-        onRetry(retryableSends(sends).map(row => row.localId));
-    }
-
-    /** Delete on the conversation's strip. */
-    function onDiscardFailed(sends: PendingMessage[]): void {
-        failedSends(sends).forEach(row => shell.value.sender.discard(row.localId));
-    }
-
     async function onSaveBirthdate(birthDate: DatePartsPickerValueBag): Promise<void> {
         isSavingBirthdate.value = true;
         const result = await invokeBlockAction<ChatBirthdateResultBag>("SaveBirthdate", { birthDate });
@@ -1382,16 +1258,6 @@
 
     // #region Functions
 
-    /** A place's files waiting to go, or null where files cannot go: the platform answered no limits for them. */
-    function trayOf(channelId: string | null, rootId?: number): AttachmentTray | null {
-        return channelId && canAttach(shell.value.state.limits) ? shell.value.trayOf(channelId, rootId) : null;
-    }
-
-    /** Whether the conversation's composer is open, which a drop on the feed goes to. */
-    function isConversationOpenToFiles(): boolean {
-        return shell.value.state.isComposerOpen && !lockedReason(activeRow.value, shell.value.state.service);
-    }
-
     /** Opens a person's card for a room beside what asked, drawn afresh each time. */
     function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
         cardAnchor.value = anchor;
@@ -1402,17 +1268,6 @@
     /** Whether an element is inside a full view in the conversation's place or the room's details. */
     function isInViewOrDetails(element: Element): boolean {
         return !!element.closest("[data-testid='main-view']") || !!element.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']");
-    }
-
-    /**
-     * What a composer's @ picker lists in a conversation: the people found for the newest query,
-     * and @all where the room's right and the query offer it; with no room, none.
-     */
-    function mentionSourceFor(row: SidebarRow | null): MentionPickerSource | null {
-        const picker = shell.value.mentions.state.picker;
-        return row
-            ? { canMention: row.can_mention, people: picker.people, isAllOffered: picker.isAllOffered, isAwaitingAnswer: picker.isAwaitingAnswer, isAwaitingFirstAnswer: picker.isAwaitingFirstAnswer }
-            : null;
     }
 
     /** A message id the worker posted as a string, or null when it is not one. */
