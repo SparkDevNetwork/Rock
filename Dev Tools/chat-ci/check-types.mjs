@@ -4,7 +4,8 @@
 // holds the chat and Spark's other Communication blocks, and checks templates as well as scripts.
 // An error in a chat file fails; an error anywhere else is printed as a note and does not fail,
 // because the rest of the project is upstream Rock's and a merge from it must never turn the chat
-// red. It reads the framework through its built declarations, so the framework's types are built
+// red by its types. The exception is an error that stops tsc checking types at all (a syntax, option
+// or global error): the chat could not be checked, so it fails. It reads the framework through its built declarations, so the framework's types are built
 // first (npm run build:types in Rock.JavaScript.Obsidian).
 //
 // The bag comparison holds each chat view model bag in C# to its TypeScript declaration by member
@@ -39,6 +40,9 @@ const bagsFolder = 'Blocks/Communication/Chat';
 
 /** One diagnostic as tsc prints it: `file(line,col): error TSnnnn: message`. */
 const DIAGNOSTIC = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
+
+/** A diagnostic in no file, as tsc prints a global or option error: `error TSnnnn: message`. */
+const FILELESS = /^error (TS\d+): (.*)$/;
 
 // #region Type check
 
@@ -84,9 +88,60 @@ function checkTypes(project, chat, checker) {
     failed.push(`vue does not resolve from ${dirname(project)}: the type checker would skip every template (install the blocks package)`);
   }
 
+  const run = runChecker(checker, project, '--listFiles');
+  if (!run.finished) {
+    failed.push(`the type checker exited ${run.ended} before listing its program, so its run did not finish:\n${run.said}`);
+    return { failed, notes: [], read: 0 };
+  }
+
+  // A finished run that fails without naming an error has one the gate cannot read at all.
+  if (run.status !== 0 && run.errors.length === 0) {
+    failed.push(`the type checker exited ${run.status} without naming an error:\n${run.said}`);
+  }
+
+  const unread = chatFiles.filter((file) => !run.listed.has(pathKey(file)));
+  if (unread.length > 0) {
+    failed.push(`chat files the type check never read (the project's include no longer reaches them):\n${unread.map((file) => `      ${relative(blocksPackage, file)}`).join('\n')}`);
+  }
+
+  const inChat = (file) => {
+    const fromChat = relative(chat, resolve(blocksPackage, file));
+    return fromChat !== '' && !fromChat.startsWith('..') && !isAbsolute(fromChat);
+  };
+  failed.push(...run.errors.filter((error) => error.file && inChat(error.file)).map((error) => error.text));
+  const outside = run.errors.filter((error) => !error.file || !inChat(error.file));
+
+  // tsc checks types only when nothing went wrong before the check: its run asks for the syntax
+  // errors of every file, then the option errors and the global ones (a missing lib type), and asks
+  // for type errors only if all three are empty. One error outside the chat of those kinds therefore
+  // hides every error in it. The printed line does not say which kind an error is, and a code does
+  // not either (the checker raises TS1xxx grammar errors too), so tsc is asked: run with
+  // --listFilesOnly it reports the config's errors, the syntax errors and the option errors and
+  // stops before checking types, and whatever it reports outside the chat is of that kind. A global
+  // error is the one kind that run leaves out, and tsc prints it in no file. It runs only when an
+  // error outside the chat was reported, so a clean project is checked once.
+  const stopping = new Set(outside.filter((error) => !error.file).map((error) => error.text));
+  if (outside.some((error) => error.file)) {
+    const before = runChecker(checker, project, '--listFilesOnly');
+    if (!before.finished) {
+      failed.push(`the type checker, asked which errors came before its type check, exited ${before.ended} before listing its program:\n${before.said}`);
+    }
+    before.errors.filter((error) => !error.file || !inChat(error.file)).forEach((error) => stopping.add(error.text));
+  }
+  failed.push(...[...stopping].map((text) => `${text}\n      tsc reports this before it checks types, and given a syntax, option or global error it checks no file's types, so the chat could not be checked`));
+  const notes = outside.filter((error) => !stopping.has(error.text)).map((error) => error.text);
+
+  return { failed, notes, read: chatFiles.length - unread.length };
+}
+
+/**
+ * Runs the checker once and reads what it printed: its errors, each with its file (none for a global
+ * or option error), and the program it listed.
+ */
+function runChecker(checker, project, listing) {
   // The file list is over a thousand lines, near 150 KB, and node kills a child whose output passes
   // its 1 MB default; the room above that keeps a growing project from failing as a cut-off run.
-  const run = spawnSync(process.execPath, [checker, '--noEmit', '--listFiles', '-p', project], { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  const run = spawnSync(process.execPath, [checker, '--noEmit', listing, '-p', project], { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   // tsc writes its diagnostics and the file list to stdout; stderr holds only what node says, such as
   // a crash's stack, whose first line is an absolute path that must never be read as a listed file.
   const lines = (run.stdout ?? '').split(/\r?\n/);
@@ -94,9 +149,13 @@ function checkTypes(project, chat, checker) {
   const listed = new Set();
   for (const line of lines) {
     const match = DIAGNOSTIC.exec(line);
+    const fileless = FILELESS.exec(line);
     if (match) {
       const [, file, row, col, code, message] = match;
       errors.push({ file, text: `${file}(${row},${col}): ${code} ${message}` });
+    }
+    else if (fileless) {
+      errors.push({ file: null, text: `${fileless[1]} ${fileless[2]}` });
     }
     else if (errors.length > 0 && /^\s/.test(line) && line.trim()) {
       // tsc explains an error on indented lines under it
@@ -112,31 +171,14 @@ function checkTypes(project, chat, checker) {
   // word that it finished. Its exit status cannot say that: a finished run with errors ends 2 when
   // it writes its incremental cache and 1 when the cache was current, and a crash also ends 1. A run
   // with no status was killed, its output cut wherever that happened.
-  const said = () => `${lines.filter((line) => !isAbsolute(line.trim())).join('\n')}\n${run.stderr ?? ''}`.trim();
-  if (listed.size === 0 || run.status === null) {
-    failed.push(`the type checker exited ${run.status ?? run.error?.message ?? run.signal} before listing its program, so its run did not finish:\n${said()}`);
-    return { failed, notes: [], read: 0 };
-  }
-
-  // A finished run that fails without naming an error in a file has one the gate cannot place
-  // inside or outside the chat, such as a missing global type.
-  if (run.status !== 0 && errors.length === 0) {
-    failed.push(`the type checker exited ${run.status} without naming an error in a file:\n${said()}`);
-  }
-
-  const unread = chatFiles.filter((file) => !listed.has(pathKey(file)));
-  if (unread.length > 0) {
-    failed.push(`chat files the type check never read (the project's include no longer reaches them):\n${unread.map((file) => `      ${relative(blocksPackage, file)}`).join('\n')}`);
-  }
-
-  const inChat = (file) => {
-    const fromChat = relative(chat, resolve(blocksPackage, file));
-    return fromChat !== '' && !fromChat.startsWith('..') && !isAbsolute(fromChat);
+  return {
+    errors,
+    listed,
+    status: run.status,
+    finished: listed.size > 0 && run.status !== null,
+    ended: run.status ?? run.error?.message ?? run.signal,
+    said: `${lines.filter((line) => !isAbsolute(line.trim())).join('\n')}\n${run.stderr ?? ''}`.trim(),
   };
-  failed.push(...errors.filter((error) => inChat(error.file)).map((error) => error.text));
-  const notes = errors.filter((error) => !inChat(error.file)).map((error) => error.text);
-
-  return { failed, notes, read: chatFiles.length - unread.length };
 }
 
 // #endregion

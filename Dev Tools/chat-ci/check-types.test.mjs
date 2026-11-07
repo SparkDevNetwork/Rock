@@ -6,7 +6,7 @@
 // by a typed client, so nothing else notices it. Both halves are run here the way CI runs them.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, rmSync, symlinkSync, unlinkSync } from 'node:fs';
+import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import test from 'node:test';
@@ -79,6 +79,33 @@ test('an error in a file outside the chat is printed as a note and does not fail
     assert.match(result.stdout, /outside the chat, not failing/);
     assert.match(result.stdout, /Other[\\/]upstreamError\.ts\(2,14\): TS2322/);
     assert.match(result.stdout, /no type errors in the chat client/);
+    assert.doesNotMatch(`${result.stdout}\n${result.stderr}`, /could not be checked/);
+  });
+});
+
+// tsc checks types only when nothing went wrong before the check: given a syntax error in any file,
+// or an option it no longer accepts, it reports that alone and checks no file's types. The chat's
+// own errors then go unprinted, so an error outside the chat of that kind fails.
+test('a syntax error outside the chat, which stops tsc checking any types, fails naming its file', () => {
+  withProject('red', (dir) => {
+    writeFileSync(join(dir, 'Other', 'brokenSyntax.ts'), 'export const broken = ;\n');
+    const result = run('--project', join(dir, 'tsconfig.json'), '--chat', join(dir, 'Chat'));
+
+    assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stderr, /Other[\\/]brokenSyntax\.ts\(1,23\): TS1109/);
+    assert.match(result.stderr, /the chat could not be checked/);
+  });
+});
+
+test('an option the checker no longer accepts, which stops tsc checking any types, fails naming the config', () => {
+  withProject('red', (dir) => {
+    const config = join(dir, 'tsconfig.json');
+    writeFileSync(config, readFileSync(config, 'utf8').replace('"strict": true,', '"strict": true,\n    "preserveValueImports": true,'));
+    const result = run('--project', config, '--chat', join(dir, 'Chat'));
+
+    assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stderr, /tsconfig\.json\(\d+,\d+\): TS5102/);
+    assert.match(result.stderr, /the chat could not be checked/);
   });
 });
 
