@@ -936,8 +936,8 @@
         askBlock, blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock
     } = useMessageActionsView({
         shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker,
-        // the dialogs own the card and are made last, so their watchers keep their place after the others'
-        openCard: (anchor, personAliasGuid, channelId) => openCard(anchor, personAliasGuid, channelId)
+        // The card is the dialogs', made below since they take this view's askBlock in turn.
+        openCard: (...card) => openCard(...card)
     });
 
     const {

@@ -1034,7 +1034,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         isStopped: () => isStopped
     });
 
-
     return {
         state,
         reveal,
