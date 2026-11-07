@@ -32,11 +32,15 @@ order the built styles load in, so a caller sets `--chat-ic-size` or `--chat-ic-
 
 `check-types.mjs` runs the blocks package's own `vue-tsc` over Rock's Communication project,
 templates included, and fails on an error in a chat file; an error in any other file there is
-upstream Rock's, so it is printed as a note and does not fail, unless it is a syntax, option or
-global error: given one of those tsc checks no file's types, so the chat could not be checked and
-the gate fails naming it (tsc run with `--listFilesOnly` says which errors are of that kind). It
-reads the framework through its built declarations, so `npm run build:types` in `Rock.JavaScript.Obsidian` runs first. Its second
-half holds each chat view model bag in C# to its TypeScript declaration by member name, both ways,
+upstream Rock's, so it is printed as a note and does not fail. Each run proves it checked: it
+writes two probe files with one known error each, a script and a template, into
+`Rock.JavaScript.Obsidian.Blocks/dist/.chat-type-probe/` with a config that extends the project's,
+and passes only if both errors are reported and every chat file is in the program; anything that
+stops tsc checking (a syntax error anywhere, an option it no longer accepts, a crash) fails it,
+printing what the checker said. It passes `--noCheck false`, so no config can turn checking off. A
+declaration error in a chat file (TS4xxx) is not reported: tsc computes those only when no other
+error exists. It reads the framework through its built declarations, so `npm run build:types` in
+`Rock.JavaScript.Obsidian` runs first. Its second half holds each chat view model bag in C# to its TypeScript declaration by member name, both ways,
 counting inherited members and Rock's camelCase as the declaration generator does: a member that
 exists only in C# is read by nothing typed, so the type check alone cannot see it.
 

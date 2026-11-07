@@ -4,9 +4,17 @@
 // holds the chat and Spark's other Communication blocks, and checks templates as well as scripts.
 // An error in a chat file fails; an error anywhere else is printed as a note and does not fail,
 // because the rest of the project is upstream Rock's and a merge from it must never turn the chat
-// red by its types. The exception is an error that stops tsc checking types at all (a syntax, option
-// or global error): the chat could not be checked, so it fails. It reads the framework through its built declarations, so the framework's types are built
-// first (npm run build:types in Rock.JavaScript.Obsidian).
+// red by its types. It reads the framework through its built declarations, so the framework's
+// types are built first (npm run build:types in Rock.JavaScript.Obsidian).
+//
+// What a pass proves: the run checked scripts and templates, under the project's own options, for
+// files in the chat's program, and every chat file was in that program. The first comes from two
+// probe files with one known error each, checked in the same program: the gate passes only if both
+// are reported, so anything that stops tsc checking (a syntax error anywhere, an option it no
+// longer accepts, a crash, a setup without templates) fails it. What it does not report: a
+// declaration error in a chat file (TS4xxx, TS2742). tsc computes those only when no other error
+// exists, and the probe always has one; the blocks are not published as declarations, so they are
+// not type errors in the chat's use.
 //
 // The bag comparison holds each chat view model bag in C# to its TypeScript declaration by member
 // name, both ways. The declarations are written by a code generator a person runs by hand, so a
@@ -18,11 +26,12 @@
 //
 //   node check-types.mjs                                     both halves over the chat
 //   node check-types.mjs --project <tsconfig> --chat <dir>   the type check of another project
-//   node check-types.mjs ... --checker <script>              the type check run by a stand-in for vue-tsc
+//   node check-types.mjs ... --probe <dir>                   its probe written in another folder
+//   node check-types.mjs ... --checker <script>              run by a stand-in for vue-tsc
 //   node check-types.mjs --cs <dir> --ts <dir> --folder <f>  the bag comparison of another tree
 import { spawnSync } from 'node:child_process';
 import { createRequire } from 'node:module';
-import { existsSync, readdirSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -34,6 +43,11 @@ const frameworkTypes = resolve(repoRoot, 'Rock.JavaScript.Obsidian/dist/Framewor
 const chatProject = resolve(blocksPackage, 'src/Communication/tsconfig.json');
 const chatFolder = resolve(blocksPackage, 'src/Communication/Chat');
 
+// Under dist the probe is ignored by git, separate per checkout, in no build's input (the build
+// reads src) and under the base config's rootDir, and vue resolves from it as from the project. A
+// dot folder is matched by no ** include, so it never joins another program.
+const probeFolder = resolve(blocksPackage, 'dist/.chat-type-probe');
+
 const bagsCs = resolve(repoRoot, 'Rock.ViewModels');
 const bagsTs = resolve(repoRoot, 'Rock.JavaScript.Obsidian/Framework/ViewModels');
 const bagsFolder = 'Blocks/Communication/Chat';
@@ -43,6 +57,27 @@ const DIAGNOSTIC = /^(.+?)\((\d+),(\d+)\): error (TS\d+): (.*)$/;
 
 /** A diagnostic in no file, as tsc prints a global or option error: `error TSnnnn: message`. */
 const FILELESS = /^error (TS\d+): (.*)$/;
+
+/**
+ * The probe files, each with the one error it must be reported for. The script's is a strict-null
+ * error, so a config that loses strict says why; the template reads a member named unlike any its
+ * prop declares, so tsc reports it as missing (TS2339) rather than as a misspelling (TS2551).
+ */
+const PROBES = [
+  {
+    kind: 'scripts',
+    file: 'scriptProbe.ts',
+    code: 'TS2322',
+    text: 'declare const maybe: number | undefined;\nexport const probe: number = maybe;\n',
+  },
+  {
+    kind: 'templates',
+    file: 'templateProbe.obs',
+    code: 'TS2339',
+    text: '<template>\n    <div>{{ box.notDeclaredOnTheProbe }}</div>\n</template>\n\n'
+      + '<script setup lang="ts">\n    defineProps<{ box: { title: string } }>();\n</script>\n',
+  },
+];
 
 // #region Type check
 
@@ -62,15 +97,42 @@ function pathKey(file) {
 }
 
 /**
+ * Writes the probe folder: the two probe files and a config that is the project's own with the
+ * probes added. It extends the project and copies its references, the one field extends does not
+ * carry, so it is checked as the project is in every setting; its files are the project's own and
+ * the probes. Returns the config, or the reason the project could not be read.
+ */
+function writeProbe(project, probe) {
+  // tsc's own reader, so a config with comments or trailing commas reads as tsc reads it.
+  const ts = createRequire(join(blocksPackage, 'package.json'))('typescript');
+  const { config, error } = ts.readConfigFile(project, ts.sys.readFile);
+  if (error) {
+    return { reason: ts.flattenDiagnosticMessageText(error.messageText, '\n') };
+  }
+
+  const fromProject = (path) => resolve(dirname(project), path);
+  mkdirSync(probe, { recursive: true });
+  for (const { file, text } of PROBES) {
+    writeFileSync(join(probe, file), text);
+  }
+  const wrapper = {
+    extends: project,
+    ...(config.references ? { references: config.references.map((reference) => ({ ...reference, path: fromProject(reference.path) })) } : {}),
+    files: [...(config.files ?? []).map(fromProject), ...PROBES.map(({ file }) => join(probe, file))],
+  };
+  const tsconfig = join(probe, 'tsconfig.json');
+  writeFileSync(tsconfig, `${JSON.stringify(wrapper, null, 2)}\n`);
+  return { tsconfig };
+}
+
+/**
  * Runs the type check over a project and sorts its errors into the chat's and everyone else's.
  * Paths are printed relative to the blocks package, where the checker runs.
  *
- * Counting errors cannot tell a clean chat from a chat never read, so the same run proves it read
- * the chat: every chat file must be in the program it lists, and vue must resolve from the
- * project's folder, the one condition on which the checker sets up template checking (it asks
- * require.resolve for vue/package.json from there, and without it checks scripts alone).
+ * Counting errors cannot tell a clean chat from a chat never checked, so the same run proves it
+ * checked: both probe errors must be reported, and every chat file must be in the program it lists.
  */
-function checkTypes(project, chat, checker) {
+function checkTypes(project, chat, probe, checker) {
   if (!existsSync(checker)) {
     return { failed: [`no type checker at ${checker}: install the blocks package (npm ci in Rock.JavaScript.Obsidian.Blocks)`], notes: [], read: 0 };
   }
@@ -81,23 +143,23 @@ function checkTypes(project, chat, checker) {
     failed.push(`no chat files under ${chat}: the type check would pass having read none`);
   }
 
-  try {
-    createRequire(import.meta.url).resolve('vue/package.json', { paths: [dirname(project)] });
-  }
-  catch {
-    failed.push(`vue does not resolve from ${dirname(project)}: the type checker would skip every template (install the blocks package)`);
-  }
-
-  const run = runChecker(checker, project, '--listFiles');
-  if (!run.finished) {
-    failed.push(`the type checker exited ${run.ended} before listing its program, so its run did not finish:\n${run.said}`);
+  const { tsconfig, reason } = writeProbe(project, probe);
+  if (!tsconfig) {
+    failed.push(`cannot read the project config ${project}: ${reason}`);
     return { failed, notes: [], read: 0 };
   }
 
-  // A finished run that fails without naming an error has one the gate cannot read at all.
-  if (run.status !== 0 && run.errors.length === 0) {
-    failed.push(`the type checker exited ${run.status} without naming an error:\n${run.said}`);
+  const run = runChecker(checker, tsconfig);
+
+  // A probe error is found by its file and code; any other error in a probe file is reported.
+  const isProbe = (error, { file, code }) => error.file !== null && error.code === code && pathKey(resolve(blocksPackage, error.file)) === pathKey(join(probe, file));
+  const missing = PROBES.filter((expected) => !run.errors.some((error) => isProbe(error, expected)));
+  if (missing.length > 0) {
+    const kinds = missing.map(({ kind }) => kind).join(' and ');
+    failed.push(`the type check did not check ${kinds}: its probe error was not reported, so no chat error could have been either. What the checker printed, the likely cause:\n${run.said}`);
+    return { failed, notes: [], read: 0 };
   }
+  const errors = run.errors.filter((error) => !PROBES.some((expected) => isProbe(error, expected)));
 
   const unread = chatFiles.filter((file) => !run.listed.has(pathKey(file)));
   if (unread.length > 0) {
@@ -108,54 +170,36 @@ function checkTypes(project, chat, checker) {
     const fromChat = relative(chat, resolve(blocksPackage, file));
     return fromChat !== '' && !fromChat.startsWith('..') && !isAbsolute(fromChat);
   };
-  failed.push(...run.errors.filter((error) => error.file && inChat(error.file)).map((error) => error.text));
-  const outside = run.errors.filter((error) => !error.file || !inChat(error.file));
-
-  // tsc checks types only when nothing went wrong before the check: its run asks for the syntax
-  // errors of every file, then the option errors and the global ones (a missing lib type), and asks
-  // for type errors only if all three are empty. One error outside the chat of those kinds therefore
-  // hides every error in it. The printed line does not say which kind an error is, and a code does
-  // not either (the checker raises TS1xxx grammar errors too), so tsc is asked: run with
-  // --listFilesOnly it reports the config's errors, the syntax errors and the option errors and
-  // stops before checking types, and whatever it reports outside the chat is of that kind. A global
-  // error is the one kind that run leaves out, and tsc prints it in no file. It runs only when an
-  // error outside the chat was reported, so a clean project is checked once.
-  const stopping = new Set(outside.filter((error) => !error.file).map((error) => error.text));
-  if (outside.some((error) => error.file)) {
-    const before = runChecker(checker, project, '--listFilesOnly');
-    if (!before.finished) {
-      failed.push(`the type checker, asked which errors came before its type check, exited ${before.ended} before listing its program:\n${before.said}`);
-    }
-    before.errors.filter((error) => !error.file || !inChat(error.file)).forEach((error) => stopping.add(error.text));
-  }
-  failed.push(...[...stopping].map((text) => `${text}\n      tsc reports this before it checks types, and given a syntax, option or global error it checks no file's types, so the chat could not be checked`));
-  const notes = outside.filter((error) => !stopping.has(error.text)).map((error) => error.text);
+  failed.push(...errors.filter((error) => error.file && inChat(error.file)).map((error) => error.text));
+  const notes = errors.filter((error) => !error.file || !inChat(error.file)).map((error) => error.text);
 
   return { failed, notes, read: chatFiles.length - unread.length };
 }
 
 /**
  * Runs the checker once and reads what it printed: its errors, each with its file (none for a global
- * or option error), and the program it listed.
+ * or option error) and code, and the program it listed.
  */
-function runChecker(checker, project, listing) {
-  // The file list is over a thousand lines, near 150 KB, and node kills a child whose output passes
-  // its 1 MB default; the room above that keeps a growing project from failing as a cut-off run.
-  const run = spawnSync(process.execPath, [checker, '--noEmit', listing, '-p', project], { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-  // tsc writes its diagnostics and the file list to stdout; stderr holds only what node says, such as
-  // a crash's stack, whose first line is an absolute path that must never be read as a listed file.
-  const lines = (run.stdout ?? '').split(/\r?\n/);
+function runChecker(checker, tsconfig) {
+  // --noCheck false is the gate's own, as --noEmit is: whether tsc checks at all is the one
+  // setting a config must never decide for it. The file list is over a thousand lines, near 150 KB,
+  // and node kills a child whose output passes its 1 MB default; the room above is for growth.
+  const args = [checker, '--noEmit', '--noCheck', 'false', '--listFiles', '-p', tsconfig];
+  const run = spawnSync(process.execPath, args, { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  // tsc writes its diagnostics and the file list to stdout; stderr holds only what node says, such
+  // as a crash's stack, whose first line is an absolute path that must never be read as a listed file.
   const errors = [];
   const listed = new Set();
-  for (const line of lines) {
+  const other = [];
+  for (const line of (run.stdout ?? '').split(/\r?\n/)) {
     const match = DIAGNOSTIC.exec(line);
     const fileless = FILELESS.exec(line);
     if (match) {
       const [, file, row, col, code, message] = match;
-      errors.push({ file, text: `${file}(${row},${col}): ${code} ${message}` });
+      errors.push({ file, code, text: `${file}(${row},${col}): ${code} ${message}` });
     }
     else if (fileless) {
-      errors.push({ file: null, text: `${fileless[1]} ${fileless[2]}` });
+      errors.push({ file: null, code: fileless[1], text: `${fileless[1]} ${fileless[2]}` });
     }
     else if (errors.length > 0 && /^\s/.test(line) && line.trim()) {
       // tsc explains an error on indented lines under it
@@ -165,20 +209,14 @@ function runChecker(checker, project, listing) {
       // --listFiles prints each file in the program on a line of its own, as an absolute path
       listed.add(pathKey(line.trim()));
     }
+    else if (line.trim()) {
+      other.push(line);
+    }
   }
 
-  // tsc lists the program only after it has printed every diagnostic, so the list is the run's own
-  // word that it finished. Its exit status cannot say that: a finished run with errors ends 2 when
-  // it writes its incremental cache and 1 when the cache was current, and a crash also ends 1. A run
-  // with no status was killed, its output cut wherever that happened.
-  return {
-    errors,
-    listed,
-    status: run.status,
-    finished: listed.size > 0 && run.status !== null,
-    ended: run.status ?? run.error?.message ?? run.signal,
-    said: `${lines.filter((line) => !isAbsolute(line.trim())).join('\n')}\n${run.stderr ?? ''}`.trim(),
-  };
+  const ended = `exited ${run.status ?? run.error?.message ?? run.signal}`;
+  const said = [...errors.map((error) => error.text), ...other, (run.stderr ?? '').trim(), ended].filter(Boolean);
+  return { errors, listed, said: said.join('\n').split('\n').map((line) => `      ${line}`).join('\n') };
 }
 
 // #endregion
@@ -354,7 +392,8 @@ if (!bagsOnly) {
     process.exit(1);
   }
 
-  const { failed, notes, read } = checkTypes(project, chat, resolve(flag('--checker') ?? vueTsc));
+  const probe = resolve(flag('--probe') ?? probeFolder);
+  const { failed, notes, read } = checkTypes(project, chat, probe, resolve(flag('--checker') ?? vueTsc));
   if (notes.length > 0) {
     console.log('type errors outside the chat, not failing:');
     for (const note of notes) console.log(`  ${note}`);
