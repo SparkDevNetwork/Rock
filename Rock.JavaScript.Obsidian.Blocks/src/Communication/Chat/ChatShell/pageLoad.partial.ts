@@ -687,6 +687,10 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         return outcome;
     }
 
+    /**
+     * Opens the first conversation: the one a link names or this browser opened last, else the
+     * first the sidebar can open. The page says chat is opening until it settles.
+     */
     async function runPageLoad(): Promise<void> {
         if (isStopped()) {
             return;
@@ -721,6 +725,7 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         }
     }
 
+    /** Opens a channel the person chose, or waits for the open of it already under way. */
     async function select(channelId: string): Promise<void> {
         directMessages.close();
         if (channelId !== state.activeChannelId) {

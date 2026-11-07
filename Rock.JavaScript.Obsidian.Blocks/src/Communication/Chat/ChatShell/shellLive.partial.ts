@@ -140,6 +140,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     /** The wait before a rejoin's sidebar read, pending; null when none is. */
     let sidebarWait: ReturnType<typeof setTimeout> | null = null;
 
+    /** Cancels a recheck still waiting. */
     function cancelRecheck(): void {
         if (recheckTimer !== null) {
             clearTimeout(recheckTimer);
@@ -147,6 +148,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         }
     }
 
+    /** Cancels a rejoin's wait still pending. */
     function cancelSidebarWait(): void {
         if (sidebarWait !== null) {
             clearTimeout(sidebarWait);
@@ -154,6 +156,10 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         }
     }
 
+    /**
+     * Fetches the sidebar and replaces the rows with it, or, while a read is out, has one more read
+     * follow it. A read a newer ask overtook answers with the newer one's sidebar.
+     */
     function loadSidebar(): Promise<SidebarRow[]> {
         if (isSidebarQueued) {
             return sidebarAnswer;
@@ -254,7 +260,10 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         return channels.rows;
     }
 
-    // A failed read is reported where it fails, so nothing is left to catch here.
+    /**
+     * Reads the sidebar again, unless a rejoin's wait is pending, whose read this then is. A failed
+     * read is reported where it fails, so nothing is left to catch here.
+     */
     function reloadSidebar(): void {
         if (sidebarWait === null) {
             void loadSidebar().catch(() => undefined);
@@ -308,9 +317,10 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     }
 
     /**
-     * Every holder of messages masks again what it holds, in place. The found conversation's look
-     * and a quote waiting in a composer are snapshots resync does not read, so after an unblock
-     * they stay withheld, the safe side, until the person looks again.
+     * Every holder of messages masks again what it holds, in place. A holder added here is added to
+     * resync beside it when what it holds can be read again; the found conversation's look and a
+     * quote waiting in a composer are snapshots resync does not read, so after an unblock they stay
+     * withheld, the safe side, until the person looks again.
      */
     function remask(added: readonly string[]): void {
         timelines.remask(added);
