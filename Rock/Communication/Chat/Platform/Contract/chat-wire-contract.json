@@ -180,6 +180,10 @@
         {
           "column": "synced_at",
           "reason": "One value for the whole submission, carried once in the read-time header."
+        },
+        {
+          "column": "rev",
+          "reason": "The room's revision, moved by every change to its timeline as the change commits and read by chat clients to notice a live event they missed. Written by the platform and never by the sync; Rock never sees a message."
         }
       ]
     },
