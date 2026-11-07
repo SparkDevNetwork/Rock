@@ -729,6 +729,22 @@ describe("the page load", () => {
         expect(h.shell.state.isOpening).toBe(false);
     });
 
+    test("a Try again after the shell stops opens nothing and reads no sidebar", async () => {
+        const h = build({ linkedChannelId: null });
+        h.bootstrap.value = new Error("offline");
+        await h.shell.start();
+        const asked = h.counts.bootstraps;
+
+        await h.shell.stop();
+        h.bootstrap.value = { channels: [{ channel_id: channelB } as SidebarRow] };
+        h.shell.channels.retryLoad();
+        expect(h.shell.state.isOpening).toBe(false);
+        await settle();
+
+        expect(h.counts.bootstraps).toBe(asked);
+        expect(h.shell.state.activeChannelId).toBeNull();
+    });
+
     test("a first visit's sidebar read overtaken by a newer one opens from the newer one's rows", async () => {
         const h = build({ linkedChannelId: null });
         h.heldBootstraps.value = [];
@@ -2664,6 +2680,23 @@ describe("the live sidebar", () => {
 
             expect(h.counts.bootstraps).toBe(before);
         });
+
+        test("a rejoin heard after the shell stops, while its last save is still out, waits for nothing and reads nothing", async () => {
+            const h = await startedLive();
+            jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+            const rejoined = jest.spyOn(h.shell.members, "rejoined");
+            const before = h.counts.bootstraps;
+            personalStatus(h, "CHANNEL_ERROR");
+
+            // The hub stops last, after the last save, so its topic can still report a join here.
+            void h.shell.stop();
+            personalStatus(h, "SUBSCRIBED");
+            jest.advanceTimersByTime(10_000);
+            await settle();
+
+            expect(h.counts.bootstraps).toBe(before);
+            expect(rejoined).not.toHaveBeenCalled();
+        });
     });
 
     describe("a reload in flight", () => {
@@ -2840,6 +2873,24 @@ describe("the live sidebar", () => {
 
             expect(rowOf(h, channelB)?.name).toBe("Room");
             expect(h.heldBootstraps.value).toHaveLength(asked);
+        });
+
+        test("a read queued behind one out is never sent once the shell stops before that one answers", async () => {
+            const h = await startedLive();
+            h.heldBootstraps.value = [];
+            askReload(h);
+            await settle();
+            askReload(h);
+            await settle();
+            expect(h.heldBootstraps.value).toHaveLength(1);
+            const asked = h.counts.bootstraps;
+
+            void h.shell.stop();
+            await settle();
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, snapshot()));
+            await settle();
+
+            expect(h.counts.bootstraps).toBe(asked);
         });
     });
 
