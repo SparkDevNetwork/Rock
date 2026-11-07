@@ -6,7 +6,7 @@
 // by a typed client, so nothing else notices it. Both halves are run here the way CI runs them.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
+import { chmodSync, cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { isAbsolute, join, resolve } from 'node:path';
 import test from 'node:test';
@@ -162,6 +162,40 @@ test('noCheck in the project config does not stop the chat being checked', () =>
     assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
     assert.match(result.stderr, /Chat[\\/]readsUndeclared\.ts\(5,16\): TS2339/);
     assert.match(result.stderr, /Chat[\\/]templateReadsUndeclared\.obs\(2,\d+\): TS2339/);
+  });
+});
+
+// The gate reads tsc's plain output, so its shape is the gate's own too: colour and boxed context,
+// or an explained program in place of the absolute file list, would read as a run that checked
+// nothing or read no chat file.
+test('pretty and explainFiles in the project config do not change what the gate reads', () => {
+  withProject('clean', (dir) => {
+    addOptions(dir, '"pretty": true,\n    "explainFiles": true,');
+    const result = checkProject(dir);
+
+    assert.equal(result.status, 0, `${result.stdout}\n${result.stderr}`);
+    assert.match(result.stdout, /Other[\\/]upstreamError\.ts\(2,14\): TS2322/);
+    assert.match(result.stdout, /no type errors in the chat client, 1 chat files read/);
+  });
+});
+
+test('a probe folder that cannot be written fails naming the folder', () => {
+  withProject('clean', (dir) => {
+    const probe = join(dir, '.chat-type-probe');
+    const locked = join(probe, 'scriptProbe.ts');
+    mkdirSync(probe);
+    writeFileSync(locked, '');
+    chmodSync(locked, 0o444);
+    try {
+      const result = checkProject(dir);
+
+      assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
+      assert.ok(result.stderr.includes(`cannot write the probe folder ${probe}:`), result.stderr);
+      assert.doesNotMatch(result.stderr, /\n\s+at /);
+    }
+    finally {
+      chmodSync(locked, 0o666);
+    }
   });
 });
 

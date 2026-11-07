@@ -100,28 +100,33 @@ function pathKey(file) {
  * Writes the probe folder: the two probe files and a config that is the project's own with the
  * probes added. It extends the project and copies its references, the one field extends does not
  * carry, so it is checked as the project is in every setting; its files are the project's own and
- * the probes. Returns the config, or the reason the project could not be read.
+ * the probes. Returns the config, or why the project could not be read or the probe written.
  */
 function writeProbe(project, probe) {
   // tsc's own reader, so a config with comments or trailing commas reads as tsc reads it.
   const ts = createRequire(join(blocksPackage, 'package.json'))('typescript');
   const { config, error } = ts.readConfigFile(project, ts.sys.readFile);
   if (error) {
-    return { reason: ts.flattenDiagnosticMessageText(error.messageText, '\n') };
+    return { failure: `cannot read the project config ${project}: ${ts.flattenDiagnosticMessageText(error.messageText, '\n')}` };
   }
 
   const fromProject = (path) => resolve(dirname(project), path);
-  mkdirSync(probe, { recursive: true });
-  for (const { file, text } of PROBES) {
-    writeFileSync(join(probe, file), text);
-  }
   const wrapper = {
     extends: project,
     ...(config.references ? { references: config.references.map((reference) => ({ ...reference, path: fromProject(reference.path) })) } : {}),
     files: [...(config.files ?? []).map(fromProject), ...PROBES.map(({ file }) => join(probe, file))],
   };
   const tsconfig = join(probe, 'tsconfig.json');
-  writeFileSync(tsconfig, `${JSON.stringify(wrapper, null, 2)}\n`);
+  try {
+    mkdirSync(probe, { recursive: true });
+    for (const { file, text } of PROBES) {
+      writeFileSync(join(probe, file), text);
+    }
+    writeFileSync(tsconfig, `${JSON.stringify(wrapper, null, 2)}\n`);
+  }
+  catch (writeError) {
+    return { failure: `cannot write the probe folder ${probe}: ${writeError.message}` };
+  }
   return { tsconfig };
 }
 
@@ -143,9 +148,9 @@ function checkTypes(project, chat, probe, checker) {
     failed.push(`no chat files under ${chat}: the type check would pass having read none`);
   }
 
-  const { tsconfig, reason } = writeProbe(project, probe);
+  const { tsconfig, failure } = writeProbe(project, probe);
   if (!tsconfig) {
-    failed.push(`cannot read the project config ${project}: ${reason}`);
+    failed.push(failure);
     return { failed, notes: [], read: 0 };
   }
 
@@ -182,9 +187,12 @@ function checkTypes(project, chat, probe, checker) {
  */
 function runChecker(checker, tsconfig) {
   // --noCheck false is the gate's own, as --noEmit is: whether tsc checks at all is the one
-  // setting a config must never decide for it. The file list is over a thousand lines, near 150 KB,
-  // and node kills a child whose output passes its 1 MB default; the room above is for growth.
-  const args = [checker, '--noEmit', '--noCheck', 'false', '--listFiles', '-p', tsconfig];
+  // setting a config must never decide for it. So is the output's shape, since the gate parses tsc's
+  // plain output: pretty output wraps each diagnostic in colour and context, and explainFiles prints
+  // the program with relative paths in place of the absolute list. The file list is over a thousand
+  // lines, near 150 KB, and node kills a child whose output passes its 1 MB default; the room above
+  // is for growth.
+  const args = [checker, '--noEmit', '--noCheck', 'false', '--pretty', 'false', '--explainFiles', 'false', '--listFiles', '-p', tsconfig];
   const run = spawnSync(process.execPath, args, { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   // tsc writes its diagnostics and the file list to stdout; stderr holds only what node says, such
   // as a crash's stack, whose first line is an absolute path that must never be read as a listed file.
