@@ -377,6 +377,22 @@ describe("star and hide", () => {
         expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden. It leaves your list when you open another conversation." });
     });
 
+    // The platform reads a key left out of the patch as unchanged, so the bytes sent are what
+    // matters, not the object: toEqual would pass an undefined favorite that the wire drops.
+    test("a hide and a star send the row's star and hidden both, by value, on the wire", async () => {
+        const s = setup();
+
+        void s.prefs.setHidden(team, true);
+        s.prefCalls[0].answer.resolve(written(team, { hidden: true }));
+        await settle();
+        void s.prefs.setStarred(prayer, true, false);
+
+        expect(s.prefCalls.map(c => JSON.stringify(c.changes))).toEqual([
+            "{\"is_favorite\":false,\"hidden\":true}",
+            "{\"is_favorite\":true,\"hidden\":false}"
+        ]);
+    });
+
     test("starring a hidden room unhides it in the same one patch, and says so under Star", async () => {
         const s = setup();
         void s.prefs.setHidden(team, true);

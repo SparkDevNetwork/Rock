@@ -455,7 +455,7 @@ describe("the Follow toggle", () => {
     });
 
     test("a refused change shows its sentence and Try again under the header, said at once, and Try again asks it again with focus on the toggle", async () => {
-        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, failure: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } } });
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { rootId: 40, isFollowing: false, failure: { alone: "You're offline. Try again when you're back.", besideRetry: "You're offline.", canRetry: true } } });
         await nextTick();
 
         const error = w.get("[data-testid='thread-follow-error']");
@@ -469,7 +469,7 @@ describe("the Follow toggle", () => {
     });
 
     test("a refusal another try cannot pass shows its sentence under the header with no Try again", async () => {
-        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { isFollowing: false, failure: { alone: "You're no longer in this channel.", besideRetry: "You're no longer in this channel.", canRetry: false } } });
+        const w = draw({ root: rootWith(3), replies: replies(3), isLoading: false, isFollowing: true, followError: { rootId: 40, isFollowing: false, failure: { alone: "You're no longer in this channel.", besideRetry: "You're no longer in this channel.", canRetry: false } } });
         await nextTick();
 
         const error = w.get("[data-testid='thread-follow-error']");

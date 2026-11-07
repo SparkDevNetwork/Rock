@@ -159,3 +159,34 @@ test('the client suite runs with the framework package installed as well as the 
   assert.ok(installIn('Rock.JavaScript.Obsidian.Blocks') >= 0, 'nothing installs the blocks package');
   assert.ok(installIn('Rock.JavaScript.Obsidian') < jest && installIn('Rock.JavaScript.Obsidian.Blocks') < jest, 'the client tests run before an install');
 });
+
+test('the chat client is type-checked once the framework types it imports are built, and the gate tests run after', () => {
+  // The type check reads the framework through its built declarations, so they are built after
+  // the framework is installed and before the check. The gates' own tests check fixtures with the
+  // blocks package's type checker, so they too wait for both installs.
+  const steps = unlabelled().steps ?? [];
+  const dirOf = (step) => String(step['working-directory'] ?? '').replace(/^\.\//, '');
+  const installIn = (dir) => steps.findIndex((step) => /npm ci/.test(String(step.run ?? '')) && dirOf(step) === dir);
+  const buildTypes = steps.findIndex((step) => /npm run build:types/.test(String(step.run ?? '')) && dirOf(step) === 'Rock.JavaScript.Obsidian');
+  const typeGate = steps.findIndex((step) => /check:types|check-types\.mjs/.test(String(step.run ?? '')));
+  const gateTests = steps.findIndex((step) => /npm test/.test(String(step.run ?? '')) && dirOf(step) === 'Dev Tools/chat-ci');
+  const framework = installIn('Rock.JavaScript.Obsidian');
+  const blocks = installIn('Rock.JavaScript.Obsidian.Blocks');
+
+  assert.ok(buildTypes >= 0, 'nothing builds the framework types');
+  assert.ok(typeGate >= 0, 'the type gate never runs');
+  assert.ok(framework >= 0 && framework < buildTypes, 'the framework types are built before the framework is installed');
+  assert.ok(buildTypes < typeGate && blocks < typeGate, 'the type gate runs before what it reads is in place');
+  assert.ok(gateTests > buildTypes && gateTests > blocks, 'the gate tests run before the type checker they use is installed');
+});
+
+test('the local run lists the type gate where the workflow runs it', () => {
+  const local = readFileSync(resolve(repoRoot, 'Dev Tools/chat-ci/ci.mjs'), 'utf8');
+  const at = (text) => local.indexOf(text);
+
+  assert.ok(at("'build:types'") >= 0, 'the local run does not build the framework types');
+  assert.ok(at("'check-types.mjs'") >= 0, 'the local run does not run the type gate');
+  assert.ok(at("'build:types'") < at("args: ['--test']"), 'the local run tests the gates before the framework types are built');
+  assert.ok(at("args: ['--test']") < at("'check-types.mjs'"), 'the local run checks types before testing the gates, unlike the workflow');
+  assert.ok(at("'check-types.mjs'") < at('testProject, '), 'the local run builds before the type gate, unlike the workflow');
+});
