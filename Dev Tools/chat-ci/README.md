@@ -9,6 +9,7 @@ npm ci
 node ci.mjs                  every gate, with a wall time per gate
 npm run check:references     just the reference gate
 npm run check:styles         just the style gate
+npm run check:types          just the type gate
 npm test                     the gates' own tests
 ```
 
@@ -28,6 +29,14 @@ sheet and `brand.partial.ts`, which computes the church color's tokens, are the 
 It also refuses a rule outside the icon component, the token sheet included, that sets an icon's
 width, height or stroke width: such a rule weighs the same as the icon's own and wins or loses by the
 order the built styles load in, so a caller sets `--chat-ic-size` or `--chat-ic-stroke` on what holds the icon instead.
+
+`check-types.mjs` runs the blocks package's own `vue-tsc` over Rock's Communication project,
+templates included, and fails on an error in a chat file; an error in any other file there is
+upstream Rock's, so it is printed as a note and never fails. It reads the framework through its
+built declarations, so `npm run build:types` in `Rock.JavaScript.Obsidian` runs first. Its second
+half holds each chat view model bag in C# to its TypeScript declaration by member name, both ways,
+counting inherited members and Rock's camelCase as the declaration generator does: a member that
+exists only in C# is read by nothing typed, so the type check alone cannot see it.
 
 `check-contract.mjs` fails when Rock's vendored wire contract differs by a byte from the platform's, read from `CHAT_PLATFORM_CONTRACT` or else a platform checkout beside this repository; with neither, it says it skipped and passes.
 

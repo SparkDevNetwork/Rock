@@ -51,8 +51,28 @@ jobs:
         run: npm run check:styles
         working-directory: ./Dev Tools/chat-ci
 
+      # The chat components import the shared framework, and its compiled helpers resolve tslib from
+      # the framework package's own node_modules, so both packages are installed. They come before
+      # the gates' own tests and the type check, which run the blocks package's type checker.
+      - name: Install the framework dependencies the client tests import
+        run: npm ci
+        working-directory: ./Rock.JavaScript.Obsidian
+
+      - name: Install the client dependencies
+        run: npm ci
+        working-directory: ./Rock.JavaScript.Obsidian.Blocks
+
+      # The type check reads the framework through its built declarations.
+      - name: Build the framework types
+        run: npm run build:types
+        working-directory: ./Rock.JavaScript.Obsidian
+
       - name: The gates keep the shape these jobs assume
         run: npm test
+        working-directory: ./Dev Tools/chat-ci
+
+      - name: The chat client type-checks, templates included, and its bags match their declarations
+        run: npm run check:types
         working-directory: ./Dev Tools/chat-ci
 
       - name: Build the unit test project and what it depends on
@@ -80,16 +100,6 @@ jobs:
       # 78 is what that namespace holds today, measured: 59 provider tests and 19 encoder tests.
       - name: The tripwire still has its tests
         run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/connected-services.trx --minimum 78
-
-      # The chat components import the shared framework, and its compiled helpers resolve tslib from
-      # the framework package's own node_modules, so both packages are installed.
-      - name: Install the framework dependencies the client tests import
-        run: npm ci
-        working-directory: ./Rock.JavaScript.Obsidian
-
-      - name: Install the client dependencies
-        run: npm ci
-        working-directory: ./Rock.JavaScript.Obsidian.Blocks
 
       - name: Client tests
         run: npx jest tests/Communication/Chat tests/Administration/sparkConnectedServices

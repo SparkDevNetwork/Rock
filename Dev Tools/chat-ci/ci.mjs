@@ -27,6 +27,7 @@ const chatTests = 'FullyQualifiedName~Communication.Chat.Platform';
 // would let real provider tests disappear unnoticed.
 const connectedServicesTests = 'FullyQualifiedName~Rock.Tests.Configuration.ConnectedServices';
 const clientProject = resolve(repoRoot, 'Rock.JavaScript.Obsidian.Blocks');
+const frameworkProject = resolve(repoRoot, 'Rock.JavaScript.Obsidian');
 
 function has(command) {
   const probe = spawnSync(command, ['-version'], { stdio: 'ignore', shell: true });
@@ -55,9 +56,24 @@ const gates = [
     cwd: here,
   },
   {
+    // The type check reads the framework through its built declarations. The packages themselves
+    // are installed once by hand here, where the pipeline installs them on every run.
+    name: 'build the framework types',
+    cmd: 'npm',
+    args: ['run', 'build:types'],
+    cwd: frameworkProject,
+    shell: true,
+  },
+  {
     name: 'the gates keep the shape the pipeline assumes',
     cmd: process.execPath,
     args: ['--test'],
+    cwd: here,
+  },
+  {
+    name: 'the chat client type-checks, templates included, and its bags match their declarations',
+    cmd: process.execPath,
+    args: ['check-types.mjs'],
     cwd: here,
   },
   msbuild
