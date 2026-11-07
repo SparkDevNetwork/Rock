@@ -25,6 +25,7 @@ import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import { ChatShell } from "../shell.partial";
 import { ChatError, ChatPerson, TimelineMessage } from "../types.partial";
+import { personName } from "../ui/face.partial";
 import { MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
 import { OpenThreadState } from "./useThreads.partial";
 
@@ -93,6 +94,9 @@ export type MessageActionsView = {
      */
     askBlock: (person: ChatPerson, anchor: HTMLElement | null, messageId: number | null, isInThread?: boolean) => void;
 
+    /** The block confirmation's title, which names the person as the card or the message did. */
+    blockTitle: ComputedRef<string>;
+
     /** What the block confirmation gives focus back to as it closes. */
     blockReturnTarget: () => HTMLElement | null;
 
@@ -143,6 +147,12 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
         const channelId = confirmingDelete.value?.channelId;
         const where = channelId && roomKinds.value[channelId] === "channel" ? roomTitles.value[channelId] : "this conversation";
         return `It will be removed for everyone in ${where}. You can't undo this.`;
+    });
+
+    const blockTitle = computed((): string => {
+        const person = shell.value.blocks.state.confirming;
+        const name = person ? personName(person) : "";
+        return name ? `Block ${name}?` : "Block this person?";
     });
 
     // #endregion Computed Values
@@ -419,6 +429,7 @@ export function useMessageActionsView(dependencies: MessageActionsViewDependenci
         onMessageAction,
         onCancelDelete,
         askBlock,
+        blockTitle,
         blockReturnTarget,
         onCancelBlock,
         onConfirmBlock,

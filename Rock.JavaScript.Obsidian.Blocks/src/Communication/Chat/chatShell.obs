@@ -730,7 +730,6 @@
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
-    import { shownMembers } from "./ChatShell/composables/useMembers.partial";
     import { useMembersPanel } from "./ChatShell/composables/useMembersPanel.partial";
     import AddPeople from "./ChatShell/components/addPeople.partial.obs";
     import RemoveMember from "./ChatShell/components/removeMember.partial.obs";
@@ -752,11 +751,9 @@
     import { useRoomsView } from "./ChatShell/composables/useRoomsView.partial";
     import { useThreadsPanel } from "./ChatShell/composables/useThreadsPanel.partial";
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
-    import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
+    import { useDialogs } from "./ChatShell/composables/useDialogs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
-    import { ChatPerson, PersonProfile } from "./ChatShell/types.partial";
-    import { personName as nameOf } from "./ChatShell/ui/face.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -844,30 +841,6 @@
 
     /** Focus that went with a room closing under it, owed to the next conversation that opens. */
     let isFocusOwed = false;
-
-    /** Whether the open conversation's details dialog is open. */
-    const isDetailsOpen = ref(false);
-
-    /** Whether the person's Chat settings are open. */
-    const isSettingsOpen = ref(false);
-
-    // The blocked people are read as Chat settings opens, so the list is never older than the dialog.
-    watch(isSettingsOpen, isOpen => {
-        if (isOpen) {
-            void shell.value.blocks.load();
-        }
-    });
-
-    /** The block's confirmation names the person, as the card or the message did. */
-    const blockTitle = computed((): string => {
-        const person = shell.value.blocks.state.confirming;
-        const name = person ? nameOf(person) : "";
-        return name ? `Block ${name}?` : "Block this person?";
-    });
-
-    /** What asked for the profile card, which it is placed beside, and a count that draws each card afresh. */
-    const cardAnchor = shallowRef<HTMLElement | null>(null);
-    const cardOpenCount = ref(0);
 
     /** Toasts that are not failures, such as being back online after an outage. */
     const notices = ref<ToastNotice[]>([]);
@@ -960,8 +933,12 @@
     const {
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
-        askBlock, blockReturnTarget, onCancelBlock, onConfirmBlock
-    } = useMessageActionsView({ shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker, openCard });
+        askBlock, blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock
+    } = useMessageActionsView({
+        shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker,
+        // the dialogs own the card and are made last, so their watchers keep their place after the others'
+        openCard: (anchor, personAliasGuid, channelId) => openCard(anchor, personAliasGuid, channelId)
+    });
 
     const {
         threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, onThreadsLoadMore, onFollowFromList, onFollowThread, onLoadOlderReplies
@@ -973,6 +950,13 @@
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     } = useComposers({ shell, activeChannelId, activeRow, isJoinBarShown, drawnThread, panelKind, isPanelHidden, conversationQuoteKey, threadQuoteKey });
 
+    const {
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, openCard, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        onCardToggleDetails, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers
+    } = useDialogs({
+        shell, activeChannelId, panelKind, mainView, rootElement, panelElement, isPhone, closePanel, openFromMainView, openMainView, onListPanel, closeReactionPicker, askBlock
+    });
+
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -981,42 +965,6 @@
     function onSendFirst(body: string): void {
         isPaneMotionOn.value = true;
         void shell.value.directMessages.sendFirst(body);
-    }
-
-    /**
-     * The card's Message: the conversation the two already have, else New message with the person
-     * chosen. The card goes first, so it never stands over what opens.
-     */
-    function onCardMessage(person: PersonProfile): void {
-        shell.value.rooms.closeCard();
-        closePanel();
-        if (person.dm_channel_id) {
-            void openFromMainView(person.dm_channel_id);
-            return;
-        }
-
-        void openMainView("newdm", [{ person_alias_guid: person.person_alias_guid, nick_name: person.nick_name, last_name: person.last_name, avatar_url: person.avatar_url }]);
-    }
-
-    function onLeave(): void {
-        if (activeChannelId.value) {
-            void shell.value.rooms.leave(activeChannelId.value);
-        }
-    }
-
-    function onRename(name: string): void {
-        if (activeChannelId.value) {
-            void shell.value.rooms.rename(activeChannelId.value, name);
-        }
-    }
-
-    /**
-     * Closes the details dialog. Focus goes to the title button, since the phone's overflow item
-     * that may have opened it has left with its menu.
-     */
-    function closeDetails(): void {
-        isDetailsOpen.value = false;
-        void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='header-details']")?.focus());
     }
 
     function onJoin(): void {
@@ -1092,63 +1040,6 @@
         void shell.value.turnOnPush();
     }
 
-    /** The open room's notify mode, star or hide, from its details or its header. */
-    function onRoomChoice(choice: RoomChoice): void {
-        void shell.value.prefs.choose(activeChannelId.value, choice);
-    }
-
-    /**
-     * The person's own card's switch for their details: saved by the one save rule, which shows the
-     * change at once, and Rock asked again for the card once the save has landed.
-     */
-    function onCardToggleDetails(value: boolean): void {
-        shell.value.rooms.refreshCardDetails(shell.value.prefs.setSwitch("profile_details", value));
-    }
-
-    /**
-     * The card's Block: the card goes first, so the confirmation never stands under it, and focus
-     * comes back to what opened the card.
-     */
-    function onCardBlock(person: PersonProfile): void {
-        const anchor = cardAnchor.value;
-        shell.value.rooms.closeCard();
-        askBlock(person, anchor, null);
-    }
-
-    /** The card's Unblock, which needs no confirmation, since everything comes back as it was. */
-    function onCardUnblock(person: PersonProfile): void {
-        shell.value.rooms.closeCard();
-        void shell.value.blocks.unblock(person, false);
-    }
-
-    /** A row of Chat settings' blocked people. */
-    function onSettingsUnblock(person: ChatPerson): void {
-        void shell.value.blocks.unblock(person, true);
-    }
-
-    /** The person's own card's Chat settings: the card goes first, so it never stands over the dialog. */
-    function onCardSettings(): void {
-        shell.value.rooms.closeCard();
-        isSettingsOpen.value = true;
-    }
-
-    /**
-     * Closes Chat settings. The dialog gives focus back to what opened it; the card that may have
-     * opened it has gone, so focus then goes to the sidebar's foot, or on a phone the title.
-     */
-    function closeSettings(): void {
-        isSettingsOpen.value = false;
-        void nextTick(() => {
-            const active = document.activeElement;
-            if (active && active !== document.body && rootElement.value?.contains(active)) {
-                return;
-            }
-
-            const target = isPhone.value ? "[data-testid='frame-main'] [data-header-focus]" : "[data-testid='sidebar-me']";
-            rootElement.value?.querySelector<HTMLElement>(target)?.focus();
-        });
-    }
-
     /** A send over the room's limit was held back: the toast names the limit. */
     function onOverLimit(maxLength: number): void {
         showNotice({ code: "over-limit", text: `This message is over the ${maxLength.toLocaleString()} character limit.`, icon: "alert" });
@@ -1204,66 +1095,9 @@
         void shell.value.start();
     }
 
-    /**
-     * Message from a member row: the conversation with that person, or a draft for them, in place
-     * of the open room, as New message would open it.
-     */
-    let memberMessageGeneration = 0;
-
-    async function onMemberMessage(personAliasGuid: string): Promise<void> {
-        const askedShell = shell.value;
-        const channelId = askedShell.members.state.channelId;
-        const member = shownMembers(askedShell.members.state).find(m => m.person_alias_guid === personAliasGuid);
-        if (!member || !channelId) {
-            return;
-        }
-
-        const generation = ++memberMessageGeneration;
-        const person = await askedShell.rooms.readPerson(personAliasGuid, channelId);
-        // A slow answer must not replace another conversation or a newer member's Message.
-        if (generation !== memberMessageGeneration || shell.value !== askedShell || activeChannelId.value !== channelId || panelKind.value !== "members") {
-            return;
-        }
-
-        if (person?.can_message) {
-            onCardMessage(person);
-        }
-    }
-
-    /**
-     * A member row's face or name: the person's card for the panel's room, anchored on the row so
-     * it stands beside the panel rather than over the list, and Escape gives focus back to it.
-     */
-    function onMemberPerson(personAliasGuid: string): void {
-        const channelId = shell.value.members.state.channelId;
-        const row = panelElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
-        if (!channelId || !row) {
-            return;
-        }
-
-        // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
-        row.focus({ preventScroll: true });
-        openCard(row, personAliasGuid, channelId);
-    }
-
-    /** The details dialog's member count: the dialog gives way to the members panel, which takes focus. */
-    function onDetailsMembers(): void {
-        isDetailsOpen.value = false;
-        if (panelKind.value !== "members") {
-            void onListPanel("members");
-        }
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
-
-    /** Opens a person's card for a room beside what asked, drawn afresh each time. */
-    function openCard(anchor: HTMLElement, personAliasGuid: string, channelId: string): void {
-        cardAnchor.value = anchor;
-        cardOpenCount.value++;
-        shell.value.rooms.openCard(personAliasGuid, channelId);
-    }
 
     /** Whether an element is inside a full view in the conversation's place or the room's details. */
     function isInViewOrDetails(element: Element): boolean {
@@ -1284,12 +1118,6 @@
     // #endregion Functions
 
     // #region Watchers
-
-    // A Message belongs to this opening of Members, even if the same room's panel is closed
-    // and reopened before Vue's next render. Invalidate it at each change, not after batching.
-    watch([shell, activeChannelId, panelKind], () => {
-        memberMessageGeneration++;
-    }, { flush: "sync" });
 
     // Before the new feed mounts, which reads it once.
     watch(activeChannelId, (now, before) => {
@@ -1324,16 +1152,6 @@
         const badging = navigator as Navigator & { setAppBadge?: (count?: number) => Promise<void>, clearAppBadge?: () => Promise<void> };
         const done = count > 0 ? badging.setAppBadge?.(count) : badging.clearAppBadge?.();
         void done?.catch(() => undefined);
-    });
-
-    // A picker or a card belongs to a message on screen, so another conversation or a full view
-    // over it closes them; so are the details, which belong to the conversation.
-    watch([activeChannelId, mainView], () => {
-        closeReactionPicker();
-        if (shell.value.rooms.state.card) {
-            shell.value.rooms.closeCard();
-        }
-        isDetailsOpen.value = false;
     });
 
     // A conversation that opens in place of what had focus, New message after its first message
@@ -1374,21 +1192,6 @@
         }
     });
 
-    // Each time the details open Rock is asked whether the person may rename the room, as its
-    // rename door would answer now.
-    watch(isDetailsOpen, isOpen => {
-        if (isOpen && activeChannelId.value) {
-            void shell.value.rooms.detailsOpened(activeChannelId.value);
-        }
-    });
-
-    // Once the person has left, the room's details have nothing left to show.
-    watch(() => activeChannelId.value ? shell.value.rooms.leaveOf(activeChannelId.value).kind : null, kind => {
-        if (kind === "left" && isDetailsOpen.value) {
-            closeDetails();
-        }
-    });
-
     // The panel column keeps drawing a closing drawer while it narrows, so a picker opened from
     // the drawer would float over it, beside a message going away; the drawer's closing closes it.
     watch(panelKind, () => {
@@ -1418,7 +1221,6 @@
     });
 
     onBeforeUnmount(() => {
-        memberMessageGeneration++;
         resizeObserver?.disconnect();
         navigator.serviceWorker?.removeEventListener("message", onWorkerMessage);
         void shell.value.stop();
