@@ -84,8 +84,12 @@ function checkTypes(project, chat, checker) {
     failed.push(`vue does not resolve from ${dirname(project)}: the type checker would skip every template (install the blocks package)`);
   }
 
-  const run = spawnSync(process.execPath, [checker, '--noEmit', '--listFiles', '-p', project], { cwd: blocksPackage, encoding: 'utf8' });
-  const lines = `${run.stdout ?? ''}${run.stderr ?? ''}`.split(/\r?\n/);
+  // The file list is over a thousand lines, near 150 KB, and node kills a child whose output passes
+  // its 1 MB default; the room above that keeps a growing project from failing as a cut-off run.
+  const run = spawnSync(process.execPath, [checker, '--noEmit', '--listFiles', '-p', project], { cwd: blocksPackage, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+  // tsc writes its diagnostics and the file list to stdout; stderr holds only what node says, such as
+  // a crash's stack, whose first line is an absolute path that must never be read as a listed file.
+  const lines = (run.stdout ?? '').split(/\r?\n/);
   const errors = [];
   const listed = new Set();
   for (const line of lines) {
@@ -104,6 +108,22 @@ function checkTypes(project, chat, checker) {
     }
   }
 
+  // tsc lists the program only after it has printed every diagnostic, so the list is the run's own
+  // word that it finished. Its exit status cannot say that: a finished run with errors ends 2 when
+  // it writes its incremental cache and 1 when the cache was current, and a crash also ends 1. A run
+  // with no status was killed, its output cut wherever that happened.
+  const said = () => `${lines.filter((line) => !isAbsolute(line.trim())).join('\n')}\n${run.stderr ?? ''}`.trim();
+  if (listed.size === 0 || run.status === null) {
+    failed.push(`the type checker exited ${run.status ?? run.error?.message ?? run.signal} before listing its program, so its run did not finish:\n${said()}`);
+    return { failed, notes: [], read: 0 };
+  }
+
+  // A finished run that fails without naming an error in a file has one the gate cannot place
+  // inside or outside the chat, such as a missing global type.
+  if (run.status !== 0 && errors.length === 0) {
+    failed.push(`the type checker exited ${run.status} without naming an error in a file:\n${said()}`);
+  }
+
   const unread = chatFiles.filter((file) => !listed.has(pathKey(file)));
   if (unread.length > 0) {
     failed.push(`chat files the type check never read (the project's include no longer reaches them):\n${unread.map((file) => `      ${relative(blocksPackage, file)}`).join('\n')}`);
@@ -115,15 +135,6 @@ function checkTypes(project, chat, checker) {
   };
   failed.push(...errors.filter((error) => inChat(error.file)).map((error) => error.text));
   const notes = errors.filter((error) => !inChat(error.file)).map((error) => error.text);
-
-  // The checker is believed only when its exit agrees with what it printed: tsc under --noEmit ends
-  // 0 having found nothing and 2 having found errors. Anything else is a run that did not finish
-  // (a missing config, or a crash, which node ends 1), whatever errors it had named by then.
-  const finished = errors.length === 0 ? run.status === 0 : run.status === 2;
-  if (!finished) {
-    const output = lines.filter((line) => !isAbsolute(line.trim())).join('\n').trim();
-    failed.push(`the type checker exited ${run.status} having named ${errors.length === 1 ? 'one error' : `${errors.length} errors`}, so its run did not finish:\n${output}`);
-  }
 
   return { failed, notes, read: chatFiles.length - unread.length };
 }

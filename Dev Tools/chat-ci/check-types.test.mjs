@@ -82,6 +82,30 @@ test('an error in a file outside the chat is printed as a note and does not fail
   });
 });
 
+// Rock's config is incremental, as the fixtures' are, so every run after the first reads its cache
+// and skips writing it, and tsc then ends a run that found errors with 1 rather than 2. CI runs the
+// check twice in a job, so the second, warm run must reach the same verdict as the first.
+test('a warm incremental run reaches the same verdict as a cold one', () => {
+  withProject('clean', (dir) => {
+    for (const pass of ['cold', 'warm']) {
+      const result = run('--project', join(dir, 'tsconfig.json'), '--chat', join(dir, 'Chat'));
+
+      assert.equal(result.status, 0, `${pass}: ${result.stdout}\n${result.stderr}`);
+      assert.match(result.stdout, /Other[\\/]upstreamError\.ts\(2,14\): TS2322/, pass);
+    }
+  });
+  withProject('red', (dir) => {
+    for (const pass of ['cold', 'warm']) {
+      const result = run('--project', join(dir, 'tsconfig.json'), '--chat', join(dir, 'Chat'));
+
+      assert.equal(result.status, 1, `${pass}: ${result.stdout}\n${result.stderr}`);
+      assert.match(result.stderr, /Chat[\\/]readsUndeclared\.ts\(5,16\): TS2339/, pass);
+      assert.match(result.stderr, /Chat[\\/]templateReadsUndeclared\.obs\(2,\d+\): TS2339/, pass);
+      assert.doesNotMatch(result.stderr, /did not finish/, pass);
+    }
+  });
+});
+
 // The type check counts errors, so it cannot see a chat file it never read. Two things it does not
 // own decide that: the project's include, which is upstream Rock's file, and whether vue resolves
 // from the project's folder, which is what turns template checking on. Each is checked in the run.
@@ -116,7 +140,7 @@ test('a chat folder holding no chat files fails, rather than passing on nothing'
 
 test('a checker that dies after naming only errors outside the chat fails, since its run never finished', () => {
   withProject('clean', (dir) => {
-    const result = run('--project', join(dir, 'tsconfig.json'), '--chat', join(dir, 'Chat'), '--checker', join(fixtures, 'crashing-checker.mjs'));
+    const result = run('--project', join(dir, 'tsconfig.json'), '--chat', join(dir, 'Chat'), '--checker', join(fixtures, 'crashing-checker.cjs'));
 
     assert.equal(result.status, 1, `${result.stdout}\n${result.stderr}`);
     assert.match(result.stderr, /the type checker exited 1/);
