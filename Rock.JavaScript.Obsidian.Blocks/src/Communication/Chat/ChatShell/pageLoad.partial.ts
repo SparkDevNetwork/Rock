@@ -14,16 +14,20 @@
 // limitations under the License.
 // </copyright>
 //
-// What happens between sign-in and the first message on screen. The open channel's history, its
-// live join and the sidebar all start at once: history needs nothing from the sidebar, so the
-// time to the first message is sign-in plus one history call. The channel that opens is the one
-// a link names, else the last one this browser opened for this person, else, only on a first
-// visit, the sidebar's first row once it arrives.
+// Every room put on screen, the first above all. A room's history, its live join and its facts
+// start at once, and the one chosen last wins however the answers land. On the first screen the
+// sidebar starts beside them: history needs nothing from it, so the time to the first message is
+// sign-in plus one history call. The channel that opens first is the one a link names, else the
+// last one this browser opened for this person, else, only on a first visit, the sidebar's first
+// row once it arrives.
 //
 // What the person sees meanwhile is one thing, owned here: the frame stands at mount, and its
 // regions crossfade in together once the first screen is ready, rather than each popping in as
 // its own answer lands.
 import { InjectionKey, nextTick, reactive } from "vue";
+import { classifyPlatformError } from "./errors.partial";
+import type { ReadTracker } from "./composables/useMarkRead.partial";
+import type { ChatShell, ShellState } from "./shell.partial";
 import { SidebarRow } from "./types.partial";
 
 /** The part of browser storage the shell uses. */
@@ -510,4 +514,222 @@ export async function startPageLoad(dependencies: PageLoadDependencies): Promise
     }
 
     return null;
+}
+
+/** What putting rooms on screen reads from the shell. */
+export type RoomOpenerDependencies = {
+    state: ShellState;
+
+    /** The shell's modules a room's opening and closing reach, each made before this. */
+    modules: Pick<ChatShell, "reveal" | "channels" | "timelines" | "messageActions" | "rooms" | "directMessages">;
+
+    /** The read tracker, which follows the room on screen. */
+    tracker: ReadTracker;
+
+    storage: StorageLike | null;
+
+    /** Where this person's last room and its look are remembered. */
+    storageKey: string;
+
+    /** The channel a link named, or null. */
+    linkedChannelId: string | null;
+
+    /** Marks a step on the page's performance timeline. */
+    mark: (name: string) => void;
+
+    /** Joins a channel's live topic, once the live connection is there. */
+    join: (channelId: string) => void;
+
+    /** Fetches the sidebar, through the shell's one read. */
+    loadSidebar: () => Promise<SidebarRow[]>;
+
+    /** Whether the shell has stopped or its session ended, read at each resumed step. */
+    isStopped: () => boolean;
+};
+
+/** Every room put on screen: the page load's first, the person's choices, and closing the one open. */
+export type RoomOpener = {
+    /** Opens a channel, kept as the last open asked for. */
+    open: (channelId: string, isPageLoad?: boolean) => Promise<OpenOutcome>;
+
+    /** Opens a channel the person chose, or waits for the open of it already under way. */
+    select: (channelId: string) => Promise<void>;
+
+    /** Takes the open channel off the screen. */
+    closeActive: () => void;
+
+    /** Opens the first conversation, saying chat is opening until it settles. */
+    runPageLoad: () => Promise<void>;
+};
+
+/**
+ * Creates what puts rooms on screen.
+ *
+ * @param dependencies What it reads from the shell.
+ *
+ * @returns The opener.
+ */
+export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpener {
+    const { state, modules, tracker, storage, storageKey, mark, isStopped } = dependencies;
+    const { reveal, channels, timelines, messageActions, rooms, directMessages } = modules;
+
+    /** Counts opens, so an open that a later one has replaced stops touching anything. */
+    let openCount = 0;
+
+    /** The open asked for last and the room it opens, which selecting that room again waits for. */
+    let lastOpen: { channelId: string, outcome: Promise<OpenOutcome> } | null = null;
+
+    /**
+     * Puts a channel on screen, or none. Every switch passes through here, so a message's editor
+     * and delete confirm close with the conversation they were opened in.
+     */
+    function showChannel(channelId: string | null): void {
+        if (state.activeChannelId !== channelId) {
+            messageActions.switchConversation(channelId);
+            rooms.conversationShown(channelId);
+        }
+        state.activeChannelId = channelId;
+        channels.setActive(channelId);
+    }
+
+    /**
+     * Its position is saved, its catch-up stops, and an open of it still loading is superseded,
+     * so it cannot take the screen back.
+     */
+    function closeActive(): void {
+        openCount++;
+        void tracker.leave();
+        if (state.activeChannelId) {
+            timelines.leave(state.activeChannelId);
+        }
+        showChannel(null);
+    }
+
+    /** A second ask for the same room while it loads waits for this open rather than finding it empty. */
+    function open(channelId: string, isPageLoad: boolean = false): Promise<OpenOutcome> {
+        const outcome = runOpen(channelId, isPageLoad);
+        lastOpen = { channelId, outcome };
+        return outcome;
+    }
+
+    /**
+     * Lets go of the room being left without waiting, then joins and fetches together. A person
+     * can open rooms faster than the platform answers; the one chosen last is on screen, joined,
+     * tracked and remembered.
+     *
+     * @param isPageLoad Whether the first load is opening this room, which then decides what a
+     * refusal means for the reveal; a room the person chose answers it for itself.
+     */
+    async function runOpen(channelId: string, isPageLoad: boolean): Promise<OpenOutcome> {
+        const thisOpen = ++openCount;
+        // a stopped shell's open touches nothing more, however its answers land
+        const isCurrent = (): boolean => thisOpen === openCount && !isStopped();
+
+        // The first screen's column waits for the room now on screen, not one it replaces.
+        reveal.roomOpening();
+
+        if (state.activeChannelId && state.activeChannelId !== channelId) {
+            void tracker.leave();
+            timelines.leave(state.activeChannelId);
+        }
+
+        if (state.activeChannelId !== channelId) {
+            tracker.show(channelId);
+        }
+        showChannel(channelId);
+
+        // The facts are read beside the history, neither waiting for the other; both answers, a
+        // refusal too, are what the first load waits on.
+        void rooms.channelOpened(channelId).then(() => {
+            if (isCurrent()) {
+                // The look is the room's own, so the next load's skeleton has its shape.
+                const facts = rooms.factsOf(channelId);
+                if (facts) {
+                    writeRememberedKind(storage, storageKey, facts.channel_type === "dm" ? "direct" : "channel");
+                }
+                reveal.factsAnswered();
+            }
+        });
+
+        const outcome = await openChannel({
+            join: id => dependencies.join(id),
+            loadNewest: async id => {
+                await timelines.loadNewest(id);
+                if (isCurrent()) {
+                    reveal.historyAnswered();
+                    mark("chat:history");
+                    tracker.open(id, timelines.state(id).readCursor);
+                }
+            },
+            isRefusal: error => classifyPlatformError(error).severity === "permission",
+            remember: id => {
+                if (isCurrent()) {
+                    writeRememberedChannel(storage, storageKey, id);
+                }
+            }
+        }, channelId);
+
+        if (!isCurrent()) {
+            return "superseded";
+        }
+
+        if (outcome !== "opened") {
+            showChannel(null);
+
+            // A room the person chose has nothing more to load; what has arrived shows now. The
+            // first load's own room leaves that to the load.
+            if (!isPageLoad) {
+                reveal.nothingToOpen();
+                reveal.failed();
+            }
+        }
+
+        return outcome;
+    }
+
+    async function runPageLoad(): Promise<void> {
+        if (isStopped()) {
+            return;
+        }
+
+        state.isOpening = true;
+        try {
+            const last: { outcome: OpenOutcome | null } = { outcome: null };
+            const opened = await startPageLoad({
+                linkedChannelId: dependencies.linkedChannelId?.toLowerCase() ?? null,
+                rememberedChannelId: readRememberedChannel(storage, storageKey),
+                loadSidebar: () => dependencies.loadSidebar(),
+                // The load decides the opening room, so one it opens answers nothing to the reveal
+                // when refused: the next row may still open, and the column must not reveal empty.
+                open: async id => (last.outcome = await open(id, true))
+            });
+
+            // The person opened a room themselves meanwhile, and that open answers the column.
+            if (opened !== null || last.outcome === "superseded") {
+                return;
+            }
+
+            // Nothing could open: the column waits no longer, and a room that failed or was
+            // refused shows what has arrived now.
+            reveal.nothingToOpen();
+            if (last.outcome !== null) {
+                reveal.failed();
+            }
+        }
+        finally {
+            state.isOpening = false;
+        }
+    }
+
+    async function select(channelId: string): Promise<void> {
+        directMessages.close();
+        if (channelId !== state.activeChannelId) {
+            await open(channelId);
+        }
+        else if (lastOpen?.channelId === channelId) {
+            await lastOpen.outcome;
+        }
+    }
+
+    return { open, select, closeActive, runPageLoad };
 }

@@ -14,10 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-// The shell's wiring: one place that builds the session, the live connection, the timelines,
-// the sender, the read tracker, the threads, the mentions, the rooms, the person's settings and the
-// sidebar, and joins them. Each of those is its own tested
-// module; what is here decides only which one hears what.
+// The shell's wiring: one place that builds the session and its call path, the timelines, the
+// sender, the read tracker, the threads, the mentions, the rooms and the person's settings, and
+// joins them to the part that keeps them current (shellLive) and the one that puts rooms on
+// screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
@@ -43,18 +43,7 @@ import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest,
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
-import {
-    createPageReveal,
-    openChannel,
-    OpenOutcome,
-    PageReveal,
-    readRememberedChannel,
-    readRememberedKind,
-    rememberedChannelKey,
-    startPageLoad,
-    writeRememberedChannel,
-    writeRememberedKind
-} from "./pageLoad.partial";
+import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rememberedChannelKey } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
@@ -636,7 +625,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reloadSidebar: () => live.reloadSidebar(),
         // A first visit's page load waits on the sidebar to choose its conversation, so a retry
         // with nothing open runs the page load again; with a conversation open, only the list is owed.
-        retryFirstLoad: () => state.activeChannelId === null ? void runPageLoad() : void live.loadSidebar().catch(() => undefined)
+        retryFirstLoad: () => state.activeChannelId === null ? void opener.runPageLoad() : void live.loadSidebar().catch(() => undefined)
     });
 
     /** A save of the read position, applied to the row and the unread mentions. */
@@ -790,7 +779,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         openChannel: channelId => {
             directMessages.close();
             if (channelId !== state.activeChannelId) {
-                void open(channelId);
+                void opener.open(channelId);
             }
         },
         channels,
@@ -993,7 +982,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             if (startedWith) {
                 rooms.conversationStarted(channelId, startedWith);
             }
-            return (await open(channelId)) === "opened";
+            return (await opener.open(channelId)) === "opened";
         },
         send: async (channelId, body, attempt) => {
             const isSent = await sender.send(channelId, body, attempt);
@@ -1024,172 +1013,27 @@ export function createChatShell(options: ShellOptions): ChatShell {
         favorites,
         isConnectionFailure,
         recheck,
-        closeActive: () => closeActive(),
+        closeActive: () => opener.closeActive(),
         isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
         mark: options.mark,
         // one flag for the whole shell, read at each step, so nothing of a stopped shell lands
         isStopped: () => isStopped
     });
 
-    /**
-     * Opens the first conversation: the one a link names or this browser opened last, else the
-     * first the sidebar can open. The page says chat is opening until it settles.
-     */
-    async function runPageLoad(): Promise<void> {
-        if (isStopped) {
-            return;
-        }
+    const opener = createRoomOpener({
+        state,
+        modules: { reveal, channels, timelines, messageActions, rooms, directMessages },
+        tracker,
+        storage: options.storage,
+        storageKey,
+        linkedChannelId: options.linkedChannelId,
+        mark: options.mark,
+        // the hub is made at start, before any room opens
+        join: channelId => hub?.openChannel(channelId),
+        loadSidebar: live.loadSidebar,
+        isStopped: () => isStopped
+    });
 
-        state.isOpening = true;
-        try {
-            const last: { outcome: OpenOutcome | null } = { outcome: null };
-            const opened = await startPageLoad({
-                linkedChannelId: options.linkedChannelId?.toLowerCase() ?? null,
-                rememberedChannelId: readRememberedChannel(options.storage, storageKey),
-                loadSidebar: () => live.loadSidebar(),
-                // The load decides the opening room, so one it opens answers nothing to the reveal
-                // when it is refused: the next row may still open, and the column must not reveal
-                // empty and then fill.
-                open: async id => (last.outcome = await open(id, true))
-            });
-
-            // The person opened a room themselves meanwhile, and that open answers the column.
-            if (opened !== null || last.outcome === "superseded") {
-                return;
-            }
-
-            // Nothing could open: the column has nothing more to wait for, and a room that failed
-            // or was refused shows what has arrived now.
-            reveal.nothingToOpen();
-            if (last.outcome !== null) {
-                reveal.failed();
-            }
-        }
-        finally {
-            state.isOpening = false;
-        }
-    }
-
-    /**
-     * Takes the open channel off the screen: its position is saved, its catch-up stops, and an
-     * open of it still loading is superseded, so it cannot take the screen back.
-     */
-    function closeActive(): void {
-        openCount++;
-        void tracker.leave();
-        if (state.activeChannelId) {
-            timelines.leave(state.activeChannelId);
-        }
-        showChannel(null);
-    }
-
-    /**
-     * Puts a channel on screen, or none. Every switch passes through here, so a message's editor
-     * and delete confirm close with the conversation they were opened in, and an edit's answer
-     * still out lands nowhere.
-     */
-    function showChannel(channelId: string | null): void {
-        if (state.activeChannelId !== channelId) {
-            messageActions.switchConversation(channelId);
-            rooms.conversationShown(channelId);
-        }
-        state.activeChannelId = channelId;
-        channels.setActive(channelId);
-    }
-
-    /** Counts opens, so an open that a later one has replaced stops touching anything. */
-    let openCount = 0;
-
-    /** The open asked for last and the room it opens, which selecting that room again waits for. */
-    let lastOpen: { channelId: string, outcome: Promise<OpenOutcome> } | null = null;
-
-    /**
-     * Opens a channel, keeping the open as the last one asked for, so a second ask for the same
-     * room while it loads waits for this open rather than finding it on screen with nothing in it.
-     */
-    function open(channelId: string, isPageLoad: boolean = false): Promise<OpenOutcome> {
-        const outcome = runOpen(channelId, isPageLoad);
-        lastOpen = { channelId, outcome };
-        return outcome;
-    }
-
-    /**
-     * Opens a channel: lets go of the one being left and saves its position without waiting,
-     * then joins and fetches together. A person can open channels faster than the platform
-     * answers; whatever an earlier open was waiting on, the channel chosen last is the one on
-     * screen, joined, tracked and remembered.
-     *
-     * @param isPageLoad Whether the first load is opening this room, which then decides what a
-     * refusal means for the reveal; a room the person chose answers it for itself.
-     */
-    async function runOpen(channelId: string, isPageLoad: boolean): Promise<OpenOutcome> {
-        const thisOpen = ++openCount;
-        // a stopped shell's open touches nothing more, however its answers land
-        const isCurrent = (): boolean => thisOpen === openCount && !isStopped;
-
-        // The first screen's column waits for the room now on screen: an answer of the room this
-        // one replaces, or a refused room's, must not complete its gates.
-        reveal.roomOpening();
-
-        if (state.activeChannelId && state.activeChannelId !== channelId) {
-            void tracker.leave();
-            // its catch-up stops and its answers still on the way are dropped
-            timelines.leave(state.activeChannelId);
-        }
-
-        if (state.activeChannelId !== channelId) {
-            tracker.show(channelId);
-        }
-        showChannel(channelId);
-
-        // The room's facts are read beside its history, so neither waits for the other. Both
-        // answers, a refusal too, are what the first load waits on.
-        void rooms.channelOpened(channelId).then(() => {
-            if (isCurrent()) {
-                // The look is the room's own, so the next load's skeleton has its shape.
-                const facts = rooms.factsOf(channelId);
-                if (facts) {
-                    writeRememberedKind(options.storage, storageKey, facts.channel_type === "dm" ? "direct" : "channel");
-                }
-                reveal.factsAnswered();
-            }
-        });
-
-        const outcome = await openChannel({
-            join: id => hub?.openChannel(id),
-            loadNewest: async id => {
-                await timelines.loadNewest(id);
-                if (isCurrent()) {
-                    reveal.historyAnswered();
-                    options.mark("chat:history");
-                    tracker.open(id, timelines.state(id).readCursor);
-                }
-            },
-            isRefusal: error => classifyPlatformError(error).severity === "permission",
-            remember: id => {
-                if (isCurrent()) {
-                    writeRememberedChannel(options.storage, storageKey, id);
-                }
-            }
-        }, channelId);
-
-        if (!isCurrent()) {
-            return "superseded";
-        }
-
-        if (outcome !== "opened") {
-            showChannel(null);
-
-            // A room the person chose that failed or refused has nothing more to load; what has
-            // arrived shows now. The first load's own room leaves that to the load.
-            if (!isPageLoad) {
-                reveal.nothingToOpen();
-                reveal.failed();
-            }
-        }
-
-        return outcome;
-    }
 
     return {
         state,
@@ -1245,7 +1089,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachThreads = threads.attach(options.pageTargets);
             state.phase = "ready";
 
-            await runPageLoad();
+            await opener.runPageLoad();
 
             // The emoji catalog, once the first conversation is drawn, so the picker never waits
             // on it: the quick tray draws a recent by the catalog's glyph, the full picker its
@@ -1276,15 +1120,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
         },
 
-        selectChannel: async (channelId: string): Promise<void> => {
-            directMessages.close();
-            if (channelId !== state.activeChannelId) {
-                await open(channelId);
-            }
-            else if (lastOpen?.channelId === channelId) {
-                await lastOpen.outcome;
-            }
-        },
+        selectChannel: (channelId: string): Promise<void> => opener.select(channelId),
 
         seen: (messageId: number): void => tracker.seen(messageId),
 
