@@ -752,7 +752,7 @@
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useJump } from "./ChatShell/composables/useJump.partial";
     import { useRoomsView } from "./ChatShell/composables/useRoomsView.partial";
-    import { FollowError, ThreadListState, ThreadListTab, unfollowNotice } from "./ChatShell/composables/useThreads.partial";
+    import { useThreadsPanel } from "./ChatShell/composables/useThreadsPanel.partial";
     import { RoomChoice } from "./ChatShell/composables/usePrefs.partial";
     import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./ChatShell/composables/useSend.partial";
     import { refusalMessage } from "./ChatShell/shell.partial";
@@ -798,10 +798,7 @@
         linkedChannelId: config.channelGuid ?? null,
         areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
         isSignInPersisted: config.isSignInPersisted ?? false,
-        // one toast per code, the newest kept, so a second copy or delete restarts its toast
-        notify: notice => {
-            notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
-        },
+        notify: notice => showNotice(notice),
         invokeBlockAction,
         // Called only after the frame below is set up, so the landings they reach are there.
         mentionViews: {
@@ -960,9 +957,6 @@
     /** The open conversation's files waiting to go, or null where its composer takes none. */
     const conversationTray = computed((): AttachmentTray | null => isJoinBarShown.value ? null : trayOf(activeChannelId.value));
 
-    /** The threads list the panel draws, as the shell's threads hold it. */
-    const threadList = computed((): ThreadListState => shell.value.threads.state.list);
-
     /** What the members panel, the remove confirm and Add people draw of the roster. */
     const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
 
@@ -973,22 +967,16 @@
         askBlock, blockReturnTarget, onCancelBlock, onConfirmBlock
     } = useMessageActionsView({ shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker, openCard });
 
+    const {
+        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, onThreadsLoadMore, onFollowFromList, onFollowThread, onLoadOlderReplies
+    } = useThreadsPanel({ shell, activeChannelId, drawnThread, showNotice });
+
     /**
      * What the conversation's box holds, kept by the shell for the conversation, so text typed in
      * one never shows in another; a thread's reply is its own, under the thread's key.
      */
     const conversationDraft = computed((): ComposerDraft | null => conversationQuoteKey.value ? shell.value.drafts.of(conversationQuoteKey.value) : null);
     const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
-
-    /**
-     * A refused follow change is said once, by the drawer while it holds that thread, the drawer
-     * it went back from included, and otherwise by the list's row.
-     */
-    const drawerFollowError = computed((): FollowError | null => {
-        const error = shell.value.threads.state.followError;
-        return error && error.rootId === drawnThread.value?.rootId ? error : null;
-    });
-    const listFollowError = computed((): FollowError | null => drawerFollowError.value ? null : shell.value.threads.state.followError);
 
     /** The box focus is in, if either. */
     const focusedComposer = ref<"conversation" | "thread" | null>(null);
@@ -1121,40 +1109,13 @@
         }
     }
 
+    /** Shows a toast, one per code, the newest kept, so a second copy or delete restarts its toast. */
+    function showNotice(notice: ToastNotice): void {
+        notices.value = [...notices.value.filter(n => n.code !== notice.code), notice];
+    }
+
     function onDismissNotice(notice: ToastNotice): void {
         notices.value = notices.value.filter(n => n.code !== notice.code);
-    }
-
-    function onThreadsTab(tab: ThreadListTab): void {
-        // A thread opened from the All tab may have moved the conversation, so the list's own
-        // tab is opened for the conversation open now.
-        if (tab === "channel" && activeChannelId.value && threadList.value.channelId !== activeChannelId.value) {
-            void shell.value.threads.openList(activeChannelId.value, tab);
-            return;
-        }
-
-        void shell.value.threads.switchTab(tab);
-    }
-
-    function onThreadsRefresh(): void {
-        void shell.value.threads.refresh();
-    }
-
-    function onThreadsLoadMore(): void {
-        void shell.value.threads.loadMore();
-    }
-
-    /**
-     * A follow change from a row or the drawer: the bell changes at once and a refusal comes back
-     * beside it. Following says nothing more; an unfollow that lands says what it means.
-     */
-    async function onFollowFromList(rootId: number, isFollowing: boolean): Promise<void> {
-        if (!await shell.value.threads.follow(rootId, isFollowing) || isFollowing) {
-            return;
-        }
-
-        // one unfollow toast at a time
-        notices.value = [...notices.value.filter(n => n.code !== unfollowNotice.code), unfollowNotice];
     }
 
     /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
@@ -1203,13 +1164,6 @@
         }
     }
 
-    /** The drawer's toggle, saved as the list's is. */
-    function onFollowThread(isFollowing: boolean): void {
-        if (drawnThread.value) {
-            void onFollowFromList(drawnThread.value.rootId, isFollowing);
-        }
-    }
-
     /** A drag carrying files may be dropped anywhere on the conversation, where its composer takes files. */
     function onConversationDragOver(event: DragEvent): void {
         if (conversationTray.value && isConversationOpenToFiles() && event.dataTransfer?.types?.includes("Files")) {
@@ -1232,10 +1186,6 @@
         if (drawnThread.value) {
             void shell.value.sendReply(drawnThread.value.rootId, body, isShownInChannel);
         }
-    }
-
-    function onLoadOlderReplies(): void {
-        void shell.value.threads.loadOlderReplies();
     }
 
     function onTurnOnPush(): void {
@@ -1301,11 +1251,7 @@
 
     /** A send over the room's limit was held back: the toast names the limit. */
     function onOverLimit(maxLength: number): void {
-        notices.value = [...notices.value.filter(n => n.code !== "over-limit"), {
-            code: "over-limit",
-            text: `This message is over the ${maxLength.toLocaleString()} character limit.`,
-            icon: "alert"
-        }];
+        showNotice({ code: "over-limit", text: `This message is over the ${maxLength.toLocaleString()} character limit.`, icon: "alert" });
     }
 
     /**
