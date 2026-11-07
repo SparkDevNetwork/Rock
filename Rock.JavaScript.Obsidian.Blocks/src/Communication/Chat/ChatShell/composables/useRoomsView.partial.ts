@@ -15,9 +15,10 @@
 // </copyright>
 //
 // What the frame draws of rooms: the open conversation's row, facts, kind, title, look and
-// subtitle, the open thread's room, and the conversation New message found. The header, the
-// panels and the dialogs all read these, so each is worked out once here and the same computed
-// value handed to every reader, which keeps one fact waking everything that draws it.
+// subtitle, the open thread's room, and the conversation New message found. The template, the
+// members panel, the message actions, the composers and the block's own watchers read these, so
+// each is worked out once here and the same computed value handed to every reader, which keeps one
+// fact waking everything that draws it.
 
 import { computed, Ref } from "vue";
 import { HeaderRoomKind } from "../components/chatHeader.partial.obs";

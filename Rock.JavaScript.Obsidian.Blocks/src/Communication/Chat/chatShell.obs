@@ -794,7 +794,7 @@
         linkedChannelId: config.channelGuid ?? null,
         areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
         isSignInPersisted: config.isSignInPersisted ?? false,
-        notify: notice => showNotice(notice),
+        notify: showNotice,
         invokeBlockAction,
         // Called only after the frame below is set up, so the landings they reach are there.
         mentionViews: {
