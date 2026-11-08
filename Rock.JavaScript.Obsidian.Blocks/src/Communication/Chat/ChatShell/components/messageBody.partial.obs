@@ -138,12 +138,13 @@ button.chat-mn {
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, inject, PropType, ref, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
     import { avatarHue } from "../ui/brand.partial";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { isActionCall } from "../composables/useMessageActions.partial";
     import { isRoomMention } from "../composables/useHistory.partial";
+    import { problemReportKey } from "../problemReport.partial";
     import { MessageAction } from "../types.partial";
 
     // #region Types
@@ -183,6 +184,9 @@ button.chat-mn {
         testId?: string;
         url?: string;
         alt?: string;
+
+        /** The type of a block drawn by its fallback, as the server sent it. */
+        fallbackType?: string;
     };
 
     // #endregion Types
@@ -243,6 +247,9 @@ button.chat-mn {
 
     // The mention chips' photos are faces, so they arrive with the others drawn in the same frame.
     const reveal = useImageReveal({ isShared: true });
+
+    // Absent where nothing provides it, as a body drawn outside the shell.
+    const problems = inject(problemReportKey, null);
 
     /** The buttons whose action is out, by block and button index, each held until it answers. */
     const busyKeys = ref(new Set<string>());
@@ -449,9 +456,24 @@ button.chat-mn {
             kind: "pieces",
             cssClass: "chat-block-fallback",
             testId: "block-fallback",
-            pieces: drawnPieces(null, textOf(asRecord(block.fallback)?.text))
+            pieces: drawnPieces(null, textOf(asRecord(block.fallback)?.text)),
+            fallbackType: textOf(block.type)
         };
     }
 
     // #endregion Functions
+
+    // #region Watchers
+
+    // The platform learns which blocks its released clients draw by their fallback, by type alone;
+    // the report keeps each to once a page load, so a body drawn again is not counted again.
+    watch(rows, drawn => {
+        for (const row of drawn) {
+            if (row.fallbackType !== undefined) {
+                problems?.report("block", row.fallbackType);
+            }
+        }
+    }, { immediate: true });
+
+    // #endregion Watchers
 </script>

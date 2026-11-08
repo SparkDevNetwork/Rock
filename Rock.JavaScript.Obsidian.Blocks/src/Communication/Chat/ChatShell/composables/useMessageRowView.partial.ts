@@ -20,11 +20,12 @@
 // done to the message and the handlers that ask for it, so the two looks draw the same facts and
 // neither works any of them out again. A fact only one look draws lives in that look.
 
-import { ComponentPublicInstance, computed, Ref, UnwrapNestedRefs } from "vue";
+import { ComponentPublicInstance, computed, inject, Ref, UnwrapNestedRefs, watch } from "vue";
 import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "./useHistory.partial";
 import { MessageRowRequests } from "./useMessageActions.partial";
 import { ReactionReader } from "./useReactions.partial";
 import { RowPosition, timeLabel } from "../feedLayout.partial";
+import { problemReportKey } from "../problemReport.partial";
 import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
 
 /** What the row is drawing, which is also the marker the styles and the screenshots key on. */
@@ -385,6 +386,16 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
         && state.value !== "system" && state.value !== "card" && state.value !== "blocked");
 
     const tombIcon = computed((): string => state.value === "deleted" ? "trash" : "eye-off");
+
+    // The platform learns which message types its released clients draw by their text, by type
+    // alone; the report keeps each to once a page load, however many rows draw it. Absent where
+    // nothing provides it, as a row drawn outside the shell.
+    const problems = inject(problemReportKey, null);
+    watch(state, drawn => {
+        if (drawn === "unknown" && props.message) {
+            problems?.report("message_type", props.message.message_type);
+        }
+    }, { immediate: true });
 
     return {
         message,

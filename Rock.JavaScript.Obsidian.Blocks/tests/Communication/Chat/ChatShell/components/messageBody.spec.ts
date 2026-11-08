@@ -21,6 +21,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 
 function draw(props: { text: string | null, pieces?: unknown, blocks?: unknown }): VueWrapper {
     return mount(MessageBody, { props });
@@ -203,6 +204,27 @@ describe("a message's blocks", () => {
 
         expect(body.findAll("img")).toHaveLength(0);
         expect(body.get("[data-testid='block-fallback']").text()).toBe("A picture");
+    });
+
+    // The platform learns which blocks its older clients cannot draw: the block's type only, never
+    // the text drawn in its place.
+    test("a block drawn by its fallback is reported by its type, and a block drawn as itself is not", async () => {
+        const report = jest.fn();
+        const body = mount(MessageBody, {
+            props: {
+                text: "Vote now",
+                blocks: [
+                    { type: "context", text: "Before", pieces: null, fallback: fallback("Before") },
+                    { type: "poll", options: ["a", "b"], fallback: fallback("Vote: a or b") }
+                ]
+            },
+            global: { provide: { [problemReportKey as symbol]: { report } } }
+        });
+
+        expect(report.mock.calls).toEqual([["block", "poll"]]);
+
+        await body.setProps({ blocks: [{ type: "image", url: "http://x.org/a.png", alt: "a", fallback: fallback("A picture") }] });
+        expect(report.mock.calls).toEqual([["block", "poll"], ["block", "image"]]);
     });
 });
 

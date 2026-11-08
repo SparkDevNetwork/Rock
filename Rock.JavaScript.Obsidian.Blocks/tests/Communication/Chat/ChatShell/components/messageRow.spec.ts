@@ -31,6 +31,7 @@ import BlockCard from "../../../../../src/Communication/Chat/ChatShell/component
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -285,6 +286,20 @@ describe("the states, in Conversational", () => {
 
         expect(root(wrapper).getAttribute("data-state")).toBe("unknown");
         expect(wrapper.get("[data-testid='message-body']").text()).toBe(body);
+    });
+
+    // The platform learns which types its older clients draw by their text: the type only, never
+    // the body drawn in its place.
+    test("a type this client does not know is reported by its type, and a known one is not", async () => {
+        const report = jest.fn();
+        const wrapper = mount(MessageRow, {
+            props: { personAliasGuid: me, message: message({ message_type: "announcement", body: "Doors open at 6" }) },
+            global: { provide: { [problemReportKey as symbol]: { report } } }
+        });
+        expect(report).not.toHaveBeenCalled();
+
+        await wrapper.setProps({ message: message({ message_type: "poll", body: "Can't be shown here." }) });
+        expect(report.mock.calls).toEqual([["message_type", "poll"]]);
     });
 
     test.each([
