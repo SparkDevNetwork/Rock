@@ -549,6 +549,37 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void AGroupConversationTakesSomeoneSharedOnlyThroughARoomThatHidesItsRosterFromItsLeaderAlone()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var lee = scene.AddChatPerson( "Lee", isOpenDmAllowed: true );
+                var closed = scene.AddChatPerson( "Closed", isOpenDmAllowed: false );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Hidden private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = false;
+                } );
+                scene.Fixture.AddMember( room, ada );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, closed );
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ), scene.Alias( lee ) ).ChannelGuid.Value;
+
+                var refused = scene.Add( ada, group, scene.Alias( closed ) );
+                Assert.AreEqual( "door.target_not_eligible", refused.Code, "a plain member may not see who is in the room, so it gives no reach" );
+                Assert.AreEqual( scene.Alias( closed ), refused.PersonAliasGuid );
+                Assert.AreEqual( 4, scene.ActiveMemberCount( group ), "and nobody was added" );
+
+                Assert.AreEqual( "ok", scene.Add( lee, group, scene.Alias( closed ) ).Code, "the room's leader may see its roster, so they add them" );
+                CollectionAssert.Contains( scene.ActiveMembers( group ), closed );
+            }
+        }
+
+        [TestMethod]
         public void AddingToAConversationOfTwoIsRefusedSoItStaysPrivate()
         {
             using ( var scene = new ChatDoorScene() )

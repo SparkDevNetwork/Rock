@@ -61,6 +61,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
                     group.IsChatChannelAlwaysShownOverride = true;
                     group.IsChatSearchIndexedOverride = true;
                     group.CampusId = campusId;
+                    group.CanViewMembersOverride = false;
                 } );
 
                 var payload = fixture.Project();

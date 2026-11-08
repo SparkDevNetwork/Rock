@@ -342,6 +342,78 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void OpenDmOffAndOnlyAPrivateRoomThatHidesItsRosterSharedIsRefusedNamingThatPerson()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Hidden private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = false;
+                } );
+                scene.Fixture.AddMember( room, ada );
+                scene.Fixture.AddMember( room, bo );
+
+                var result = scene.Start( ada, scene.Alias( bo ) );
+
+                Assert.AreEqual( "door.target_not_eligible", result.Code, "a plain member may not see who is in the room, so it gives no reach" );
+                Assert.AreEqual( scene.Alias( bo ), result.PersonAliasGuid, "the answer names who could not be added" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( ada, bo ).Count, "and nothing was made" );
+            }
+        }
+
+        [TestMethod]
+        public void OpenDmOffAndAPrivateRoomThatHidesItsRosterIsAllowedForItsLeader()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
+                var leader = scene.Fixture.AddRole( scene.Fixture.SharedGroupTypeId, "Leader", isLeader: true );
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Hidden private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = false;
+                } );
+                scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
+                scene.Fixture.AddMember( room, bo );
+
+                Assert.AreEqual( "ok", scene.Start( ada, scene.Alias( bo ) ).Code, "the leader may see the roster, so the room gives them reach" );
+                Assert.AreEqual( "door.target_not_eligible", scene.Start( bo, scene.Alias( ada ) ).Code,
+                    "but not the other way: the room gives a plain member no reach to its leader" );
+            }
+        }
+
+        [TestMethod]
+        public void OpenDmOffAndAPrivateRoomThatShowsItsMembersBesideAHiddenOneIsAllowed()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
+                var hidden = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Hidden private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = false;
+                } );
+                var shown = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Shown private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = true;
+                } );
+                foreach ( var room in new[] { hidden, shown } )
+                {
+                    scene.Fixture.AddMember( room, ada );
+                    scene.Fixture.AddMember( room, bo );
+                }
+
+                Assert.AreEqual( "ok", scene.Start( ada, scene.Alias( bo ) ).Code, "the room that shows its members gives reach" );
+            }
+        }
+
+        [TestMethod]
         public void OpenDmOffWithNothingPrivateSharedIsRefusedNamingThatPerson()
         {
             using ( var scene = new ChatDoorScene() )
