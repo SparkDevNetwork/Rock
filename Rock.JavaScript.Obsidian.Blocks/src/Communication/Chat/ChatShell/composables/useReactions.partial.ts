@@ -493,13 +493,14 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
     /**
      * What a reaction event does to a copy of its message, by who reacted; null for a payload
-     * that names no message or emoji. A press of the message still out is told the event came.
+     * that names no message, emoji or count. A press of the message still out is told the event came.
      */
     function eventChange(event: "reaction.added" | "reaction.removed", payload: unknown): { messageId: number, apply: (copy: TimelineMessage) => void } | null {
         const reaction = payload as Partial<ReactionEvent> | null;
-        if (typeof reaction?.message_id !== "number" || typeof reaction.code !== "string") {
+        if (typeof reaction?.message_id !== "number" || typeof reaction.code !== "string" || typeof reaction.count !== "number") {
             return null;
         }
+        const count = reaction.count;
 
         const isAdded = event === "reaction.added";
         const emoji: EmojiGlyph = { code: reaction.code, emoji: reaction.emoji ?? null, image_url: reaction.image_url ?? null, label: reaction.label ?? reaction.code };
@@ -515,11 +516,11 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         return {
             messageId: reaction.message_id,
             apply: copy => {
-                moveCount(copy, emoji, isAdded, isReaders);
+                setCount(copy, emoji, count, isReaders ? isAdded : null);
 
-                // The count moves by one as it always has, but who reacted is the server's whole
-                // answer: the chip's newest three as read after this change, the reader's own
-                // echo included, since their toggle drew only the mark.
+                // Who reacted is the server's whole answer too: the chip's newest three as read
+                // after this change, the reader's own echo included, since their toggle drew only
+                // the mark.
                 const chip = copy.reactions?.find(existing => existing.code === emoji.code);
                 if (chip && reactors) {
                     chip.reactors = reactors.map(reactor => ({ ...reactor }));
@@ -529,30 +530,28 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
     }
 
     /**
-     * Moves a chip's count and mark for one reaction an event carried. The reader's own moves
-     * only a mark it would change: their toggle already drew it, and another device of theirs has not.
+     * Sets a chip's count to what the server read after the change, and the reader's mark when the
+     * change was theirs. A reaction carries no revision, so its event can arrive twice or after one
+     * was lost; a count set rather than moved is right either way, and a lost one heals at the
+     * chip's next event.
+     *
+     * @param mine The reader's mark after their own change; null for someone else's, which leaves it.
      */
-    function moveCount(copy: TimelineMessage, emoji: EmojiGlyph, isAdded: boolean, isReaders: boolean): void {
-        if (isReaders) {
-            setOwnReaction(copy, emoji, isAdded, placeOf);
-            return;
-        }
-
+    function setCount(copy: TimelineMessage, emoji: EmojiGlyph, count: number, mine: boolean | null): void {
         const chip = copy.reactions?.find(existing => existing.code === emoji.code);
-        if (isAdded) {
+        if (count <= 0) {
             if (chip) {
-                chip.count++;
-            }
-            else {
-                addChip(copy, emoji, false, placeOf);
-            }
-        }
-        else if (chip) {
-            chip.count--;
-            if (chip.count <= 0) {
                 copy.reactions!.splice(copy.reactions!.indexOf(chip), 1);
             }
+            return;
         }
+        if (chip) {
+            chip.count = count;
+            chip.mine = mine ?? chip.mine;
+            return;
+        }
+        addChip(copy, emoji, mine ?? false, placeOf);
+        (copy.reactions!.find(existing => existing.code === emoji.code) as Reaction).count = count;
     }
 
     /**

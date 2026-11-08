@@ -46,7 +46,7 @@ export type ShellLiveDependencies = {
     state: ShellState;
 
     /** The shell's modules, each made before this. */
-    modules: Pick<ChatShell, "reveal" | "channels" | "timelines" | "threads" | "messageActions" | "reactions" | "mentions" | "rooms" | "roomKindOf" | "members" | "prefs" | "blocks" | "sender" | "directMessages">;
+    modules: Pick<ChatShell, "reveal" | "channels" | "timelines" | "threads" | "messageActions" | "reactions" | "mentions" | "rooms" | "roomKindOf" | "members" | "prefs" | "blocks" | "sender" | "directMessages" | "problems">;
 
     /** The shell's one call path. */
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
@@ -115,7 +115,7 @@ export type ShellLive = {
  */
 export function createShellLive(dependencies: ShellLiveDependencies): ShellLive {
     const { state, modules, call, report, thrown, applySave, favorites, isConnectionFailure, recheck, closeActive, mark, isStopped } = dependencies;
-    const { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages } = modules;
+    const { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems } = modules;
 
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
     let recheckTimer: ReturnType<typeof setTimeout> | null = null;
@@ -198,6 +198,9 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     async function readSidebar(): Promise<SidebarRow[] | null> {
         const generation = sidebarGeneration;
         sidebarJournal = [];
+        // what each timeline held as the read was asked, so a row that live events have since
+        // passed is not taken for a room whose history went backwards
+        const heldAtAsk = timelines.revsHeld();
         const result = await call("chat_get_bootstrap", { p_campus_only: dependencies.isCampusLimited });
         if (isStopped()) {
             return channels.rows;
@@ -251,6 +254,13 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             }
             else {
                 applySave(change.channelId, change.result, change.sentAt);
+            }
+        }
+
+        // each row's revision against the room's timeline, which a room without one never reads
+        for (const row of rows) {
+            if (typeof row.rev === "number") {
+                timelines.noteSidebar(row.channel_id, row.rev, heldAtAsk.get(row.channel_id) ?? null, row.channel_id === state.activeChannelId);
             }
         }
 
@@ -332,6 +342,9 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
 
     const handlers: ShellLive["handlers"] = {
         onChannelEvent: (channelId, event, rawPayload) => {
+            // The revision first, whatever the event's name and whatever a handler then makes of it,
+            // so a name this release does not know, or a message collapsed below, leaves no hole.
+            timelines.advance(channelId, rawPayload);
             // A room's events are one payload for every subscriber, so a message by someone the
             // person blocked is collapsed, and their face blanked, before anything holds it.
             const payload = blocks.maskEvent(event, rawPayload);
@@ -407,6 +420,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
         },
         onUnknownError: () => {
+            problems.report("realtime", "rt.unknown");
             // Words this client does not know may be a lost read it was not built to recognise. A
             // new token makes Realtime decide again, and the sidebar read again shows what the
             // person may still see.

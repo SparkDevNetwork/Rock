@@ -23,7 +23,7 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey, messageForError } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey, isUnworded, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
@@ -47,6 +47,7 @@ import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rem
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
+import { createProblemReport, ProblemReporter } from "./problemReport.partial";
 
 /**
  * The part of the platform client the shell uses: its live connection. Every call goes through
@@ -233,6 +234,9 @@ export type ChatShell = {
     reveal: PageReveal;
     channels: ChannelStore;
     timelines: Timelines;
+
+    /** Tells the platform, a few codes a page load, what this client met and could not handle. */
+    problems: ProblemReporter;
     sender: Sender;
     directMessages: DirectMessages;
 
@@ -440,6 +444,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /** Tells the person about a failure, once per sentence until it is dismissed. */
     function report(error: ChatError): void {
+        // words neither side has for a refusal are a code this release was not built to know
+        if (isUnworded(error)) {
+            problems.report("refusal", error.code);
+        }
         if (state.connection && isConnectionFailure(error)) {
             return;
         }
@@ -513,6 +521,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal.stop();
         live.stop();
         timelines.stop();
+        problems.stop();
         threads.stop();
         messageActions.stop();
         reactions.stop();
@@ -566,6 +575,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return result;
     }
 
+    // Its own call goes straight through the call path, never through report, so a refused report
+    // never reports itself.
+    const problems = createProblemReport({ call: (name, args) => call(name, args), cap: () => session.settings().limits.problem_reports_per_load });
+
     /**
      * Tells the sender of every keyed message in a page, whether or not a view keeps the page: a
      * page dropped because its thread was left, or its channel was left, still shows the message
@@ -610,6 +623,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
         retryDelay: () => ({ baseMs: session.settings().limits.reconnect_base_ms, capMs: session.settings().limits.reconnect_cap_ms }),
+        revRules: () => ({
+            reorderMs: session.settings().limits.gap_reorder_ms,
+            repairWaitMs: session.settings().limits.gap_repair_wait_ms,
+            staleMs: session.settings().limits.stale_reload_ms
+        }),
+        onGap: () => problems.report("live", "gap", 1),
+        // the open thread of a room being repaired reads its newest page again; made below
+        onRepair: channelId => threads.repair(channelId),
         // whichever copy of the person's send lands first, from a page, live or its answer, settles it
         onLanded: message => sender.landed(message),
         // A reaction moves the conversation's copy of its message when the timeline lets it
@@ -1005,7 +1026,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const live = createShellLive({
         state,
-        modules: { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages },
+        modules: { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems },
         call,
         report,
         thrown,
@@ -1039,6 +1060,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal,
         channels,
         timelines,
+        problems,
         sender,
         directMessages,
         threads,
@@ -1233,6 +1255,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isPushOffered = false;
             live.stop();
             timelines.stop();
+            problems.stop();
             sender.stop();
             directMessages.stop();
 

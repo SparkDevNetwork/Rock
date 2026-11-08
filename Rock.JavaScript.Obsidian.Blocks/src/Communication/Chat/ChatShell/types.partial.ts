@@ -122,6 +122,12 @@ export type SidebarRow = {
     description?: string | null;
 
     /**
+     * The room's revision as the sidebar read it, which a room whose timeline is held compares with
+     * the revision it has applied; a row the client made itself carries none.
+     */
+    rev?: number;
+
+    /**
      * Whether the person hid the room from this screen. The platform's sidebar leaves a hidden room
      * out, so only a row the person hid here, while it is open, carries it.
      */
@@ -518,6 +524,12 @@ export type ReactionEvent = EmojiGlyph & {
 
     /** The chip's newest three as the server read them after the change, none once it is empty. */
     reactors: ChipReactor[];
+
+    /**
+     * The chip's count as a page reads it after the change, 0 once it is empty or the message is
+     * hidden or deleted. A reaction carries no revision, so the count is set, never added to.
+     */
+    count: number;
 };
 
 /** One person who replied in a thread, under their primary alias. */
@@ -542,6 +554,12 @@ export type HistoryPage = {
      */
     first_unread_id?: number | null;
     has_more: boolean;
+
+    /**
+     * The room's revision, read before the messages, so every change up to it is in them; it says
+     * nothing of messages the page does not carry. A stand-in page may leave it out.
+     */
+    rev?: number;
 };
 
 /** A page of a thread, as chat_get_thread_history returns it: the replies newest first. */
@@ -552,6 +570,9 @@ export type ThreadPage = {
     unread_count: number;
     following: boolean;
     has_more: boolean;
+
+    /** The room's revision, read before the root and its replies, as a history page's is. */
+    rev?: number;
 };
 
 /** One row of the threads list, as chat_list_threads returns it. */

@@ -743,6 +743,7 @@
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
     import { gifsKey } from "./ChatShell/composables/useGifs.partial";
+    import { problemReportKey } from "./ChatShell/problemReport.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
@@ -834,6 +835,11 @@
         isOn: () => shell.value.gifs.isOn(),
         search: (query, page, signal) => shell.value.gifs.search(query, page, signal),
         turnOff: () => shell.value.gifs.turnOff()
+    });
+
+    // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.
+    provide(problemReportKey, {
+        report: (kind, code, count, detail) => shell.value.problems.report(kind, code, count, detail)
     });
 
     const birthdateMessage = ref<string | null>(null);

@@ -176,7 +176,7 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
             return null;
         }
 
-        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: messages[messages.length - 1].id };
+        return { messages, isLoaded: true, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: messages[messages.length - 1].id, rev: null, isStale: false };
     });
 
     /** Whether the person is reading a channel they have not joined, where they cannot act on its messages. */

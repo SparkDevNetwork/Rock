@@ -47,7 +47,7 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, changedFields, combine, defaultCatchUp, layNewer, maskHeld, MessageMask, revOf, RevisionLedger, takeChange, Timelines, withSendKey } from "./useHistory.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
@@ -134,7 +134,7 @@ export type ThreadsDependencies = {
     call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
 
     /** The channel timelines, whose roots a thread's changes move. */
-    timelines: Pick<Timelines, "state" | "keepThreadRead">;
+    timelines: Pick<Timelines, "state" | "keepThreadRead" | "isNewer">;
 
     /** The reader, so their own reply does not mark a thread unread. */
     personAliasGuid: string;
@@ -220,6 +220,9 @@ export type Threads = {
      */
     resync: () => void;
 
+    /** The room missed a live change: its open thread, if any, reads its newest page again. */
+    repair: (channelId: string) => void;
+
     /** The people blocked gained someone: the open thread and the list's roots are masked again, in place. */
     remask: () => void;
 
@@ -271,6 +274,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
     // The one stopped state every resumed await checks before it touches anything.
     let isStopped = false;
+
+    // The open thread's copies by revision, per group, so a page read before a live change does not
+    // undo it; begun again with each thread opened.
+    let ledger: RevisionLedger = new Map();
 
     // Bumped by every fetch that replaces the list and by closing it, so an older answer is dropped.
     let listFetch = 0;
@@ -394,6 +401,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         lastSaved = null;
         pendingRootUpdate = null;
         whileLoading = [];
+        ledger = new Map();
 
         // Opening the thread is reading it, so its mark goes from the conversation and the list
         // at once rather than at the next save, and stays gone from a conversation whose
@@ -422,8 +430,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
 
         const page = body<ThreadPage>(result);
-        const pageRoot = page.root ?? null;
-        if (pageRoot && pendingRootUpdate) {
+        const pageRev = revOf(page);
+        const pageRoot = page.root ? layNewer(ledger, page.root, pageRev) : null;
+        // counts that arrived while the page was out move its root, unless the page was read after them
+        const pendingRev = revOf(pendingRootUpdate);
+        if (pageRoot && pendingRootUpdate && (pendingRev === null || pageRev === null || pendingRev > pageRev)) {
             moveRoot(pageRoot, pendingRootUpdate, true);
         }
         pendingRootUpdate = null;
@@ -431,9 +442,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         thread.root = pageRoot ? mask(pageRoot) : null;
 
         // A reply that arrived live while the page was on its way may be newer than the page,
-        // so what is held joins the page by id rather than being replaced by it.
+        // so what is held joins the page by id rather than being replaced by it; a change that
+        // arrived above the page's revision is laid over its copy.
         const live = thread.replies;
-        thread.replies = (page.messages ?? []).map(own).sort((a, b) => a.id - b.id);
+        thread.replies = (page.messages ?? []).map(message => own(layNewer(ledger, message, pageRev))).sort((a, b) => a.id - b.id);
         reportLanded(thread.replies);
         for (const reply of live) {
             insertReply(reply);
@@ -487,9 +499,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             }
 
             const page = body<ThreadPage>(result);
+            const pageRev = revOf(page);
             const messages = (page.messages ?? []).filter(message => beforeId === null || message.id < (beforeId as number));
-            root = root ?? page.root ?? null;
-            read.push(...messages.map(withSendKey));
+            root = root ?? (page.root ? layNewer(ledger, page.root, pageRev) : null);
+            read.push(...messages.map(message => withSendKey(layNewer(ledger, message, pageRev))));
             hasMore = page.has_more === true;
             beforeId = messages.length > 0 ? Math.min(...messages.map(message => message.id)) : null;
         } while (hasMore && beforeId !== null && oldestHeld !== null && beforeId > oldestHeld && read.length < max);
@@ -667,15 +680,19 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     /** Moves a root's counts and faces wherever it is held, and keeps them for a drawer still loading it. */
     function applyThreadUpdated(channelId: string, update: ThreadUpdatedEvent): void {
         const isOpen = state.thread?.channelId === channelId && state.thread.rootId === update.root_id;
+        const rev = revOf(update);
 
+        // each copy moves only when the counts are newer than what it holds
         const held = timelineRoot(channelId, update.root_id);
-        if (held) {
+        if (held && dependencies.timelines.isNewer(update.root_id, "thread", rev)) {
             moveRoot(held, update, isOpen);
         }
-        if (isOpen && state.thread?.root) {
+        const counts = { reply_count: update.reply_count, last_reply_at: update.last_reply_at, participant_count: update.participant_count, repliers: update.repliers };
+        const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts);
+        if (isNewerHere && state.thread?.root) {
             moveRoot(state.thread.root, update, true);
         }
-        else if (isOpen) {
+        else if (isNewerHere) {
             pendingRootUpdate = update;
         }
 
@@ -712,11 +729,13 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         // the live copy names its sender; one from a platform that does not takes the name and
         // photo from the sender's newest message already held here
         const held = [...thread.replies].reverse().concat(thread.root ? [thread.root] : []);
+        // a change that arrived before it, above its revision, is laid over it
+        const arrived = layNewer(ledger, created as TimelineMessage, revOf(created));
         const sender = created.sender_nick_name !== undefined
             ? created
             : held.find(m => m.person_alias_guid === created.person_alias_guid && m.sender_nick_name !== undefined);
         const message = {
-            ...created,
+            ...arrived,
             sender_nick_name: sender?.sender_nick_name,
             sender_last_name: sender?.sender_last_name,
             sender_avatar_url: sender?.sender_avatar_url,
@@ -961,7 +980,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
 
-            // an edit, a delete or a hide reaches the root and the replies the drawer holds
+            // an edit, a delete or a hide reaches the root and the replies the drawer holds, when newer
+            // than the copy, and waits in the ledger for a page still on its way
+            const fields = changedFields(event, payload);
+            if (!fields || !takeChange(ledger, payload.id, "message", revOf(payload), fields)) {
+                return;
+            }
             const held = thread.root?.id === payload.id ? thread.root : thread.replies.find(r => r.id === payload.id);
             if (held) {
                 applyMessageChange(held, event, payload);
@@ -1019,6 +1043,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 void fetchList("refresh");
             }
             void rereadThread();
+        },
+
+        repair: (channelId: string): void => {
+            if (!isStopped && state.thread?.channelId === channelId) {
+                void rereadThread();
+            }
         },
 
         remask: (): void => {

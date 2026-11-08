@@ -194,8 +194,8 @@ describe("createTimelines", () => {
         });
         const rejoinPage = deferred<HistoryPage>();
         const answers: Array<HistoryPage | Deferred<HistoryPage>> = [
-            { messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false },
-            page([]),
+            { messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false, rev: 1 },
+            page([], { rev: 1 }),
             rejoinPage
         ];
         const timelines = createTimelines({
@@ -214,9 +214,9 @@ describe("createTimelines", () => {
         const rejoining = timelines.onJoined(channel);
         timelines.state(channel).messages[0].thread_unread = true;
         timelines.applyEvent(channel, "thread.updated", {
-            channel_id: channel, root_id: 10, reply_count: 2, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 2, repliers: [ben, anna]
+            channel_id: channel, root_id: 10, reply_count: 2, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 2, repliers: [ben, anna], rev: 2
         });
-        rejoinPage.resolve({ messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false });
+        rejoinPage.resolve({ messages: [rootBefore()], read_cursor: null, unread_count: 0, has_more: false, rev: 1 });
         await rejoining;
 
         const held = timelines.state(channel).messages[0];
@@ -595,6 +595,8 @@ describe("catching up when fetches fail or are overtaken", () => {
 
     function server(initial: number[]) {
         const rows = new Map<number, TimelineMessage>();
+        // the room's revision, moved by each change as the platform moves it
+        let rev = 0;
         for (const id of initial) {
             rows.set(id, { ...message(id), visibility: "visible" });
         }
@@ -608,8 +610,10 @@ describe("catching up when fetches fail or are overtaken", () => {
             add: (id: number): TimelineMessage => {
                 const row = { ...message(id), visibility: "visible" };
                 rows.set(id, row);
+                rev++;
                 return row;
             },
+            bump: (): number => ++rev,
             ids: sorted,
             read: (options: Fetch): HistoryPage => {
                 const all = sorted();
@@ -634,7 +638,7 @@ describe("catching up when fetches fail or are overtaken", () => {
                 if (options.afterId === undefined) {
                     messages.reverse();
                 }
-                return { messages, read_cursor: null, unread_count: 0, has_more: hasMore };
+                return { messages, read_cursor: null, unread_count: 0, has_more: hasMore, rev };
             }
         };
     }
@@ -815,6 +819,10 @@ describe("catching up when fetches fail or are overtaken", () => {
         Object.assign(platform.rows.get(2) as TimelineMessage, { body: "edited", edited_at: "2026-09-23T11:00:00Z" });
         Object.assign(platform.rows.get(3) as TimelineMessage, { body: null, deleted_at: "2026-09-23T11:01:00Z" });
         Object.assign(platform.rows.get(4) as TimelineMessage, { body: null, visibility: "hidden", visibility_notice: "Hidden while it is reviewed." });
+        // each change moves the room's revision, as the platform's commit does
+        platform.bump();
+        platform.bump();
+        platform.bump();
 
         await timelines.onJoined(channel);
 
@@ -874,7 +882,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         const resyncing = timelines.loadNewest(channel);
         await settle();
         Object.assign(platform.rows.get(2) as TimelineMessage, { body: null, visibility: "hidden", visibility_notice: "Hidden." });
-        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Hidden." });
+        timelines.applyEvent(channel, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Hidden.", rev: platform.bump() });
         fetches.pending.shift()?.answer();
         await resyncing;
 
@@ -1060,7 +1068,7 @@ describe("catching up when fetches fail or are overtaken", () => {
         await settle();
 
         // the page was read with 7 as it was; the change to 7 arrives live before the page does
-        timelines.applyEvent(channel, event, { id: 7, channel_id: channel, ...change });
+        timelines.applyEvent(channel, event, { id: 7, channel_id: channel, ...change, rev: platform.bump() });
         fetches.pending.shift()?.answer();
         await joining;
 
@@ -2379,7 +2387,7 @@ describe("the room's revision", () => {
     test("a page at a revision does not undo a group changed above it, and overwrites one at or below it, for the message and its thread counts", async () => {
         const root = (body: string, replies: number): TimelineMessage => ({ ...message(1, body), reply_count: replies, participant_count: 1, last_reply_at: "2026-09-23T10:00:00Z", repliers: [] });
         const older = { messages: [message(2, "old"), root("root", 1)], read_cursor: null, unread_count: 0, has_more: false, rev: 6 };
-        const newer = { messages: [message(2, "newest"), root("root", 4)], read_cursor: null, unread_count: 0, has_more: false, rev: 9 };
+        const newer = { messages: [{ ...message(2, "newest"), edited_at: "2026-09-23T12:00:00Z" }, root("root", 4)], read_cursor: null, unread_count: 0, has_more: false, rev: 9 };
         const { timelines } = setup([revPage([1, 2], 5), older, newer]);
         await timelines.loadNewest(channel);
 
@@ -2420,13 +2428,10 @@ describe("the room's revision", () => {
     });
 
     test("a reaction carries no revision: held before a page it is skipped by arrival time, after it it passes to the reactions, and it never moves the revision", async () => {
-        const first = deferred<HistoryPage>();
-        const { timelines, reactions, clock } = setup([first]);
-        const loading = timelines.loadNewest(channel);
+        const { timelines, reactions, clock } = setup([revPage([1], 5)]);
         const reaction = { message_id: 1, channel_id: channel, code: "thumbsup", person_alias_guid: "a0000009-0000-4000-8000-000000000000", reactors: [], count: 1 };
         deliver(timelines, "reaction.added", reaction);
-        first.resolve(revPage([1], 5));
-        await loading;
+        await timelines.loadNewest(channel);
         expect(reactions).toEqual([]);
 
         deliver(timelines, "reaction.added", { ...reaction, count: 2 });

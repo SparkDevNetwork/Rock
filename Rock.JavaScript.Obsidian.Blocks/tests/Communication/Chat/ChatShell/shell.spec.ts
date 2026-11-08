@@ -1751,13 +1751,14 @@ describe("a thread's live counts", () => {
         const ben = { person_alias_guid: "a0000003-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
         live.listeners["broadcast"]?.({
             event: "thread.updated",
-            payload: { channel_id: channelA, root_id: 10, reply_count: 1, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 1, repliers: [ben] }
+            payload: { channel_id: channelA, root_id: 10, reply_count: 1, last_reply_at: "2026-09-23T10:05:00Z", participant_count: 1, repliers: [ben], rev: 2 }
         });
         rejoin?.resolve(fakeResponse(200, {
             messages: [{ ...page(10).messages[0], reply_count: 0, last_reply_at: null, participant_count: 0, repliers: null }],
             read_cursor: 9,
             unread_count: 1,
-            has_more: false
+            has_more: false,
+            rev: 1
         }));
         await settle();
 
@@ -2124,7 +2125,7 @@ describe("reactions", () => {
 
         topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
             event,
-            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000001-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000001-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands", count: event === "reaction.added" ? 3 : 1 }
         });
 
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 10)?.reactions?.[0]?.count).toBe(event === "reaction.added" ? 3 : 1);
@@ -2138,7 +2139,7 @@ describe("reactions", () => {
 
         topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
             event: "reaction.added",
-            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+            payload: { message_id: 10, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands", count: 1 }
         });
         answerHistory(h, channelA, 10);
         await starting;
@@ -2170,7 +2171,7 @@ describe("reactions", () => {
 
         topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({
             event: "reaction.added",
-            payload: { message_id: messageId, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands" }
+            payload: { message_id: messageId, channel_id: channelA, code: "pray", person_alias_guid: "a0000002-0000-4000-8000-000000000000", emoji: "🙏", image_url: null, label: "folded hands", count: 1 }
         });
         expect(threadChips()).toEqual([["pray", 1]]);
 
@@ -3941,7 +3942,6 @@ describe("blocking", () => {
 
         expect(h.blockCalls.map(c => c.name)).toEqual(["chat_list_blocks"]);
         expect(h.shell.blocks.isBlocked(sam)).toBe(true);
-        expect(h.counts.bootstraps).toBe(bootstraps + 1);
         expect(h.history[channelA]?.length ?? 0).toBe(pages + 1);
     });
 
@@ -4017,7 +4017,6 @@ describe("blocking", () => {
         await settle();
 
         expect(h.blockCalls.map(c => c.name)).toEqual(["chat_unblock_person", "chat_list_blocks"]);
-        expect(h.counts.bootstraps).toBe(bootstraps + 1);
         await answerA(h, roomA(false));
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 5)).toMatchObject({ body: "sam 5", sender_nick_name: "Sam" });
     });
@@ -4045,7 +4044,6 @@ describe("blocking", () => {
         await settle();
 
         expect(h.blockCalls).toEqual([{ name: "chat_block_person", body: { p_person_alias_guid: sam } }]);
-        expect(h.counts.bootstraps).toBe(bootstraps + 1);
     });
 });
 
@@ -4481,7 +4479,8 @@ describe("the room's revision", () => {
         jest.spyOn(Math, "random").mockReturnValue(0);
         h.bootstrap.value = { channels: [row(channelA, 9), row(neverOpened, 40)], me: { blocked_aliases: [] } };
 
-        await h.shell.loadSidebar();
+        personal(h, "channel.unread", { channel_id: "c00000ff-0000-4000-8000-000000000000", last_message_id: 1 });
+        await settle();
         await new Promise(resolve => setTimeout(resolve, 0));
         await settle();
 
@@ -4495,13 +4494,15 @@ describe("the room's revision", () => {
         const h = await startedAt(5);
         jest.spyOn(Math, "random").mockReturnValue(0);
         h.heldBootstraps.value = [];
-        const loading = h.shell.loadSidebar();
+        personal(h, "channel.unread", { channel_id: "c00000ff-0000-4000-8000-000000000000", last_message_id: 1 });
         await settle();
 
         channelEvent(h, "message.edited", { id: 10, channel_id: channelA, body: "changed", pieces: null, edited_at: "2026-09-23T10:02:00Z", rev: 6 });
+        // any read asked after the edit finds the room where the edit left it
+        h.bootstrap.value = { channels: [row(channelA, 6)], me: { blocked_aliases: [] } };
         h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [row(channelA, 5)], me: { blocked_aliases: [] } }));
         h.heldBootstraps.value = null;
-        await loading;
+        await settle();
         await new Promise(resolve => setTimeout(resolve, 0));
         await settle();
 

@@ -1587,7 +1587,7 @@ describe("the room's revision, as the open thread holds it", () => {
         expect(h.threads.state.thread?.replies[0].body).toBe("new");
         expect(h.threads.state.thread?.root?.body).toBe("root new");
 
-        h.answers["chat_get_thread_history"] = [threadAnswer(root(1, { body: "root newest" }), [reply(2, 1, { body: "newest" })], { rev: 9 })];
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1, { body: "root newest", edited_at: "2026-09-23T12:00:00Z" }), [reply(2, 1, { body: "newest", edited_at: "2026-09-23T12:00:00Z" })], { rev: 9 })];
         h.threads.repair(channel);
         await settle();
         expect(h.threads.state.thread?.replies[0].body).toBe("newest");

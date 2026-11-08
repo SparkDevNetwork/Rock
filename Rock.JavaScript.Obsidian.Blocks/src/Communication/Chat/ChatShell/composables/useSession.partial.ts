@@ -64,7 +64,7 @@ export type ChatSettings = {
     service: { state: string, banner: string | null };
     client: { update_required: boolean };
     routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number } & PlatformLimits & AttachmentTypes;
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number, gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number } & PlatformLimits & AttachmentTypes;
     /** Switches by name; gifs is whether the church may search for and send GIFs, off unless true. */
     flags: Record<string, unknown> & { gifs: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
@@ -93,7 +93,13 @@ const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof A
     catch_up_page: 100,
     catch_up_max: 500,
     // an estimate: enough to name what went wrong on a load without a page that keeps failing flooding the log
-    problem_reports_per_load: 10
+    problem_reports_per_load: 10,
+    // A missed live change: how long a hole in a room's revisions may stay open before it is a gap
+    // (Telegram's figure), the longest random wait before its repair (the rejoin's wait), and how
+    // long a room may go with nothing confirmed before a gap reloads it rather than repairs it.
+    gap_reorder_ms: 500,
+    gap_repair_wait_ms: 5000,
+    stale_reload_ms: 900000
 };
 
 /** The platform's limits by name, read from every exchange's answer. */
@@ -165,6 +171,9 @@ export function readSettings(raw: unknown): ChatSettings {
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max"),
             problem_reports_per_load: limit("problem_reports_per_load"),
+            gap_reorder_ms: limit("gap_reorder_ms"),
+            gap_repair_wait_ms: limit("gap_repair_wait_ms"),
+            stale_reload_ms: limit("stale_reload_ms"),
             ...platformLimits,
             // a list of anything but strings is no list, so files are refused rather than guessed at
             attachment_types: Array.isArray(limits.attachment_types) && limits.attachment_types.every(type => typeof type === "string")
