@@ -857,6 +857,9 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             public HashSet<int> BannedPersonIds { get; } = new HashSet<int>();
 
+            /// <summary>
+            /// The people who share with the caller a private room whose members the caller may see.
+            /// </summary>
             public HashSet<int> SharedPersonIds { get; } = new HashSet<int>();
         }
 
@@ -937,14 +940,18 @@ namespace Rock.Communication.Chat.Platform.Doors
                 }
             }
 
-            // A private room counts when the caller and the person are both unbanned members of it.
-            var privateRooms = projection.Channels.Where( c => !c.Value.IsPublic ).Select( c => c.Key ).ToList();
+            // A private room counts when the caller and the person are both unbanned members of it and
+            // the caller may see who is in it: the room shows its members or the caller leads it. A
+            // room that hides its roster would otherwise let a plain member find and message its people
+            // one by one. The platform's people search reads the same rule, private.chat_room_shows_people.
+            var privateRooms = projection.Channels.Where( c => !c.Value.IsPublic ).ToList();
             foreach ( var room in privateRooms )
             {
-                var unbanned = projection.Members.Where( m => m.ChannelGuid == room && !m.IsBanned && m.PersonId.HasValue ).Select( m => m.PersonId.Value ).ToList();
-                if ( unbanned.Contains( callerId ) )
+                var unbanned = projection.Members.Where( m => m.ChannelGuid == room.Key && !m.IsBanned && m.PersonId.HasValue ).ToList();
+                var mayCallerSeeMembers = room.Value.CanViewMembers || unbanned.Any( m => m.PersonId == callerId && m.IsLeader );
+                if ( mayCallerSeeMembers && unbanned.Any( m => m.PersonId == callerId ) )
                 {
-                    read.SharedPersonIds.UnionWith( unbanned.Where( id => id != callerId ) );
+                    read.SharedPersonIds.UnionWith( unbanned.Select( m => m.PersonId.Value ).Where( id => id != callerId ) );
                 }
             }
 

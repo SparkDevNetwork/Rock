@@ -204,9 +204,9 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             /// <summary>
             /// Each membership of a live channel: the person when they are one of those asked for,
-            /// and whether a ban on it is in force now.
+            /// whether a ban on it is in force now, and whether it leads the channel.
             /// </summary>
-            public List<(Guid ChannelGuid, int? PersonId, bool IsBanned)> Members { get; } = new List<(Guid ChannelGuid, int? PersonId, bool IsBanned)>();
+            public List<(Guid ChannelGuid, int? PersonId, bool IsBanned, bool IsLeader)> Members { get; } = new List<(Guid ChannelGuid, int? PersonId, bool IsBanned, bool IsLeader)>();
         }
 
         /// <summary>
@@ -234,6 +234,12 @@ namespace Rock.Communication.Chat.Platform.Sync
             /// Whether a member may leave it.
             /// </summary>
             public bool IsLeaveAllowed { get; set; }
+
+            /// <summary>
+            /// Whether every member may see who is in it, rather than its leaders alone. Always true
+            /// for a direct message.
+            /// </summary>
+            public bool CanViewMembers { get; set; }
         }
 
         /// <summary>
@@ -1113,7 +1119,8 @@ namespace Rock.Communication.Chat.Platform.Sync
                     ChannelType = ( string ) row[column["channel_type"]],
                     IsPublic = FlagAt( row, column["is_public"] ),
                     IsAlwaysShown = FlagAt( row, column["always_shown"] ),
-                    IsLeaveAllowed = FlagAt( row, column["leave_allowed"] )
+                    IsLeaveAllowed = FlagAt( row, column["leave_allowed"] ),
+                    CanViewMembers = FlagAt( row, column["can_view_members"] )
                 };
             }
 
@@ -1126,7 +1133,7 @@ namespace Rock.Communication.Chat.Platform.Sync
 
                 var personId = personByAlias.TryGetValue( GuidAt( row, column["person_alias_guid"] ), out var id ) ? id : ( int? ) null;
 
-                read.Members.Add( (GuidAt( row, column["channel_id"] ), personId, FlagAt( row, column["is_banned"] ) && isBanInForce) );
+                read.Members.Add( (GuidAt( row, column["channel_id"] ), personId, FlagAt( row, column["is_banned"] ) && isBanInForce, FlagAt( row, column["is_leader"] )) );
             }
 
             return read;

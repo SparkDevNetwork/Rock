@@ -645,7 +645,9 @@ namespace Rock.Model
         /// Gets or sets whether the members of this chat channel may see who else belongs to it. When this is
         /// <see langword="false"/>, only the channel's leaders may open the roster. If set to <see langword="null"/>,
         /// then the value of <see cref="GroupType.CanViewMembers"/> will be used. Direct messages ignore both and
-        /// always allow it, since a direct message has no roster to hide.
+        /// always allow it, since a direct message has no roster to hide. A hidden roster also stops members finding
+        /// and messaging one another through the channel: sharing it lets a person start a conversation with another
+        /// member, or add them to one, only when that person leads it.
         /// </summary>
         [DataMember]
         public bool? CanViewMembersOverride { get; set; }
