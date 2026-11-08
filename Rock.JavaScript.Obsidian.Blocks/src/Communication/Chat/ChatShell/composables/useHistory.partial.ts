@@ -43,6 +43,7 @@ import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
 import { PlatformLimits } from "./useSession.partial";
+import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -84,110 +85,6 @@ export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(messa
 
 /** How a missed live change is noticed and repaired, when the settings name nothing else: estimates. */
 export const defaultRevRules = { reorderMs: 500, repairWaitMs: 5000, staleMs: 900000 };
-
-/**
- * The fields of a message each history event states in full, by the group one revision orders:
- * the message itself, and its thread's counts. A reaction carries no revision and the reader's own
- * thread marks no event carries, so neither is a group.
- */
-const groupFields = {
-    message: ["body", "pieces", "blocks", "attachments", "metadata", "edited_at", "deleted_at", "visibility", "visibility_notice"],
-    thread: ["reply_count", "last_reply_at", "participant_count", "repliers"]
-} as const;
-
-/** A group of a message's fields that one revision orders. */
-export type FieldGroup = keyof typeof groupFields;
-
-/**
- * For each message held or heard of, the revision each group is held at, and for a live change
- * newer than any page, the fields it set, so a page read before it that lands after it gets them
- * laid over it. One per holder of copies: the timelines and the open thread.
- */
-export type RevisionLedger = Map<number, Partial<Record<FieldGroup, { rev: number, fields?: Partial<TimelineMessage> }>>>;
-
-/**
- * The revision a live payload or a page carries, or null when it carries none. A signal, a
- * reaction, or an older platform's answer carries none and is ordered as before.
- *
- * @param value The payload or page.
- *
- * @returns Its revision, or null.
- */
-export function revOf(value: unknown): number | null {
-    const rev = value && typeof value === "object" ? (value as { rev?: unknown }).rev : undefined;
-    return typeof rev === "number" && Number.isFinite(rev) ? rev : null;
-}
-
-/**
- * Takes a live change to one group of a message: true when it is newer than what is held, and then
- * recorded with the fields it set; false for a change a page or an earlier event already holds. A
- * change with no revision is taken and recorded nowhere.
- *
- * @param ledger The holder's ledger.
- * @param id The message.
- * @param group The group the change states.
- * @param rev The change's revision, or null.
- * @param fields What it set.
- *
- * @returns Whether to apply it.
- */
-export function takeChange(ledger: RevisionLedger, id: number, group: FieldGroup, rev: number | null, fields: Partial<TimelineMessage>): boolean {
-    if (rev === null) {
-        return true;
-    }
-    const entry = ledger.get(id) ?? {};
-    const held = entry[group];
-    if (held && held.rev >= rev) {
-        return false;
-    }
-    // a later change of the group states what it changed in full, so it is laid over the earlier
-    entry[group] = { rev, fields: { ...held?.fields, ...fields } };
-    ledger.set(id, entry);
-    return true;
-}
-
-/**
- * Whether a change at this revision to a group of a message is newer than what the holder has.
- *
- * @param ledger The holder's ledger.
- * @param id The message.
- * @param group The group.
- * @param rev The change's revision; one with none is always newer.
- *
- * @returns True when it should be applied.
- */
-export function isNewerChange(ledger: RevisionLedger, id: number, group: FieldGroup, rev: number | null): boolean {
-    const held = ledger.get(id)?.[group];
-    return rev === null || !held || held.rev < rev;
-}
-
-/**
- * Takes a copy of a message read at a revision, a page's or a created event's: each group a live
- * change moved above that revision keeps what the change set, and every other group is now held at
- * the copy's revision. A copy with no revision is read as older than any numbered change.
- *
- * @param ledger The holder's ledger.
- * @param copy The copy as read.
- * @param rev The revision it was read at, or null.
- *
- * @returns The copy with the newer changes laid over it.
- */
-export function layNewer(ledger: RevisionLedger, copy: TimelineMessage, rev: number | null): TimelineMessage {
-    const readAt = rev ?? 0;
-    const entry = ledger.get(copy.id) ?? {};
-    let result = copy;
-    for (const group of Object.keys(groupFields) as FieldGroup[]) {
-        const held = entry[group];
-        if (held && held.rev > readAt) {
-            result = held.fields ? { ...result, ...held.fields } : result;
-        }
-        else {
-            entry[group] = { rev: readAt };
-        }
-    }
-    ledger.set(copy.id, entry);
-    return result;
-}
 
 /**
  * What a row shows for a message. The server decides when a message is hidden or removed and
@@ -382,37 +279,6 @@ export function applyMessageChange(message: TimelineMessage, event: string, payl
     }
 }
 
-/**
- * What an edit, a delete or a change of visibility sets on a message, stated in full, for a copy
- * not held yet to have laid over it when its page lands; null for any other event.
- *
- * @param event The live event's name.
- * @param payload Its payload.
- *
- * @returns The fields it sets, or null.
- */
-export function changedFields(event: string, payload: unknown): Partial<TimelineMessage> | null {
-    if (event === "message.edited") {
-        const edited = payload as MessageEditedEvent;
-        return { body: edited.body, pieces: edited.pieces ?? null, edited_at: edited.edited_at };
-    }
-    if (event === "message.deleted") {
-        return { deleted_at: (payload as MessageDeletedEvent).deleted_at, body: null, pieces: null, blocks: null, attachments: null, metadata: null };
-    }
-    if (event === "message.visibility") {
-        const changed = payload as MessageVisibilityEvent;
-        const withBody = changed.body !== undefined
-            ? { body: changed.body, pieces: changed.pieces ?? null, blocks: changed.blocks ?? null, attachments: changed.attachments ?? null }
-            : {};
-        return {
-            visibility: changed.state,
-            visibility_notice: changed.notice,
-            ...(changed.state === "visible" ? withBody : { body: null, pieces: null, blocks: null, attachments: null, metadata: null })
-        };
-    }
-    return null;
-}
-
 /** A channel's timeline. */
 export type TimelineState = {
     /** The messages, oldest first, by id. */
@@ -583,7 +449,7 @@ export function isTimelineMessage(message: Pick<TimelineMessage, "parent_id" | "
     return message.parent_id === null || message.parent_id === undefined || message.shown_in_channel === true;
 }
 
-/** Whether a live event is a reaction, which moves a count rather than setting a value. */
+/** Whether a live event is a reaction, which carries no revision and is ordered by when it arrived. */
 function isReactionEvent(event: string): event is "reaction.added" | "reaction.removed" {
     return event === "reaction.added" || event === "reaction.removed";
 }
@@ -1475,8 +1341,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     const waiting = held.get(channelId) ?? [];
                     held.delete(channelId);
                     for (const { event, payload, heldAt } of waiting) {
-                        // A reaction moves a count by one, so one that arrived before this page was
-                        // read is already in it; anything else sets a value and is safe to lay again.
+                        // A reaction carries no revision, so one that arrived before this page was
+                        // read is older than the count the page shows; anything else its revision orders.
                         if (isReactionEvent(event) && heldAt < answer.readAt) {
                             continue;
                         }

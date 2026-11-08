@@ -47,7 +47,8 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, changedFields, combine, defaultCatchUp, layNewer, maskHeld, MessageMask, revOf, RevisionLedger, takeChange, Timelines, withSendKey } from "./useHistory.partial";
+import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
+import { changedFields, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
