@@ -35,11 +35,19 @@ const groupFields = {
 export type FieldGroup = keyof typeof groupFields;
 
 /**
- * For each message held or heard of, the revision each group is held at, and for a live change
- * newer than any page, the fields it set, so a page read before it that lands after it gets them
- * laid over it. One per holder of copies: the timelines and the open thread.
+ * One group of one message as a holder has it: the revision a copy last showed the whole group at,
+ * and each field a live change set above that, with the revision of the change that set it. Kept
+ * per field because two changes of one group state different fields: a hide that arrives after a
+ * later edit still hides, though the edit's words stay newer than its.
  */
-export type RevisionLedger = Map<number, Partial<Record<FieldGroup, { rev: number, fields?: Partial<TimelineMessage> }>>>;
+type GroupRecord = { copyRev: number, changes: Partial<Record<keyof TimelineMessage, { rev: number, value: unknown }>> };
+
+/**
+ * For each message held or heard of, each group as the holder has it, so a page read before a live
+ * change that lands after it gets the change laid over it. One per holder of copies: the timelines
+ * and the open thread.
+ */
+export type RevisionLedger = Map<number, Partial<Record<FieldGroup, GroupRecord>>>;
 
 /**
  * The revision a live payload or a page carries, or null when it carries none. A signal, a
@@ -55,9 +63,29 @@ export function revOf(value: unknown): number | null {
 }
 
 /**
- * Takes a live change to one group of a message: true when it is newer than what is held, and then
- * recorded with the fields it set; false for a change a page or an earlier event already holds. A
- * change with no revision is taken and recorded nowhere.
+ * The revision a field of a group is held at: the copy's, or a live change's above it.
+ */
+function fieldRev(record: GroupRecord, key: keyof TimelineMessage): number {
+    return Math.max(record.copyRev, record.changes[key]?.rev ?? 0);
+}
+
+/**
+ * What live changes above a revision set in a group, to lay over anything older.
+ */
+function setAbove(record: GroupRecord, rev: number): Partial<TimelineMessage> {
+    const fields: Record<string, unknown> = {};
+    for (const [key, change] of Object.entries(record.changes)) {
+        if (change && change.rev > rev) {
+            fields[key] = change.value;
+        }
+    }
+    return fields as Partial<TimelineMessage>;
+}
+
+/**
+ * Takes a live change to one group of a message. Each field it states that nothing newer set is
+ * recorded at its revision; when none is, the change is older than what is held throughout and is
+ * refused. A change with no revision is taken and recorded nowhere.
  *
  * @param ledger The holder's ledger.
  * @param id The message.
@@ -65,25 +93,32 @@ export function revOf(value: unknown): number | null {
  * @param rev The change's revision, or null.
  * @param fields What it set.
  *
- * @returns Whether to apply it.
+ * @returns Null to refuse it; otherwise what newer changes set, to lay over it once it is applied.
  */
-export function takeChange(ledger: RevisionLedger, id: number, group: FieldGroup, rev: number | null, fields: Partial<TimelineMessage>): boolean {
+export function takeChange(ledger: RevisionLedger, id: number, group: FieldGroup, rev: number | null, fields: Partial<TimelineMessage>): Partial<TimelineMessage> | null {
     if (rev === null) {
-        return true;
+        return {};
     }
     const entry = ledger.get(id) ?? {};
-    const held = entry[group];
-    if (held && held.rev >= rev) {
-        return false;
+    const record: GroupRecord = entry[group] ?? { copyRev: 0, changes: {} };
+    let isTaken = false;
+    for (const [key, value] of Object.entries(fields)) {
+        if (fieldRev(record, key as keyof TimelineMessage) < rev) {
+            record.changes[key as keyof TimelineMessage] = { rev, value };
+            isTaken = true;
+        }
     }
-    // a later change of the group states what it changed in full, so it is laid over the earlier
-    entry[group] = { rev, fields: { ...held?.fields, ...fields } };
+    if (!isTaken) {
+        return null;
+    }
+    entry[group] = record;
     ledger.set(id, entry);
-    return true;
+    return setAbove(record, rev);
 }
 
 /**
- * Whether a change at this revision to a group of a message is newer than what the holder has.
+ * Whether a change at this revision to a group of a message is newer than everything the holder
+ * has of that group.
  *
  * @param ledger The holder's ledger.
  * @param id The message.
@@ -93,14 +128,17 @@ export function takeChange(ledger: RevisionLedger, id: number, group: FieldGroup
  * @returns True when it should be applied.
  */
 export function isNewerChange(ledger: RevisionLedger, id: number, group: FieldGroup, rev: number | null): boolean {
-    const held = ledger.get(id)?.[group];
-    return rev === null || !held || held.rev < rev;
+    const record = ledger.get(id)?.[group];
+    if (rev === null || !record) {
+        return true;
+    }
+    return Object.values(record.changes).every(change => !change || change.rev < rev) && record.copyRev < rev;
 }
 
 /**
- * Takes a copy of a message read at a revision, a page's or a created event's: each group a live
- * change moved above that revision keeps what the change set, and every other group is now held at
- * the copy's revision. A copy with no revision is read as older than any numbered change.
+ * Takes a copy of a message read at a revision, a page's or a created event's: each field a live
+ * change set above that revision keeps what the change set, and the rest of each group is now held
+ * at the copy's revision. A copy with no revision is read as older than any numbered change.
  *
  * @param ledger The holder's ledger.
  * @param copy The copy as read.
@@ -113,12 +151,18 @@ export function layNewer(ledger: RevisionLedger, copy: TimelineMessage, rev: num
     const entry = ledger.get(copy.id) ?? {};
     let result = copy;
     for (const group of Object.keys(groupFields) as FieldGroup[]) {
-        const held = entry[group];
-        if (held && held.rev > readAt) {
-            result = held.fields ? { ...result, ...held.fields } : result;
+        const record = entry[group];
+        if (!record) {
+            entry[group] = { copyRev: readAt, changes: {} };
+            continue;
         }
-        else {
-            entry[group] = { rev: readAt };
+        result = { ...result, ...setAbove(record, readAt) };
+        record.copyRev = Math.max(record.copyRev, readAt);
+        // a change the copy already shows is held by the copy's revision
+        for (const [key, change] of Object.entries(record.changes)) {
+            if (change && change.rev <= record.copyRev) {
+                delete record.changes[key as keyof TimelineMessage];
+            }
         }
     }
     ledger.set(copy.id, entry);

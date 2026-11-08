@@ -689,7 +689,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             moveRoot(held, update, isOpen);
         }
         const counts = { reply_count: update.reply_count, last_reply_at: update.last_reply_at, participant_count: update.participant_count, repliers: update.repliers };
-        const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts);
+        const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts) !== null;
         if (isNewerHere && state.thread?.root) {
             moveRoot(state.thread.root, update, true);
         }
@@ -984,12 +984,13 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             // an edit, a delete or a hide reaches the root and the replies the drawer holds, when newer
             // than the copy, and waits in the ledger for a page still on its way
             const fields = changedFields(event, payload);
-            if (!fields || !takeChange(ledger, payload.id, "message", revOf(payload), fields)) {
+            const newer = fields ? takeChange(ledger, payload.id, "message", revOf(payload), fields) : null;
+            if (!newer) {
                 return;
             }
             const held = thread.root?.id === payload.id ? thread.root : thread.replies.find(r => r.id === payload.id);
             if (held) {
-                applyMessageChange(held, event, payload);
+                applyMessageChange(held, event, payload, newer);
                 // a change in place is a write like any other: its pieces may name someone blocked
                 maskHeld([held], mask);
             }

@@ -228,13 +228,15 @@ export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean
 /**
  * Lays an edit, a delete or a change of visibility over a message held on screen, wherever it is
  * held: the conversation's timeline or an open thread. A deleted message keeps no edit, and a
- * hidden or removed body never stays on screen.
+ * hidden or removed body never stays on screen. A change that arrived after a newer one of the
+ * same message has the newer one's fields laid back over it, as a page read before a change does.
  *
  * @param message The message held, changed in place.
  * @param event The live event's name.
  * @param payload The live event's payload, about this message.
+ * @param newer What newer changes to the message set, laid over this one.
  */
-export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown): void {
+export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown, newer: Partial<TimelineMessage> = {}): void {
     if (event === "message.edited") {
         const edited = payload as MessageEditedEvent;
         // an edit by someone the reader blocked moves its time and says nothing of its words
@@ -277,6 +279,15 @@ export function applyMessageChange(message: TimelineMessage, event: string, payl
             message.attachments = changed.attachments ?? null;
         }
     }
+
+    Object.assign(message, newer);
+    if (message.deleted_at || (message.visibility !== undefined && message.visibility !== "visible")) {
+        message.body = null;
+        message.pieces = null;
+        message.blocks = null;
+        message.attachments = null;
+        message.metadata = null;
+    }
 }
 
 /** A channel's timeline. */
@@ -314,9 +325,6 @@ export type TimelineState = {
      * to it is in what is held. Null until a page that carries one arrives.
      */
     rev: number | null;
-
-    /** Whether the room has moved past what is held while not on screen, so its next open repairs it. */
-    isStale: boolean;
 };
 
 /** What the timeline reaches outside itself. */
@@ -576,8 +584,11 @@ type ChannelSync = {
      */
     olderLoad: { beforeId: number, epoch: number, done: Promise<void> } | null;
 
-    /** The revisions seen above the one applied, which a hole keeps from being applied. */
-    above: Set<number>;
+    /**
+     * The revisions seen above the one applied, which a hole keeps from being applied, each with
+     * when it arrived on the counter pages are read by, so a reload forgets only what came before it.
+     */
+    above: Map<number, number>;
 
     /** The highest revision the platform has named for the room, by an event or a sidebar row. */
     known: number | null;
@@ -589,11 +600,21 @@ type ChannelSync = {
     cancelReorder: (() => void) | null;
     cancelRepair: (() => void) | null;
 
+    /** The lowest revision missing when the reorder wait started, so a hole opened later gets a whole wait. */
+    reorderHole: number | null;
+
     /** Whether the next catch-up reads the held run again whatever the revision says: a repair or a reopen. */
     isRereadDue: boolean;
 
     /** Whether the next newest page replaces what is held: the revision went backwards. */
     isReloadDue: boolean;
+
+    /**
+     * Whether the next catch-up reads the newest page first: the room ran past the catch-up bound
+     * or went unconfirmed too long. The page is merged with what is held when it joins it, as any
+     * newest page is, so the reader keeps their place.
+     */
+    isNewestDue: boolean;
 };
 
 /** A page as it was fetched: when it was read on the client's clock, and the revision held when it was asked. */
@@ -655,7 +676,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let timeline = states.get(channelId);
 
         if (!timeline) {
-            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null, rev: null, isStale: false }) as TimelineState;
+            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null, rev: null }) as TimelineState;
             states.set(channelId, timeline);
         }
 
@@ -669,7 +690,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         if (!channelSync) {
             channelSync = {
                 epoch: 0, runToken: 0, running: null, isRerunAsked: false, hasJoined: false, isLoading: false, isJoinPending: false, olderLoad: null,
-                above: new Set(), known: null, confirmedAt: 0, cancelReorder: null, cancelRepair: null, isRereadDue: false, isReloadDue: false
+                above: new Map(), known: null, confirmedAt: 0, cancelReorder: null, reorderHole: null, cancelRepair: null, isRereadDue: false, isReloadDue: false, isNewestDue: false
             };
             syncs.set(channelId, channelSync);
         }
@@ -767,13 +788,14 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             participant_count: update.participant_count,
             repliers: update.repliers
         };
-        if (!takeChange(ledger, update.root_id, "thread", rev, fields)) {
+        const newer = takeChange(ledger, update.root_id, "thread", rev, fields);
+        if (!newer) {
             return;
         }
 
         const root = find(channelId, update.root_id);
         if (root) {
-            Object.assign(root, fields);
+            Object.assign(root, fields, newer);
             // the repliers are faces, so this write is masked as every other one is, whenever the event arrived
             maskHeld([root], mask);
             const marks: Partial<TimelineMessage> = {};
@@ -845,12 +867,13 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * what is held, and records it, held or not, for a page read before it.
      */
     function changeMessage(channelId: string, event: string, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>): void {
-        if (!takeChange(ledger, payload.id, "message", rev, fields)) {
+        const newer = takeChange(ledger, payload.id, "message", rev, fields);
+        if (!newer) {
             return;
         }
         const message = find(channelId, payload.id);
         if (message) {
-            applyMessageChange(message, event, payload);
+            applyMessageChange(message, event, payload, newer);
             // a change in place is a write like any other: its pieces may name someone blocked
             maskHeld([message], mask);
         }
@@ -861,8 +884,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * (it reaches back to what was verified, or it is the whole channel) it is merged; when it
      * does not, it replaces what is held in one step, so the screen is never empty in between and
      * no gap is left in the middle. Messages above the page, a live copy or the person's own send
-     * that landed after it was read, stay. A reload replaces what is held whether it joins or not.
-     * A page that replaces what is held is where the room's revision is counted from.
+     * that landed after it was read, stay. A reload, for a history that started again, replaces what
+     * is held whether it joins or not. A page that replaces what is held is where the room's revision
+     * is counted from.
      */
     function takeNewest(channelId: string, page: HistoryPage, readAt: number, isReload: boolean = false): boolean {
         const timeline = state(channelId);
@@ -870,6 +894,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         const range = bounds(page);
         const verified = timeline.verifiedThrough;
         const isJoined = !isReload && verified !== null && (!page.has_more || (range !== null && range.oldest <= verified));
+        // a newest page is in hand, which is what a room far behind was waiting for
+        channelSync.isNewestDue = false;
 
         if (isJoined) {
             mergePage(channelId, page, readAt);
@@ -889,7 +915,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             mergePage(channelId, page, readAt);
             channelSync.epoch++;
             timeline.verifiedThrough = null;
-            countFrom(channelId, revOf(page), isReload);
+            countFrom(channelId, revOf(page), isReload ? readAt : null);
         }
 
         timeline.verifiedThrough = Math.max(timeline.verifiedThrough ?? 0, range?.newest ?? 0);
@@ -940,8 +966,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         // a room whose revision is unknown, or has a hole, cannot say it has not moved
         const isRevisionSilent = timeline.rev === null || channelSync.above.size > 0;
         let isReread = channelSync.isRereadDue || (!isFirst && isRevisionSilent);
-        let isForwardFirst = !isFirst && !isReread;
+        // a first join and a rejoin with nothing missed read forward first, and read the held run
+        // again only when that page says the room moved since what was applied
+        let isForwardFirst = !isReread;
+        let isNewestFirst = channelSync.isNewestDue;
         channelSync.isRereadDue = false;
+        channelSync.isNewestDue = false;
 
         const verified = timeline.verifiedThrough ?? 0;
         const settled = timeline.messages.filter(m => m.id <= verified);
@@ -953,7 +983,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let rereadRev: number | null = null;
 
         while (isOwner()) {
-            const isPastBound = fetched >= max || channelSync.isReloadDue;
+            const isPastBound = fetched >= max || channelSync.isReloadDue || isNewestFirst;
             let answer: Fetched | null;
             try {
                 answer = await fetchCurrent(channelId, isPastBound ? { limit: dependencies.limits().history_page_size } : { limit: pageSize, afterId });
@@ -988,11 +1018,16 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             if (isPastBound) {
                 // Paging through more than this would keep the person waiting for history they
                 // will mostly scroll past, so the channel opens fresh at its newest instead, and
-                // only once the fresh page is in hand.
-                if (takeNewest(channelId, answer.page, answer.readAt, channelSync.isReloadDue)) {
+                // only once the fresh page is in hand. A newest page asked first because the room is
+                // far behind, when it joins what is held, is merged and the held run read again
+                // behind it, so the reader keeps their place and the room still holds every change
+                // up to what the reread was read at.
+                const isReplaced = takeNewest(channelId, answer.page, answer.readAt, channelSync.isReloadDue);
+                if (isReplaced) {
                     isReread = false;
                 }
-                afterId = timeline.verifiedThrough ?? 0;
+                afterId = !isReplaced && isNewestFirst && isReread ? rereadFrom : timeline.verifiedThrough ?? 0;
+                isNewestFirst = false;
                 fetched = 0;
                 continue;
             }
@@ -1006,7 +1041,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             if (isForwardFirst) {
                 isForwardFirst = false;
-                if (rev === null || rev !== answer.heldRev) {
+                // A first join reads past its first page what was sent while the subscription came
+                // up, so an edit made then is caught here rather than left for the live path to find
+                // as a loss. A first join with no revision to compare reads forward only, as before.
+                const isMoved = rev === null || answer.heldRev === null ? !isFirst : rev !== answer.heldRev;
+                if (isMoved) {
                     isReread = true;
                     mergePage(channelId, answer.page, answer.readAt);
                     afterId = rereadFrom;
@@ -1036,11 +1075,13 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     }
 
     /**
-     * Where a room's revision is counted from: a page that replaced what is held. A reload starts
-     * again from it alone, since revisions seen before it may belong to a history that started
-     * again; a first page keeps the events that arrived above it while it was read.
+     * Where a room's revision is counted from: a page that replaced what is held. A reload forgets
+     * the revisions seen before it was asked, which may belong to a history that started again, and
+     * keeps those that arrived while it was out; any other page keeps every event above it.
+     *
+     * @param forgetBefore For a reload, when it was asked on the counter; null for any other page.
      */
-    function countFrom(channelId: string, rev: number | null, isReload: boolean): void {
+    function countFrom(channelId: string, rev: number | null, forgetBefore: number | null): void {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
         channelSync.isReloadDue = false;
@@ -1048,12 +1089,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         if (rev === null) {
             return;
         }
-        if (isReload) {
-            channelSync.above.clear();
-            channelSync.known = rev;
+        if (forgetBefore !== null) {
+            for (const [seen, arrivedAt] of [...channelSync.above]) {
+                if (arrivedAt < forgetBefore) {
+                    channelSync.above.delete(seen);
+                }
+            }
+            channelSync.known = Math.max(rev, ...channelSync.above.keys());
         }
         timeline.rev = rev;
-        timeline.isStale = false;
         channelSync.confirmedAt = now();
         settleRevisions(channelId);
     }
@@ -1068,7 +1112,6 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         channelSync.confirmedAt = now();
         if (rereadRev !== null) {
             timeline.rev = Math.max(timeline.rev ?? rereadRev, rereadRev);
-            timeline.isStale = false;
         }
         if (timeline.rev !== null) {
             settleRevisions(channelId);
@@ -1084,7 +1127,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
         let applied = timeline.rev ?? 0;
-        for (const rev of channelSync.above) {
+        for (const rev of [...channelSync.above.keys()]) {
             if (rev <= applied) {
                 channelSync.above.delete(rev);
             }
@@ -1095,13 +1138,18 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
         timeline.rev = applied;
 
-        if (channelSync.above.size === 0) {
+        // each hole gets the whole wait: one that opens as an earlier one fills starts it again
+        const hole = channelSync.above.size === 0 ? null : applied + 1;
+        if (hole !== channelSync.reorderHole) {
             channelSync.cancelReorder?.();
             channelSync.cancelReorder = null;
+            channelSync.reorderHole = null;
         }
-        else if (!channelSync.cancelReorder && !isStopped) {
+        if (hole !== null && !channelSync.cancelReorder && !isStopped) {
+            channelSync.reorderHole = hole;
             channelSync.cancelReorder = schedule(() => {
                 channelSync.cancelReorder = null;
+                channelSync.reorderHole = null;
                 if (channelSync.above.size > 0) {
                     dependencies.onGap?.(channelId);
                     scheduleRepair(channelId);
@@ -1126,54 +1174,54 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     }
 
     /**
-     * Whether the room is better opened fresh at its newest page than repaired: its revision went
-     * backwards, it moved past the catch-up bound, or nothing has confirmed it for so long that
-     * paging through what changed would cost more than starting again.
+     * Whether the room's history started again, so what is held is replaced rather than merged: a
+     * page or a sidebar row below what was applied when it was asked.
      *
      * @param pageRev The revision of a newest page in hand, if any, and what was applied when it was asked.
      */
-    function isReloadNeeded(channelId: string, pageRev: number | null = null, heldRev: number | null = null): boolean {
+    function isRestarted(channelId: string, pageRev: number | null = null, heldRev: number | null = null): boolean {
+        return sync(channelId).isReloadDue || (pageRev !== null && heldRev !== null && pageRev < heldRev);
+    }
+
+    /**
+     * Whether the room is far enough behind that its repair reads the newest page first: it moved
+     * past the catch-up bound, or nothing has confirmed it for so long that paging through what
+     * changed would cost more than starting at the newest.
+     */
+    function isFarBehind(channelId: string): boolean {
         const applied = state(channelId).rev;
         if (applied === null) {
             return false;
         }
         const channelSync = sync(channelId);
         const { max } = dependencies.catchUp?.() ?? defaultCatchUp;
-        const newest = Math.max(channelSync.known ?? applied, pageRev ?? applied);
-        return channelSync.isReloadDue
-            || (pageRev !== null && heldRev !== null && pageRev < heldRev)
-            || newest - applied > max
-            || now() - channelSync.confirmedAt > rules().staleMs;
+        return (channelSync.known ?? applied) - applied > max || now() - channelSync.confirmedAt > rules().staleMs;
     }
 
     /**
      * Repairs a room that missed a change: the open thread reads its newest page again, and the
-     * timeline reads its held run again by the catch-up it already has, or reloads its newest page.
-     * A catch-up that ran meanwhile may have healed it already. A refusal is not told: the join, the
-     * hub and the next open each tell the person of a room they lost.
+     * timeline reads its held run again by the catch-up it already has, a room far behind its newest
+     * page first. A catch-up already going is the room's read, so the repair waits for it and asks
+     * for one only if the room is still behind after it. A leave, a stop or a replace meanwhile ends
+     * the repair, since the room it was for is gone and a hole still open is found again. A refusal
+     * is not told: the join, the hub and the next open each tell the person of a room they lost.
      */
     async function repair(channelId: string): Promise<void> {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
+        const epoch = channelSync.epoch;
+        if (channelSync.running) {
+            await channelSync.running.catch(() => undefined);
+        }
         const isCurrent = timeline.rev !== null && channelSync.above.size === 0 && (channelSync.known ?? 0) <= timeline.rev;
-        if (isStopped || (isCurrent && !channelSync.isReloadDue)) {
+        if (isStopped || channelSync.epoch !== epoch || (isCurrent && !channelSync.isReloadDue)) {
             return;
         }
         dependencies.onRepair?.(channelId);
-        try {
-            if (isReloadNeeded(channelId)) {
-                channelSync.isReloadDue = true;
-                await loadNewest(channelId);
-                await requestCatchUp(channelId);
-            }
-            else {
-                channelSync.isRereadDue = true;
-                await requestCatchUp(channelId);
-            }
-        }
-        catch {
-            // see above
-        }
+        channelSync.isNewestDue = isFarBehind(channelId);
+        channelSync.isRereadDue = true;
+        // the one await is the run's own, which a leave or a stop ends; a refusal, as above, is not told
+        await requestCatchUp(channelId).catch(() => undefined);
     }
 
     /**
@@ -1317,6 +1365,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         // reads it again, whatever its revision says, for what no channel event carries
         channelSync.cancelReorder?.();
         channelSync.cancelReorder = null;
+        channelSync.reorderHole = null;
         channelSync.cancelRepair?.();
         channelSync.cancelRepair = null;
         channelSync.isRereadDue = channelSync.isRereadDue || channelSync.hasJoined;
@@ -1334,7 +1383,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             try {
                 const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size });
                 if (answer && !isStopped) {
-                    if (takeNewest(channelId, answer.page, answer.readAt, isReloadNeeded(channelId, revOf(answer.page), answer.heldRev))) {
+                    if (takeNewest(channelId, answer.page, answer.readAt, isRestarted(channelId, revOf(answer.page), answer.heldRev))) {
                         channelSync.hasJoined = false;
                     }
 
@@ -1444,7 +1493,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             if (timeline.rev !== null && rev <= timeline.rev) {
                 return;
             }
-            channelSync.above.add(rev);
+            if (!channelSync.above.has(rev)) {
+                channelSync.above.set(rev, ++seq);
+            }
             // until a page says where the room stands, what arrived waits for it
             if (timeline.rev !== null) {
                 settleRevisions(channelId);
@@ -1469,11 +1520,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     return;
                 }
             }
+            // a room held but not on screen reads itself again on its next open, from its newest page first
+            // when the revision just recorded puts it far behind
             if (isOpen) {
                 scheduleRepair(channelId);
-            }
-            else {
-                timeline.isStale = true;
             }
         },
 
