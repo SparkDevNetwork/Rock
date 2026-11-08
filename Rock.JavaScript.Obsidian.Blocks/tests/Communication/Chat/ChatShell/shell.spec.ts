@@ -4425,3 +4425,87 @@ describe("a block, whatever order the reads land in", () => {
         expect(h.shell.messageActions.state.quotes[quoteKey(channelA)]).toMatchObject({ id: 10, blocked: true, body: null, sender_nick_name: null });
     });
 });
+
+// Each room's revision: taken from every channel event before any handler reads it, and from
+// every sidebar row against what the timeline held when the read was asked.
+describe("the room's revision", () => {
+    const sam = "a0000005-0000-4000-8000-000000000000";
+    const neverOpened = "c000000e-0000-4000-8000-000000000000";
+    const row = (channelId: string, rev: number): SidebarRow => ({ channel_id: channelId, room_kind: "group", title: "Room", is_member: true, last_message_id: 10, last_message_preview: "m10", is_unread: false, rev } as unknown as SidebarRow);
+
+    /** Answers every history call waiting for channel A with message 10 at this revision. */
+    async function answerAt(h: ReturnType<typeof build>, rev: number): Promise<void> {
+        while (h.history[channelA]?.length) {
+            h.history[channelA].shift()?.resolve(fakeResponse(200, { ...page(10), rev }));
+            await settle();
+        }
+    }
+
+    async function startedAt(rev: number, aliases: string[] = []): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [row(channelA, rev), row(neverOpened, 3)], me: { blocked_aliases: aliases } };
+        const starting = h.shell.start();
+        await settle();
+        await answerAt(h, rev);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        await answerAt(h, rev);
+        return h;
+    }
+
+    function channelEvent(h: ReturnType<typeof build>, event: string, payload: Record<string, unknown>): void {
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event, payload });
+    }
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test("an event name this client does not know and a blocked sender's collapsed message each advance the room with no gap, and a signal with none moves nothing", async () => {
+        const h = await startedAt(5, [sam]);
+
+        channelEvent(h, "pin.added", { id: 10, channel_id: channelA, rev: 6 });
+        channelEvent(h, "message.created", { id: 11, channel_id: channelA, person_alias_guid: sam, message_type: "text", body: "hidden", created_at: "2026-09-23T10:01:00Z", parent_id: null, rev: 7 });
+        channelEvent(h, "channel.changed", { channel_id: channelA });
+
+        expect(h.shell.timelines.state(channelA).rev).toBe(7);
+        expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ blocked: true, body: null });
+    });
+
+    test("a sidebar row ahead of the open room repairs it after the random wait, and a room never opened is never read", async () => {
+        const h = await startedAt(5);
+        jest.spyOn(Math, "random").mockReturnValue(0);
+        h.bootstrap.value = { channels: [row(channelA, 9), row(neverOpened, 40)], me: { blocked_aliases: [] } };
+
+        await h.shell.loadSidebar();
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+
+        expect(h.history[channelA]?.length).toBe(1);
+        expect(h.history[neverOpened]).toBeUndefined();
+        await answerAt(h, 9);
+        expect(h.shell.timelines.state(channelA).rev).toBe(9);
+    });
+
+    test("a sidebar read asked before a live event that it predates is not taken as the room going backwards", async () => {
+        const h = await startedAt(5);
+        jest.spyOn(Math, "random").mockReturnValue(0);
+        h.heldBootstraps.value = [];
+        const loading = h.shell.loadSidebar();
+        await settle();
+
+        channelEvent(h, "message.edited", { id: 10, channel_id: channelA, body: "changed", pieces: null, edited_at: "2026-09-23T10:02:00Z", rev: 6 });
+        h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [row(channelA, 5)], me: { blocked_aliases: [] } }));
+        h.heldBootstraps.value = null;
+        await loading;
+        await new Promise(resolve => setTimeout(resolve, 0));
+        await settle();
+
+        expect(h.history[channelA]?.length ?? 0).toBe(0);
+        expect(h.shell.timelines.state(channelA).rev).toBe(6);
+    });
+});

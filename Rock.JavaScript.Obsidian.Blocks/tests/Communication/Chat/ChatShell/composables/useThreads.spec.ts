@@ -1551,3 +1551,70 @@ describe("a block, as what the threads hold is masked where it is written", () =
         expect(h.threads.state.list.rows[0].root).toMatchObject({ blocked: true, body: null });
     });
 });
+
+describe("the room's revision, as the open thread holds it", () => {
+    function edited(id: number, body: string, rev: number): Record<string, unknown> {
+        return { id, channel_id: channel, body, pieces: null, edited_at: `2026-09-23T11:00:${String(id % 60).padStart(2, "0")}Z`, rev };
+    }
+
+    test("a repair of the room reads the open thread's newest page again; a repair of another room reads nothing", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1)], { rev: 5 })];
+        await h.threads.openThread(channel, 1);
+
+        h.threads.repair(otherChannel);
+        await settle();
+        expect(h.callsTo("chat_get_thread_history").length).toBe(1);
+
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1)], { rev: 7 })];
+        h.threads.repair(channel);
+        await settle();
+
+        expect(h.callsTo("chat_get_thread_history").at(-1)?.args).toEqual({ p_root_id: 1, p_limit: 23 });
+        expect(h.threads.state.thread?.replies.map(r => r.id)).toEqual([2, 3]);
+    });
+
+    test("a page read before a change above its revision does not undo it, and one read after it wins", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { body: "old" })], { rev: 5 })];
+        await h.threads.openThread(channel, 1);
+
+        h.threads.applyEvent(channel, "message.edited", edited(2, "new", 7));
+        h.threads.applyEvent(channel, "message.edited", edited(1, "root new", 8));
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1, { body: "root old" }), [reply(2, 1, { body: "old" })], { rev: 6 })];
+        h.threads.repair(channel);
+        await settle();
+        expect(h.threads.state.thread?.replies[0].body).toBe("new");
+        expect(h.threads.state.thread?.root?.body).toBe("root new");
+
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1, { body: "root newest" }), [reply(2, 1, { body: "newest" })], { rev: 9 })];
+        h.threads.repair(channel);
+        await settle();
+        expect(h.threads.state.thread?.replies[0].body).toBe("newest");
+        expect(h.threads.state.thread?.root?.body).toBe("root newest");
+    });
+
+    test("an edit at or below the revision the thread's page was read at is not laid over it", async () => {
+        const h = await setup();
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(2, 1, { body: "as read" })], { rev: 8 })];
+        await h.threads.openThread(channel, 1);
+
+        h.threads.applyEvent(channel, "message.edited", edited(2, "late", 7));
+
+        expect(h.threads.state.thread?.replies[0].body).toBe("as read");
+    });
+
+    test("an edit that arrives while the thread's first page is on its way, above the page's revision, is laid over it", async () => {
+        const h = await setup();
+        const first = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [first];
+        const opening = h.threads.openThread(channel, 1);
+        await settle();
+
+        h.threads.applyEvent(channel, "message.edited", edited(2, "while loading", 7));
+        first.resolve(threadAnswer(root(1), [reply(2, 1, { body: "as read" })], { rev: 6 }));
+        await opening;
+
+        expect(h.threads.state.thread?.replies[0].body).toBe("while loading");
+    });
+});

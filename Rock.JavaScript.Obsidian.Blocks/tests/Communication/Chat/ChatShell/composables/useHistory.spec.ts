@@ -2230,3 +2230,402 @@ describe("a block, as what is held is masked where it is written", () => {
         expect(withheldIds(timelines, channel)).toEqual([1, 2, 3]);
     });
 });
+
+// A room's revision: every history event on its topic carries the room's new revision, and pages
+// and the sidebar carry the revision they were read at, so a client that sees a revision skip
+// knows it missed a change and repairs that room alone. Reactions carry none.
+describe("the room's revision", () => {
+    /** A page as the platform answers it, with the revision read before its rows. */
+    function revPage(pageIds: number[], rev: number, extra: Partial<HistoryPage> = {}): HistoryPage {
+        return page(pageIds, { rev, ...extra });
+    }
+
+    /** The timers the timelines start, run or cancelled by hand. */
+    type Timer = { run: () => void, ms: number, isCancelled: boolean };
+
+    function timers(): { list: Timer[], schedule: (run: () => void, ms: number) => () => void, live: () => Timer[], fire: (ms: number) => void, runAll: () => void } {
+        const list: Timer[] = [];
+        return {
+            list,
+            schedule: (run, ms) => {
+                const timer: Timer = { run, ms, isCancelled: false };
+                list.push(timer);
+                return () => {
+                    timer.isCancelled = true;
+                };
+            },
+            live: () => list.filter(timer => !timer.isCancelled),
+            fire: ms => {
+                for (const timer of list.filter(t => !t.isCancelled && t.ms === ms)) {
+                    timer.isCancelled = true;
+                    timer.run();
+                }
+            },
+            runAll: () => {
+                for (const timer of list.filter(t => !t.isCancelled)) {
+                    timer.isCancelled = true;
+                    timer.run();
+                }
+            }
+        };
+    }
+
+    type Fetch = { limit: number, beforeId?: number, afterId?: number };
+
+    /**
+     * Timelines over a queue of answers, each a page or a deferred one, with the timers and the
+     * clock in the test's hands. The rules are the client's defaults unless a cell says otherwise.
+     */
+    function setup(answers: Array<HistoryPage | Deferred<HistoryPage>>, options: { max?: number, page?: number, now?: () => number, onGap?: (channelId: string) => void } = {}): {
+        timelines: ReturnType<typeof createTimelines>,
+        fetches: Fetch[],
+        clock: ReturnType<typeof timers>,
+        reactions: Array<{ event: string, payload: unknown }>
+    } {
+        const fetches: Fetch[] = [];
+        const clock = timers();
+        const reactions: Array<{ event: string, payload: unknown }> = [];
+        const timelines = createTimelines({
+            mask: platformMask,
+            limits,
+            catchUp: () => ({ page: options.page ?? 100, max: options.max ?? 500 }),
+            revRules: () => ({ reorderMs: 500, repairWaitMs: 5000, staleMs: 900000 }),
+            schedule: clock.schedule,
+            now: options.now ?? (() => 0),
+            random: () => 0.5,
+            onGap: options.onGap,
+            applyReaction: (_c, event, payload) => reactions.push({ event, payload }),
+            fetchPage: (_c, asked) => {
+                fetches.push(asked);
+                const next = answers.shift();
+                if (!next) {
+                    return Promise.reject(new Error("no answer queued"));
+                }
+                return "promise" in next ? next.promise : Promise.resolve(next);
+            }
+        });
+        return { timelines, fetches, clock, reactions };
+    }
+
+    /** What the shell's router does with each channel event: the revision first, then the event. */
+    function deliver(timelines: ReturnType<typeof createTimelines>, event: string, payload: Record<string, unknown>): void {
+        timelines.advance(channel, payload);
+        timelines.applyEvent(channel, event, payload);
+    }
+
+    function edited(id: number, body: string, rev?: number): Record<string, unknown> {
+        return { id, channel_id: channel, body, pieces: null, edited_at: `2026-09-23T11:00:${String(id % 60).padStart(2, "0")}Z`, ...(rev === undefined ? {} : { rev }) };
+    }
+
+    async function settle(): Promise<void> {
+        for (let i = 0; i < 10; i++) {
+            await Promise.resolve();
+        }
+    }
+
+    test("an event one above what is applied is applied and advances the room's revision", async () => {
+        const { timelines, clock } = setup([revPage([1, 2, 3], 5)]);
+        await timelines.loadNewest(channel);
+        expect(timelines.state(channel).rev).toBe(5);
+
+        deliver(timelines, "message.edited", edited(2, "changed", 6));
+
+        expect(timelines.state(channel).messages[1].body).toBe("changed");
+        expect(timelines.state(channel).rev).toBe(6);
+        expect(clock.live()).toEqual([]);
+    });
+
+    test("a hole that fills within the reorder wait repairs nothing", async () => {
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(3, "second", 7));
+        expect(timelines.state(channel).rev).toBe(5);
+        expect(clock.live().map(timer => timer.ms)).toEqual([500]);
+
+        deliver(timelines, "message.edited", edited(2, "first", 6));
+        expect(timelines.state(channel).rev).toBe(7);
+        expect(clock.live()).toEqual([]);
+        clock.runAll();
+        await settle();
+
+        expect(fetches.length).toBe(1);
+    });
+
+    test("a hole still open after the reorder wait is repaired once, after a random wait, and later gaps share the repair", async () => {
+        const gaps: string[] = [];
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5), revPage([1, 2, 3, 4], 9)], { onGap: id => gaps.push(id) });
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "x", 7));
+        clock.fire(500);
+        // the random wait: half of the longest, as the injected random says
+        expect(clock.live().map(timer => timer.ms)).toEqual([2500]);
+
+        deliver(timelines, "message.edited", edited(3, "y", 9));
+        clock.fire(500);
+        expect(clock.live().map(timer => timer.ms)).toEqual([2500]);
+
+        clock.fire(2500);
+        await settle();
+
+        // the repair is the catch-up the timeline has: the held run read again from its oldest
+        expect(fetches).toEqual([{ limit: firstPageSize }, { limit: 100, afterId: 0 }]);
+        expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4]);
+        expect(timelines.state(channel).rev).toBe(9);
+        expect(gaps).toEqual([channel, channel]);
+    });
+
+    test("a page at a revision does not undo a group changed above it, and overwrites one at or below it, for the message and its thread counts", async () => {
+        const root = (body: string, replies: number): TimelineMessage => ({ ...message(1, body), reply_count: replies, participant_count: 1, last_reply_at: "2026-09-23T10:00:00Z", repliers: [] });
+        const older = { messages: [message(2, "old"), root("root", 1)], read_cursor: null, unread_count: 0, has_more: false, rev: 6 };
+        const newer = { messages: [message(2, "newest"), root("root", 4)], read_cursor: null, unread_count: 0, has_more: false, rev: 9 };
+        const { timelines } = setup([revPage([1, 2], 5), older, newer]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "new", 7));
+        deliver(timelines, "thread.updated", { channel_id: channel, root_id: 1, reply_count: 3, participant_count: 2, last_reply_at: "2026-09-23T10:05:00Z", repliers: [], rev: 8 });
+
+        // read at 6, before both changes: neither is undone
+        await timelines.loadNewest(channel);
+        let [first, second] = timelines.state(channel).messages;
+        expect(second.body).toBe("new");
+        expect(first.reply_count).toBe(3);
+
+        // read at 9, after both: it wins
+        await timelines.loadNewest(channel);
+        [first, second] = timelines.state(channel).messages;
+        expect(second.body).toBe("newest");
+        expect(first.reply_count).toBe(4);
+    });
+
+    test("an event at or below what a page set for a message is not laid over it", async () => {
+        const { timelines } = setup([revPage([1, 2], 8)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "late", 7));
+
+        expect(timelines.state(channel).messages[1].body).toBe("m2");
+    });
+
+    test("a message created before an edit that arrived first still lands, with the edit laid over it", async () => {
+        const { timelines } = setup([revPage([1], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "edited", 7));
+        deliver(timelines, "message.created", { ...message(2, "first words"), channel_id: channel, parent_id: null, rev: 6 });
+
+        expect(timelines.state(channel).messages[1].body).toBe("edited");
+        expect(timelines.state(channel).rev).toBe(7);
+    });
+
+    test("a reaction carries no revision: held before a page it is skipped by arrival time, after it it passes to the reactions, and it never moves the revision", async () => {
+        const first = deferred<HistoryPage>();
+        const { timelines, reactions, clock } = setup([first]);
+        const loading = timelines.loadNewest(channel);
+        const reaction = { message_id: 1, channel_id: channel, code: "thumbsup", person_alias_guid: "a0000009-0000-4000-8000-000000000000", reactors: [], count: 1 };
+        deliver(timelines, "reaction.added", reaction);
+        first.resolve(revPage([1], 5));
+        await loading;
+        expect(reactions).toEqual([]);
+
+        deliver(timelines, "reaction.added", { ...reaction, count: 2 });
+        expect(reactions).toEqual([{ event: "reaction.added", payload: { ...reaction, count: 2 } }]);
+        expect(timelines.state(channel).rev).toBe(5);
+        expect(clock.live()).toEqual([]);
+    });
+
+    test("an event name it does not know, with a revision, advances and never leaves a gap", async () => {
+        const { timelines, clock } = setup([revPage([1], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "pin.added", { id: 1, channel_id: channel, rev: 6 });
+        deliver(timelines, "message.edited", edited(1, "after", 7));
+
+        expect(timelines.state(channel).rev).toBe(7);
+        expect(clock.live()).toEqual([]);
+    });
+
+    test("an event with no revision moves nothing", async () => {
+        const { timelines, clock } = setup([revPage([1], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(1, "unnumbered"));
+
+        expect(timelines.state(channel).rev).toBe(5);
+        expect(clock.live()).toEqual([]);
+    });
+
+    test("a jump above the catch-up bound reloads the newest page instead of reading the held run again", async () => {
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5), revPage([40, 41], 30, { has_more: true }), revPage([], 30)], { max: 10 });
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(41, "far ahead", 30));
+        clock.fire(500);
+        clock.fire(2500);
+        await settle();
+
+        expect(fetches.slice(0, 2)).toEqual([{ limit: firstPageSize }, { limit: firstPageSize }]);
+        expect(ids(timelines.state(channel).messages)).toEqual([40, 41]);
+        expect(timelines.state(channel).rev).toBe(30);
+    });
+
+    test("a page whose revision went backwards reloads the newest page, which is taken as it stands", async () => {
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 50), revPage([1, 2, 3], 40), revPage([7, 8], 41, { has_more: true }), revPage([], 41)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "x", 52));
+        clock.fire(500);
+        clock.fire(2500);
+        await settle();
+
+        expect(fetches.slice(0, 3)).toEqual([{ limit: firstPageSize }, { limit: 100, afterId: 0 }, { limit: firstPageSize }]);
+        expect(ids(timelines.state(channel).messages)).toEqual([7, 8]);
+        expect(timelines.state(channel).rev).toBe(41);
+    });
+
+    test("a room with nothing confirmed for longer than the stale wait reloads the newest page on a gap", async () => {
+        let now = 0;
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5), revPage([9], 12, { has_more: true }), revPage([], 12)], { now: () => now });
+        await timelines.loadNewest(channel);
+
+        now = 16 * 60 * 1000;
+        deliver(timelines, "message.edited", edited(9, "much later", 12));
+        clock.fire(500);
+        clock.fire(2500);
+        await settle();
+
+        expect(fetches[1]).toEqual({ limit: firstPageSize });
+        expect(ids(timelines.state(channel).messages)).toEqual([9]);
+    });
+
+    test("a sidebar read before live events that arrived meanwhile is not backwards, and one below what was held when asked is", async () => {
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5), revPage([4], 3, { has_more: true }), revPage([], 3)]);
+        await timelines.loadNewest(channel);
+        const asked = timelines.revsHeld();
+
+        deliver(timelines, "message.edited", edited(2, "meanwhile", 6));
+        timelines.noteSidebar(channel, 5, asked.get(channel) ?? null, true);
+        expect(clock.live()).toEqual([]);
+
+        timelines.noteSidebar(channel, 3, asked.get(channel) ?? null, true);
+        clock.runAll();
+        await settle();
+        expect(fetches[1]).toEqual({ limit: firstPageSize });
+        expect(timelines.state(channel).rev).toBe(3);
+    });
+
+    test("a sidebar row ahead of the open room repairs it, marks a held room not on screen stale, and never reads a room with no timeline", async () => {
+        const other = "c0000002-0000-4000-8000-000000000000";
+        const never = "c0000003-0000-4000-8000-000000000000";
+        const { timelines, fetches, clock } = setup([revPage([1, 2], 5), revPage([1, 2], 4), revPage([1, 2, 3], 7)]);
+        await timelines.loadNewest(channel);
+        await timelines.loadNewest(other);
+        timelines.leave(other);
+        const asked = timelines.revsHeld();
+
+        timelines.noteSidebar(other, 9, asked.get(other) ?? null, false);
+        timelines.noteSidebar(never, 3, asked.get(never) ?? null, false);
+        expect(timelines.state(other).isStale).toBe(true);
+        expect(fetches.length).toBe(2);
+        expect(clock.live()).toEqual([]);
+
+        timelines.noteSidebar(channel, 7, asked.get(channel) ?? null, true);
+        clock.runAll();
+        await settle();
+        expect(fetches[2]).toEqual({ limit: 100, afterId: 0 });
+        expect(timelines.state(channel).rev).toBe(7);
+        expect(timelines.state(channel).isStale).toBe(false);
+    });
+
+    test("a rejoin of the open room whose forward page answers the revision applied does not read the held run again", async () => {
+        const { timelines, fetches } = setup([revPage([1, 2, 3, 4, 5], 5), revPage([], 5), revPage([], 5)], { page: 2 });
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        await timelines.onJoined(channel);
+
+        expect(fetches).toEqual([{ limit: firstPageSize }, { limit: 2, afterId: 5 }, { limit: 2, afterId: 5 }]);
+    });
+
+    test("a rejoin of the open room whose revision moved reads the held run again", async () => {
+        const { timelines, fetches } = setup([revPage([1, 2, 3], 5), revPage([], 5), revPage([], 6), revPage([1, 2, 3], 6)]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        await timelines.onJoined(channel);
+
+        expect(fetches).toEqual([{ limit: firstPageSize }, { limit: 100, afterId: 3 }, { limit: 100, afterId: 3 }, { limit: 100, afterId: 0 }]);
+        expect(timelines.state(channel).rev).toBe(6);
+    });
+
+    test("a reopen of a visited room reads the held run again even when its revision has not moved", async () => {
+        const { timelines, fetches } = setup([revPage([1, 2, 3], 5), revPage([], 5), revPage([1, 2, 3], 5), revPage([1, 2, 3], 5)]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        timelines.leave(channel);
+
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        expect(fetches).toEqual([{ limit: firstPageSize }, { limit: 100, afterId: 3 }, { limit: firstPageSize }, { limit: 100, afterId: 0 }]);
+    });
+
+    test("a reopen after the room's revision ran past the catch-up bound reloads the newest page rather than read the held run", async () => {
+        const other = "c0000002-0000-4000-8000-000000000000";
+        const { timelines, fetches } = setup([revPage([1, 2, 3], 5), revPage([90, 91], 600, { has_more: true }), revPage([], 600)]);
+        await timelines.loadNewest(other);
+        timelines.leave(other);
+        timelines.noteSidebar(other, 600, 5, false);
+
+        await timelines.loadNewest(other);
+        await timelines.onJoined(other);
+
+        expect(ids(timelines.state(other).messages)).toEqual([90, 91]);
+        expect(fetches[2]).toEqual({ limit: 100, afterId: 91 });
+        expect(timelines.state(other).rev).toBe(600);
+    });
+
+    test("leaving the room cancels the reorder wait, and a stop cancels the repair's", async () => {
+        const { timelines, clock } = setup([revPage([1, 2, 3], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "x", 7));
+        expect(clock.live().length).toBe(1);
+        timelines.leave(channel);
+        expect(clock.live()).toEqual([]);
+    });
+
+    test("a stop cancels a repair waiting to run", async () => {
+        const { timelines, fetches, clock } = setup([revPage([1, 2, 3], 5)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "x", 7));
+        clock.fire(500);
+        expect(clock.live().map(timer => timer.ms)).toEqual([2500]);
+        timelines.stop();
+
+        expect(clock.live()).toEqual([]);
+        expect(fetches.length).toBe(1);
+    });
+
+    test("a thread's unread and following marks, which no event's revision covers, keep the order they arrived in", async () => {
+        const rootPage = (replies: number, rev: number): HistoryPage => ({ messages: [{ ...message(10), reply_count: replies, thread_following: true, thread_unread: false }], read_cursor: null, unread_count: 0, has_more: false, rev });
+        const rejoin = deferred<HistoryPage>();
+        const { timelines } = setup([rootPage(1, 5), revPage([], 5), revPage([], 6), rejoin]);
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+
+        const rejoining = timelines.onJoined(channel);
+        await settle();
+        // the threads mark the root unread before the timeline records the counts
+        timelines.state(channel).messages[0].thread_unread = true;
+        deliver(timelines, "thread.updated", { channel_id: channel, root_id: 10, reply_count: 2, participant_count: 2, last_reply_at: "2026-09-23T10:05:00Z", repliers: [], rev: 6 });
+        // a page read at the counts' revision, but before the threads' mark was recorded
+        rejoin.resolve(rootPage(2, 6));
+        await rejoining;
+
+        expect(timelines.state(channel).messages[0].thread_unread).toBe(true);
+        expect(timelines.state(channel).messages[0].reply_count).toBe(2);
+    });
+});

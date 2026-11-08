@@ -146,8 +146,9 @@ const refused = (code: string, text: string): CallResult => ({
     retryAfterSeconds: null
 });
 
-const added = (code: string, by: string, messageId = 42): Record<string, unknown> => ({
-    message_id: messageId, channel_id: channel, code, person_alias_guid: by, emoji: glyphs[code]?.emoji ?? null, image_url: null, label: glyphs[code]?.label ?? code
+// The chip's count as the server read it after the change, which every reaction event carries.
+const added = (code: string, by: string, count: number, messageId = 42): Record<string, unknown> => ({
+    message_id: messageId, channel_id: channel, code, person_alias_guid: by, emoji: glyphs[code]?.emoji ?? null, image_url: null, label: glyphs[code]?.label ?? code, count
 });
 
 type Call = { name: string, args: Record<string, unknown> };
@@ -367,10 +368,10 @@ describe("the reader's own reaction and its echo", () => {
             if (order === "answer-first") {
                 answer.resolve(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
                 await toggling;
-                reactions.applyEvent(channel, "reaction.added", added("heart", me));
+                reactions.applyEvent(channel, "reaction.added", added("heart", me, 5));
             }
             else {
-                reactions.applyEvent(channel, "reaction.added", added("heart", me));
+                reactions.applyEvent(channel, "reaction.added", added("heart", me, 5));
                 expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
                 answer.resolve(ok({ message_id: 42, reactions: [rx("heart", 5, true)] }));
                 await toggling;
@@ -390,10 +391,10 @@ describe("the reader's own reaction and its echo", () => {
             if (order === "answer-first") {
                 answer.resolve(ok({ message_id: 42, reactions: [rx("heart", 4)] }));
                 await toggling;
-                reactions.applyEvent(channel, "reaction.removed", added("heart", me));
+                reactions.applyEvent(channel, "reaction.removed", added("heart", me, 4));
             }
             else {
-                reactions.applyEvent(channel, "reaction.removed", added("heart", me));
+                reactions.applyEvent(channel, "reaction.removed", added("heart", me, 4));
                 answer.resolve(ok({ message_id: 42, reactions: [rx("heart", 4)] }));
                 await toggling;
             }
@@ -405,7 +406,7 @@ describe("the reader's own reaction and its echo", () => {
     test("a reaction from the reader's other device marks the chip theirs and counts it", async () => {
         const { reactions, timelines } = await setup([message(42, [rx("heart", 4)])]);
 
-        reactions.applyEvent(channel, "reaction.added", added("heart", me));
+        reactions.applyEvent(channel, "reaction.added", added("heart", me, 5));
 
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
     });
@@ -413,36 +414,70 @@ describe("the reader's own reaction and its echo", () => {
     test("an event of the reader's that would not change their mark changes nothing", async () => {
         const { reactions, timelines } = await setup([message(42, [rx("heart", 5, true), rx("pray", 2)])]);
 
-        reactions.applyEvent(channel, "reaction.added", added("heart", me));
-        reactions.applyEvent(channel, "reaction.removed", added("pray", me));
+        reactions.applyEvent(channel, "reaction.added", added("heart", me, 5));
+        reactions.applyEvent(channel, "reaction.removed", added("pray", me, 2));
 
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }, { code: "pray", count: 2, mine: false }]);
     });
 });
 
 describe("another person's reaction", () => {
-    test("added moves the chip's count up by one and leaves the reader's mark", async () => {
+    test("added sets the chip's count from the event and leaves the reader's mark", async () => {
         const { reactions, timelines } = await setup([message(42, [rx("heart", 4, true)])]);
 
-        reactions.applyEvent(channel, "reaction.added", added("heart", anna));
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 5));
 
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
     });
 
-    test("removed moves it down by one, and a chip at zero leaves", async () => {
+    test("removed sets it from the event, and a chip at zero leaves", async () => {
         const { reactions, timelines } = await setup([message(42, [rx("thumbsup", 1), rx("heart", 2)])]);
 
-        reactions.applyEvent(channel, "reaction.removed", added("heart", anna));
+        reactions.applyEvent(channel, "reaction.removed", added("heart", anna, 1));
         expect(chipsOf(timelines)).toEqual([{ code: "thumbsup", count: 1, mine: false }, { code: "heart", count: 1, mine: false }]);
 
-        reactions.applyEvent(channel, "reaction.removed", added("thumbsup", david));
+        reactions.applyEvent(channel, "reaction.removed", added("thumbsup", david, 0));
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 1, mine: false }]);
+    });
+
+    test("a count behind what the chip shows is set, never added to", async () => {
+        const { reactions, timelines } = await setup([message(42, [rx("heart", 7)])]);
+
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 3));
+
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 3, mine: false }]);
+    });
+
+    test("the same event twice leaves the same count", async () => {
+        const { reactions, timelines } = await setup([message(42, [rx("heart", 4, true)])]);
+
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 5));
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 5));
+
+        expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 5, mine: true }]);
+    });
+
+    test("a count of 0 takes the chip away, the reader's mark with it, and an added event at 0 draws none", async () => {
+        const { reactions, timelines } = await setup([message(42, [rx("heart", 2, true), rx("pray", 1)])]);
+
+        reactions.applyEvent(channel, "reaction.removed", added("heart", anna, 0));
+        reactions.applyEvent(channel, "reaction.added", added("fire", anna, 0));
+
+        expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 1, mine: false }]);
+    });
+
+    test("a removal on a chip the client never drew draws it at the count the server says is left", async () => {
+        const { reactions, timelines } = await setup([message(42)]);
+
+        reactions.applyEvent(channel, "reaction.removed", added("pray", anna, 2));
+
+        expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 2, mine: false }]);
     });
 
     test("on an emoji the message has none of draws a new chip with the event's glyph and label", async () => {
         const { reactions, timelines } = await setup([message(42)]);
 
-        reactions.applyEvent(channel, "reaction.added", added("pray", anna));
+        reactions.applyEvent(channel, "reaction.added", added("pray", anna, 1));
 
         const held = timelines.state(channel).messages.find(m => m.id === 42) as unknown as { reactions: ReactionRow[] };
         expect(held.reactions).toEqual([{ code: "pray", count: 1, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }]);
@@ -451,7 +486,7 @@ describe("another person's reaction", () => {
     test("on a message this page does not hold changes nothing and throws nothing", async () => {
         const { reactions, timelines } = await setup([message(42, [rx("heart", 1)])]);
 
-        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 999));
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 2, 999));
 
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 1, mine: false }]);
     });
@@ -462,10 +497,10 @@ describe("another person's reaction", () => {
         const { reactions, timelines } = await setup([message(42, [rx("thumbsup", 2), rx("pray", 1)])], [ok({ emojis: catalog })]);
         await reactions.loadCatalog();
 
-        reactions.applyEvent(channel, "reaction.added", added("heart", anna));
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 1));
         expect(chipsOf(timelines).map(c => c.code)).toEqual(["heart", "thumbsup", "pray"]);
 
-        reactions.applyEvent(channel, "reaction.added", added("fire", anna));
+        reactions.applyEvent(channel, "reaction.added", added("fire", anna, 1));
         expect(chipsOf(timelines).map(c => c.code)).toEqual(["heart", "thumbsup", "pray", "fire"]);
     });
 
@@ -473,7 +508,7 @@ describe("another person's reaction", () => {
         const { reactions, timelines } = await setup([message(42, [rx("thumbsup", 2), rx("pray", 1)])], [ok({ emojis: catalog })]);
         await reactions.loadCatalog();
 
-        reactions.applyEvent(channel, "reaction.added", { ...added("thumbsup", anna), code: "smirk", emoji: "😏", label: "smirking face" });
+        reactions.applyEvent(channel, "reaction.added", { ...added("thumbsup", anna, 1), code: "smirk", emoji: "😏", label: "smirking face" });
 
         expect(chipsOf(timelines).map(c => c.code)).toEqual(["thumbsup", "pray", "smirk"]);
     });
@@ -594,11 +629,11 @@ describe("who reacted", () => {
         return held.reactions?.find(r => r.code === code)?.reactors;
     }
 
-    test("another person's reaction lays the event's three on the chip, the count still moved by one", async () => {
+    test("another person's reaction lays the event's three on the chip, the count set from the event", async () => {
         const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2, true), reactors: [person(me, "Jordan", "Ellis")] } as never])]);
         const three = [person(anna, "Anna", "Reyes"), person(me, "Jordan", "Ellis")];
 
-        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna), reactors: three });
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna, 3), reactors: three });
 
         expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 3, mine: true }]);
         expect(heldReactors(timelines, "pray")).toEqual(three);
@@ -607,7 +642,7 @@ describe("who reacted", () => {
     test("a new chip from an event carries the event's three", async () => {
         const { reactions, timelines } = await setup([message(42)]);
 
-        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna), reactors: [person(anna, "Anna", "Reyes")] });
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", anna, 1), reactors: [person(anna, "Anna", "Reyes")] });
 
         expect(heldReactors(timelines, "pray")).toEqual([person(anna, "Anna", "Reyes")]);
     });
@@ -615,16 +650,16 @@ describe("who reacted", () => {
     test("a removal lays the three that are left", async () => {
         const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2), reactors: [person(anna, "Anna", "Reyes"), person(david, "David", "Okafor")] } as never])]);
 
-        reactions.applyEvent(channel, "reaction.removed", { ...added("pray", anna), reactors: [person(david, "David", "Okafor")] });
+        reactions.applyEvent(channel, "reaction.removed", { ...added("pray", anna, 1), reactors: [person(david, "David", "Okafor")] });
 
         expect(heldReactors(timelines, "pray")).toEqual([person(david, "David", "Okafor")]);
     });
 
-    test("the reader's own echo lays the three too, though it leaves the count and mark as the press drew them", async () => {
+    test("the reader's own echo lays the three and its count, the mark as the press drew it", async () => {
         const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 2, true), reactors: [person(anna, "Anna", "Reyes")] } as never])]);
         const three = [person(me, "Jordan", "Ellis"), person(anna, "Anna", "Reyes")];
 
-        reactions.applyEvent(channel, "reaction.added", { ...added("pray", me), reactors: three });
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", me, 2), reactors: three });
 
         expect(chipsOf(timelines)).toEqual([{ code: "pray", count: 2, mine: true }]);
         expect(heldReactors(timelines, "pray")).toEqual(three);
@@ -634,7 +669,7 @@ describe("who reacted", () => {
         const held = [person(anna, "Anna", "Reyes")];
         const { reactions, timelines } = await setup([message(42, [{ ...rx("pray", 1), reactors: held } as never])]);
 
-        reactions.applyEvent(channel, "reaction.added", added("pray", david));
+        reactions.applyEvent(channel, "reaction.added", added("pray", david, 2));
 
         expect(heldReactors(timelines, "pray")).toEqual(held);
     });
@@ -646,8 +681,8 @@ describe("who reacted", () => {
         const heartThree = [person(david, "David", "Okafor"), person(me, "Jordan", "Ellis")];
 
         const pressing = reactions.toggle(channel, 42, glyph("heart"));
-        reactions.applyEvent(channel, "reaction.added", { ...added("pray", david), reactors: prayThree });
-        reactions.applyEvent(channel, "reaction.added", { ...added("heart", david), reactors: heartThree });
+        reactions.applyEvent(channel, "reaction.added", { ...added("pray", david, 2), reactors: prayThree });
+        reactions.applyEvent(channel, "reaction.added", { ...added("heart", david, 2), reactors: heartThree });
         answer.resolve(ok({ message_id: 42, reactions: [{ ...rx("pray", 1), reactors: [person(anna, "Anna", "Reyes")] }, { ...rx("heart", 1, true), reactors: [person(me, "Jordan", "Ellis")] }] }));
         await pressing;
 
@@ -1005,7 +1040,7 @@ describe("a page read before a reaction", () => {
         const p = await loaded([message(42, [rx("heart", 4)])]);
 
         const reloading = p.timelines.loadNewest(channel);
-        p.deliver("reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna, 5));
         p.pages[1].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await reloading;
 
@@ -1021,7 +1056,7 @@ describe("a page read before a reaction", () => {
 
         const rejoining = p.timelines.onJoined(channel);
         await flush();
-        p.deliver("reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna, 5));
         p.pages[2].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await rejoining;
 
@@ -1032,7 +1067,7 @@ describe("a page read before a reaction", () => {
         const p = paged();
 
         const loading = p.timelines.loadNewest(channel);
-        p.deliver("reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna, 5));
         p.pages[0].resolve(pageOf([message(42, [rx("heart", 4)])]));
         await loading;
 
@@ -1042,7 +1077,7 @@ describe("a page read before a reaction", () => {
     test("a reaction held before the channel's first page was read is not counted again by it", async () => {
         const p = paged();
 
-        p.deliver("reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna, 5));
         const loading = p.timelines.loadNewest(channel);
         p.pages[0].resolve(pageOf([message(42, [rx("heart", 5)])]));
         await loading;
@@ -1067,7 +1102,7 @@ describe("a page read before a reaction", () => {
         const p = await loaded([message(42)]);
 
         const opening = p.threads.openThread(channel, 42);
-        p.deliver("reaction.added", added("pray", anna, 43));
+        p.deliver("reaction.added", added("pray", anna, 1, 43));
         p.threadPage.resolve(ok({ root: message(42), messages: [message(43, [], { parent_id: 42, shown_in_channel: false })], read_cursor: null, following: false, has_more: false }));
         await opening;
 
@@ -1081,7 +1116,7 @@ describe("a page read before a reaction", () => {
         await opening;
 
         const failing = p.timelines.loadNewest(channel);
-        p.deliver("reaction.added", added("heart", anna));
+        p.deliver("reaction.added", added("heart", anna, 5));
         p.pages[0].reject(new Error("offline"));
         await expect(failing).rejects.toThrow("offline");
 
@@ -1133,7 +1168,7 @@ describe("after stop", () => {
         await reactions.toggle(channel, 42, glyph("heart"));
         await reactions.loadCatalog();
         await reactions.listReactors(42, "heart", null);
-        reactions.applyEvent(channel, "reaction.added", added("heart", anna));
+        reactions.applyEvent(channel, "reaction.added", added("heart", anna, 5));
 
         expect(calls).toEqual([]);
         expect(chipsOf(timelines)).toEqual([{ code: "heart", count: 4, mine: false }]);
@@ -1226,7 +1261,7 @@ describe("a block, as what a reaction writes is masked", () => {
         const opening = h.threads.openThread(channel, 42);
         await flush();
 
-        h.reactions.applyThreadEvent(channel, "reaction.added", { ...added("heart", anna, 43), reactors: [annaReacted] });
+        h.reactions.applyThreadEvent(channel, "reaction.added", { ...added("heart", anna, 1, 43), reactors: [annaReacted] });
         h.blocks.setAliases([anna]);
         page.resolve(ok({ root: message(42, [], { person_alias_guid: david }), messages: [message(43, [], { parent_id: 42, person_alias_guid: david })], has_more: false, following: false, read_cursor: null }));
         await opening;
