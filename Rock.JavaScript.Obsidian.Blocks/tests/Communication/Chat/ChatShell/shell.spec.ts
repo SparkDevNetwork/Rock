@@ -3942,6 +3942,7 @@ describe("blocking", () => {
 
         expect(h.blockCalls.map(c => c.name)).toEqual(["chat_list_blocks"]);
         expect(h.shell.blocks.isBlocked(sam)).toBe(true);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
         expect(h.history[channelA]?.length ?? 0).toBe(pages + 1);
     });
 
@@ -4017,6 +4018,7 @@ describe("blocking", () => {
         await settle();
 
         expect(h.blockCalls.map(c => c.name)).toEqual(["chat_unblock_person", "chat_list_blocks"]);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
         await answerA(h, roomA(false));
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 5)).toMatchObject({ body: "sam 5", sender_nick_name: "Sam" });
     });
@@ -4044,6 +4046,7 @@ describe("blocking", () => {
         await settle();
 
         expect(h.blockCalls).toEqual([{ name: "chat_block_person", body: { p_person_alias_guid: sam } }]);
+        expect(h.counts.bootstraps).toBe(bootstraps + 1);
     });
 });
 
