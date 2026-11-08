@@ -23,14 +23,16 @@
 // name or another person's id: every word sent is held to the letters a code is made of. Each kind
 // and code goes once a page load, and only a few a load, so a page that keeps failing does not
 // keep reporting it; a report that fails is let go, since telling the platform must never become
-// a failure the person sees or another report.
+// a failure the person sees or another report. What is worth a number, a gap in what was heard,
+// is counted instead and sent as the page is hidden or left, each send the count since the last.
 import { InjectionKey } from "vue";
 import { CallResult } from "./platformCall.partial";
+import { PageEventTargets } from "./composables/useMarkRead.partial";
 
 /** What the report reaches outside itself. */
 export type ProblemReportOptions = {
-    /** The shell's one call path to the platform. */
-    call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
+    /** The shell's one call path to the platform; keepalive for a send made as the page is left. */
+    call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
 
     /** How many reports a page load may send, read from the settings at each report. */
     cap: () => number;
@@ -51,7 +53,19 @@ export type ProblemReporter = {
 
 /** The report a shell holds. */
 export type ProblemReport = ProblemReporter & {
-    /** Sends nothing more; a report already out is let go when it answers. */
+    /**
+     * Counts one more of a kind and code, sent with the count when the page is hidden or left, or
+     * the report stops: one send for many, and the platform learns how many.
+     *
+     * @param kind What sort of problem, one of the client's own names.
+     * @param code Which one; one not of a code's letters is counted as unreadable.
+     */
+    tally: (kind: string, code: string) => void;
+
+    /** Sends the counts as the page is hidden or left; answers the detach. */
+    attach: (targets: PageEventTargets) => (() => void);
+
+    /** Sends the counts held, then nothing more; a report already out is let go when it answers. */
     stop: () => void;
 };
 
@@ -95,8 +109,54 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
     /** Every kind and code already sent this load, a failed one included, so none goes twice. */
     const sent = new Set<string>();
 
+    /** The counts not sent yet, by kind and code. */
+    const tallies = new Map<string, { kind: string, code: string, count: number }>();
+
+    /** How many sends this load, a failed one included, which the cap holds. */
+    let sends = 0;
+
     /** Set once the shell stops; nothing is sent after it. */
     let isStopped = false;
+
+    /** The code as it may be sent: as written when it is of a code's letters, else unreadable. */
+    function codeOf(code: string): string {
+        return isCodeText(code, maxCodeLength) ? code : unreadableCode;
+    }
+
+    /** One call to the platform's report, while the load's cap allows one. */
+    function send(kind: string, code: string, count: number, detail: string | undefined, isLeaving: boolean): void {
+        if (sends >= Math.floor(options.cap())) {
+            return;
+        }
+        sends++;
+
+        const args = {
+            p_kind: kind,
+            p_code: code,
+            p_count: Number.isFinite(count) ? Math.min(maxCount, Math.max(0, Math.floor(count))) : 0,
+            p_detail: isCodeText(detail, maxDetailLength) ? detail : null
+        };
+
+        // The platform answers nothing, so there is nothing to apply when it does, after a stop
+        // or not; a refusal or a call that never left is dropped and never sent again.
+        try {
+            void options.call("chat_report_problem", args, isLeaving ? { keepalive: true } : undefined).catch(() => undefined);
+        }
+        catch {
+            // the call path could not even ask, which is the same as a failed call
+        }
+    }
+
+    /** Sends each count held, as the page may be closing, and starts every count again. */
+    function flush(): void {
+        if (isStopped) {
+            return;
+        }
+        for (const { kind, code, count } of tallies.values()) {
+            send(kind, code, count, undefined, true);
+        }
+        tallies.clear();
+    }
 
     return {
         report: (kind: string, code: string, count: number = 0, detail?: string): void => {
@@ -106,31 +166,42 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
                 return;
             }
 
-            const sentCode = isCodeText(code, maxCodeLength) ? code : unreadableCode;
+            const sentCode = codeOf(code);
             const key = `${kind} ${sentCode}`;
-            if (sent.has(key) || sent.size >= Math.floor(options.cap())) {
+            if (sent.has(key) || sends >= Math.floor(options.cap())) {
                 return;
             }
             sent.add(key);
+            send(kind, sentCode, count, detail, false);
+        },
 
-            const args = {
-                p_kind: kind,
-                p_code: sentCode,
-                p_count: Number.isFinite(count) ? Math.min(maxCount, Math.max(0, Math.floor(count))) : 0,
-                p_detail: isCodeText(detail, maxDetailLength) ? detail : null
+        tally: (kind: string, code: string): void => {
+            if (isStopped || !isCodeText(kind, maxKindLength)) {
+                return;
+            }
+            const sentCode = codeOf(code);
+            const key = `${kind} ${sentCode}`;
+            const tally = tallies.get(key) ?? { kind, code: sentCode, count: 0 };
+            tally.count++;
+            tallies.set(key, tally);
+        },
+
+        attach: (targets: PageEventTargets): (() => void) => {
+            const onVisibility = (): void => {
+                if (targets.document.visibilityState === "hidden") {
+                    flush();
+                }
             };
-
-            // The platform answers nothing, so there is nothing to apply when it does, after a
-            // stop or not; a refusal or a call that never left is dropped and never sent again.
-            try {
-                void options.call("chat_report_problem", args).catch(() => undefined);
-            }
-            catch {
-                // the call path could not even ask, which is the same as a failed call
-            }
+            targets.document.addEventListener("visibilitychange", onVisibility);
+            targets.window.addEventListener("pagehide", flush);
+            return () => {
+                targets.document.removeEventListener("visibilitychange", onVisibility);
+                targets.window.removeEventListener("pagehide", flush);
+            };
         },
 
         stop: (): void => {
+            flush();
             isStopped = true;
         }
     };

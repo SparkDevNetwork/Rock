@@ -159,6 +159,8 @@ function build(options: {
     const listAnswers: Record<string, unknown> = {};
     // Every block, unblock and list read, each answered with the list as it stands.
     const blockCalls: Array<{ name: string, body: Record<string, unknown> }> = [];
+    // Every problem report, answered with nothing as the platform answers it.
+    const reports: Array<Record<string, unknown>> = [];
     const blocksAnswer: { value: unknown } = { value: { people: [], blocked_aliases: [] } };
     // Every attachment begun, and every upload to Storage, each answered by the test.
     const begins: Array<Record<string, unknown>> = [];
@@ -255,6 +257,10 @@ function build(options: {
                 return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
             }
             const body = JSON.parse(init.body as string);
+            if (url.endsWith("/rest/v1/rpc/chat_report_problem")) {
+                reports.push(body);
+                return fakeResponse(200, null);
+            }
             if (url.endsWith("/rest/v1/rpc/chat_attachment_begin")) {
                 begins.push(body);
                 return fakeResponse(200, (body.p_files as unknown[]).map(() => nextUpload()));
@@ -396,8 +402,9 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers,
-        fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l())
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports,
+        fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
+        firePageHide: () => (windowListeners["pagehide"] ?? []).forEach(l => l())
     };
 }
 
@@ -4475,6 +4482,39 @@ describe("the room's revision", () => {
 
         expect(h.shell.timelines.state(channelA).rev).toBe(7);
         expect(h.shell.timelines.state(channelA).messages.find(m => m.id === 11)).toMatchObject({ blocked: true, body: null });
+    });
+
+    test("gaps are counted and reported once the page is left, with how many there were", async () => {
+        const h = build();
+        h.exchangeSettings.value = { limits: { ...platformLimits, gap_reorder_ms: 1 } };
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [row(channelA, 5)], me: { blocked_aliases: [] } };
+        const starting = h.shell.start();
+        await settle();
+        await answerAt(h, 5);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        await answerAt(h, 5);
+        jest.spyOn(Math, "random").mockReturnValue(0);
+
+        // two holes, each found after the reorder wait and repaired
+        for (const rev of [7, 10]) {
+            channelEvent(h, "message.edited", { id: 10, channel_id: channelA, body: `at ${rev}`, pieces: null, edited_at: "2026-09-23T10:02:00Z", rev });
+            await new Promise(resolve => setTimeout(resolve, 5));
+            await settle();
+            await answerAt(h, rev);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            await settle();
+        }
+        expect(h.reports.filter(r => r.p_kind === "live")).toEqual([]);
+
+        h.firePageHide();
+        await settle();
+
+        expect(h.reports.filter(r => r.p_kind === "live")).toEqual([{ p_kind: "live", p_code: "gap", p_count: 2, p_detail: null }]);
     });
 
     test("a sidebar row ahead of the open room repairs it after the random wait, and a room never opened is never read", async () => {

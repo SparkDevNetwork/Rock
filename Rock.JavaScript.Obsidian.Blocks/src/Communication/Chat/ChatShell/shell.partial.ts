@@ -431,6 +431,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     let hub: RealtimeHub | null = null;
     let detachPage: (() => void) | null = null;
     let detachThreads: (() => void) | null = null;
+    let detachProblems: (() => void) | null = null;
     let push: PushRegistration | null = null;
     let isFirstMessageMarked = false;
 
@@ -577,7 +578,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     // Its own call goes straight through the call path, never through report, so a refused report
     // never reports itself.
-    const problems = createProblemReport({ call: (name, args) => call(name, args), cap: () => session.settings().limits.problem_reports_per_load });
+    const problems = createProblemReport({ call: (name, args, callOptions) => call(name, args, callOptions), cap: () => session.settings().limits.problem_reports_per_load });
 
     /**
      * Tells the sender of every keyed message in a page, whether or not a view keeps the page: a
@@ -628,7 +629,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             repairWaitMs: session.settings().limits.gap_repair_wait_ms,
             staleMs: session.settings().limits.stale_reload_ms
         }),
-        onGap: () => problems.report("live", "gap", 1),
+        // counted, and sent as the page is hidden or left with how many since the last send
+        onGap: () => problems.tally("live", "gap"),
         // the open thread of a room being repaired reads its newest page again; made below
         onRepair: channelId => threads.repair(channelId),
         // whichever copy of the person's send lands first, from a page, live or its answer, settles it
@@ -1108,6 +1110,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             detachPage = tracker.attach(options.pageTargets);
             detachThreads = threads.attach(options.pageTargets);
+            detachProblems = problems.attach(options.pageTargets);
             state.phase = "ready";
 
             await opener.runPageLoad();
@@ -1279,6 +1282,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             await Promise.all([tracker.leave(), threadSaved]);
             detachPage?.();
             detachThreads?.();
+            detachProblems?.();
             await hub?.stop();
         }
     };

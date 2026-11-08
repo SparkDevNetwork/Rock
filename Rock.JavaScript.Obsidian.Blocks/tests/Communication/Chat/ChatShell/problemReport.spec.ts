@@ -20,6 +20,7 @@
 // and a report that fails is let go: telling the platform must never become a problem of its own.
 import { createProblemReport, ProblemReport } from "../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 import { CallResult } from "../../../../src/Communication/Chat/ChatShell/platformCall.partial";
+import { PageEventTargets } from "../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void, reject: (error: unknown) => void };
 
@@ -52,6 +53,27 @@ function reporter(cap: () => number = () => 10, answer: () => Promise<CallResult
         cap
     });
     return { problems, sent };
+}
+
+/** A page whose hiding and leaving the test does by hand. */
+function page(): { targets: PageEventTargets, hide: () => void, leave: () => void } {
+    const listeners = new Map<string, Array<() => void>>();
+    const add = (type: string, listener: () => void): void => {
+        listeners.set(type, [...(listeners.get(type) ?? []), listener]);
+    };
+    const remove = (type: string, listener: () => void): void => {
+        listeners.set(type, (listeners.get(type) ?? []).filter(l => l !== listener));
+    };
+    const document = { visibilityState: "visible", addEventListener: add, removeEventListener: remove };
+    const fire = (type: string): void => (listeners.get(type) ?? []).forEach(listener => listener());
+    return {
+        targets: { document, window: { addEventListener: add, removeEventListener: remove } } as unknown as PageEventTargets,
+        hide: () => {
+            document.visibilityState = "hidden";
+            fire("visibilitychange");
+        },
+        leave: () => fire("pagehide")
+    };
 }
 
 /** Lets every answer already given settle. */
@@ -161,6 +183,51 @@ describe("the problem report", () => {
         problems.report("live", "gap", 1);
         problems.report("block", "poll");
         expect(sent).toHaveLength(1);
+    });
+
+    test("a counted problem is sent as the page is hidden or left, with how many since the last send, and kept alive as the page closes", () => {
+        const keptAlive: boolean[] = [];
+        const sent: Sent[] = [];
+        const problems = createProblemReport({
+            call: (name, args, options) => {
+                sent.push({ name, args });
+                keptAlive.push(options?.keepalive === true);
+                return Promise.resolve(accepted);
+            },
+            cap: () => 10
+        });
+        const shown = page();
+        problems.attach(shown.targets);
+
+        problems.tally("live", "gap");
+        problems.tally("live", "gap");
+        problems.tally("live", "gap");
+        expect(sent).toEqual([]);
+
+        shown.hide();
+        problems.tally("live", "gap");
+        problems.tally("live", "gap");
+        shown.leave();
+        shown.leave();
+
+        expect(sent.map(s => s.args)).toEqual([
+            { p_kind: "live", p_code: "gap", p_count: 3, p_detail: null },
+            { p_kind: "live", p_code: "gap", p_count: 2, p_detail: null }
+        ]);
+        expect(keptAlive).toEqual([true, true]);
+    });
+
+    test("counts held are sent as the report stops, each send held to the load's cap, and none once stopped", () => {
+        const { problems, sent } = reporter(() => 2);
+
+        problems.report("refusal", "rpc.new_thing");
+        problems.tally("live", "gap");
+        problems.tally("realtime", "rt.unknown");
+        problems.stop();
+        problems.tally("live", "gap");
+        problems.stop();
+
+        expect(sent.map(s => [s.args.p_kind, s.args.p_count])).toEqual([["refusal", 0], ["live", 1]]);
     });
 
     test("a call path that throws as it is asked is dropped the same way", () => {
