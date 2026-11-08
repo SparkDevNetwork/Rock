@@ -380,9 +380,11 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 scene.Fixture.AddMember( room, ada, m => m.GroupRoleId = leader );
                 scene.Fixture.AddMember( room, bo );
 
-                Assert.AreEqual( "ok", scene.Start( ada, scene.Alias( bo ) ).Code, "the leader may see the roster, so the room gives them reach" );
+                // The plain member first, since the leader's start below makes a conversation the two
+                // would then carry on whatever the room says.
                 Assert.AreEqual( "door.target_not_eligible", scene.Start( bo, scene.Alias( ada ) ).Code,
-                    "but not the other way: the room gives a plain member no reach to its leader" );
+                    "the room gives a plain member no reach to its leader" );
+                Assert.AreEqual( "ok", scene.Start( ada, scene.Alias( bo ) ).Code, "but the leader may see the roster, so the room gives them reach" );
             }
         }
 
