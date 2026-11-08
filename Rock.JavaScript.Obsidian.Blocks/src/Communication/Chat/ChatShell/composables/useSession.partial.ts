@@ -64,7 +64,7 @@ export type ChatSettings = {
     service: { state: string, banner: string | null };
     client: { update_required: boolean };
     routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number } & PlatformLimits & AttachmentTypes;
+    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number } & PlatformLimits & AttachmentTypes;
     /** Switches by name; gifs is whether the church may search for and send GIFs, off unless true. */
     flags: Record<string, unknown> & { gifs: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
@@ -91,7 +91,9 @@ const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof A
     reconnect_base_ms: 1000,
     reconnect_cap_ms: 30000,
     catch_up_page: 100,
-    catch_up_max: 500
+    catch_up_max: 500,
+    // an estimate: enough to name what went wrong on a load without a page that keeps failing flooding the log
+    problem_reports_per_load: 10
 };
 
 /** The platform's limits by name, read from every exchange's answer. */
@@ -162,6 +164,7 @@ export function readSettings(raw: unknown): ChatSettings {
             // outside that would fail every catch-up
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max"),
+            problem_reports_per_load: limit("problem_reports_per_load"),
             ...platformLimits,
             // a list of anything but strings is no list, so files are refused rather than guessed at
             attachment_types: Array.isArray(limits.attachment_types) && limits.attachment_types.every(type => typeof type === "string")

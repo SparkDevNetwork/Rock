@@ -485,6 +485,7 @@ describe("settings from the token exchange", () => {
             reconnect_cap_ms: 30000,
             catch_up_page: 100,
             catch_up_max: 500,
+            problem_reports_per_load: 10,
             dm_max_others: 0,
             dm_name_max_length: 0,
             body_max_length: 0,
@@ -553,6 +554,12 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
         expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, other: "kept" });
+    });
+
+    test("the problem reports a page load may send are read as sent, else 10", () => {
+        expect(readSettings({ limits: { problem_reports_per_load: 3 } }).limits.problem_reports_per_load).toBe(3);
+        expect(readSettings({ limits: { problem_reports_per_load: "3" } }).limits.problem_reports_per_load).toBe(10);
+        expect(readSettings({ limits: { problem_reports_per_load: 0 } }).limits.problem_reports_per_load).toBe(10);
     });
 
     test("a catch-up page is never larger than history will serve", () => {
