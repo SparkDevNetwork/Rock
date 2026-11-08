@@ -126,6 +126,9 @@ const tryAgainLater = "Try again in a moment.";
 /** What a failure says that this client has no better words for. */
 const wentWrong = "Something went wrong in chat.";
 
+/** What a refusal of a right says that this client has no better words for. */
+const noAccess = "You do not have access to that.";
+
 /** What a change says when it could not be made because the person is offline, wherever it was asked. */
 export const offlineSentence = "You're offline. Try again when you're back.";
 
@@ -297,7 +300,28 @@ function answeredWords(error: ChatError): FailureWords {
         return finalWords(maintenanceSentence);
     }
 
-    return finalWords(error.severity === "permission" ? "You do not have access to that." : wentWrong);
+    return finalWords(error.severity === "permission" ? noAccess : wentWrong);
+}
+
+/**
+ * Whether a refusal reached the person with no words of its own: neither this client nor the
+ * server had a sentence for its code, so all they read is that something went wrong. That is a
+ * code the platform added after this release without a sentence, which it is told about.
+ *
+ * @param error The classified failure.
+ *
+ * @returns True when the person was shown only the client's last-resort words.
+ */
+export function isUnworded(error: ChatError): boolean {
+    // A failure the client could not read, or a call that reached nothing, has no code to name;
+    // the last-resort words are the right ones for it.
+    if (error.code.endsWith(".unknown") || isUnreached(error) || isSentence(error.text, error.code)) {
+        return false;
+    }
+
+    // Beside a Try again, or alone where none is offered, the last-resort words are the same.
+    const words = answeredWords(error);
+    return words.besideRetry === wentWrong || words.besideRetry === noAccess;
 }
 
 /**

@@ -32,6 +32,7 @@ import {
     isOfflineFailure,
     isRefusedForGood,
     isUnreached,
+    isUnworded,
     maintenanceSentence,
     messageForError,
     messageOrOffline,
@@ -225,6 +226,31 @@ describe("codes a released client was not built with", () => {
     test("with no sentence from the server the severity's sentence is shown", () => {
         expect(messageForError({ code: "rpc.something_new", severity: "failed" }))
             .toBe("Something went wrong in chat. Try again in a moment.");
+    });
+
+    // What the platform is told about: a refusal neither this client nor the server had a
+    // sentence for, so the person read only that something went wrong.
+    test("a refusal with neither the client's words nor the server's is unworded", () => {
+        expect(isUnworded({ code: "rpc.something_new", severity: "failed" })).toBe(true);
+        expect(isUnworded({ code: "authz.something_new", severity: "permission" })).toBe(true);
+        expect(isUnworded({ code: "rpc.bad_request", severity: "failed", text: "rpc.bad_request" })).toBe(true);
+        expect(isUnworded({ code: "billing.over_quota", severity: "unknown" })).toBe(true);
+    });
+
+    test("a refusal with the server's sentence or the client's own is worded", () => {
+        expect(isUnworded({ code: "rpc.something_new", severity: "failed", text: "That can't be done yet." })).toBe(false);
+        expect(isUnworded({ code: "rpc.rate_limited", severity: "failed" })).toBe(false);
+        expect(isUnworded({ code: "rpc.read_only", severity: "failed" })).toBe(false);
+        expect(isUnworded({ code: "rt.read_revoked", severity: "permission" })).toBe(false);
+        expect(isUnworded({ code: "auth.something_new", severity: "session" })).toBe(false);
+        expect(isUnworded({ code: "authz.not_member", severity: "permission", roomKind: "group" })).toBe(false);
+    });
+
+    test("a failure the client could not read, or a call that reached nothing, is no refusal to report", () => {
+        expect(isUnworded({ code: "rpc.unknown", severity: "unknown" })).toBe(false);
+        expect(isUnworded({ code: "door.unknown", severity: "unknown" })).toBe(false);
+        expect(isUnworded({ code: "rpc.transport", severity: "failed" })).toBe(false);
+        expect(isUnworded({ code: "door.unreachable", severity: "failed" })).toBe(false);
     });
 });
 
