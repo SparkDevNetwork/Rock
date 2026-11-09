@@ -210,7 +210,7 @@ namespace RockWeb.Blocks.Crm
                     var rockContext = RockApp.Current.CreateRockContext();
                     var entitySetService = new EntitySetService( rockContext );
                     var entitySet = entitySetService.Get( setId.Value );
-                    if ( entitySet != null )
+                    if ( IsMergeRequestOfCurrentPerson( entitySet ) )
                     {
                         if ( entitySet.AdditionalSettingsJson != null )
                         {
@@ -223,6 +223,7 @@ namespace RockWeb.Blocks.Crm
                         if ( definedValuePurpose != null )
                         {
                             nbNotAuthorized.Visible = false;
+                            cbShouldNotifyAfterMerge.Visible = true;
                             tbEntitySetNote.Visible = true;
                             btnSaveRequestNote.Visible = true;
 
@@ -374,6 +375,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ppAdd_SelectPerson( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             int? personId = ppAdd.PersonId;
             if ( personId.HasValue && ( MergeData == null || !MergeData.People.Any( p => p.Id == personId.Value ) ) )
             {
@@ -410,6 +416,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void personCol_OnDelete( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             var personMergeField = sender as MergePersonField;
             if ( personMergeField != null )
             {
@@ -526,6 +537,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbMerge_Click( object sender, EventArgs e )
         {
+            if ( !IsUserAuthorized( Authorization.EDIT ) )
+            {
+                return;
+            }
+
             if ( !CanMerge().IsAllowedToMerge )
             {
                 nbError.Heading = "Merge Error";
@@ -1325,6 +1341,15 @@ namespace RockWeb.Blocks.Crm
             {
                 var rockContext = RockApp.Current.CreateRockContext();
                 var entitySet = new EntitySetService( rockContext ).Get( setId.Value );
+                if ( !IsMergeRequestOfCurrentPerson( entitySet ) )
+                {
+                    nbNotAuthorized.Visible = true;
+                    cbShouldNotifyAfterMerge.Visible = false;
+                    tbEntitySetNote.Visible = false;
+                    btnSaveRequestNote.Visible = false;
+                    return;
+                }
+
                 entitySet.Note = tbEntitySetNote.Text;
 
                 var entitySetAdditionalSettings = entitySet.GetAdditionalSettings<EntitySetAdditionalSettings>();
@@ -1482,6 +1507,29 @@ namespace RockWeb.Blocks.Crm
             public RoleCache RequiredSecurityRole { get; set; }
 
             public ElevatedSecurityLevel MaxElevatedSecurityLevel { get; internal set; }
+        }
+
+        /// <summary>
+        /// Determines whether the entity set is a set of people created by the current person.
+        /// </summary>
+        /// <param name="entitySet">The entity set named by the Set page parameter, or <c>null</c> when none was found.</param>
+        /// <returns><c>true</c> when the current person created the set and it holds people; otherwise <c>false</c>.</returns>
+        private bool IsMergeRequestOfCurrentPerson( EntitySet entitySet )
+        {
+            /*
+                11/09/26 - JMH
+
+                A person with VIEW but not EDIT on this block can only submit a merge request.
+                The person grid saves the merge set as the requester, so the creator is the only
+                legitimate view-only visitor. Person ids are compared instead of alias ids so the
+                check still holds after the requester's own record has been merged.
+
+                Reason: Stop view-only visitors from reading or changing other people's sets by id.
+            */
+            return entitySet != null
+                && CurrentPersonId.HasValue
+                && entitySet.EntityTypeId == EntityTypeCache.Get<Rock.Model.Person>().Id
+                && entitySet.CreatedByPersonId == CurrentPersonId.Value;
         }
 
         private CanMergeResult CanMerge()

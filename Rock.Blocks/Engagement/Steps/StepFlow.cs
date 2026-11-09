@@ -81,8 +81,8 @@ namespace Rock.Blocks.Engagement.Steps
         DefaultValue = "<div class=\"flow-legend\">\n" +
             "{% for stepItem in Steps %}\n" +
             "    <div class=\"flow-key\">\n" +
-            "        <span class=\"color\" style=\"background-color:{{stepItem.Color}};\"></span>\n" +
-            "        <span>{{forloop.index}}. {{stepItem.StepName}}</span>\n" +
+            "        <span class=\"color\" style=\"background-color:{{stepItem.Color | Escape}};\"></span>\n" +
+            "        <span>{{forloop.index}}. {{stepItem.StepName | Escape}}</span>\n" +
             "    </div>\n" +
             "{% endfor %}\n" +
             "</div>",
@@ -320,8 +320,8 @@ namespace Rock.Blocks.Engagement.Steps
 
         private string BuildTooltip( StepTypeCache source, StepTypeCache target, int units, int? days )
         {
-            string sourceName = source?.Name ?? "Unknown Source";
-            string targetName = target?.Name ?? "Unknown Target";
+            string sourceName = ( source?.Name ?? "Unknown Source" ).EncodeHtml();
+            string targetName = ( target?.Name ?? "Unknown Target" ).EncodeHtml();
             string dayString = days.HasValue ? days.Value.ToString() : "Unknown";
 
             return $"<p><strong>{sourceName} > {targetName}</strong></p>" +
