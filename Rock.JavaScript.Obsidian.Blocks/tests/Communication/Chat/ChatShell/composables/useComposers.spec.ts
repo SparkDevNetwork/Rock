@@ -21,6 +21,7 @@
 import { computed, ref } from "vue";
 import { useComposers } from "../../../../../src/Communication/Chat/ChatShell/composables/useComposers.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import type { TypingLine } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import type { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import type { OpenThreadState } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 
@@ -30,7 +31,7 @@ const otherRoom = "c000000b-0000-4000-8000-000000000000";
 function build() {
     const drafts: Record<string, string> = {};
     const typed: Array<[string, number | null, string]> = [];
-    const lines: Record<string, string> = { [group]: "Anna is typing…", [quoteKey(otherRoom, 40)]: "Sam is typing…" };
+    const lines: Record<string, TypingLine> = { [group]: { names: "Anna", verb: "is typing…" }, [quoteKey(otherRoom, 40)]: { names: "Sam", verb: "is typing…" } };
     const shell = ref({
         drafts: {
             of: (place: string) => ({ text: drafts[place] ?? "", mentions: [], isAlsoSent: false }),
@@ -91,6 +92,6 @@ test("a box handing back the text its draft already holds, as a send that keeps 
 test("each box is given the line of who else is typing in its place", () => {
     const h = build();
 
-    expect(h.composers.conversationTyping.value).toBe("Anna is typing…");
-    expect(h.composers.threadTyping.value).toBe("Sam is typing…");
+    expect(h.composers.conversationTyping.value).toEqual({ names: "Anna", verb: "is typing…" });
+    expect(h.composers.threadTyping.value).toEqual({ names: "Sam", verb: "is typing…" });
 });

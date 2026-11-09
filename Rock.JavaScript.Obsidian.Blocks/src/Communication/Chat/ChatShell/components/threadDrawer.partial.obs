@@ -344,6 +344,7 @@
     import { AttachmentTray } from "../composables/useAttachments.partial";
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { TypingLine } from "../composables/usePresence.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
@@ -531,7 +532,7 @@
 
         /** Who else is typing a reply in this thread, for the reply composer's foot; null for no one. */
         typingLine: {
-            type: String as PropType<string | null>,
+            type: Object as PropType<TypingLine | null>,
             default: null
         },
 

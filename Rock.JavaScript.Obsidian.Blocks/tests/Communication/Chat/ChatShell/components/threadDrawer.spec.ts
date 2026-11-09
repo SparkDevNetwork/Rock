@@ -548,9 +548,9 @@ test("the reply composer is keyed by its thread", () => {
 // Who is typing a reply in this thread is told in the reply composer's foot, as the conversation's
 // composer tells its own.
 test("the reply composer is given the thread's typing line", () => {
-    const w = draw({ typingLine: "Anna is typing…" });
+    const w = draw({ typingLine: { names: "Anna", verb: "is typing…" } });
 
-    expect(w.findComponent(Composer).props("typingLine")).toBe("Anna is typing…");
+    expect(w.findComponent(Composer).props("typingLine")).toEqual({ names: "Anna", verb: "is typing…" });
 });
 
 describe("the reply composer's @ picker", () => {

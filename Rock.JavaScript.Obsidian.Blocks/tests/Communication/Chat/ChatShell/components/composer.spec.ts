@@ -28,6 +28,7 @@ import Composer from "../../../../../src/Communication/Chat/ChatShell/components
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
+import { TypingLine } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
 
@@ -240,8 +241,10 @@ describe("the composer's key hint", () => {
 // Someone else typing is told in the foot's own reserved row, in the key hint's place, so nothing
 // above it moves; it is read where a person moves to it, never announced.
 describe("the composer's typing line", () => {
+    const anna: TypingLine = { names: "Anna", verb: "is typing…" };
+
     test("takes the key hint's place with the words", () => {
-        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: "Anna is typing…" } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: anna } });
 
         expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
@@ -255,13 +258,13 @@ describe("the composer's typing line", () => {
     });
 
     test("on a phone it takes the foot's otherwise empty row", () => {
-        const wrapper = mountComposer({ props: { isPhone: true, typingLine: "Anna is typing…" } });
+        const wrapper = mountComposer({ props: { isPhone: true, typingLine: anna } });
 
         expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
     });
 
     test("in a thread it follows the also-send switch, which stays, and the counter stays last", () => {
-        const wrapper = mountComposer({ props: { isThread: true, maxLength: 600, typingLine: "Anna is typing…" } });
+        const wrapper = mountComposer({ props: { isThread: true, maxLength: 600, typingLine: anna } });
         const foot = wrapper.get(".chat-composer-foot").element;
         const children = Array.from(foot.children).map(child => (child as HTMLElement).dataset.testid);
 
@@ -286,11 +289,51 @@ describe("the composer's typing line", () => {
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*max-width: 100%;/);
         expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*min-width: 0;/);
-        expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*text-overflow: ellipsis;/);
+    });
+
+    // However narrow the foot, what is left must still read as typing: the names give way, the verb
+    // never does, and a screen reader hears the whole sentence.
+    test("is drawn as names that may shrink and a verb that does not, reading as one sentence", () => {
+        const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew", verb: "is typing…" } } });
+        const line = wrapper.get("[data-testid='composer-typing']");
+        const text = line.get(".chat-composer-typing-text").element;
+        const parts = Array.from(text.children).map(child => [child.className, child.textContent]);
+
+        expect(parts).toEqual([["chat-composer-typing-names", "Bartholomew"], ["chat-composer-typing-verb", " is typing…"]]);
+        expect(text.textContent).toBe("Bartholomew is typing…");
+    });
+
+    test("two names shrink as one part", () => {
+        const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew and Anna", verb: "are typing…" } } });
+
+        expect(wrapper.get(".chat-composer-typing-names").text()).toBe("Bartholomew and Anna");
+        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Bartholomew and Anna are typing…");
+    });
+
+    test("several people is the verb alone, kept whole", () => {
+        const wrapper = mountComposer({ props: { typingLine: { names: null, verb: "Several people are typing…" } } });
+        const text = wrapper.get(".chat-composer-typing-text").element;
+
+        expect(wrapper.find(".chat-composer-typing-names").exists()).toBe(false);
+        expect(text.textContent).toBe("Several people are typing…");
+    });
+
+    test("only the names truncate; the verb keeps its width and its leading space", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*display: flex;/);
+        expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*min-width: 0;/);
+        expect(style).not.toMatch(/\.chat-composer-typing-text\s*\{[^}]*text-overflow/);
+        expect(style).toMatch(/\.chat-composer-typing-names\s*\{[^}]*min-width: 0;/);
+        expect(style).toMatch(/\.chat-composer-typing-names\s*\{[^}]*overflow: hidden;/);
+        expect(style).toMatch(/\.chat-composer-typing-names\s*\{[^}]*text-overflow: ellipsis;/);
+        expect(style).toMatch(/\.chat-composer-typing-verb\s*\{[^}]*flex: none;/);
+        expect(style).toMatch(/\.chat-composer-typing-verb\s*\{[^}]*white-space: pre;/);
     });
 
     test("is not a live region, nor inside one, and its dots are hidden from a screen reader", () => {
-        const wrapper = mountComposer({ props: { typingLine: "Anna is typing…" } });
+        const wrapper = mountComposer({ props: { typingLine: anna } });
         const line = wrapper.get("[data-testid='composer-typing']").element as HTMLElement;
 
         for (let node: HTMLElement | null = line; node; node = node.parentElement) {

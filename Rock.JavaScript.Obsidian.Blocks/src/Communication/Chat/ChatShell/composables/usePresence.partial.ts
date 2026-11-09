@@ -93,7 +93,7 @@ export type Presence = {
     typed: (channelId: string, rootId: number | null, text: string) => void;
 
     /** The line a place's composer draws, or null when no one else is typing there. */
-    lineFor: (place: string | null) => string | null;
+    lineFor: (place: string | null) => TypingLine | null;
 
     /** A message arrived live, which ends its sender's typing in its place. */
     messageArrived: (channelId: string, created: Partial<MessageCreatedEvent>) => void;
@@ -107,6 +107,18 @@ export type Presence = {
     stop: () => void;
 };
 
+/**
+ * The typing line in its two parts, so a narrow foot can shorten the names and never the verb that
+ * says what they are doing; read together they are the sentence.
+ */
+export type TypingLine = {
+    /** Who is typing, which may be cut short; null when no one is named, as for several people. */
+    names: string | null;
+
+    /** What they are doing, always drawn whole. */
+    verb: string;
+};
+
 /** One typist in a place: when their line expires, and the newest message their signal followed. */
 type Typist = { expiresAt: number, after: number };
 
@@ -117,12 +129,12 @@ type Typist = { expiresAt: number, after: number };
  *
  * @returns The line, or null for none.
  */
-export function typingLine(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | "last_name"> | null>): string | null {
+export function typingLine(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | "last_name"> | null>): TypingLine | null {
     if (people.length === 0) {
         return null;
     }
     if (people.length > 2) {
-        return "Several people are typing…";
+        return { names: null, verb: "Several people are typing…" };
     }
 
     const names = people.map(person => person?.nick_name || person?.last_name || null);
@@ -137,10 +149,10 @@ export function typingLine(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | 
     }
 
     if (names.length === 1) {
-        return `${names[0] ?? "Someone"} is typing…`;
+        return { names: names[0] ?? "Someone", verb: "is typing…" };
     }
 
-    return `${names[0] ?? "Someone"} and ${names[1] ?? "someone"} are typing…`;
+    return { names: `${names[0] ?? "Someone"} and ${names[1] ?? "someone"}`, verb: "are typing…" };
 }
 
 /**

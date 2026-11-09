@@ -151,7 +151,7 @@
                 <!-- Read where a person moves to it, never announced: a live region would speak every pause. -->
                 <span v-if="typingLine" class="chat-composer-typing" data-testid="composer-typing">
                     <span class="chat-composer-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-                    <span class="chat-composer-typing-text">{{ typingLine }}</span>
+                    <span class="chat-composer-typing-text"><span v-if="typingLine.names" class="chat-composer-typing-names">{{ typingLine.names }}</span><span class="chat-composer-typing-verb">{{ typingLine.names ? ` ${typingLine.verb}` : typingLine.verb }}</span></span>
                 </span>
                 <span v-else-if="!isThread && !isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
@@ -495,10 +495,26 @@
     animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-out);
 }
 
+/*
+ * The names give way with an ellipsis and the verb never does, so however narrow the foot, what is
+ * left still reads as someone typing. The space before the verb is its own text, kept by `pre`, so
+ * the line reads as one sentence to a screen reader and when copied.
+ */
 .chat-composer-typing-text {
+    display: flex;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.chat-composer-typing-names {
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+}
+
+.chat-composer-typing-verb {
+    flex: none;
+    white-space: pre;
 }
 
 .chat-composer-typing-dots {
@@ -598,6 +614,7 @@
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { gifsKey } from "../composables/useGifs.partial";
+    import { TypingLine } from "../composables/usePresence.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import { useIsMotionReduced } from "../ui/brand.partial";
@@ -739,7 +756,7 @@
 
         /** Who else is typing where the box types, drawn in the foot in the key hint's place; null for no one. */
         typingLine: {
-            type: String as PropType<string | null>,
+            type: Object as PropType<TypingLine | null>,
             default: null
         },
 

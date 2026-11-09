@@ -4607,7 +4607,7 @@ describe("typing", () => {
         await settle();
 
         expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
-        expect(h.shell.presence.lineFor(channelA)).toBe("Someone is typing…");
+        expect(h.shell.presence.lineFor(channelA)).toEqual({ names: "Someone", verb: "is typing…" });
         expect(timeline).not.toHaveBeenCalled();
         expect(threads).not.toHaveBeenCalled();
         expect(landed).not.toHaveBeenCalled();
