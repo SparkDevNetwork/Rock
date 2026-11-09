@@ -791,6 +791,9 @@ export type TypingEvent = {
      * against their messages; null for none, and left out by a platform older than the ordering.
      */
     after?: number | null;
+
+    /** The interval the platform holds this typist's signals to, by their token; left out by a platform that does not say it. */
+    interval_ms?: number;
 };
 
 /** A new message on a channel topic. */

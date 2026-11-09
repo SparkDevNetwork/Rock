@@ -316,6 +316,18 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         changed();
     }
 
+    /**
+     * How long a typist's line lasts: the viewer's own expiry, or where the signal names the pace
+     * its typist was held to, that pace with the same margin the viewer's expiry has over its own
+     * interval, since tokens minted at different moments can name different paces.
+     */
+    function expiryOf(intervalMs: unknown): number {
+        const { typing_interval_ms: ownInterval, typing_expiry_ms: ownExpiry } = settings().limits;
+        return typeof intervalMs === "number" && intervalMs > 0 && ownInterval > 0
+            ? intervalMs * ownExpiry / ownInterval
+            : ownExpiry;
+    }
+
     function heard(event: string, payload: unknown, topicChannelId?: string): void {
         if (isStopped() || event !== "typing") {
             return;
@@ -349,7 +361,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             held = new Map();
             typists.set(place, held);
         }
-        held.set(alias, { expiresAt: Date.now() + settings().limits.typing_expiry_ms, after });
+        held.set(alias, { expiresAt: Date.now() + expiryOf(typing?.interval_ms), after });
         changed();
     }
 

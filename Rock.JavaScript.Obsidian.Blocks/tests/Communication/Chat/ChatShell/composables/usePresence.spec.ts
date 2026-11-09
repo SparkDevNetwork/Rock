@@ -431,6 +431,31 @@ describe("the others' signals", () => {
         expect(h.presence.state.typists[group] ?? []).toEqual([]);
     });
 
+    // The typist paces by their own token, which can name a longer interval than the viewer's
+    // while the platform's cap is moving; the line lasts by their pace, with the viewer's own
+    // margin of expiry over interval (6,000 over 4,000 here).
+    test("a signal naming its typist's interval keeps the line for that interval with the expiry's margin", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna, { interval_ms: 8000 }), group);
+
+        jest.advanceTimersByTime(11999);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        jest.advanceTimersByTime(1);
+        expect(h.presence.state.typists[group] ?? []).toEqual([]);
+    });
+
+    test("a signal naming no interval, or one that is not a positive number, keeps the line for the viewer's own expiry", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna), group);
+        h.presence.heard("typing", signal(sam, { interval_ms: "8000" }), group);
+        h.presence.heard("typing", signal(lee, { interval_ms: 0 }), group);
+
+        jest.advanceTimersByTime(5999);
+        expect(h.presence.state.typists[group]).toEqual([anna, sam, lee]);
+        jest.advanceTimersByTime(1);
+        expect(h.presence.state.typists[group] ?? []).toEqual([]);
+    });
+
     test("however many typists are held, one timer waits for the soonest", () => {
         const h = build();
 
