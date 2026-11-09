@@ -238,37 +238,50 @@ describe("the composer's key hint", () => {
     });
 });
 
-// Someone else typing is told in the foot's own reserved row, in the key hint's place, so nothing
-// above it moves; it is read where a person moves to it, never announced.
+// Someone else typing is told in a band of the composer's own on its top edge, over the feed's
+// bottom padding, so it takes no space and nothing moves as it comes and goes; the foot keeps what
+// it shows with no one typing. It is read where a person moves to it, never announced.
 describe("the composer's typing line", () => {
     const anna: TypingLine = { names: "Anna", verb: "is typing…" };
 
-    test("takes the key hint's place with the words", () => {
-        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: anna } });
+    /** The test ids of the foot's own parts, in order. */
+    function footParts(wrapper: VueWrapper): (string | undefined)[] {
+        return Array.from(wrapper.get(".chat-composer-foot").element.children).map(child => (child as HTMLElement).dataset.testid);
+    }
 
-        expect(wrapper.get("[data-testid='composer-typing'] .chat-composer-typing-text").text()).toBe("Anna is typing…");
-        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
+    test("stands just before the box, outside the foot, and the key hint stays", () => {
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: anna } });
+        const line = wrapper.get("[data-testid='composer-typing']").element;
+
+        expect(line.querySelector(".chat-composer-typing-text")?.textContent).toBe("Anna is typing…");
+        expect(line.closest(".chat-composer-foot")).toBeNull();
+        expect(line.nextElementSibling?.classList.contains("chat-composer-box")).toBe(true);
+        expect(wrapper.get("[data-testid='composer-hint']").text()).toBe("Enter to send, Shift + Enter for a new line");
     });
 
-    test("with no one typing, the hint is back", () => {
+    test("with no one typing, no band is drawn and the hint is there as ever", () => {
         const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: null } });
 
         expect(wrapper.find("[data-testid='composer-typing']").exists()).toBe(false);
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(true);
     });
 
-    test("on a phone it takes the foot's otherwise empty row", () => {
+    test("on a phone it stands above the box too, and the foot keeps only its counter", () => {
         const wrapper = mountComposer({ props: { isPhone: true, typingLine: anna } });
+        const line = wrapper.get("[data-testid='composer-typing']").element;
 
-        expect(wrapper.get("[data-testid='composer-typing'] .chat-composer-typing-text").text()).toBe("Anna is typing…");
+        expect(line.querySelector(".chat-composer-typing-text")?.textContent).toBe("Anna is typing…");
+        expect(line.nextElementSibling?.classList.contains("chat-composer-box")).toBe(true);
+        expect(footParts(wrapper)).toEqual(["composer-count"]);
     });
 
-    test("in a thread it follows the also-send switch, which stays, and the counter stays last", () => {
+    test("in a thread it stands above the box, and the foot keeps the also-send switch and the counter", () => {
         const wrapper = mountComposer({ props: { isThread: true, maxLength: 600, typingLine: anna } });
-        const foot = wrapper.get(".chat-composer-foot").element;
-        const children = Array.from(foot.children).map(child => (child as HTMLElement).dataset.testid);
+        const line = wrapper.get("[data-testid='composer-typing']").element;
 
-        expect(children).toEqual(["composer-also", "composer-typing", "composer-count"]);
+        expect(line.closest(".chat-composer-foot")).toBeNull();
+        expect(line.nextElementSibling?.classList.contains("chat-composer-box")).toBe(true);
+        expect(footParts(wrapper)).toEqual(["composer-also", "composer-count"]);
     });
 
     test("in a thread with no one typing the switch stands alone, with no key hint beside it", () => {
@@ -279,19 +292,61 @@ describe("the composer's typing line", () => {
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
 
-    // A typing line with a zero basis takes only the width the label and the counter leave over, so
-    // neither gives way to it, and the label still shrinks against the counter as it always has. Its
-    // dots and verb never shrink, so a line left less room than them is cut at its own box and never
-    // paints over the counter or past the foot.
-    test("in a thread the typing line takes only the space left over and truncates there", () => {
+    // The foot is drawn the same whoever is typing, the counter showing included, so neither the
+    // switch's words, the key hint nor the counter changes as typists come and go.
+    test.each([
+        ["a conversation", {}],
+        ["a thread", { isThread: true, isChannel: true, title: "Evening Volunteers Planning" }],
+        ["a phone", { isPhone: true }]
+    ])("in %s the foot is the same with someone typing as without", async (_kind, kind) => {
+        const wrapper = mountComposer({ props: { ...kind, maxLength: 5000, typingLine: null } });
+        await type(wrapper, "x".repeat(4812));
+        const alone = wrapper.get(".chat-composer-foot").html();
+
+        await wrapper.setProps({ typingLine: { names: "Bartholomew and Maximiliana", verb: "are typing…" } });
+
+        expect(wrapper.find("[data-testid='composer-typing']").exists()).toBe(true);
+        expect(wrapper.get("[data-testid='composer-count']").text()).toBe("188 left");
+        expect(wrapper.get(".chat-composer-foot").html()).toBe(alone);
+    });
+
+    // The band is placed on the composer's top edge rather than in its column, so it takes no
+    // height in the composer and the composer and the feed above it never move. Its text starts
+    // where the foot's does, at the composer's inset plus the foot's own, in every kind of composer.
+    // The surface behind it hides rows scrolled under it, and it takes a press rather than passing
+    // it to a row the person cannot see.
+    test("is a band on the composer's top edge that takes no space, its text at the foot's inset", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = (selector: string): string => new RegExp(`(?:^|\\n)${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
+
+        expect(rule(".chat-composer")).toMatch(/position: relative;/);
+        expect(rule(".chat-composer-typing")).toMatch(/position: absolute;/);
+        expect(rule(".chat-composer-typing")).toMatch(/bottom: 100%;/);
+        expect(rule(".chat-composer-typing")).toMatch(/left: 0;/);
+        expect(rule(".chat-composer-typing")).toMatch(/right: 0;/);
+        expect(rule(".chat-composer-typing")).toMatch(/height: 16px;/);
+        expect(rule(".chat-composer-typing")).toMatch(/background: linear-gradient\(to bottom, transparent, var\(--chat-surface\) 4px\);/);
+        expect(rule(".chat-composer-typing")).not.toMatch(/flex: 1 1 0/);
+        expect(rule(".chat-composer-typing")).not.toMatch(/pointer-events/);
+
+        // One inset per kind of composer, read by its padding and by the band's text alike.
+        expect(rule(".chat-composer")).toMatch(/--chat-composer-inset: 20px;/);
+        expect(rule(".chat-composer.is-thread")).toMatch(/--chat-composer-inset: 14px;/);
+        expect(rule(".chat-composer.is-phone")).toMatch(/--chat-composer-inset: 10px;/);
+        expect(rule(".chat-composer")).toMatch(/padding: 0 var\(--chat-composer-inset\) 14px;/);
+        expect(rule(".chat-composer-foot")).toMatch(/padding: 0 14px;/);
+        expect(rule(".chat-composer-typing")).toMatch(/padding: 0 calc\(var\(--chat-composer-inset\) \+ 14px\);/);
+    });
+
+    // The foot holds no typing rule at all: it is back to what it drew before typing was shown.
+    test("leaves the foot's own rules untouched", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
-        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*flex: 1 1 0;/);
+        expect(style).not.toMatch(/\.chat-composer-foot[^{]*\.chat-composer-typing/);
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*max-width: 100%;/);
-        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*min-width: 0;/);
-        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*overflow: hidden;/);
     });
 
     // However narrow the foot, what is left must still read as typing: the names give way and the
