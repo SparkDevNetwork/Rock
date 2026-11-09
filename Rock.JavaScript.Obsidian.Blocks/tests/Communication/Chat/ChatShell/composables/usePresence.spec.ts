@@ -307,14 +307,17 @@ describe("the person's own signals", () => {
         expect(h.calls).toHaveLength(2);
     });
 
-    test("a conversation refused as not one typing shows in is not asked again this page, and another still is", async () => {
+    test("a conversation refused as not one typing shows in is not asked again this page, nor are its threads, and another still is", async () => {
         const h = build();
         h.answers.push(refused("rpc.typing_not_here", 400, "Typing indicators show only in direct messages and groups."));
 
-        h.presence.typed(group, null, "a");
+        // refused from a thread, so the silence is the conversation's and not only that thread's
+        h.presence.typed(group, 40, "a");
         await settle();
         jest.advanceTimersByTime(5000);
-        h.presence.typed(group, null, "ab");
+        h.presence.typed(group, 40, "ab");
+        h.presence.typed(group, null, "a");
+        h.presence.typed(group, 41, "a");
         h.presence.typed(otherGroup, null, "a");
         await settle();
 
