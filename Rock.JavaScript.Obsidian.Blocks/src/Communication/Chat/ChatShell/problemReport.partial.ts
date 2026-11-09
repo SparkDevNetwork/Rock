@@ -25,6 +25,8 @@
 // keep reporting it; a report that fails is let go, since telling the platform must never become
 // a failure the person sees or another report. What is worth a number, a gap in what was heard,
 // is counted instead and sent as the page is hidden or left, each send the count since the last.
+// Those sends have a cap of their own, apart from the one-off reports', because a load hidden
+// often can send counts many times and must never use up the room the rare reports need.
 import { InjectionKey } from "vue";
 import { CallResult } from "./platformCall.partial";
 import { PageEventTargets } from "./composables/useMarkRead.partial";
@@ -34,8 +36,11 @@ export type ProblemReportOptions = {
     /** The shell's one call path to the platform; keepalive for a send made as the page is left. */
     call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
 
-    /** How many reports a page load may send, read from the settings at each report. */
-    cap: () => number;
+    /** How many one-off reports a page load may send, read from the settings at each report. */
+    reportCap: () => number;
+
+    /** How many sends of counts a page load may make, read from the settings at each send. */
+    countCap: () => number;
 };
 
 /** What the components that draw a fallback reach the report by. */
@@ -112,8 +117,11 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
     /** The counts not sent yet, by kind and code. */
     const tallies = new Map<string, { kind: string, code: string, count: number }>();
 
-    /** How many sends this load, a failed one included, which the cap holds. */
-    let sends = 0;
+    /** How many one-off reports this load, a failed one included, which their cap holds. */
+    let reportSends = 0;
+
+    /** How many sends of counts this load, a failed one included, which their own cap holds. */
+    let countSends = 0;
 
     /** Set once the shell stops; nothing is sent after it. */
     let isStopped = false;
@@ -123,13 +131,8 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
         return isCodeText(code, maxCodeLength) ? code : unreadableCode;
     }
 
-    /** One call to the platform's report, while the load's cap allows one. */
+    /** One call to the platform's report; the caller has already held it to its cap. */
     function send(kind: string, code: string, count: number, detail: string | undefined, isLeaving: boolean): void {
-        if (sends >= Math.floor(options.cap())) {
-            return;
-        }
-        sends++;
-
         const args = {
             p_kind: kind,
             p_code: code,
@@ -153,6 +156,10 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
             return;
         }
         for (const { kind, code, count } of tallies.values()) {
+            if (countSends >= Math.floor(options.countCap())) {
+                break;
+            }
+            countSends++;
             send(kind, code, count, undefined, true);
         }
         tallies.clear();
@@ -168,10 +175,11 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
 
             const sentCode = codeOf(code);
             const key = `${kind} ${sentCode}`;
-            if (sent.has(key) || sends >= Math.floor(options.cap())) {
+            if (sent.has(key) || reportSends >= Math.floor(options.reportCap())) {
                 return;
             }
             sent.add(key);
+            reportSends++;
             send(kind, sentCode, count, detail, false);
         },
 

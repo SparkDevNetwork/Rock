@@ -583,7 +583,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     // Its own call goes straight through the call path, never through report, so a refused report
     // never reports itself.
-    const problems = createProblemReport({ call: (name, args, callOptions) => call(name, args, callOptions), cap: () => session.settings().limits.problem_reports_per_load });
+    const problems = createProblemReport({
+        call: (name, args, callOptions) => call(name, args, callOptions),
+        reportCap: () => session.settings().limits.problem_reports_per_load,
+        countCap: () => session.settings().limits.count_reports_per_load
+    });
 
     /**
      * Tells the sender of every keyed message in a page, whether or not a view keeps the page: a
