@@ -282,6 +282,9 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     /** The one timer, set for the soonest expiry. */
     let expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
+    /** What each place last drew, handed out again while its typists and their people are the same. */
+    const drawn = new Map<string, Typing>();
+
     /** Puts what is held on the screen, each place's typists in the order first heard. */
     function publish(): void {
         const next: Record<string, string[]> = {};
@@ -336,6 +339,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     /** Forgets every typist, and the timer. */
     function clear(): void {
         typists.clear();
+        drawn.clear();
         changed();
     }
 
@@ -430,8 +434,17 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             // a place key starts with its conversation's id
             const people = dependencies.peopleOf(place.split("/")[0]);
             const typists = aliases.map(alias => ({ alias, person: people.find(person => person.person_alias_guid.toLowerCase() === alias) ?? null }));
+            const last = drawn.get(place);
+            if (last && last.typists.length === typists.length && last.typists.every((typist, index) => typist.alias === typists[index].alias && typist.person === typists[index].person)) {
+                return last;
+            }
+
             const words = typingWords(typists.map(typist => typist.person));
-            return words ? { typists, ...words } : null;
+            const typing = words ? { typists, ...words } : null;
+            if (typing) {
+                drawn.set(place, typing);
+            }
+            return typing;
         },
 
         messageArrived,

@@ -652,6 +652,29 @@ describe("the typing words", () => {
     });
 });
 
+// A signal refreshes its typist every interval and an expiry anywhere republishes every place,
+// so the bubble is handed the same value until who it draws changes, and draws nothing again.
+describe("the typing a place draws", () => {
+    test("is the same value while its typists and their people are unchanged, and a new one when they change", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna), group);
+        const first = h.presence.typingIn(group);
+
+        h.presence.heard("typing", signal(anna), group);
+        h.presence.heard("typing", signal(sam, { parent_id: 40 }), group);
+        expect(h.presence.typingIn(group)).toBe(first);
+
+        h.presence.heard("typing", signal(sam), group);
+        const two = h.presence.typingIn(group);
+        expect(two).not.toBe(first);
+        expect(two?.names).toBe("Anna and Sam");
+
+        h.people[group] = [person(anna, "Ann", "Reyes"), person(sam, "Sam", "Okafor")];
+        expect(h.presence.typingIn(group)).not.toBe(two);
+        expect(h.presence.typingIn(group)?.names).toBe("Ann and Sam");
+    });
+});
+
 describe("a stopped presence", () => {
     test("forgets every typist and timer, sends nothing, keeps nothing heard, and writes nothing an answer brings after", async () => {
         const h = build();
