@@ -487,8 +487,9 @@ describe("settings from the token exchange", () => {
             catch_up_page: 100,
             catch_up_max: 500,
             problem_reports_per_load: 10,
+            count_reports_per_load: 10,
             gap_reorder_ms: 500,
-            gap_repair_wait_ms: 5000,
+            gap_repair_wait_ms: 20000,
             stale_reload_ms: 900000,
             typing_interval_ms: 4000,
             typing_expiry_ms: 6000,
@@ -592,11 +593,19 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ limits: { problem_reports_per_load: 0 } }).limits.problem_reports_per_load).toBe(10);
     });
 
+    test("the sends of counts a page load may make are read as sent, else 10, apart from the one-off reports' cap", () => {
+        expect(readSettings({ limits: { count_reports_per_load: 4 } }).limits).toMatchObject({ count_reports_per_load: 4, problem_reports_per_load: 10 });
+        expect(readSettings({ limits: { problem_reports_per_load: 3 } }).limits).toMatchObject({ count_reports_per_load: 10, problem_reports_per_load: 3 });
+        expect(readSettings({ limits: { count_reports_per_load: "4" } }).limits.count_reports_per_load).toBe(10);
+        expect(readSettings({ limits: { count_reports_per_load: -1 } }).limits.count_reports_per_load).toBe(10);
+    });
+
     test("the waits of a missed live change are read as sent, else their estimates", () => {
-        expect(readSettings({ limits: { gap_reorder_ms: 800, gap_repair_wait_ms: 20000, stale_reload_ms: 60000 } }).limits)
-            .toMatchObject({ gap_reorder_ms: 800, gap_repair_wait_ms: 20000, stale_reload_ms: 60000 });
+        expect(readSettings({ limits: { gap_reorder_ms: 800, gap_repair_wait_ms: 5000, stale_reload_ms: 60000 } }).limits)
+            .toMatchObject({ gap_reorder_ms: 800, gap_repair_wait_ms: 5000, stale_reload_ms: 60000 });
+        // the repair's wait spreads a Realtime restart's repairs over 20 s unless the church's settings say otherwise
         expect(readSettings({ limits: { gap_reorder_ms: "800", gap_repair_wait_ms: 0, stale_reload_ms: -1 } }).limits)
-            .toMatchObject({ gap_reorder_ms: 500, gap_repair_wait_ms: 5000, stale_reload_ms: 900000 });
+            .toMatchObject({ gap_reorder_ms: 500, gap_repair_wait_ms: 20000, stale_reload_ms: 900000 });
     });
 
     test("a catch-up page is never larger than history will serve", () => {
