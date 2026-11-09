@@ -22,7 +22,7 @@
 // them, or the person blocks them.
 //
 // This lives apart from the timelines because what it holds expires on its own clock and is never
-// history: a signal lost costs a line for a few seconds, and nothing is caught up or repaired.
+// history: a signal lost costs the bubble for a few seconds, and nothing is caught up or repaired.
 
 import { reactive } from "vue";
 import type { CallResult, PlatformCall } from "../platformCall.partial";
@@ -74,7 +74,7 @@ export type PresenceDependencies = {
 
 /** Typing, as the shell holds it. */
 export type Presence = {
-    /** Each place's typists by alias, in the order first heard, so the line does not reorder as they refresh; reactive. */
+    /** Each place's typists by alias, in the order first heard, so the faces and names do not reorder as they refresh; reactive. */
     state: { typists: Record<string, string[]> };
 
     /** Whether a live event is the presence's alone. */
@@ -92,8 +92,8 @@ export type Presence = {
     /** The person changed a box's text in a place: a conversation, or a thread when a root is named. */
     typed: (channelId: string, rootId: number | null, text: string) => void;
 
-    /** The line a place's composer draws, or null when no one else is typing there. */
-    lineFor: (place: string | null) => TypingLine | null;
+    /** Who else is typing in a place, as its feed's typing bubble draws them, or null for no one. */
+    typingIn: (place: string | null) => Typing | null;
 
     /** A message arrived live, which ends its sender's typing in its place. */
     messageArrived: (channelId: string, created: Partial<MessageCreatedEvent>) => void;
@@ -101,25 +101,28 @@ export type Presence = {
     /** A conversation's topic was joined, first or again: whatever was heard before is stale. */
     joined: (channelId: string) => void;
 
-    /** The people blocked gained someone: their line goes at once. */
+    /** The people blocked gained someone: their typing goes at once. */
     remask: () => void;
 
     stop: () => void;
 };
 
-/**
- * The typing line in its two parts, so a narrow band can shorten the names and never the verb that
- * says what they are doing; read together they are the sentence.
- */
-export type TypingLine = {
-    /** Who is typing, which may be cut short; null when no one is named, as for several people. */
-    names: string | null;
+/** Who is typing in a place: their faces, the name line a group shows, and the sentence a screen reader hears. */
+export type Typing = {
+    /** Each typist in the order first heard, by lower-case alias, with their person where the room's facts name them. */
+    typists: ReadonlyArray<{ alias: string, person: ChatPerson | null }>;
+} & TypingWords;
 
-    /** What they are doing, always drawn whole. */
-    verb: string;
+/** What is said of the people typing in a place. */
+export type TypingWords = {
+    /** Who is typing, as a group's name line says it: "Anna", "Anna and Sam", or "Several people". */
+    names: string;
+
+    /** The whole sentence: "Anna is typing…". */
+    sentence: string;
 };
 
-/** One typist in a place: when their line expires, and the newest message their signal followed. */
+/** One typist in a place: when their typing expires, and the newest message their signal followed. */
 type Typist = { expiresAt: number, after: number };
 
 /**
@@ -127,20 +130,20 @@ type Typist = { expiresAt: number, after: number };
  *
  * @param people Each typist in the order first heard, or null for one whose name is not held.
  *
- * @returns The line, or null for none.
+ * @returns The words, or null for none.
  */
-export function typingLine(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | "last_name"> | null>): TypingLine | null {
+export function typingWords(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | "last_name"> | null>): TypingWords | null {
     if (people.length === 0) {
         return null;
     }
     if (people.length > 2) {
-        return { names: null, verb: "Several people are typing…" };
+        return { names: "Several people", sentence: "Several people are typing…" };
     }
 
     const names = people.map(person => person?.nick_name || person?.last_name || null);
 
-    // Two of one nick name are told apart by their last initial, only then, so the usual line
-    // stays as short as the names.
+    // Two of one nick name are told apart by their last initial, only then, so the usual names
+    // stay as short as they are.
     if (names.length === 2 && names[0] !== null && names[0] === names[1]) {
         people.forEach((person, index) => {
             const initial = person?.nick_name && person.last_name ? ` ${person.last_name.charAt(0)}.` : "";
@@ -149,10 +152,12 @@ export function typingLine(people: ReadonlyArray<Pick<ChatPerson, "nick_name" | 
     }
 
     if (names.length === 1) {
-        return { names: names[0] ?? "Someone", verb: "is typing…" };
+        const one = names[0] ?? "Someone";
+        return { names: one, sentence: `${one} is typing…` };
     }
 
-    return { names: `${names[0] ?? "Someone"} and ${names[1] ?? "someone"}`, verb: "are typing…" };
+    const two = `${names[0] ?? "Someone"} and ${names[1] ?? "someone"}`;
+    return { names: two, sentence: `${two} are typing…` };
 }
 
 /**
@@ -333,7 +338,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     }
 
     /**
-     * How long a typist's line lasts: the viewer's own expiry, or where the signal names the pace
+     * How long a typist is shown typing: the viewer's own expiry, or where the signal names the pace
      * its typist was held to, that pace with the same margin the viewer's expiry has over its own
      * interval, since tokens minted at different moments can name different paces.
      */
@@ -420,14 +425,16 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             void signal(channelId, rootId, place);
         },
 
-        lineFor: place => {
+        typingIn: place => {
             const aliases = place ? state.typists[place] : undefined;
             if (!place || !aliases?.length) {
                 return null;
             }
             // a place key starts with its conversation's id
             const people = dependencies.peopleOf(place.split("/")[0]);
-            return typingLine(aliases.map(alias => people.find(person => person.person_alias_guid.toLowerCase() === alias) ?? null));
+            const typists = aliases.map(alias => ({ alias, person: people.find(person => person.person_alias_guid.toLowerCase() === alias) ?? null }));
+            const words = typingWords(typists.map(typist => typist.person));
+            return words ? { typists, ...words } : null;
         },
 
         messageArrived,

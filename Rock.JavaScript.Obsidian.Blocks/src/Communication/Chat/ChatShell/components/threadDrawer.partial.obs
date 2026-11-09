@@ -146,6 +146,8 @@
                 </div>
             </template>
 
+            <TypingBubble class="chat-grp" :typing="typing" :isGroup="!isChannel && !isDirectMessage" :newestMessage="newestReply" />
+
             <!--
                 The thread's one action bar, drawn in the dock of the message it is on. One element for
                 the drawer's life, left here while it is on no message, so every show plays its entrance.
@@ -178,7 +180,6 @@
                       :sendFailure="replyFailure"
                       :lastFailure="lastFailure"
                       :tray="tray"
-                      :typingLine="typingLine"
                       @send="onSend"
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
@@ -336,6 +337,7 @@
     import { PickerSource } from "./emojiPicker.partial.obs";
     import { MentionPickerSource } from "./mentionPicker.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
+    import TypingBubble from "./typingBubble.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
@@ -345,7 +347,7 @@
     import { AttachmentTray } from "../composables/useAttachments.partial";
     import { ComposerDraft } from "../composables/useDrafts.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
-    import { TypingLine } from "../composables/usePresence.partial";
+    import { Typing } from "../composables/usePresence.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
@@ -526,9 +528,9 @@
             default: null
         },
 
-        /** Who else is typing a reply in this thread, for the reply composer's band; null for no one. */
-        typingLine: {
-            type: Object as PropType<TypingLine | null>,
+        /** Who else is typing a reply in this thread, drawn as its newest row; null for no one. */
+        typing: {
+            type: Object as PropType<Typing | null>,
             default: null
         },
 
@@ -718,6 +720,9 @@
         ];
     });
 
+    /** The newest reply, so a typist's reply arriving takes their typing bubble's place. */
+    const newestReply = computed((): TimelineMessage | null => props.replies[props.replies.length - 1] ?? null);
+
     /** The thread's parts for the panel's entrance, none until the root is there to draw. */
     const entranceKeys = computed((): string[] | null => props.root ? items.value.map(item => item.key) : null);
 
@@ -892,9 +897,10 @@
         followTipHost.value = overlayHostOf(element);
     });
 
-    // Older replies go in above without moving what the reader is looking at; newer ones are
-    // followed when the reader is at the bottom, and the reader's own always are.
-    watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
+    // Older replies go in above without moving what the reader is looking at; newer ones, and
+    // someone starting to type, are followed when the reader is at the bottom, and the reader's own
+    // replies always are.
+    watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!props.typing], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
         const element = scroller();
         const fromBottom = element ? element.scrollHeight - element.scrollTop : 0;
         const shouldFollow = isNearBottom() || pendingCount > oldPendingCount;

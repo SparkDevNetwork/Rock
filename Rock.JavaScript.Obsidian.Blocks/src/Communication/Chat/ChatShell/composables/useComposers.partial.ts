@@ -26,7 +26,7 @@ import { DisplayPiece, PendingMessage, SidebarRow } from "../types.partial";
 import { AttachmentTray, canAttach } from "./useAttachments.partial";
 import { ComposerDraft } from "./useDrafts.partial";
 import { PanelKind } from "./useFrame.partial";
-import { TypingLine } from "./usePresence.partial";
+import { Typing } from "./usePresence.partial";
 import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./useSend.partial";
 import { OpenThreadState } from "./useThreads.partial";
 
@@ -99,9 +99,9 @@ export function useComposers(dependencies: ComposersDependencies) {
 
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
 
-    /** Who else is typing where each box types, drawn on its top edge; null for no one. */
-    const conversationTyping = computed((): TypingLine | null => shell.value.presence.lineFor(conversationQuoteKey.value));
-    const threadTyping = computed((): TypingLine | null => shell.value.presence.lineFor(threadQuoteKey.value));
+    /** Who else is typing where each box types, drawn as a bubble at the end of its feed; null for no one. */
+    const conversationTyping = computed((): Typing | null => shell.value.presence.typingIn(conversationQuoteKey.value));
+    const threadTyping = computed((): Typing | null => shell.value.presence.typingIn(threadQuoteKey.value));
 
     /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
     function onMentionQuery(row: SidebarRow | null, query: string | null): void {

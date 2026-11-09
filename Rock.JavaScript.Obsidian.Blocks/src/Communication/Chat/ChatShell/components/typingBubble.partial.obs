@@ -1,0 +1,214 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Transition enter-active-class="is-arriving" leave-active-class="is-leaving" leave-to-class="is-gone" :css="!isReplaced">
+        <div v-if="typing" v-bind="$attrs" class="chat-typing" data-testid="typing-bubble">
+            <div class="chat-typing-in">
+                <div v-if="isGroup" class="chat-typing-names" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
+                <div class="chat-typing-line" aria-hidden="true">
+                    <Avatar v-if="faces.length === 1" :people="faces" :size="34" />
+                    <GroupFace v-else :people="faces" :size="34" />
+                    <span class="chat-typing-bubble" data-testid="typing-dots"><i></i><i></i><i></i></span>
+                </div>
+                <span class="chat-sr-only">{{ typing.sentence }}</span>
+            </div>
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+/*
+    Someone else typing, drawn as their next message would be: the newest row of the feed or the
+    thread, their face or the group face of everyone typing beside a bubble of three dots, and in a
+    group the name line above it. The caller gives it the group's padding and its gap above, so it
+    stands where the reply will land. It is a grid of one row, so its leaving can take its height
+    down to nothing rather than drop it at the end.
+*/
+.chat-typing {
+    position: relative;
+    display: grid;
+    grid-template-rows: 1fr;
+}
+
+.chat-typing-in {
+    min-height: 0;
+}
+
+/* The name line, as a group's message draws its sender's name, cut to one line however many are named. */
+.chat-typing-names {
+    padding: 0 12px 1px 54px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-typing-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+/* An incoming bubble one text line high, so a message taking its place starts where it stood. */
+.chat-typing-bubble {
+    display: inline-flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    color: var(--chat-icon);
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-bubble);
+}
+
+/* Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before. */
+.chat-typing-bubble i {
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: .45;
+    animation: chat-typing-bob var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+.chat-typing-bubble i:nth-child(2) {
+    animation-delay: calc(var(--chat-d-pulse) / 5);
+}
+
+.chat-typing-bubble i:nth-child(3) {
+    animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
+}
+
+/* It comes in the way a message arrives, rising from the sender's side. */
+.chat-typing.is-arriving {
+    transform-origin: left bottom;
+    animation: chat-typing-in var(--chat-t-msg) var(--chat-ease-in) both;
+}
+
+/*
+    Stopped without sending, it fades and its height and the gap above it fall away together, so
+    the feed settles back rather than jumping. It is clipped only while it goes, so the group
+    face's rings are whole at rest.
+*/
+.chat-typing.is-leaving {
+    transition: grid-template-rows var(--chat-t-base) var(--chat-ease-out), margin-top var(--chat-t-base) var(--chat-ease-out), opacity var(--chat-t-fast) var(--chat-ease-out);
+}
+
+.chat-typing.is-leaving .chat-typing-in {
+    overflow: hidden;
+}
+
+.chat-typing.is-gone {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+}
+
+/* Asked for less motion, the dots stand still at full strength and a typist stopping is simply gone. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-bubble i {
+        opacity: 1;
+        animation: none;
+    }
+
+    .chat-typing.is-leaving {
+        transition: none;
+    }
+}
+
+@keyframes chat-typing-bob {
+    0%,
+    60%,
+    100% {
+        opacity: .45;
+        transform: none;
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+
+@keyframes chat-typing-in {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-rise)) scale(var(--chat-msg-scale));
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import GroupFace from "../ui/groupFace.partial.obs";
+    import { personFace } from "../ui/face.partial";
+    import { Typing } from "../composables/usePresence.partial";
+    import { TimelineMessage } from "../types.partial";
+
+    // The caller's class, the group's padding and gap, goes on the row itself rather than on the
+    // transition around it.
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        /** Who else is typing in this place, or null for no one. */
+        typing: {
+            type: Object as PropType<Typing | null>,
+            default: null
+        },
+
+        /** A group draws the name line saying who; a direct message has only the one other person. */
+        isGroup: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The newest message in the place, so a typist's own message arriving takes the bubble's place. */
+        newestMessage: {
+            type: Object as PropType<TimelineMessage | null>,
+            default: null
+        }
+    });
+
+    // #region Values
+
+    /**
+     * Whether the bubble last went because a typist's message arrived, so it goes at once and the
+     * message stands in its place; one that goes because they stopped settles away.
+     */
+    const isReplaced = ref(false);
+
+    /** The typists last drawn, by lower-case alias, and the newest message then. */
+    let drawnAliases: string[] = [];
+    let drawnNewestId = 0;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Each typist's face; one the room's facts do not name draws the people icon. */
+    const faces = computed((): AvatarPerson[] => (props.typing?.typists ?? []).map(typist => typist.person ? personFace(typist.person) : { name: "", photoUrl: null }));
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    // Read before the render that draws the change, so the bubble's leaving is chosen in the frame
+    // the message arrives: a message ends its sender's typing in the same live event that brings it.
+    watch(() => [props.typing, props.newestMessage?.id] as const, ([typing]) => {
+        const newest = props.newestMessage;
+        if (typing) {
+            drawnAliases = typing.typists.map(typist => typist.alias);
+            drawnNewestId = newest?.id ?? 0;
+            isReplaced.value = false;
+            return;
+        }
+
+        isReplaced.value = !!newest && newest.id > drawnNewestId && drawnAliases.includes((newest.person_alias_guid ?? "").toLowerCase());
+    }, { immediate: true });
+
+    // #endregion Watchers
+</script>
