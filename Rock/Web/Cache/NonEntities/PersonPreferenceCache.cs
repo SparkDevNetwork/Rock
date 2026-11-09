@@ -172,6 +172,30 @@ namespace Rock.Web.Cache
             }
         }
 
+        /// <summary>
+        /// The person identifier of the Anonymous Visitor person. This is
+        /// resolved once and used to tell visitor aliases from aliases that
+        /// belong to a regular person.
+        /// </summary>
+        private static readonly Lazy<int> AnonymousVisitorPersonId = new Lazy<int>( () => new PersonService( new RockContext() ).GetOrCreateAnonymousVisitorPersonId(), System.Threading.LazyThreadSafetyMode.PublicationOnly );
+
+        /// <summary>
+        /// Determines whether the person alias belongs to the Anonymous Visitor
+        /// person. An unknown alias is treated as not being a visitor alias.
+        /// </summary>
+        /// <param name="personAliasId">The person alias identifier.</param>
+        /// <returns><c>true</c> if the alias belongs to the Anonymous Visitor person; otherwise <c>false</c>.</returns>
+        private static bool IsAnonymousVisitorAlias( int personAliasId )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var personId = new PersonAliasService( rockContext ).GetPersonId( personAliasId );
+
+                // An unknown alias gives null or 0, neither matches the visitor person.
+                return personId.HasValue && personId.Value == AnonymousVisitorPersonId.Value;
+            }
+        }
+
         #endregion
 
         #region Public Static Methods
@@ -314,12 +338,28 @@ namespace Rock.Web.Cache
         /// </para>
         /// <para>
         /// Do not call this with a person alias identifier for a regular person.
+        /// If the alias does not belong to the Anonymous Visitor person then an
+        /// empty collection is returned that does not save any values.
         /// </para>
         /// </summary>
         /// <param name="personAliasId">The person alias identifier of the visitor.</param>
         /// <returns>An instance of <see cref="PersonPreferenceCollection"/> that will provide access to the preferences.</returns>
         public static PersonPreferenceCollection GetVisitorPreferenceCollection( int personAliasId )
         {
+            /*
+                11/09/2026 - MSE
+
+                Visitor preferences are keyed only by the person alias from the visitor
+                key cookie. Only aliases that belong to the Anonymous Visitor person may
+                use them, otherwise a regular person's preferences could be read or changed.
+
+                Reason: Restrict visitor preferences to Anonymous Visitor aliases.
+            */
+            if ( !IsAnonymousVisitorAlias( personAliasId ) )
+            {
+                return new PersonPreferenceCollection();
+            }
+
             var preferences = GetVisitorPreferences( personAliasId, null, null );
             var prefix = PersonPreferenceService.GetGlobalPreferencePrefix();
 
@@ -337,6 +377,8 @@ namespace Rock.Web.Cache
         /// </para>
         /// <para>
         /// Do not call this with a person alias identifier for a regular person.
+        /// If the alias does not belong to the Anonymous Visitor person then an
+        /// empty collection is returned that does not save any values.
         /// </para>
         /// </summary>
         /// <param name="personAliasId">The person alias identifier of the visitor.</param>
@@ -347,6 +389,20 @@ namespace Rock.Web.Cache
             if ( entity == null )
             {
                 throw new ArgumentNullException( nameof( entity ) );
+            }
+
+            /*
+                11/09/2026 - MSE
+
+                Visitor preferences are keyed only by the person alias from the visitor
+                key cookie. Only aliases that belong to the Anonymous Visitor person may
+                use them, otherwise a regular person's preferences could be read or changed.
+
+                Reason: Restrict visitor preferences to Anonymous Visitor aliases.
+            */
+            if ( !IsAnonymousVisitorAlias( personAliasId ) )
+            {
+                return new PersonPreferenceCollection();
             }
 
             var entityTypeCache = EntityTypeCache.Get( entity.GetType() );
@@ -367,6 +423,8 @@ namespace Rock.Web.Cache
         /// </para>
         /// <para>
         /// Do not call this with a person alias identifier for a regular person.
+        /// If the alias does not belong to the Anonymous Visitor person then an
+        /// empty collection is returned that does not save any values.
         /// </para>
         /// </summary>
         /// <param name="personAliasId">The person alias identifier of the visitor.</param>
@@ -377,6 +435,20 @@ namespace Rock.Web.Cache
             if ( entity == null )
             {
                 throw new ArgumentNullException( nameof( entity ) );
+            }
+
+            /*
+                11/09/2026 - MSE
+
+                Visitor preferences are keyed only by the person alias from the visitor
+                key cookie. Only aliases that belong to the Anonymous Visitor person may
+                use them, otherwise a regular person's preferences could be read or changed.
+
+                Reason: Restrict visitor preferences to Anonymous Visitor aliases.
+            */
+            if ( !IsAnonymousVisitorAlias( personAliasId ) )
+            {
+                return new PersonPreferenceCollection();
             }
 
             var entityTypeCache = EntityTypeCache.Get( entity.GetType() );
@@ -397,6 +469,8 @@ namespace Rock.Web.Cache
         /// </para>
         /// <para>
         /// Do not call this with a person alias identifier for a regular person.
+        /// If the alias does not belong to the Anonymous Visitor person then an
+        /// empty collection is returned that does not save any values.
         /// </para>
         /// </summary>
         /// <param name="personAliasId">The person alias identifier of the visitor.</param>
@@ -408,6 +482,20 @@ namespace Rock.Web.Cache
             if ( entityTypeCache == null )
             {
                 throw new ArgumentNullException( nameof( entityTypeCache ) );
+            }
+
+            /*
+                11/09/2026 - MSE
+
+                Visitor preferences are keyed only by the person alias from the visitor
+                key cookie. Only aliases that belong to the Anonymous Visitor person may
+                use them, otherwise a regular person's preferences could be read or changed.
+
+                Reason: Restrict visitor preferences to Anonymous Visitor aliases.
+            */
+            if ( !IsAnonymousVisitorAlias( personAliasId ) )
+            {
+                return new PersonPreferenceCollection();
             }
 
             var prefix = PersonPreferenceService.GetPreferencePrefix( entityTypeCache.GetEntityType(), entityId );
