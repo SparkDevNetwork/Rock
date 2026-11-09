@@ -83,6 +83,20 @@ namespace RockWeb
             // Read query string parameters
             var settings = ReadSettingsFromRequest( context.Request );
 
+            /*
+                11/02/2026 - MSE
+
+                Check the photo before the cache key is built. A request that is not allowed to see the
+                photo then lands on the initials cache entry and can never be served a photo that was
+                cached for someone else.
+
+                Reason: The avatar cache was read before any view check on the photo.
+            */
+            if ( settings.PhotoId.HasValue && !AvatarHelper.IsPhotoViewAllowed( settings.PhotoId.Value ) )
+            {
+                settings.PhotoId = null;
+            }
+
             string cacheFolder = context.Request.MapPath( $"~/App_Data/Avatar/Cache/" );
             string cachedFilePath = $"{cacheFolder}{settings.CacheKey}.png";
 
