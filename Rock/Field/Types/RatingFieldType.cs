@@ -134,7 +134,20 @@ namespace Rock.Field.Types
         {
             var ratingValue = publicValue.FromJsonOrNull<RatingPublicValue>();
 
-            return ratingValue?.Value.ToString() ?? string.Empty;
+            if ( ratingValue == null )
+            {
+                return string.Empty;
+            }
+
+            /*
+                11/09/2026 - MSE
+
+                Limit the saved rating to 0 through the configured maximum so a posted
+                value outside that range is never stored.
+
+                Reason: Rating values must stay within the field's configured range.
+            */
+            return Math.Max( 0, Math.Min( ratingValue.Value, GetMaxRating( privateConfigurationValues ) ) ).ToString();
         }
 
         #endregion
