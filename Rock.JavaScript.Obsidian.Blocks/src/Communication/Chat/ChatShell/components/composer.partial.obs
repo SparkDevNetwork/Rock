@@ -516,7 +516,7 @@
     height: 4px;
     background: currentColor;
     border-radius: 50%;
-    animation: chat-composer-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 /* Each dot a fifth of the cycle after the one before. */
@@ -526,12 +526,6 @@
 
 .chat-composer-typing-dots i:nth-child(3) {
     animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
-}
-
-@keyframes chat-composer-pulse {
-    50% {
-        opacity: .3;
-    }
 }
 
 /* The countdown in the last 500 characters of the limit, at the foot's end. */

@@ -728,6 +728,13 @@
     }
 }
 
+/* A dot that waits, the live dot and the typing dots alike: a soft fade to a third and back. */
+@keyframes chat-pulse {
+    50% {
+        opacity: .3;
+    }
+}
+
 @keyframes chat-crossfade {
     from {
         opacity: 0;

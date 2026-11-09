@@ -263,7 +263,7 @@ button.chat-header-id:hover .chat-header-chev {
     vertical-align: 1px;
     background: var(--chat-warning);
     border-radius: 50%;
-    animation: chat-header-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 .chat-header-sub[data-tone="info"] .chat-header-live {
@@ -488,12 +488,6 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-fade-enter-from,
 .chat-fade-leave-to {
     opacity: 0;
-}
-
-@keyframes chat-header-pulse {
-    50% {
-        opacity: .3;
-    }
 }
 
 @keyframes chat-header-sweep {

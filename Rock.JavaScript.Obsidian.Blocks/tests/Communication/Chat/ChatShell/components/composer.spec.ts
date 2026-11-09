@@ -303,7 +303,7 @@ describe("the composer's typing line", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
 
-        expect(style).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: chat-composer-pulse var\(--chat-d-pulse\)/);
+        expect(style).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: chat-pulse var\(--chat-d-pulse\)/);
         expect(reduced).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: none/);
     });
 });
