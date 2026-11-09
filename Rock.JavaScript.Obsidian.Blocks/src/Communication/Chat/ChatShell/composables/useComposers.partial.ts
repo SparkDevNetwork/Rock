@@ -99,7 +99,7 @@ export function useComposers(dependencies: ComposersDependencies) {
 
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
 
-    /** Who else is typing where each box types, drawn in its foot; null for no one. */
+    /** Who else is typing where each box types, drawn on its top edge; null for no one. */
     const conversationTyping = computed((): TypingLine | null => shell.value.presence.lineFor(conversationQuoteKey.value));
     const threadTyping = computed((): TypingLine | null => shell.value.presence.lineFor(threadQuoteKey.value));
 

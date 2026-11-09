@@ -530,7 +530,7 @@
             default: null
         },
 
-        /** Who else is typing a reply in this thread, for the reply composer's foot; null for no one. */
+        /** Who else is typing a reply in this thread, for the reply composer's band; null for no one. */
         typingLine: {
             type: Object as PropType<TypingLine | null>,
             default: null

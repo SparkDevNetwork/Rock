@@ -108,7 +108,7 @@ export type Presence = {
 };
 
 /**
- * The typing line in its two parts, so a narrow foot can shorten the names and never the verb that
+ * The typing line in its two parts, so a narrow band can shorten the names and never the verb that
  * says what they are doing; read together they are the sentence.
  */
 export type TypingLine = {

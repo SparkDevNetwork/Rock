@@ -352,7 +352,7 @@ describe("the composer's typing line", () => {
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*max-width: 100%;/);
     });
 
-    // However narrow the foot, what is left must still read as typing: the names give way and the
+    // However narrow the band, what is left must still read as typing: the names give way and the
     // verb never does.
     test("is drawn as names that may shrink and a verb that does not", () => {
         const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew", verb: "is typing…" } } });
