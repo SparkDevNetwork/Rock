@@ -707,18 +707,15 @@ describe("the components' own styles", () => {
         expect(declarationOf(feedPath, ".chat-jump.is-on", "transform")).toBe("none");
     });
 
-    // The composer's typing band stands over the feed's bottom edge, so Jump to latest stands
-    // clear above it always, not only while someone types: the pill never moves as a line comes.
-    // The gap is at least 6px, so the pill's shadow does not lie on the band's text, and the
+    // Nothing of typing stands over the feed's bottom edge any more, someone typing being a row in
+    // the feed, so Jump to latest stands 14px over it as it did before typing was shown, and the
     // bottom fade starts 16px above the pill's top, so text scrolling down is faint before it meets it.
-    test("Jump to latest stands clear of the composer's typing band, under the feed's bottom fade", () => {
-        const band = parseFloat(declarationOf(resolve(components, "composer.partial.obs"), ".chat-composer-typing", "height"));
+    test("Jump to latest stands 14px over the feed's bottom, under the feed's bottom fade", () => {
         const pillBottom = parseFloat(declarationOf(feedPath, ".chat-jump", "bottom"));
         const pillHeight = parseFloat(declarationOf(feedPath, ".chat-jump", "height"));
         const fade = parseFloat(declarationOf(feedPath, ".chat-feed-frame.has-jump", "--chat-feed-bottom-mask"));
 
-        expect(band).toBe(16);
-        expect(pillBottom - band).toBeGreaterThanOrEqual(6);
+        expect(pillBottom).toBe(14);
         expect(fade - (pillBottom + pillHeight)).toBe(16);
     });
 

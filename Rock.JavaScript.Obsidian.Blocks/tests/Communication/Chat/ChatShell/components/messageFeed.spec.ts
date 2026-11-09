@@ -36,6 +36,8 @@ import { createSender, SendResult } from "../../../../../src/Communication/Chat/
 import { createTimelines, TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -165,7 +167,11 @@ type FeedProps = {
     isDirectMessage?: boolean;
     isEntering?: boolean;
     isCovered?: boolean;
+    typing?: Typing | null;
 };
+
+/** Anna typing, as the presence gives it. */
+const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
 
 function draw(props: FeedProps, reveal?: { isMainRevealed: boolean }): VueWrapper {
     const provide = reveal ? { [pageRevealKey as symbol]: { state: reveal, holdFace: () => undefined } } : {};
@@ -1310,6 +1316,85 @@ describe("Jump to latest", () => {
     });
 });
 
+// Someone else typing is drawn as their next message would be, the feed's newest row, after the
+// person's own sends too. It is no message: it is never seen, and Jump to latest neither shows for
+// it nor counts it.
+describe("someone else typing", () => {
+    test("is the feed's newest row, after the stored messages and the person's own sends", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")], isDirectMessage: true, typing: annaTyping });
+        const bubble = wrapper.get("[data-testid='typing-bubble']").element;
+        const rows = wrapper.findAll("[data-testid='message-row'], [data-testid='pending-row']").map(row => row.element);
+
+        expect(rows).toHaveLength(2);
+        expect(rows.every(row => isBefore(row, bubble))).toBe(true);
+        expect(wrapper.get("[data-testid='feed-content']").element.contains(bubble)).toBe(true);
+        // drawn as a group, so it stands where the reply will
+        expect(bubble.classList.contains("chat-grp")).toBe(true);
+    });
+
+    test("is not drawn with no one typing", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true });
+
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
+    });
+
+    test("a group's bubble has its name line, a direct message's has none", () => {
+        const group = draw({ timeline: timeline([message(1, anna, at(14, 50))]), typing: annaTyping });
+        const direct = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true, typing: annaTyping });
+
+        expect(group.findComponent(TypingBubble).props("isGroup")).toBe(true);
+        expect(group.get("[data-testid='typing-names']").text()).toBe("Anna");
+        expect(direct.findComponent(TypingBubble).props("isGroup")).toBe(false);
+        expect(direct.find("[data-testid='typing-names']").exists()).toBe(false);
+    });
+
+    test("the bubble is given the newest stored message, so the typist's own can take its place", async () => {
+        const state = timeline([message(1, anna, at(14, 50)), message(2, me, at(14, 51))]);
+        const wrapper = draw({ timeline: state, typing: annaTyping });
+        expect((wrapper.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(2);
+
+        state.messages.push(message(3, anna, at(14, 52)));
+        await nextTick();
+        expect((wrapper.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(3);
+    });
+
+    test("is never watched as seen, so it is never read as a message", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true, typing: annaTyping });
+        await nextTick();
+
+        const bubble = wrapper.get("[data-testid='typing-bubble']").element;
+        expect(FakeIntersectionObserver.all.some(observer => [...observer.watched].some(watched => watched === bubble || bubble.contains(watched)))).toBe(false);
+    });
+
+    test("scrolled up, typing coming and going is not counted by Jump to latest, and a message after it is counted once", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state, isDirectMessage: true });
+        placeScroll(wrapper, 0);
+        await nextTick();
+
+        await wrapper.setProps({ typing: annaTyping });
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("Jump to latest");
+
+        state.messages.push(message(2, anna, at(14, 1)));
+        await wrapper.setProps({ typing: null });
+        await nextTick();
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
+    });
+
+    test("leaves the unread strip and the New divider as they were, above it", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))], { readCursor: 1, unreadCount: 1, firstUnreadId: 2 });
+        const wrapper = draw({ timeline: state, isDirectMessage: true });
+        const before = wrapper.get("[data-testid='unread-strip']").text();
+
+        await wrapper.setProps({ typing: annaTyping });
+
+        expect(wrapper.get("[data-testid='unread-strip']").text()).toBe(before);
+        expect(isBefore(wrapper.get("[data-testid='unread-divider']").element, wrapper.get("[data-testid='typing-bubble']").element)).toBe(true);
+    });
+});
+
 describe("a send that fails", () => {
     test("is scrolled into view, out from under the feed's bottom fade", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")] });
@@ -1717,6 +1802,64 @@ describe("a feed holding its reader at the newest message", () => {
         await nextTick();
 
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // Someone typing is the feed's newest row, inside the content the feed watches, so it is kept in
+    // view by the rule every growth is: a reader at the newest message follows it as it rises in
+    // and as it settles away, and one scrolled up is not moved by either.
+    test("a reader at the newest message follows someone else's typing bubble into view, and back as it goes", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]), isDirectMessage: true });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        expect(sizes.scrollTop).toBe(1500);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2048;
+        await resize();
+        expect(sizes.scrollTop).toBe(1548);
+
+        // she stops without sending: the content shrinks back and the browser clamps the reader to the end
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        sizes.scrollTop = 1500;
+        echoScroll(wrapper);
+        await resize();
+        expect(sizes.scrollTop).toBe(1500);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("a reader scrolled up is not moved by someone else's typing bubble coming or going", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]), isDirectMessage: true });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 700);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2048;
+        await resize();
+        expect(sizes.scrollTop).toBe(700);
+
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        await resize();
+        expect(sizes.scrollTop).toBe(700);
+    });
+
+    // Her message takes the bubble's place: the feed follows it as it follows any arrival.
+    test("a reader at the newest message follows the typist's message that takes the bubble's place", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]);
+        const wrapper = draw({ timeline: state, isDirectMessage: true, typing: annaTyping });
+        const sizes = { scrollHeight: 2048, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+
+        state.messages.push(message(3, anna, at(14, 2)));
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2070;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(1570);
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
     });
 });
 

@@ -18,9 +18,9 @@
 // Typing: the person's own signals, sent at once on the first change and then at most once an
 // interval while the text keeps changing, never in a channel and never while nothing could come of
 // one; and the others' signals, kept for the open conversation's places until they expire, a
-// message of theirs follows them, or the person blocks them, and drawn as one line of names.
+// message of theirs follows them, or the person blocks them, and given with their faces and words.
 import { reactive } from "vue";
-import { createPresence, Presence, PresenceDependencies, typingLine } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
@@ -538,8 +538,8 @@ describe("the others' signals", () => {
 
         expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([anna]);
         expect(h.presence.state.typists[group]).toBeUndefined();
-        expect(h.presence.lineFor(group)).toBeNull();
-        expect(h.presence.lineFor(quoteKey(group, 40))).toEqual({ names: "Anna", verb: "is typing…" });
+        expect(h.presence.typingIn(group)).toBeNull();
+        expect(h.presence.typingIn(quoteKey(group, 40))).toMatchObject({ names: "Anna", sentence: "Anna is typing…" });
     });
 
     test("a topic joined again forgets every typist and every message heard, since both were missed meanwhile", () => {
@@ -568,38 +568,48 @@ describe("the others' signals", () => {
     });
 });
 
-describe("the line's words", () => {
+describe("the typing words", () => {
     test("one, two, and three or more typists", () => {
-        expect(typingLine([])).toBeNull();
-        expect(typingLine([person(anna, "Anna")])).toEqual({ names: "Anna", verb: "is typing…" });
-        expect(typingLine([person(anna, "Anna"), person(sam, "Sam")])).toEqual({ names: "Anna and Sam", verb: "are typing…" });
-        expect(typingLine([person(anna, "Anna"), person(sam, "Sam"), person(lee, "Lee")])).toEqual({ names: null, verb: "Several people are typing…" });
-        expect(typingLine([person(anna, "Anna"), person(sam, "Sam"), person(lee, "Lee"), null, null])).toEqual({ names: null, verb: "Several people are typing…" });
+        expect(typingWords([])).toBeNull();
+        expect(typingWords([person(anna, "Anna")])).toEqual({ names: "Anna", sentence: "Anna is typing…" });
+        expect(typingWords([person(anna, "Anna"), person(sam, "Sam")])).toEqual({ names: "Anna and Sam", sentence: "Anna and Sam are typing…" });
+        expect(typingWords([person(anna, "Anna"), person(sam, "Sam"), person(lee, "Lee")])).toEqual({ names: "Several people", sentence: "Several people are typing…" });
+        expect(typingWords([person(anna, "Anna"), person(sam, "Sam"), person(lee, "Lee"), null, null])).toEqual({ names: "Several people", sentence: "Several people are typing…" });
     });
 
     test("someone not held reads as someone, and a person with no nick name by their last name", () => {
-        expect(typingLine([null])).toEqual({ names: "Someone", verb: "is typing…" });
-        expect(typingLine([person(anna, "Anna"), null])).toEqual({ names: "Anna and someone", verb: "are typing…" });
-        expect(typingLine([null, person(anna, "Anna")])).toEqual({ names: "Someone and Anna", verb: "are typing…" });
-        expect(typingLine([person(anna, null, "Reyes")])).toEqual({ names: "Reyes", verb: "is typing…" });
+        expect(typingWords([null])).toEqual({ names: "Someone", sentence: "Someone is typing…" });
+        expect(typingWords([person(anna, "Anna"), null])).toEqual({ names: "Anna and someone", sentence: "Anna and someone are typing…" });
+        expect(typingWords([null, person(anna, "Anna")])).toEqual({ names: "Someone and Anna", sentence: "Someone and Anna are typing…" });
+        expect(typingWords([person(anna, null, "Reyes")])).toEqual({ names: "Reyes", sentence: "Reyes is typing…" });
     });
 
     test("two typists of one nick name are told apart by their last initial", () => {
-        expect(typingLine([person(anna, "Anna", "Baker"), person(sam, "Anna", "Kim")])).toEqual({ names: "Anna B. and Anna K.", verb: "are typing…" });
+        expect(typingWords([person(anna, "Anna", "Baker"), person(sam, "Anna", "Kim")])).toEqual({ names: "Anna B. and Anna K.", sentence: "Anna B. and Anna K. are typing…" });
     });
 
-    test("names come from the room's people, here a named group of five", () => {
+    test("names and faces come from the room's people, here a named group of five", () => {
         const h = build();
         const five = "c000000f-0000-4000-8000-000000000000";
         h.state.activeChannelId = five;
         h.people[five] = [person(anna, "Anna", "Reyes"), person(sam, "Sam", "Okafor"), person(lee, "Lee", "Park"), person("a0000004-0000-4000-8000-000000000000", "Kai", "Lu")];
 
         h.presence.heard("typing", signal(sam, { channel_id: five }), five);
-        expect(h.presence.lineFor(five)).toEqual({ names: "Sam", verb: "is typing…" });
+        expect(h.presence.typingIn(five)).toEqual({
+            typists: [{ alias: sam, person: person(sam, "Sam", "Okafor") }],
+            names: "Sam",
+            sentence: "Sam is typing…"
+        });
 
-        h.presence.heard("typing", signal("a000000f-0000-4000-8000-000000000000", { channel_id: five }), five);
-        expect(h.presence.lineFor(five)).toEqual({ names: "Sam and someone", verb: "are typing…" });
-        expect(h.presence.lineFor(null)).toBeNull();
+        // someone the facts do not name is still a typist, drawn with no face of their own
+        const stranger = "a000000f-0000-4000-8000-000000000000";
+        h.presence.heard("typing", signal(stranger, { channel_id: five }), five);
+        expect(h.presence.typingIn(five)).toEqual({
+            typists: [{ alias: sam, person: person(sam, "Sam", "Okafor") }, { alias: stranger, person: null }],
+            names: "Sam and someone",
+            sentence: "Sam and someone are typing…"
+        });
+        expect(h.presence.typingIn(null)).toBeNull();
     });
 });
 

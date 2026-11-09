@@ -58,6 +58,8 @@ import MessageRow from "../../../../../src/Communication/Chat/ChatShell/componen
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
+import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -554,12 +556,89 @@ test("the reply composer is keyed by its thread", () => {
     expect(w.findComponent(Composer).props("conversationKey")).toBe("thread:40");
 });
 
-// Who is typing a reply in this thread is told on the reply composer's top edge, as the conversation's
-// composer tells its own.
-test("the reply composer is given the thread's typing line", () => {
-    const w = draw({ typingLine: { names: "Anna", verb: "is typing…" } });
+// Someone typing a reply in this thread is drawn as the thread's newest row, as the conversation
+// draws its own, and kept in view the way a new reply is: followed by a reader at the bottom, and
+// out of sight below one scrolled up, who is not moved.
+describe("someone typing a reply", () => {
+    const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
 
-    expect(w.findComponent(Composer).props("typingLine")).toEqual({ names: "Anna", verb: "is typing…" });
+    /** The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped to them. */
+    function layOut(w: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
+        const scroller = w.get(".chat-panel-body").element as HTMLElement;
+        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
+        Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+        Object.defineProperty(scroller, "scrollTop", {
+            configurable: true,
+            get: () => sizes.scrollTop,
+            set: (value: number) => sizes.scrollTop = Math.max(0, Math.min(value, sizes.scrollHeight - sizes.clientHeight))
+        });
+    }
+
+    test("is the thread's newest row, after the last reply, in a group with its name line", () => {
+        const w = draw({ isChannel: false, typing: annaTyping });
+        const bubble = w.get("[data-testid='typing-bubble']").element;
+        const rows = w.findAll("[data-reply-id]").map(row => row.element);
+
+        expect(rows.every(row => (row.compareDocumentPosition(bubble) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)).toBe(true);
+        expect(bubble.classList.contains("chat-grp")).toBe(true);
+        expect(w.get("[data-testid='typing-names']").text()).toBe("Anna");
+    });
+
+    test("in a direct message it has no name line, and with no one typing it is not drawn", async () => {
+        const w = draw({ isChannel: false, isDirectMessage: true, typing: annaTyping });
+        expect(w.findComponent(TypingBubble).props("isGroup")).toBe(false);
+        expect(w.find("[data-testid='typing-names']").exists()).toBe(false);
+
+        await w.setProps({ typing: null });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
+    });
+
+    test("is given the newest reply, so the typist's reply can take its place", () => {
+        const w = draw({ isChannel: false, typing: annaTyping });
+
+        expect((w.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(43);
+    });
+
+    test("the reply composer is the same with someone typing as without, and is given no typing", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        const alone = w.get("[data-testid='composer-input']").element.closest(".chat-composer")?.outerHTML;
+
+        await w.setProps({ typing: annaTyping });
+
+        expect(w.findComponent(Composer).props()).not.toHaveProperty("typingLine");
+        expect(w.get("[data-testid='composer-input']").element.closest(".chat-composer")?.outerHTML).toBe(alone);
+    });
+
+    test("a reader at the bottom follows it into view", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        await nextTick();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+
+        await w.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 1065;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(665);
+    });
+
+    test("a reader scrolled up is not moved", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        await nextTick();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 200 };
+        layOut(w, sizes);
+
+        await w.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 1065;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(200);
+    });
 });
 
 describe("the reply composer's @ picker", () => {
