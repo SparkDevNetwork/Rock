@@ -608,16 +608,28 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const page = body<ThreadListPage>(result);
         const rows = page.threads ?? [];
         const last = rows[rows.length - 1];
-        if (last) {
-            listCursor = { last_reply_at: last.last_reply_at, id: last.root.id };
+        // A fetched list follows its own last row, or none when empty, so no page asked after the
+        // old rows can land under it; a next page with no rows leaves the cursor where it was.
+        if (mode !== "more" || last) {
+            listCursor = last ? { last_reply_at: last.last_reply_at, id: last.root.id } : null;
         }
         // Rows hold their place while their times change, so the platform can list a thread held
         // above the cursor again below it; the row held stays.
         const held = new Set(mode === "more" ? list.rows.map(rowKey) : []);
-        const landed = rows.filter(row => !held.has(rowKey(row))).map(row => landRow(row, revOf(row) ?? heardBefore.get(row.root.id) ?? null));
+        const landed = rows.filter(row => !held.has(rowKey(row)))
+            .map(row => landRow(row, revOf(row) ?? heardBefore.get(row.root.id) ?? null))
+            .filter(isListed);
         list.error = null;
         list.rows = mode === "more" ? [...list.rows, ...landed] : landed;
         list.hasMore = page.has_more === true;
+    }
+
+    /**
+     * Whether a row's thread is listed: only with a live reply, as the platform lists it, so a
+     * page read before its last reply went and a change heard after both leave it out.
+     */
+    function isListed(row: ThreadListRow): boolean {
+        return row.reply_count > 0;
     }
 
     /** A row's thread, by its conversation and root. */
@@ -819,7 +831,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const marks = marksAfter(now, { count: row.reply_count, isFollowing: row.following, isUnread: row.has_unread }, isOpen);
         setRowCounts(row, now);
         markRow(row, marks);
-        if (now.reply_count === 0) {
+        if (!isListed(row)) {
             list.rows = list.rows.filter(r => r !== row);
         }
     }

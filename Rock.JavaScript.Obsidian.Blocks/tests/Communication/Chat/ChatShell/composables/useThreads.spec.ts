@@ -1304,6 +1304,21 @@ describe("the threads list's rows, as thread.updated moves them", () => {
         expect(order(h)).toEqual([30]);
     });
 
+    // A page read before the thread's last live reply went lists it; the change heard while the
+    // page was on its way leaves it with none, so it is not listed, by the same rule.
+    test("a page row whose thread lost its last live reply while the page was out is not listed", async () => {
+        const h = await setup();
+        const answer = deferred<CallResult>();
+        h.answers.chat_list_threads = [answer];
+
+        const opening = h.threads.openList(channel);
+        deliver(h, heard(40, [], 0, 7, "2026-10-13T08:00:00Z"));
+        answer.resolve(listAnswer([listRow(40), listRow(30, { last_reply_at: "2026-10-13T09:00:00Z" })]));
+        await opening;
+
+        expect(order(h)).toEqual([30]);
+    });
+
     test("a page read before a change heard while it was on its way takes the change, and its bold", async () => {
         const h = await setup();
         const answer = deferred<CallResult>();
@@ -1385,6 +1400,22 @@ describe("the threads list's rows, as thread.updated moves them", () => {
         await loading;
 
         expect(order(h)).toEqual([50, 40]);
+    });
+
+    test("a page asked after the old rows is dropped once a fetch again finds no rows", async () => {
+        const h = await listed([listRow(40, { last_reply_at: "2026-10-13T10:00:00Z" }), listRow(30, { last_reply_at: "2026-10-13T09:00:00Z" })], true);
+        const refreshed = deferred<CallResult>();
+        const more = deferred<CallResult>();
+        h.answers.chat_list_threads = [refreshed, more];
+
+        const refreshing = h.threads.refresh();
+        const loading = h.threads.loadMore();
+        refreshed.resolve(listAnswer([], false));
+        await refreshing;
+        more.resolve(listAnswer([listRow(20, { last_reply_at: "2026-10-13T07:00:00Z" })]));
+        await loading;
+
+        expect(order(h)).toEqual([]);
     });
 
     test("stays read while its thread is open, and leaving takes the bold the save answers", async () => {
