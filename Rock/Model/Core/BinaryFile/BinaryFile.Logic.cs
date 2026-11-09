@@ -129,7 +129,7 @@ namespace Rock.Model
         /// <summary>
         /// Checks the parent entity to see if the user has view access.
         /// </summary>
-        /// <returns><c>true</c> if allow, <c>false</c> if not allowed, <c>null</c> if there isn't a parent entity to check.</returns>
+        /// <returns><c>true</c> if allow, <c>false</c> if not allowed, <c>null</c> if there is no parent that can be checked (none set, or it no longer exists).</returns>
         public bool? ParentEntityAllowsView( Person person )
         {
             if ( !this.ParentEntityTypeId.HasValue || !this.ParentEntityId.HasValue )
@@ -137,17 +137,28 @@ namespace Rock.Model
                 return null;
             }
 
+            /*
+                11/02/2026 - MSE
+
+                A parent that can no longer be loaded (deleted record, unknown entity type, or an entity
+                that has no security) must not grant access. Return null so the callers fall back to the
+                file type security instead of treating the file as viewable.
+
+                Reason: Files with a missing parent were delivered without any security check.
+            */
             var entityType = Rock.Web.Cache.EntityTypeCache.Get( this.ParentEntityTypeId.Value )?.GetEntityType();
-            if ( entityType != null )
+            if ( entityType == null )
             {
-                var parentEntity = Rock.Reflection.GetIEntityForEntityType( entityType, this.ParentEntityId.Value ) as Rock.Security.ISecured;
-                if ( parentEntity != null && !parentEntity.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
-                {
-                    return false;
-                }
+                return null;
             }
 
-            return true;
+            var parentEntity = Rock.Reflection.GetIEntityForEntityType( entityType, this.ParentEntityId.Value ) as Rock.Security.ISecured;
+            if ( parentEntity == null )
+            {
+                return null;
+            }
+
+            return parentEntity.IsAuthorized( Rock.Security.Authorization.VIEW, person );
         }
 
         /// <summary>
