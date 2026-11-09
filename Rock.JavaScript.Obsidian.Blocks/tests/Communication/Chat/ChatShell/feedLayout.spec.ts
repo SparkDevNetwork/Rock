@@ -26,6 +26,7 @@ import {
     groupWindowMs,
     jumpLabel,
     layoutFeed,
+    nearBottomPx,
     newMessagesText,
     sentHoldMs,
     skeletonDelayMs,
@@ -119,6 +120,12 @@ describe("the rules' constants", () => {
         expect(sentHoldMs).toBe(2200);
         expect(skeletonDelayMs).toBe(1000);
     });
+});
+
+// A group's typing bubble is 70 px (its gap, name line and bubble), so a reader within it is at
+// the newest message and the bubble's settling away never moves one counted as scrolled up.
+test("the near-bottom band is 72 px, a group's typing bubble rounded up", () => {
+    expect(nearBottomPx).toBe(72);
 });
 
 describe("grouping", () => {

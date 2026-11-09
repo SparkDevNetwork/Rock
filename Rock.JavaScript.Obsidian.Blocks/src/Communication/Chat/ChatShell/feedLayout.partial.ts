@@ -40,9 +40,11 @@ export const skeletonDelayMs = 1000;
 /**
  * How far from the bottom a reader may be and still count as at the newest message, in the
  * conversation and the thread drawer alike: such a reader follows what arrives, anyone further up
- * stays put and is offered Jump to latest. The design's own figure.
+ * stays put and is offered Jump to latest. It covers a group's typing bubble, 70px with its gap
+ * and name line, so a reader nearer the end than the bubble follows it, and its settling away
+ * never clamps the scroll of a reader counted as scrolled up.
  */
-export const nearBottomPx = 48;
+export const nearBottomPx = 72;
 
 /**
  * How far from the whole-pixel end a feed still counts as at it. The sizes the browser reports are

@@ -1249,27 +1249,28 @@ describe("Jump to latest", () => {
         expect(wrapper.findAll("[data-state='blocked']")).toHaveLength(1);
     });
 
-    // One near-bottom rule, the design's 48 px, decides both whether Jump shows and whether a new
-    // message is followed, so Jump never shows and then vanishes as the feed snaps down anyway.
-    test("a reader 60 px up stays put when another person sends, and Jump counts it", async () => {
+    // One near-bottom rule, 72 px, decides both whether Jump shows and whether a new message is
+    // followed, so Jump never shows and then vanishes as the feed snaps down anyway. It covers a
+    // group's typing bubble, so the bubble's coming and going never moves a reader it counts as up.
+    test("a reader 80 px up stays put when another person sends, and Jump counts it", async () => {
         const state = timeline([message(1, anna, at(14, 0))]);
         const wrapper = draw({ timeline: state });
-        placeScroll(wrapper, 1440);
+        placeScroll(wrapper, 1420);
         await nextTick();
 
         state.messages.push(message(2, anna, at(14, 1)));
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(1440);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(1420);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
     });
 
-    test("a reader 40 px up follows another person's message to the bottom, and Jump stays hidden", async () => {
+    test("a reader 60 px up follows another person's message to the bottom, and Jump stays hidden", async () => {
         const state = timeline([message(1, anna, at(14, 0))]);
         const wrapper = draw({ timeline: state });
-        placeScroll(wrapper, 1460);
+        placeScroll(wrapper, 1440);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
 
@@ -1290,12 +1291,12 @@ describe("Jump to latest", () => {
         await nextTick();
 
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-        Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 1442 });
+        Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 1426 });
         state.messages.push(message(2, anna, at(14, 1)));
         await nextTick();
         await nextTick();
 
-        expect(scroller.scrollTop).toBe(1442);
+        expect(scroller.scrollTop).toBe(1426);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
     });
@@ -1811,7 +1812,7 @@ describe("a feed holding its reader at the newest message", () => {
         const wrapper = draw({ timeline: state });
         const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
         layOut(wrapper, sizes);
-        scrollReader(wrapper, 1440);
+        scrollReader(wrapper, 1400);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
 
@@ -1836,7 +1837,7 @@ describe("a feed holding its reader at the newest message", () => {
         const wrapper = draw({ timeline: state });
         const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
         layOut(wrapper, sizes);
-        scrollReader(wrapper, 1440);
+        scrollReader(wrapper, 1400);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
 
@@ -1865,6 +1866,30 @@ describe("a feed holding its reader at the newest message", () => {
         expect(sizes.scrollTop).toBe(1548);
 
         // she stops without sending: the content shrinks back and the browser clamps the reader to the end
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        sizes.scrollTop = 1500;
+        echoScroll(wrapper);
+        await resize();
+        expect(sizes.scrollTop).toBe(1500);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // A group's bubble is 70 px; a reader nearer the end than that is at the newest message and
+    // follows it, so its settling away never clamps a reader counted as scrolled up.
+    test("a reader within a group bubble's height of the end follows the bubble into view and back as it goes", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 1440);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2070;
+        await resize();
+        expect(sizes.scrollTop).toBe(1570);
+
         await wrapper.setProps({ typing: null });
         sizes.scrollHeight = 2000;
         sizes.scrollTop = 1500;
