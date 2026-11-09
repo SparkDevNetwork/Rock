@@ -237,6 +237,58 @@ describe("the composer's key hint", () => {
     });
 });
 
+// Someone else typing is told in the foot's own reserved row, in the key hint's place, so nothing
+// above it moves; it is read where a person moves to it, never announced.
+describe("the composer's typing line", () => {
+    test("takes the key hint's place with the words", () => {
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: "Anna is typing…" } });
+
+        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
+        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
+    });
+
+    test("with no one typing, the hint is back", () => {
+        const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: null } });
+
+        expect(wrapper.find("[data-testid='composer-typing']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(true);
+    });
+
+    test("on a phone it takes the foot's otherwise empty row", () => {
+        const wrapper = mountComposer({ props: { isPhone: true, typingLine: "Anna is typing…" } });
+
+        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
+    });
+
+    test("in a thread it follows the also-send switch, which stays, and the counter stays last", () => {
+        const wrapper = mountComposer({ props: { isThread: true, maxLength: 600, typingLine: "Anna is typing…" } });
+        const foot = wrapper.get(".chat-composer-foot").element;
+        const children = Array.from(foot.children).map(child => (child as HTMLElement).dataset.testid);
+
+        expect(children).toEqual(["composer-also", "composer-typing", "composer-count"]);
+    });
+
+    test("is not a live region, nor inside one, and its dots are hidden from a screen reader", () => {
+        const wrapper = mountComposer({ props: { typingLine: "Anna is typing…" } });
+        const line = wrapper.get("[data-testid='composer-typing']").element as HTMLElement;
+
+        for (let node: HTMLElement | null = line; node; node = node.parentElement) {
+            expect(node.getAttribute("aria-live")).toBeNull();
+            expect(node.getAttribute("role")).not.toBe("status");
+        }
+        expect(line.querySelector(".chat-composer-typing-dots")?.getAttribute("aria-hidden")).toBe("true");
+    });
+
+    test("its dots pulse, and stand still under reduced motion", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
+
+        expect(style).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: chat-composer-pulse var\(--chat-d-pulse\)/);
+        expect(reduced).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: none/);
+    });
+});
+
 describe("the composer's keys", () => {
     test("Enter sends the text", async () => {
         const wrapper = mountComposer();

@@ -545,6 +545,14 @@ test("the reply composer is keyed by its thread", () => {
     expect(w.findComponent(Composer).props("conversationKey")).toBe("thread:40");
 });
 
+// Who is typing a reply in this thread is told in the reply composer's foot, as the conversation's
+// composer tells its own.
+test("the reply composer is given the thread's typing line", () => {
+    const w = draw({ typingLine: "Anna is typing…" });
+
+    expect(w.findComponent(Composer).props("typingLine")).toBe("Anna is typing…");
+});
+
 describe("the reply composer's @ picker", () => {
     test("opens on @ from the drawer's mention source, tells the drawer's owner the query, and takes Enter for the chip", async () => {
         const mentionSource = { canMention: true, people: [{ person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor" }], isAllOffered: false };

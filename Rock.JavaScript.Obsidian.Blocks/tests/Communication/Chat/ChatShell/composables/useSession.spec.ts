@@ -478,7 +478,8 @@ describe("settings from the token exchange", () => {
     const defaults: ChatSettings = {
         service: { state: "normal", banner: null },
         client: { update_required: false },
-        routes: { send: "direct" },
+        // no region named, so calls run wherever the platform's edge takes them
+        routes: { send: "direct", region: null },
         // the platform's own limits have no default here: one not sent reads as 0
         limits: {
             reconnect_base_ms: 1000,
@@ -489,6 +490,8 @@ describe("settings from the token exchange", () => {
             gap_reorder_ms: 500,
             gap_repair_wait_ms: 5000,
             stale_reload_ms: 900000,
+            typing_interval_ms: 4000,
+            typing_expiry_ms: 6000,
             dm_max_others: 0,
             dm_name_max_length: 0,
             body_max_length: 0,
@@ -503,8 +506,8 @@ describe("settings from the token exchange", () => {
             // no list takes no files
             attachment_types: []
         },
-        // GIFs are off unless the platform says the church has them on
-        flags: { gifs: false },
+        // GIFs and typing are off unless the platform says the church has them on
+        flags: { gifs: false, typing: false },
         push: { web: null, vapid_key: null, prompt: "after_send" }
     };
 
@@ -556,7 +559,30 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ flags: { gifs: "true" } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
-        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, other: "kept" });
+        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, other: "kept" });
+    });
+
+    test("typing is on only when the platform's flag is the boolean true", () => {
+        expect(readSettings({ flags: { typing: true } }).flags.typing).toBe(true);
+        expect(readSettings({ flags: { typing: "true" } }).flags.typing).toBe(false);
+        expect(readSettings({ flags: {} }).flags.typing).toBe(false);
+    });
+
+    // A platform that sends no pace sends no typing flag either, so the defaults only keep a
+    // missing key from becoming a signal on every key.
+    test("the typing pace and expiry are read as sent, else 4 and 6 seconds", () => {
+        expect(readSettings({ limits: { typing_interval_ms: 6860, typing_expiry_ms: 9000 } }).limits)
+            .toMatchObject({ typing_interval_ms: 6860, typing_expiry_ms: 9000 });
+        expect(readSettings({ limits: { typing_interval_ms: "6860", typing_expiry_ms: 0 } }).limits)
+            .toMatchObject({ typing_interval_ms: 4000, typing_expiry_ms: 6000 });
+    });
+
+    test("the database's region is read when it is a region's name, else there is none", () => {
+        expect(readSettings({ routes: { region: "us-east-1" } }).routes.region).toBe("us-east-1");
+        expect(readSettings({ routes: { region: "ap-southeast-2" } }).routes.region).toBe("ap-southeast-2");
+        for (const region of [undefined, "", 7, "US-EAST-1", "us-east-1; x", "https://example.com"]) {
+            expect(readSettings({ routes: { region } }).routes.region).toBeNull();
+        }
     });
 
     test("the problem reports a page load may send are read as sent, else 10", () => {

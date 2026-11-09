@@ -239,6 +239,20 @@ describe("callFunction", () => {
         expect(result).toMatchObject({ ok: false, status: 403, error: { code: "rpc.gifs_off" } });
     });
 
+    // The typing route is pinned to the database's region by a header the platform's edge reads.
+    test("sends a header of the caller's beside its own three, which it cannot override", async () => {
+        const { call, sent } = setup([response(200, { sent: true })]);
+
+        await call.callFunction("chat-typing", { p_channel_id: "c" }, { headers: { "x-region": "us-east-1", "Authorization": "Bearer forged", "apikey": "other" } });
+
+        expect(headers(sent[0])).toEqual({
+            "x-region": "us-east-1",
+            "Authorization": "Bearer platform-token",
+            "apikey": "k",
+            "Content-Type": "application/json"
+        });
+    });
+
     test("asks nothing without a token", async () => {
         const { call, sent } = setup([]);
         const options = { fetch: async () => response(200, {}), projectUrl: url, publishableKey: "k", currentToken: () => null, routes: () => ({ send: "direct" }) };

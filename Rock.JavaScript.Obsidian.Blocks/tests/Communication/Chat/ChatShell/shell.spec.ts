@@ -162,6 +162,8 @@ function build(options: {
     // Every problem report, answered with nothing as the platform answers it.
     const reports: Array<Record<string, unknown>> = [];
     const blocksAnswer: { value: unknown } = { value: { people: [], blocked_aliases: [] } };
+    // Every typing signal sent, each passed.
+    const typingCalls: Array<{ body: Record<string, unknown>, headers: Record<string, string> }> = [];
     // Every attachment begun, and every upload to Storage, each answered by the test.
     const begins: Array<Record<string, unknown>> = [];
     const uploads: FakeRequest[] = [];
@@ -276,6 +278,10 @@ function build(options: {
                 // an answer a test gives as a function is asked of it, and may wait for the test
                 const answer = listAnswers[listCall];
                 return fakeResponse(200, typeof answer === "function" ? await answer(body) : answer);
+            }
+            if (url.endsWith("/functions/v1/chat-typing")) {
+                typingCalls.push({ body, headers: init.headers as Record<string, string> });
+                return fakeResponse(200, { sent: true });
             }
             if (url.endsWith("/rest/v1/rpc/chat_register_device")) {
                 deviceCalls.push({ name: "chat_register_device", body });
@@ -402,7 +408,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         firePageHide: () => (windowListeners["pagehide"] ?? []).forEach(l => l())
     };
@@ -4551,5 +4557,116 @@ describe("the room's revision", () => {
 
         expect(h.history[channelA]?.length ?? 0).toBe(0);
         expect(h.shell.timelines.state(channelA).rev).toBe(6);
+    });
+});
+
+// Typing rides the same two topics as everything else but is no change to anything held: it goes
+// to the presence alone, before the mask, the threads, the timeline or the sender read it.
+describe("typing", () => {
+    const anna = "a0000001-0000-4000-8000-000000000000";
+    const groupRow = { channel_id: channelA, room_kind: "group", title: "Room", is_member: true, can_post: true, last_message_id: 10, last_message_preview: "m10", is_unread: false, rev: 5 } as unknown as SidebarRow;
+
+    async function typingStarted(): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.exchangeSettings.value = { limits: platformLimits, flags: { typing: true }, routes: { region: "us-east-1" } };
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [groupRow], me: { blocked_aliases: [] } };
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+        return h;
+    }
+
+    function channelEvent(h: ReturnType<typeof build>, event: string, payload: Record<string, unknown>): void {
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event, payload });
+    }
+
+    const typing = { channel_id: channelA, parent_id: null, person_alias_guid: anna, id: "sig-1", after: 10 };
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
+    test("on the conversation topic it reaches the presence and nothing that holds messages, and opens no gap", async () => {
+        const h = await typingStarted();
+        const held = h.shell.timelines.state(channelA).rev;
+        const timeline = jest.spyOn(h.shell.timelines, "applyEvent");
+        const threads = jest.spyOn(h.shell.threads, "applyEvent");
+        const landed = jest.spyOn(h.shell.sender, "landed");
+
+        channelEvent(h, "typing", typing);
+        await settle();
+
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+        expect(h.shell.presence.lineFor(channelA)).toBe("Someone is typing…");
+        expect(timeline).not.toHaveBeenCalled();
+        expect(threads).not.toHaveBeenCalled();
+        expect(landed).not.toHaveBeenCalled();
+        expect(h.shell.timelines.state(channelA).rev).toBe(held);
+        expect(h.history[channelA]?.length ?? 0).toBe(0);
+    });
+
+    test("on the personal topic it reaches the presence and never the sidebar's rows", async () => {
+        const h = await typingStarted();
+        const rows = jest.spyOn(h.shell.channels, "applyPersonalEvent");
+        const mentions = jest.spyOn(h.shell.mentions, "applyPersonalEvent");
+
+        personal(h, "typing", typing);
+        await settle();
+
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+        expect(rows).not.toHaveBeenCalled();
+        expect(mentions).not.toHaveBeenCalled();
+    });
+
+    test("the typist's message takes them off the line at once", async () => {
+        const h = await typingStarted();
+        channelEvent(h, "typing", typing);
+
+        channelEvent(h, "message.created", { id: 11, channel_id: channelA, person_alias_guid: anna, message_type: "text", body: "hi", created_at: "2026-09-23T10:01:00Z", parent_id: null, rev: 6 });
+        await settle();
+
+        expect(h.shell.presence.state.typists[channelA] ?? []).toEqual([]);
+    });
+
+    test("the conversation's topic joined again forgets every typist", async () => {
+        const h = await typingStarted();
+        channelEvent(h, "typing", typing);
+
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+
+        expect(h.shell.presence.state.typists).toEqual({});
+    });
+
+    test("the person's typing goes to the typing route pinned to the database's region, naming the newest message the timeline holds", async () => {
+        const h = await typingStarted();
+
+        h.shell.presence.typed(channelA, null, "H");
+        await settle();
+
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10 }]);
+        expect(h.typingCalls[0].headers["x-region"]).toBe("us-east-1");
+    });
+
+    test("a stopped shell shows no one typing and sends nothing", async () => {
+        const h = await typingStarted();
+        channelEvent(h, "typing", typing);
+
+        await h.shell.stop();
+        h.shell.presence.typed(channelA, null, "H");
+        await settle();
+
+        expect(h.shell.presence.state.typists).toEqual({});
+        expect(h.typingCalls).toEqual([]);
     });
 });

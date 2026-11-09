@@ -33,6 +33,7 @@ import { resolve } from "path";
 type WireContract = {
     tables: { schema: string; name: string; columns: string[] }[];
     error_codes: { families: string[]; pattern: string; codes: string[] };
+    limits: Record<string, unknown>;
     wire_hash: string;
 };
 
@@ -78,5 +79,14 @@ describe("chat wire contract", () => {
         for (const code of ["rpc.gifs_off", "rpc.bad_gif", "rpc.gif_search_busy"]) {
             expect(contract.error_codes.codes).toContain(code);
         }
+    });
+
+    it("carries the typing refusals and the typing pace, which the client branches on and defaults to", () => {
+        const contract = readContract();
+
+        for (const code of ["rpc.typing_off", "rpc.typing_not_here", "rpc.bad_parent", "authz.not_member"]) {
+            expect(contract.error_codes.codes).toContain(code);
+        }
+        expect(contract.limits).toMatchObject({ typing_interval_ms: 4000, typing_expiry_ms: 6000 });
     });
 });
