@@ -188,6 +188,7 @@ export const finalRefusals = {
         "rpc.gifs_off",
         "rpc.idempotency_mismatch",
         "rpc.block_limit",
+        "rpc.typing_not_here",
         "door.bad_request",
         "door.not_allowed",
         "door.not_found",
