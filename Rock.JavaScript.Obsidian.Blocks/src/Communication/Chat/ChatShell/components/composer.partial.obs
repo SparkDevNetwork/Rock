@@ -465,8 +465,14 @@
     box-shadow: none;
 }
 
+/*
+ * It keeps its width beside a typing line, which is the one item in the foot that gives way; only a
+ * conversation's name too long for the foot on its own wraps it.
+ */
 .chat-composer-also {
     display: inline-flex;
+    flex: none;
+    max-width: 100%;
     gap: 8px;
     align-items: center;
     margin: 0;

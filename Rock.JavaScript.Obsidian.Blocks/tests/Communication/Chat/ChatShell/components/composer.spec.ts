@@ -268,6 +268,25 @@ describe("the composer's typing line", () => {
         expect(children).toEqual(["composer-also", "composer-typing", "composer-count"]);
     });
 
+    test("in a thread with no one typing the switch stands alone, with no key hint beside it", () => {
+        const wrapper = mountComposer({ props: { isThread: true, typingLine: null } });
+
+        expect(wrapper.find("[data-testid='composer-also']").exists()).toBe(true);
+        expect(wrapper.find("[data-testid='composer-typing']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
+    });
+
+    // Flex shares an overflow among the row's shrinkable items, so a label left shrinkable would
+    // wrap to a second line in a narrow drawer and grow the foot; only the typing line gives way.
+    test("in a thread the also-send label keeps its width and the typing line truncates", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
+        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*min-width: 0;/);
+        expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*text-overflow: ellipsis;/);
+    });
+
     test("is not a live region, nor inside one, and its dots are hidden from a screen reader", () => {
         const wrapper = mountComposer({ props: { typingLine: "Anna is typing…" } });
         const line = wrapper.get("[data-testid='composer-typing']").element as HTMLElement;
