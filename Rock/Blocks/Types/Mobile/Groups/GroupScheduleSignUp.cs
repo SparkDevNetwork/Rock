@@ -214,6 +214,28 @@ namespace Rock.Blocks.Types.Mobile.Groups
         }
 
         /// <summary>
+        /// Determines whether a sign-up time sent by the client matches a time the server offered.
+        /// </summary>
+        /// <param name="offered">The date and time the server offered.</param>
+        /// <param name="requested">The date and time the client sent back.</param>
+        /// <returns><c>true</c> if the requested time matches the offered time; otherwise <c>false</c>.</returns>
+        private static bool IsSameOfferedDateTime( DateTimeOffset offered, DateTimeOffset requested )
+        {
+            /*
+                11/09/2026 - PS
+
+                The client sends back the time it was offered, but the offset may not
+                round-trip (for example, if the app converts it to the device's time zone).
+                Accept either the same wall-clock time or the same moment in time. Callers
+                create the occurrence from the offered time, never the requested one, so a
+                crafted offset can't move the sign-up to a date that was not offered.
+
+                Reason: Don't reject valid sign-ups, and don't trust the client's date.
+            */
+            return offered.DateTime == requested.DateTime || offered == requested;
+        }
+
+        /// <summary>
         /// Gets a list of schedule sign up data.
         /// </summary>
         /// <remarks>This method is carefully designed to return a smaller payload, since it
@@ -221,8 +243,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <paramref name="startWeekIndex"/> and <paramref name="endWeekIndex"/>, while making sure not to exceed
         /// the <see cref="FutureWeeksToShow" />.
         /// </remarks>
-        /// <param name="signUpGroupGuid">The sign-up group. Checks should be done beforehand that this group is
-        /// configured correctly.</param>
+        /// <param name="signUpGroupGuid">The sign-up group. Options are only returned when the current person is an
+        /// active member of this group and the group has scheduling enabled.</param>
         /// <param name="selectedSignupPersonId">The person requesting the sign up data.</param>
         /// <param name="startWeekIndex">The starting index of the next weeks to load.</param>
         /// <param name="endWeekIndex">The ending index of the next weeks to load.</param>
@@ -247,6 +269,11 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var groupLocationService = new GroupLocationService( rockContext );
                 var group = groupService.Get( signUpGroupGuid );
 
+                if ( group == null )
+                {
+                    return new List<GroupScheduleSignUpBag>();
+                }
+
                 bool personDoesntMeetRequirements = group.SchedulingMustMeetRequirements
                     && groupService.GroupMembersNotMeetingRequirements( group, false, false )
                         .Where( a => a.Key.PersonId == selectedSignupPersonId )
@@ -257,7 +284,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                     return new List<GroupScheduleSignUpBag>();
                 }
 
-                foreach ( var personGroupLocation in group.GroupLocations )
+                foreach ( var personGroupLocation in GetApplicableGroupLocations( group, groupLocationService ) )
                 {
                     foreach ( var schedule in personGroupLocation.Schedules.Where( a => ( a.IsPublic ?? true ) && a.IsActive ) )
                     {
@@ -379,6 +406,12 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 var personScheduleExclusionService = new PersonScheduleExclusionService( rockContext );
 
                 var group = groupService.Get( groupGuid );
+
+                if ( group == null )
+                {
+                    return null;
+                }
+
                 var personGroupLocationList = GetApplicableGroupLocations( group, groupLocationService );
 
                 var groupsThatHaveSchedulingRequirements = personGroupLocationList.Where( a => a.Group.SchedulingMustMeetRequirements ).Select( a => a.Group ).Distinct().ToList();
@@ -398,7 +431,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 foreach ( var personGroupLocation in personGroupLocationList )
                 {
                     // Loop through each particular scheduling opportunity
-                    foreach ( var schedule in personGroupLocation.Schedules )
+                    foreach ( var schedule in personGroupLocation.Schedules.Where( a => ( a.IsPublic ?? true ) && a.IsActive ) )
                     {
                         // Find if this has max volunteers here.
                         int maximumCapacitySetting = 0;
@@ -547,8 +580,8 @@ namespace Rock.Blocks.Types.Mobile.Groups
         /// <summary>
         /// Gets the schedule sign up data.
         /// </summary>
-        /// <param name="groupGuid">The group to get schedules for. Checks to ensure
-        /// the group is a scheduling group should be done beforehand.</param>
+        /// <param name="groupGuid">The group to get schedules for. Schedules are only returned when the
+        /// current person is an active member of this group and the group has scheduling enabled.</param>
         /// <param name="startWeekIndex">The starting index of the next weeks to load.</param>
         /// <param name="endWeekIndex">The ending index of the next weeks to load.</param>
         /// <returns></returns>
@@ -595,6 +628,33 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [BlockAction]
         public BlockActionResult SaveSignUpSchedule( ScheduleSignUpRequestBag schedule )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionForbidden();
+            }
+
+            if ( schedule == null )
+            {
+                return ActionBadRequest( "Invalid schedule request." );
+            }
+
+            // Only allow a sign-up that matches an option we would offer this person.
+            var offeredSignUp = GetSequentialScheduleSignupDataFromGroup( schedule.GroupGuid, CurrentPersonId, 0, FutureWeeksToShow )
+                .FirstOrDefault( s =>
+                {
+                    var isRequestedLocationOffered = !schedule.LocationGuid.HasValue
+                        || s.Locations.Any( l => l.LocationGuid == schedule.LocationGuid.Value );
+
+                    return s.ScheduleGuid == schedule.ScheduleGuid
+                        && IsSameOfferedDateTime( s.ScheduledDateTime, schedule.ScheduledDateTime )
+                        && isRequestedLocationOffered;
+                } );
+
+            if ( offeredSignUp == null )
+            {
+                return ActionBadRequest( "Failed to schedule that particular date. Please try again." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
@@ -607,7 +667,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
 
                 var scheduleId = new ScheduleService( rockContext ).GetNoTracking( schedule.ScheduleGuid ).Id;
 
-                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( schedule.ScheduledDateTime.DateTime, groupId, locationId, scheduleId );
+                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( offeredSignUp.ScheduledDateTime.DateTime, groupId, locationId, scheduleId );
                 var personAlias = new PersonAliasService( rockContext ).Get( CurrentPersonPrimaryAliasId );
 
                 var attendanceService = new AttendanceService( rockContext );
@@ -676,13 +736,35 @@ namespace Rock.Blocks.Types.Mobile.Groups
         [Obsolete]
         public BlockActionResult SaveSchedule( PersonScheduleSignupDataBag schedule )
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionForbidden();
+            }
+
+            if ( schedule == null )
+            {
+                return ActionBadRequest( "Invalid schedule request." );
+            }
+
+            // Only allow a sign-up that matches an option we would offer this person.
+            var offeredSignUp = GetScheduleSignupData( schedule.GroupGuid )?.PersonScheduleSignups
+                .FirstOrDefault( s => s.GroupGuid == schedule.GroupGuid
+                    && s.LocationGuid == schedule.LocationGuid
+                    && s.ScheduleGuid == schedule.ScheduleGuid
+                    && IsSameOfferedDateTime( s.ScheduledDateTime, schedule.ScheduledDateTime ) );
+
+            if ( offeredSignUp == null )
+            {
+                return ActionBadRequest( "Failed to schedule that particular date. Please try again." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
                 var groupId = new GroupService( rockContext ).GetNoTracking( schedule.GroupGuid ).Id;
                 var locationId = new LocationService( rockContext ).GetNoTracking( schedule.LocationGuid ).Id;
                 var scheduleId = new ScheduleService( rockContext ).GetNoTracking( schedule.ScheduleGuid ).Id;
 
-                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( schedule.ScheduledDateTime.DateTime, groupId, locationId, scheduleId );
+                var attendanceOccurrence = new AttendanceOccurrenceService( rockContext ).GetOrAdd( offeredSignUp.ScheduledDateTime.DateTime, groupId, locationId, scheduleId );
                 var personAlias = new PersonAliasService( rockContext ).Get( CurrentPersonPrimaryAliasId );
 
                 var attendanceService = new AttendanceService( rockContext );
