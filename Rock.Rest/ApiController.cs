@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Security;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
 
@@ -206,21 +207,58 @@ namespace Rock.Rest
                 throw new HttpResponseException( errorResponse );
             }
 
+            /*
+                11/02/2026 - MSE
+
+                The attribute is resolved and checked before it is used in the query, so
+                the result cannot confirm which records hold a value for an attribute the
+                person is not allowed to view. A key can match several attributes (for
+                example the same key with different qualifiers), so only the viewable
+                ones are searched.
+
+                Reason: Honor attribute security when filtering by attribute value.
+            */
+            var person = GetPerson();
+            var entityTypeId = EntityTypeCache.GetId<T>() ?? 0;
+            var candidateAttributes = AttributeCache.AllForEntityType( entityTypeId )
+                .Where( a => queryById ? a.Id == attributeId.Value : a.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) )
+                .ToList();
+
             // Query for the models that have the value for the attribute
             var rockContext = Service.Context as RockContext;
             var query = Service.Queryable().AsNoTracking();
             var valueComparison = caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 
-            if ( queryById )
+            if ( !candidateAttributes.Any() )
             {
-                query = query.WhereAttributeValue( rockContext,
-                    a => a.AttributeId == attributeId && a.Value.Equals( value, valueComparison ) );
+                // No attribute of this entity type matches, so nothing can match.
+                return query.Where( e => false );
             }
-            else
+
+            /*
+                11/02/2026 - MSE
+
+                Password fields and component settings (gateway credentials, provider
+                keys) usually have no security of their own, so VIEW alone passes for
+                them. The v1 responses already leave their values out unless the person
+                can edit the attribute or the item, so searching by them needs EDIT as
+                well. A search spans many items, so only EDIT on the attribute counts here.
+
+                Reason: Keep component secrets from being confirmed by value through the v1 attribute value search.
+            */
+            var authorizedAttributeIds = candidateAttributes
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, person )
+                    && ( !SensitiveAttributeHelper.IsSensitiveAttribute( a ) || a.IsAuthorized( Rock.Security.Authorization.EDIT, person ) ) )
+                .Select( a => a.Id )
+                .ToList();
+
+            if ( !authorizedAttributeIds.Any() )
             {
-                query = query.WhereAttributeValue( rockContext,
-                    a => a.Attribute.Key.Equals( attributeKey, StringComparison.OrdinalIgnoreCase ) && a.Value.Equals( value, valueComparison ) );
+                throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.Forbidden ) { ReasonPhrase = "Not authorized to view that attribute" } );
             }
+
+            query = query.WhereAttributeValue( rockContext,
+                a => authorizedAttributeIds.Contains( a.AttributeId ) && a.Value.Equals( value, valueComparison ) );
 
             return query;
         }
