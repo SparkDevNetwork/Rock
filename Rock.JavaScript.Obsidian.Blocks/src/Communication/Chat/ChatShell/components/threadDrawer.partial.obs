@@ -125,6 +125,7 @@
                                 :organizationName="organizationName"
                                 :isChannel="isChannel"
                                 :position="row.position"
+                                :isTypingNext="row.isTypingNext"
                                 :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
                                 :isArriving="isRowArriving(row.key)"
@@ -146,7 +147,11 @@
                 </div>
             </template>
 
-            <TypingBubble class="chat-grp" :typing="typing" :isGroup="!isChannel && !isDirectMessage" :newestMessage="newestReply" />
+            <!-- Someone typing a reply, as the newest row the layout placed; one element, so it can settle away once its row is gone. -->
+            <TypingBubble :typing="drawnTyping"
+                          :isGroup="!isChannel && !isDirectMessage"
+                          :isInRun="repliesLaidOut?.typing?.isInRun ?? false"
+                          :messages="replies" />
 
             <!--
                 The thread's one action bar, drawn in the dock of the message it is on. One element for
@@ -278,22 +283,31 @@
 
 /*
     A group, as the feed draws one, in the panel's narrower room: 16px on the sender's side and 40px
-    on the far side. A phone keeps the feed's own phone padding.
+    on the far side. A phone keeps the feed's own phone padding. Another person's measures are
+    stated once, for the groups and for the typing bubble, which stands where their next one will.
 */
+.chat-th-body {
+    --chat-grp-space: 14px;
+    --chat-grp-gap: 2px;
+    --chat-grp-inset: 16px;
+    --chat-grp-room: 40px;
+}
+
+.chat-th-body.is-phone:not(.is-community) {
+    --chat-grp-inset: 12px;
+    --chat-grp-room: 36px;
+}
+
 .chat-grp {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-top: 14px;
-    padding: 0 40px 0 16px;
+    gap: var(--chat-grp-gap);
+    margin-top: var(--chat-grp-space);
+    padding: 0 var(--chat-grp-room) 0 var(--chat-grp-inset);
 }
 
 .chat-grp.is-own {
     padding: 0 16px 0 40px;
-}
-
-.is-phone:not(.is-community) .chat-grp {
-    padding: 0 36px 0 12px;
 }
 
 .is-phone:not(.is-community) .chat-grp.is-own {
@@ -352,8 +366,8 @@
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
-    import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { useViewArrivals } from "../messageMotion.partial";
+    import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -696,32 +710,28 @@
     const justSentKeys = useSentHold(() => pendingReplies.value, bodyElement);
     const slowSendKeys = useSlowSend(() => pendingReplies.value);
 
+    /** Who is typing a reply as the drawer draws it: no one until the root is there, so nothing types under the skeleton. */
+    const drawnTyping = computed((): Typing | null => props.root ? props.typing : null);
+
+    /** The replies as the feed lays out its messages, someone typing among them as their next row. */
+    const repliesLaidOut = computed((): FeedLayoutResult | null => props.root ? layOut(props.replies, pendingReplies.value, drawnTyping.value) : null);
+
     const items = computed((): DrawerItem[] => {
-        if (!props.root) {
+        if (!props.root || !repliesLaidOut.value) {
             return [];
         }
 
-        const layout = props.isChannel ? "community" : "conversational";
-        const flatten = (messages: TimelineMessage[], pending: PendingMessage[], isReply: boolean): DrawerItem[] => layoutFeed({
-            messages,
-            pending,
-            personAliasGuid: props.personAliasGuid,
-            newDividerBeforeId: null,
-            layout,
-            now: new Date()
-        }).flatMap(section => section.items)
+        const flatten = (laid: FeedLayoutResult, isReply: boolean): DrawerItem[] => laid.sections
+            .flatMap(section => section.items)
             .filter((item): item is Exclude<FeedItem, { kind: "divider" }> => item.kind !== "divider")
             .map(item => ({ ...item, isReply }));
 
         return [
-            ...flatten([props.root], [], false),
+            ...flatten(layOut([props.root], [], null), false),
             { kind: "thread-divider", key: "thread-divider" },
-            ...flatten(props.replies, pendingReplies.value, true)
+            ...flatten(repliesLaidOut.value, true)
         ];
     });
-
-    /** The newest reply, so a typist's reply arriving takes their typing bubble's place. */
-    const newestReply = computed((): TimelineMessage | null => props.replies[props.replies.length - 1] ?? null);
 
     /** The thread's parts for the panel's entrance, none until the root is there to draw. */
     const entranceKeys = computed((): string[] | null => props.root ? items.value.map(item => item.key) : null);
@@ -792,6 +802,19 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Lays out part of the thread by the feed's rules, in the look its conversation draws. */
+    function layOut(messages: TimelineMessage[], pending: PendingMessage[], typing: Typing | null): FeedLayoutResult {
+        return layoutFeed({
+            messages,
+            pending,
+            personAliasGuid: props.personAliasGuid,
+            newDividerBeforeId: null,
+            layout: props.isChannel ? "community" : "conversational",
+            now: new Date(),
+            typists: typing?.typists.map(typist => typist.alias) ?? []
+        });
+    }
 
     /** The panel host's scroller, which holds this body. */
     function scroller(): HTMLElement | null {
@@ -900,7 +923,7 @@
     // Older replies go in above without moving what the reader is looking at; newer ones, and
     // someone starting to type, are followed when the reader is at the bottom, and the reader's own
     // replies always are.
-    watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!props.typing], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
+    watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!drawnTyping.value], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
         const element = scroller();
         const fromBottom = element ? element.scrollHeight - element.scrollTop : 0;
         const shouldFollow = isNearBottom() || pendingCount > oldPendingCount;

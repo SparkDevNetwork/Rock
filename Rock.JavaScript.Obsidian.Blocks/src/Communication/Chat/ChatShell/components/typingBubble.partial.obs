@@ -1,9 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Transition enter-active-class="is-arriving" leave-active-class="is-leaving" leave-to-class="is-gone" :css="!isReplaced">
-        <div v-if="typing" v-bind="$attrs" class="chat-typing" data-testid="typing-bubble">
+    <Transition enter-active-class="is-arriving"
+                leave-active-class="is-leaving"
+                leave-to-class="is-gone"
+                :css="!isReplaced"
+                @leave="onLeave"
+                @afterLeave="onLeaveEnd"
+                @leaveCancelled="onLeaveEnd">
+        <div v-if="typing" class="chat-typing" :class="{ 'is-in-run': isInRun }" data-testid="typing-bubble">
             <div class="chat-typing-in">
-                <div v-if="isGroup" class="chat-typing-names" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
+                <div v-if="isGroup && !isInRun" class="chat-typing-names" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
                 <div class="chat-typing-line" aria-hidden="true">
                     <Avatar v-if="faces.length === 1" :people="faces" :size="34" />
                     <GroupFace v-else :people="faces" :size="34" />
@@ -19,14 +25,22 @@
 /*
     Someone else typing, drawn as their next message would be: the newest row of the feed or the
     thread, their face or the group face of everyone typing beside a bubble of three dots, and in a
-    group the name line above it. The caller gives it the group's padding and its gap above, so it
-    stands where the reply will land. It is a grid of one row, so its leaving can take its height
-    down to nothing rather than drop it at the end.
+    group the name line above it. It stands where the reply will land, inset as another person's
+    group and spaced from the row above as a group, or as a row continuing the typist's own run,
+    from the group measures the feed or the thread states once for its groups and this alike. It
+    is a grid of one row, so its leaving can take its height down to nothing rather than drop it
+    at the end.
 */
 .chat-typing {
     position: relative;
     display: grid;
     grid-template-rows: 1fr;
+    margin-top: var(--chat-grp-space);
+    padding: 0 var(--chat-grp-room) 0 var(--chat-grp-inset);
+}
+
+.chat-typing.is-in-run {
+    margin-top: var(--chat-grp-gap);
 }
 
 .chat-typing-in {
@@ -62,6 +76,11 @@
     color: var(--chat-icon);
     background: var(--chat-bubble);
     border-radius: var(--chat-r-bubble);
+}
+
+/* Continuing her run, it is the run's last bubble, its corner toward the run above tightened as hers would be. */
+.chat-typing.is-in-run .chat-typing-bubble {
+    border-top-left-radius: var(--chat-r-tail);
 }
 
 /* Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before. */
@@ -107,6 +126,14 @@
     opacity: 0;
 }
 
+/*
+    Her message landing while the bubble settles away takes its place at once, so the feed makes
+    one move, the message's, rather than the message's and the settling's together.
+*/
+.chat-typing.is-replaced {
+    display: none;
+}
+
 /* Asked for less motion, the dots stand still at full strength and a typist stopping is simply gone. */
 @media (prefers-reduced-motion: reduce) {
     .chat-typing-bubble i {
@@ -149,10 +176,6 @@
     import { Typing } from "../composables/usePresence.partial";
     import { TimelineMessage } from "../types.partial";
 
-    // The caller's class, the group's padding and gap, goes on the row itself rather than on the
-    // transition around it.
-    defineOptions({ inheritAttrs: false });
-
     const props = defineProps({
         /** Who else is typing in this place, or null for no one. */
         typing: {
@@ -166,10 +189,16 @@
             default: false
         },
 
-        /** The newest message in the place, so a typist's own message arriving takes the bubble's place. */
-        newestMessage: {
-            type: Object as PropType<TimelineMessage | null>,
-            default: null
+        /** The one typist sent the newest group, so this is her run's next row, with no name line and a row's gap above. */
+        isInRun: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The place's messages, oldest first, so a typist's own message arriving takes the bubble's place. */
+        messages: {
+            type: Array as PropType<readonly TimelineMessage[]>,
+            default: () => []
         }
     });
 
@@ -185,6 +214,9 @@
     let drawnAliases: string[] = [];
     let drawnNewestId = 0;
 
+    /** The row while it settles away, which Vue no longer draws and her message can still cut short. */
+    let leavingElement: Element | null = null;
+
     // #endregion Values
 
     // #region Computed Values
@@ -194,20 +226,49 @@
 
     // #endregion Computed Values
 
+    // #region Functions
+
+    /** Whether a message newer than the bubble last drawn is one of its typists', whatever else came with it. */
+    function hasTypistSent(): boolean {
+        for (let index = props.messages.length - 1; index >= 0 && props.messages[index].id > drawnNewestId; index--) {
+            if (drawnAliases.includes((props.messages[index].person_alias_guid ?? "").toLowerCase())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onLeave(element: Element): void {
+        leavingElement = element;
+    }
+
+    function onLeaveEnd(): void {
+        leavingElement = null;
+    }
+
+    // #endregion Event Handlers
+
     // #region Watchers
 
     // Read before the render that draws the change, so the bubble's leaving is chosen in the frame
     // the message arrives: a message ends its sender's typing in the same live event that brings it.
-    watch(() => [props.typing, props.newestMessage?.id] as const, ([typing]) => {
-        const newest = props.newestMessage;
+    watch(() => [props.typing, props.messages[props.messages.length - 1]?.id ?? 0] as const, ([typing, newestId]) => {
         if (typing) {
             drawnAliases = typing.typists.map(typist => typist.alias);
-            drawnNewestId = newest?.id ?? 0;
+            drawnNewestId = newestId;
             isReplaced.value = false;
             return;
         }
 
-        isReplaced.value = !!newest && newest.id > drawnNewestId && drawnAliases.includes((newest.person_alias_guid ?? "").toLowerCase());
+        isReplaced.value = hasTypistSent();
+        if (isReplaced.value) {
+            leavingElement?.classList.add("is-replaced");
+        }
     }, { immediate: true });
 
     // #endregion Watchers

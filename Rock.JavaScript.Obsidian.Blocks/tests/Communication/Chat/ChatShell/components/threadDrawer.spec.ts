@@ -580,8 +580,47 @@ describe("someone typing a reply", () => {
         const rows = w.findAll("[data-reply-id]").map(row => row.element);
 
         expect(rows.every(row => (row.compareDocumentPosition(bubble) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)).toBe(true);
-        expect(bubble.classList.contains("chat-grp")).toBe(true);
+        // its layout is its own, so no group rule of the drawer's can turn its grid into another box
+        expect(bubble.classList.contains("chat-grp")).toBe(false);
         expect(w.get("[data-testid='typing-names']").text()).toBe("Anna");
+    });
+
+    // As in the conversation, a reply of hers newest makes the bubble her run's next row.
+    test("after the typist's own newest reply it is her run's next row, the face moving to it", () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const hers = message(44, { parent_id: 40 });
+            const w = draw({ isChannel: false, replies: [...replies(3), hers], typing: annaTyping });
+            const row = w.get("[data-reply-id='44']");
+
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(true);
+            expect(w.find("[data-testid='typing-names']").exists()).toBe(false);
+            expect(row.find("[data-testid='sender-avatar']").exists()).toBe(false);
+            expect(row.find("[data-testid='message-meta']").exists()).toBe(true);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("after someone else's reply it is a group of its own", () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const w = draw({ isChannel: false, typing: annaTyping });
+
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("is not drawn before the thread's first page is there", async () => {
+        const w = draw({ isChannel: false, root: null, replies: [], isLoading: true, typing: annaTyping });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
+
+        await w.setProps({ root: rootWith(3), replies: replies(3), isLoading: false });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(true);
     });
 
     test("in a direct message it has no name line, and with no one typing it is not drawn", async () => {
@@ -593,10 +632,10 @@ describe("someone typing a reply", () => {
         expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
     });
 
-    test("is given the newest reply, so the typist's reply can take its place", () => {
+    test("is given the replies, so the typist's reply can take its place", () => {
         const w = draw({ isChannel: false, typing: annaTyping });
 
-        expect((w.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(43);
+        expect((w.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([41, 42, 43]);
     });
 
     test("the reply composer is the same with someone typing as without, and is given no typing", async () => {

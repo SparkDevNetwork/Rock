@@ -63,6 +63,12 @@ export type FeedRow = {
     message: TimelineMessage | null;
     pending: PendingMessage | null;
     position: RowPosition;
+
+    /**
+     * The group's sender is typing her next row after this one. That row has the run's face and
+     * corners, as her message will, but no time, so the time stays under this row.
+     */
+    isTypingNext: boolean;
 };
 
 /**
@@ -92,6 +98,24 @@ export type FeedLayoutOptions = {
     layout: FeedLayout;
     now: Date;
     locale?: string;
+
+    /** Who else is typing here, by lower-case alias, in the order first heard. */
+    typists?: readonly string[];
+};
+
+/**
+ * Where someone else typing is drawn: the newest row, either the next row of the typist's own run
+ * or the first of a group of its own. It never starts a day of its own; her message brings its
+ * day's pill when it lands.
+ */
+export type TypingRow = {
+    isInRun: boolean;
+};
+
+/** The feed as laid out: its day sections, and the typing row after them while someone types. */
+export type FeedLayoutResult = {
+    sections: FeedSection[];
+    typing: TypingRow | null;
 };
 
 /** A message or a pending send, with what grouping reads from it. */
@@ -134,11 +158,15 @@ export function isOwnMessage(message: Pick<TimelineMessage, "is_own" | "person_a
  * arrive; a new element would cut its rise short and play it again. A pending row whose message is
  * already here is not drawn, since the message stands for it.
  *
- * @param options The messages, the pending sends, the reader and where the divider sits.
+ * Someone else typing is laid out as the typist's next row by the same grouping rule, so her
+ * message lands where it stood: one typist who sent the newest group today, within the window,
+ * continues that run, and anyone else typing starts a group after it.
  *
- * @returns The sections, oldest first.
+ * @param options The messages, the pending sends, the reader, where the divider sits and who is typing.
+ *
+ * @returns The sections, oldest first, and the typing row.
  */
-export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
+export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
     const me = options.personAliasGuid.toLowerCase();
     const sections: FeedSection[] = [];
     let section: FeedSection | null = null;
@@ -205,7 +233,7 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
             group = null;
         }
         else if (group && previous && joinsGroup(previous, entry, options.layout)) {
-            group.rows.push({ key: entry.key, message, pending: entry.pending, position: "single" });
+            group.rows.push({ key: entry.key, message, pending: entry.pending, position: "single", isTypingNext: false });
         }
         else {
             group = {
@@ -213,12 +241,26 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
                 key: entry.key,
                 isOwn: entry.sender === me,
                 senderGuid: message ? message.person_alias_guid : options.personAliasGuid,
-                rows: [{ key: entry.key, message, pending: entry.pending, position: "single" }]
+                rows: [{ key: entry.key, message, pending: entry.pending, position: "single", isTypingNext: false }]
             };
             section.items.push(group);
         }
 
         previous = entry;
+    }
+
+    // The typing row is one more row after the newest, laid out by the rule a message there would
+    // be: it continues the newest group when that is the one typist's, today and within the window.
+    const typists = options.typists ?? [];
+    let typing: TypingRow | null = null;
+    if (typists.length > 0) {
+        const next: Entry = { key: "typing", message: null, pending: null, sender: typists.length === 1 ? typists[0].toLowerCase() : "", at: options.now };
+        const isInRun = !!group && !!previous && section?.key === localDayKey(options.now) && next.sender !== "" && next.sender !== me
+            && joinsGroup(previous, next, options.layout);
+        if (isInRun && group) {
+            group.rows[group.rows.length - 1].isTypingNext = true;
+        }
+        typing = { isInRun };
     }
 
     for (const item of sections.flatMap(s => s.items)) {
@@ -227,7 +269,7 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
         }
     }
 
-    return sections;
+    return { sections, typing };
 }
 
 /**
@@ -381,12 +423,13 @@ function joinsGroup(previous: Entry, entry: Entry, layout: FeedLayout): boolean 
     return !isAnnouncement(entry) && !isAnnouncement(previous) && !entry.message?.quoted_message_id;
 }
 
-/** Marks each row with its place in the group. */
+/** Marks each row with its place in the group, counting a typing row after the last as one more. */
 function setPositions(rows: FeedRow[]): void {
+    const count = rows.length + (rows[rows.length - 1]?.isTypingNext ? 1 : 0);
     rows.forEach((row, index) => {
-        row.position = rows.length === 1 ? "single"
+        row.position = count === 1 ? "single"
             : index === 0 ? "first"
-                : index === rows.length - 1 ? "last" : "middle";
+                : index === count - 1 ? "last" : "middle";
     });
 }
 

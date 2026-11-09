@@ -22,6 +22,7 @@
 import {
     blockedRunText,
     dayLabel,
+    FeedSection,
     groupWindowMs,
     jumpLabel,
     layoutFeed,
@@ -74,7 +75,7 @@ function pendingRow(localId: string, status: "sending" | "failed" = "sending"): 
 
 type LayoutOptions = Partial<Parameters<typeof layoutFeed>[0]>;
 
-function lay(messages: TimelineMessage[], options: LayoutOptions = {}): ReturnType<typeof layoutFeed> {
+function lay(messages: TimelineMessage[], options: LayoutOptions = {}): FeedSection[] {
     return layoutFeed({
         messages,
         pending: [],
@@ -84,11 +85,11 @@ function lay(messages: TimelineMessage[], options: LayoutOptions = {}): ReturnTy
         now,
         locale,
         ...options
-    });
+    }).sections;
 }
 
 /** Every item of every section, in order. */
-function items(messages: TimelineMessage[], options: LayoutOptions = {}): ReturnType<typeof layoutFeed>[number]["items"] {
+function items(messages: TimelineMessage[], options: LayoutOptions = {}): FeedSection["items"] {
     return lay(messages, options).flatMap(section => section.items);
 }
 
@@ -356,15 +357,15 @@ describe("messages by people the reader blocked", () => {
         message(id, sender, at(9, id), { body: null, sender_nick_name: null, sender_last_name: null, blocked: true, ...extra });
 
     function items(messages: TimelineMessage[], newDividerBeforeId: number | null = null): Array<{ kind: string, ids: number[] }> {
-        return layoutFeed({ messages, pending: [], personAliasGuid: me, newDividerBeforeId, layout: "community", now, locale })[0].items
+        return layoutFeed({ messages, pending: [], personAliasGuid: me, newDividerBeforeId, layout: "community", now, locale }).sections[0].items
             .map(item => ({ kind: item.kind, ids: item.kind === "blocked" ? item.messages.map(m => m.id) : item.kind === "group" ? item.rows.map(r => r.message?.id ?? 0) : item.kind === "divider" ? [] : [item.message.id] }));
     }
 
     test("a run of them folds into one line between the groups either side, keyed by its first message", () => {
-        const sections = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben), blocked(3, ben), message(4, anna, at(9, 5))], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale });
+        const sections = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben), blocked(3, ben), message(4, anna, at(9, 5))], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale }).sections;
 
         expect(sections[0].items.map(item => item.kind)).toEqual(["group", "blocked", "group"]);
-        const grown = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben)], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale });
+        const grown = layoutFeed({ messages: [message(1, anna, at(9, 0)), blocked(2, ben)], pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "community", now, locale }).sections;
         expect(sections[0].items[1].key).toBe(grown[0].items[1].key);
         expect(items([message(1, anna, at(9, 0)), blocked(2, ben), blocked(3, ben), message(4, anna, at(9, 5))])[1]).toEqual({ kind: "blocked", ids: [2, 3] });
     });
@@ -381,5 +382,75 @@ describe("messages by people the reader blocked", () => {
         expect(blockedRunText([blocked(2, ben)])).toBe("Message from someone you blocked");
         expect(blockedRunText([blocked(2, ben), blocked(3, ben.toUpperCase())])).toBe("2 messages from someone you blocked");
         expect(blockedRunText([blocked(2, ben), blocked(3, anna)])).toBe("2 messages from people you blocked");
+    });
+});
+
+// Someone else typing is laid out as the typist's next row, by the rule her message will be: it
+// joins her run when she sent the newest group today within five minutes, and otherwise starts a
+// group of its own. Joining, it takes the run's face and corners from the row above, so her
+// message lands where it stood; the time stays under her newest message, the typing row having none.
+describe("someone else typing", () => {
+    /** The rows of the newest group, each as its position and whether typing follows it. */
+    function lastRun(messages: TimelineMessage[], options: LayoutOptions = {}): Array<[string, boolean]> {
+        const groups = items(messages, options).filter(item => item.kind === "group");
+        const last = groups[groups.length - 1];
+        return last?.kind === "group" ? last.rows.map(row => [row.position, row.isTypingNext]) : [];
+    }
+
+    function typingOf(messages: TimelineMessage[], options: LayoutOptions = {}): ReturnType<typeof layoutFeed>["typing"] {
+        return layoutFeed({ messages, pending: [], personAliasGuid: me, newDividerBeforeId: null, layout: "conversational", now, locale, ...options }).typing;
+    }
+
+    test("with no one typing there is no typing row and the rows are as they were", () => {
+        const list = [message(1, anna, at(14, 58))];
+
+        expect(typingOf(list)).toBeNull();
+        expect(typingOf(list, { typists: [] })).toBeNull();
+        expect(lastRun(list)).toEqual([["single", false]]);
+    });
+
+    test("the one typist who sent the newest group within five minutes is her run's next row", () => {
+        const list = [message(1, ben, at(14, 50)), message(2, anna, at(14, 57)), message(3, anna, at(14, 58))];
+
+        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: true });
+        expect(lastRun(list, { typists: [anna] })).toEqual([["first", false], ["middle", true]]);
+    });
+
+    test("a run of one becomes the run's head, keeping its name line, and gives its face to the typing row", () => {
+        expect(lastRun([message(1, anna, at(14, 58))], { typists: [anna] })).toEqual([["first", true]]);
+    });
+
+    test("is a group of its own when someone else sent the newest group, and leaves that group as it was", () => {
+        const list = [message(1, anna, at(14, 57)), message(2, ben, at(14, 58))];
+
+        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: false });
+        expect(lastRun(list, { typists: [anna] })).toEqual([["single", false]]);
+    });
+
+    test("is a group of its own after the reader's own sends, a stored one or one still pending", () => {
+        expect(typingOf([message(1, anna, at(14, 57)), message(2, me, at(14, 58))], { typists: [anna] })).toEqual({ isInRun: false });
+        expect(typingOf([message(1, anna, at(14, 58))], { typists: [anna], pending: [pendingRow("a")] })).toEqual({ isInRun: false });
+    });
+
+    test("is a group of its own past five minutes, on a day after her run, or after a system line or a block post", () => {
+        expect(typingOf([message(1, anna, at(14, 54, 59))], { typists: [anna] })).toEqual({ isInRun: false });
+        expect(typingOf([message(1, anna, at(23, 59, 0, 1))], { typists: [anna], now: new Date(2026, 9, 12, 0, 1) })).toEqual({ isInRun: false });
+        expect(typingOf([message(1, anna, at(14, 58)), message(2, ben, at(14, 59), { message_type: "system" })], { typists: [anna] })).toEqual({ isInRun: false });
+        expect(typingOf([message(1, anna, at(14, 58), { blocks: [{ type: "text" }] as unknown as TimelineMessage["blocks"] })], { typists: [anna] })).toEqual({ isInRun: false });
+    });
+
+    test("two typing are a group of their own, even when one of them sent the newest group", () => {
+        const list = [message(1, anna, at(14, 58))];
+
+        expect(typingOf(list, { typists: [anna, ben] })).toEqual({ isInRun: false });
+        expect(lastRun(list, { typists: [anna, ben] })).toEqual([["single", false]]);
+    });
+
+    test("her run is found under the alias in any case", () => {
+        expect(typingOf([message(1, anna.toUpperCase(), at(14, 58))], { typists: [anna] })).toEqual({ isInRun: true });
+    });
+
+    test("with no messages at all it is a group of its own", () => {
+        expect(typingOf([], { typists: [anna] })).toEqual({ isInRun: false });
     });
 });

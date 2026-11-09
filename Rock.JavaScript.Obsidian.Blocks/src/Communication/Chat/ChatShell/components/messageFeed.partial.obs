@@ -122,6 +122,7 @@
                                         :organizationName="organizationName"
                                         :isChannel="isChannel"
                                         :position="row.position"
+                                        :isTypingNext="row.isTypingNext"
                                         :isPhone="isPhone"
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
@@ -145,10 +146,15 @@
                 </section>
 
                 <!--
-                    Someone else typing, as the newest row: inside the watched content, so a reader at
-                    the newest message follows it into view and one scrolled up is not moved.
+                    Someone else typing, as the newest row the layout placed: inside the watched
+                    content, so a reader at the newest message follows it into view and one scrolled
+                    up is not moved. One element after the days rather than a row inside them, so it
+                    is the same row wherever it stands and can settle away once its row is gone.
                 -->
-                <TypingBubble class="chat-grp" :typing="typing" :isGroup="!isChannel && !isDirectMessage" :newestMessage="newestMessage" />
+                <TypingBubble :typing="drawnTyping"
+                              :isGroup="!isChannel && !isDirectMessage"
+                              :isInRun="laidOut.typing?.isInRun ?? false"
+                              :messages="timeline.messages" />
             </div>
         </div>
 
@@ -228,6 +234,21 @@
     /* Where the content starts, scrolled to the very top: below that band, and the strip while it may show. */
     --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-day-height) + var(--chat-day-fade));
     --chat-feed-bottom-mask: 14px;
+
+    /*
+        Another person's group: the space above it, the gap between its rows, its inset on the
+        sender's side and the room kept on the far side. Stated once here for the groups and for the
+        typing bubble, which stands where that person's next group or row will.
+    */
+    --chat-grp-space: 14px;
+    --chat-grp-gap: 2px;
+    --chat-grp-inset: 20px;
+    --chat-grp-room: 64px;
+}
+
+.chat-feed-frame.is-phone:not(.is-community) {
+    --chat-grp-inset: 12px;
+    --chat-grp-room: 36px;
 }
 
 .chat-feed-frame.has-strip {
@@ -393,17 +414,13 @@
 .chat-grp {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-top: 14px;
-    padding: 0 64px 0 20px;
+    gap: var(--chat-grp-gap);
+    margin-top: var(--chat-grp-space);
+    padding: 0 var(--chat-grp-room) 0 var(--chat-grp-inset);
 }
 
 .chat-grp.is-own {
     padding: 0 20px 0 64px;
-}
-
-.is-phone:not(.is-community) .chat-grp {
-    padding: 0 36px 0 12px;
 }
 
 .is-phone:not(.is-community) .chat-grp.is-own {
@@ -693,8 +710,8 @@
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
-    import { endSlackPx, FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
-    import { ChannelFacts, ChatError, PendingMessage } from "../types.partial";
+    import { endSlackPx, FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
+    import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
         timeline: {
@@ -971,14 +988,20 @@
     const justSentKeys = useSentHold(() => channelPending.value, feed);
     const slowSendKeys = useSlowSend(() => channelPending.value);
 
-    const sections = computed((): FeedSection[] => layoutFeed({
+    /** Who is typing as the feed draws it: no one until the first page is drawn, so nothing types under the skeleton. */
+    const drawnTyping = computed((): Typing | null => props.timeline.isLoaded ? props.typing : null);
+
+    const laidOut = computed((): FeedLayoutResult => layoutFeed({
         messages: props.timeline.messages,
         pending: channelPending.value,
         personAliasGuid: props.personAliasGuid,
         newDividerBeforeId: dividerBeforeId.value,
         layout: layout.value,
-        now: new Date()
+        now: new Date(),
+        typists: drawnTyping.value?.typists.map(typist => typist.alias) ?? []
     }));
+
+    const sections = computed((): FeedSection[] => laidOut.value.sections);
 
     /**
      * The name of each person seen sending in this timeline, by alias guid, so a mention typed in
@@ -994,8 +1017,6 @@
         }
         return names;
     });
-
-    const newestMessage = computed((): TimelineMessage | null => props.timeline.messages[props.timeline.messages.length - 1] ?? null);
 
     const isSkeletonShown = computed((): boolean => isSkeletonDue.value && !props.timeline.isLoaded);
 

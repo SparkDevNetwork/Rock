@@ -488,6 +488,15 @@
             default: "single"
         },
 
+        /**
+         * The group's sender is typing her next row after this one: that row takes the face and the
+         * corners, as her message will, and the time stays here under her newest message.
+         */
+        isTypingNext: {
+            type: Boolean,
+            default: false
+        },
+
         /** The message was jumped to, so its bubble flashes. */
         isFlashing: {
             type: Boolean,
@@ -502,8 +511,8 @@
     /** Bubbles name another person's group once, over its first message, and never in a direct message. */
     const isNameShown = computed((): boolean => !props.view.isOwn && !props.isDirectMessage && props.view.isHead);
 
-    /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
-    const isMetaShown = computed((): boolean => isLastOfGroup.value || props.view.state === "failed" || props.view.isSendingShown);
+    /** The meta sits under a group's last message, and under any send that says Sending… or failed. */
+    const isMetaShown = computed((): boolean => isLastOfGroup.value || props.isTypingNext || props.view.state === "failed" || props.view.isSendingShown);
 
     const isEditedUnder = computed((): boolean => props.view.isEdited && !isMetaShown.value);
 

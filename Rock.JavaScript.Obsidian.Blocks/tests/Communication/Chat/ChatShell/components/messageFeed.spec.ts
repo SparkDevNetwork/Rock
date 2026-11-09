@@ -40,6 +40,7 @@ import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/com
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 
 const me = "a0000001-0000-4000-8000-000000000000";
+const ben = "a0000003-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
 
 // #region Browser stand-ins
@@ -1328,8 +1329,53 @@ describe("someone else typing", () => {
         expect(rows).toHaveLength(2);
         expect(rows.every(row => isBefore(row, bubble))).toBe(true);
         expect(wrapper.get("[data-testid='feed-content']").element.contains(bubble)).toBe(true);
-        // drawn as a group, so it stands where the reply will
-        expect(bubble.classList.contains("chat-grp")).toBe(true);
+        // its layout is its own, so no group rule of the feed's can turn its grid into another box
+        expect(bubble.classList.contains("chat-grp")).toBe(false);
+    });
+
+    // The bubble is laid out as her next row: with her run newest it continues the run, which
+    // gives it the face its last row had and keeps the time under her newest message; with anyone
+    // else's newest it starts a group of its own, as her message will.
+    test("after the typist's own run it is that run's next row: the face moves to it and the time stays under her message", () => {
+        const wrapper = draw({ timeline: timeline([message(1, me, at(14, 50)), message(2, anna, at(14, 58))]), typing: annaTyping });
+        const hers = wrapper.get("[data-message-id='2']");
+
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+        expect(wrapper.find("[data-testid='typing-names']").exists()).toBe(false);
+        expect(hers.attributes("data-position")).toBe("first");
+        expect(hers.find("[data-testid='sender-avatar']").exists()).toBe(false);
+        expect(hers.find("[data-testid='message-meta']").exists()).toBe(true);
+        expect(hers.find("[data-testid='sender-name']").exists()).toBe(true);
+    });
+
+    test("after someone else's message it starts a group of its own, and that message keeps its face", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, ben, at(14, 58))]), typing: annaTyping });
+        const bens = wrapper.get("[data-message-id='2']");
+
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        expect(wrapper.get("[data-testid='typing-names']").text()).toBe("Anna");
+        expect(bens.attributes("data-position")).toBe("single");
+        expect(bens.find("[data-testid='sender-avatar']").exists()).toBe(true);
+    });
+
+    test("her run gets its face back as she stops", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 58))]), typing: annaTyping });
+
+        await wrapper.setProps({ typing: null });
+
+        expect(wrapper.get("[data-message-id='1']").attributes("data-position")).toBe("single");
+        expect(wrapper.find("[data-message-id='1'] [data-testid='sender-avatar']").exists()).toBe(true);
+    });
+
+    test("is not drawn while the first page is still loading", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isDirectMessage: true, typing: annaTyping });
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(true);
     });
 
     test("is not drawn with no one typing", () => {
@@ -1348,14 +1394,14 @@ describe("someone else typing", () => {
         expect(direct.find("[data-testid='typing-names']").exists()).toBe(false);
     });
 
-    test("the bubble is given the newest stored message, so the typist's own can take its place", async () => {
+    test("the bubble is given the stored messages, so the typist's own can take its place", async () => {
         const state = timeline([message(1, anna, at(14, 50)), message(2, me, at(14, 51))]);
         const wrapper = draw({ timeline: state, typing: annaTyping });
-        expect((wrapper.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(2);
+        expect((wrapper.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([1, 2]);
 
         state.messages.push(message(3, anna, at(14, 52)));
         await nextTick();
-        expect((wrapper.findComponent(TypingBubble).props("newestMessage") as TimelineMessage).id).toBe(3);
+        expect((wrapper.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([1, 2, 3]);
     });
 
     test("is never watched as seen, so it is never read as a message", async () => {
