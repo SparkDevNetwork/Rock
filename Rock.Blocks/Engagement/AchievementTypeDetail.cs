@@ -140,7 +140,7 @@ namespace Rock.Blocks.Engagement
 
                         sb.AppendFormat(
                             "<li>This achievement type cannot have prerequisite \"{0}\" because it would create a circular dependency.</li>",
-                            prerequisite.PrerequisiteAchievementType.Name )
+                            prerequisite.PrerequisiteAchievementType.Name.EncodeHtml() )
                             .AppendLine();
                     }
                 }
