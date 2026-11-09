@@ -150,18 +150,22 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
             return { ok: false, status: 401, error: { code: "auth.expired", severity: "session" }, retryAfterSeconds: null };
         }
 
+        const ownHeaders: Record<string, string> = {
+            "Authorization": `Bearer ${token}`,
+            "apikey": options.publishableKey,
+            "Content-Type": "application/json"
+        };
+        // Header names are case-insensitive, and fetch joins two spellings of one into one value,
+        // so a caller's header of any spelling of the call's own three is left out, never merged.
+        const ownNames = new Set(Object.keys(ownHeaders).map(name => name.toLowerCase()));
+        const callerHeaders = Object.entries(extraHeaders ?? {}).filter(([name]) => !ownNames.has(name.toLowerCase()));
+
         let response: Response;
         try {
             response = await options.fetch(url, {
                 method: "POST",
                 ...init,
-                // the call's own three last, so no caller's header can stand in for the token
-                headers: {
-                    ...extraHeaders,
-                    "Authorization": `Bearer ${token}`,
-                    "apikey": options.publishableKey,
-                    "Content-Type": "application/json"
-                },
+                headers: { ...Object.fromEntries(callerHeaders), ...ownHeaders },
                 body: JSON.stringify(body)
             });
         }

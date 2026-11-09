@@ -240,10 +240,12 @@ describe("callFunction", () => {
     });
 
     // The typing route is pinned to the database's region by a header the platform's edge reads.
-    test("sends a header of the caller's beside its own three, which it cannot override", async () => {
+    test("sends a header of the caller's beside its own three, which it cannot override in any case", async () => {
         const { call, sent } = setup([response(200, { sent: true })]);
 
-        await call.callFunction("chat-typing", { p_channel_id: "c" }, { headers: { "x-region": "us-east-1", "Authorization": "Bearer forged", "apikey": "other" } });
+        await call.callFunction("chat-typing", { p_channel_id: "c" }, {
+            headers: { "x-region": "us-east-1", "Authorization": "Bearer forged", "authorization": "Bearer forged", "APIKEY": "other", "content-type": "text/plain" }
+        });
 
         expect(headers(sent[0])).toEqual({
             "x-region": "us-east-1",
