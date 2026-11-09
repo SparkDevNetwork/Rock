@@ -1342,6 +1342,7 @@ namespace RockWeb.Blocks.Crm
                 if ( !IsMergeRequestOfCurrentPerson( entitySet ) )
                 {
                     nbNotAuthorized.Visible = true;
+                    cbShouldNotifyAfterMerge.Visible = false;
                     tbEntitySetNote.Visible = false;
                     btnSaveRequestNote.Visible = false;
                     return;
