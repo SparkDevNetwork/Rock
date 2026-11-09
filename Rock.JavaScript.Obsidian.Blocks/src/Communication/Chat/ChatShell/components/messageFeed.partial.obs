@@ -514,7 +514,8 @@
 
 .chat-jump {
     position: absolute;
-    bottom: 14px;
+    /* Clear of the composer's 16px typing band over the feed's bottom edge, always, so it never moves as a line comes. */
+    bottom: 22px;
     /* Centred by layout, not by a transform of half its own width: its text changes with the count, and a width-dependent transform would slide it sideways as that changes while it fades in. */
     left: 0;
     right: 0;
