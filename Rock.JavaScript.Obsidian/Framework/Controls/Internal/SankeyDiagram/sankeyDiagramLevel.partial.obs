@@ -32,6 +32,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { toDecimalPlaces } from "@Obsidian/Utility/numberUtils";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
     import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
 
@@ -111,7 +112,7 @@
     }
 
     function onHoverNode(node: SankeyDiagramLevelNode, e: MouseEvent): void {
-        emit("showTooltip", `<strong>${node.name}</strong>${props.nodeTooltipActionLabel ? `<br>${props.nodeTooltipActionLabel}` : ""}: ${node.totalUnits}`, e);
+        emit("showTooltip", `<strong>${escapeHtml(node.name ?? "")}</strong>${props.nodeTooltipActionLabel ? `<br>${props.nodeTooltipActionLabel}` : ""}: ${node.totalUnits}`, e);
     }
 
     function onUnHover(): void {
