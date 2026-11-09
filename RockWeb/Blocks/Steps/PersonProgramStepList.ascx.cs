@@ -437,7 +437,7 @@ namespace RockWeb.Blocks.Steps
 
                 var showCondensed = !( attribute.FieldType.Field is BooleanFieldType );
 
-                var formattedValue = attribute.FieldType.Field.FormatValue( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
+                var formattedValue = attribute.FieldType.Field.FormatValueAsHtml( null, attribute.EntityTypeId, step.Id, rawValue, attribute.QualifierValues, showCondensed );
 
                 itemSummary.AppendLine( string.Format( formatString, attribute.Name, formattedValue ) );
             }
