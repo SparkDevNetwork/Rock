@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var requiredAttribute in requiredAttributes )
                         {
                             var attributeValue = familyPersonState.PersonAttributeValuesState.GetValueOrNull( requiredAttribute.Key );
-                            var requiredAttributeDisplayValue = requiredAttribute.FieldType.Field.FormatValue( lRequiredAttributes, attributeValue != null ? attributeValue.Value : null, requiredAttribute.QualifierValues, true );
+                            var requiredAttributeDisplayValue = requiredAttribute.FieldType.Field.FormatValueAsHtml( lRequiredAttributes, requiredAttribute.EntityTypeId, familyPersonState.PersonId, attributeValue != null ? attributeValue.Value : null, requiredAttribute.QualifierValues, true );
                             descriptionList.Add( requiredAttribute.Name, requiredAttributeDisplayValue );
                         }
 
