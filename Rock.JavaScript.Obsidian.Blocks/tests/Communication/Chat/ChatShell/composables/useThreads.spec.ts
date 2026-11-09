@@ -15,9 +15,10 @@
 // </copyright>
 //
 // Threads: the threads list, the thread page, following, the thread's read position and the live
-// counts of a thread's root. The list has no live signal, so it is fetched when the panel opens,
-// when the person switches tabs and when they press refresh, and at no other time. An answer a
-// newer fetch overtook is dropped, and nothing resolves into state once the threads are stopped.
+// counts of a thread's root. The list is fetched when the panel opens, when the person switches
+// tabs and when they press refresh, and at no other time; thread.updated moves its rows as it moves
+// the conversation's root. An answer a newer fetch overtook is dropped, and nothing resolves into
+// state once the threads are stopped.
 // The thread's read position is saved as the channel's is, on events only: closing the thread,
 // the window losing focus and the page going to the background, and only when a newer reply was
 // on screen. A root's counts and faces follow thread.updated, and a followed root shows unread
@@ -1184,6 +1185,113 @@ describe("thread.updated", () => {
 
         expect(timelineRoot(timelines, 40).reply_count).toBe(3);
         expect(timelineRoot(timelines, 40).thread_unread).toBe(false);
+    });
+});
+
+// The panel draws a row from the row itself: its bold, count, time and order. thread.updated is
+// heard for every thread of the open conversation, so its rows move as the conversation's pill
+// does, with no fetch.
+describe("the threads list's rows, as thread.updated moves them", () => {
+    /** thread.updated as chat_timeline_send sends it: the counts, and the room's revision. */
+    function heard(rootId: number, repliers: Replier[], replyCount: number, rev: number, lastReplyAt = "2026-10-13T10:05:00Z"): Record<string, unknown> {
+        return { ...threadUpdated(rootId, repliers, replyCount), last_reply_at: lastReplyAt, rev };
+    }
+
+    /** The list open on the conversation, holding these rows, newest reply first. */
+    async function listed(rows: Array<Record<string, unknown>>, hasMore = false, blocked: string[] = []): Promise<Awaited<ReturnType<typeof setup>>> {
+        const h = await setup(undefined, undefined, undefined, undefined, blocked);
+        h.answers.chat_list_threads = [listAnswer(rows, hasMore)];
+        await h.threads.openList(channel);
+        return h;
+    }
+
+    /** Hands an event to the threads and then the timelines, in the order the shell does. */
+    function deliver(h: Awaited<ReturnType<typeof setup>>, payload: Record<string, unknown>): void {
+        h.threads.applyEvent(channel, "thread.updated", payload);
+        h.timelines.applyEvent(channel, "thread.updated", payload);
+    }
+
+    const row = (h: Awaited<ReturnType<typeof setup>>, rootId: number): Record<string, unknown> =>
+        h.threads.state.list.rows.find(r => r.root.id === rootId) as unknown as Record<string, unknown>;
+
+    test("a followed row takes someone else's reply: its count, time and faces, the bold, and the top of the list", async () => {
+        const h = await listed([listRow(30, { last_reply_at: "2026-10-13T09:50:00Z" }), listRow(40)]);
+
+        deliver(h, heard(40, [benReplier, annaReplier], 3, 7));
+
+        expect(h.threads.state.list.rows.map(r => r.root.id)).toEqual([40, 30]);
+        expect(row(h, 40)).toMatchObject({ reply_count: 3, last_reply_at: "2026-10-13T10:05:00Z", participant_count: 2, has_unread: true });
+        expect(h.threads.state.list.rows[0].root.repliers).toEqual([benReplier, annaReplier]);
+        expect(row(h, 30)).toMatchObject({ reply_count: 2, has_unread: false });
+    });
+
+    test("a reply by someone the reader blocked moves the row but leaves it read, as a reload answers it", async () => {
+        const h = await listed([listRow(30, { last_reply_at: "2026-10-13T09:50:00Z" }), listRow(40)], false, [ben]);
+
+        deliver(h, heard(40, [benReplier, annaReplier], 3, 7));
+
+        expect(h.threads.state.list.rows.map(r => r.root.id)).toEqual([40, 30]);
+        expect(row(h, 40)).toMatchObject({ reply_count: 3, has_unread: false });
+    });
+
+    test("the reader's own reply moves the row and leaves it read", async () => {
+        const h = await listed([listRow(40)]);
+
+        deliver(h, heard(40, [meReplier, annaReplier], 3, 7));
+
+        expect(row(h, 40)).toMatchObject({ reply_count: 3, has_unread: false, following: true });
+    });
+
+    test("a row the reader does not follow moves and is never bold", async () => {
+        const h = await listed([listRow(40, { following: false })]);
+
+        deliver(h, heard(40, [benReplier, annaReplier], 3, 7));
+
+        expect(row(h, 40)).toMatchObject({ reply_count: 3, has_unread: false });
+    });
+
+    test("a change at a revision already taken moves nothing back", async () => {
+        const h = await listed([listRow(40)]);
+
+        deliver(h, heard(40, [annaReplier, benReplier], 4, 8, "2026-10-13T10:06:00Z"));
+        deliver(h, heard(40, [benReplier, annaReplier], 3, 7));
+
+        expect(row(h, 40)).toMatchObject({ reply_count: 4, last_reply_at: "2026-10-13T10:06:00Z" });
+        expect(h.threads.state.list.rows[0].root.repliers).toEqual([annaReplier, benReplier]);
+    });
+
+    test("a thread left with no live reply leaves the list, as the platform lists it", async () => {
+        const h = await listed([listRow(40), listRow(30, { last_reply_at: "2026-10-13T09:00:00Z" })]);
+
+        deliver(h, heard(40, [], 0, 7, "2026-10-13T08:00:00Z"));
+
+        expect(h.threads.state.list.rows.map(r => r.root.id)).toEqual([30]);
+    });
+
+    // The next page is asked after the last row; a row moved below it would hide the rows between.
+    test("a row moved below the last row while more wait is left for the page that holds it", async () => {
+        const h = await listed([listRow(40, { last_reply_at: "2026-10-13T10:00:00Z" }), listRow(30, { last_reply_at: "2026-10-13T09:00:00Z" })], true);
+
+        deliver(h, heard(40, [annaReplier], 1, 7, "2026-10-13T08:00:00Z"));
+        await h.threads.loadMore();
+
+        expect(h.callsTo("chat_list_threads")[1].args).toEqual(expect.objectContaining({ p_before_last_reply_at: "2026-10-13T09:00:00Z", p_before_id: 30 }));
+    });
+
+    test("stays read while its thread is open, and leaving takes the bold the save answers", async () => {
+        const h = await listed([listRow(40, { has_unread: true })]);
+        h.answers.chat_get_thread_history = [threadAnswer(root(40), [reply(42, 40), reply(41, 40)], { read_cursor: 41 })];
+        await h.threads.openThread(channel, 40);
+        h.threads.seen(42);
+
+        deliver(h, heard(40, [benReplier, annaReplier], 3, 7));
+        expect(row(h, 40).has_unread).toBe(false);
+
+        h.answers.chat_mark_thread_read = [{ ok: true, data: { read_cursor: 42, last_reply_id: 43, thread_unread: true } }];
+        await h.threads.closeThread();
+        await settle();
+
+        expect(row(h, 40).has_unread).toBe(true);
     });
 });
 

@@ -17,11 +17,12 @@
 // Threads: the threads list, the open thread, following, the thread's read position and the
 // live counts of a thread's root.
 //
-// The list has no live signal. It is fetched when the panel opens, when the tab changes, when the
-// person presses refresh and when it is scrolled to its end, and at no other time, so a busy room
-// costs the platform nothing while the panel sits open. Every fetch is numbered, and an answer a
-// newer fetch overtook is dropped. Once the threads are stopped nothing is fetched and no answer
-// still on its way reaches the screen.
+// The list is fetched when the panel opens, when the tab changes, when the person presses refresh
+// and when it is scrolled to its end, and at no other time, so a busy room costs the platform
+// nothing while the panel sits open. Its rows are held copies of their threads all the same, so
+// the thread.updated a room already sends moves them as it moves the conversation's pill. Every
+// fetch is numbered, and an answer a newer fetch overtook is dropped. Once the threads are
+// stopped nothing is fetched and no answer still on its way reaches the screen.
 //
 // The thread's read position is saved as the channel's is, on events only: closing the thread,
 // the window losing focus, the page going to the background or closing. What is saved is the
@@ -623,13 +624,21 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // or the shell stops still arrives.
     const saveOptions = { keepalive: true };
 
-    /** Puts the thread's saved position on its root in the conversation. */
+    /** Puts the thread's saved position on its root in the conversation and on its row in the list. */
     function applySaved(channelId: string, rootId: number, answer: Partial<MarkThreadReadAnswer>): void {
+        // A reply that landed as the person left keeps the thread unread. The platform answers the
+        // bold by the rule its pages read, since the newest reply may be by someone they blocked.
+        const isUnread = answer.thread_unread;
+        if (typeof isUnread !== "boolean") {
+            return;
+        }
+
         const root = timelineRoot(channelId, rootId);
-        if (root && root.thread_following === true && typeof answer.thread_unread === "boolean") {
-            // A reply that landed as the person left keeps the root unread. The platform answers the
-            // bold by the rule its pages read, since the newest reply may be by someone they blocked.
-            root.thread_unread = answer.thread_unread;
+        if (root && root.thread_following === true) {
+            root.thread_unread = isUnread;
+        }
+        for (const row of state.list.rows.filter(r => r.channel_id === channelId && r.root.id === rootId && r.following)) {
+            row.has_unread = isUnread;
         }
     }
 
@@ -661,26 +670,83 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
     }
 
-    /** Moves one held copy of a root by a thread.updated, marking it unread when someone else, not blocked, replied. */
-    function moveRoot(root: TimelineMessage, update: ThreadUpdatedEvent, isOpen: boolean): void {
+    /**
+     * What a thread.updated makes of one held copy's marks, the one rule for every copy: the reader's
+     * own reply makes them follow, someone else's, not blocked, makes a thread they follow and are
+     * not reading unread, and a thread with no live reply left is read.
+     */
+    function marksAfter(update: ThreadUpdatedEvent, heldCount: number, isFollowing: boolean, isUnread: boolean, isOpen: boolean): { isFollowing: boolean, isUnread: boolean } {
         const newest = update.repliers?.[0]?.person_alias_guid?.toLowerCase() ?? null;
-        const isNewReply = update.reply_count > (root.reply_count ?? 0);
+        const isNewReply = update.reply_count > heldCount;
+
+        if (isNewReply && newest === me) {
+            // the platform makes whoever replies follow the thread
+            return { isFollowing: true, isUnread };
+        }
+        if (isNewReply && isFollowing && !isOpen && !dependencies.isBlocked(newest)) {
+            // a reply by someone the reader blocked is not news, as the platform's bold reads it
+            return { isFollowing, isUnread: true };
+        }
+        return { isFollowing, isUnread: isUnread && update.reply_count > 0 };
+    }
+
+    /** Moves one held copy of a root by a thread.updated: its counts and faces, and its marks by the one rule. */
+    function moveRoot(root: TimelineMessage, update: ThreadUpdatedEvent, isOpen: boolean): void {
+        const marks = marksAfter(update, root.reply_count ?? 0, root.thread_following === true, root.thread_unread === true, isOpen);
         root.reply_count = update.reply_count;
         root.last_reply_at = update.last_reply_at;
         root.participant_count = update.participant_count;
         root.repliers = update.repliers;
 
-        if (isNewReply && newest === me) {
-            // the platform makes whoever replies follow the thread
+        // a mark the root does not carry stays unset until it changes
+        if (marks.isFollowing && root.thread_following !== true) {
             root.thread_following = true;
         }
-        else if (isNewReply && root.thread_following === true && !isOpen && !dependencies.isBlocked(newest)) {
-            // a reply by someone the reader blocked is not news, as the platform's bold reads it
-            root.thread_unread = true;
+        if (marks.isUnread !== (root.thread_unread === true)) {
+            root.thread_unread = marks.isUnread;
         }
-        if (update.reply_count === 0 && root.thread_unread === true) {
-            root.thread_unread = false;
+    }
+
+    /**
+     * Moves the list's row of a thread by a thread.updated, as its root moves, and keeps the list in
+     * the platform's order: newest reply first, ties by the newer root, and a thread with no live
+     * reply not listed. The row draws its own count, time and bold, so they move with its root's.
+     */
+    function moveRow(channelId: string, update: ThreadUpdatedEvent, isOpen: boolean): void {
+        const list = state.list;
+        const row = list.rows.find(r => r.channel_id === channelId && r.root.id === update.root_id);
+        if (!row) {
+            return;
         }
+
+        const marks = marksAfter(update, row.reply_count, row.following, row.has_unread, isOpen);
+        moveRoot(row.root, update, isOpen);
+        row.reply_count = update.reply_count;
+        row.last_reply_at = update.last_reply_at;
+        row.participant_count = update.participant_count;
+        row.following = marks.isFollowing;
+        row.has_unread = marks.isUnread;
+
+        const rest = list.rows.filter(r => r !== row);
+        if (update.reply_count === 0) {
+            list.rows = rest;
+            return;
+        }
+        const at = rest.findIndex(r => listsBefore(row, r));
+        if (at === -1 && list.hasMore) {
+            // the next page is asked after the last row, so a row that now sorts below it waits for
+            // the page that holds it rather than hiding the rows between
+            list.rows = rest;
+            return;
+        }
+        list.rows = at === -1 ? [...rest, row] : [...rest.slice(0, at), row, ...rest.slice(at)];
+    }
+
+    /** Whether a row comes before another in the platform's order: the newer last reply, then the newer root. */
+    function listsBefore(row: ThreadListRow, other: ThreadListRow): boolean {
+        const at = Date.parse(row.last_reply_at ?? "") || 0;
+        const otherAt = Date.parse(other.last_reply_at ?? "") || 0;
+        return at !== otherAt ? at > otherAt : row.root.id > other.root.id;
     }
 
     /** Moves a root's counts and faces wherever it is held, and keeps them for a drawer still loading it. */
@@ -688,10 +754,15 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const isOpen = state.thread?.channelId === channelId && state.thread.rootId === update.root_id;
         const rev = revOf(update);
 
-        // each copy moves only when the counts are newer than what it holds
+        // The conversation's root and the list's row move only when the counts are newer than what
+        // the conversation holds; the timelines record each change after the threads have taken it.
+        const isNewerHeld = dependencies.timelines.isNewer(update.root_id, "thread", rev);
         const held = timelineRoot(channelId, update.root_id);
-        if (held && dependencies.timelines.isNewer(update.root_id, "thread", rev)) {
+        if (held && isNewerHeld) {
             moveRoot(held, update, isOpen);
+        }
+        if (isNewerHeld) {
+            moveRow(channelId, update, isOpen);
         }
         const counts = { reply_count: update.reply_count, last_reply_at: update.last_reply_at, participant_count: update.participant_count, repliers: update.repliers };
         const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts) !== null;
