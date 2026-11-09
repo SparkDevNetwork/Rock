@@ -16,9 +16,9 @@
 //
 // The numbers that order a message's copies against the live changes to it. Every history event on a
 // room's topic carries the room's revision, and every page the revision it was read at; each holder
-// of copies, the timelines and the open thread, keeps one ledger of them, so a page read before a
-// change that lands after it does not undo it, and a change older than what a page showed is not laid
-// over it.
+// of copies, the timelines, the open thread and the threads list, keeps one ledger of them, so a page
+// read before a change that lands after it does not undo it, and a change older than what a page
+// showed is not laid over it.
 import { MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, TimelineMessage } from "./types.partial";
 
 /**
@@ -44,8 +44,8 @@ type GroupRecord = { copyRev: number, changes: Partial<Record<keyof TimelineMess
 
 /**
  * For each message held or heard of, each group as the holder has it, so a page read before a live
- * change that lands after it gets the change laid over it. One per holder of copies: the timelines
- * and the open thread.
+ * change that lands after it gets the change laid over it. One per holder of copies: the timelines,
+ * the open thread and the threads list.
  */
 export type RevisionLedger = Map<number, Partial<Record<FieldGroup, GroupRecord>>>;
 
@@ -133,6 +133,27 @@ export function isNewerChange(ledger: RevisionLedger, id: number, group: FieldGr
         return true;
     }
     return Object.values(record.changes).every(change => !change || change.rev < rev) && record.copyRev < rev;
+}
+
+/**
+ * The revision each message's group is held at, the copy's or its newest live change's, for a
+ * page that carries no revision of its own: a change heard before the page was asked for was
+ * committed before it was read, so the page shows it or something newer.
+ *
+ * @param ledger The holder's ledger.
+ * @param group The group.
+ *
+ * @returns Each message held or heard of, by id, and the revision its group is held at.
+ */
+export function heldRevisions(ledger: RevisionLedger, group: FieldGroup): Map<number, number> {
+    const revs = new Map<number, number>();
+    for (const [id, entry] of ledger) {
+        const record = entry[group];
+        if (record) {
+            revs.set(id, Math.max(record.copyRev, ...Object.values(record.changes).map(change => change?.rev ?? 0)));
+        }
+    }
+    return revs;
 }
 
 /**

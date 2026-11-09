@@ -20,7 +20,10 @@
 // The list is fetched when the panel opens, when the tab changes, when the person presses refresh
 // and when it is scrolled to its end, and at no other time, so a busy room costs the platform
 // nothing while the panel sits open. Its rows are held copies of their threads all the same, so
-// the thread.updated a room already sends moves them as it moves the conversation's pill. Every
+// the thread.updated a room already sends changes each row as it moves the conversation's pill:
+// its counts, faces and marks, in its place. The order is the platform's and settles at the next
+// fetch, so no row moves out from under the person's focus or pointer. The list keeps its own
+// record of the changes it took, by revision, so a page read before one does not undo it. Every
 // fetch is numbered, and an answer a newer fetch overtook is dropped. Once the threads are
 // stopped nothing is fetched and no answer still on its way reaches the screen.
 //
@@ -49,7 +52,7 @@ import {
     TimelineMessage
 } from "../types.partial";
 import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
-import { changedFields, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
+import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
@@ -73,6 +76,15 @@ export function threadPlaceOf(message: Pick<TimelineMessage, "id" | "parent_id">
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
+
+/** Where the list's next page starts: its last row's newest reply and root, as the platform listed them. */
+type ListCursor = { last_reply_at: string | null, id: number };
+
+/** A thread's counts and faces, as thread.updated states them and every held copy draws them. */
+type ThreadCounts = Pick<ThreadUpdatedEvent, "reply_count" | "last_reply_at" | "participant_count" | "repliers">;
+
+/** The reader's marks on a thread: whether they follow it and whether it is bold. */
+type ThreadMarks = { isFollowing: boolean, isUnread: boolean };
 
 /** The threads list as the panel draws it. */
 export type ThreadListState = {
@@ -284,6 +296,15 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // undo it; begun again with each thread opened.
     let ledger: RevisionLedger = new Map();
 
+    // The list's copies by revision, so a page read before a live change does not undo it and a
+    // repeat or an older change moves nothing back. Kept for the threads' life, as a page lands into
+    // it whichever fetch asked for it.
+    const listLedger: RevisionLedger = new Map();
+
+    // Where the next page starts, held from the page as read: a row's time changes live, and a
+    // cursor read off the rows would then skip or repeat the rows between.
+    let listCursor: ListCursor | null = null;
+
     // Bumped by every fetch that replaces the list and by closing it, so an older answer is dropped.
     let listFetch = 0;
 
@@ -375,7 +396,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     /** Drops a thread's unread marks, which no longer apply once it is unfollowed. */
     function clearUnread(rootId: number): void {
         for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
-            row.has_unread = false;
+            markRow(row, { isFollowing: row.following, isUnread: false });
         }
 
         const root = followedRoot(rootId);
@@ -417,7 +438,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             held.thread_unread = false;
         }
         for (const row of state.list.rows.filter(r => r.root.id === rootId)) {
-            row.has_unread = false;
+            markRow(row, { isFollowing: row.following, isUnread: false });
         }
 
         const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
@@ -535,7 +556,14 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
 
         const thisFetch = mode === "more" ? listFetch : ++listFetch;
-        const last = mode === "more" ? list.rows[list.rows.length - 1] : undefined;
+        if (mode === "fresh") {
+            // the rows are gone, so no page of them can follow
+            listCursor = null;
+        }
+        const cursor = mode === "more" ? listCursor : null;
+        // A change heard before the ask was committed before the page is read, so the page shows
+        // it or something newer; only what is heard while the page is on its way is laid over it.
+        const heardBefore = heldRevisions(listLedger, "thread");
         if (mode === "more") {
             isLoadingMore = true;
         }
@@ -549,8 +577,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             result = await dependencies.call("chat_list_threads", {
                 p_channel_id: list.tab === "channel" ? list.channelId : null,
                 // both cursor values together, as the platform's keyset reads them
-                p_before_last_reply_at: last?.last_reply_at ?? null,
-                p_before_id: last?.root.id ?? null,
+                p_before_last_reply_at: cursor?.last_reply_at ?? null,
+                p_before_id: cursor?.id ?? null,
                 p_limit: dependencies.limits().thread_page_size
             });
         }
@@ -564,7 +592,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         if (isStopped || thisFetch !== listFetch) {
             return;
         }
-        if (mode === "more" && list.rows[list.rows.length - 1] !== last) {
+        // a page after a cursor the list has since replaced would leave a gap or repeat rows
+        if (mode === "more" && listCursor !== cursor) {
             return;
         }
 
@@ -578,14 +607,38 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
         const page = body<ThreadListPage>(result);
         const rows = page.threads ?? [];
-        for (const row of rows) {
-            row.root = mask(row.root);
-            row.following = landedFollowing(row.root.id, row.following);
-            row.root.thread_following = row.following;
+        const last = rows[rows.length - 1];
+        if (last) {
+            listCursor = { last_reply_at: last.last_reply_at, id: last.root.id };
         }
+        // Rows hold their place while their times change, so the platform can list a thread held
+        // above the cursor again below it; the row held stays.
+        const held = new Set(mode === "more" ? list.rows.map(rowKey) : []);
+        const landed = rows.filter(row => !held.has(rowKey(row))).map(row => landRow(row, revOf(row) ?? heardBefore.get(row.root.id) ?? null));
         list.error = null;
-        list.rows = mode === "more" ? [...list.rows, ...rows] : rows;
+        list.rows = mode === "more" ? [...list.rows, ...landed] : landed;
         list.hasMore = page.has_more === true;
+    }
+
+    /** A row's thread, by its conversation and root. */
+    function rowKey(row: ThreadListRow): string {
+        return `${row.channel_id}:${row.root.id}`;
+    }
+
+    /**
+     * Takes a row as a page lists it, read at a revision: masked, its follow as the person last
+     * chose it, and the counts heard since laid over it with the marks they make.
+     */
+    function landRow(row: ThreadListRow, readAt: number | null): ThreadListRow {
+        const read = { ...row.root, reply_count: row.reply_count, last_reply_at: row.last_reply_at, participant_count: row.participant_count };
+        const root = mask(layNewer(listLedger, read, readAt));
+        const counts = countsOf(root);
+        const held = { count: row.reply_count, isFollowing: landedFollowing(root.id, row.following), isUnread: row.has_unread };
+        const marks = marksAfter(counts, held, isReading(row.channel_id, root.id));
+        row.root = root;
+        setRowCounts(row, counts);
+        markRow(row, marks);
+        return row;
     }
 
     /**
@@ -638,7 +691,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             root.thread_unread = isUnread;
         }
         for (const row of state.list.rows.filter(r => r.channel_id === channelId && r.root.id === rootId && r.following)) {
-            row.has_unread = isUnread;
+            markRow(row, { isFollowing: true, isUnread });
         }
     }
 
@@ -671,32 +724,42 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     }
 
     /**
-     * What a thread.updated makes of one held copy's marks, the one rule for every copy: the reader's
-     * own reply makes them follow, someone else's, not blocked, makes a thread they follow and are
-     * not reading unread, and a thread with no live reply left is read.
+     * What a thread's new counts make of one held copy's marks, the one rule for every copy: the
+     * reader's own reply makes them follow, someone else's, not blocked, makes a thread they follow
+     * and are not reading unread, and a thread with no live reply left is read.
      */
-    function marksAfter(update: ThreadUpdatedEvent, heldCount: number, isFollowing: boolean, isUnread: boolean, isOpen: boolean): { isFollowing: boolean, isUnread: boolean } {
-        const newest = update.repliers?.[0]?.person_alias_guid?.toLowerCase() ?? null;
-        const isNewReply = update.reply_count > heldCount;
+    function marksAfter(counts: ThreadCounts, held: ThreadMarks & { count: number }, isOpen: boolean): ThreadMarks {
+        const newest = counts.repliers?.[0]?.person_alias_guid?.toLowerCase() ?? null;
+        const isNewReply = counts.reply_count > held.count;
 
         if (isNewReply && newest === me) {
             // the platform makes whoever replies follow the thread
-            return { isFollowing: true, isUnread };
+            return { isFollowing: true, isUnread: held.isUnread };
         }
-        if (isNewReply && isFollowing && !isOpen && !dependencies.isBlocked(newest)) {
+        if (isNewReply && held.isFollowing && !isOpen && !dependencies.isBlocked(newest)) {
             // a reply by someone the reader blocked is not news, as the platform's bold reads it
-            return { isFollowing, isUnread: true };
+            return { isFollowing: held.isFollowing, isUnread: true };
         }
-        return { isFollowing, isUnread: isUnread && update.reply_count > 0 };
+        return { isFollowing: held.isFollowing, isUnread: held.isUnread && counts.reply_count > 0 };
     }
 
-    /** Moves one held copy of a root by a thread.updated: its counts and faces, and its marks by the one rule. */
-    function moveRoot(root: TimelineMessage, update: ThreadUpdatedEvent, isOpen: boolean): void {
-        const marks = marksAfter(update, root.reply_count ?? 0, root.thread_following === true, root.thread_unread === true, isOpen);
-        root.reply_count = update.reply_count;
-        root.last_reply_at = update.last_reply_at;
-        root.participant_count = update.participant_count;
-        root.repliers = update.repliers;
+    /** A held copy's counts and faces. */
+    function countsOf(root: TimelineMessage): ThreadCounts {
+        return { reply_count: root.reply_count ?? 0, last_reply_at: root.last_reply_at ?? null, participant_count: root.participant_count ?? 0, repliers: root.repliers ?? null };
+    }
+
+    /** Puts a thread's counts and faces on one held copy of its root. */
+    function moveCounts(root: TimelineMessage, counts: ThreadCounts): void {
+        root.reply_count = counts.reply_count;
+        root.last_reply_at = counts.last_reply_at;
+        root.participant_count = counts.participant_count;
+        root.repliers = counts.repliers;
+    }
+
+    /** Moves one held copy of a root by a thread's new counts: its counts and faces, and its marks by the one rule. */
+    function moveRoot(root: TimelineMessage, counts: ThreadCounts, isOpen: boolean): void {
+        const marks = marksAfter(counts, { count: root.reply_count ?? 0, isFollowing: root.thread_following === true, isUnread: root.thread_unread === true }, isOpen);
+        moveCounts(root, counts);
 
         // a mark the root does not carry stays unset until it changes
         if (marks.isFollowing && root.thread_following !== true) {
@@ -707,64 +770,74 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
     }
 
+    /** Puts a thread's counts and faces on its row and the row's root, which the panel draws between them. */
+    function setRowCounts(row: ThreadListRow, counts: ThreadCounts): void {
+        row.reply_count = counts.reply_count;
+        row.last_reply_at = counts.last_reply_at;
+        row.participant_count = counts.participant_count;
+        moveCounts(row.root, counts);
+    }
+
     /**
-     * Moves the list's row of a thread by a thread.updated, as its root moves, and keeps the list in
-     * the platform's order: newest reply first, ties by the newer root, and a thread with no live
-     * reply not listed. The row draws its own count, time and bold, so they move with its root's.
+     * Puts the reader's marks on a row and its root, one answer for both copies. The mention badge
+     * is the list's count as fetched; a thread read has no unread mention left in it.
      */
-    function moveRow(channelId: string, update: ThreadUpdatedEvent, isOpen: boolean): void {
+    function markRow(row: ThreadListRow, marks: ThreadMarks): void {
+        row.following = marks.isFollowing;
+        row.root.thread_following = marks.isFollowing;
+        row.has_unread = marks.isUnread;
+        row.root.thread_unread = marks.isUnread;
+        if (!marks.isUnread) {
+            row.mention_count = 0;
+        }
+    }
+
+    /** Whether the reader is in a thread now, its drawer open, loading or loaded. */
+    function isReading(channelId: string, rootId: number): boolean {
+        return state.thread?.channelId === channelId && state.thread.rootId === rootId;
+    }
+
+    /**
+     * Takes a thread.updated into the list's record, and changes the thread's row in its place:
+     * its counts, faces and marks, never its position, which settles at the next fetch. A thread
+     * with no live reply leaves the list, as the platform lists it, which moves no other row.
+     */
+    function moveRow(channelId: string, rootId: number, counts: ThreadCounts, rev: number | null, isOpen: boolean): void {
+        // taken whether or not the row is held, for a page on its way to have laid over it
+        const newer = takeChange(listLedger, rootId, "thread", rev, counts);
+        if (newer === null) {
+            // a repeat, or older than what the list holds
+            return;
+        }
         const list = state.list;
-        const row = list.rows.find(r => r.channel_id === channelId && r.root.id === update.root_id);
+        const row = list.rows.find(r => r.channel_id === channelId && r.root.id === rootId);
         if (!row) {
             return;
         }
 
-        const marks = marksAfter(update, row.reply_count, row.following, row.has_unread, isOpen);
-        moveRoot(row.root, update, isOpen);
-        row.reply_count = update.reply_count;
-        row.last_reply_at = update.last_reply_at;
-        row.participant_count = update.participant_count;
-        row.following = marks.isFollowing;
-        row.has_unread = marks.isUnread;
-
-        const rest = list.rows.filter(r => r !== row);
-        if (update.reply_count === 0) {
-            list.rows = rest;
-            return;
+        const now = { ...counts, ...newer } as ThreadCounts;
+        const marks = marksAfter(now, { count: row.reply_count, isFollowing: row.following, isUnread: row.has_unread }, isOpen);
+        setRowCounts(row, now);
+        markRow(row, marks);
+        if (now.reply_count === 0) {
+            list.rows = list.rows.filter(r => r !== row);
         }
-        const at = rest.findIndex(r => listsBefore(row, r));
-        if (at === -1 && list.hasMore) {
-            // the next page is asked after the last row, so a row that now sorts below it waits for
-            // the page that holds it rather than hiding the rows between
-            list.rows = rest;
-            return;
-        }
-        list.rows = at === -1 ? [...rest, row] : [...rest.slice(0, at), row, ...rest.slice(at)];
-    }
-
-    /** Whether a row comes before another in the platform's order: the newer last reply, then the newer root. */
-    function listsBefore(row: ThreadListRow, other: ThreadListRow): boolean {
-        const at = Date.parse(row.last_reply_at ?? "") || 0;
-        const otherAt = Date.parse(other.last_reply_at ?? "") || 0;
-        return at !== otherAt ? at > otherAt : row.root.id > other.root.id;
     }
 
     /** Moves a root's counts and faces wherever it is held, and keeps them for a drawer still loading it. */
     function applyThreadUpdated(channelId: string, update: ThreadUpdatedEvent): void {
-        const isOpen = state.thread?.channelId === channelId && state.thread.rootId === update.root_id;
+        const isOpen = isReading(channelId, update.root_id);
         const rev = revOf(update);
+        const counts: ThreadCounts = { reply_count: update.reply_count, last_reply_at: update.last_reply_at, participant_count: update.participant_count, repliers: update.repliers };
 
-        // The conversation's root and the list's row move only when the counts are newer than what
-        // the conversation holds; the timelines record each change after the threads have taken it.
-        const isNewerHeld = dependencies.timelines.isNewer(update.root_id, "thread", rev);
+        // The conversation's root moves only when the counts are newer than what the conversation
+        // holds, which the timelines record after the threads have taken the change; the list's
+        // row by the list's own record.
         const held = timelineRoot(channelId, update.root_id);
-        if (held && isNewerHeld) {
+        if (held && dependencies.timelines.isNewer(update.root_id, "thread", rev)) {
             moveRoot(held, update, isOpen);
         }
-        if (isNewerHeld) {
-            moveRow(channelId, update, isOpen);
-        }
-        const counts = { reply_count: update.reply_count, last_reply_at: update.last_reply_at, participant_count: update.participant_count, repliers: update.repliers };
+        moveRow(channelId, update.root_id, counts, rev, isOpen);
         const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts) !== null;
         if (isNewerHere && state.thread?.root) {
             moveRoot(state.thread.root, update, true);
@@ -894,7 +967,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         refresh: () => fetchList("refresh"),
 
         loadMore: async (): Promise<void> => {
-            if (!state.list.hasMore || isLoadingMore || state.list.rows.length === 0) {
+            if (!state.list.hasMore || isLoadingMore || listCursor === null) {
                 return;
             }
             await fetchList("more");
