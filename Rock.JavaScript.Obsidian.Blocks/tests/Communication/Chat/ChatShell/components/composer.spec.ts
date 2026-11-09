@@ -919,6 +919,45 @@ describe("the reply composer's Also send switch", () => {
     });
 });
 
+// The foot is one line at every width, so the box above it never moves as the counter appears or
+// in a channel with a long name. The counter, the warning that a send will fail, never gives way;
+// the words beside it do, cut at their end with an ellipsis, so a long room name shortens first.
+describe("the composer's foot", () => {
+    function rule(selector: string): string {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        // The selector alone or as one of a list sharing the rule.
+        return new RegExp(`(?:^|\\n)(?:[^{}]*,\\s*)?${selector.replace(/\./g, "\\.")}\\s*(?:,[^{}]*)?\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
+    }
+
+    test("keeps the counter whole and on the line", () => {
+        expect(rule(".chat-composer-count")).toMatch(/flex: none;/);
+        expect(rule(".chat-composer-count")).toMatch(/white-space: nowrap;/);
+    });
+
+    test.each([".chat-composer-also-text", ".chat-composer-hint"])("cuts %s at its end with an ellipsis rather than wrapping", selector => {
+        expect(rule(selector)).toMatch(/min-width: 0;/);
+        expect(rule(selector)).toMatch(/overflow: hidden;/);
+        expect(rule(selector)).toMatch(/text-overflow: ellipsis;/);
+        expect(rule(selector)).toMatch(/white-space: nowrap;/);
+    });
+
+    test("lets the also-send label shrink below its words, so its text can be cut", () => {
+        expect(rule(".chat-composer-also")).toMatch(/min-width: 0;/);
+    });
+
+    // The cut is drawn only, so the switch is still named by the whole sentence.
+    test("still names the switch by the whole sentence when a long room name is cut", () => {
+        const title = "Wednesday Night Student Ministry Leaders and Parents";
+        const wrapper = mountComposer({ props: { isThread: true, isChannel: true, title, maxLength: 600 } });
+        const text = wrapper.get("[data-testid='composer-also'] .chat-composer-also-text");
+
+        expect(text.text().replace(/\s+/g, " ").trim()).toBe(`Also send to ${title}`);
+        expect(text.get("b").text()).toBe(title);
+    });
+});
+
 // A send that failed is marked on its message; what to do about it waits here, in a strip over the
 // box the person types in: what happened, the newest reason, and real buttons. One strip speaks for
 // every failed send in the place the box types into, by count, and its buttons act on them all.
