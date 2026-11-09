@@ -271,6 +271,12 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         state.typists = next;
     }
 
+    /** What is held changed: it is drawn, and the one timer set for the soonest expiry left. */
+    function changed(): void {
+        publish();
+        schedule();
+    }
+
     /** Removes every typist due and sets the one timer for the next. */
     function expire(): void {
         expiryTimer = null;
@@ -285,8 +291,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
                 typists.delete(place);
             }
         }
-        publish();
-        schedule();
+        changed();
     }
 
     /** Sets the one timer for the soonest expiry held, replacing any set before. */
@@ -310,8 +315,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     function clear(): void {
         typists.clear();
         newestHeard.clear();
-        schedule();
-        publish();
+        changed();
     }
 
     function heard(event: string, payload: unknown, topicChannelId?: string): void {
@@ -348,8 +352,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             typists.set(place, held);
         }
         held.set(alias, { expiresAt: Date.now() + settings().limits.typing_expiry_ms, after });
-        publish();
-        schedule();
+        changed();
     }
 
     function messageArrived(channelId: string, created: Partial<MessageCreatedEvent>): void {
@@ -370,8 +373,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         const typist = typists.get(place)?.get(alias);
         if (typist && typist.after < created.id) {
             typists.get(place)?.delete(alias);
-            publish();
-            schedule();
+            changed();
         }
     }
 
@@ -416,8 +418,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
                     }
                 }
             }
-            publish();
-            schedule();
+            changed();
         },
 
         stop: () => {
