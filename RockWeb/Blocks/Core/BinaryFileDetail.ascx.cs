@@ -205,6 +205,23 @@ namespace RockWeb.Blocks.Core
             if ( !binaryFileId.Equals( 0 ) )
             {
                 binaryFile = binaryFileService.Get( binaryFileId );
+
+                /*
+                    11/02/2026 - MSE
+
+                    Block VIEW alone must not show a file. Check the file the same way GetFile.ashx does
+                    (parent record first, then the file type) before showing any of its details.
+
+                    Reason: The block displayed any file the page parameter named, whatever its type security.
+                */
+                if ( binaryFile != null && !CanViewFile( binaryFile ) )
+                {
+                    pnlDetails.Visible = false;
+                    nbNotAuthorized.Text = EditModeMessage.NotAuthorizedToView( BinaryFile.FriendlyTypeName );
+                    nbNotAuthorized.Visible = true;
+                    return;
+                }
+
                 pdAuditDetails.SetEntity( binaryFile, ResolveRockUrl( "~" ) );
             }
 
@@ -311,6 +328,22 @@ namespace RockWeb.Blocks.Core
             return fsFile.BinaryFileId.HasValue && !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.EditLabelPage ) ) && fsFile.BinaryFileTypeGuid == Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL.AsGuid();
         }
 
+        /// <summary>
+        /// Determines whether the current person can view the file, in the same order GetFile.ashx checks it.
+        /// </summary>
+        /// <param name="binaryFile">The binary file.</param>
+        /// <returns><c>true</c> if the current person can view the file; otherwise <c>false</c>.</returns>
+        private bool CanViewFile( BinaryFile binaryFile )
+        {
+            var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( CurrentPerson );
+            if ( parentEntityAllowsView.HasValue )
+            {
+                return parentEntityAllowsView.Value;
+            }
+
+            return binaryFile.IsAuthorized( Authorization.VIEW, CurrentPerson );
+        }
+
         #endregion
 
         #region Edit Events
@@ -375,7 +408,22 @@ namespace RockWeb.Blocks.Core
             else
             {
                 binaryFile = binaryFileService.Get( binaryFileId );
-                prevBinaryFileTypeId = binaryFile != null ? binaryFile.BinaryFileTypeId : ( int? ) null;
+
+                /*
+                    11/02/2026 - MSE
+
+                    Saving an existing file needs EDIT on the file itself (its type security), not just
+                    EDIT on the block, and the person must also be able to view it.
+
+                    Reason: Block EDIT alone allowed replacing the contents of any file.
+                */
+                if ( binaryFile == null || !CanViewFile( binaryFile ) || !binaryFile.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( BinaryFile.FriendlyTypeName );
+                    return;
+                }
+
+                prevBinaryFileTypeId = binaryFile.BinaryFileTypeId;
             }
 
             // Only accept the file's current contents or a new upload, otherwise keep the current contents.
@@ -549,6 +597,14 @@ namespace RockWeb.Blocks.Core
                     }
 
                     var binaryFile = binaryFileService.Get( fsFile.BinaryFileId.Value );
+
+                    // A saved file needs the same view and edit rights as Save.
+                    if ( binaryFile != null && !binaryFile.IsTemporary && ( !CanViewFile( binaryFile ) || !binaryFile.IsAuthorized( Authorization.EDIT, CurrentPerson ) ) )
+                    {
+                        nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( BinaryFile.FriendlyTypeName );
+                        return;
+                    }
+
                     if ( binaryFile != null )
                     {
                         LaunchFileUploadWorkflow( binaryFile, binaryFileService );

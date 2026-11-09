@@ -138,7 +138,7 @@ namespace Rock.Drawing.Avatar
         /// Without view security this makes no database call, so cached avatars stay cheap to serve.
         /// The Person Image file type itself is still enforced when the photo is loaded.
         /// </remarks>
-        [Rock.Attribute.RockInternal( "20.1" )]
+        [Rock.Attribute.RockInternal( "17.13" )]
         public static bool IsPhotoViewAllowed( int photoId )
         {
             var personImageType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
