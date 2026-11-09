@@ -157,7 +157,7 @@
                 <!-- The label names the switch and passes a press on its words to it. -->
                 <label v-if="isThread" class="chat-composer-also" data-testid="composer-also">
                     <Switch size="sm" :isOn="isAlsoSent" @click="setAlsoSent(!isAlsoSent)" />
-                    <span>Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
+                    <span class="chat-composer-also-text">Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
                 <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
@@ -454,6 +454,11 @@
     transform: scale(.94);
 }
 
+/*
+ * One line at every width, so the box above never moves. The counter, the warning that a send will
+ * fail, never gives way; the words beside it are cut at their end, so a long room name shortens
+ * first. The cut is drawn only, and the switch is still named by the whole sentence.
+ */
 .chat-composer-foot {
     display: flex;
     gap: 10px;
@@ -462,6 +467,14 @@
     padding: 0 14px;
     font-size: 11.5px;
     color: var(--chat-muted);
+}
+
+.chat-composer-hint,
+.chat-composer-also-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 /* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */
@@ -480,6 +493,7 @@
     display: inline-flex;
     gap: 8px;
     align-items: center;
+    min-width: 0;
     margin: 0;
     font-size: 12px;
     font-weight: 500;
@@ -569,9 +583,11 @@
 
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
+    flex: none;
     margin-left: auto;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
 }
 
 .chat-composer-count[data-tone="warn"] {
