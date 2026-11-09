@@ -221,8 +221,8 @@ namespace Rock.Field.Types
             {
                 TextValue = textValue,
                 CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
+                HtmlValue = textValue.EncodeHtml(),
+                CondensedHtmlValue = condensedTextValue.EncodeHtml()
             };
         }
 

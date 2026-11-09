@@ -362,13 +362,23 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public sealed override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            /*
+                11/09/2026 - MSE
+
+                Item text comes from the item bags, which can hold names
+                entered by users. The HTML values are the encoded text value,
+                the same as the base FieldType, so grids, Lava and the
+                persisted values all receive encoded text.
+
+                Reason: HTML values returned the text value without encoding.
+            */
+            return GetTextValue( privateValue, privateConfigurationValues ).EncodeHtml();
         }
 
         /// <inheritdoc/>
         public sealed override string GetCondensedHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            return GetTextValue( privateValue, privateConfigurationValues );
+            return GetHtmlValue( privateValue, privateConfigurationValues );
         }
 
         /// <inheritdoc/>
@@ -379,9 +389,9 @@ namespace Rock.Field.Types
             return new PersistedValues
             {
                 TextValue = textValue,
-                HtmlValue = textValue,
+                HtmlValue = textValue.EncodeHtml(),
                 CondensedTextValue = textValue,
-                CondensedHtmlValue = textValue
+                CondensedHtmlValue = textValue.EncodeHtml()
             };
         }
 

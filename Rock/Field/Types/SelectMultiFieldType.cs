@@ -253,8 +253,8 @@ namespace Rock.Field.Types
                 {
                     TextValue = privateValue,
                     CondensedTextValue = privateValue,
-                    HtmlValue = privateValue,
-                    CondensedHtmlValue = privateValue
+                    HtmlValue = privateValue.EncodeHtml(),
+                    CondensedHtmlValue = privateValue.EncodeHtml()
                 };
             }
 
@@ -268,12 +268,22 @@ namespace Rock.Field.Types
             var textValue = GetTextValueFromConfiguredValues( privateValue, configuredValues ) ?? string.Empty;
             var condensedTextValue = textValue.Truncate( CondensedTruncateLength );
 
+            /*
+                11/09/2026 - MSE
+
+                Option text comes from the attribute configuration. The
+                non-persisted GetHtmlValue (base FieldType) encodes the text
+                value, so the persisted HTML values are encoded the same way
+                to keep both paths identical.
+
+                Reason: Persisted HTML values must match GetHtmlValue.
+            */
             return new PersistedValues
             {
                 TextValue = textValue,
                 CondensedTextValue = condensedTextValue,
-                HtmlValue = textValue,
-                CondensedHtmlValue = condensedTextValue
+                HtmlValue = textValue.EncodeHtml(),
+                CondensedHtmlValue = condensedTextValue.EncodeHtml()
             };
         }
 
