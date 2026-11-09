@@ -63,10 +63,17 @@ export type AttachmentTypes = {
 export type ChatSettings = {
     service: { state: string, banner: string | null };
     client: { update_required: boolean };
-    routes: { send: string };
-    limits: { reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number, gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number } & PlatformLimits & AttachmentTypes;
-    /** Switches by name; gifs is whether the church may search for and send GIFs, off unless true. */
-    flags: Record<string, unknown> & { gifs: boolean };
+    /** The send's route, and the database's region, which calls that can be pinned to it are; null for none. */
+    routes: { send: string, region: string | null };
+    limits: {
+        reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number,
+        gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number, typing_interval_ms: number, typing_expiry_ms: number
+    } & PlatformLimits & AttachmentTypes;
+    /**
+     * Switches by name; gifs is whether the church may search for and send GIFs, and typing
+     * whether its conversations show who is typing, each off unless true.
+     */
+    flags: Record<string, unknown> & { gifs: boolean, typing: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -76,6 +83,9 @@ const serviceStates = ["normal", "degraded", "read_only", "maintenance"];
 
 /** The routes this client can take; any other is read as direct, the route every release has. */
 const sendRoutes = ["direct", "edge"];
+
+/** A region's name as Supabase writes one, which is all a header may carry. */
+const regionPattern = /^[a-z]{2}-[a-z]+-\d+$/;
 
 /**
  * When the "Turn on notifications" button shows; any other value is read as after a send, the
@@ -99,7 +109,11 @@ const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof A
     // long a room may go with nothing confirmed before a gap reloads it rather than repairs it.
     gap_reorder_ms: 500,
     gap_repair_wait_ms: 5000,
-    stale_reload_ms: 900000
+    stale_reload_ms: 900000,
+    // A platform without typing's pace sends no typing flag either; these only keep a missing key
+    // from becoming a signal on every key.
+    typing_interval_ms: 4000,
+    typing_expiry_ms: 6000
 };
 
 /** The platform's limits by name, read from every exchange's answer. */
@@ -162,7 +176,10 @@ export function readSettings(raw: unknown): ChatSettings {
             banner: typeof service.banner === "string" ? service.banner : null
         },
         client: { update_required: client.update_required === true },
-        routes: { send: typeof routes.send === "string" && sendRoutes.includes(routes.send) ? routes.send : "direct" },
+        routes: {
+            send: typeof routes.send === "string" && sendRoutes.includes(routes.send) ? routes.send : "direct",
+            region: typeof routes.region === "string" && regionPattern.test(routes.region) ? routes.region : null
+        },
         limits: {
             reconnect_base_ms: limit("reconnect_base_ms"),
             reconnect_cap_ms: limit("reconnect_cap_ms"),
@@ -174,14 +191,16 @@ export function readSettings(raw: unknown): ChatSettings {
             gap_reorder_ms: limit("gap_reorder_ms"),
             gap_repair_wait_ms: limit("gap_repair_wait_ms"),
             stale_reload_ms: limit("stale_reload_ms"),
+            typing_interval_ms: limit("typing_interval_ms"),
+            typing_expiry_ms: limit("typing_expiry_ms"),
             ...platformLimits,
             // a list of anything but strings is no list, so files are refused rather than guessed at
             attachment_types: Array.isArray(limits.attachment_types) && limits.attachment_types.every(type => typeof type === "string")
                 ? [...limits.attachment_types as string[]]
                 : []
         },
-        // only the JSON true turns GIFs on, so a value this client cannot read leaves them off
-        flags: { ...flags, gifs: flags.gifs === true },
+        // only the JSON true turns a switch on, so a value this client cannot read leaves it off
+        flags: { ...flags, gifs: flags.gifs === true, typing: flags.typing === true },
         push: {
             web: hasPush ? web : null,
             vapid_key: hasPush ? push.vapid_key as string : null,

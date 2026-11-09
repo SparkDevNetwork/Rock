@@ -98,6 +98,10 @@ export function useComposers(dependencies: ComposersDependencies) {
 
     const conversationFailure = computed((): SendFailure | null => sendFailure(conversationSends.value));
 
+    /** Who else is typing where each box types, drawn in its foot; null for no one. */
+    const conversationTyping = computed((): string | null => shell.value.presence.lineFor(conversationQuoteKey.value));
+    const threadTyping = computed((): string | null => shell.value.presence.lineFor(threadQuoteKey.value));
+
     /** A composer's @ query, searched among the people of the conversation it is in; null closes the search. */
     function onMentionQuery(row: SidebarRow | null, query: string | null): void {
         if (row && query !== null) {
@@ -123,9 +127,28 @@ export function useComposers(dependencies: ComposersDependencies) {
         focusedComposer.value = null;
     }
 
+    /**
+     * A box's text changed: it is kept as its place's draft, and told as typing in that place. A box
+     * handing back the text its draft already holds, as a send that keeps its text does, is not
+     * the person typing.
+     */
     function onDraftText(place: string | null, text: string): void {
-        if (place) {
-            shell.value.drafts.write(place, text);
+        if (!place) {
+            return;
+        }
+        const isChanged = shell.value.drafts.of(place).text !== text;
+        shell.value.drafts.write(place, text);
+        if (!isChanged) {
+            return;
+        }
+
+        // the drawer's thread can be of a room other than the open one
+        const thread = drawnThread.value;
+        if (place === conversationQuoteKey.value && activeChannelId.value) {
+            shell.value.presence.typed(activeChannelId.value, null, text);
+        }
+        else if (place === threadQuoteKey.value && thread) {
+            shell.value.presence.typed(thread.channelId, thread.rootId, text);
         }
     }
 
@@ -206,7 +229,7 @@ export function useComposers(dependencies: ComposersDependencies) {
     }
 
     return {
-        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure,
+        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
         onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     };

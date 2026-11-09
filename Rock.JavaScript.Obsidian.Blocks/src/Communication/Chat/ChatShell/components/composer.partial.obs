@@ -148,7 +148,12 @@
                     <Switch size="sm" :isOn="isAlsoSent" @click="setAlsoSent(!isAlsoSent)" />
                     <span>Also send to <b v-if="alsoName">{{ alsoName }}</b><template v-else>the conversation</template></span>
                 </label>
-                <span v-else-if="!isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
+                <!-- Read where a person moves to it, never announced: a live region would speak every pause. -->
+                <span v-if="typingLine" class="chat-composer-typing" data-testid="composer-typing">
+                    <span class="chat-composer-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="chat-composer-typing-text">{{ typingLine }}</span>
+                </span>
+                <span v-else-if="!isThread && !isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
             </div>
 
@@ -476,6 +481,53 @@
     color: var(--chat-text);
 }
 
+/*
+ * Someone else typing, in the hint's place in the foot's reserved row, so nothing above it moves. It
+ * fades in and leaves at once, so it never lingers past the message that ended it.
+ */
+.chat-composer-typing {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-out);
+}
+
+.chat-composer-typing-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-composer-typing-dots {
+    display: inline-flex;
+    flex: none;
+    gap: 3px;
+}
+
+.chat-composer-typing-dots i {
+    width: 4px;
+    height: 4px;
+    background: currentColor;
+    border-radius: 50%;
+    animation: chat-composer-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+/* Each dot a fifth of the cycle after the one before. */
+.chat-composer-typing-dots i:nth-child(2) {
+    animation-delay: calc(var(--chat-d-pulse) / 5);
+}
+
+.chat-composer-typing-dots i:nth-child(3) {
+    animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
+}
+
+@keyframes chat-composer-pulse {
+    50% {
+        opacity: .3;
+    }
+}
+
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
     margin-left: auto;
@@ -533,6 +585,11 @@
     .chat-strip-leave-to {
         grid-template-rows: 1fr;
         margin-bottom: 0;
+    }
+
+    /* A looping animation stops: the dots stand at full strength. */
+    .chat-composer-typing-dots i {
+        animation: none;
     }
 }
 </style>
@@ -681,6 +738,12 @@
          */
         lastFailure: {
             type: Object as PropType<SendFailureNews | null>,
+            default: null
+        },
+
+        /** Who else is typing where the box types, drawn in the foot in the key hint's place; null for no one. */
+        typingLine: {
+            type: String as PropType<string | null>,
             default: null
         },
 

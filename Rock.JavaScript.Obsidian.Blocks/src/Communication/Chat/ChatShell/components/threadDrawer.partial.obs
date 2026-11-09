@@ -177,6 +177,7 @@
                       :sendFailure="replyFailure"
                       :lastFailure="lastFailure"
                       :tray="tray"
+                      :typingLine="typingLine"
                       @send="onSend"
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
@@ -525,6 +526,12 @@
         /** The files waiting to go with the next reply, or null where files cannot go. */
         tray: {
             type: Object as PropType<AttachmentTray | null>,
+            default: null
+        },
+
+        /** Who else is typing a reply in this thread, for the reply composer's foot; null for no one. */
+        typingLine: {
+            type: String as PropType<string | null>,
             default: null
         },
 

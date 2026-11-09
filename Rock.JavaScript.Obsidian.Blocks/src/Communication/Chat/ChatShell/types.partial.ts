@@ -774,6 +774,22 @@ export type ChannelMentionEvent = {
     all: boolean;
 };
 
+/**
+ * Someone typing, on the conversation's topic or, where a block keeps it from some members, on each
+ * other member's personal topic. It carries no name and no text.
+ */
+export type TypingEvent = {
+    channel_id: string;
+
+    /** The thread's root when the reply is typed in a thread; null in the conversation itself. */
+    parent_id: number | null;
+    person_alias_guid: string;
+    id: string;
+
+    /** The newest message the typist's client held in that place, so a viewer can order the signal against their messages; null for none. */
+    after: number | null;
+};
+
 /** A new message on a channel topic. */
 export type MessageCreatedEvent = {
     id: number;

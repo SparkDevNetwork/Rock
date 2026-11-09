@@ -43,6 +43,7 @@ import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest,
 import { createMembers, MemberDoors, Members } from "./composables/useMembers.partial";
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
+import { createPresence, Presence } from "./composables/usePresence.partial";
 import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rememberedChannelKey } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
@@ -274,6 +275,9 @@ export type ChatShell = {
 
     /** GIF search, and whether the church has GIFs on. */
     gifs: Gifs;
+
+    /** Who else is typing in the open conversation's places, and the person's own typing signals. */
+    presence: Presence;
 
     /** The files waiting to go with the next send in a conversation, or in a thread when a root is named. */
     trayOf: (channelId: string, rootId?: number) => AttachmentTray;
@@ -531,6 +535,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         members.stop();
         prefs.stop();
         blocks.stop();
+        presence.stop();
         session.stop();
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
@@ -1027,9 +1032,37 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
 
+    const presence = createPresence({
+        callFunction,
+        settings: session.settings,
+        currentToken: session.currentToken,
+        state,
+        rowOf: channelId => channels.rows.find(row => row.channel_id === channelId) ?? null,
+        peopleOf: channelId => rooms.factsOf(channelId)?.people ?? [],
+        // A signal names the newest message the person has seen in its place: a conversation's
+        // newest held, or the row's where a live copy has not reached the timeline; a thread's
+        // newest reply held, else its root.
+        newestHeld: (channelId, rootId) => {
+            if (rootId !== null) {
+                const thread = threads.state.thread;
+                const isOpen = thread?.channelId === channelId && thread.rootId === rootId;
+                return (isOpen ? thread.replies[thread.replies.length - 1]?.id : undefined) ?? rootId;
+            }
+            const messages = timelines.state(channelId).messages;
+            const newest = messages[messages.length - 1]?.id ?? null;
+            const row = channels.rows.find(r => r.channel_id === channelId)?.last_message_id ?? null;
+            return newest === null && row === null ? null : Math.max(newest ?? 0, row ?? 0);
+        },
+        isSending: (channelId, rootId) => sender.pending(channelId).some(row => row.status === "sending" && (row.parentId ?? null) === rootId),
+        personAliasGuid,
+        isBlocked: alias => blocks.isBlocked(alias),
+        report: code => problems.report("typing", code),
+        isStopped: () => isStopped
+    });
+
     const live = createShellLive({
         state,
-        modules: { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems },
+        modules: { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems, presence },
         call,
         report,
         thrown,
@@ -1078,6 +1111,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         drafts,
         attachments,
         gifs,
+        presence,
         trayOf: (channelId: string, rootId?: number): AttachmentTray => attachments.trayFor(quoteKey(channelId, rootId), channelId),
         isNewMessageShown: isNewMessageShown(options.session),
 
@@ -1274,6 +1308,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             members.stop();
             prefs.stop();
             blocks.stop();
+            presence.stop();
             drafts.stop();
             attachments.stop();
 

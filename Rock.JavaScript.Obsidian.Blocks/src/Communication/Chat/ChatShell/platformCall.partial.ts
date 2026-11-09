@@ -62,9 +62,10 @@ export type PlatformCall = {
      *
      * @param path The function's name, as its address ends.
      * @param body What it is sent.
-     * @param options signal, which ends a call no longer wanted.
+     * @param options signal, which ends a call no longer wanted; headers, which the platform's
+     * edge reads before the function runs, and which never replace the call's own.
      */
-    callFunction: (path: string, body: Record<string, unknown>, options?: { signal?: AbortSignal }) => Promise<CallResult>;
+    callFunction: (path: string, body: Record<string, unknown>, options?: { signal?: AbortSignal, headers?: Record<string, string> }) => Promise<CallResult>;
 };
 
 /** The operations a route in the settings can move; every other call goes straight to the database. */
@@ -143,7 +144,7 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
     const now = options.now ?? ((): number => Date.now());
 
     /** Posts a body with the person's token and reads the answer, a refusal by its code. */
-    async function post(url: string, body: Record<string, unknown>, init: Pick<RequestInit, "keepalive" | "signal">): Promise<CallResult> {
+    async function post(url: string, body: Record<string, unknown>, init: Pick<RequestInit, "keepalive" | "signal">, extraHeaders?: Record<string, string>): Promise<CallResult> {
         const token = options.currentToken();
         if (!token) {
             return { ok: false, status: 401, error: { code: "auth.expired", severity: "session" }, retryAfterSeconds: null };
@@ -154,7 +155,9 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
             response = await options.fetch(url, {
                 method: "POST",
                 ...init,
+                // the call's own three last, so no caller's header can stand in for the token
                 headers: {
+                    ...extraHeaders,
                     "Authorization": `Bearer ${token}`,
                     "apikey": options.publishableKey,
                     "Content-Type": "application/json"
@@ -190,7 +193,7 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
         },
 
         callFunction: (path, body, callOptions): Promise<CallResult> => {
-            return post(`${projectUrl}/functions/v1/${path}`, body, callOptions?.signal ? { signal: callOptions.signal } : {});
+            return post(`${projectUrl}/functions/v1/${path}`, body, callOptions?.signal ? { signal: callOptions.signal } : {}, callOptions?.headers);
         }
     };
 }

@@ -182,6 +182,7 @@
                               :sendFailure="conversationFailure"
                               :lastFailure="shell.sender.lastFailure()"
                               :tray="conversationTray"
+                              :typingLine="conversationTyping"
                               @retryFailed="onRetryFailed(conversationSends)"
                               @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
@@ -370,6 +371,7 @@
                                   :reactionHost="reactionHost"
                                   :emojiSource="emojiSource"
                                   :mentionSource="mentionSourceFor(threadRow)"
+                                  :typingLine="threadTyping"
                                   @mentionQuery="onMentionQuery(threadRow, $event)"
                                   @composerFocus="onComposerFocus(threadRow, 'thread')"
                                   @composerBlur="onComposerBlur"
@@ -951,7 +953,7 @@
     } = useThreadsPanel({ shell, activeChannelId, drawnThread, showNotice });
 
     const {
-        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure,
+        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
         onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     } = useComposers({ shell, activeChannelId, activeRow, isJoinBarShown, drawnThread, panelKind, isPanelHidden, conversationQuoteKey, threadQuoteKey });

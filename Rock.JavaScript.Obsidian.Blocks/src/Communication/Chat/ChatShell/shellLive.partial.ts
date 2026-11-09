@@ -46,7 +46,7 @@ export type ShellLiveDependencies = {
     state: ShellState;
 
     /** The shell's modules, each made before this. */
-    modules: Pick<ChatShell, "reveal" | "channels" | "timelines" | "threads" | "messageActions" | "reactions" | "mentions" | "rooms" | "roomKindOf" | "members" | "prefs" | "blocks" | "sender" | "directMessages" | "problems">;
+    modules: Pick<ChatShell, "reveal" | "channels" | "timelines" | "threads" | "messageActions" | "reactions" | "mentions" | "rooms" | "roomKindOf" | "members" | "prefs" | "blocks" | "sender" | "directMessages" | "problems" | "presence">;
 
     /** The shell's one call path. */
     call: (name: string, args: Record<string, unknown>) => Promise<CallResult>;
@@ -115,7 +115,7 @@ export type ShellLive = {
  */
 export function createShellLive(dependencies: ShellLiveDependencies): ShellLive {
     const { state, modules, call, report, thrown, applySave, favorites, isConnectionFailure, recheck, closeActive, mark, isStopped } = dependencies;
-    const { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems } = modules;
+    const { reveal, channels, timelines, threads, messageActions, reactions, mentions, rooms, roomKindOf, members, prefs, blocks, sender, directMessages, problems, presence } = modules;
 
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
     let recheckTimer: ReturnType<typeof setTimeout> | null = null;
@@ -338,6 +338,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         mentions.remask();
         directMessages.remask();
         messageActions.remask();
+        presence.remask();
     }
 
     const handlers: ShellLive["handlers"] = {
@@ -345,6 +346,11 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             // The revision first, whatever the event's name and whatever a handler then makes of it,
             // so a name this release does not know, or a message collapsed below, leaves no hole.
             timelines.advance(channelId, rawPayload);
+            // Typing changes nothing held, so nothing that holds messages reads it.
+            if (presence.owns(event)) {
+                presence.heard(event, rawPayload, channelId);
+                return;
+            }
             // A room's events are one payload for every subscriber, so a message by someone the
             // person blocked is collapsed, and their face blanked, before anything holds it.
             const payload = blocks.maskEvent(event, rawPayload);
@@ -372,12 +378,21 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             // that is not open is kept by no view. A message of a channel still loading settles at
             // its page instead, so its row is never taken away before the message is drawn.
             const created = payload as Partial<MessageCreatedEvent> | null;
+            // a message ends its sender's typing in its place
+            if (event === "message.created" && created) {
+                presence.messageArrived(channelId, created);
+            }
             if (event === "message.created" && typeof created?.id === "number" && created.client_key
                 && (timelines.state(channelId).isLoaded || !isTimelineMessage(created))) {
                 sender.landed({ id: created.id, client_key: created.client_key });
             }
         },
         onPersonalEvent: (event, payload) => {
+            // A typist a block keeps off the conversation's topic is told on each other member's own.
+            if (presence.owns(event)) {
+                presence.heard(event, payload);
+                return;
+            }
             if (event === "resync") {
                 resync();
                 return;
@@ -417,6 +432,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         onPersonalRejoined: reloadAfterRejoin,
         onJoined: channelId => {
             mark("chat:join");
+            presence.joined(channelId);
             timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
         },
         onUnknownError: () => {
