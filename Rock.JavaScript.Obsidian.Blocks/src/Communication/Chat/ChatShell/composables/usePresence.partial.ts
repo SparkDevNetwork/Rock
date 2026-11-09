@@ -54,8 +54,11 @@ export type PresenceDependencies = {
     /** The newest message the client holds in a place, which the person's signal names as followed. */
     newestHeld: (channelId: string, rootId: number | null) => number | null;
 
-    /** Whether one of the person's own sends to a place is still out. */
-    isSending: (channelId: string, rootId: number | null) => boolean;
+    /**
+     * Whether what the client holds of a place may be behind what the person has written there: a
+     * send of theirs still out, or a thread's first page still on its way.
+     */
+    isBehind: (channelId: string, rootId: number | null) => boolean;
 
     /** The person's primary alias, which the platform writes as a signal's typist. */
     personAliasGuid: string;
@@ -184,9 +187,10 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (refusedPlaces.has(channelId) || refusedPlaces.has(place) || isCallOut) {
             return false;
         }
-        // A send still out has not reached this client's history, so a signal now would name a
-        // message older than it and viewers would drop it; the next change after it lands goes.
-        if (dependencies.isSending(channelId, rootId)) {
+        // A send still out, or a thread page still coming, may hold a message of the person's
+        // that this client's history lacks, so a signal now would name a message older than it
+        // and viewers would drop it; the next change after the history catches up goes.
+        if (dependencies.isBehind(channelId, rootId)) {
             return false;
         }
 

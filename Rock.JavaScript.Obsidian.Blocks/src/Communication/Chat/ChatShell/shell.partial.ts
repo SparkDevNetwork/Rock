@@ -1053,7 +1053,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const row = channels.rows.find(r => r.channel_id === channelId)?.last_message_id ?? null;
             return newest === null && row === null ? null : Math.max(newest ?? 0, row ?? 0);
         },
-        isSending: (channelId, rootId) => sender.pending(channelId).some(row => row.status === "sending" && (row.parentId ?? null) === rootId),
+        // what the client holds of a place is behind the person while a send of theirs is out, or
+        // while the thread's first page, which may hold a reply of theirs, is on its way
+        isBehind: (channelId, rootId) => {
+            const thread = threads.state.thread;
+            if (rootId !== null && thread?.channelId === channelId && thread.rootId === rootId && thread.isLoading) {
+                return true;
+            }
+            return sender.pending(channelId).some(row => row.status === "sending" && (row.parentId ?? null) === rootId);
+        },
         personAliasGuid,
         isBlocked: alias => blocks.isBlocked(alias),
         report: code => problems.report("typing", code),

@@ -4566,12 +4566,12 @@ describe("typing", () => {
     const anna = "a0000001-0000-4000-8000-000000000000";
     const groupRow = { channel_id: channelA, room_kind: "group", title: "Room", is_member: true, can_post: true, last_message_id: 10, last_message_preview: "m10", is_unread: false, rev: 5 } as unknown as SidebarRow;
 
-    async function typingStarted(): Promise<ReturnType<typeof build>> {
+    async function typingStarted(row: Partial<SidebarRow> = {}): Promise<ReturnType<typeof build>> {
         const h = build();
         h.exchangeSettings.value = { limits: platformLimits, flags: { typing: true }, routes: { region: "us-east-1" } };
         h.listAnswers.chat_list_threads = { threads: [], has_more: false };
         h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
-        h.bootstrap.value = { channels: [groupRow], me: { blocked_aliases: [] } };
+        h.bootstrap.value = { channels: [{ ...groupRow, ...row }], me: { blocked_aliases: [] } };
         const starting = h.shell.start();
         await settle();
         answerHistory(h, channelA, 10);
@@ -4656,6 +4656,101 @@ describe("typing", () => {
 
         expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10 }]);
         expect(h.typingCalls[0].headers["x-region"]).toBe("us-east-1");
+    });
+
+    // The row's newest can be ahead of the timeline (a live copy only the sidebar heard) or behind
+    // it (a row read before the newest page), and the signal names the larger either way.
+    test.each([
+        [12, 12],
+        [5, 10]
+    ])("with the row's newest at %i and the timeline's at 10 the signal names %i", async (rowNewest, expected) => {
+        const h = await typingStarted({ last_message_id: rowNewest });
+
+        h.shell.presence.typed(channelA, null, "H");
+        await settle();
+
+        expect(h.typingCalls.map(c => c.body.p_after)).toEqual([expected]);
+    });
+
+    function rootOf(id: number): Record<string, unknown> {
+        return { id, person_alias_guid: anna, message_type: "text", body: `m${id}`, created_at: "2026-09-23T10:00:00Z" };
+    }
+
+    /** Opens thread 40, answering its first page with the replies named. */
+    async function threadOpened(h: ReturnType<typeof build>, replies: number[]): Promise<void> {
+        const opening = h.shell.threads.openThread(channelA, 40);
+        await settle();
+        h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, {
+            root: rootOf(40), messages: replies.map(rootOf), read_cursor: null, unread_count: 0, following: true, has_more: false
+        }));
+        await opening;
+        await settle();
+    }
+
+    test("a thread's signal names its newest reply held, and its root when it holds none", async () => {
+        const h = await typingStarted();
+        await threadOpened(h, [41, 44]);
+        h.shell.presence.typed(channelA, 40, "H");
+        await settle();
+
+        const empty = await typingStarted();
+        await threadOpened(empty, []);
+        empty.shell.presence.typed(channelA, 40, "H");
+        await settle();
+
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44 }]);
+        expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40 }]);
+    });
+
+    // Until the thread's first page lands its replies are not held, so a signal would name the
+    // root, below a reply of the person's own that viewers already heard, and they would drop it.
+    test("no signal goes from a thread whose first page is still on its way, and the next change after it lands does", async () => {
+        const h = await typingStarted();
+        const opening = h.shell.threads.openThread(channelA, 40);
+        await settle();
+
+        h.shell.presence.typed(channelA, 40, "H");
+        await settle();
+        expect(h.typingCalls).toEqual([]);
+
+        h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, {
+            root: rootOf(40), messages: [rootOf(44)], read_cursor: null, unread_count: 0, following: true, has_more: false
+        }));
+        await opening;
+        await settle();
+        h.shell.presence.typed(channelA, 40, "Hi");
+        await settle();
+        expect(h.typingCalls.map(c => c.body.p_after)).toEqual([44]);
+    });
+
+    test("a reply still sending in a thread holds that thread's signals and not the conversation's", async () => {
+        const h = await typingStarted();
+        await threadOpened(h, [41]);
+        h.heldSends.value = [];
+        void (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> })
+            .sendReply(40, "on my way", false);
+        await settle();
+
+        h.shell.presence.typed(channelA, 40, "H");
+        h.shell.presence.typed(channelA, null, "H");
+        await settle();
+
+        expect(h.typingCalls.map(c => c.body.p_parent_id)).toEqual([null]);
+        h.heldSends.value[0].resolve();
+        await settle();
+    });
+
+    test("someone blocked on another tab leaves the line at once", async () => {
+        const h = await typingStarted();
+        channelEvent(h, "typing", typing);
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+
+        h.blocksAnswer.value = { people: [{ person_alias_guid: anna, nick_name: "Ada", last_name: "Reyes", avatar_url: null }], blocked_aliases: [anna] };
+        h.bootstrap.value = { channels: [groupRow], me: { blocked_aliases: [anna] } };
+        personal(h, "blocks.changed", { id: "e1" });
+        await settle();
+
+        expect(h.shell.presence.state.typists[channelA] ?? []).toEqual([]);
     });
 
     test("a stopped shell shows no one typing and sends nothing", async () => {

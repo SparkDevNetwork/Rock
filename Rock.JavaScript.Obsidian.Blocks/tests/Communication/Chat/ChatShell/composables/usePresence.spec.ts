@@ -87,7 +87,8 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const stopped = { value: false };
     // The newest message the person's client holds for each place, by place key.
     const newest: Record<string, number | null> = { [group]: 10 };
-    const sending = new Set<string>();
+    // Places whose history may be behind the person, as a send still out leaves one.
+    const behind = new Set<string>();
 
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
@@ -109,7 +110,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         rowOf: channelId => (rows[channelId] ?? null) as SidebarRow | null,
         peopleOf: channelId => people[channelId] ?? [],
         newestHeld: (channelId, rootId) => newest[quoteKey(channelId, rootId)] ?? null,
-        isSending: (channelId, rootId) => sending.has(quoteKey(channelId, rootId)),
+        isBehind: (channelId, rootId) => behind.has(quoteKey(channelId, rootId)),
         personAliasGuid: me,
         isBlocked: alias => blocked.has(alias.toLowerCase()),
         report: code => reports.push(code),
@@ -117,7 +118,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
     };
 
     const presence: Presence = createPresence(dependencies);
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, sending };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -227,13 +228,13 @@ describe("the person's own signals", () => {
 
     test("nothing is sent while the person's own send to that place is still out, and the next change after it lands is", async () => {
         const h = build();
-        h.sending.add(group);
+        h.behind.add(group);
 
         h.presence.typed(group, null, "a");
         await settle();
         expect(h.calls).toHaveLength(0);
 
-        h.sending.delete(group);
+        h.behind.delete(group);
         h.newest[group] = 12;
         h.presence.typed(group, null, "ab");
         await settle();
