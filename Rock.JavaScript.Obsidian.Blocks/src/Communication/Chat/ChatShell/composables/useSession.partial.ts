@@ -84,8 +84,8 @@ const serviceStates = ["normal", "degraded", "read_only", "maintenance"];
 /** The routes this client can take; any other is read as direct, the route every release has. */
 const sendRoutes = ["direct", "edge"];
 
-/** A region's name as Supabase writes one, which is all a header may carry. */
-const regionPattern = /^[a-z]{2}-[a-z]+-\d+$/;
+/** An AWS region's name, as Supabase's x-region header takes it and the exchange checks it, such as us-east-1. */
+const regionPattern = /^[a-z]{2}(-[a-z]+)+-\d$/;
 
 /**
  * When the "Turn on notifications" button shows; any other value is read as after a send, the

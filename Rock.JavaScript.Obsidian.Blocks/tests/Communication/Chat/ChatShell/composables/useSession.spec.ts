@@ -580,6 +580,7 @@ describe("settings from the token exchange", () => {
     test("the database's region is read when it is a region's name, else there is none", () => {
         expect(readSettings({ routes: { region: "us-east-1" } }).routes.region).toBe("us-east-1");
         expect(readSettings({ routes: { region: "ap-southeast-2" } }).routes.region).toBe("ap-southeast-2");
+        expect(readSettings({ routes: { region: "us-gov-west-1" } }).routes.region).toBe("us-gov-west-1");
         for (const region of [undefined, "", 7, "US-EAST-1", "us-east-1; x", "https://example.com"]) {
             expect(readSettings({ routes: { region } }).routes.region).toBeNull();
         }
