@@ -1,8 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
-        {{ config.errorMessage }}
-    </NotificationBox>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
 
     <NotificationBox v-else-if="!config.isCollectingData" :alertType="AlertType.Warning">
         <strong>No view data is being collected for this content.</strong>
