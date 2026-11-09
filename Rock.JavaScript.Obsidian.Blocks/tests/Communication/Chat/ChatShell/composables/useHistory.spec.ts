@@ -1064,20 +1064,28 @@ describe("catching up when fetches fail or are overtaken", () => {
         const timelines = createTimelines({ mask: platformMask, limits, fetchPage: fetches.fetchPage });
         await timelines.loadNewest(channel);
 
-        for (let id = 4; id <= 10; id++) {
+        for (let id = 4; id <= 6; id++) {
             platform.add(id);
         }
         const joining = timelines.onJoined(channel);
         await settle();
+        // 7 to 10 are written after the forward page was read, so the page that brings 7 is the
+        // reread the join makes because the room moved since its first page
+        for (let id = 7; id <= 10; id++) {
+            platform.add(id);
+        }
+        fetches.pending.shift()?.answer();
+        await settle();
+        expect(fetches.pending.map(fetch => fetch.options.afterId)).toEqual([0]);
+        expect(timelines.state(channel).messages.find(m => m.id === 7)).toBeUndefined();
 
-        // the page was read with 7 as it was; the change to 7 is stored, and arrives live before the page does
+        // the reread was read with 7 as it was; the change to 7 is stored after, and arrives live
+        // while 7 is not held yet, so only the change laid over the page keeps 7 as it now is
         Object.assign(platform.rows.get(7) as TimelineMessage, stored);
         timelines.applyEvent(channel, event, { id: 7, channel_id: channel, ...change, rev: platform.bump() });
         fetches.pending.shift()?.answer();
-        // the room moved since its first page, so the join reads the held run again behind it
-        await settle();
-        fetches.pending.shift()?.answer();
         await joining;
+        expect(fetches.pending).toEqual([]);
 
         const held = timelines.state(channel).messages.find(m => m.id === 7);
         expect(held?.body).toBeNull();
@@ -2792,6 +2800,20 @@ describe("the room's revision", () => {
         const held = timelines.state(channel).messages[1];
         expect(held.visibility).toBe("hidden");
         expect(held.body).toBeNull();
+        expect(timelines.state(channel).rev).toBe(12);
+    });
+
+    test("a late hide after an unhide sets only what the unhide did not: the unhide's visibility and words are laid back over it", async () => {
+        const { timelines } = setup([revPage([1, 2], 10)]);
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.visibility", { id: 2, channel_id: channel, state: "visible", notice: null, body: "back", rev: 12 });
+        // the hide also states the metadata the unhide does not, so it is taken, under what the unhide set
+        deliver(timelines, "message.visibility", { id: 2, channel_id: channel, state: "hidden", notice: "Hidden.", rev: 11 });
+
+        const held = timelines.state(channel).messages[1];
+        expect(held.visibility).toBe("visible");
+        expect(held.body).toBe("back");
         expect(timelines.state(channel).rev).toBe(12);
     });
 
