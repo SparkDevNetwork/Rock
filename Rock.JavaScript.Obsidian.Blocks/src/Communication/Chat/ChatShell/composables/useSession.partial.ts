@@ -364,6 +364,10 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     // asked to be left alone after the last one, when it said.
     let failures = 0;
     let retryAfterSeconds: number | null = null;
+    // Until when, after a failed refresh, nothing asks again: the timer that ends the wait is the one
+    // refresh allowed before it. A platform that answers 503 while it struggles is just when every
+    // call refused as expired would otherwise start an exchange of its own.
+    let retryNotBefore = 0;
     let refreshing: Promise<boolean> | null = null;
     let isStopped = false;
     const now = dependencies.now ?? ((): number => Date.now());
@@ -473,20 +477,26 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     }
 
     /**
-     * Schedules another refresh after a failed one: when the platform said to come back, or else
-     * after a random wait that grows with each failure in a row, so the clients of every church
-     * that failed together do not all ask again in the same second.
+     * Schedules another refresh after a failed one, after the longer of when the platform said to
+     * come back and a random wait that grows with each failure in a row, so the clients of every
+     * church that failed together do not all ask again in the same second, and a short Retry-After
+     * cannot keep the wait from growing. The cap bounds a proxy's huge value; nothing asks before
+     * the wait ends but its own timer.
      */
     function retryLater(): void {
         clear();
         if (isStopped) {
             return;
         }
-        const wait = retryAfterSeconds !== null
-            ? retryAfterSeconds * 1000
-            : computeBackoff(failures, settings.value.limits.reconnect_base_ms, settings.value.limits.reconnect_cap_ms, dependencies.random);
+        const { reconnect_base_ms: baseMs, reconnect_cap_ms: capMs } = settings.value.limits;
+        const backoff = computeBackoff(failures, baseMs, capMs, dependencies.random);
+        const wait = Math.min(capMs, Math.max((retryAfterSeconds ?? 0) * 1000, backoff));
         failures++;
-        timer = dependencies.setTimer(() => void refresh(), wait);
+        retryNotBefore = now() + wait;
+        timer = dependencies.setTimer(() => {
+            retryNotBefore = 0;
+            void refresh();
+        }, wait);
     }
 
     /** Stops the pending refresh, if there is one. */
@@ -504,8 +514,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      */
     function refresh(): Promise<boolean> {
         // A stopped session asks Rock for nothing more, whatever still calls it: an expired call
-        // in flight, or a timer that fired late.
-        if (isStopped) {
+        // in flight, or a timer that fired late. Inside the wait after a failure nothing is asked
+        // either, whoever asks; the wait's own timer asks when it ends.
+        if (isStopped || now() < retryNotBefore) {
             return Promise.resolve(false);
         }
 

@@ -22,6 +22,7 @@
 import {
     computeBackoff,
     createPlatformCall,
+    exchangeChurchToken,
     parseRetryAfter,
     PlatformCallOptions
 } from "../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -263,5 +264,23 @@ describe("callFunction", () => {
 
         expect(result).toMatchObject({ ok: false, error: { code: "auth.expired" } });
         expect(sent).toHaveLength(0);
+    });
+});
+
+describe("exchangeChurchToken", () => {
+    test("a refused exchange carries the wait the platform asked for, read from its Retry-After", async () => {
+        const fetch: PlatformCallOptions["fetch"] = async () => response(503, { error: { code: "rpc.unavailable" } }, { "retry-after": "8" });
+
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", 0);
+
+        expect(answer).toEqual({ ok: false, status: 503, code: "rpc.unavailable", retryAfterSeconds: 8 });
+    });
+
+    test("a refused exchange without a Retry-After carries no wait", async () => {
+        const fetch: PlatformCallOptions["fetch"] = async () => response(503, { error: { code: "rpc.unavailable" } });
+
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", 0);
+
+        expect(answer).toMatchObject({ ok: false, retryAfterSeconds: null });
     });
 });

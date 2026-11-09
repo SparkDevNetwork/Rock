@@ -738,3 +738,108 @@ describe("retrying a refresh that could not complete", () => {
         expect(waits[0]).not.toBe(waits[1]);
     });
 });
+
+// A failed exchange is asked again after the longer of the platform's Retry-After and the growing,
+// jittered wait, never past the cap, and nothing asks before that time: the platform answering 503
+// while it struggles is exactly when every refused call would otherwise start an exchange of its own.
+describe("waiting after a refresh the platform could not serve", () => {
+    /** A session whose exchanges after the first all fail as given, with a clock the test moves. */
+    function failing(failure: ExchangeResult): { f: ReturnType<typeof fakes>, clock: { now: number }, ended: { count: number } } {
+        let exchanges = 0;
+        const clock = { now: 0 };
+        const ended = { count: 0 };
+        const f = fakes({
+            now: () => clock.now,
+            onEnded: () => {
+                ended.count++;
+            },
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 1
+                    ? { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 }
+                    : failure;
+            }
+        });
+        return { f, clock, ended };
+    }
+
+    const unavailable = (retryAfterSeconds: number | null): ExchangeResult => ({ ok: false, status: 503, code: "rpc.unavailable", retryAfterSeconds });
+
+    test("a Retry-After longer than the first backoff is the wait", async () => {
+        const { f } = failing(unavailable(8));
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(8000);
+    });
+
+    test("once the backoff has grown past a short Retry-After, the backoff is the wait", async () => {
+        const { f, clock } = failing(unavailable(2));
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+        for (let i = 0; i < 4; i++) {
+            const timer = f.timers[f.timers.length - 1];
+            clock.now += timer.milliseconds;
+            timer.callback();
+            await settle();
+        }
+
+        // The fifth failure's ceiling is 16 s from the 1 s base, and the random draw sits at its middle.
+        expect(f.timers.slice(-5).map(t => t.milliseconds)).toEqual([2000, 2000, 3000, 6000, 12000]);
+    });
+
+    test("a Retry-After past the cap waits the cap", async () => {
+        const { f } = failing(unavailable(99999));
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(30000);
+    });
+
+    test("a call refused as expired inside the wait does not mint or exchange", async () => {
+        const { f, clock } = failing(unavailable(8));
+        const session = createSession(f.dependencies);
+        await session.start();
+        await session.refresh();
+        const mints = f.mints;
+        const exchanges = f.exchanges.length;
+
+        clock.now += 7999;
+        const result = await session.withFreshToken(async () => "expired", r => r === "expired");
+        expect(await session.refresh()).toBe(false);
+
+        expect(result).toBe("expired");
+        expect([f.mints, f.exchanges.length]).toEqual([mints, exchanges]);
+
+        // The wait's own timer asks again when it ends.
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+        expect(f.mints).toBe(mints + 1);
+    });
+
+    test("a run of failures keeps the live token until it expires, then ends the session once", async () => {
+        const { f, clock, ended } = failing(unavailable(8));
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        clock.now = 150_000;
+        await session.refresh();
+        while (clock.now < 300_000) {
+            expect(session.currentToken()).toBe("platform-for-church-1");
+            const timer = f.timers[f.timers.length - 1];
+            clock.now += timer.milliseconds;
+            timer.callback();
+            await settle();
+        }
+
+        expect(session.currentToken()).toBeNull();
+        expect(ended.count).toBe(1);
+        expect(f.timers.filter(t => !t.cleared)).toHaveLength(0);
+    });
+});
