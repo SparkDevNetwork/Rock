@@ -77,7 +77,7 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addHtmlValue("Streak Type", props.modelValue?.streakType?.text ?? "");
+        valueBuilder.addTextValue("Streak Type", props.modelValue?.streakType?.text ?? "");
         valueBuilder.addTextValue("Enrollment Date", `${RockDateTime.parseISO(props.modelValue.enrollmentDate ?? "")?.toASPString("d") ?? ""}`);
         if (props.modelValue?.location?.text) {
             valueBuilder.addTextValue("Location", props.modelValue.location.text);
