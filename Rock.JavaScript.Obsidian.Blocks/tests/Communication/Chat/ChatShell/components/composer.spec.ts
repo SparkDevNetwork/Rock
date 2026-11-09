@@ -314,7 +314,9 @@ describe("the composer's typing line", () => {
     // height in the composer and the composer and the feed above it never move. Its text starts
     // where the foot's does, at the composer's inset plus the foot's own, in every kind of composer.
     // The surface behind it hides rows scrolled under it, and it takes a press rather than passing
-    // it to a row the person cannot see.
+    // it to a row the person cannot see. It stops at the composer's inset on the right, short of the
+    // scrollbar of the feed or panel above, so it never covers the bar's arrow or thumb, and it cuts
+    // a line too long for it at its own box.
     test("is a band on the composer's top edge that takes no space, its text at the foot's inset", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
@@ -324,8 +326,9 @@ describe("the composer's typing line", () => {
         expect(rule(".chat-composer-typing")).toMatch(/position: absolute;/);
         expect(rule(".chat-composer-typing")).toMatch(/bottom: 100%;/);
         expect(rule(".chat-composer-typing")).toMatch(/left: 0;/);
-        expect(rule(".chat-composer-typing")).toMatch(/right: 0;/);
+        expect(rule(".chat-composer-typing")).toMatch(/right: var\(--chat-composer-inset\);/);
         expect(rule(".chat-composer-typing")).toMatch(/height: 16px;/);
+        expect(rule(".chat-composer-typing")).toMatch(/overflow: hidden;/);
         expect(rule(".chat-composer-typing")).toMatch(/background: linear-gradient\(to bottom, transparent, var\(--chat-surface\) 4px\);/);
         expect(rule(".chat-composer-typing")).not.toMatch(/flex: 1 1 0/);
         expect(rule(".chat-composer-typing")).not.toMatch(/pointer-events/);
@@ -336,7 +339,7 @@ describe("the composer's typing line", () => {
         expect(rule(".chat-composer.is-phone")).toMatch(/--chat-composer-inset: 10px;/);
         expect(rule(".chat-composer")).toMatch(/padding: 0 var\(--chat-composer-inset\) 14px;/);
         expect(rule(".chat-composer-foot")).toMatch(/padding: 0 14px;/);
-        expect(rule(".chat-composer-typing")).toMatch(/padding: 0 calc\(var\(--chat-composer-inset\) \+ 14px\);/);
+        expect(rule(".chat-composer-typing")).toMatch(/padding: 0 14px 0 calc\(var\(--chat-composer-inset\) \+ 14px\);/);
     });
 
     // The foot holds no typing rule at all: it is back to what it drew before typing was shown.
