@@ -246,6 +246,14 @@ describe("the typing bubble's motion", () => {
         expect(style).toMatch(/\.chat-typing\.is-gone\s*\{[^}]*grid-template-rows: 0fr;[^}]*margin-top: 0;/);
     });
 
+    // Stopping in her run, her last message takes the run's face back in the same draw, so the
+    // bubble settling away shows none and her face is never drawn twice.
+    test("in her run, its face is hidden at once as it settles away", () => {
+        expect(draw({ typing: annaTyping, isInRun: true }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
+        expect(draw({ typing: twoTyping }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
+        expect(style).toMatch(/\.chat-typing\.is-in-run\.is-leaving \.chat-typing-face\s*\{[^}]*visibility: hidden;/);
+    });
+
     // The bubble's layout is its own: nothing the feed or the thread draws is on it, so no sheet's
     // order can turn its grid into another box. It reads the group measures they state for their
     // groups, so it stands where a group or a row of her run would.

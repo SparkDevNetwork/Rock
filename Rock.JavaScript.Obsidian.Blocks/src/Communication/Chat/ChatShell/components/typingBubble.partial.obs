@@ -11,8 +11,8 @@
             <div class="chat-typing-in">
                 <div v-if="isGroup && !isInRun" class="chat-typing-names" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
                 <div class="chat-typing-line" aria-hidden="true">
-                    <Avatar v-if="faces.length === 1" :people="faces" :size="34" />
-                    <GroupFace v-else :people="faces" :size="34" />
+                    <Avatar v-if="faces.length === 1" class="chat-typing-face" :people="faces" :size="34" />
+                    <GroupFace v-else class="chat-typing-face" :people="faces" :size="34" />
                     <span class="chat-typing-bubble" data-testid="typing-dots"><i></i><i></i><i></i></span>
                 </div>
                 <span class="chat-sr-only">{{ typing.sentence }}</span>
@@ -118,6 +118,11 @@
 
 .chat-typing.is-leaving .chat-typing-in {
     overflow: hidden;
+}
+
+/* Stopping in her run, her last message takes the run's face back in the same draw, so the bubble settling away shows none. */
+.chat-typing.is-in-run.is-leaving .chat-typing-face {
+    visibility: hidden;
 }
 
 .chat-typing.is-gone {
