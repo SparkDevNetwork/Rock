@@ -151,7 +151,18 @@ namespace Rock.Drawing
         ///   <c>true</c> if the current user is authorized; otherwise, <c>false</c>.</returns>
         private static Boolean IsAuthorized( BinaryFile binaryFile )
         {
-            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false )
+            /*
+                11/02/2026 - MSE
+
+                A parent record decides first, the same as GetFile.ashx. Only a file without a parent
+                that can be checked falls back to the file type, and the type's view security flag is
+                honored at that point instead of before the parent is looked at.
+
+                Reason: The type flag used to skip the parent check, so a denying parent was ignored.
+            */
+            // Most photos have no parent record, so skip every query when the file type has no view security.
+            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false
+                && !( binaryFile.ParentEntityTypeId.HasValue && binaryFile.ParentEntityId.HasValue ) )
             {
                 return true;
             }
@@ -160,17 +171,18 @@ namespace Rock.Drawing
             Person currentPerson = currentUser?.Person;
             var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-            // If no parent entity is specified then check if there is security on the BinaryFileType
-            if ( parentEntityAllowsView == null )
+            // A parent record decides first, the same as GetFile.ashx.
+            if ( parentEntityAllowsView.HasValue )
             {
-                if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    return false;
-                }
+                return parentEntityAllowsView.Value;
             }
 
-            // Check if there is parent security and use it if it exists, otherwise return true.
-            return parentEntityAllowsView ?? true;
+            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false )
+            {
+                return true;
+            }
+
+            return binaryFile.IsAuthorized( Authorization.VIEW, currentPerson );
         }
     }
 }
