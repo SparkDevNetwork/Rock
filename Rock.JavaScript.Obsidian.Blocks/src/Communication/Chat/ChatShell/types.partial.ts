@@ -602,10 +602,14 @@ export type FollowThreadAnswer = {
     read_cursor: number | null;
 };
 
-/** What chat_mark_thread_read returns: the position as stored, and the thread's last reply. */
+/**
+ * What chat_mark_thread_read returns: the position as stored, the thread's last reply, and the
+ * root's bold for the reader as every page reads it (null when it has no live reply).
+ */
 export type MarkThreadReadAnswer = {
     read_cursor: number | null;
     last_reply_id: number | null;
+    thread_unread: boolean | null;
 };
 
 /** What chat_send_message returns: the stored message, and the server's sentence about it. */

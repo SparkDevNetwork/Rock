@@ -1041,6 +1041,30 @@ describe("the thread's read position", () => {
 
         expect(callsTo("chat_mark_thread_read")).toEqual([]);
     });
+
+    /** Leaves root 40, held in the conversation, with 42 seen, and the save answering the given bold. */
+    async function leftWith(threadUnread: boolean): Promise<Record<string, unknown>> {
+        const { threads, timelines, answers } = await setup({ messages: [root(40)], read_cursor: null, unread_count: 0, has_more: false });
+        answers.chat_get_thread_history = [threadAnswer(root(40), [reply(43, 40), reply(42, 40), reply(41, 40)], { read_cursor: 41 })];
+        await threads.openThread(channel, 40);
+        threads.seen(42);
+        answers.chat_mark_thread_read = [{ ok: true, data: { read_cursor: 42, last_reply_id: 43, thread_unread: threadUnread } }];
+
+        await threads.closeThread();
+        await settle();
+
+        return timelineRoot(timelines, 40);
+    }
+
+    // The newest reply, 43, is above the saved place in both; only the platform knows whether it is
+    // by someone the reader blocked, so the root takes the bold it answers.
+    test("leaves the root read when the platform answers it read, though a newer reply is stored", async () => {
+        expect((await leftWith(false)).thread_unread).toBe(false);
+    });
+
+    test("leaves the root bold when the platform answers it bold", async () => {
+        expect((await leftWith(true)).thread_unread).toBe(true);
+    });
 });
 
 describe("thread.updated", () => {

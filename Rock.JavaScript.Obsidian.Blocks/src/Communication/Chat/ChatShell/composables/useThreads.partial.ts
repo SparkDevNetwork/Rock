@@ -626,9 +626,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     /** Puts the thread's saved position on its root in the conversation. */
     function applySaved(channelId: string, rootId: number, answer: Partial<MarkThreadReadAnswer>): void {
         const root = timelineRoot(channelId, rootId);
-        if (root && root.thread_following === true && typeof answer.read_cursor === "number" && typeof answer.last_reply_id === "number") {
-            // a reply that landed as the person left keeps the root unread
-            root.thread_unread = answer.last_reply_id > answer.read_cursor;
+        if (root && root.thread_following === true && typeof answer.thread_unread === "boolean") {
+            // A reply that landed as the person left keeps the root unread. The platform answers the
+            // bold by the rule its pages read, since the newest reply may be by someone they blocked.
+            root.thread_unread = answer.thread_unread;
         }
     }
 
