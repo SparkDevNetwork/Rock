@@ -786,8 +786,11 @@ export type TypingEvent = {
     person_alias_guid: string;
     id: string;
 
-    /** The newest message the typist's client held in that place, so a viewer can order the signal against their messages; null for none. */
-    after: number | null;
+    /**
+     * The newest message the typist's client held in that place, so a viewer can order the signal
+     * against their messages; null for none, and left out by a platform older than the ordering.
+     */
+    after?: number | null;
 };
 
 /** A new message on a channel topic. */

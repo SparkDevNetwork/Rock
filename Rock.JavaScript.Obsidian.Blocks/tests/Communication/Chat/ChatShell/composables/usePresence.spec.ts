@@ -477,11 +477,15 @@ describe("the others' signals", () => {
         expect(h.presence.state.typists[group]).toEqual([anna]);
     });
 
-    test("a signal naming no message followed counts as following none", () => {
+    test("a signal naming no message followed, or from a platform that names none, counts as following none", () => {
         const h = build();
         h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: anna });
+        h.presence.messageArrived(group, { id: 12, channel_id: group, parent_id: null, person_alias_guid: sam });
+        const older = signal(sam);
+        delete older.after;
 
         h.presence.heard("typing", signal(anna, { after: null }), group);
+        h.presence.heard("typing", older, group);
 
         expect(h.presence.state.typists[group] ?? []).toEqual([]);
     });
