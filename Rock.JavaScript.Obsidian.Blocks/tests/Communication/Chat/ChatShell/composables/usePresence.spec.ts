@@ -89,6 +89,9 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const newest: Record<string, number | null> = { [group]: 10 };
     // Places whose history may be behind the person, as a send still out leaves one.
     const behind = new Set<string>();
+    // The newest message the client holds from each person in each place, by place key and
+    // lower-case alias, whether a page or a live copy brought it.
+    const sent: Record<string, Record<string, number>> = {};
 
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
@@ -111,6 +114,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         peopleOf: channelId => people[channelId] ?? [],
         newestHeld: (channelId, rootId) => newest[quoteKey(channelId, rootId)] ?? null,
         isBehind: (channelId, rootId) => behind.has(quoteKey(channelId, rootId)),
+        newestFrom: (channelId, rootId, alias) => sent[quoteKey(channelId, rootId)]?.[alias] ?? null,
         personAliasGuid: me,
         isBlocked: alias => blocked.has(alias.toLowerCase()),
         report: code => reports.push(code),
@@ -118,7 +122,20 @@ function build(rawSettings: Record<string, unknown> = {}) {
     };
 
     const presence: Presence = createPresence(dependencies);
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind };
+
+    /** A page or a live copy brings someone's message into the client's history. */
+    function hold(id: number, alias: string, parentId: number | null = null): void {
+        const place = quoteKey(group, parentId);
+        sent[place] = { ...sent[place], [alias.toLowerCase()]: Math.max(sent[place]?.[alias.toLowerCase()] ?? 0, id) };
+    }
+
+    /** A message arrives live: the history takes it, then the presence hears it, as the shell runs them. */
+    function arrive(id: number, alias: string, parentId: number | null = null): void {
+        hold(id, alias, parentId);
+        presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
+    }
+
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, hold, arrive };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -477,15 +494,15 @@ describe("the others' signals", () => {
         h.presence.heard("typing", signal(sam), group);
         h.presence.heard("typing", signal(anna, { parent_id: 40 }), group);
 
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: anna });
+        h.arrive(11, anna);
 
         expect(h.presence.state.typists[group]).toEqual([sam]);
         expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([anna]);
     });
 
-    test("a signal that follows an older message than one of theirs already heard is dropped, as it was sent before that message", () => {
+    test("a signal that follows an older message than one of theirs already held is dropped, as it was sent before that message", () => {
         const h = build();
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: anna });
+        h.arrive(11, anna);
 
         h.presence.heard("typing", signal(anna, { after: 10 }), group);
         expect(h.presence.state.typists[group] ?? []).toEqual([]);
@@ -498,15 +515,15 @@ describe("the others' signals", () => {
         const h = build();
 
         h.presence.heard("typing", signal(anna, { after: 11 }), group);
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: anna });
+        h.arrive(11, anna);
 
         expect(h.presence.state.typists[group]).toEqual([anna]);
     });
 
     test("a signal naming no message followed, or from a platform that names none, counts as following none", () => {
         const h = build();
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: anna });
-        h.presence.messageArrived(group, { id: 12, channel_id: group, parent_id: null, person_alias_guid: sam });
+        h.arrive(11, anna);
+        h.arrive(12, sam);
         const older = signal(sam);
         delete older.after;
 
@@ -542,18 +559,40 @@ describe("the others' signals", () => {
         expect(h.presence.typingIn(quoteKey(group, 40))).toMatchObject({ names: "Anna", sentence: "Anna is typing…" });
     });
 
-    test("a topic joined again forgets every typist and every message heard, since both were missed meanwhile", () => {
+    // Signals missed meanwhile cannot be caught up, so every typist goes; what was sent is the
+    // history's, which a rejoin keeps or pages back in, so a late signal is still judged by it.
+    test("a topic joined again forgets every typist, and a signal sent before a message the history still holds stays dropped", () => {
         const h = build();
         h.presence.heard("typing", signal(anna), group);
         h.presence.heard("typing", signal(sam, { parent_id: 40 }), group);
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: lee });
+        h.arrive(11, lee);
 
         h.presence.joined(group);
         expect(h.presence.state.typists).toEqual({});
         expect(jest.getTimerCount()).toBe(0);
 
         h.presence.heard("typing", signal(lee, { after: 10 }), group);
+        expect(h.presence.state.typists[group] ?? []).toEqual([]);
+        h.presence.heard("typing", signal(lee, { after: 11 }), group);
         expect(h.presence.state.typists[group]).toEqual([lee]);
+    });
+
+    // After a reconnect or a reopen her message comes back in a page, never heard live; a signal
+    // she sent before it, arriving late, would otherwise draw her typing under her own message.
+    test("a signal sent before a message of theirs that a page brought, not a live copy, is dropped", () => {
+        const h = build();
+        h.presence.joined(group);
+        h.hold(100, anna);
+        h.hold(50, sam, 40);
+
+        h.presence.heard("typing", signal(anna, { after: 99 }), group);
+        h.presence.heard("typing", signal(sam, { parent_id: 40, after: 49 }), group);
+        expect(h.presence.state.typists).toEqual({});
+
+        h.presence.heard("typing", signal(anna, { after: 100 }), group);
+        h.presence.heard("typing", signal(sam, { parent_id: 40, after: 50 }), group);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([sam]);
     });
 
     test("someone just blocked leaves the line at once", () => {
@@ -633,7 +672,7 @@ describe("a stopped presence", () => {
         jest.advanceTimersByTime(10000);
         h.presence.typed(group, null, "ab");
         h.presence.heard("typing", signal(sam), group);
-        h.presence.messageArrived(group, { id: 11, channel_id: group, parent_id: null, person_alias_guid: sam });
+        h.arrive(11, sam);
         await settle();
         expect(h.calls).toHaveLength(1);
         expect(h.presence.state.typists).toEqual({});

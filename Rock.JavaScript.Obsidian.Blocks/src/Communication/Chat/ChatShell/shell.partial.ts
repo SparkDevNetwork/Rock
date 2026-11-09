@@ -1069,6 +1069,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const row = channels.rows.find(r => r.channel_id === channelId)?.last_message_id ?? null;
             return newest === null && row === null ? null : Math.max(newest ?? 0, row ?? 0);
         },
+        // A late signal is judged by the typist's newest message held in its place, a conversation's
+        // timeline or the open thread's replies, however it came: a page after a rejoin included.
+        newestFrom: (channelId, rootId, alias) => {
+            const thread = threads.state.thread;
+            const isOpen = rootId !== null && thread?.channelId === channelId && thread.rootId === rootId;
+            const messages = rootId === null ? timelines.state(channelId).messages : isOpen ? thread.replies : [];
+            for (let index = messages.length - 1; index >= 0; index--) {
+                if ((messages[index].person_alias_guid ?? "").toLowerCase() === alias) {
+                    return messages[index].id;
+                }
+            }
+            return null;
+        },
         // what the client holds of a place is behind the person while a send of theirs is out, or
         // while the thread's first page, which may hold a reply of theirs, is on its way
         isBehind: (channelId, rootId) => {

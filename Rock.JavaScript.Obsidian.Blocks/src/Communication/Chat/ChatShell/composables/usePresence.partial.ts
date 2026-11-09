@@ -55,6 +55,12 @@ export type PresenceDependencies = {
     newestHeld: (channelId: string, rootId: number | null) => number | null;
 
     /**
+     * The newest message the client holds from someone in a place, by their lower-case alias,
+     * whether a page or a live copy brought it; a signal naming an older one was sent before it.
+     */
+    newestFrom: (channelId: string, rootId: number | null, alias: string) => number | null;
+
+    /**
      * Whether what the client holds of a place may be behind what the person has written there: a
      * send of theirs still out, or a thread's first page still on its way.
      */
@@ -273,9 +279,6 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     /** The typists held for each place of the open conversation, by lower-case alias. */
     const typists = new Map<string, Map<string, Typist>>();
 
-    /** The newest message heard live from each person in each place, by place and lower-case alias. */
-    const newestHeard = new Map<string, Map<string, number>>();
-
     /** The one timer, set for the soonest expiry. */
     let expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -330,10 +333,9 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
     }
 
-    /** Forgets every typist and message heard, and the timer. */
+    /** Forgets every typist, and the timer. */
     function clear(): void {
         typists.clear();
-        newestHeard.clear();
         changed();
     }
 
@@ -369,11 +371,12 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             return;
         }
 
-        // A signal that names a message older than one of theirs already heard was sent before
-        // that message, however late it arrives; their message ended that typing.
-        const place = quoteKey(channelId, typeof typing?.parent_id === "number" ? typing.parent_id : null);
+        // A signal that names a message older than one of theirs the history holds was sent before
+        // that message, however late it arrives and however the message came; it ended that typing.
+        const rootId = typeof typing?.parent_id === "number" ? typing.parent_id : null;
+        const place = quoteKey(channelId, rootId);
         const after = typeof typing?.after === "number" ? typing.after : 0;
-        if (after < (newestHeard.get(place)?.get(alias) ?? 0)) {
+        if (after < (dependencies.newestFrom(channelId, rootId, alias) ?? 0)) {
             return;
         }
 
@@ -393,12 +396,6 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
 
         const place = quoteKey(channelId, typeof created.parent_id === "number" ? created.parent_id : null);
-        let heardHere = newestHeard.get(place);
-        if (!heardHere) {
-            heardHere = new Map();
-            newestHeard.set(place, heardHere);
-        }
-        heardHere.set(alias, Math.max(heardHere.get(alias) ?? 0, created.id));
 
         // a signal that already follows this message overtook it, and stays
         const typist = typists.get(place)?.get(alias);
@@ -440,7 +437,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         messageArrived,
 
         // Only the open conversation's places are ever held, and its topic joined again means
-        // signals and messages were missed meanwhile.
+        // signals were missed meanwhile; the messages missed are the history's to page back in.
         joined: () => clear(),
 
         remask: () => {

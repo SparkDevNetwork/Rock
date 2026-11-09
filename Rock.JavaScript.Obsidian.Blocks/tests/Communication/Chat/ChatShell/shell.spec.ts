@@ -4675,6 +4675,20 @@ describe("typing", () => {
         expect(h.shell.presence.state.typists[channelA] ?? []).toEqual([]);
     });
 
+    // Her message 10 came in the first page, never live; a signal she sent before it, arriving
+    // late, is still judged by it, as after a reconnect or a reopen.
+    test("a signal sent before the typist's message that a page brought is dropped, and one after it shows", async () => {
+        const h = await typingStarted();
+
+        channelEvent(h, "typing", { ...typing, after: 9 });
+        await settle();
+        expect(h.shell.presence.state.typists[channelA] ?? []).toEqual([]);
+
+        channelEvent(h, "typing", { ...typing, after: 10 });
+        await settle();
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+    });
+
     test("the conversation's topic joined again forgets every typist", async () => {
         const h = await typingStarted();
         channelEvent(h, "typing", typing);
