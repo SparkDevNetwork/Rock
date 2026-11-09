@@ -367,7 +367,7 @@
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { useViewArrivals } from "../messageMotion.partial";
-    import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
+    import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -714,7 +714,13 @@
     const drawnTyping = computed((): Typing | null => props.root ? props.typing : null);
 
     /** The replies as the feed lays out its messages, someone typing among them as their next row. */
-    const repliesLaidOut = computed((): FeedLayoutResult | null => props.root ? layOut(props.replies, pendingReplies.value, drawnTyping.value) : null);
+    // the typing row's run ending changes where the bubble stands, though no input of the layout moves
+    const runEnded = useLayoutAgain(() => repliesLaidOut.value?.typing?.endsAt ?? null);
+
+    const repliesLaidOut = computed((): FeedLayoutResult | null => {
+        void runEnded.value;
+        return props.root ? layOut(props.replies, pendingReplies.value, drawnTyping.value) : null;
+    });
 
     const items = computed((): DrawerItem[] => {
         if (!props.root || !repliesLaidOut.value) {

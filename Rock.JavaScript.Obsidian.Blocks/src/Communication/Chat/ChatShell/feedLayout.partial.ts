@@ -18,7 +18,8 @@
 // where each day starts and what it is called, where the New divider sits, and the words of the
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
-// reason; the feed passes the browser's own.
+// reason; the feed passes the browser's own, and lays out again when a moment the layout names passes.
+import { onScopeDispose, Ref, ref, watchPostEffect } from "vue";
 import { blockedSentence, rowKey, sendKey } from "./heldMessage.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
@@ -112,6 +113,13 @@ export type FeedLayoutOptions = {
  */
 export type TypingRow = {
     isInRun: boolean;
+
+    /**
+     * In her run, the first moment it no longer holds the typing row, in epoch milliseconds: past
+     * her newest message's five minutes, or the day's end if sooner. The layout reads the clock
+     * only as its inputs change, so its owner lays out again then. Null outside her run.
+     */
+    endsAt: number | null;
 };
 
 /** The feed as laid out: its day sections, and the typing row after them while someone types. */
@@ -259,10 +267,13 @@ export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
         const next: Entry = { key: "typing", message: null, pending: null, sender: typists.length === 1 ? typists[0].toLowerCase() : "", at: options.now };
         const isInRun = !!group && !!previous && section?.key === localDayKey(options.now) && next.sender !== "" && next.sender !== me
             && joinsGroup(previous, next, options.layout);
-        if (isInRun && group) {
+        let endsAt: number | null = null;
+        if (isInRun && group && previous) {
             group.rows[group.rows.length - 1].isTypingNext = true;
+            const midnight = new Date(options.now.getFullYear(), options.now.getMonth(), options.now.getDate() + 1).getTime();
+            endsAt = Math.min(previous.at.getTime() + groupWindowMs + 1, midnight);
         }
-        typing = { isInRun };
+        typing = { isInRun, endsAt };
     }
 
     for (const item of sections.flatMap(s => s.items)) {
@@ -272,6 +283,40 @@ export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
     }
 
     return { sections, typing };
+}
+
+/**
+ * A count a feed's layout reads, moved when a moment the last layout named passes, such as the
+ * typing row's run ending: a layout reads the clock only as its inputs change, so without this it
+ * would keep a moment's answer past it. One timer, for the moment named last; stopped with its owner.
+ *
+ * @param at The moment the layout drawn last names, in epoch milliseconds, or null for none.
+ *
+ * @returns The count, for the layout to read.
+ */
+export function useLayoutAgain(at: () => number | null): Ref<number> {
+    const count = ref(0);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    function stop(): void {
+        if (timer !== null) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    }
+
+    // after the draw, so a layout that reads the count can name the moment from the first
+    watchPostEffect(() => {
+        stop();
+        const moment = at();
+        if (moment !== null) {
+            timer = setTimeout(() => count.value++, Math.max(0, moment - Date.now()));
+        }
+    });
+
+    onScopeDispose(stop);
+
+    return count;
 }
 
 /**

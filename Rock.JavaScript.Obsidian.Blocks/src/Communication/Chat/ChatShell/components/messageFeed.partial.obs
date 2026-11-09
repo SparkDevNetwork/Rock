@@ -710,7 +710,7 @@
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
-    import { endSlackPx, FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
+    import { endSlackPx, FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText, useLayoutAgain } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -991,15 +991,21 @@
     /** Who is typing as the feed draws it: no one until the first page is drawn, so nothing types under the skeleton. */
     const drawnTyping = computed((): Typing | null => props.timeline.isLoaded ? props.typing : null);
 
-    const laidOut = computed((): FeedLayoutResult => layoutFeed({
-        messages: props.timeline.messages,
-        pending: channelPending.value,
-        personAliasGuid: props.personAliasGuid,
-        newDividerBeforeId: dividerBeforeId.value,
-        layout: layout.value,
-        now: new Date(),
-        typists: drawnTyping.value?.typists.map(typist => typist.alias) ?? []
-    }));
+    // the typing row's run ending changes where the bubble stands, though no input of the layout moves
+    const runEnded = useLayoutAgain(() => laidOut.value.typing?.endsAt ?? null);
+
+    const laidOut = computed((): FeedLayoutResult => {
+        void runEnded.value;
+        return layoutFeed({
+            messages: props.timeline.messages,
+            pending: channelPending.value,
+            personAliasGuid: props.personAliasGuid,
+            newDividerBeforeId: dividerBeforeId.value,
+            layout: layout.value,
+            now: new Date(),
+            typists: drawnTyping.value?.typists.map(typist => typist.alias) ?? []
+        });
+    });
 
     const sections = computed((): FeedSection[] => laidOut.value.sections);
 

@@ -603,6 +603,21 @@ describe("someone typing a reply", () => {
         }
     });
 
+    test("in her run it is a group of its own once her run's five minutes are over", async () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const w = draw({ isChannel: false, replies: [...replies(3), message(44, { parent_id: 40 })], typing: annaTyping });
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+            jest.advanceTimersByTime(5 * 60 * 1000 + 1);
+            await nextTick();
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("after someone else's reply it is a group of its own", () => {
         jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
         try {

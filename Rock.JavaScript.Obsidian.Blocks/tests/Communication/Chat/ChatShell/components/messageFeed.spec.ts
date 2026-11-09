@@ -1349,6 +1349,22 @@ describe("someone else typing", () => {
         expect(hers.find("[data-testid='sender-name']").exists()).toBe(true);
     });
 
+    // Her message sent after the window starts a group, so the bubble starts one as the window
+    // closes, rather than her message jogging the feed as it lands.
+    test("in her run it starts a group of its own once her run's five minutes are over, and her message gets its face back", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 58))]), typing: annaTyping });
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+        jest.advanceTimersByTime(3 * 60 * 1000);
+        await nextTick();
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        expect(wrapper.get("[data-message-id='1']").attributes("data-position")).toBe("single");
+    });
+
     test("after someone else's message it starts a group of its own, and that message keeps its face", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, ben, at(14, 58))]), typing: annaTyping });
         const bens = wrapper.get("[data-message-id='2']");
