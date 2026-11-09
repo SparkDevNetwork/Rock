@@ -233,7 +233,7 @@
 }
 
 .chat-feed-frame.has-jump {
-    --chat-feed-bottom-mask: 64px;
+    --chat-feed-bottom-mask: 72px;
 }
 
 .chat-feed {
