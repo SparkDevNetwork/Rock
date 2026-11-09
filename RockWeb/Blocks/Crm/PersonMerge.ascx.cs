@@ -221,6 +221,7 @@ namespace RockWeb.Blocks.Crm
                         if ( definedValuePurpose != null )
                         {
                             nbNotAuthorized.Visible = false;
+                            cbShouldNotifyAfterMerge.Visible = true;
                             tbEntitySetNote.Visible = true;
                             btnSaveRequestNote.Visible = true;
 
