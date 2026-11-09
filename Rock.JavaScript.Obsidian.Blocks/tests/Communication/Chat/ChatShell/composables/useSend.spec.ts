@@ -21,6 +21,7 @@ import { mount } from "@vue/test-utils";
 import { defineComponent, reactive } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
 import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { AttachmentItem, ChatErrorSeverity, GifItem, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -785,17 +786,25 @@ describe("a send's identity", () => {
         expect(timelines.state(channel).messages[0].client_key).toBe("local-1");
     });
 
-    test("the session keeps every key it sent under, failed and discarded ones included", async () => {
+    // Which row rises as sent is the record's: every new send is recorded once, a failed and a
+    // discarded one included, and a try of a row already up records nothing more.
+    test("every new send is recorded as sent once, failed and discarded ones included, and a retry records nothing", async () => {
+        const motion = createMessageMotion();
         const { sender } = await setup([
             { ok: true, id: 41, createdAt: "2026-10-14T10:00:00Z" },
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
             { ok: false, error: { code: "rpc.transport", severity: "failed" } }
-        ]);
+        ], undefined, { motion });
 
         await sender.send(channel, "one");
         await sender.send(channel, "two");
+        const recorded = motion.now();
+        await sender.retryAll(["local-2"]);
         sender.discard("local-2");
 
-        expect([...sender.sentKeys]).toEqual(["local-1", "local-2"]);
+        expect(motion.of("k:local-1")?.arrival?.how).toBe("sent");
+        expect(motion.of("k:local-2")?.arrival?.how).toBe("sent");
+        expect(motion.now()).toBe(recorded);
     });
 });
 
@@ -1112,7 +1121,6 @@ describe("a send settles on the first copy of its message", () => {
 
         expect(await h.sender.send(channel, "once", { localId: "Key-1", isLast: true })).toBe(true);
         expect(h.sent.map(s => s.key)).toEqual(["key-1"]);
-        expect(h.sender.sentKeys.has("key-1")).toBe(true);
     });
 
     test("the person's message from another tab, under a key this session never sent, settles nothing", async () => {

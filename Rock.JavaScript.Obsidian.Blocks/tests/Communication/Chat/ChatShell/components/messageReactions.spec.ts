@@ -596,12 +596,16 @@ describe("the full list", () => {
 
 // The page changes a message's reactions in place, as the reactions do on a press, an answer or a
 // live event, so the row tells a change apart by the values it last drew, never by the objects.
+// Which chip moves, and how, is the reaction the row lends as it lands, recorded by the reactions
+// as the reader's own reaction is applied; the chips handed in alone move nothing, as a page that
+// states them again hands them.
 describe("the reader's own change", () => {
     test("pops a chip the reader just added beside others' chips, and only that chip", async () => {
         const held = reactive(message([heart(2)]));
         const w = mountRow({ message: held });
 
         held.reactions!.push(pray(1, true));
+        await w.setProps({ motion: { seq: 1, code: "pray", motion: "pop" } });
         await settle();
 
         const added = chips(w).find(c => c.attributes("data-code") === "pray");
@@ -614,9 +618,30 @@ describe("the reader's own change", () => {
         const w = mountRow({ message: held });
 
         held.reactions!.push(thumbsup(1, true));
+        await w.setProps({ motion: { seq: 1, code: "thumbsup", motion: "pop" } });
         await settle();
 
         expect(chips(w)[0].classes()).toContain("is-popping");
+    });
+
+    test("a chip of the reader's handed in with no reaction landing pops nothing, and a count that only changes rolls nothing", async () => {
+        const held = reactive(message([pray(1)]));
+        const w = mountRow({ message: held });
+
+        held.reactions!.push(thumbsup(1, true));
+        held.reactions![0].count++;
+        held.reactions![0].mine = true;
+        await settle();
+
+        expect(w.findAll(".is-popping")).toHaveLength(0);
+        expect(w.findAll(".is-rolling")).toHaveLength(0);
+    });
+
+    test("a reaction that landed before the chips were drawn plays nothing on them", async () => {
+        const w = mountRow({ message: message([thumbsup(1, true)]), motion: { seq: 1, code: "thumbsup", motion: "pop" } });
+        await settle();
+
+        expect(w.findAll(".is-popping")).toHaveLength(0);
     });
 
     test("rolls the count when the reader joins others' reaction, and pops nothing", async () => {
@@ -625,6 +650,7 @@ describe("the reader's own change", () => {
 
         held.reactions![0].count++;
         held.reactions![0].mine = true;
+        await w.setProps({ motion: { seq: 1, code: "pray", motion: "roll" } });
         await settle();
 
         expect(chips(w)[0].get("[data-testid='reaction-count']").classes()).toContain("is-rolling");

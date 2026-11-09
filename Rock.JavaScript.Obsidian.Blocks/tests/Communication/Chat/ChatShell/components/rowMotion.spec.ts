@@ -27,6 +27,7 @@ import { createTimelines, platformMask } from "../../../../../src/Communication/
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { createReactions } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
 import { createSender, Sender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna, channelId, liveCreated, me, pageRow } from "../messageShapes";
@@ -61,6 +62,7 @@ function wire() {
     const answers: Deferred<SendResult>[] = [];
     let sender: Sender | null = null;
     let keys = 0;
+    const motion = createMessageMotion();
 
     const call = async (name: string): Promise<CallResult> => {
         if (name === "chat_get_thread_history") {
@@ -74,7 +76,8 @@ function wire() {
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => pages.shift() ?? page([]),
         onLanded: message => sender?.landed(message),
-        applyReaction: (id, event, payload) => reactions.applyEvent(id, event, payload)
+        applyReaction: (id, event, payload) => reactions.applyEvent(id, event, payload),
+        motion
     });
     const threads = createThreads({
         call,
@@ -83,7 +86,8 @@ function wire() {
         limits: () => ({ history_page_size: 50, thread_page_size: 25 }),
         onLanded: message => sender?.landed(message),
         mask: platformMask,
-        isBlocked: () => false
+        isBlocked: () => false,
+        motion
     });
     const reactions = createReactions({
         call,
@@ -94,7 +98,8 @@ function wire() {
         favorites: [],
         churchKey: "t",
         maskFaces: people => people,
-        mask: platformMask
+        mask: platformMask,
+        motion
     });
     sender = createSender({
         send: () => {
@@ -105,7 +110,8 @@ function wire() {
         timelines,
         onReplyConfirmed: (id, message) => threads.upsertReply(id, message),
         personAliasGuid: me,
-        newLocalId: () => `k${++keys}`
+        newLocalId: () => `k${++keys}`,
+        motion
     });
 
     function live(event: string, payload: Record<string, unknown>): void {
@@ -119,7 +125,7 @@ function wire() {
         }
     }
 
-    return { pages, threadPages, answers, timelines, threads, reactions, sender: sender as Sender, live, provide: {} as Record<symbol, unknown> };
+    return { pages, threadPages, answers, motion, timelines, threads, reactions, sender: sender as Sender, live, provide: { [messageMotionKey as symbol]: motion } };
 }
 
 type Wired = ReturnType<typeof wire>;
@@ -280,6 +286,185 @@ describe("a room switch and back plays nothing on its rows", () => {
 
         expect(feed.wrapper.find("[data-message-id='2'] .chat-tsum").exists()).toBe(true);
         expect(moving(feed.wrapper)).toEqual([]);
+    });
+});
+
+/** Opens the thread under a root the conversation holds, at a first page, and draws the drawer over it. */
+async function drawThread(w: Wired, root: TimelineMessage, replies: TimelineMessage[]): Promise<VueWrapper> {
+    w.threadPages.push({ root, messages: replies, has_more: false, following: true, read_cursor: replies[replies.length - 1]?.id ?? null, unread_count: 0, rev: 1 });
+    await w.threads.openThread(channelId, root.id);
+    const Host = defineComponent({
+        setup: () => () => w.threads.state.thread?.root
+            ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+            : null
+    });
+    const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
+    await settle();
+    return drawer;
+}
+
+// Each real event, applied by the store that owns it while its row is on screen, plays its motion
+// once, through the same stores and views the quiet cells drive.
+describe("what happens while a row is on screen plays once", () => {
+    test.each([["an edit", "message.edited", { body: "Morning everyone", pieces: null, edited_at: "2026-10-12T14:09:00.000Z" }, true], ["a delete", "message.deleted", { deleted_at: "2026-10-12T14:09:00.000Z" }, false], ["a moderator's hide", "message.visibility", { state: "hidden", notice: "Hidden by a moderator" }, false]] as const)("%s heard live crossfades the row, sliding Edited in only for an edit", async (_kind, event, change, isEdit) => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live(event, { id: 1, channel_id: channelId, ...change, rev: 2 });
+        await settle();
+
+        expect(feed.wrapper.findAll("[data-message-id='1'] .is-crossfading")).toHaveLength(1);
+        expect(feed.wrapper.findAll("[data-message-id='1'] .is-swapping").length > 0).toBe(isEdit);
+    });
+
+    test("a hide and then a show each crossfade", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live("message.visibility", { id: 1, channel_id: channelId, state: "hidden", notice: "Hidden by a moderator", rev: 2 });
+        await settle();
+        expect(feed.wrapper.findAll("[data-message-id='1'] .is-crossfading")).toHaveLength(1);
+        await endMotion(feed.wrapper);
+
+        w.live("message.visibility", { id: 1, channel_id: channelId, state: "visible", notice: null, body: "m1", rev: 3 });
+        await settle();
+        expect(feed.wrapper.findAll("[data-message-id='1'] .is-crossfading")).toHaveLength(1);
+    });
+
+    test("an edit of a root open in the drawer crossfades its row in the conversation and in the drawer, each once", async () => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1, participant_count: 1 });
+        await open(w, [root]);
+        const feed = drawFeed(w);
+        const drawer = await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
+
+        w.live("message.edited", { id: 40, channel_id: channelId, body: "Hike moved", pieces: null, edited_at: "2026-10-12T14:09:00.000Z", rev: 2 });
+        await settle();
+
+        expect(feed.wrapper.findAll("[data-message-id='40'] .is-crossfading")).toHaveLength(1);
+        expect(drawer.findAll(".is-crossfading")).toHaveLength(1);
+    });
+
+    test("an edit of a reply shown only in its thread crossfades its row in the drawer", async () => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1, participant_count: 1 });
+        await open(w, [root]);
+        const drawer = await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
+
+        w.live("message.edited", { id: 41, channel_id: channelId, body: "See you there", pieces: null, edited_at: "2026-10-12T14:09:00.000Z", rev: 2 });
+        await settle();
+
+        expect(drawer.findAll("[data-reply-id='41'] .is-crossfading")).toHaveLength(1);
+    });
+
+    test("someone's message heard live rises once; the same message heard again moves nothing more", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
+        await settle();
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-arriving"]);
+
+        w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
+        await settle();
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-arriving"]);
+    });
+
+    test("a message heard while the first page was still on its way is drawn with that page, not risen", async () => {
+        const w = wire();
+        const feed = drawFeed(w);
+        w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        await settle();
+
+        expect(feed.wrapper.find("[data-message-id='2']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("the person's send rises once as it is sent, and its answer and live copy keep it in the one element", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        const sending = w.sender.send(channelId, "On my way");
+        await settle();
+        const drawn = feed.wrapper.get("[data-testid='pending-row']").element;
+        expect(drawn.classList.contains("is-arriving")).toBe(true);
+
+        // stored now, so it is drawn in today's section beside where its row was
+        const createdAt = new Date().toISOString();
+        w.answers[0].resolve({ ok: true, id: 2, createdAt, notice: null, pieces: null, blocks: null });
+        await sending;
+        w.live("message.created", liveCreated({ id: 2, key: "k1", body: "On my way", createdAt }, 2));
+        await settle();
+
+        expect(feed.wrapper.get("[data-message-id='2']").element).toBe(drawn);
+        expect(feed.wrapper.findAll(".chat-msg.is-arriving")).toHaveLength(1);
+    });
+
+    test("a reply heard live in the open drawer rises there once", async () => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1, participant_count: 1 });
+        await open(w, [root]);
+        const drawer = await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
+
+        w.live("message.created", liveCreated({ id: 42, sender: anna, parentId: 40 }, 2));
+        await settle();
+
+        expect(moving(drawer)).toEqual(["42: chat-msg is-conversational is-message is-arriving"]);
+    });
+
+    test("the reader's press adds a first chip that pops, and joining others' chip rolls it without a pop", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna }, { reactions: [{ ...heart, count: 1, mine: false }] })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        void w.reactions.toggle(channelId, 1, heart);
+        void w.reactions.toggle(channelId, 2, heart);
+        await settle();
+
+        expect(feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
+        expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-chip']").classes()).not.toContain("is-popping");
+        expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-count']").classes()).toContain("is-rolling");
+    });
+
+    test("the reader's own reaction made on another device pops as it is heard; someone else's moves nothing", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live("reaction.added", { message_id: 1, channel_id: channelId, person_alias_guid: me, ...heart, count: 1, reactors: [] });
+        w.live("reaction.added", { message_id: 2, channel_id: channelId, person_alias_guid: anna, ...heart, count: 1, reactors: [] });
+        await settle();
+
+        expect(feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
+        expect(feed.wrapper.findAll("[data-message-id='2'] .is-popping, [data-message-id='2'] .is-rolling")).toHaveLength(0);
+    });
+
+    test("a thread's first reply heard live pops its pill once; its second moves nothing", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+        const counts = (count: number): Record<string, unknown> => ({ root_id: 1, channel_id: channelId, reply_count: count, last_reply_at: "2026-10-12T14:05:00.000Z", participant_count: 1, repliers: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null }] });
+
+        w.live("thread.updated", { ...counts(1), rev: 2 });
+        await settle();
+        expect(feed.wrapper.get("[data-message-id='1'] .chat-tsum").classes()).toContain("is-popping");
+        const started = w.motion.of("k:1")?.thread?.seq;
+
+        w.live("thread.updated", { ...counts(2), rev: 3 });
+        await settle();
+        expect(w.motion.of("k:1")?.thread?.seq).toBe(started);
     });
 });
 

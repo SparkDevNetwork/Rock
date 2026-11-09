@@ -272,6 +272,7 @@
     import { focusQuietly, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { ReactionReader, whoReactedLine } from "../composables/useReactions.partial";
     import { Reaction, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
+    import type { ReactionMotion } from "../messageMotion.partial";
 
     const props = defineProps({
         /** The message, which carries its reactions in the order they are drawn, each with its newest three. */
@@ -314,6 +315,12 @@
         isCardDisabled: {
             type: Boolean,
             default: false
+        },
+
+        /** The reader's own reaction that landed while the row was on screen, newest first; null for none. */
+        motion: {
+            type: Object as PropType<ReactionMotion | null>,
+            default: null
         }
     });
 
@@ -555,24 +562,21 @@
     });
 
     /*
-        Only the reader's own change moves a chip, as the design draws it: a chip the reader just
+        Only the reader's own reaction moves a chip, as the design draws it: a chip the reader just
         added pops in, and the reader joining others rolls the count. Others' changes and the
-        reader taking one away change the number in place.
+        reader taking one away change the number in place. Which it was is recorded as it lands, so
+        a page that states the chips again moves nothing. Not immediate: one that landed before this
+        part was drawn has played, or was never on screen.
     */
-    watch(() => reactions.value.map(({ code, count, mine }) => ({ code, count, mine })), (next, previous) => {
-        // Compared with the values last drawn: the page changes a chip in place, so the chip
-        // itself already holds its new count and mark by the time this runs.
-        const before = new Map(previous.map(reaction => [reaction.code, reaction]));
-
-        for (const reaction of next) {
-            const old = before.get(reaction.code);
-
-            if (!old && reaction.mine) {
-                popping.value = new Set(popping.value).add(reaction.code);
-            }
-            else if (old && reaction.mine && !old.mine && reaction.count > old.count) {
-                rolling.value = new Set(rolling.value).add(reaction.code);
-            }
+    watch(() => props.motion, landed => {
+        if (!landed || !reactions.value.some(reaction => reaction.code === landed.code)) {
+            return;
+        }
+        if (landed.motion === "pop") {
+            popping.value = new Set(popping.value).add(landed.code);
+        }
+        else {
+            rolling.value = new Set(rolling.value).add(landed.code);
         }
     });
 

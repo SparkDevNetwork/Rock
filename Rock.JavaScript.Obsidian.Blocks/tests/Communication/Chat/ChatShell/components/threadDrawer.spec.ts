@@ -57,6 +57,7 @@ import Composer from "../../../../../src/Communication/Chat/ChatShell/components
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -109,9 +110,9 @@ let wrapper: VueWrapper | null = null;
  * A test about an entrance keeps Vue's real Transition, which marks an element entering as a
  * browser plays it.
  */
-function draw(props: Record<string, unknown> = {}, isTransitionKept = false): VueWrapper {
+function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion()): VueWrapper {
     const drawn: VueWrapper = mount(ThreadDrawer, {
-        global: isTransitionKept ? { stubs: { transition: false } } : {},
+        global: { provide: { [messageMotionKey as symbol]: motion }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
         props: {
             draft: { text: "", mentions: [] },
             onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
@@ -230,7 +231,8 @@ describe("the body", () => {
 
 // A reply the person sends is one row from the moment it is sent, as in the conversation: the row
 // still sending and every copy of the reply share the send's key, and a reply this session sent
-// never rises a second time when it is drawn afresh.
+// never rises a second time when it is drawn afresh. What rises is what was sent here or heard live
+// while the drawer was open; a reply a page or a reread brings is simply there.
 describe("the person's own reply", () => {
     const sending = { localId: "k1", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
     const mine = (id: number, key: string): TimelineMessage => message(id, { parent_id: 40, person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Lee", client_key: key });
@@ -249,15 +251,22 @@ describe("the person's own reply", () => {
     test("moved between groups by another person's newer reply, it rises only once; another tab's reply rises", async () => {
         const recent = { created_at: new Date().toISOString() };
         const earlier = { ...mine(45, "k0"), ...recent };
-        const w = draw({ isChannel: false, replies: [earlier], pending: [sending], sentKeys: new Set(["k0", "k1"]) });
+        const motion = createMessageMotion();
+        motion.sent("k0");
+        const w = draw({ isChannel: false, replies: [earlier], pending: [] }, false, motion);
         await afterOpen();
+        motion.sent("k1");
+        await w.setProps({ pending: [sending] });
         expect(w.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
 
         const ben51 = message(51, { parent_id: 40, ...recent });
+        motion.arrived(ben51);
         await w.setProps({ replies: [earlier, ben51] });
         expect(w.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
 
-        await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, { ...mine(52, "another-tab"), ...recent }], pending: [] });
+        const anotherTab = { ...mine(52, "another-tab"), ...recent };
+        motion.arrived(anotherTab);
+        await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, anotherTab], pending: [] });
 
         expect(w.get("[data-reply-id='50']").classes()).not.toContain("is-arriving");
         expect(w.get("[data-reply-id='51']").classes()).toContain("is-arriving");

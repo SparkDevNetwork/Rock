@@ -89,7 +89,7 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key, item.messages[item.messages.length - 1])"
+                                    :isArriving="isRowArriving(item.key)"
                                     :reactionHost="reactionHost"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
                                     @openThread="emit('openThread', $event)"
@@ -103,7 +103,7 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key, item.message)"
+                                    :isArriving="isRowArriving(item.key)"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
                                     :data-message-id="item.message.id"
@@ -126,7 +126,7 @@
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                         :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
-                                        :isArriving="isRowArriving(row.key, row.message)"
+                                        :isArriving="isRowArriving(row.key)"
                                         :isFlashing="!!row.message && row.message.id === flashingId"
                                         :senderNames="senderNames"
                                         :isPreviewing="isPreviewing"
@@ -680,13 +680,14 @@
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
+    import { useMotionScope } from "../messageMotion.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { endSlackPx, FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
-    import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChannelFacts, ChatError, PendingMessage } from "../types.partial";
 
     const props = defineProps({
         timeline: {
@@ -754,12 +755,6 @@
         isCovered: {
             type: Boolean,
             default: false
-        },
-
-        /** Every key this session sent under; a message carrying one already rose as its pending row. */
-        sentKeys: {
-            type: Object as PropType<ReadonlySet<string>>,
-            default: () => new Set<string>()
         },
 
         /** A room the person has not joined, where they may read but not act on a message. */
@@ -904,14 +899,14 @@
     let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * The keys whose row has risen in this feed. A row moved into another group is a new element,
-     * as when someone else's message takes the next id while the person's send is out, and a key
-     * here never rises again. Kept while the feed is open: one short string per message drawn new.
+     * What this feed has drawn new since it mounted: a message sent here or heard arriving live
+     * while it was open rises in once, under its row's key. A row moved into another group is a new
+     * element, as when someone else's message takes the next id while the person's send is out, and
+     * its key never rises again. A message a page, a catch-up or a switch back brings is simply there.
      */
-    const risenKeys = new Set<string>();
+    const arrivals = useMotionScope();
 
-    /** The newest message when the feed first had any; anything newer arrived while it was open. */
-    let newestAtLoad: number | null = null;
+    /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
 
     const announcement = ref("");
@@ -1215,32 +1210,13 @@
     }
 
     /**
-     * Whether a message arrived while the feed was open, so it rises in rather than just being
-     * there. A row reads this once, when it mounts. A send of this session already rose as its
-     * pending row, so its message never rises again, even drawn afresh in another group because
-     * someone else's message took the next id first; the person's message from another tab is
-     * news here and rises like anyone's.
+     * Whether a row rises as it is drawn: the first time its key is drawn after its message was sent
+     * here or heard live. A row reads this once, as it mounts, so the later renders that answer
+     * false leave a row already drawn as it is. The person's message from another tab is news here
+     * and rises like anyone's; one sent here rose as its pending row and never rises again.
      */
-    function isArriving(message: TimelineMessage): boolean {
-        const isSentHere = !!message.client_key && props.sentKeys.has(message.client_key);
-        return newestAtLoad !== null && message.id > newestAtLoad && !isSentHere;
-    }
-
-    /**
-     * Whether a row rises as it is drawn: a send still pending always, a message by the rule
-     * above, and either only the first time its key is drawn. A row reads this once, as it
-     * mounts, so the later renders that answer false leave a row already drawn as it is.
-     */
-    function isRowArriving(key: string, message: TimelineMessage | null): boolean {
-        if (risenKeys.has(key)) {
-            return false;
-        }
-
-        const isNew = message ? isArriving(message) : true;
-        if (isNew) {
-            risenKeys.add(key);
-        }
-        return isNew;
+    function isRowArriving(key: string): boolean {
+        return arrivals?.arrives(key) === "rise";
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
@@ -1290,7 +1266,6 @@
         const previous = newestSeenInTimeline;
         newestSeenInTimeline = newestId();
         if (previous === null) {
-            newestAtLoad ??= newestSeenInTimeline;
             return;
         }
 
@@ -1437,7 +1412,6 @@
         }
 
         newestSeenInTimeline = newestId();
-        newestAtLoad = newestSeenInTimeline;
 
         observeRows();
         if (props.timeline.messages.length > 0) {

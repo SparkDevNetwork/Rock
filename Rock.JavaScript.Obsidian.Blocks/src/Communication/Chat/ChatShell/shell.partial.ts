@@ -27,6 +27,7 @@ import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefus
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
+import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
@@ -235,6 +236,9 @@ export type ChatShell = {
     reveal: PageReveal;
     channels: ChannelStore;
     timelines: Timelines;
+
+    /** What happened to each message's row while it was on screen, which is all its motion plays. */
+    motion: MessageMotion;
 
     /** Tells the platform, a few codes a page load, what this client met and could not handle. */
     problems: ProblemReporter;
@@ -526,6 +530,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal.stop();
         live.stop();
         timelines.stop();
+        motion.stop();
         problems.stop();
         threads.stop();
         messageActions.stop();
@@ -617,6 +622,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return { message: result.error.code, hint: result.error.text, status: result.status };
     }
 
+    // The stores record each live change as they apply it, and the rows and views read it.
+    const motion = createMessageMotion();
+
     const timelines = createTimelines({
         fetchPage: async (channelId, page): Promise<HistoryPage> => {
             const result = await call("chat_get_history", {
@@ -649,7 +657,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // thread's copies are moved as the event arrives.
         applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload),
         // every holder writes through the blocks' mask, made below and called only once running
-        mask: message => blocks.mask(message)
+        mask: message => blocks.mask(message),
+        motion
     });
 
     // The sidebar's reads are the live part's, made below and reached only once running.
@@ -705,7 +714,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onLanded: message => sender.landed(message),
         isOffline: () => state.connection !== null,
         mask: message => blocks.mask(message),
-        isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid)
+        isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid),
+        motion
     });
 
     /**
@@ -742,7 +752,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         churchKey: tenantId,
         storage: options.storage,
         maskFaces: people => blocks.maskFaces(people),
-        mask: message => blocks.mask(message)
+        mask: message => blocks.mask(message),
+        motion
     });
 
     const mentions = createMentions({
@@ -918,6 +929,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
         newLocalId,
+        motion,
         isOffline: () => state.connection !== null,
         roomKind: roomKindOf,
         onRoomRefused: (channelId, error) => channels.applyPosting(channelId, {
@@ -1108,6 +1120,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal,
         channels,
         timelines,
+        motion,
         problems,
         sender,
         directMessages,
@@ -1305,6 +1318,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isPushOffered = false;
             live.stop();
             timelines.stop();
+            motion.stop();
             problems.stop();
             sender.stop();
             directMessages.stop();

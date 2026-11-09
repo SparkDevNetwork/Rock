@@ -19,7 +19,7 @@
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
 // reason; the feed passes the browser's own.
-import { blockedSentence, sendKey } from "./composables/useHistory.partial";
+import { blockedSentence, rowKey, sendKey } from "./composables/useHistory.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
 /** Messages from one sender this close together share a group. */
@@ -356,18 +356,6 @@ export function unreadStripText(count: number, since: Date, locale?: string): st
  */
 export function jumpLabel(newCount: number): string {
     return newCount > 0 ? newMessagesText(newCount) : "Jump to latest";
-}
-
-/**
- * The key a message's row is drawn under: its send's key when it has one, which its pending row
- * was drawn under too, else its id. A send key is a UUID and an id a number, so the two never meet.
- *
- * @param message The message.
- *
- * @returns The row's key.
- */
-function rowKey(message: TimelineMessage): string {
-    return `k:${sendKey(message.client_key) ?? message.id}`;
 }
 
 /** Whether a message is laid out in blocks, which draws it as a card of its own. */

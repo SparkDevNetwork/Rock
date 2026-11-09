@@ -20,12 +20,16 @@
 import {
     applyMessageChange,
     createTimelines,
+    holdMessage,
+    keptAsStated,
     messageDisplay,
+    newMessageState,
     platformMask
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna, channelId as shapesChannel, liveCreated, pageRow, sendAnswer } from "../messageShapes";
+import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 
@@ -60,6 +64,13 @@ function deferred<T>(): Deferred<T> {
 /** A page of the platform's own rows, newest first as it answers. */
 function pageOf(rows: TimelineMessage[]): HistoryPage {
     return { messages: [...rows].reverse(), read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false, rev: 1 };
+}
+
+/** Lets every promise the stores started settle. */
+async function flushPromisesOf(): Promise<void> {
+    for (let i = 0; i < 10; i++) {
+        await Promise.resolve();
+    }
 }
 
 function ids(messages: TimelineMessage[]): number[] {
@@ -2880,5 +2891,76 @@ describe("one shape for every copy of a message", () => {
         await timelines.loadNewest(shapesChannel);
 
         expect(stateOf(timelines.state(shapesChannel).messages[1])).toEqual(before);
+    });
+
+    test("every key a page row states is either a state field a new message has, or one a copy keeps as stated, never both", () => {
+        const stated = Object.keys(pageRow({ id: 1 })).sort();
+        const classed = [...Object.keys(newMessageState), ...keptAsStated].sort();
+
+        expect(classed).toEqual(stated);
+    });
+
+    test("each of the three shapes alone is held with the same state as a page states it", async () => {
+        const shapes = [await sendAnswer({ id: 2, key: "k1" }), liveCreated({ id: 2, key: "k1" }), pageRow({ id: 2, key: "k1" })];
+
+        const held = shapes.map(shape => stateOf(holdMessage(undefined, shape, platformMask)));
+
+        expect(held[0]).toEqual(stateOf(pageRow({ id: 2 })));
+        expect(held[1]).toEqual(held[0]);
+        expect(held[2]).toEqual(held[0]);
+    });
+
+    test("a copy's chips are its own list, so a change to one copy's chips moves no other", () => {
+        const first = holdMessage(undefined, liveCreated({ id: 2 }), platformMask);
+        const second = holdMessage(undefined, liveCreated({ id: 2 }), platformMask);
+
+        first.reactions?.push({ code: "heart", count: 1, mine: true, emoji: null, image_url: null, label: "Heart" });
+
+        expect(second.reactions).toEqual([]);
+    });
+
+    test("the send's answer landing after a moderator hid the message keeps it hidden, in the timeline and in the open thread", async () => {
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => pageOf([pageRow({ id: 40, sender: anna }, { reply_count: 1 })]) });
+        await timelines.loadNewest(shapesChannel);
+        const threadPage = { root: pageRow({ id: 40, sender: anna }, { reply_count: 1 }), messages: [], has_more: false, following: true, read_cursor: null, unread_count: 0, rev: 1 };
+        const threads = createThreads({ call: async () => ({ ok: true, data: threadPage }) as never, timelines, personAliasGuid: anna, limits: () => ({ history_page_size: 50, thread_page_size: 25 }), mask: platformMask, isBlocked: () => false });
+        await threads.openThread(shapesChannel, 40);
+        timelines.applyEvent(shapesChannel, "message.created", liveCreated({ id: 2, key: "k1" }));
+        threads.applyEvent(shapesChannel, "message.created", liveCreated({ id: 41, key: "k2", parentId: 40 }));
+        const hidden = (id: number): Record<string, unknown> => ({ id, channel_id: shapesChannel, state: "hidden", notice: "Hidden by a moderator", rev: 3 });
+        timelines.applyEvent(shapesChannel, "message.visibility", hidden(2));
+        threads.applyEvent(shapesChannel, "message.visibility", hidden(41));
+
+        timelines.upsert(shapesChannel, await sendAnswer({ id: 2, key: "k1" }));
+        threads.upsertReply(shapesChannel, await sendAnswer({ id: 41, key: "k2", parentId: 40 }));
+
+        expect(timelines.state(shapesChannel).messages.find(m => m.id === 2)).toMatchObject({ visibility: "hidden", body: null });
+        expect(threads.state.thread?.replies.find(m => m.id === 41)).toMatchObject({ visibility: "hidden", body: null });
+    });
+
+    test("every way a copy enters the threads is held in the one shape", async () => {
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => pageOf([pageRow({ id: 40, sender: anna }, { reply_count: 1 })]) });
+        await timelines.loadNewest(shapesChannel);
+        const reply = (id: number): Record<string, unknown> => ({ ...liveCreated({ id, sender: anna, parentId: 40 }) });
+        const held = (): TimelineMessage[] => [threads.state.thread?.root as TimelineMessage, ...threads.state.thread?.replies ?? []];
+        const pages = [
+            { root: liveCreated({ id: 40, sender: anna }), messages: [reply(41)], has_more: true, following: true, read_cursor: null, unread_count: 0, rev: 1 },
+            { root: liveCreated({ id: 40, sender: anna }), messages: [reply(39)], has_more: false, following: true, read_cursor: null, unread_count: 0, rev: 1 },
+            { root: liveCreated({ id: 40, sender: anna }), messages: [reply(39), reply(41)], has_more: false, following: true, read_cursor: null, unread_count: 0, rev: 2 }
+        ];
+        const threads = createThreads({ call: async () => ({ ok: true, data: pages.shift() }) as never, timelines, personAliasGuid: anna, limits: () => ({ history_page_size: 50, thread_page_size: 25 }), mask: platformMask, isBlocked: () => false });
+        // every state field stated, whatever path brought the copy
+        const unstated = (): unknown[] => held().flatMap(stateOf).filter(value => value === undefined);
+
+        await threads.openThread(shapesChannel, 40);
+        await threads.loadOlderReplies();
+        threads.applyEvent(shapesChannel, "message.created", reply(42));
+        threads.upsertReply(shapesChannel, await sendAnswer({ id: 43, key: "k3", parentId: 40 }));
+        expect(held()).toHaveLength(5);
+        expect(unstated()).toEqual([]);
+
+        threads.repair(shapesChannel);
+        await flushPromisesOf();
+        expect(unstated()).toEqual([]);
     });
 });

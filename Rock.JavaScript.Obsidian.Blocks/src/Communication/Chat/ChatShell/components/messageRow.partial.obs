@@ -342,6 +342,8 @@
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
+    import { rowKey, sendKey } from "../composables/useHistory.partial";
+    import { useRowMotion } from "../messageMotion.partial";
     import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -520,11 +522,6 @@
 
     const columnBar = useColumnActionBar();
 
-    const isCrossfading = ref(false);
-
-    /** An edit landed while the row was on screen, so its "Edited" slides in once. */
-    const isEditedNow = ref(false);
-
     const isSheetOpen = ref(false);
 
     /**
@@ -542,12 +539,12 @@
     const isArrivalDrawn = props.isArriving;
 
     /**
-     * Whether this row's thread started while the row was on screen: its first reply arrived
-     * live. Read from the thread appearing, not from when the summary mounts, since a page opened
-     * straight onto a conversation redraws its rows in the conversation's look once its kind is
-     * known, and a thread that was there all along must not pop then.
+     * The row's own motion, each played only for what the stores recorded happening to its message
+     * since the row mounted: an edit, a delete or a hide crossfades, a thread's first reply pops its
+     * pill, the reader's own reaction pops or rolls its chip. A page, a re-read or a remount that only
+     * states the message again plays none of them, whatever it changes.
      */
-    const isThreadStartedHere = ref(false);
+    const { isCrossfading, isEditedNow, isThreadStartedHere, reaction } = useRowMotion(() => props.pending ? `k:${sendKey(props.pending.localId)}` : props.message ? rowKey(props.message) : null);
 
     // #endregion Values
 
@@ -650,7 +647,8 @@
         isPhone: isTouchLayout.value,
         reader: { personAliasGuid: props.personAliasGuid, name: props.personName, photoUrl: props.personPhotoUrl },
         listReactors,
-        isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id)
+        isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id),
+        motion: reaction.value
     }));
 
     const rootClasses = computed((): Record<string, boolean> => ({
@@ -799,14 +797,6 @@
 
     // #region Watchers
 
-    // An edit, a delete or a moderator's hide replaces what the bubble holds, so it crossfades.
-    watch(() => [props.message?.edited_at, props.message?.deleted_at, props.message?.visibility], (now, before) => {
-        if (before && now.some((value, index) => value !== before[index])) {
-            isCrossfading.value = true;
-            isEditedNow.value = !!now[0] && now[0] !== before[0];
-        }
-    });
-
     // The row lends the column's bar its dock while its message offers one, and takes it back as
     // the message stops offering it or the row goes.
     watch([isBarOffered, barDock, () => props.message?.id], ([isOffered, element, messageId], _before, onCleanup) => {
@@ -818,13 +808,6 @@
         columnBar.offer(messageId, dock);
         onCleanup(() => columnBar.withdraw(messageId, dock));
     }, { immediate: true, flush: "post" });
-
-    // Not immediate, so a thread already there when the row draws is not taken for a new one.
-    watch(hasThread, (now, before) => {
-        if (now && !before) {
-            isThreadStartedHere.value = true;
-        }
-    });
 
     // #endregion Watchers
 </script>

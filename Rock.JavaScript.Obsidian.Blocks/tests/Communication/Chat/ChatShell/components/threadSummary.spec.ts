@@ -39,6 +39,7 @@ import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import ThreadSummary from "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 
@@ -260,11 +261,24 @@ describe("in the message row", () => {
     // A thread that starts while the reader watches pops in; one already there when the
     // conversation draws does not, or a page load would pop every thread at once.
     test.each([["a direct message", false], ["a channel", true]] as const)("a root's first reply pops its thread in %s", async (_kind, isChannel) => {
-        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root({ reply_count: 0, last_reply_at: null, repliers: null }), isChannel, position: "single" } });
+        const motion = createMessageMotion();
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root({ reply_count: 0, last_reply_at: null, repliers: null }), isChannel, position: "single" }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+
+        const replied = root({ reply_count: 1, repliers: fivePeople.slice(0, 1) });
+        motion.threadStarted(replied);
+        await row.setProps({ message: replied });
+
+        expect(row.get("[data-testid='thread-summary']").classes()).toContain("is-popping");
+    });
+
+    // A copy handed in with a thread, as a page read again brings one begun while the reader was
+    // away, is not a thread starting: the pill is simply there.
+    test.each([["a direct message", false], ["a channel", true]] as const)("a thread a copy only states does not pop in %s", async (_kind, isChannel) => {
+        const row = mount(MessageRow, { props: { personAliasGuid: me, message: root({ reply_count: 0, last_reply_at: null, repliers: null }), isChannel, position: "single" }, global: { provide: { [messageMotionKey as symbol]: createMessageMotion() } } });
 
         await row.setProps({ message: root({ reply_count: 1, repliers: fivePeople.slice(0, 1) }) });
 
-        expect(row.get("[data-testid='thread-summary']").classes()).toContain("is-popping");
+        expect(row.get("[data-testid='thread-summary']").classes()).not.toContain("is-popping");
     });
 
     test.each([["a direct message", false], ["a channel", true]] as const)("a thread already there when the row draws does not pop in %s", (_kind, isChannel) => {

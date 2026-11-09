@@ -126,7 +126,7 @@
                                 :position="row.position"
                                 :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
-                                :isArriving="isRowArriving(row.key, row.message)"
+                                :isArriving="isRowArriving(row.key)"
                                 :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                 :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
                                 :senderNames="senderNames"
@@ -350,6 +350,7 @@
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
+    import { useMotionScope } from "../messageMotion.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -512,12 +513,6 @@
             default: null
         },
 
-        /** Every key this session sent under; a reply carrying one already rose as its pending row. */
-        sentKeys: {
-            type: Object as PropType<ReadonlySet<string>>,
-            default: () => new Set<string>()
-        },
-
         /** The reply this thread's composer holds, as its owner keeps it for the thread. */
         draft: {
             type: Object as PropType<ComposerDraft>,
@@ -641,11 +636,11 @@
     let topObserver: IntersectionObserver | null = null;
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** The newest reply when the thread was placed; anything newer arrived while it was open and rises in. */
-    let newestAtOpen: number | null = null;
-
-    /** The keys whose row has risen here, so a reply moved into another group does not rise again. */
-    const risenKeys = new Set<string>();
+    /**
+     * What this drawer has drawn new since it opened: a reply sent here or heard arriving live rises
+     * in once, as in the conversation; a reply its page or a reread brings is simply there.
+     */
+    const arrivals = useMotionScope();
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
@@ -809,30 +804,9 @@
         }
     }
 
-    /**
-     * Whether a reply arrived while the thread was open, so it rises in; read once, as its row
-     * mounts. A reply this session sent rose as its pending row, so drawn afresh it does not rise
-     * again, as in the conversation.
-     */
-    function isArriving(message: TimelineMessage): boolean {
-        const isSentHere = !!message.client_key && props.sentKeys.has(message.client_key);
-        return newestAtOpen !== null && message.id > newestAtOpen && !isSentHere;
-    }
-
-    /**
-     * Whether a row rises as it is drawn: a reply still pending always, a stored one by the rule
-     * above, and either only the first time its key is drawn, as in the conversation.
-     */
-    function isRowArriving(key: string, message: TimelineMessage | null): boolean {
-        if (risenKeys.has(key)) {
-            return false;
-        }
-
-        const isNew = message ? isArriving(message) : true;
-        if (isNew) {
-            risenKeys.add(key);
-        }
-        return isNew;
+    /** Whether a row rises as it is drawn, read once as it mounts: the first time its key is drawn after it was sent here or heard live. */
+    function isRowArriving(key: string): boolean {
+        return arrivals?.arrives(key) === "rise";
     }
 
     function newestReplyId(): number | null {
@@ -845,7 +819,6 @@
             return;
         }
 
-        newestAtOpen = newestReplyId() ?? props.root.id;
         await nextTick();
         scrollToBottom();
         observeRows();

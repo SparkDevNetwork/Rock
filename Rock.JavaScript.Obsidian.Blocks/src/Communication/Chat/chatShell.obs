@@ -120,7 +120,6 @@
                                  :key="activeChannelId"
                                  :timeline="shell.timelines.state(activeChannelId)"
                                  :pending="shell.sender.pending(activeChannelId)"
-                                 :sentKeys="shell.sender.sentKeys"
                                  :personAliasGuid="personAliasGuid"
                                  :personName="personName"
                                  :personPhotoUrl="personPhotoUrl"
@@ -338,7 +337,6 @@
                                   :replies="drawnThread.replies"
                                   :pending="shell.sender.pending(drawnThread.channelId)"
                                   :lastFailure="shell.sender.lastFailure()"
-                                  :sentKeys="shell.sender.sentKeys"
                                   :isFollowing="drawnThread.following"
                                   :followError="drawerFollowError"
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
@@ -746,6 +744,7 @@
     import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
     import { gifsKey } from "./ChatShell/composables/useGifs.partial";
     import { problemReportKey } from "./ChatShell/problemReport.partial";
+    import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
@@ -837,6 +836,20 @@
         isOn: () => shell.value.gifs.isOn(),
         search: (query, page, signal) => shell.value.gifs.search(query, page, signal),
         turnOff: () => shell.value.gifs.turnOff()
+    });
+
+    // Every row and view reads what happened to its messages through this, from whichever shell is
+    // current, so a row drawn after the shell is built again never reads a record that has stopped.
+    provide(messageMotionKey, {
+        sent: localId => shell.value.motion.sent(localId),
+        arrived: message => shell.value.motion.arrived(message),
+        changed: (message, event) => shell.value.motion.changed(message, event),
+        reacted: (message, code, motion) => shell.value.motion.reacted(message, code, motion),
+        threadStarted: root => shell.value.motion.threadStarted(root),
+        now: () => shell.value.motion.now(),
+        of: key => shell.value.motion.of(key),
+        scope: () => shell.value.motion.scope(),
+        stop: () => shell.value.motion.stop()
     });
 
     // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.

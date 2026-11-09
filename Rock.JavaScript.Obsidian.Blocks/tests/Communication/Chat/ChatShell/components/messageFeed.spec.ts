@@ -32,6 +32,7 @@ import ActionBar from "../../../../../src/Communication/Chat/ChatShell/component
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -309,8 +310,8 @@ describe("the timeline", () => {
 
 // A person's own message is one thing on the page from the moment it is sent: the row still sending
 // and every copy of the message share the send's key, and the feed keys its rows by it. A message
-// newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
-// pending row already rose; a copy drawn afresh in another group does not rise a second time.
+// sent here or heard arriving live while the feed is open rises in as it is drawn, once: a send's
+// pending row rose, so none of its copies rises again, even drawn afresh in another group.
 // A conversation opened in place of another enters, as the switch's one motion; the first one
 // the block draws is simply there when its page is already held. Decided as the feed mounts and
 // never again, so nothing a redraw changes can replay it. A feed that mounts before its first
@@ -493,12 +494,16 @@ describe("the person's own message is one row from send to stored", () => {
     // person's group to below hers, and the stored copy then moves back above it: each time into
     // another group, which is a new element, and neither rises a second time.
     test("moved between groups by another person's newer message, the person's own send rises only once", async () => {
+        const motion = createMessageMotion();
         const state = timeline([message(1, me, at(14, 58))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
-        await nextTick();
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        motion.sent("k1");
+        await wrapper.setProps({ pending: [pendingRow("k1")] });
         expect(wrapper.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
 
-        state.messages.push(message(3, anna, at(15, 0)));
+        const annas = message(3, anna, at(15, 0));
+        motion.arrived(annas);
+        state.messages.push(annas);
         await nextTick();
         expect(wrapper.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
         expect(wrapper.get("[data-message-id='3']").classes()).toContain("is-arriving");
@@ -512,14 +517,33 @@ describe("the person's own message is one row from send to stored", () => {
     });
 
     test("the person's message sent from another tab is news here, and rises in", async () => {
+        const motion = createMessageMotion();
+        motion.sent("k1");
         const state = timeline([message(1, anna, at(14, 50))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
         await nextTick();
 
-        state.messages.push(message(2, me, at(15, 0), { client_key: "from-another-tab" }));
+        const fromAnotherTab = message(2, me, at(15, 0), { client_key: "from-another-tab" });
+        motion.arrived(fromAnotherTab);
+        state.messages.push(fromAnotherTab);
         await nextTick();
 
         expect(wrapper.get("[data-message-id='2']").classes()).toContain("is-arriving");
+    });
+
+    // A message the timeline gains with nothing recorded, as a page, a catch-up or a switch back
+    // brings it, is simply there; so is a send's row drawn by a feed opened after it was sent.
+    test("a message the timeline gains with no arrival recorded, and a send made before the feed opened, do not rise", async () => {
+        const motion = createMessageMotion();
+        motion.sent("k1");
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        await nextTick();
+
+        state.messages.push(message(2, anna, at(15, 0)));
+        await nextTick();
+
+        expect(wrapper.findAll(".chat-msg.is-arriving")).toHaveLength(0);
     });
 });
 
@@ -543,7 +567,9 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
     async function race(isChannel = false, isPersonLeader = false): Promise<Race> {
         const answer = deferred<SendResult>();
         let sender: ReturnType<typeof createSender> | null = null;
+        const motion = createMessageMotion();
         const timelines = createTimelines({
+            motion,
             mask: platformMask,
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: [message(1, anna, at(14, 50))], read_cursor: null, unread_count: 0, has_more: false }),
@@ -554,16 +580,17 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
             send: () => answer.promise,
             timelines,
             personAliasGuid: me,
-            newLocalId: () => "local-1"
+            newLocalId: () => "local-1",
+            motion
         });
         const created = (id: number, sender: string, key: string | null): Record<string, unknown> => ({
             id, channel_id: "c1", parent_id: null, shown_in_channel: false, person_alias_guid: sender,
             message_type: "text", body: id === 2 ? "On my way" : `m${id}`, created_at: at(15, 0), client_key: key
         });
         const Host = defineComponent({
-            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader, sentKeys: sender?.sentKeys })
+            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader })
         });
-        const wrapper = mount(Host);
+        const wrapper = mount(Host, { global: { provide: { [messageMotionKey as symbol]: motion } } });
 
         return {
             wrapper,

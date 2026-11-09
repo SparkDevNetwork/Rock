@@ -44,6 +44,7 @@ import { computeBackoff } from "../platformCall.partial";
 import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
 import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
+import type { MessageMotion } from "../messageMotion.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -81,6 +82,77 @@ export function sendKey(key: string | null | undefined): string | null {
 export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(message: T): T {
     const key = sendKey(message.client_key);
     return message.client_key && key !== message.client_key ? { ...message, client_key: key } : message;
+}
+
+/**
+ * The key a message's row is drawn under, and what happened to it is recorded under: its send's key
+ * when it has one, which its pending row was drawn under too, else its id. A send key is a UUID and
+ * an id a number, so the two never meet.
+ *
+ * @param message The message.
+ *
+ * @returns The row's key.
+ */
+export function rowKey(message: Pick<TimelineMessage, "id" | "client_key">): string {
+    return `k:${sendKey(message.client_key) ?? message.id}`;
+}
+
+/**
+ * The state a message has until a change says otherwise: what a page states for a message never
+ * edited, deleted, hidden, reacted to or replied to. The send's answer and the live copy state none
+ * of it, so every copy is completed with it as it is held, and two copies of one message compare
+ * equal whichever path brought them.
+ */
+export const newMessageState = {
+    edited_at: null,
+    deleted_at: null,
+    visibility: "visible",
+    visibility_notice: null,
+    reactions: [],
+    reply_count: 0,
+    last_reply_at: null,
+    participant_count: 0,
+    repliers: null,
+    thread_following: null,
+    thread_unread: null
+} as const satisfies Partial<Record<keyof TimelineMessage, unknown>>;
+
+/**
+ * Every other field a page states: what the message is and says, and who sent it, which a new
+ * message has no one value for, so a copy keeps what it states and a field it leaves out keeps
+ * what is held. Kept as data beside the state, so a field the platform adds is classed in one of
+ * the two before it is relied on.
+ */
+export const keptAsStated: readonly (keyof TimelineMessage)[] = [
+    "id", "parent_id", "quoted_message_id", "quoted", "shown_in_channel", "person_alias_guid", "client_key", "is_own",
+    "sender_nick_name", "sender_last_name", "sender_avatar_url", "sender_listed", "sender_is_leader",
+    "message_type", "system_kind", "body", "attachments", "pieces", "blocks", "metadata", "actions", "created_at"
+];
+
+/**
+ * A copy of a message as every holder keeps it: combined with what is held, its key lowered, each
+ * state field neither states completed with a new message's, and masked as the people blocked now
+ * stand. Completed after combining, never before: inside the combine a field left out still means
+ * "not said", which is how the send's answer landing after a hide keeps the hide.
+ *
+ * @param held The copy already held, if any.
+ * @param arrived The copy as it arrived: a page's row, a live copy or the send's answer.
+ * @param mask The mask as the set of people blocked now stands.
+ *
+ * @returns The copy to hold.
+ */
+export function holdMessage(held: TimelineMessage | undefined, arrived: TimelineMessage, mask: MessageMask): TimelineMessage {
+    const keyed = withSendKey(arrived);
+    const message = (held ? combine(held, keyed) : { ...keyed }) as Record<string, unknown>;
+
+    for (const [field, value] of Object.entries(newMessageState)) {
+        if (message[field] === undefined) {
+            // each copy its own list, so a change to one copy's chips moves no other
+            message[field] = Array.isArray(value) ? [] : value;
+        }
+    }
+
+    return mask(message as TimelineMessage);
 }
 
 /** How a missed live change is noticed and repaired when nothing is passed: the settings' own defaults, so the two never differ. */
@@ -365,6 +437,9 @@ export type TimelineDependencies = {
 
     /** How a missed live change is noticed and repaired, read from the settings each time. */
     revRules?: () => { reorderMs: number, repairWaitMs: number, staleMs: number };
+
+    /** Told of each message heard arriving live and each live edit, delete or hide as it is applied, for the rows' motion. */
+    motion?: Pick<MessageMotion, "arrived" | "changed">;
 
     /** Runs a wait and answers its cancel, so a test can say when; a timer by default. */
     schedule?: (run: () => void, ms: number) => () => void;
@@ -708,10 +783,10 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         const index = positionOf(messages, message.id);
 
         if (index < messages.length && messages[index].id === message.id) {
-            messages[index] = mask(combine(messages[index], message));
+            messages[index] = holdMessage(messages[index], message, mask);
         }
         else {
-            messages.splice(index, 0, mask(message));
+            messages.splice(index, 0, holdMessage(undefined, message, mask));
         }
 
         // Every way a message comes in passes here, so whichever copy of a send lands first is
@@ -809,8 +884,12 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
     }
 
-    /** Applies one live event to a loaded timeline. A live event never moves where catch-up resumes. */
-    function apply(channelId: string, event: string, payload: unknown): void {
+    /**
+     * Applies one live event to a loaded timeline. A live event never moves where catch-up resumes.
+     * One held while the first page was read is applied as part of that page, so it is told to no
+     * row as something that happened: the rows it lands in are drawn with it.
+     */
+    function apply(channelId: string, event: string, payload: unknown, isLive: boolean): void {
         if (isReactionEvent(event)) {
             dependencies.applyReaction?.(channelId, event, payload);
             return;
@@ -852,12 +931,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_avatar_url: sender?.sender_avatar_url,
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage, rev));
+                if (isLive) {
+                    dependencies.motion?.arrived(created);
+                }
             }
         }
         else {
             const fields = changedFields(event, payload);
             if (fields) {
-                changeMessage(channelId, event, payload, rev, fields);
+                changeMessage(channelId, event, payload, rev, fields, isLive);
             }
         }
     }
@@ -866,7 +948,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * Lays an edit, a delete or a change of visibility over the message held, when it is newer than
      * what is held, and records it, held or not, for a page read before it.
      */
-    function changeMessage(channelId: string, event: string, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>): void {
+    function changeMessage(channelId: string, event: string, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>, isLive: boolean): void {
         const newer = takeChange(ledger, payload.id, "message", rev, fields);
         if (!newer) {
             return;
@@ -876,6 +958,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             applyMessageChange(message, event, payload, newer);
             // a change in place is a write like any other: its pieces may name someone blocked
             maskHeld([message], mask);
+            if (isLive) {
+                dependencies.motion?.changed(message, event);
+            }
         }
     }
 
@@ -1395,7 +1480,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                         if (isReactionEvent(event) && heldAt < answer.readAt) {
                             continue;
                         }
-                        apply(channelId, event, payload);
+                        apply(channelId, event, payload, false);
                     }
                 }
             }
@@ -1537,7 +1622,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
-            apply(channelId, event, payload);
+            apply(channelId, event, payload, true);
         },
 
         upsert,

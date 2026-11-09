@@ -32,6 +32,7 @@ import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/compon
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
+import { createMessageMotion, MessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -95,8 +96,8 @@ type RowProps = {
     blockedRun?: TimelineMessage[] | null;
 };
 
-function draw(props: RowProps): VueWrapper {
-    return mount(MessageRow, { props: { personAliasGuid: me, ...props } });
+function draw(props: RowProps, motion?: MessageMotion): VueWrapper {
+    return mount(MessageRow, { props: { personAliasGuid: me, ...props }, global: motion ? { provide: { [messageMotionKey as symbol]: motion } } : {} });
 }
 
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
@@ -1152,10 +1153,22 @@ describe("edit in place", () => {
         const before = draw({ message: message({ edited_at: nineOhTwo }), isChannel, position: "single" });
         expect(before.get("[data-testid='message-edited']").classes()).not.toContain("is-swapping");
 
-        const w = draw({ message: message(), isChannel, position: "single" });
-        await w.setProps({ message: message({ edited_at: nineOhTwo, body: "Morning everyone" }) });
+        const motion = createMessageMotion();
+        const w = draw({ message: message(), isChannel, position: "single" }, motion);
+        const edited = message({ edited_at: nineOhTwo, body: "Morning everyone" });
+        motion.changed(edited, "message.edited");
+        await w.setProps({ message: edited });
 
         expect(w.get("[data-testid='message-edited']").classes()).toContain("is-swapping");
+    });
+
+    // A copy handed in again with an edit time, as a page read again hands it, is not an edit
+    // happening: only the edit the stores applied while the row was on screen slides Edited in.
+    test.each([["a direct message", false], ["a channel", true]] as const)("Edited does not slide in for a copy that only states the edit in %s", async (_kind, isChannel) => {
+        const w = draw({ message: message(), isChannel, position: "single" }, createMessageMotion());
+        await w.setProps({ message: message({ edited_at: nineOhTwo, body: "Morning everyone" }) });
+
+        expect(w.get("[data-testid='message-edited']").classes()).not.toContain("is-swapping");
     });
 });
 
@@ -1376,14 +1389,29 @@ describe("the reactions row", () => {
     // The page adds a message's first reaction in place, so the row must already hold its
     // reactions part to see the reader's chip arrive, rather than mount with it as a page draws one.
     test.each([["a direct message", false], ["a channel", true]] as const)("pops the reader's first reaction on a message in %s", async (_kind, isChannel) => {
+        const motion = createMessageMotion();
         const target = reactive(message({ reactions: [] } as Partial<TimelineMessage>));
-        const w = draw({ message: target, isChannel, reactionHost: host([]) });
+        const w = draw({ message: target, isChannel, reactionHost: host([]) }, motion);
 
+        motion.reacted(target, heart.code, "pop");
         target.reactions!.push({ ...heart, count: 1 });
         await nextTick();
         await nextTick();
 
         expect(w.get("[data-testid='reaction-chip']").classes()).toContain("is-popping");
+    });
+
+    // A chip a page brings is drawn as it is: only the reader's reaction landing while the row is on
+    // screen, as the reactions record it, pops.
+    test.each([["a direct message", false], ["a channel", true]] as const)("does not pop the reader's chip a copy only states in %s", async (_kind, isChannel) => {
+        const target = reactive(message({ reactions: [] } as Partial<TimelineMessage>));
+        const w = draw({ message: target, isChannel, reactionHost: host([]) }, createMessageMotion());
+
+        target.reactions!.push({ ...heart, count: 1 });
+        await nextTick();
+        await nextTick();
+
+        expect(w.get("[data-testid='reaction-chip']").classes()).not.toContain("is-popping");
     });
 });
 
@@ -1703,10 +1731,18 @@ describe("a row's one-off motion", () => {
         root(wrapper).dispatchEvent(event);
     }
 
-    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
-        const wrapper = draw({ message: message(), isChannel, position: "single" });
+    /** The row on screen, then an edit applied to its message as the stores apply one live. */
+    async function edited(isChannel = false): Promise<VueWrapper> {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, motion);
+        const now = message({ edited_at: nineOhTwo });
+        motion.changed(now, "message.edited");
+        await wrapper.setProps({ message: now });
+        return wrapper;
+    }
 
-        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
+        const wrapper = await edited(isChannel);
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
 
@@ -1721,14 +1757,67 @@ describe("a row's one-off motion", () => {
     });
 
     test("an unrelated animation's end clears nothing", async () => {
-        const wrapper = draw({ message: message(), position: "single" });
-        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        const wrapper = await edited();
 
         animationEnd(wrapper, "chat-flash-fade");
         await nextTick();
 
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+    });
+});
+
+// Which motion a row plays is the record's to say: a delete crossfades without sliding Edited in,
+// one recorded before the row mounted has played already, and a copy handed in with every field
+// changed, as a page read again hands it, plays nothing.
+describe("a row's motion follows what the stores recorded", () => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("a delete crossfades to its tombstone and does not slide Edited in, in %s", async (_kind, isChannel) => {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, motion);
+        const deleted = message({ deleted_at: nineOhTwo, body: null });
+        motion.changed(deleted, "message.deleted");
+        await wrapper.setProps({ message: deleted });
+
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping")).toHaveLength(0);
+    });
+
+    test("a hide, then a show, each crossfade once", async () => {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), position: "single" }, motion);
+        const hidden = message({ visibility: "hidden", visibility_notice: "Hidden by a moderator", body: null });
+        motion.changed(hidden, "message.visibility");
+        await wrapper.setProps({ message: hidden });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+
+        const event = new Event("animationend", { bubbles: true });
+        Object.defineProperty(event, "animationName", { value: "chat-crossfade" });
+        root(wrapper).dispatchEvent(event);
+        await nextTick();
+        expect(wrapper.findAll(".is-crossfading")).toHaveLength(0);
+
+        motion.changed(message(), "message.visibility");
+        await wrapper.setProps({ message: message() });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+    });
+
+    test("an edit recorded before the row mounted plays nothing on it", async () => {
+        const motion = createMessageMotion();
+        motion.changed(message(), "message.edited");
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "single" }, motion);
+        await nextTick();
+
+        expect(wrapper.findAll(".is-crossfading, .is-swapping")).toHaveLength(0);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a copy handed in with its edit, delete and hide all changed plays nothing in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, createMessageMotion());
+
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo, visibility: "hidden", body: null }) });
+        await wrapper.setProps({ message: message({ deleted_at: nineOhTwo, body: null }) });
+
+        expect(wrapper.findAll(".is-crossfading, .is-swapping")).toHaveLength(0);
     });
 });
 

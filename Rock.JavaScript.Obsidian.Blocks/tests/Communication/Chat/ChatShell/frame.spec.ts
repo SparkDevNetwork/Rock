@@ -35,6 +35,7 @@ import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/c
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
+import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Stand-ins
 
@@ -205,6 +206,7 @@ function fakeShell(): Record<string, unknown> {
         timelines: {
             state: timelineOf
         },
+        motion: createMessageMotion(),
         // the latest failure, as the sender tells it, held so a test can say a send just failed
         sender: { pending: () => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last },
         // the real drafts, on a storage that outlives the block as a browser's does
