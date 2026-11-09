@@ -128,6 +128,28 @@ namespace Rock.Drawing.Avatar
         }
 
         /// <summary>
+        /// Determines whether the current viewer may see the photo when the Person Image binary file type requires view security.
+        /// </summary>
+        /// <param name="photoId">The binary file identifier of the photo.</param>
+        /// <returns><c>true</c> if the Person Image type has no view security or the viewer passes it; otherwise <c>false</c>.</returns>
+        /// <remarks>
+        /// Without view security this makes no database call, so cached avatars stay cheap to serve.
+        /// The Person Image file type itself is still enforced when the photo is loaded.
+        /// </remarks>
+        [Rock.Attribute.RockInternal( "17.13" )]
+        public static bool IsPhotoViewAllowed( int photoId )
+        {
+            var personImageType = BinaryFileTypeCache.Get( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+            if ( personImageType == null || !personImageType.RequiresViewSecurity )
+            {
+                return true;
+            }
+
+            return RockImage.IsPersonImageViewable( photoId );
+        }
+
+        /// <summary>
         /// Creates the avatar based on the provided settings
         /// </summary>
         /// <param name="settings"></param>

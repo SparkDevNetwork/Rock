@@ -119,6 +119,30 @@ namespace Rock.Drawing
         }
 
         /// <summary>
+        /// Determines whether a binary file is a Person Image that the current user may view.
+        /// </summary>
+        /// <param name="photoId">The binary file identifier of the photo.</param>
+        /// <returns><c>true</c> if the file exists, is a Person Image, and passes its view security; otherwise <c>false</c>.</returns>
+        internal static bool IsPersonImageViewable( int photoId )
+        {
+            var binaryFile = new BinaryFileService( new RockContext() ).Get( photoId );
+
+            return binaryFile != null && IsPersonImageType( binaryFile ) && IsAuthorized( binaryFile );
+        }
+
+        /// <summary>
+        /// Determines whether a binary file uses the Person Image binary file type.
+        /// </summary>
+        /// <param name="binaryFile">The binary file to check.</param>
+        /// <returns><c>true</c> if the file is a Person Image; otherwise <c>false</c>.</returns>
+        private static bool IsPersonImageType( BinaryFile binaryFile )
+        {
+            var personImageTypeId = BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.PERSON_IMAGE.AsGuid() );
+
+            return personImageTypeId != null && binaryFile.BinaryFileTypeId == personImageTypeId.Value;
+        }
+
+        /// <summary>
         /// Determines whether the current user is authorized to view the Person Image.
         /// Returns true without security check if the Person Image BinaryFileType has RequiresViewSecurity set to false.
         /// Validates security and the BinaryFileType if RequiresViewSecurity is true.
@@ -128,7 +152,18 @@ namespace Rock.Drawing
         ///   <c>true</c> if the current user is authorized; otherwise, <c>false</c>.</returns>
         private static Boolean IsAuthorized( BinaryFile binaryFile )
         {
-            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false )
+            /*
+                11/02/2026 - MSE
+
+                A parent record decides first, the same as GetFile.ashx. Only a file without a parent
+                that can be checked falls back to the file type, and the type's view security flag is
+                honored at that point instead of before the parent is looked at.
+
+                Reason: The type flag used to skip the parent check, so a denying parent was ignored.
+            */
+            // Most photos have no parent record, so skip every query when the file type has no view security.
+            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false
+                && !( binaryFile.ParentEntityTypeId.HasValue && binaryFile.ParentEntityId.HasValue ) )
             {
                 return true;
             }
@@ -137,17 +172,18 @@ namespace Rock.Drawing
             Person currentPerson = currentUser?.Person;
             var parentEntityAllowsView = binaryFile.ParentEntityAllowsView( currentPerson );
 
-            // If no parent entity is specified then check if there is security on the BinaryFileType
-            if ( parentEntityAllowsView == null )
+            // A parent record decides first, the same as GetFile.ashx.
+            if ( parentEntityAllowsView.HasValue )
             {
-                if ( !binaryFile.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    return false;
-                }
+                return parentEntityAllowsView.Value;
             }
 
-            // Check if there is parent security and use it if it exists, otherwise return true.
-            return parentEntityAllowsView ?? true;
+            if ( binaryFile.BinaryFileType.RequiresViewSecurity == false )
+            {
+                return true;
+            }
+
+            return binaryFile.IsAuthorized( Authorization.VIEW, currentPerson );
         }
     }
 }
