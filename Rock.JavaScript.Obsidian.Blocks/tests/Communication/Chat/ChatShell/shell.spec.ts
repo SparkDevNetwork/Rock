@@ -4523,6 +4523,43 @@ describe("the room's revision", () => {
         expect(h.reports.filter(r => r.p_kind === "live")).toEqual([{ p_kind: "live", p_code: "gap", p_count: 2, p_detail: null }]);
     });
 
+    test("the one-off reports' cap and the tallies' cap each come from their own setting", async () => {
+        const h = build();
+        h.exchangeSettings.value = { limits: { ...platformLimits, gap_reorder_ms: 1, problem_reports_per_load: 1, tally_reports_per_load: 3 } };
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [row(channelA, 5)], me: { blocked_aliases: [] } };
+        const starting = h.shell.start();
+        await settle();
+        await answerAt(h, 5);
+        await starting;
+        await settle();
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        await answerAt(h, 5);
+        jest.spyOn(Math, "random").mockReturnValue(0);
+
+        // two message types this release cannot draw, each a one-off report, as the rows report them
+        h.shell.problems.report("message_type", "poll");
+        h.shell.problems.report("message_type", "survey");
+        await settle();
+
+        // three holes, each found, repaired and then sent as the page is left
+        for (const rev of [7, 10, 13]) {
+            channelEvent(h, "message.edited", { id: 10, channel_id: channelA, body: `at ${rev}`, pieces: null, edited_at: "2026-09-23T10:02:00Z", rev });
+            await new Promise(resolve => setTimeout(resolve, 5));
+            await settle();
+            await answerAt(h, rev);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            await settle();
+            h.firePageHide();
+            await settle();
+        }
+
+        expect(h.reports.filter(r => r.p_kind === "message_type").map(r => r.p_code)).toEqual(["poll"]);
+        expect(h.reports.filter(r => r.p_kind === "live").map(r => r.p_count)).toEqual([1, 1, 1]);
+    });
+
     test("a sidebar row ahead of the open room repairs it after the random wait, and a room never opened is never read", async () => {
         const h = await startedAt(5);
         jest.spyOn(Math, "random").mockReturnValue(0);

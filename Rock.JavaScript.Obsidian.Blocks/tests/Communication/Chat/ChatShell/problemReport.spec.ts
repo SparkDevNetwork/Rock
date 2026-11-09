@@ -43,7 +43,7 @@ const refused: CallResult = { ok: false, status: 400, error: { code: "rpc.bad_re
 type Sent = { name: string, args: Record<string, unknown> };
 
 /** A report over a call path that answers each call with what the test hands it. */
-function reporter(reportCap: () => number = () => 10, answer: () => Promise<CallResult> = async () => accepted, countCap: () => number = () => 10): { problems: ProblemReport, sent: Sent[] } {
+function reporter(reportCap: () => number = () => 10, answer: () => Promise<CallResult> = async () => accepted, tallyCap: () => number = () => 10): { problems: ProblemReport, sent: Sent[] } {
     const sent: Sent[] = [];
     const problems = createProblemReport({
         call: (name, args) => {
@@ -51,7 +51,7 @@ function reporter(reportCap: () => number = () => 10, answer: () => Promise<Call
             return answer();
         },
         reportCap,
-        countCap
+        tallyCap
     });
     return { problems, sent };
 }
@@ -196,7 +196,7 @@ describe("the problem report", () => {
                 return Promise.resolve(accepted);
             },
             reportCap: () => 10,
-            countCap: () => 10
+            tallyCap: () => 10
         });
         const shown = page();
         problems.attach(shown.targets);
@@ -219,7 +219,7 @@ describe("the problem report", () => {
         expect(keptAlive).toEqual([true, true]);
     });
 
-    test("counts held are sent as the report stops, each send held to the load's cap for counts, and none once stopped", () => {
+    test("counts held are sent as the report stops, each send held to the load's cap for tallies, and none once stopped", () => {
         const { problems, sent } = reporter(() => 1, undefined, () => 1);
 
         problems.report("refusal", "rpc.new_thing");
@@ -232,9 +232,9 @@ describe("the problem report", () => {
         expect(sent.map(s => [s.args.p_kind, s.args.p_count])).toEqual([["refusal", 0], ["live", 1]]);
     });
 
-    test("sends of counts have their own cap a load: a gappy load that keeps being hidden never spends the one-off reports' cap", () => {
-        let countCap = 2;
-        const { problems, sent } = reporter(() => 2, undefined, () => countCap);
+    test("tallies have their own cap a load: a gappy load that keeps being hidden never spends the one-off reports' cap", () => {
+        let tallyCap = 2;
+        const { problems, sent } = reporter(() => 2, undefined, () => tallyCap);
         const shown = page();
         problems.attach(shown.targets);
 
@@ -246,8 +246,8 @@ describe("the problem report", () => {
         problems.report("realtime", "rt.unknown");
         problems.report("block", "poll");
 
-        // the platform raised the counts' cap on a later exchange; what was over the old cap was not kept
-        countCap = 3;
+        // the platform raised the tallies' cap on a later exchange; what was over the old cap was not kept
+        tallyCap = 3;
         problems.tally("live", "gap");
         shown.leave();
 
@@ -256,7 +256,7 @@ describe("the problem report", () => {
         ]);
     });
 
-    test("one-off reports that use up their cap leave the counts' sends alone", () => {
+    test("one-off reports that use up their cap leave the tallies alone", () => {
         const { problems, sent } = reporter(() => 1, undefined, () => 1);
         const shown = page();
         problems.attach(shown.targets);
@@ -270,13 +270,28 @@ describe("the problem report", () => {
         expect(sent.map(s => `${s.args.p_kind} ${s.args.p_count}`)).toEqual(["refusal 0", "live 2"]);
     });
 
+    test("a hide with nothing counted spends none of the tallies' cap", () => {
+        const { problems, sent } = reporter(undefined, undefined, () => 1);
+        const shown = page();
+        problems.attach(shown.targets);
+
+        // a person hides the tab far more often than a gap happens
+        for (let i = 0; i < 5; i++) {
+            shown.hide();
+        }
+        problems.tally("live", "gap");
+        shown.leave();
+
+        expect(sent.map(s => `${s.args.p_kind} ${s.args.p_code} ${s.args.p_count}`)).toEqual(["live gap 1"]);
+    });
+
     test("a call path that throws as it is asked is dropped the same way", () => {
         const problems = createProblemReport({
             call: () => {
                 throw new Error("no token");
             },
             reportCap: () => 10,
-            countCap: () => 10
+            tallyCap: () => 10
         });
 
         expect(() => problems.report("live", "gap")).not.toThrow();

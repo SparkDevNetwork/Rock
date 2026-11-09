@@ -2296,10 +2296,11 @@ describe("the room's revision", () => {
     type Fetch = { limit: number, beforeId?: number, afterId?: number };
 
     /**
-     * Timelines over a queue of answers, each a page or a deferred one, with the timers and the
-     * clock in the test's hands. The rules are the client's defaults unless a cell says otherwise.
+     * Timelines over a queue of answers, each a page or a deferred one, with the timers, the clock
+     * and the random draw in the test's hands. The rules are the cells' own, so no cell moves when
+     * a default does.
      */
-    function setup(answers: Array<HistoryPage | Deferred<HistoryPage>>, options: { max?: number, page?: number, now?: () => number, onGap?: (channelId: string) => void } = {}): {
+    function setup(answers: Array<HistoryPage | Deferred<HistoryPage>>, options: { max?: number, page?: number, now?: () => number, random?: () => number, onGap?: (channelId: string) => void } = {}): {
         timelines: ReturnType<typeof createTimelines>,
         fetches: Fetch[],
         clock: ReturnType<typeof timers>,
@@ -2315,7 +2316,7 @@ describe("the room's revision", () => {
             revRules: () => ({ reorderMs: 500, repairWaitMs: 5000, staleMs: 900000 }),
             schedule: clock.schedule,
             now: options.now ?? (() => 0),
-            random: () => 0.5,
+            random: options.random ?? (() => 0.5),
             onGap: options.onGap,
             applyReaction: (_c, event, payload) => reactions.push({ event, payload }),
             fetchPage: (_c, asked) => {
@@ -2409,6 +2410,22 @@ describe("the room's revision", () => {
         expect(ids(timelines.state(channel).messages)).toEqual([1, 2, 3, 4]);
         expect(timelines.state(channel).rev).toBe(9);
         expect(gaps).toEqual([channel, channel]);
+    });
+
+    test("the wait before a repair is drawn afresh each time across the whole window, not fixed within it", async () => {
+        const draws = [0, 0.999];
+        const { timelines, clock } = setup([revPage([1, 2, 3], 5), revPage([1, 2, 3], 7), revPage([1, 2, 3], 9)], { random: () => draws.shift() ?? 0.5 });
+        await timelines.loadNewest(channel);
+
+        deliver(timelines, "message.edited", edited(2, "x", 7));
+        clock.fire(500);
+        expect(clock.live().map(timer => timer.ms)).toEqual([0]);
+        clock.fire(0);
+        await settle();
+
+        deliver(timelines, "message.edited", edited(3, "y", 9));
+        clock.fire(500);
+        expect(clock.live().map(timer => timer.ms)).toEqual([4995]);
     });
 
     test("a page at a revision does not undo a group changed above it, and overwrites one at or below it, for the message and its thread counts", async () => {
