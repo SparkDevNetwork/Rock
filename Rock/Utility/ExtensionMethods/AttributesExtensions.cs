@@ -699,7 +699,7 @@ namespace Rock
             {
                 if ( entity is IEntity fullEntity )
                 {
-                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                    return entityContextField.GetHtmlValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
                 }
                 else if ( entity is IEntityCache entityCache )
                 {
@@ -819,7 +819,7 @@ namespace Rock
             {
                 if ( entity is IEntity fullEntity )
                 {
-                    return entityContextField.GetTextValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
+                    return entityContextField.GetCondensedHtmlValue( rawValue, fullEntity, attributeCache.ConfigurationValues );
                 }
                 else if ( entity is IEntityCache entityCache )
                 {
@@ -827,7 +827,7 @@ namespace Rock
                 }
             }
 
-            return field?.GetTextValue( rawValue, attributeCache.ConfigurationValues );
+            return field?.GetCondensedHtmlValue( rawValue, attributeCache.ConfigurationValues );
         }
 
         /// <summary>
