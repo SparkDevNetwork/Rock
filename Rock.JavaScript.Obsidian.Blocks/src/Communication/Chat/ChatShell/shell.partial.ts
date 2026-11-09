@@ -23,7 +23,7 @@
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey, isUnworded, messageForError } from "./errors.partial";
+import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, Timelines } from "./composables/useHistory.partial";
@@ -449,8 +449,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     /** Tells the person about a failure, once per sentence until it is dismissed. */
     function report(error: ChatError): void {
-        // words neither side has for a refusal are a code this release was not built to know
-        if (isUnworded(error)) {
+        // a code this release was not built to know, or a request the platform could not read
+        if (isReportedRefusal(error)) {
             problems.report("refusal", error.code);
         }
         if (state.connection && isConnectionFailure(error)) {

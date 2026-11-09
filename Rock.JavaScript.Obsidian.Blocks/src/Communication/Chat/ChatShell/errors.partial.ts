@@ -326,6 +326,19 @@ export function isUnworded(error: ChatError): boolean {
 }
 
 /**
+ * Whether a refusal is told to the platform's problem report, the one rule every place that reports
+ * a refusal asks: a code this release has no words for, or a request the platform could not read,
+ * which is this client out of step with the contract whatever sentence came with it.
+ *
+ * @param error The classified failure.
+ *
+ * @returns True when the platform is told the refusal's code.
+ */
+export function isReportedRefusal(error: ChatError): boolean {
+    return error.code === "rpc.bad_request" || isUnworded(error);
+}
+
+/**
  * A failure in words, wherever it is told: being offline where nothing was reached and the
  * connection is lost, else what the call was answered with.
  *

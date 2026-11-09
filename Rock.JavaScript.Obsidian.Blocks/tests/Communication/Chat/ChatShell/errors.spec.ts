@@ -31,6 +31,7 @@ import {
     finalWords,
     isOfflineFailure,
     isRefusedForGood,
+    isReportedRefusal,
     isUnreached,
     isUnworded,
     maintenanceSentence,
@@ -244,6 +245,16 @@ describe("codes a released client was not built with", () => {
         expect(isUnworded({ code: "rt.read_revoked", severity: "permission" })).toBe(false);
         expect(isUnworded({ code: "auth.something_new", severity: "session" })).toBe(false);
         expect(isUnworded({ code: "authz.not_member", severity: "permission", roomKind: "group" })).toBe(false);
+    });
+
+    // A request the platform could not read is this client out of step with the contract, worth
+    // telling whatever sentence the person was shown.
+    test("a refusal is reported when it is unworded or the platform could not read the request", () => {
+        expect(isReportedRefusal({ code: "rpc.something_new", severity: "failed" })).toBe(true);
+        expect(isReportedRefusal({ code: "rpc.bad_request", severity: "failed", text: "Chat could not understand that request." })).toBe(true);
+        expect(isReportedRefusal({ code: "rpc.something_new", severity: "failed", text: "That can't be done yet." })).toBe(false);
+        expect(isReportedRefusal({ code: "rpc.transport", severity: "failed" })).toBe(false);
+        expect(isReportedRefusal({ code: "auth.expired", severity: "session" })).toBe(false);
     });
 
     test("a failure the client could not read, or a call that reached nothing, is no refusal to report", () => {

@@ -26,23 +26,11 @@
 
 import { reactive } from "vue";
 import type { PlatformCall } from "../platformCall.partial";
+import { isReportedRefusal } from "../errors.partial";
 import type { ShellState } from "../shell.partial";
 import { ChatError, ChatPerson, MessageCreatedEvent, SidebarRow, TypingEvent } from "../types.partial";
 import { quoteKey } from "./useMessageActions.partial";
 import type { ChatSettings } from "./useSession.partial";
-
-/** The refusals the typing route answers, each dropped quietly; any other is a code this release does not know. */
-const knownRefusals = new Set([
-    "rpc.typing_off",
-    "rpc.typing_not_here",
-    "rpc.bad_parent",
-    "rpc.bad_request",
-    "authz.not_member",
-    "rpc.unavailable",
-    "rpc.unknown_error_code",
-    "rpc.transport",
-    "rpc.unknown"
-]);
 
 /** What typing reaches outside itself. */
 export type PresenceDependencies = {
@@ -74,7 +62,7 @@ export type PresenceDependencies = {
 
     isBlocked: (personAliasGuid: string) => boolean;
 
-    /** Tells the platform of a refusal this release does not know. */
+    /** Tells the platform of a refusal its one rule for reporting picks out. */
     report: (code: string) => void;
 
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
@@ -242,7 +230,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         else if (error.code === "rpc.bad_parent") {
             refusedPlaces.add(place);
         }
-        else if (!knownRefusals.has(error.code) && error.severity !== "session") {
+        // every other refusal is dropped quietly, and told by the shell's one rule for reporting
+        else if (isReportedRefusal(error)) {
             dependencies.report(error.code);
         }
     }

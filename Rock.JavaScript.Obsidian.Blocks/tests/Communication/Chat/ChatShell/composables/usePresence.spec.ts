@@ -23,6 +23,7 @@ import { reactive } from "vue";
 import { createPresence, Presence, PresenceDependencies, typingLine } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
+import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatError, ChatPerson, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -52,9 +53,9 @@ function person(alias: string, nick: string | null, last: string | null = null):
     return { person_alias_guid: alias, nick_name: nick, last_name: last, avatar_url: null };
 }
 
-/** A refusal in the shape the shell's call path answers one. */
+/** A refusal as the shell's call path classifies one: its severity by its family, and the route's sentence when it sent one. */
 function refused(code: string, status = 400, text?: string): CallResult {
-    const error: ChatError = { code, severity: "failed", ...(text ? { text } : {}) } as ChatError;
+    const error = code === "rpc.transport" ? classifyPlatformError(new TypeError("Failed to fetch")) : classifyPlatformError({ message: code, hint: text, status });
     return { ok: false, status, error, retryAfterSeconds: null };
 }
 
@@ -329,12 +330,13 @@ describe("the person's own signals", () => {
     });
 
     test.each([
-        ["authz.not_member", 403],
-        ["rpc.transport", 0],
-        ["rpc.unavailable", 503]
-    ])("%s is dropped quietly, unreported, and the next change after the interval calls again", async (code, status) => {
+        ["authz.not_member", 403, "You're not in this conversation."],
+        ["rpc.transport", 0, undefined],
+        ["rpc.unavailable", 503, undefined],
+        ["auth.expired", 401, "Your chat session expired. Reconnecting."]
+    ])("%s is dropped quietly, unreported, and the next change after the interval calls again", async (code, status, text) => {
         const h = build();
-        h.answers.push(refused(code, status));
+        h.answers.push(refused(code, status, text));
 
         h.presence.typed(group, null, "a");
         await settle();
@@ -354,6 +356,20 @@ describe("the person's own signals", () => {
         await settle();
 
         expect(h.reports).toEqual(["rpc.typing_new_thing"]);
+    });
+
+    // The route could not read what this client sent: the client and the contract have drifted,
+    // which no words the person might be shown make any less worth telling.
+    test("a request the route could not read is reported, with the route's sentence or without", async () => {
+        for (const text of ["Chat could not understand that request.", undefined]) {
+            const h = build();
+            h.answers.push(refused("rpc.bad_request", 400, text));
+
+            h.presence.typed(group, null, "a");
+            await settle();
+
+            expect(h.reports).toEqual(["rpc.bad_request"]);
+        }
     });
 });
 
