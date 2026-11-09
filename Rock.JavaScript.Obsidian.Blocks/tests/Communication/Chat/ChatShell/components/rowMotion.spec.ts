@@ -1,0 +1,362 @@
+// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+// A row moves only for something that happened while it was on screen: a message arriving live or
+// sent here, an edit, a delete, a hide, the reader's own reaction, a thread's first reply. A mount,
+// a room switch and back, a page read again, a catch-up and a remount only state what is, and play
+// nothing. Driven through the real stores, wired and fed the live events in the order the shell
+// does, and the real feed and thread drawer, fed the platform's own message shapes.
+import { enableAutoUnmount, flushPromises, mount, VueWrapper } from "@vue/test-utils";
+import { defineComponent, h, nextTick, ref } from "vue";
+import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
+import { createReactions } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
+import { createSender, Sender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
+import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { anna, channelId, liveCreated, me, pageRow } from "../messageShapes";
+
+/** Every class a row's one-off motion sets: a crossfade, Edited sliding in, a chip's pop or roll, a thread's pill, a rise. */
+const motionSelector = ".is-crossfading, .is-swapping, .is-popping, .is-rolling, .chat-msg.is-arriving";
+
+const heart = { code: "heart", emoji: "❤️", image_url: null, label: "Heart" };
+
+/** A page as the platform answers it. */
+function page(messages: TimelineMessage[], rev = 1): HistoryPage {
+    return { messages, read_cursor: null, unread_count: 0, has_more: false, rev };
+}
+
+/** A send whose answer comes when the test says. */
+type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
+
+function deferred<T>(): Deferred<T> {
+    let resolve!: (value: T) => void;
+    const promise = new Promise<T>(r => resolve = r);
+    return { promise, resolve };
+}
+
+/**
+ * The stores a shell holds, wired to each other as the shell wires them, with the platform's
+ * answers queued by the test, and a live router that hands an event to each holder in the shell's
+ * order: the threads, the thread's reactions, then the timeline, then the sender.
+ */
+function wire() {
+    const pages: HistoryPage[] = [];
+    const threadPages: Record<string, unknown>[] = [];
+    const answers: Deferred<SendResult>[] = [];
+    let sender: Sender | null = null;
+    let keys = 0;
+
+    const call = async (name: string): Promise<CallResult> => {
+        if (name === "chat_get_thread_history") {
+            return { ok: true, data: threadPages.shift() ?? { root: null, messages: [], has_more: false, following: false, read_cursor: null, unread_count: 0 } } as CallResult;
+        }
+        return { ok: true, data: {} } as CallResult;
+    };
+
+    const timelines = createTimelines({
+        mask: platformMask,
+        limits: () => ({ history_page_size: 50 }),
+        fetchPage: async () => pages.shift() ?? page([]),
+        onLanded: message => sender?.landed(message),
+        applyReaction: (id, event, payload) => reactions.applyEvent(id, event, payload)
+    });
+    const threads = createThreads({
+        call,
+        timelines,
+        personAliasGuid: me,
+        limits: () => ({ history_page_size: 50, thread_page_size: 25 }),
+        onLanded: message => sender?.landed(message),
+        mask: platformMask,
+        isBlocked: () => false
+    });
+    const reactions = createReactions({
+        call,
+        timelines,
+        threads,
+        personAliasGuid: me,
+        notify: () => undefined,
+        favorites: [],
+        churchKey: "t",
+        maskFaces: people => people,
+        mask: platformMask
+    });
+    sender = createSender({
+        send: () => {
+            const answer = deferred<SendResult>();
+            answers.push(answer);
+            return answer.promise;
+        },
+        timelines,
+        onReplyConfirmed: (id, message) => threads.upsertReply(id, message),
+        personAliasGuid: me,
+        newLocalId: () => `k${++keys}`
+    });
+
+    function live(event: string, payload: Record<string, unknown>): void {
+        threads.applyEvent(channelId, event, payload);
+        if (event === "reaction.added" || event === "reaction.removed") {
+            reactions.applyThreadEvent(channelId, event, payload);
+        }
+        timelines.applyEvent(channelId, event, payload);
+        if (event === "message.created" && typeof payload.client_key === "string") {
+            (sender as Sender).landed({ id: payload.id as number, client_key: payload.client_key });
+        }
+    }
+
+    return { pages, threadPages, answers, timelines, threads, reactions, sender: sender as Sender, live, provide: {} as Record<symbol, unknown> };
+}
+
+type Wired = ReturnType<typeof wire>;
+
+async function settle(): Promise<void> {
+    for (let i = 0; i < 6; i++) {
+        await flushPromises();
+        await nextTick();
+    }
+}
+
+/**
+ * The conversation's feed as the shell draws it, keyed by the room so a switch away and back
+ * mounts a new one, over the real timeline and the sender's rows.
+ */
+function drawFeed(w: Wired): { wrapper: VueWrapper, switchAwayAndBack: (pageOnReturn: HistoryPage) => Promise<void> } {
+    const isShown = ref(true);
+    const opened = ref(0);
+    const Host = defineComponent({
+        setup: () => () => isShown.value
+            ? h(MessageFeed, { key: opened.value, timeline: w.timelines.state(channelId), pending: w.sender.pending(channelId), personAliasGuid: me })
+            : null
+    });
+    const wrapper = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
+
+    return {
+        wrapper,
+        switchAwayAndBack: async (pageOnReturn: HistoryPage): Promise<void> => {
+            w.timelines.leave(channelId);
+            isShown.value = false;
+            await nextTick();
+            opened.value++;
+            isShown.value = true;
+            await nextTick();
+            w.pages.push(pageOnReturn);
+            await w.timelines.loadNewest(channelId);
+            await settle();
+        }
+    };
+}
+
+/** Opens the room at a first page. */
+async function open(w: Wired, messages: TimelineMessage[]): Promise<void> {
+    w.pages.push(page(messages));
+    await w.timelines.loadNewest(channelId);
+}
+
+/** Every one-off motion drawn now, by the row it is on: the message's id, or a send still out. */
+function moving(wrapper: VueWrapper): string[] {
+    return [...wrapper.element.querySelectorAll(motionSelector)].map(element => {
+        const row = element.closest("[data-message-id], [data-reply-id], [data-testid='pending-row']");
+        return `${row?.getAttribute("data-message-id") ?? row?.getAttribute("data-reply-id") ?? "pending"}: ${element.className}`;
+    });
+}
+
+/** Ends every one-off motion as the browser would at its keyframe's end. */
+async function endMotion(wrapper: VueWrapper): Promise<void> {
+    for (const element of [...wrapper.element.querySelectorAll(".is-crossfading, .is-swapping")]) {
+        for (const name of ["chat-crossfade", "chat-meta-in"]) {
+            const event = new Event("animationend", { bubbles: true });
+            Object.defineProperty(event, "animationName", { value: name });
+            element.dispatchEvent(event);
+        }
+    }
+    await nextTick();
+}
+
+class QuietObserver {
+    observe(): void { /* jsdom lays nothing out */ }
+    unobserve(): void { /* nothing to stop */ }
+    disconnect(): void { /* nothing to stop */ }
+    takeRecords(): [] {
+        return [];
+    }
+}
+
+beforeEach(() => {
+    (window as unknown as { IntersectionObserver: unknown }).IntersectionObserver = QuietObserver;
+});
+
+enableAutoUnmount(afterEach);
+
+describe("a room switch and back plays nothing on its rows", () => {
+    test("someone's messages heard live, read again on the return as the page states them, do not crossfade", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        w.live("message.created", liveCreated({ id: 2, sender: anna }));
+        await settle();
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna })]));
+
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("the person's own sends, answered and heard live, read again on the return, do not crossfade or rise again", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        const sending = w.sender.send(channelId, "On my way");
+        await settle();
+        w.answers[0].resolve({ ok: true, id: 2, createdAt: "2026-10-12T14:01:00.000Z", notice: null, pieces: null, blocks: null });
+        await sending;
+        w.live("message.created", liveCreated({ id: 2, key: "k1", body: "On my way" }));
+        await settle();
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, key: "k1", body: "On my way" })]));
+
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("messages sent while the reader was in another room do not rise as if heard live", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna })]);
+        const feed = drawFeed(w);
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna }), pageRow({ id: 3, sender: anna })]));
+
+        expect(feed.wrapper.find("[data-message-id='3']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("a send still on its way when the reader left does not rise a second time on the return", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        void w.sender.send(channelId, "On my way");
+        await settle();
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna })]));
+
+        expect(feed.wrapper.find("[data-testid='pending-row']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("the reader's reaction from another device, read on the return onto a copy heard live, does not pop", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        w.live("message.created", liveCreated({ id: 2, sender: anna }));
+        await settle();
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna }, { reactions: [{ ...heart, count: 1, mine: true }] })]));
+
+        expect(feed.wrapper.find("[data-message-id='2'] [data-testid='reaction-chip']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("a thread begun while the reader was away, read on the return onto a copy heard live, does not pop its pill", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        w.live("message.created", liveCreated({ id: 2, sender: anna }));
+        await settle();
+
+        const replied = { reply_count: 1, last_reply_at: "2026-10-12T14:05:00.000Z", participant_count: 1, repliers: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null }] };
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna }, replied)]));
+
+        expect(feed.wrapper.find("[data-message-id='2'] .chat-tsum").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+});
+
+describe("the thread drawer's reread plays nothing", () => {
+    test("replies a repair reads again, above the newest when the thread was placed, do not rise", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 40, sender: anna }, { reply_count: 1 })]);
+        const reply = (id: number): TimelineMessage => pageRow({ id, sender: anna, parentId: 40 });
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1 });
+        w.threadPages.push({ root, messages: [reply(41)], has_more: false, following: true, read_cursor: 41, unread_count: 0, rev: 1 });
+        await w.threads.openThread(channelId, 40);
+        const Host = defineComponent({
+            setup: () => () => w.threads.state.thread?.root
+                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+                : null
+        });
+        const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
+        await settle();
+
+        w.threadPages.push({ root: { ...root, reply_count: 3 }, messages: [reply(41), reply(42), reply(43)], has_more: false, following: true, read_cursor: 41, unread_count: 2, rev: 3 });
+        w.threads.repair(channelId);
+        await settle();
+
+        expect(drawer.find("[data-reply-id='43']").exists()).toBe(true);
+        expect(moving(drawer)).toEqual([]);
+    });
+});
+
+// The guard against the class coming back: a feed over every state a row can carry, some held
+// as heard live and some as a page states them, then every way state is written without anything
+// happening. Any motion inferred from comparing what a row was handed across renders, on any field,
+// shows here without anyone having to name the field.
+describe("the quiet sweep", () => {
+    test("a re-read, a newest page that replaces what is held, a catch-up and a remount play no motion anywhere", async () => {
+        const w = wire();
+        const replied = { reply_count: 2, last_reply_at: "2026-10-12T14:05:00.000Z", participant_count: 1, repliers: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null }] };
+        const held = [
+            pageRow({ id: 1, sender: anna }, { edited_at: "2026-10-12T14:02:00.000Z" }),
+            pageRow({ id: 2, sender: anna }, { deleted_at: "2026-10-12T14:02:00.000Z", body: null }),
+            pageRow({ id: 3, sender: anna }, { visibility: "hidden", visibility_notice: "Hidden by a moderator", body: null }),
+            pageRow({ id: 4, sender: anna }, { reactions: [{ ...heart, count: 2, mine: true }] }),
+            pageRow({ id: 5, sender: anna }, replied),
+            pageRow({ id: 6, sender: anna }, { blocked: true, body: null, sender_nick_name: null, sender_last_name: null })
+        ];
+        await open(w, held);
+        const feed = drawFeed(w);
+        // heard live: someone's message, the person's own send answered, and a send still out
+        w.live("message.created", liveCreated({ id: 7, sender: anna }));
+        const sending = w.sender.send(channelId, "On my way");
+        await settle();
+        w.answers[0].resolve({ ok: true, id: 8, createdAt: "2026-10-12T14:08:00.000Z", notice: null, pieces: null, blocks: null });
+        await sending;
+        void w.sender.send(channelId, "Still going");
+        await settle();
+        await endMotion(feed.wrapper);
+        const readAgain = (): HistoryPage => page([...held, pageRow({ id: 7, sender: anna }), pageRow({ id: 8, key: "k1", body: "On my way" })], 2);
+        // what rose as it arrived keeps its class on its element; nothing may be added to it
+        const before = moving(feed.wrapper);
+        const added = (): string[] => moving(feed.wrapper).filter(entry => !before.includes(entry));
+
+        // a re-read of the room while it is open, as a reconnect's catch-up reads it
+        await w.timelines.onJoined(channelId);
+        w.pages.push(readAgain());
+        await w.timelines.onJoined(channelId);
+        await settle();
+        expect(added()).toEqual([]);
+
+        // a newest page that does not join what is held, which replaces it in one step, and brings
+        // messages the reader has not seen
+        w.pages.push({ ...page([pageRow({ id: 9, sender: anna }), pageRow({ id: 10, sender: anna })], 3), has_more: true });
+        await w.timelines.loadNewest(channelId);
+        await settle();
+        expect(feed.wrapper.find("[data-message-id='10']").exists()).toBe(true);
+        expect(added()).toEqual([]);
+
+        // a switch away and back, the page read again
+        await feed.switchAwayAndBack(page([pageRow({ id: 9, sender: anna }), pageRow({ id: 10, sender: anna }, { edited_at: "2026-10-12T14:09:00.000Z", reactions: [{ ...heart, count: 1, mine: true }] })], 4));
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+});

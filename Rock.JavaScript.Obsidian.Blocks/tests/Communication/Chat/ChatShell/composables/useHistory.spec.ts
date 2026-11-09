@@ -25,6 +25,7 @@ import {
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { anna, channelId as shapesChannel, liveCreated, pageRow, sendAnswer } from "../messageShapes";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
 
@@ -54,6 +55,11 @@ function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
     const promise = new Promise<T>(r => resolve = r);
     return { promise, resolve };
+}
+
+/** A page of the platform's own rows, newest first as it answers. */
+function pageOf(rows: TimelineMessage[]): HistoryPage {
+    return { messages: [...rows].reverse(), read_cursor: null, unread_count: 0, first_unread_id: null, has_more: false, rev: 1 };
 }
 
 function ids(messages: TimelineMessage[]): number[] {
@@ -2852,5 +2858,27 @@ describe("the room's revision", () => {
 
         expect(timelines.state(channel).messages[0].thread_unread).toBe(true);
         expect(timelines.state(channel).messages[0].reply_count).toBe(2);
+    });
+});
+
+// One message reaches the client in three shapes: the send's answer and the live copy state none of
+// its state, a page states all of it. A copy held is the same message whichever path brought it,
+// so a page that only states it again changes nothing a row could read as a change.
+describe("one shape for every copy of a message", () => {
+    const stateOf = (held: TimelineMessage): unknown[] => [held.edited_at, held.deleted_at, held.visibility, held.visibility_notice, held.reactions, held.reply_count, held.last_reply_at, held.participant_count, held.repliers, held.thread_following, held.thread_unread];
+
+    test("a send answered and heard live, then read again on a return as a page states it, changes no state field", async () => {
+        const pages: HistoryPage[] = [{ ...pageOf([pageRow({ id: 1, sender: anna })]) }];
+        const timelines = createTimelines({ mask: platformMask, limits, fetchPage: async () => pages.shift() as HistoryPage });
+        await timelines.loadNewest(shapesChannel);
+        timelines.upsert(shapesChannel, await sendAnswer({ id: 2, key: "k1" }));
+        timelines.applyEvent(shapesChannel, "message.created", liveCreated({ id: 2, key: "k1" }));
+        const before = stateOf(timelines.state(shapesChannel).messages[1]);
+
+        timelines.leave(shapesChannel);
+        pages.push(pageOf([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, key: "k1" })]));
+        await timelines.loadNewest(shapesChannel);
+
+        expect(stateOf(timelines.state(shapesChannel).messages[1])).toEqual(before);
     });
 });
