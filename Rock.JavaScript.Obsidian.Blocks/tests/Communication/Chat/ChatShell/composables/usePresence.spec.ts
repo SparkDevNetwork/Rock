@@ -67,6 +67,8 @@ function build(rawSettings: Record<string, unknown> = {}) {
     // Answered at once with a pass unless a test holds the next answers to settle them by hand.
     const held: { value: Deferred<CallResult>[] | null } = { value: null };
     const answers: CallResult[] = [];
+    // A call that rejects rather than answering, as a token refresh that throws would.
+    const rejections: Error[] = [];
     const settings = {
         value: readSettings({ flags: { typing: true }, routes: { region: "us-east-1" }, ...rawSettings })
     };
@@ -90,6 +92,10 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
             calls.push({ path, body, options: options as Call["options"] });
+            const rejection = rejections.shift();
+            if (rejection) {
+                return Promise.reject(rejection);
+            }
             if (held.value) {
                 const answer = deferred<CallResult>();
                 held.value.push(answer);
@@ -111,7 +117,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
     };
 
     const presence: Presence = createPresence(dependencies);
-    return { presence, calls, held, answers, settings, token, state, rows, people, blocked, reports, stopped, newest, sending };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, sending };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -337,6 +343,20 @@ describe("the person's own signals", () => {
     ])("%s is dropped quietly, unreported, and the next change after the interval calls again", async (code, status, text) => {
         const h = build();
         h.answers.push(refused(code, status, text));
+
+        h.presence.typed(group, null, "a");
+        await settle();
+        jest.advanceTimersByTime(4000);
+        h.presence.typed(group, null, "ab");
+        await settle();
+
+        expect(h.calls).toHaveLength(2);
+        expect(h.reports).toEqual([]);
+    });
+
+    test("a call that rejects is dropped quietly like any failure, and the next change after the interval calls again", async () => {
+        const h = build();
+        h.rejections.push(new Error("the refresh threw"));
 
         h.presence.typed(group, null, "a");
         await settle();

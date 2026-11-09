@@ -25,7 +25,7 @@
 // history: a signal lost costs a line for a few seconds, and nothing is caught up or repaired.
 
 import { reactive } from "vue";
-import type { PlatformCall } from "../platformCall.partial";
+import type { CallResult, PlatformCall } from "../platformCall.partial";
 import { isReportedRefusal } from "../errors.partial";
 import type { ShellState } from "../shell.partial";
 import { ChatError, ChatPerson, MessageCreatedEvent, SidebarRow, TypingEvent } from "../types.partial";
@@ -203,18 +203,27 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
         isCallOut = true;
         lastSentAt.set(place, Date.now());
-        const result = await dependencies.callFunction(
-            "chat-typing",
-            { p_channel_id: channelId, p_parent_id: rootId, ...(after !== null ? { p_after: after } : {}) },
-            region ? { headers: { "x-region": region } } : undefined
-        );
-        if (isStopped()) {
-            return;
+        let result: CallResult | null;
+        try {
+            result = await dependencies.callFunction(
+                "chat-typing",
+                { p_channel_id: channelId, p_parent_id: rootId, ...(after !== null ? { p_after: after } : {}) },
+                region ? { headers: { "x-region": region } } : undefined
+            );
         }
-        isCallOut = false;
+        catch {
+            // a call that rejects rather than answering is dropped like any other failure
+            result = null;
+        }
+        finally {
+            // however the call ended the next may go, unless stop has already cleared everything
+            if (!isStopped()) {
+                isCallOut = false;
+            }
+        }
 
         // a pass and a throttled call answer alike, as success with nothing more to do
-        if (result.ok) {
+        if (isStopped() || !result || result.ok) {
             return;
         }
         refused(result.error, channelId, place, token);
