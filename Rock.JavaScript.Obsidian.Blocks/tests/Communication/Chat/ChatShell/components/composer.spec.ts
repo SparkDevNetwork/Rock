@@ -32,6 +32,12 @@ import { TypingLine } from "../../../../../src/Communication/Chat/ChatShell/comp
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
 
+/** The composer's own style block, for the rules jsdom cannot lay out. */
+function composerStyle(): string {
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
+    return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+}
+
 function editorOf(wrapper: VueWrapper): HTMLElement {
     return wrapper.get("[data-testid='composer-input']").element as HTMLElement;
 }
@@ -318,8 +324,7 @@ describe("the composer's typing line", () => {
     // scrollbar of the feed or panel above, so it never covers the bar's arrow or thumb, and it cuts
     // a line too long for it at its own box.
     test("is a band on the composer's top edge that takes no space, its text at the foot's inset", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = composerStyle();
         const rule = (selector: string): string => new RegExp(`(?:^|\\n)${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
 
         expect(rule(".chat-composer")).toMatch(/position: relative;/);
@@ -344,8 +349,7 @@ describe("the composer's typing line", () => {
 
     // The foot holds no typing rule at all: it is back to what it drew before typing was shown.
     test("leaves the foot's own rules untouched", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = composerStyle();
 
         expect(style).not.toMatch(/\.chat-composer-foot[^{]*\.chat-composer-typing/);
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
@@ -396,8 +400,7 @@ describe("the composer's typing line", () => {
     });
 
     test("only the names truncate; the verb keeps its width and its leading space", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = composerStyle();
 
         expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*display: flex;/);
         expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*min-width: 0;/);
@@ -421,8 +424,7 @@ describe("the composer's typing line", () => {
     });
 
     test("its dots pulse, and stand still under reduced motion", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = composerStyle();
         const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
 
         expect(style).toMatch(/\.chat-composer-typing-dots i\s*\{[^}]*animation: chat-pulse var\(--chat-d-pulse\)/);
@@ -920,13 +922,11 @@ describe("the reply composer's Also send switch", () => {
 });
 
 // The foot is one line at every width, so the box above it never moves as the counter appears or
-// in a channel with a long name. The counter, the warning that a send will fail, never gives way;
-// the words beside it do, cut at their end with an ellipsis, so a long room name shortens first.
+// in a channel with a long name. The counter, the warning about the limit, never gives way; the
+// words beside it do, cut at their end with an ellipsis, so a long room name shortens first.
 describe("the composer's foot", () => {
     function rule(selector: string): string {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-
+        const style = composerStyle();
         // The selector alone or as one of a list sharing the rule.
         return new RegExp(`(?:^|\\n)(?:[^{}]*,\\s*)?${selector.replace(/\./g, "\\.")}\\s*(?:,[^{}]*)?\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
     }
@@ -1158,8 +1158,7 @@ describe("the composer's strip for a failed send", () => {
         expect(leaving.exists()).toBe(true);
         expect(leaving.element.parentElement?.classList.contains("chat-strip-leave-active")).toBe(true);
 
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const style = composerStyle();
         const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
         expect(style).toMatch(/\.chat-strip-leave-active\s*\{[^}]*grid-template-rows var\(--chat-t-base\)/);
         expect(reduced).toMatch(/\.chat-strip-leave-to\s*\{[^}]*grid-template-rows: 1fr/);

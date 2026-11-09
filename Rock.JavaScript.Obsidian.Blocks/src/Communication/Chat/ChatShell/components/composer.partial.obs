@@ -455,9 +455,8 @@
 }
 
 /*
- * One line at every width, so the box above never moves. The counter, the warning that a send will
- * fail, never gives way; the words beside it are cut at their end, so a long room name shortens
- * first. The cut is drawn only, and the switch is still named by the whole sentence.
+ * One line at every width, so the box above never moves. The counter, the warning about the limit,
+ * never gives way; the words beside it are cut at their end, so a long room name shortens first. The cut is drawn only, and the switch is still named by the whole sentence.
  */
 .chat-composer-foot {
     display: flex;
