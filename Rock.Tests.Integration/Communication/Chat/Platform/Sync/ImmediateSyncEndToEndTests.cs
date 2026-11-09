@@ -618,6 +618,93 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void APrivateRoomThatHidesItsRosterGivesAPlainMemberNoReachToItsPeopleAndItsLeaderReach()
+        {
+            var platform = LocalChatPlatform.FromEnvironment();
+
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            using ( var recorder = new PushRecorder() )
+            using ( var sync = ChatPlatformSyncHelper.OverrideImmediateSync( recorder ) )
+            {
+                var configuration = platform.ProvisionChurch();
+                fixture.StoreConfiguration( configuration );
+
+                var leaderRoleId = fixture.AddRole( fixture.SharedGroupTypeId, "Leader", true );
+                var channel = fixture.AddChannel( fixture.SharedGroupTypeId, "Hidden roster room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = false;
+                } );
+                var annId = fixture.AddPerson( "Annreach" );
+                var bobId = fixture.AddPerson( "Bobreach" );
+                var leeId = fixture.AddPerson( "Leereach" );
+                var ann = fixture.PrimaryAliasGuid( annId );
+
+                // Ann has Open DM off, so only a room she shares can give anyone reach to her.
+                using ( var rockContext = new RockContext() )
+                {
+                    rockContext.Database.ExecuteSqlCommand( "UPDATE [Person] SET [IsChatOpenDirectMessageAllowed] = 0 WHERE [Id] = @p0", annId );
+                }
+
+                using ( ChatSyncProjectionFixture.InsideRequest() )
+                using ( var rockContext = new RockContext() )
+                {
+                    AddMember( rockContext, channel, annId );
+                    AddMember( rockContext, channel, bobId );
+                    AddMember( rockContext, channel, leeId, leaderRoleId );
+                    rockContext.SaveChanges();
+                }
+
+                Assert.IsTrue( sync.WaitForPushes( TimeSpan.FromSeconds( 10 ) ), "the memberships' push did not finish" );
+                Assert.IsNotNull( platform.WaitForChannel( configuration.TenantId.Value, channel, r => r != null && !( bool ) r["can_view_members"] ),
+                    "the platform never heard the room hides its roster" );
+                Assert.IsNotNull( platform.WaitForMember( configuration.TenantId.Value, channel, fixture.PrimaryAliasGuid( leeId ), r => r != null && ( bool ) r["is_leader"] ),
+                    "the platform never heard who leads the room" );
+                Assert.IsNotNull( platform.WaitForAlias( configuration.TenantId.Value, ann, r => r != null && ( bool? ) r["is_open_dm_allowed"] == false ),
+                    "the platform never heard Ann has Open DM off" );
+
+                // The same three questions for each caller, through the real token exchange: the
+                // people search, the card's Message, and Rock's own Start door.
+                (bool Found, bool CanMessage, string Start) Ask( int callerId )
+                {
+                    var token = PersonToken( callerId, configuration );
+
+                    var search = Post( configuration, "/rest/v1/rpc/chat_search_people", token, new JObject { ["p_query"] = "annreach" } );
+                    Assert.IsTrue( search.IsSuccess, "the people search refused: " + search.Body );
+                    var found = JObject.Parse( search.Body )["people"].Any( p => ( Guid ) p["person_alias_guid"] == ann );
+
+                    var card = Post( configuration, "/rest/v1/rpc/chat_get_person", token,
+                        new JObject { ["p_person_alias_guid"] = ann.ToString(), ["p_channel_id"] = channel.ToString() } );
+                    Assert.IsTrue( card.IsSuccess, "the card refused: " + card.Body );
+                    var canMessage = ( bool ) JObject.Parse( card.Body )["can_message"];
+
+                    using ( ChatSyncProjectionFixture.InsideRequest() )
+                    using ( var rockContext = new RockContext() )
+                    {
+                        var caller = new PersonService( rockContext ).Get( callerId );
+                        var context = Rock.Communication.Chat.Platform.Session.ChatSessionHelper.BuildSessionContext( caller, configuration, rockContext );
+                        var start = Rock.Communication.Chat.Platform.Doors.ChatDoorHelper
+                            .StartDirectMessageAsync( caller, new[] { ann }, context, rockContext ).GetAwaiter().GetResult();
+
+                        return (found, canMessage, start.Code);
+                    }
+                }
+
+                // The plain member first, since the leader's start makes a conversation the two
+                // would then carry on whatever the room says.
+                var bob = Ask( bobId );
+                Assert.IsFalse( bob.Found, "the search lists Ann to a plain member of a room that hides who is in it" );
+                Assert.IsFalse( bob.CanMessage, "the card offers a plain member Message to Ann" );
+                Assert.AreEqual( "door.target_not_eligible", bob.Start, "Rock's door lets a plain member start a conversation with Ann" );
+
+                var lee = Ask( leeId );
+                Assert.IsTrue( lee.Found, "the search hides Ann from the room's leader, who may see its roster" );
+                Assert.IsTrue( lee.CanMessage, "the card refuses the leader Message to Ann" );
+                Assert.AreEqual( "ok", lee.Start, "Rock's door refuses the leader a conversation with Ann" );
+            }
+        }
+
         #endregion Tests
 
         #region Support

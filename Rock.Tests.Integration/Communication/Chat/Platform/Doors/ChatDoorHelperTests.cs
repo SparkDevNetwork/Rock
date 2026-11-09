@@ -365,6 +365,37 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void OpenDmOffAndOnlyAPrivateRoomWhoseGroupTypeHidesItsRosterSharedIsRefused()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: false );
+
+                // A church mostly hides a roster by the group type, a support group's for one, and
+                // leaves the group's own override unset, so the room takes the type's value.
+                using ( var rockContext = new RockContext() )
+                {
+                    new GroupTypeService( rockContext ).Get( scene.Fixture.SharedGroupTypeId ).CanViewMembers = false;
+                    rockContext.SaveChanges();
+                }
+
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Hidden by its type", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.CanViewMembersOverride = null;
+                } );
+                scene.Fixture.AddMember( room, ada );
+                scene.Fixture.AddMember( room, bo );
+
+                var result = scene.Start( ada, scene.Alias( bo ) );
+
+                Assert.AreEqual( "door.target_not_eligible", result.Code, "the type hides who is in the room from a plain member, so it gives no reach" );
+                Assert.AreEqual( 0, scene.DirectMessagesWithExactly( ada, bo ).Count, "and nothing was made" );
+            }
+        }
+
+        [TestMethod]
         public void OpenDmOffAndAPrivateRoomThatHidesItsRosterIsAllowedForItsLeader()
         {
             using ( var scene = new ChatDoorScene() )
