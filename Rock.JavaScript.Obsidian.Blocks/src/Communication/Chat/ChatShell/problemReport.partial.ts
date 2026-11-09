@@ -25,8 +25,8 @@
 // keep reporting it; a report that fails is let go, since telling the platform must never become
 // a failure the person sees or another report. What is worth a number, a gap in what was heard,
 // is counted instead and sent as the page is hidden or left, each send the count since the last.
-// Those sends have a cap of their own, apart from the one-off reports', because a load hidden
-// often can send counts many times and must never use up the room the rare reports need.
+// Those tallies have a cap of their own, apart from the one-off reports', because a load hidden
+// often can send them many times and must never use up the room the rare reports need.
 import { InjectionKey } from "vue";
 import { CallResult } from "./platformCall.partial";
 import { PageEventTargets } from "./composables/useMarkRead.partial";
@@ -39,8 +39,8 @@ export type ProblemReportOptions = {
     /** How many one-off reports a page load may send, read from the settings at each report. */
     reportCap: () => number;
 
-    /** How many sends of counts a page load may make, read from the settings at each send. */
-    countCap: () => number;
+    /** How many tallies a page load may send, one for each kind and code counted at each hide, read from the settings at each send. */
+    tallyCap: () => number;
 };
 
 /** What the components that draw a fallback reach the report by. */
@@ -120,8 +120,8 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
     /** How many one-off reports this load, a failed one included, which their cap holds. */
     let reportSends = 0;
 
-    /** How many sends of counts this load, a failed one included, which their own cap holds. */
-    let countSends = 0;
+    /** How many tallies this load, a failed one included, which their own cap holds. */
+    let tallySends = 0;
 
     /** Set once the shell stops; nothing is sent after it. */
     let isStopped = false;
@@ -156,10 +156,10 @@ export function createProblemReport(options: ProblemReportOptions): ProblemRepor
             return;
         }
         for (const { kind, code, count } of tallies.values()) {
-            if (countSends >= Math.floor(options.countCap())) {
+            if (tallySends >= Math.floor(options.tallyCap())) {
                 break;
             }
-            countSends++;
+            tallySends++;
             send(kind, code, count, undefined, true);
         }
         tallies.clear();

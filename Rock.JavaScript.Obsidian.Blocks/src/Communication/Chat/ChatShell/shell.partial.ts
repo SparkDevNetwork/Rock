@@ -586,7 +586,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const problems = createProblemReport({
         call: (name, args, callOptions) => call(name, args, callOptions),
         reportCap: () => session.settings().limits.problem_reports_per_load,
-        countCap: () => session.settings().limits.count_reports_per_load
+        tallyCap: () => session.settings().limits.tally_reports_per_load
     });
 
     /**

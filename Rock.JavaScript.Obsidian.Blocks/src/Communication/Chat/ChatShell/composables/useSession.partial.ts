@@ -66,8 +66,9 @@ export type ChatSettings = {
     /** The send's route, and the database's region, which calls that can be pinned to it are; null for none. */
     routes: { send: string, region: string | null };
     limits: {
-        reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number, count_reports_per_load: number,
-        gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number, typing_interval_ms: number, typing_expiry_ms: number
+        reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number,
+        tally_reports_per_load: number, gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number,
+        typing_interval_ms: number, typing_expiry_ms: number
     } & PlatformLimits & AttachmentTypes;
     /**
      * Switches by name; gifs is whether the church may search for and send GIFs, and typing
@@ -97,25 +98,23 @@ const pushPrompts = ["off", "offer", "after_send"];
  * The defaults when the platform sends nothing for a key. The reconnect and catch-up figures are
  * estimates, not measurements; the platform can change them without a release.
  */
-const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof AttachmentTypes> = {
+export const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | keyof AttachmentTypes> = {
     reconnect_base_ms: 1000,
     reconnect_cap_ms: 30000,
     catch_up_page: 100,
     catch_up_max: 500,
     // an estimate: enough to name what went wrong on a load without a page that keeps failing flooding the log
     problem_reports_per_load: 10,
-    // An estimate: how many times a load may send its counts (a gap in what was heard live), one
-    // each time the page is hidden or left with something counted. A cap of its own, so a load
-    // hidden often while it misses changes never spends the one-off reports' cap and hides them.
-    count_reports_per_load: 10,
+    // An estimate: how many tallies (counts of something gone wrong, a gap in what was heard live)
+    // a load may send, one for each kind and code counted each time the page is hidden or left.
+    // A cap of its own, so a load hidden often while it misses changes never spends the one-off
+    // reports' cap.
+    tally_reports_per_load: 10,
     // A missed live change: how long a hole in a room's revisions may stay open before it is a gap
-    // (Telegram's figure), the longest random wait before its repair, and how long a room may go
-    // with nothing confirmed before a gap reloads it rather than repairs it. The wait is 20 s
-    // because a Realtime restart has every viewer of a room repair at once: spread over 5 s,
-    // 1,300 of them need about four database cores, over 20 s about one. A missed change can
-    // then show up to 20 s late, and only after a restart; a church's settings can change it.
+    // (Telegram's figure), the longest random wait before its repair (the rejoin's wait), and how
+    // long a room may go with nothing confirmed before a gap reloads it rather than repairs it.
     gap_reorder_ms: 500,
-    gap_repair_wait_ms: 20000,
+    gap_repair_wait_ms: 5000,
     stale_reload_ms: 900000,
     // A platform without typing's pace sends no typing flag either; these only keep a missing key
     // from becoming a signal on every key.
@@ -195,7 +194,7 @@ export function readSettings(raw: unknown): ChatSettings {
             catch_up_page: Math.min(100, Math.max(1, Math.round(limit("catch_up_page")))),
             catch_up_max: limit("catch_up_max"),
             problem_reports_per_load: limit("problem_reports_per_load"),
-            count_reports_per_load: limit("count_reports_per_load"),
+            tally_reports_per_load: limit("tally_reports_per_load"),
             gap_reorder_ms: limit("gap_reorder_ms"),
             gap_repair_wait_ms: limit("gap_repair_wait_ms"),
             stale_reload_ms: limit("stale_reload_ms"),

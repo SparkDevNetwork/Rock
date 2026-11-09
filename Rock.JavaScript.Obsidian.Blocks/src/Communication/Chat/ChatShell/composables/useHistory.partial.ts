@@ -42,7 +42,7 @@ import { reactive, toRaw } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
-import { PlatformLimits } from "./useSession.partial";
+import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
@@ -83,8 +83,8 @@ export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(messa
     return message.client_key && key !== message.client_key ? { ...message, client_key: key } : message;
 }
 
-/** How a missed live change is noticed and repaired, when the settings name nothing else: estimates. */
-export const defaultRevRules = { reorderMs: 500, repairWaitMs: 5000, staleMs: 900000 };
+/** How a missed live change is noticed and repaired when nothing is passed: the settings' own defaults, so the two never differ. */
+export const defaultRevRules = { reorderMs: defaultLimits.gap_reorder_ms, repairWaitMs: defaultLimits.gap_repair_wait_ms, staleMs: defaultLimits.stale_reload_ms };
 
 /**
  * What a row shows for a message. The server decides when a message is hidden or removed and
