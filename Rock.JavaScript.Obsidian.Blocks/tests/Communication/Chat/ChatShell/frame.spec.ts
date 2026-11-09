@@ -272,6 +272,8 @@ function fakeShell(): Record<string, unknown> {
         members: fakeMembers(),
         prefs: fakePrefs(),
         blocks: fakeBlocks(),
+        // no one else typing, and the person's own typing asked of nothing
+        presence: { state: reactive({ typists: {} }), typed: jest.fn(), lineFor: () => null },
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
