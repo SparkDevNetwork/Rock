@@ -695,7 +695,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
         onLanded: message => sender.landed(message),
         isOffline: () => state.connection !== null,
-        mask: message => blocks.mask(message)
+        mask: message => blocks.mask(message),
+        isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid)
     });
 
     /**

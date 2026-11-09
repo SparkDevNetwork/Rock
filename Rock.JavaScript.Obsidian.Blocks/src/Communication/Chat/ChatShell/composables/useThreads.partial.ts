@@ -157,6 +157,9 @@ export type ThreadsDependencies = {
 
     /** What the reader may see of a message, applied to every root and reply as it is written. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
+
+    /** Whether an alias is someone the reader blocked, whose reply is not news to them. Required, for the same reason. */
+    isBlocked: (personAliasGuid: string | null) => boolean;
 };
 
 /** The threads a shell holds. */
@@ -657,7 +660,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
     }
 
-    /** Moves one held copy of a root by a thread.updated, marking it unread when someone else replied. */
+    /** Moves one held copy of a root by a thread.updated, marking it unread when someone else, not blocked, replied. */
     function moveRoot(root: TimelineMessage, update: ThreadUpdatedEvent, isOpen: boolean): void {
         const newest = update.repliers?.[0]?.person_alias_guid?.toLowerCase() ?? null;
         const isNewReply = update.reply_count > (root.reply_count ?? 0);
@@ -670,7 +673,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             // the platform makes whoever replies follow the thread
             root.thread_following = true;
         }
-        else if (isNewReply && root.thread_following === true && !isOpen) {
+        else if (isNewReply && root.thread_following === true && !isOpen && !dependencies.isBlocked(newest)) {
+            // a reply by someone the reader blocked is not news, as the platform's bold reads it
             root.thread_unread = true;
         }
         if (update.reply_count === 0 && root.thread_unread === true) {

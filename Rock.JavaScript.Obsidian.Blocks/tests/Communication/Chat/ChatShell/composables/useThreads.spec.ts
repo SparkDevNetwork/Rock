@@ -185,7 +185,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }, blocked: string[] = []): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -215,6 +215,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
         timelines,
         personAliasGuid: me,
         catchUp: () => catchUp,
+        isBlocked: guid => guid !== null && blocked.includes(guid.toLowerCase()),
         onLanded,
         ...(isOffline ? { isOffline } : {})
     });
@@ -1125,6 +1126,23 @@ describe("thread.updated", () => {
         expect(timelineRoot(timelines, 40).thread_unread).toBe(false);
     });
 
+    test("leaves a followed root read when the newest replier is someone the reader blocked, as a reload answers it", async () => {
+        const { threads, timelines } = await setup({ messages: [root(40, { thread_following: true, thread_unread: false })], read_cursor: null, unread_count: 0, has_more: false }, undefined, undefined, undefined, [ben]);
+
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [benReplier, annaReplier], 3));
+
+        expect(timelineRoot(timelines, 40).reply_count).toBe(3);
+        expect(timelineRoot(timelines, 40).thread_unread).toBe(false);
+    });
+
+    test("still marks it unread when someone else replied after the person blocked", async () => {
+        const { threads, timelines } = await setup({ messages: [root(40, { thread_following: true, thread_unread: false })], read_cursor: null, unread_count: 0, has_more: false }, undefined, undefined, undefined, [ben]);
+
+        threads.applyEvent(channel, "thread.updated", threadUpdated(40, [annaReplier, benReplier], 3));
+
+        expect(timelineRoot(timelines, 40).thread_unread).toBe(true);
+    });
+
     test("leaves a followed root read while its thread is open", async () => {
         const { threads, timelines, answers } = await setup({ messages: [root(40, { thread_following: true, thread_unread: false })], read_cursor: null, unread_count: 0, has_more: false });
         answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)])];
@@ -1443,7 +1461,8 @@ describe("a block, as what the threads hold is masked where it is written", () =
             timelines,
             personAliasGuid: me,
             catchUp: () => ({ page: 19, max: 40 }),
-            mask: m => blocks.mask(m)
+            mask: m => blocks.mask(m),
+            isBlocked: guid => blocks.isBlocked(guid)
         });
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),

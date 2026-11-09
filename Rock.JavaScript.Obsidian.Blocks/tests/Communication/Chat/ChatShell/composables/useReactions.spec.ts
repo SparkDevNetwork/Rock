@@ -987,7 +987,7 @@ describe("a page read before a reaction", () => {
             applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload),
             mask: platformMask
         } as never);
-        const threads = createThreads({ mask: platformMask, limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me });
+        const threads = createThreads({ mask: platformMask, limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me, isBlocked: () => false });
         reactions = createReactions({
             call: () => {
                 const answer = answers.shift() ?? ok({});
