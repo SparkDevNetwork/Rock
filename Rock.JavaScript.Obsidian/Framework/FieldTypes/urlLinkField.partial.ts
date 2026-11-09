@@ -18,7 +18,6 @@ import { Component } from "vue";
 import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { stringComparisonTypes } from "@Obsidian/Core/Reporting/comparisonType";
-import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 import { isUrlSchemeSafe } from "@Obsidian/Utility/url";
@@ -42,19 +41,11 @@ const configurationComponent = defineAsyncComponent(async () => {
  */
 export class UrlLinkFieldType extends FieldTypeBase {
     public override getHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped: boolean = false): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
         const textValue = this.getTextValue(value, configurationValues);
 
         let htmlValue = "";
         if (textValue) {
-            if (!shouldAlwaysShowCondensed) {
-                htmlValue = this.getLinkHtml(textValue);
-            }
-            else {
-                // The text value is the raw link markup, so build the safe
-                // link from the value instead.
-                htmlValue = this.getLinkHtml(value);
-            }
+            htmlValue = this.getLinkHtml(textValue);
         }
 
         if (isEscaped) {
@@ -62,15 +53,6 @@ export class UrlLinkFieldType extends FieldTypeBase {
         }
 
         return htmlValue;
-    }
-
-    public override getTextValue(value: string, configurationValues: Record<string, string>): string {
-        const shouldAlwaysShowCondensed = asBoolean(configurationValues[ConfigurationValueKey.ShouldAlwaysShowCondensed]);
-        if (shouldAlwaysShowCondensed) {
-            return `<a href="${value}">${value}</a>`;
-        }
-
-        return value;
     }
 
     /**
