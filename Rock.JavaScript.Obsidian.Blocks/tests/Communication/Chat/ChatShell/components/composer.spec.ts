@@ -246,7 +246,7 @@ describe("the composer's typing line", () => {
     test("takes the key hint's place with the words", () => {
         const wrapper = mountComposer({ props: { title: "Anna Reyes", typingLine: anna } });
 
-        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
+        expect(wrapper.get("[data-testid='composer-typing'] .chat-composer-typing-text").text()).toBe("Anna is typing…");
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
 
@@ -260,7 +260,7 @@ describe("the composer's typing line", () => {
     test("on a phone it takes the foot's otherwise empty row", () => {
         const wrapper = mountComposer({ props: { isPhone: true, typingLine: anna } });
 
-        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Anna is typing…");
+        expect(wrapper.get("[data-testid='composer-typing'] .chat-composer-typing-text").text()).toBe("Anna is typing…");
     });
 
     test("in a thread it follows the also-send switch, which stays, and the counter stays last", () => {
@@ -280,7 +280,9 @@ describe("the composer's typing line", () => {
     });
 
     // A typing line with a zero basis takes only the width the label and the counter leave over, so
-    // neither gives way to it, and the label still shrinks against the counter as it always has.
+    // neither gives way to it, and the label still shrinks against the counter as it always has. Its
+    // dots and verb never shrink, so a line left less room than them is cut at its own box and never
+    // paints over the counter or past the foot.
     test("in a thread the typing line takes only the space left over and truncates there", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
@@ -289,11 +291,12 @@ describe("the composer's typing line", () => {
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
         expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*max-width: 100%;/);
         expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*min-width: 0;/);
+        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*overflow: hidden;/);
     });
 
-    // However narrow the foot, what is left must still read as typing: the names give way, the verb
-    // never does, and a screen reader hears the whole sentence.
-    test("is drawn as names that may shrink and a verb that does not, reading as one sentence", () => {
+    // However narrow the foot, what is left must still read as typing: the names give way and the
+    // verb never does.
+    test("is drawn as names that may shrink and a verb that does not", () => {
         const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew", verb: "is typing…" } } });
         const line = wrapper.get("[data-testid='composer-typing']");
         const text = line.get(".chat-composer-typing-text").element;
@@ -303,11 +306,26 @@ describe("the composer's typing line", () => {
         expect(text.textContent).toBe("Bartholomew is typing…");
     });
 
+    // The drawn parts are flex items, so a screen reader would meet them as two lines; it is given
+    // the sentence once instead, and the drawn parts are hidden from it.
+    test("a screen reader hears the whole sentence once and never the drawn parts", () => {
+        const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew", verb: "is typing…" } } });
+        const line = wrapper.get("[data-testid='composer-typing']").element;
+        const heard = line.querySelectorAll(".chat-sr-only");
+
+        expect(heard).toHaveLength(1);
+        expect(heard[0].textContent).toBe("Bartholomew is typing…");
+        expect(heard[0].closest("[aria-hidden='true']")).toBeNull();
+        expect(line.querySelector(".chat-composer-typing-names")?.closest("[aria-hidden='true']")).not.toBeNull();
+        expect(line.querySelector(".chat-composer-typing-verb")?.closest("[aria-hidden='true']")).not.toBeNull();
+    });
+
     test("two names shrink as one part", () => {
         const wrapper = mountComposer({ props: { typingLine: { names: "Bartholomew and Anna", verb: "are typing…" } } });
 
         expect(wrapper.get(".chat-composer-typing-names").text()).toBe("Bartholomew and Anna");
-        expect(wrapper.get("[data-testid='composer-typing']").text()).toBe("Bartholomew and Anna are typing…");
+        expect(wrapper.get(".chat-composer-typing-text").text()).toBe("Bartholomew and Anna are typing…");
+        expect(wrapper.get("[data-testid='composer-typing'] .chat-sr-only").text()).toBe("Bartholomew and Anna are typing…");
     });
 
     test("several people is the verb alone, kept whole", () => {
@@ -316,6 +334,7 @@ describe("the composer's typing line", () => {
 
         expect(wrapper.find(".chat-composer-typing-names").exists()).toBe(false);
         expect(text.textContent).toBe("Several people are typing…");
+        expect(wrapper.get("[data-testid='composer-typing'] .chat-sr-only").text()).toBe("Several people are typing…");
     });
 
     test("only the names truncate; the verb keeps its width and its leading space", () => {

@@ -151,7 +151,8 @@
                 <!-- Read where a person moves to it, never announced: a live region would speak every pause. -->
                 <span v-if="typingLine" class="chat-composer-typing" data-testid="composer-typing">
                     <span class="chat-composer-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-                    <span class="chat-composer-typing-text"><span v-if="typingLine.names" class="chat-composer-typing-names">{{ typingLine.names }}</span><span class="chat-composer-typing-verb">{{ typingLine.names ? ` ${typingLine.verb}` : typingLine.verb }}</span></span>
+                    <span class="chat-composer-typing-text" aria-hidden="true"><span v-if="typingLine.names" class="chat-composer-typing-names">{{ typingLine.names }}</span><span class="chat-composer-typing-verb">{{ typingLine.names ? ` ${typingLine.verb}` : typingLine.verb }}</span></span>
+                    <span class="chat-sr-only">{{ typingLine.names ? `${typingLine.names} ${typingLine.verb}` : typingLine.verb }}</span>
                 </span>
                 <span v-else-if="!isThread && !isPhone" class="chat-composer-hint" data-testid="composer-hint"><kbd>Enter</kbd> to send, <kbd>Shift + Enter</kbd> for a new line</span>
                 <span class="chat-composer-count" data-testid="composer-count" :data-tone="count?.tone">{{ count?.text ?? "" }}</span>
@@ -484,7 +485,9 @@
 /*
  * Someone else typing, in the hint's place in the foot's reserved row, so nothing above it moves. It
  * fades in and leaves at once, so it never lingers past the message that ended it. A zero basis has it
- * take only the width the also-send label and the counter leave over, so neither gives way to it.
+ * take only the width the also-send label and the counter leave over, so neither gives way to it,
+ * and a line left less room than its dots and verb is cut at its own box, never painting over the
+ * counter or past the foot.
  */
 .chat-composer-typing {
     display: inline-flex;
@@ -492,13 +495,15 @@
     gap: 6px;
     align-items: center;
     min-width: 0;
+    overflow: hidden;
     animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-out);
 }
 
 /*
  * The names give way with an ellipsis and the verb never does, so however narrow the foot, what is
- * left still reads as someone typing. The space before the verb is its own text, kept by `pre`, so
- * the line reads as one sentence to a screen reader and when copied.
+ * left still reads as someone typing. The space before the verb is its own text, kept by `pre`.
+ * Flex items are blocks, so a screen reader is given the sentence from a visually hidden copy and
+ * never these drawn parts.
  */
 .chat-composer-typing-text {
     display: flex;
