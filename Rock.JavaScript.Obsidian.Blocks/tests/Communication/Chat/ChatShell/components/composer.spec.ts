@@ -276,13 +276,15 @@ describe("the composer's typing line", () => {
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
 
-    // Flex shares an overflow among the row's shrinkable items, so a label left shrinkable would
-    // wrap to a second line in a narrow drawer and grow the foot; only the typing line gives way.
-    test("in a thread the also-send label keeps its width and the typing line truncates", () => {
+    // A typing line with a zero basis takes only the width the label and the counter leave over, so
+    // neither gives way to it, and the label still shrinks against the counter as it always has.
+    test("in a thread the typing line takes only the space left over and truncates there", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
-        expect(style).toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
+        expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*flex: 1 1 0;/);
+        expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*flex: none;/);
+        expect(style).not.toMatch(/\.chat-composer-also\s*\{[^}]*max-width: 100%;/);
         expect(style).toMatch(/\.chat-composer-typing\s*\{[^}]*min-width: 0;/);
         expect(style).toMatch(/\.chat-composer-typing-text\s*\{[^}]*text-overflow: ellipsis;/);
     });

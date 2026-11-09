@@ -465,14 +465,8 @@
     box-shadow: none;
 }
 
-/*
- * It keeps its width beside a typing line, which is the one item in the foot that gives way; only a
- * conversation's name too long for the foot on its own wraps it.
- */
 .chat-composer-also {
     display: inline-flex;
-    flex: none;
-    max-width: 100%;
     gap: 8px;
     align-items: center;
     margin: 0;
@@ -489,10 +483,12 @@
 
 /*
  * Someone else typing, in the hint's place in the foot's reserved row, so nothing above it moves. It
- * fades in and leaves at once, so it never lingers past the message that ended it.
+ * fades in and leaves at once, so it never lingers past the message that ended it. A zero basis has it
+ * take only the width the also-send label and the counter leave over, so neither gives way to it.
  */
 .chat-composer-typing {
     display: inline-flex;
+    flex: 1 1 0;
     gap: 6px;
     align-items: center;
     min-width: 0;
