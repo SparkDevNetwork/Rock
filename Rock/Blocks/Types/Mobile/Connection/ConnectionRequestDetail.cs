@@ -1331,7 +1331,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
             ConnectionRequestActivity activity = null;
             if ( activityGuid != null )
             {
-                activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid.Value );
+                // Only return an activity that this request's detail view lists.
+                activity = GetConnectionRequestActivities( request, rockContext ).FirstOrDefault( a => a.Guid == activityGuid.Value );
             }
 
             return (activity, connectors, activityTypes, null);
@@ -1854,21 +1855,18 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 Guid? activityTypeGuid = null;
                 string activityType = "";
 
-                if ( activityGuid != null )
+                var activity = requestActivityBag.Activity;
+
+                if ( activity != null )
                 {
-                    var activity = new ConnectionRequestActivityService( rockContext ).Get( activityGuid );
-
-                    if ( activity != null )
+                    if ( activity.ConnectorPersonAliasId.HasValue )
                     {
-                        if ( activity.ConnectorPersonAliasId.HasValue )
-                        {
-                            connectorGuid = new PersonAliasService( rockContext ).Get( activity.ConnectorPersonAliasId.Value ).Guid;
-                        }
-
-                        activityType = activity.ConnectionActivityType.ToString();
-                        activityNote = activity.Note;
-                        activityTypeGuid = activity.ConnectionActivityType.Guid;
+                        connectorGuid = new PersonAliasService( rockContext ).Get( activity.ConnectorPersonAliasId.Value ).Guid;
                     }
+
+                    activityType = activity.ConnectionActivityType.ToString();
+                    activityNote = activity.Note;
+                    activityTypeGuid = activity.ConnectionActivityType.Guid;
                 }
 
                 return ActionOk( new Common.Mobile.Blocks.Connection.ConnectionRequestDetail.ConnectionRequestActivityDetailBag
@@ -2034,8 +2032,33 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     return ActionUnauthorized();
                 }
 
+                // Only accept an activity that this request's detail view lists.
+                if ( !GetConnectionRequestActivities( request, rockContext ).Any( a => a.Id == activityToUpdate.Id ) )
+                {
+                    return ActionNotFound( "Unable to find that specific activity." );
+                }
+
+                // The activity may belong to a sibling request when the full
+                // activity list is enabled, so check EDIT on that request too.
+                if ( activityToUpdate.ConnectionRequestId != request.Id )
+                {
+                    var activityRequest = connectionRequestService.Queryable()
+                        .Include( r => r.ConnectionOpportunity.ConnectionType )
+                        .FirstOrDefault( r => r.Id == activityToUpdate.ConnectionRequestId );
+
+                    if ( activityRequest == null || !activityRequest.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionUnauthorized();
+                    }
+                }
+
+                if ( !IsActivityModifiable( activityToUpdate ) )
+                {
+                    return ActionForbidden( "You don't have permission to edit that activity." );
+                }
+
                 var connectionActivityType = connectionActivityTypeService.Get( activity.ActivityTypeGuid );
-                if ( connectionActivityType == null )
+                if ( connectionActivityType == null || connectionActivityType.ConnectionTypeId != request.ConnectionOpportunity.ConnectionTypeId )
                 {
                     return ActionBadRequest( "Unable to find that connection activity type." );
                 }
