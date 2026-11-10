@@ -433,10 +433,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             }
         }
 
-        // A time line fades where it stood only while its row rides the stack. A row that steps, as
-        // every row does under reduced motion, or one above the newest does when something above it
-        // changes, takes its time line at once rather than leaving it over what stepped into its place.
-        const played = reduced ? 0 : offset;
+        // A time line fades where it stood only while its row rides the glide: what takes its place
+        // then moves in, and so is drawn over it. Under reduced motion nothing moves in, so it would
+        // be drawn over what stands in its place; and a row that steps, as the rows above the newest
+        // do when something above them changes, leaves it behind. Either way it goes at once.
         for (const part of [...lifted]) {
             if (part.element.dataset.tail !== "meta") {
                 continue;
@@ -444,7 +444,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             const key = part.element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? "";
             const stood = was.rows.find(row => row.key === key);
             const now = drawnRows.get(key);
-            if (!stood || !now || Math.abs(stood.top - now.getBoundingClientRect().top - played) > .5) {
+            if (reduced || !stood || !now || Math.abs(stood.top - now.getBoundingClientRect().top - offset) > .5) {
                 lifted.splice(lifted.indexOf(part), 1);
                 part.done();
             }
