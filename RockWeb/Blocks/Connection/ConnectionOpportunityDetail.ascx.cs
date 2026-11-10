@@ -250,6 +250,9 @@ namespace RockWeb.Blocks.Connection
                 nbNotAllowedToEdit.Visible = false;
                 nbInvalidGroupType.Visible = false;
                 nbInvalidGroupTypes.Visible = false;
+                nbWorkflowError.Visible = false;
+                nbGroupNotAvailable.Visible = false;
+                nbConnectorGroupNotAvailable.Visible = false;
 
                 DefaultConnectors = new Dictionary<int, int>();
                 foreach ( var item in lvDefaultConnectors.Items )
@@ -937,6 +940,22 @@ namespace RockWeb.Blocks.Connection
                 var group = new GroupService( rockContext ).Get( groupId );
                 if ( group != null )
                 {
+                    /*
+                        11/10/2026 - MSE
+
+                        The group picker value is a posted form field, so it can be changed after the page renders.
+                        Repeat the picker's VIEW filter here. A group already on the opportunity is accepted so an
+                        unchanged value keeps saving. Nothing is added to GroupsState when this refuses.
+
+                        Reason: Posted placement groups must be ones the person is allowed to view.
+                    */
+                    if ( !GroupsState.Any( g => g.GroupId == group.Id ) && !group.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+                    {
+                        nbGroupNotAvailable.Text = "One or more of the selected groups are not available.";
+                        nbGroupNotAvailable.Visible = true;
+                        return;
+                    }
+
                     int? groupTypeId = ddlGroupType.SelectedValueAsInt();
                     if ( groupTypeId.HasValue && group.GroupTypeId != groupTypeId.Value )
                     {
@@ -1212,6 +1231,25 @@ namespace RockWeb.Blocks.Connection
         {
             Guid guid = hfConnectorGroupGuid.Value.AsGuid();
             var connectorGroup = ConnectorGroupsState.Where( g => g.Guid.Equals( guid ) ).FirstOrDefault();
+
+            /*
+                11/10/2026 - MSE
+
+                The group picker value is a posted form field, so it can be changed after the page renders.
+                Repeat the picker's VIEW filter here, before a new row is added to ConnectorGroupsState so a refused
+                save leaves nothing behind. The group already on the row being edited is accepted so an unchanged
+                value keeps saving.
+
+                Reason: Posted connector groups must be ones the person is allowed to view.
+            */
+            var postedGroup = new GroupService( new RockContext() ).Get( gpGroup.ItemId.AsInteger() );
+            if ( postedGroup != null && postedGroup.Id != connectorGroup?.GroupId && !postedGroup.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                nbConnectorGroupNotAvailable.Text = "The selected group is not available.";
+                nbConnectorGroupNotAvailable.Visible = true;
+                return;
+            }
+
             if ( connectorGroup == null )
             {
                 connectorGroup = new GroupStateObj();
@@ -1444,6 +1482,26 @@ namespace RockWeb.Blocks.Connection
                 workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
             }
 
+            /*
+                11/10/2026 - MSE
+
+                The workflow type picker value is a posted form field, so it can be changed after the page renders.
+                Repeat the picker's VIEW filter here, before a new row is added to WorkflowsState so a refused save
+                leaves nothing behind. The workflow type already on the row being edited is accepted so an unchanged
+                value keeps saving.
+
+                Reason: Posted workflow types must be ones the person is allowed to view.
+            */
+            var postedWorkflowTypeId = wpWorkflowType.SelectedValueAsId();
+            var workflowType = postedWorkflowTypeId.HasValue ? new WorkflowTypeService( new RockContext() ).Get( postedWorkflowTypeId.Value ) : null;
+            if ( workflowType == null ||
+                ( workflowType.Id != workflowTypeStateObj?.WorkflowTypeId && !workflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
+            {
+                nbWorkflowError.Text = "The selected workflow type is not available.";
+                nbWorkflowError.Visible = true;
+                return;
+            }
+
             if ( workflowTypeStateObj == null )
             {
                 workflowTypeStateObj = new WorkflowTypeStateObj();
@@ -1451,12 +1509,8 @@ namespace RockWeb.Blocks.Connection
                 WorkflowsState.Add( workflowTypeStateObj );
             }
 
-            var workflowType = new WorkflowTypeService( new RockContext() ).Get( wpWorkflowType.SelectedValueAsId().Value );
-            if ( workflowType != null )
-            {
-                workflowTypeStateObj.WorkflowTypeId = workflowType.Id;
-                workflowTypeStateObj.WorkflowTypeName = workflowType.Name;
-            }
+            workflowTypeStateObj.WorkflowTypeId = workflowType.Id;
+            workflowTypeStateObj.WorkflowTypeName = workflowType.Name;
 
             workflowTypeStateObj.TriggerType = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>();
             workflowTypeStateObj.QualifierValue = string.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );

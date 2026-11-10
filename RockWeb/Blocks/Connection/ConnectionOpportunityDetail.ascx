@@ -241,6 +241,8 @@
 
                 <asp:ValidationSummary ID="valWorkflowDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="WorkflowDetails" />
 
+                <Rock:NotificationBox ID="nbWorkflowError" runat="server" NotificationBoxType="Danger" Visible="false" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When"
@@ -293,6 +295,7 @@
             <Content>
                 <asp:ValidationSummary ID="valGroupDetails" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="GroupDetails" />
                 <Rock:NotificationBox ID="nbInvalidGroupType" runat="server" NotificationBoxType="Danger" Visible="false" Heading="Group Type" />
+                <Rock:NotificationBox ID="nbGroupNotAvailable" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <Rock:GroupPicker ID="gpOpportunityGroup" runat="server" Label="Select Group" AllowMultiSelect="true" ValidationGroup="GroupDetails" />
             </Content>
         </Rock:ModalDialog>
@@ -328,6 +331,7 @@
         <Rock:ModalDialog ID="dlgConnectorGroupDetails" runat="server" ValidationGroup="ConnectorGroup" SaveButtonText="Add" OnSaveClick="dlgConnectorGroupDetails_SaveClick" Title="Select Group">
             <Content>
                 <asp:ValidationSummary ID="valConnectorGroup" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ConnectorGroup" />
+                <Rock:NotificationBox ID="nbConnectorGroupNotAvailable" runat="server" NotificationBoxType="Danger" Visible="false" />
                 <asp:HiddenField ID="hfConnectorGroupGuid" runat="server" />
                 <div class="row">
                     <div class="col-md-6">
