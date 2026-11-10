@@ -297,6 +297,16 @@ function ()
         }
 
         /// <summary>
+        /// Gets the id of the data view that is referenced by a stored selection.
+        /// </summary>
+        /// <param name="selection">A formatted string representing the filter settings.</param>
+        /// <returns>The referenced data view id, or <c>null</c>.</returns>
+        internal static int? GetReferencedDataViewId( string selection )
+        {
+            return DataComponentSettingsHelper.GetDataViewId( new FilterSettings( selection ?? string.Empty ).PersonDataViewGuid );
+        }
+
+        /// <summary>
         /// Gets a formatted string representing the current filter control values.
         /// </summary>
         /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
