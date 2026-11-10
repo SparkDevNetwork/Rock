@@ -918,7 +918,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             nameFromRepliers(message, thread.root?.repliers ?? pendingRootUpdate?.repliers);
         }
         insertReply(message);
-        dependencies.motion.arrived(message);
+        // One heard while the first page is out is part of that page, as the timeline holds such a
+        // message until its page lands: the drawer draws them together, and neither rises.
+        if (!thread.isLoading) {
+            dependencies.motion.arrived(message);
+        }
     }
 
     /**
