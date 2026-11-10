@@ -1358,6 +1358,12 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            // Refuse an unavailable automation data view before anything on the status is changed.
+            if ( rcwStatusAutomationsEdit.Visible && !IsStatusAutomationDataViewAllowed( connectionStatus ) )
+            {
+                return;
+            }
+
             connectionStatus.Name = tbConnectionStatusName.Text;
             connectionStatus.Description = tbConnectionStatusDescription.Text;
             if ( cbIsDefault.Checked == true )
@@ -1637,6 +1643,11 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            if ( !IsStatusAutomationDataViewAllowed( connectionStatus ) )
+            {
+                return;
+            }
+
             AddOrUpdateConnectionStatusAutomation( connectionStatus );
 
             SetStatusAutomationEditMode( false );
@@ -1673,6 +1684,25 @@ namespace RockWeb.Blocks.Connection
             if ( !guid.IsEmpty() )
             {
                 connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( guid ) );
+            }
+
+            /*
+                11/10/2026 - MSE
+
+                The workflow type picker value is a posted form field, so it can be changed after the page renders.
+                Repeat the picker's VIEW filter here. The workflow type already on the row being edited is accepted
+                so an unchanged value keeps saving.
+
+                Reason: Posted workflow types must be ones the person is allowed to view.
+            */
+            var postedWorkflowTypeId = wpWorkflowType.SelectedValueAsId();
+            var postedWorkflowType = postedWorkflowTypeId.HasValue ? new WorkflowTypeService( new RockContext() ).Get( postedWorkflowTypeId.Value ) : null;
+            if ( postedWorkflowType == null ||
+                ( postedWorkflowType.Id != connectionWorkflow?.WorkflowTypeId && !postedWorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
+            {
+                nbWorkflowError.Text = "The selected workflow type is not available.";
+                nbWorkflowError.Visible = true;
+                return;
             }
 
             if ( connectionWorkflow == null )
@@ -1743,6 +1773,7 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionWorkflowGuid">The connection workflow unique identifier.</param>
         protected void gWorkflows_ShowEdit( Guid connectionWorkflowGuid )
         {
+            nbWorkflowError.Visible = false;
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
@@ -2333,6 +2364,48 @@ namespace RockWeb.Blocks.Connection
             {
                 connectionStatus.ConnectionStatusAutomations.Add( connectionStatusAutomation );
             }
+        }
+
+        /// <summary>
+        /// Determines whether the data view selected in the status automation editor can be saved by the current person.
+        /// Shows a message when it cannot.
+        /// </summary>
+        /// <param name="connectionStatus">The connection status being edited.</param>
+        /// <returns><c>true</c> if no data view is selected, it is unchanged, or the person can view it; otherwise <c>false</c>.</returns>
+        private bool IsStatusAutomationDataViewAllowed( ConnectionStatusState connectionStatus )
+        {
+            /*
+                11/10/2026 - MSE
+
+                The data view picker value is a posted form field, so it can be changed after the page renders.
+                Repeat the picker's filter here (a connection request data view, with VIEW on the data view and on its filter). The data view already on
+                the automation is accepted so an unchanged value keeps saving. Callers run this before anything on
+                the status or automation is changed, so a refusal changes nothing.
+
+                Reason: Posted data views must be ones the person is allowed to view.
+            */
+            var dataViewId = dvpDataView.SelectedValueAsId();
+            var connectionStatusAutomationGuid = hfConnectionStatusAutomationGuid.Value.AsGuid();
+            var connectionStatusAutomation = connectionStatus.ConnectionStatusAutomations.FirstOrDefault( a => a.Guid == connectionStatusAutomationGuid );
+            if ( !dataViewId.HasValue || connectionStatusAutomation?.DataViewId == dataViewId )
+            {
+                return true;
+            }
+
+            var postedDataView = DataViewCache.Get( dataViewId.Value );
+            var connectionRequestEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.ConnectionRequest ) ).Id;
+            if ( postedDataView != null && postedDataView.EntityTypeId == connectionRequestEntityTypeId && postedDataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) && postedDataView.DataViewFilter != null )
+            {
+                var allEntityFilters = DataViewFilterCache.All().Where( df => df.EntityTypeId == postedDataView.EntityTypeId ).ToList();
+                if ( postedDataView.DataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson, allEntityFilters ) )
+                {
+                    return true;
+                }
+            }
+
+            nbStatusWarning.Text = "The selected data view is not available.";
+            nbStatusWarning.Visible = true;
+            return false;
         }
 
         #endregion

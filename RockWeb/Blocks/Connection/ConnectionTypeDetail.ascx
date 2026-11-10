@@ -312,6 +312,8 @@
 
                 <asp:ValidationSummary ID="valConnectionWorkflowSummary" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation" ValidationGroup="ConnectionWorkflow" />
 
+                <Rock:NotificationBox ID="nbWorkflowError" runat="server" NotificationBoxType="Danger" Visible="false" />
+
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:RockDropDownList ID="ddlTriggerType" runat="server" Label="Launch Workflow When"
