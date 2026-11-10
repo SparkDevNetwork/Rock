@@ -125,6 +125,33 @@ describe("createTimelines", () => {
         expect(fetches).toEqual([{ limit: 7 }, { limit: 9, beforeId: 2 }]);
     });
 
+    // Presence keeps anyone heard after a read was asked, so the read's clock is taken before the
+    // request goes: a signal heard while the page is out is newer than its answer.
+    test("the newest page tells typing the clock as it was asked, before the request went", async () => {
+        const first = deferred<HistoryPage>();
+        let clock = 1_000;
+        const now = jest.spyOn(Date, "now").mockImplementation(() => clock);
+        const told: number[] = [];
+        try {
+            const timelines = createTimelines({
+                motion: createMessageMotion(),
+                mask: platformMask,
+                limits,
+                fetchPage: () => first.promise,
+                typing: { heldThrough: () => undefined, stated: (_channel, _root, _typists, askedAt) => void told.push(askedAt) }
+            });
+            const loading = timelines.loadNewest(channel);
+            clock = 2_000;
+            first.resolve(page([1, 2], { typing: [] } as Partial<HistoryPage>));
+            await loading;
+        }
+        finally {
+            now.mockRestore();
+        }
+
+        expect(told).toEqual([1_000]);
+    });
+
     test("a live message before the first page is held, then applied after it, once", async () => {
         const first = deferred<HistoryPage>();
         const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits, fetchPage: () => first.promise });

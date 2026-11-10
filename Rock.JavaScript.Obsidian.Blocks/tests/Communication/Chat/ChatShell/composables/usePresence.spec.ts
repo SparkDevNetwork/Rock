@@ -23,7 +23,7 @@
 // until it expires, stops, is overtaken, sent or blocked, each end recorded once with its cause and
 // never before a typist has been shown for the minimum; and the platform's answer of who is typing,
 // drawn as what is.
-import { reactive } from "vue";
+import { reactive, shallowRef } from "vue";
 import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
@@ -82,9 +82,8 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const answers: CallResult[] = [];
     // A call that rejects rather than answering, as a token refresh that throws would.
     const rejections: Error[] = [];
-    const settings = {
-        value: readSettings({ ...current, ...rawSettings })
-    };
+    // a shallow ref, as the session holds them, so a change of the switch is seen as it lands
+    const settings = shallowRef(readSettings({ ...current, ...rawSettings }));
     const token = { value: "token-1" as string | null };
     const state = reactive({ activeChannelId: group as string | null, connection: null as ChatError | null, isComposerOpen: true });
     const rows: Record<string, Partial<SidebarRow>> = {
@@ -999,6 +998,23 @@ describe("the typing a page states", () => {
         expect(h.records).toEqual([`started ${group}`, `ended ${group} overtaken`]);
     });
 
+    // A word typed and deleted never blinks, whoever says it is over: an answer leaving out someone
+    // drawn under the minimum ends her only once she has been shown for it.
+    test("a typist the answer leaves out before her minimum show is drawn until it, then ends as overtaken", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        jest.advanceTimersByTime(300);
+
+        h.presence.stated(group, null, [], Date.now() + 1);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+
+        jest.advanceTimersByTime(699);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        jest.advanceTimersByTime(1);
+        expect(h.presence.state.typists[group]).toBeUndefined();
+        expect(h.records).toEqual([`started ${group}`, `ended ${group} overtaken`]);
+    });
+
     test("an answer with no list of typists removes no one, and an answer for one place leaves another's typists", () => {
         const h = build();
         h.presence.heard("typing", signal(anna));
@@ -1119,7 +1135,7 @@ describe("the typing a place draws", () => {
 });
 
 describe("typing switched off", () => {
-    test("a signal draws no one, and anyone drawn before is drawn no more", () => {
+    test("a signal draws no one, and anyone drawn before ends as cleared", () => {
         const h = build();
         h.presence.heard("typing", signal(anna));
         expect(h.presence.typingIn(group)).not.toBeNull();
@@ -1128,7 +1144,12 @@ describe("typing switched off", () => {
         h.presence.heard("typing", signal(sam));
 
         expect(h.presence.typingIn(group)).toBeNull();
-        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.presence.state.typists[group]).toBeUndefined();
+        expect(h.records).toEqual([`started ${group}`, `ended ${group} cleared`]);
+
+        // switched on again, no one held from before comes back
+        h.settings.value = readSettings({ ...current, flags: { typing: true } });
+        expect(h.presence.typingIn(group)).toBeNull();
     });
 });
 

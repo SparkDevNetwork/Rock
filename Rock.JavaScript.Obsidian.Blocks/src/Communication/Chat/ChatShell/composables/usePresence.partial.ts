@@ -164,7 +164,16 @@ export type TypingWords = {
  * drawn, when a signal of theirs was last heard, when their typing expires, and when a stop heard
  * takes them, if one was.
  */
-type Typist = { after: number, shownAt: number, heardAt: number, expiresAt: number, stopAt: number | null };
+type Typist = {
+    after: number;
+    shownAt: number;
+    heardAt: number;
+    expiresAt: number;
+
+    /** When a stop takes her, held to the minimum show, and why: a stop heard, or a page's answer leaving her out. */
+    stopAt: number | null;
+    stopCause: "stopped" | "overtaken";
+};
 
 /**
  * The person's turn in one place, from its first key to its send: the box's text, when its last
@@ -418,6 +427,19 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
     }
 
+    // Typing switched off ends everyone drawn as cleared, so nothing held comes back if it is
+    // switched on again within an expiry; what is heard while it is off draws no one.
+    const stopWatchingSwitch = watch(() => settings().flags.typing, isOn => {
+        if (!isOn && typists.size > 0) {
+            for (const [place, held] of [...typists]) {
+                for (const alias of [...held.keys()]) {
+                    end(place, alias, "cleared");
+                }
+            }
+            changed();
+        }
+    }, { flush: "sync" });
+
     // A place that leaves the screen ends its turn there with nothing sent, whichever way it goes:
     // a room switch, the drawer closing, or the drawer moving to another thread. Watched at once,
     // so a timer set for it never fires for a room the person has left.
@@ -490,7 +512,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         for (const [place, held] of typists) {
             for (const [alias, typist] of held) {
                 if (endsAt(typist) <= now) {
-                    end(place, alias, typist.stopAt !== null ? "stopped" : "expired");
+                    end(place, alias, typist.stopAt !== null ? typist.stopCause : "expired");
                 }
             }
         }
@@ -530,14 +552,16 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (typist) {
             typist.after = Math.max(typist.after, after);
             typist.expiresAt = Math.max(typist.expiresAt, expiresAt);
-            // still typing after a stop: the stop is past
+            // still typing after a stop, or named again after an answer left her out: the stop is past
             if (isHeard) {
                 typist.heardAt = Date.now();
+            }
+            if (isHeard || typist.stopCause === "overtaken") {
                 typist.stopAt = null;
             }
             return;
         }
-        held.set(alias, { after, shownAt: Date.now(), heardAt: isHeard ? Date.now() : 0, expiresAt, stopAt: null });
+        held.set(alias, { after, shownAt: Date.now(), heardAt: isHeard ? Date.now() : 0, expiresAt, stopAt: null, stopCause: "stopped" });
         if (isFirst && isHeard) {
             motion.typingStarted(place);
         }
@@ -579,6 +603,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (typing?.stopped === true) {
             if (typist) {
                 typist.stopAt = Math.max(Date.now(), typist.shownAt + settings().limits.typing_min_show_ms);
+                typist.stopCause = "stopped";
                 changed();
             }
             return;
@@ -649,10 +674,17 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
         // The answer read the typists in the same statement as the page, so one held here that it
         // leaves out stopped, expired or was blocked before the read; a signal heard after the
-        // read was asked is newer than the answer, and stays.
+        // read was asked is newer than the answer, and stays. She goes once shown for the minimum.
         for (const [alias, typist] of [...typists.get(place) ?? []]) {
             if (!named.has(alias) && typist.heardAt < askedAt) {
-                end(place, alias, "overtaken");
+                const at = typist.shownAt + settings().limits.typing_min_show_ms;
+                if (at <= now) {
+                    end(place, alias, "overtaken");
+                }
+                else if (typist.stopAt === null || typist.stopAt > at) {
+                    typist.stopAt = at;
+                    typist.stopCause = "overtaken";
+                }
             }
         }
         changed();
@@ -718,6 +750,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
         stop: () => {
             stopWatchingScreen();
+            stopWatchingSwitch();
             for (const place of [...turns.keys()]) {
                 forget(place);
             }

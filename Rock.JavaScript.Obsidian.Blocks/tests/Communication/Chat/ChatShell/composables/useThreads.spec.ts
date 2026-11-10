@@ -1970,6 +1970,33 @@ describe("the room's revision, as the open thread holds it", () => {
 // Each page of the open thread tells typing what it now holds and, on its first page, who the
 // platform says is typing a reply, so a thread opened while someone types shows them.
 describe("the open thread's typing", () => {
+    // As the conversation's page, the thread's read takes its clock before the request goes, so
+    // anyone heard while it is out is kept against its answer.
+    test("the first page tells typing the clock as it was asked, before the request went", async () => {
+        const told: number[] = [];
+        const typing = {
+            heldThrough: (): void => undefined,
+            stated: (_channel: string, _root: number | null, _typists: unknown, askedAt: number): void => void told.push(askedAt)
+        };
+        const h = await setup(undefined, undefined, undefined, undefined, [], typing);
+        const first = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [first];
+        let clock = 1_000;
+        const now = jest.spyOn(Date, "now").mockImplementation(() => clock);
+        try {
+            const opening = h.threads.openThread(channel, 1);
+            await settle();
+            clock = 2_000;
+            first.resolve(threadAnswer(root(1), [reply(2, 1)], { typing: [] }));
+            await opening;
+        }
+        finally {
+            now.mockRestore();
+        }
+
+        expect(told).toEqual([1_000]);
+    });
+
     test("the first page and a reread tell typing every reply they hold and the typists the first page answers", async () => {
         const told: string[] = [];
         const typing = {
