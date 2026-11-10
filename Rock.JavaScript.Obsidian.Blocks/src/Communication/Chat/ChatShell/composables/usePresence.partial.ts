@@ -37,6 +37,7 @@ import { isReportedRefusal } from "../errors.partial";
 import type { MessageMotion, TypingEnd } from "../messageMotion.partial";
 import type { ShellState } from "../shell.partial";
 import { ChatError, ChatPerson, MessageCreatedEvent, SidebarRow, TypingEvent, TypingSnapshot } from "../types.partial";
+import { personName } from "../ui/face.partial";
 import { quoteKey } from "./useMessageActions.partial";
 import type { ChatSettings } from "./useSession.partial";
 
@@ -152,7 +153,7 @@ export type Typing = {
 
 /** What is said of the people typing in a place. */
 export type TypingWords = {
-    /** Who is typing, as a group's name line says it: "Anna", "Anna and Sam", or "Several people". */
+    /** Who is typing, as a group's name line says it: "Anna Park", "Anna and Sam", or "Several people". */
     names: string;
 
     /** The whole sentence: "Anna is typing…". */
@@ -170,9 +171,11 @@ type Typist = {
     heardAt: number;
     expiresAt: number;
 
-    /** When a stop takes her, held to the minimum show, and why: a stop heard, or a page's answer leaving her out. */
+    /** When a stop takes her, held to the minimum show: a stop heard, or a page's answer leaving her out. */
     stopAt: number | null;
-    stopCause: "stopped" | "overtaken";
+
+    /** Whether that stop is a page's answer leaving her out, which a later answer naming her undoes. */
+    isLeftOut: boolean;
 };
 
 /**
@@ -218,7 +221,8 @@ export function typingWords(people: ReadonlyArray<Pick<ChatPerson, "nick_name" |
 
     if (names.length === 1) {
         const one = names[0] ?? "Someone";
-        return { names: one, sentence: `${one} is typing…` };
+        // one typist's name line is her message's, as the bubble is drawn as her next message would be
+        return { names: (people[0] && personName(people[0])) || one, sentence: `${one} is typing…` };
     }
 
     const two = `${names[0] ?? "Someone"} and ${names[1] ?? "someone"}`;
@@ -511,8 +515,9 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         const now = Date.now();
         for (const [place, held] of typists) {
             for (const [alias, typist] of held) {
+                // a stop, heard or learned from an answer, goes as a stop does, sliding out
                 if (endsAt(typist) <= now) {
-                    end(place, alias, typist.stopAt !== null ? typist.stopCause : "expired");
+                    end(place, alias, typist.stopAt !== null ? "stopped" : "expired");
                 }
             }
         }
@@ -556,12 +561,13 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             if (isHeard) {
                 typist.heardAt = Date.now();
             }
-            if (isHeard || typist.stopCause === "overtaken") {
+            if (isHeard || typist.isLeftOut) {
                 typist.stopAt = null;
+                typist.isLeftOut = false;
             }
             return;
         }
-        held.set(alias, { after, shownAt: Date.now(), heardAt: isHeard ? Date.now() : 0, expiresAt, stopAt: null, stopCause: "stopped" });
+        held.set(alias, { after, shownAt: Date.now(), heardAt: isHeard ? Date.now() : 0, expiresAt, stopAt: null, isLeftOut: false });
         if (isFirst && isHeard) {
             motion.typingStarted(place);
         }
@@ -603,7 +609,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (typing?.stopped === true) {
             if (typist) {
                 typist.stopAt = Math.max(Date.now(), typist.shownAt + settings().limits.typing_min_show_ms);
-                typist.stopCause = "stopped";
+                typist.isLeftOut = false;
                 changed();
             }
             return;
@@ -648,8 +654,9 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     }
 
     function stated(channelId: string, rootId: number | null, answered: unknown, askedAt: number): void {
-        // an answer with no list says nothing of typing, as an older platform's or a channel's
-        if (isStopped() || !Array.isArray(answered)) {
+        // an answer with no list says nothing of typing, as an older platform's or a channel's; while
+        // typing is off nothing is held, so switching it on again draws no one from before
+        if (isStopped() || !Array.isArray(answered) || !settings().flags.typing) {
             return;
         }
         const place = quoteKey(channelId, rootId);
@@ -674,16 +681,18 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
         // The answer read the typists in the same statement as the page, so one held here that it
         // leaves out stopped, expired or was blocked before the read; a signal heard after the
-        // read was asked is newer than the answer, and stays. She goes once shown for the minimum.
+        // read was asked is newer than the answer, and stays. Past her minimum she ends with the
+        // page's render, so nothing moves; under it she is held to it, then goes as a stop does,
+        // and a stop already heard is kept as it is.
         for (const [alias, typist] of [...typists.get(place) ?? []]) {
             if (!named.has(alias) && typist.heardAt < askedAt) {
                 const at = typist.shownAt + settings().limits.typing_min_show_ms;
                 if (at <= now) {
                     end(place, alias, "overtaken");
                 }
-                else if (typist.stopAt === null || typist.stopAt > at) {
+                else if (typist.stopAt === null) {
                     typist.stopAt = at;
-                    typist.stopCause = "overtaken";
+                    typist.isLeftOut = true;
                 }
             }
         }

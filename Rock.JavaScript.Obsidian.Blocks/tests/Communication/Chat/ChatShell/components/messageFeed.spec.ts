@@ -36,7 +36,7 @@ import { createSender, SendResult } from "../../../../../src/Communication/Chat/
 import { createTimelines, TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import { Typing, typingWords, TypingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 import { playAnimations, tailPlayed } from "../tailStage";
 
@@ -187,7 +187,8 @@ type FeedProps = {
 };
 
 /** Anna typing, as the presence gives it. */
-const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
+const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+const annaTyping: Typing = { typists: [{ alias: anna, person: annaPerson }], ...typingWords([annaPerson]) as TypingWords };
 
 function draw(props: FeedProps, reveal?: { isMainRevealed: boolean }): VueWrapper {
     const provide = reveal ? { [pageRevealKey as symbol]: { state: reveal, holdFace: () => undefined } } : {};
@@ -1426,7 +1427,7 @@ describe("someone else typing", () => {
         const bens = wrapper.get("[data-message-id='2']");
 
         expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(false);
-        expect(wrapper.get("[data-testid='typing-names']").text()).toBe("Anna");
+        expect(wrapper.get("[data-testid='typing-names']").text()).toBe("Anna Reyes");
         expect(bens.attributes("data-position")).toBe("single");
         expect(bens.find("[data-testid='sender-avatar']").exists()).toBe(true);
     });
@@ -1438,6 +1439,19 @@ describe("someone else typing", () => {
 
         expect(wrapper.get("[data-message-id='1']").attributes("data-position")).toBe("single");
         expect(wrapper.find("[data-message-id='1'] [data-testid='sender-avatar']").exists()).toBe(true);
+    });
+
+    // The name line glides from the bubble into her group as her message lands, so it says what her
+    // group's will: a name that changed as it landed would swap in one frame.
+    test("her group's name line, as her message lands, reads what the bubble's said", async () => {
+        const state = timeline([message(1, ben, at(14, 58))]);
+        const wrapper = draw({ timeline: state, typing: annaTyping });
+        const said = wrapper.get("[data-testid='typing-names']").text();
+
+        state.messages.push(message(2, anna, at(14, 59)));
+        await wrapper.setProps({ typing: null });
+
+        expect(wrapper.get("[data-message-id='2'] [data-testid='sender-name']").text()).toBe(said);
     });
 
     test("is not drawn while the first page is still loading", async () => {
@@ -1462,7 +1476,7 @@ describe("someone else typing", () => {
         const direct = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true, typing: annaTyping });
 
         expect(group.findComponent(TypingBubble).props("isGroup")).toBe(true);
-        expect(group.get("[data-testid='typing-names']").text()).toBe("Anna");
+        expect(group.get("[data-testid='typing-names']").text()).toBe("Anna Reyes");
         expect(direct.findComponent(TypingBubble).props("isGroup")).toBe(false);
         expect(direct.find("[data-testid='typing-names']").exists()).toBe(false);
     });

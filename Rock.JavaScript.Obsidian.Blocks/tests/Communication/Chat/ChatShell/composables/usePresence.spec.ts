@@ -847,7 +847,7 @@ describe("the others' signals", () => {
         expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([anna]);
         expect(h.presence.state.typists[group]).toBeUndefined();
         expect(h.presence.typingIn(group)).toBeNull();
-        expect(h.presence.typingIn(quoteKey(group, 40))).toMatchObject({ names: "Anna", sentence: "Anna is typing…" });
+        expect(h.presence.typingIn(quoteKey(group, 40))).toMatchObject({ names: "Anna Reyes", sentence: "Anna is typing…" });
     });
 
     // A typist held when the person switched away is still true for the rest of her expiry, so the
@@ -863,7 +863,7 @@ describe("the others' signals", () => {
         expect(h.presence.state.typists[otherGroup]).toEqual([sam]);
 
         h.state.activeChannelId = group;
-        expect(h.presence.typingIn(group)?.names).toBe("Anna");
+        expect(h.presence.typingIn(group)?.names).toBe("Anna Reyes");
         jest.advanceTimersByTime(6000);
         expect(h.presence.state.typists).toEqual({});
     });
@@ -999,8 +999,9 @@ describe("the typing a page states", () => {
     });
 
     // A word typed and deleted never blinks, whoever says it is over: an answer leaving out someone
-    // drawn under the minimum ends her only once she has been shown for it.
-    test("a typist the answer leaves out before her minimum show is drawn until it, then ends as overtaken", () => {
+    // drawn under the minimum ends her only once she has been shown for it. That end lands on its
+    // own, long after the page, so it is a stop learned late and goes as a stop does, sliding out.
+    test("a typist the answer leaves out before her minimum show is drawn until it, then ends as stopped", () => {
         const h = build();
         h.presence.heard("typing", signal(anna));
         jest.advanceTimersByTime(300);
@@ -1012,7 +1013,36 @@ describe("the typing a page states", () => {
         expect(h.presence.state.typists[group]).toEqual([anna]);
         jest.advanceTimersByTime(1);
         expect(h.presence.state.typists[group]).toBeUndefined();
-        expect(h.records).toEqual([`started ${group}`, `ended ${group} overtaken`]);
+        expect(h.records).toEqual([`started ${group}`, `ended ${group} stopped`]);
+    });
+
+    test("held to her minimum by an answer that left her out, a later answer naming her keeps her drawn", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        jest.advanceTimersByTime(300);
+        h.presence.stated(group, null, [], Date.now() + 1);
+        jest.advanceTimersByTime(100);
+
+        h.presence.stated(group, null, [stated(anna, { age_ms: 0 })], Date.now());
+        jest.advanceTimersByTime(1000);
+
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.records).toEqual([`started ${group}`]);
+    });
+
+    test("an answer leaving out a typist whose stop was heard keeps the stop: a later answer naming her does not keep her", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        jest.advanceTimersByTime(200);
+        h.presence.heard("typing", stop(anna));
+        jest.advanceTimersByTime(100);
+
+        h.presence.stated(group, null, [], Date.now() + 1);
+        h.presence.stated(group, null, [stated(anna, { age_ms: 0 })], Date.now() + 1);
+        jest.advanceTimersByTime(700);
+
+        expect(h.presence.state.typists[group]).toBeUndefined();
+        expect(h.records).toEqual([`started ${group}`, `ended ${group} stopped`]);
     });
 
     test("an answer with no list of typists removes no one, and an answer for one place leaves another's typists", () => {
@@ -1082,6 +1112,13 @@ describe("the typing words", () => {
         expect(typingWords([person(anna, null, "Reyes")])).toEqual({ names: "Reyes", sentence: "Reyes is typing…" });
     });
 
+    // The bubble is drawn as her next message would be, so one typist's name line reads the name
+    // her message's name line will, and a group hand-off never swaps one name for another.
+    test("one typist's name line reads her name as her message draws it; the sentence keeps her nick name", () => {
+        expect(typingWords([person(anna, "Anna", "Park")])).toEqual({ names: "Anna Park", sentence: "Anna is typing…" });
+        expect(typingWords([person(anna, "Anna", "Park"), person(sam, "Sam", "Kim")])).toEqual({ names: "Anna and Sam", sentence: "Anna and Sam are typing…" });
+    });
+
     test("two typists of one nick name are told apart by their last initial", () => {
         expect(typingWords([person(anna, "Anna", "Baker"), person(sam, "Anna", "Kim")])).toEqual({ names: "Anna B. and Anna K.", sentence: "Anna B. and Anna K. are typing…" });
     });
@@ -1095,7 +1132,7 @@ describe("the typing words", () => {
         h.presence.heard("typing", signal(sam, { channel_id: five }), five);
         expect(h.presence.typingIn(five)).toEqual({
             typists: [{ alias: sam, person: person(sam, "Sam", "Okafor") }],
-            names: "Sam",
+            names: "Sam Okafor",
             sentence: "Sam is typing…"
         });
 
@@ -1150,6 +1187,17 @@ describe("typing switched off", () => {
         // switched on again, no one held from before comes back
         h.settings.value = readSettings({ ...current, flags: { typing: true } });
         expect(h.presence.typingIn(group)).toBeNull();
+    });
+
+    test("a page's answer while it is off holds no one, so switching it on again within an expiry draws no one", () => {
+        const h = build();
+        h.settings.value = readSettings({ ...current, flags: { typing: false } });
+
+        h.presence.stated(group, null, [{ person_alias_guid: anna, after: 10, age_ms: 0 }], Date.now());
+        h.settings.value = readSettings({ ...current, flags: { typing: true } });
+
+        expect(h.presence.typingIn(group)).toBeNull();
+        expect(h.presence.state.typists[group]).toBeUndefined();
     });
 });
 
