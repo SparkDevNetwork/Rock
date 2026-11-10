@@ -718,13 +718,15 @@ describe("the components' own styles", () => {
     });
 
     // A conversation opened in place of another rises 6px into view over the view time on the
-    // entrance curve; under reduced motion a switch is not animated at all.
+    // entrance curve; under reduced motion a switch is not animated at all. Its keyframes are the
+    // token sheet's, where the build keeps the name the feed's tail finds the entrance by.
     test("a conversation switch enters its feed from 6px below, and not at all under reduced motion", () => {
         const animation = declarationOf(feedPath, ".chat-feed.is-entering", "animation");
         expect(animation).toContain(normalize("var(--chat-d-view) var(--chat-ease-in)"));
 
         const name = animation.split(/\s|var\(/)[0];
-        const frames = normalize(keyframesBody(feedPath, name) ?? "");
+        expect(keyframesBody(feedPath, name)).toBeNull();
+        const frames = normalize(keyframesBody(sheetPath, name) ?? "");
         expect(frames).toContain("opacity:0");
         expect(frames).toContain(normalize("transform: translateY(6px)"));
 

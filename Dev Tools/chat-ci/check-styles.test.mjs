@@ -10,7 +10,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { scan, styleFiles } from './check-styles.mjs';
+import { scan, scanKeyframeNames, styleFiles } from './check-styles.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -434,6 +434,40 @@ test('run on the green fixtures, which hold a token sheet full of literals, it p
   const result = run('--root', 'check-styles-fixtures/green');
 
   assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
+test('it refuses a keyframe a script finds by name when a scoped block defines it, since the build renames it there', () => {
+  const component = [
+    '<template><div class="chat-feed"></div></template>',
+    '<style scoped>',
+    '.chat-feed.is-entering {',
+    '    animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);',
+    '}',
+    '@keyframes chat-feed-enter {',
+    '    from { opacity: 0; }',
+    '}',
+    '@keyframes chat-unread-flash {',
+    '    from { opacity: 0; }',
+    '}',
+    '</style>',
+  ].join('\n');
+  const script = [
+    'const entrance = animations.find(animation => (animation as CSSAnimation).animationName === "chat-feed-enter");',
+    'const isFlash = event.animationName.includes("chat-unread-flash");',
+  ].join('\n');
+  const sheet = '@keyframes chat-enter {\n    from { opacity: 0; }\n}\n';
+  const reader = ['<script setup lang="ts">', "if (event.animationName === 'chat-enter') done();", '</script>'].join('\n');
+
+  const hits = scanKeyframeNames([
+    { file: `${shell}/components/feed.partial.obs`, text: component },
+    { file: `${shell}/composables/useTail.partial.ts`, text: script },
+    { file: 'RockWeb/Styles/Blocks/Communication/Chat/chat.css', text: sheet },
+    { file: `${shell}/ui/host.partial.obs`, text: reader },
+  ]);
+
+  // only the scoped definition of a name read exactly: a name read by part, or defined in the sheet, is not renamed out of reach
+  assert.deepEqual(hits.map((hit) => hit.replace(/:\d+:.*/, '')), [`${shell}/components/feed.partial.obs`], hits.join(' | '));
+  assert.match(hits[0], /:6:.*chat-feed-enter/);
 });
 
 test('it reads the chat block and every file under its folder', () => {

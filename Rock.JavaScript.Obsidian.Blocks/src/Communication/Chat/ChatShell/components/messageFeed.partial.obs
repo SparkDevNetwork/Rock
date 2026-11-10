@@ -302,7 +302,9 @@
 
 /*
     A conversation opened in place of another rises into view, and a first page rises in as it is
-    drawn; a page already held when the block first draws it is simply there.
+    drawn; a page already held when the block first draws it is simply there. Its keyframes are in
+    the token sheet, since the feed's tail finds the entrance by name to carry what lands inside it,
+    and a keyframe in a scoped block is renamed by the build.
 */
 .chat-feed.is-entering {
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
@@ -688,17 +690,6 @@
     }
 }
 
-@keyframes chat-feed-enter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
 </style>
 
 <script setup lang="ts">

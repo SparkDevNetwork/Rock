@@ -1138,6 +1138,23 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     }
 }
 
+/*
+    The conversation's entrance, which the feed plays on its scroller. Defined here, where no build
+    renames it, because the feed's tail finds it by this name: whatever lands at the newest end while
+    it plays rides it to its end rather than stepping inside a feed still rising.
+*/
+@keyframes chat-feed-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
 .chat-shell .chat-ls-row {
     position: relative;
     border-radius: var(--chat-r-md);
