@@ -769,6 +769,24 @@ describe("her message ending her typing", () => {
         expect((stage as Stage).played.some(motion => motion.element === meta && motion.id === "chat-tail-out")).toBe(false);
     });
 
+    // Two of her groups joining, as clearing the unread line between them does, steps the rows above
+    // the newest: a time line its row gives up as it steps goes with it, rather than standing where
+    // it was over the row that stepped into its place.
+    test("a time line its row gives up as the row steps, not riding the stack, goes at once", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: anna }, { key: "k:2", sender: anna, isNewGroup: true }] });
+        const meta = part(v, "meta:k:1");
+        expect(opacity(meta)).toBe(1);
+
+        v.rows[1].isNewGroup = false;
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: me });
+        await settle();
+
+        expect(opacity(meta)).toBe(0);
+        expect((stage as Stage).played.some(motion => motion.element === meta)).toBe(false);
+    });
+
     test("a time line its row shows again while it fades is back in the flow at once", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });

@@ -372,9 +372,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const tokens = tokensOf(content);
         const reduced = isMotionReduced();
         // What goes: the parts handed over, and each time line read standing that its row now hides.
-        // Under reduced motion the rows step, so a time line hidden goes at once rather than drawing
-        // over what stepped into its place.
-        const parting = reduced ? handed : [...handed, ...[...was.parts.values()]
+        const parting = [...handed, ...[...was.parts.values()]
             .filter(part => kindOf(part.id) === "meta" && part.element.isConnected && part.element.hidden)
             .map(part => hiding(part.element))];
         const bubbleGoing = parting.find(part => part.element.dataset.tail === "typing:typing");
@@ -432,6 +430,23 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             if (now) {
                 offset = Math.max(-height, Math.min(height, stood.top - now.getBoundingClientRect().top));
                 break;
+            }
+        }
+
+        // A time line fades where it stood only while its row rides the stack. A row that steps, as
+        // every row does under reduced motion, or one above the newest does when something above it
+        // changes, takes its time line at once rather than leaving it over what stepped into its place.
+        const played = reduced ? 0 : offset;
+        for (const part of [...lifted]) {
+            if (part.element.dataset.tail !== "meta") {
+                continue;
+            }
+            const key = part.element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? "";
+            const stood = was.rows.find(row => row.key === key);
+            const now = drawnRows.get(key);
+            if (!stood || !now || Math.abs(stood.top - now.getBoundingClientRect().top - played) > .5) {
+                lifted.splice(lifted.indexOf(part), 1);
+                part.done();
             }
         }
 
