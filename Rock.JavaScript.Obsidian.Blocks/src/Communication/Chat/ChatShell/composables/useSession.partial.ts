@@ -68,7 +68,7 @@ export type ChatSettings = {
     limits: {
         reconnect_base_ms: number, reconnect_cap_ms: number, catch_up_page: number, catch_up_max: number, problem_reports_per_load: number,
         tally_reports_per_load: number, gap_reorder_ms: number, gap_repair_wait_ms: number, stale_reload_ms: number,
-        typing_interval_ms: number, typing_expiry_ms: number
+        typing_interval_ms: number, typing_expiry_ms: number, typing_first_after_ms: number, typing_min_show_ms: number
     } & PlatformLimits & AttachmentTypes;
     /**
      * Switches by name; gifs is whether the church may search for and send GIFs, and typing
@@ -119,7 +119,11 @@ export const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | 
     // A platform without typing's pace sends no typing flag either; these only keep a missing key
     // from becoming a signal on every key.
     typing_interval_ms: 4000,
-    typing_expiry_ms: 6000
+    typing_expiry_ms: 6000,
+    // A message sent within the first wait never shows typing; a typist drawn stays at least the
+    // minimum, so a word typed and deleted never blinks.
+    typing_first_after_ms: 700,
+    typing_min_show_ms: 1000
 };
 
 /** The platform's limits by name, read from every exchange's answer. */
@@ -200,6 +204,8 @@ export function readSettings(raw: unknown): ChatSettings {
             stale_reload_ms: limit("stale_reload_ms"),
             typing_interval_ms: limit("typing_interval_ms"),
             typing_expiry_ms: limit("typing_expiry_ms"),
+            typing_first_after_ms: limit("typing_first_after_ms"),
+            typing_min_show_ms: limit("typing_min_show_ms"),
             ...platformLimits,
             // a list of anything but strings is no list, so files are refused rather than guessed at
             attachment_types: Array.isArray(limits.attachment_types) && limits.attachment_types.every(type => typeof type === "string")

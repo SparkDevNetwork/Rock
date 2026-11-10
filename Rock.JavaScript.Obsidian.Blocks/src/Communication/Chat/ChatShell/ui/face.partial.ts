@@ -28,7 +28,7 @@ import type { AvatarPerson } from "./avatar.partial.obs";
  *
  * @returns The name, or an empty string for someone with none.
  */
-export function personName(person: ChatPerson): string {
+export function personName(person: Pick<ChatPerson, "nick_name" | "last_name">): string {
     return [person.nick_name, person.last_name].filter(part => !!part).join(" ");
 }
 

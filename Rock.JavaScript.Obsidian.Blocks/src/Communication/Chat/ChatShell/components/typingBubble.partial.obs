@@ -1,0 +1,181 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Transition :css="false" @leave="onLeave">
+        <div v-if="typing" class="chat-typing" :class="{ 'is-in-run': isInRun }" data-tail="typing:typing" data-testid="typing-bubble">
+            <div class="chat-typing-in">
+                <Transition :css="false" @leave="onLeave">
+                    <div v-if="isGroup && !isInRun" :key="who" class="chat-typing-names" :data-tail="`name:${groupKey}`" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
+                </Transition>
+                <div class="chat-typing-line" aria-hidden="true">
+                    <Transition :css="false" @leave="onLeave">
+                        <Avatar v-if="faces.length === 1" :key="who" class="chat-typing-face" :data-tail="`face:${groupKey}`" :people="faces" :size="34" />
+                        <GroupFace v-else :key="who" class="chat-typing-face" :data-tail="`face:${groupKey}`" :people="faces" :size="34" />
+                    </Transition>
+                    <span class="chat-typing-bubble" data-tail="dots:typing" data-testid="typing-dots"><i></i><i></i><i></i></span>
+                </div>
+                <span class="chat-sr-only">{{ typing.sentence }}</span>
+            </div>
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+/*
+    Someone else typing, drawn as their next message would be: the newest row of the feed or the
+    thread, their face or the group face of everyone typing beside a bubble of three dots, and in a
+    group the name line above it. It stands where the reply will land, inset as another person's
+    group and spaced from the row above as a group, or as a row continuing the typist's own run,
+    from the group measures the feed or the thread states once for its groups and this alike. It
+    has no motion of its own: the feed or the thread moves its tail, this with it.
+*/
+.chat-typing {
+    position: relative;
+    margin-top: var(--chat-grp-space);
+    padding: 0 var(--chat-grp-room) 0 var(--chat-grp-inset);
+}
+
+.chat-typing.is-in-run {
+    margin-top: var(--chat-grp-gap);
+}
+
+/* The name line, as a group's message draws its sender's name, cut to one line however many are named. */
+.chat-typing-names {
+    padding: 0 12px 1px 54px;
+    margin-bottom: 2px;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text-2);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-typing-line {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+
+/* An incoming bubble one text line high, so a message taking its place starts where it stood. */
+.chat-typing-bubble {
+    display: inline-flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    color: var(--chat-icon);
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-bubble);
+}
+
+/* Continuing her run, it is the run's last bubble, its corner toward the run above tightened as hers would be. */
+.chat-typing.is-in-run .chat-typing-bubble {
+    border-top-left-radius: var(--chat-r-tail);
+}
+
+/* Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before. */
+.chat-typing-bubble i {
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    border-radius: 50%;
+    opacity: .45;
+    animation: chat-typing-bob var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+.chat-typing-bubble i:nth-child(2) {
+    animation-delay: calc(var(--chat-d-pulse) / 5);
+}
+
+.chat-typing-bubble i:nth-child(3) {
+    animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
+}
+
+/* Asked for less motion, the dots stand still at full strength. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-typing-bubble i {
+        opacity: 1;
+        animation: none;
+    }
+}
+
+@keyframes chat-typing-bob {
+    0%,
+    60%,
+    100% {
+        opacity: .45;
+        transform: none;
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(-2px);
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, PropType } from "vue";
+    import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import GroupFace from "../ui/groupFace.partial.obs";
+    import { personFace } from "../ui/face.partial";
+    import { Typing } from "../composables/usePresence.partial";
+    import { feedTailKey } from "../composables/useFeedTail.partial";
+
+    const props = defineProps({
+        /** Who else is typing in this place, or null for no one. */
+        typing: {
+            type: Object as PropType<Typing | null>,
+            default: null
+        },
+
+        /** A group draws the name line saying who; a direct message has only the one other person. */
+        isGroup: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The one typist sent the newest group, so this is her run's next row, with no name line and a row's gap above. */
+        isInRun: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The key of the group this is drawn in: her run's when it continues it, else its own, so its face and name line move only while her run does. */
+        groupKey: {
+            type: String,
+            default: "typing"
+        }
+    });
+
+    // #region Values
+
+    /** The tail of the feed or the thread this is drawn in, which moves it; drawn alone, it comes and goes at once. */
+    const tail = inject(feedTailKey, null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Each typist's face; one the room's facts do not name draws the people icon. */
+    const faces = computed((): AvatarPerson[] => (props.typing?.typists ?? []).map(typist => typist.person ? personFace(typist.person) : { name: "", photoUrl: null }));
+
+    /** Who is drawn, so a change of typists is the face and name line going and new ones coming, crossing. */
+    const who = computed((): string => (props.typing?.typists ?? []).map(typist => typist.alias).join());
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onLeave(element: Element, done: () => void): void {
+        if (tail) {
+            tail.leave(element, done);
+        }
+        else {
+            done();
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

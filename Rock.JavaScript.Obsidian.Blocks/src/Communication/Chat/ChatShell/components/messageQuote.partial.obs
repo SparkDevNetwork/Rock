@@ -239,7 +239,7 @@ button.chat-quote:active .chat-quote-body {
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { attachmentsPreview } from "../composables/useAttachments.partial";
-    import { blockedSentence } from "../composables/useHistory.partial";
+    import { blockedSentence } from "../heldMessage.partial";
     import { TimelineMessage } from "../types.partial";
 
     const props = defineProps({

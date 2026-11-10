@@ -25,7 +25,7 @@ import {
     isTextKeptOnSend,
     PersonRow
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
-import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChatError, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };

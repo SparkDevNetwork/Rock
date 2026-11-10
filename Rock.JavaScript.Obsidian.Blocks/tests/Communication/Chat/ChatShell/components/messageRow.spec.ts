@@ -32,6 +32,7 @@ import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/compon
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
+import { createMessageMotion, MessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -83,7 +84,6 @@ type RowProps = {
     isDirectMessage?: boolean;
     isSendingSlow?: boolean;
     isJustSent?: boolean;
-    isArriving?: boolean;
     senderNames?: ReadonlyMap<string, string>;
     isEditing?: boolean;
     editError?: { code: string, severity: string, text?: string | null } | null;
@@ -95,13 +95,20 @@ type RowProps = {
     blockedRun?: TimelineMessage[] | null;
 };
 
-function draw(props: RowProps): VueWrapper {
-    return mount(MessageRow, { props: { personAliasGuid: me, ...props } });
+function draw(props: RowProps, motion?: MessageMotion): VueWrapper {
+    return mount(MessageRow, { props: { personAliasGuid: me, ...props }, global: motion ? { provide: { [messageMotionKey as symbol]: motion } } : {} });
 }
 
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
 function plain(text: string | undefined): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
+}
+
+/** What a person reads of an element: its text, less what it keeps hidden. */
+function shownText(element: Element): string {
+    const copy = element.cloneNode(true) as Element;
+    copy.querySelectorAll("[hidden]").forEach(hidden => hidden.remove());
+    return plain(copy.textContent ?? "");
 }
 
 /** The sources of the row and of the looks it draws in, each a file whose name starts with the row's. */
@@ -149,26 +156,18 @@ describe("every message row", () => {
     });
 });
 
-// A row rises in once, as it first appears. Whether it does is read when it mounts: a class that
-// came and went later would start the rise over on a row already on screen.
+// A message arriving is the tail's motion, played by the feed or the thread it is drawn in: the
+// stack glides and the new row fades in riding it. The row has no arrival of its own, so nothing a
+// row is handed can start a rise over on a row already on screen.
 describe("the arrival", () => {
-    test("a row drawn arriving keeps its rise when the feed later stops calling it arriving", async () => {
-        const wrapper = draw({ pending: pendingRow(), isOwn: true, isArriving: true });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
+    test("is not the row's: it takes no word of it and draws no rise of its own", async () => {
+        const wrapper = draw({ pending: pendingRow(), isOwn: true });
+        await wrapper.setProps({ pending: null, message: ownConfirmed(), isJustSent: true });
 
-        await wrapper.setProps({ pending: null, message: ownConfirmed(), isJustSent: true, isArriving: false });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
-
-        await wrapper.setProps({ isJustSent: false, isArriving: true });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
-    });
-
-    test("a row drawn settled never rises later", async () => {
-        const wrapper = draw({ message: message(), isArriving: false });
-
-        await wrapper.setProps({ isArriving: true });
-
+        expect(Object.keys(wrapper.props())).not.toContain("isArriving");
         expect(root(wrapper).classList.contains("is-arriving")).toBe(false);
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        expect(source).not.toMatch(/is-arriving|chat-msg-in/);
     });
 });
 
@@ -331,11 +330,17 @@ describe("the states, in Conversational", () => {
         expect(wrapper.get("[data-testid='message-meta'] [data-testid='message-edited']").text()).toBe("Edited");
     });
 
-    test("edited, mid-group: Edited under that bubble, with no meta", () => {
+    test("edited, mid-group: its time line says Edited alone, with no time", () => {
         const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "middle" });
 
-        expect(wrapper.find("[data-testid='message-meta']").exists()).toBe(false);
-        expect(wrapper.get("[data-testid='message-edited']").text()).toBe("Edited");
+        const meta = wrapper.get("[data-testid='message-meta']");
+        expect((meta.element as HTMLElement).hidden).toBe(false);
+        expect(shownText(meta.element)).toBe("Edited");
+        expect(meta.get("[data-testid='message-edited']").text()).toBe("Edited");
+        // the time is kept, hidden, so the view's tail can fade it where it stood as its row gives it up
+        const stamp = meta.get("[data-tail='stamp']").element as HTMLElement;
+        expect(stamp.hidden).toBe(true);
+        expect(plain(stamp.textContent ?? "")).toBe("9:02 AM·");
     });
 
     test("the server's sentence about the person's own send stays under it", () => {
@@ -374,8 +379,48 @@ describe("the group's furniture, in Conversational", () => {
     });
 
     test("the meta sits under the group's last message only", () => {
-        expect(draw({ message: message(), position: "first" }).find("[data-testid='message-meta']").exists()).toBe(false);
+        expect(draw({ message: message(), position: "first" }).find("[data-testid='message-meta']:not([hidden])").exists()).toBe(false);
         expect(plain(draw({ message: message(), position: "last" }).get("[data-testid='message-meta']").text())).toBe("9:02 AM");
+    });
+
+    // The row keeps its time line and shows it by its state, so a 300-row room mounts no motion per
+    // row; the view's tail fades out the one a row stops showing, read from where it stood.
+    test("a time line its row stops showing is the same element, kept hidden, and shown again in place", async () => {
+        const wrapper = draw({ message: message(), position: "last" });
+        const meta = wrapper.get("[data-testid='message-meta']").element as HTMLElement;
+        expect(meta.hidden).toBe(false);
+
+        await wrapper.setProps({ position: "middle" });
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(true);
+        expect(meta.dataset.tail).toBe("meta");
+
+        await wrapper.setProps({ position: "last" });
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(false);
+    });
+
+    // Edited has one home, the time line: a row giving up its time keeps the line, saying Edited
+    // alone, so nothing new appears where the time stood for a time line going to be drawn over.
+    test("an edited row giving up its time keeps its time line shown, the same element, saying Edited alone", async () => {
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "last" });
+        const meta = wrapper.get("[data-testid='message-meta']").element as HTMLElement;
+        expect(plain(meta.textContent ?? "")).toBe("9:02 AM·Edited");
+
+        await wrapper.setProps({ position: "middle" });
+
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(false);
+        expect(shownText(meta)).toBe("Edited");
+        expect(wrapper.findAll("[data-testid='message-edited']")).toHaveLength(1);
+        expect(wrapper.find(".chat-msg-edited").exists()).toBe(false);
+    });
+
+    test("a hidden time line holds no Sent, so its arriving motion never runs unseen", () => {
+        const wrapper = draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, position: "first" });
+
+        expect((wrapper.get("[data-testid='message-meta']").element as HTMLElement).hidden).toBe(true);
+        expect(wrapper.find(".chat-meta-sent").exists()).toBe(false);
     });
 
     test("a failed send mid-group still shows its own Not sent line", () => {
@@ -1152,10 +1197,22 @@ describe("edit in place", () => {
         const before = draw({ message: message({ edited_at: nineOhTwo }), isChannel, position: "single" });
         expect(before.get("[data-testid='message-edited']").classes()).not.toContain("is-swapping");
 
-        const w = draw({ message: message(), isChannel, position: "single" });
-        await w.setProps({ message: message({ edited_at: nineOhTwo, body: "Morning everyone" }) });
+        const motion = createMessageMotion();
+        const w = draw({ message: message(), isChannel, position: "single" }, motion);
+        const edited = message({ edited_at: nineOhTwo, body: "Morning everyone" });
+        motion.changed(edited, "message.edited");
+        await w.setProps({ message: edited });
 
         expect(w.get("[data-testid='message-edited']").classes()).toContain("is-swapping");
+    });
+
+    // A copy handed in again with an edit time, as a page read again hands it, is not an edit
+    // happening: only the edit the stores applied while the row was on screen slides Edited in.
+    test.each([["a direct message", false], ["a channel", true]] as const)("Edited does not slide in for a copy that only states the edit in %s", async (_kind, isChannel) => {
+        const w = draw({ message: message(), isChannel, position: "single" }, createMessageMotion());
+        await w.setProps({ message: message({ edited_at: nineOhTwo, body: "Morning everyone" }) });
+
+        expect(w.get("[data-testid='message-edited']").classes()).not.toContain("is-swapping");
     });
 });
 
@@ -1376,14 +1433,29 @@ describe("the reactions row", () => {
     // The page adds a message's first reaction in place, so the row must already hold its
     // reactions part to see the reader's chip arrive, rather than mount with it as a page draws one.
     test.each([["a direct message", false], ["a channel", true]] as const)("pops the reader's first reaction on a message in %s", async (_kind, isChannel) => {
+        const motion = createMessageMotion();
         const target = reactive(message({ reactions: [] } as Partial<TimelineMessage>));
-        const w = draw({ message: target, isChannel, reactionHost: host([]) });
+        const w = draw({ message: target, isChannel, reactionHost: host([]) }, motion);
 
+        motion.reacted(target, heart.code, "pop");
         target.reactions!.push({ ...heart, count: 1 });
         await nextTick();
         await nextTick();
 
         expect(w.get("[data-testid='reaction-chip']").classes()).toContain("is-popping");
+    });
+
+    // A chip a page brings is drawn as it is: only the reader's reaction landing while the row is on
+    // screen, as the reactions record it, pops.
+    test.each([["a direct message", false], ["a channel", true]] as const)("does not pop the reader's chip a copy only states in %s", async (_kind, isChannel) => {
+        const target = reactive(message({ reactions: [] } as Partial<TimelineMessage>));
+        const w = draw({ message: target, isChannel, reactionHost: host([]) }, createMessageMotion());
+
+        target.reactions!.push({ ...heart, count: 1 });
+        await nextTick();
+        await nextTick();
+
+        expect(w.get("[data-testid='reaction-chip']").classes()).not.toContain("is-popping");
     });
 });
 
@@ -1703,10 +1775,18 @@ describe("a row's one-off motion", () => {
         root(wrapper).dispatchEvent(event);
     }
 
-    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
-        const wrapper = draw({ message: message(), isChannel, position: "single" });
+    /** The row on screen, then an edit applied to its message as the stores apply one live. */
+    async function edited(isChannel = false): Promise<VueWrapper> {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, motion);
+        const now = message({ edited_at: nineOhTwo });
+        motion.changed(now, "message.edited");
+        await wrapper.setProps({ message: now });
+        return wrapper;
+    }
 
-        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+    test.each([["a direct message", false], ["a channel", true]] as const)("an edit crossfades and slides in Edited, and each keyframe's end clears its own class in %s", async (_kind, isChannel) => {
+        const wrapper = await edited(isChannel);
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
 
@@ -1721,14 +1801,67 @@ describe("a row's one-off motion", () => {
     });
 
     test("an unrelated animation's end clears nothing", async () => {
-        const wrapper = draw({ message: message(), position: "single" });
-        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        const wrapper = await edited();
 
         animationEnd(wrapper, "chat-flash-fade");
         await nextTick();
 
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+    });
+});
+
+// Which motion a row plays is the record's to say: a delete crossfades without sliding Edited in,
+// one recorded before the row mounted has played already, and a copy handed in with every field
+// changed, as a page read again hands it, plays nothing.
+describe("a row's motion follows what the stores recorded", () => {
+    test.each([["a direct message", false], ["a channel", true]] as const)("a delete crossfades to its tombstone and does not slide Edited in, in %s", async (_kind, isChannel) => {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, motion);
+        const deleted = message({ deleted_at: nineOhTwo, body: null });
+        motion.changed(deleted, "message.deleted");
+        await wrapper.setProps({ message: deleted });
+
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+        expect(wrapper.findAll(".is-swapping")).toHaveLength(0);
+    });
+
+    test("a hide, then a show, each crossfade once", async () => {
+        const motion = createMessageMotion();
+        const wrapper = draw({ message: message(), position: "single" }, motion);
+        const hidden = message({ visibility: "hidden", visibility_notice: "Hidden by a moderator", body: null });
+        motion.changed(hidden, "message.visibility");
+        await wrapper.setProps({ message: hidden });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+
+        const event = new Event("animationend", { bubbles: true });
+        Object.defineProperty(event, "animationName", { value: "chat-crossfade" });
+        root(wrapper).dispatchEvent(event);
+        await nextTick();
+        expect(wrapper.findAll(".is-crossfading")).toHaveLength(0);
+
+        motion.changed(message(), "message.visibility");
+        await wrapper.setProps({ message: message() });
+        expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
+    });
+
+    test("an edit recorded before the row mounted plays nothing on it", async () => {
+        const motion = createMessageMotion();
+        motion.changed(message(), "message.edited");
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "single" }, motion);
+        await nextTick();
+
+        expect(wrapper.findAll(".is-crossfading, .is-swapping")).toHaveLength(0);
+    });
+
+    test.each([["a direct message", false], ["a channel", true]] as const)("a copy handed in with its edit, delete and hide all changed plays nothing in %s", async (_kind, isChannel) => {
+        const wrapper = draw({ message: message(), isChannel, position: "single" }, createMessageMotion());
+
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo }) });
+        await wrapper.setProps({ message: message({ edited_at: nineOhTwo, visibility: "hidden", body: null }) });
+        await wrapper.setProps({ message: message({ deleted_at: nineOhTwo, body: null }) });
+
+        expect(wrapper.findAll(".is-crossfading, .is-swapping")).toHaveLength(0);
     });
 });
 

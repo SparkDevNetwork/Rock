@@ -58,10 +58,12 @@
 // chat_delete_message do; a server action answers { notice }, the sentence the person is shown.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
 import { canEditMessage, createMessageActions } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { messageForError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Fixtures
 
@@ -134,6 +136,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     notices: jest.Mock
 }> {
     const timelines = createTimelines({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async channelId => ({ messages: channelId === channel ? messages : [message(900, { body: "elsewhere" })], read_cursor: null, unread_count: 0, has_more: false })

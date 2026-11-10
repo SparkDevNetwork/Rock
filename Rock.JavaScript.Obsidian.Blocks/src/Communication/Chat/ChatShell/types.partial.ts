@@ -560,6 +560,9 @@ export type HistoryPage = {
      * nothing of messages the page does not carry. A stand-in page may leave it out.
      */
     rev?: number;
+
+    /** Who is typing in the conversation now, on a page that reaches its newest message; left out by any other, and by a platform that does not say. */
+    typing?: TypingSnapshot[];
 };
 
 /** A page of a thread, as chat_get_thread_history returns it: the replies newest first. */
@@ -573,6 +576,9 @@ export type ThreadPage = {
 
     /** The room's revision, read before the root and its replies, as a history page's is. */
     rev?: number;
+
+    /** Who is typing a reply now, on the thread's first page, as a history page says it. */
+    typing?: TypingSnapshot[];
 };
 
 /** One row of the threads list, as chat_list_threads returns it. */
@@ -793,6 +799,21 @@ export type TypingEvent = {
     after?: number | null;
 
     /** The interval the platform holds this typist's signals to, by their token; left out by a platform that does not say it. */
+    interval_ms?: number;
+
+    /** The typist cleared their box: they stopped, and are not typing on. Left out of a signal that they are typing. */
+    stopped?: boolean;
+};
+
+/**
+ * Someone typing in a place as a newest page answers them, from the platform's own record of the
+ * signals it passed: the newest message the signal followed, how long ago it passed, and the pace
+ * its typist was held to.
+ */
+export type TypingSnapshot = {
+    person_alias_guid: string;
+    after: number | null;
+    age_ms: number;
     interval_ms?: number;
 };
 

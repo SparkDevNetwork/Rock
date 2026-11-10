@@ -493,6 +493,8 @@ describe("settings from the token exchange", () => {
             stale_reload_ms: 900000,
             typing_interval_ms: 4000,
             typing_expiry_ms: 6000,
+            typing_first_after_ms: 700,
+            typing_min_show_ms: 1000,
             dm_max_others: 0,
             dm_name_max_length: 0,
             body_max_length: 0,
@@ -561,6 +563,14 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
         expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, other: "kept" });
+    });
+
+    test("the first wait and the minimum show are read as sent, else 0.7 and 1 second, and no setting says whether a stop is taken", () => {
+        expect(readSettings({ limits: { typing_first_after_ms: 500, typing_min_show_ms: 1500 } }))
+            .toMatchObject({ limits: { typing_first_after_ms: 500, typing_min_show_ms: 1500 } });
+        expect(readSettings({ limits: { typing_first_after_ms: "500", typing_min_show_ms: -1 } }))
+            .toMatchObject({ limits: { typing_first_after_ms: 700, typing_min_show_ms: 1000 } });
+        expect(readSettings({ limits: {} }).flags).not.toHaveProperty("typing_stop");
     });
 
     test("typing is on only when the platform's flag is the boolean true", () => {

@@ -404,7 +404,7 @@
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { failureNote } from "../composables/saveRule.partial";
-    import { messageDisplay } from "../composables/useHistory.partial";
+    import { messageDisplay } from "../heldMessage.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
 

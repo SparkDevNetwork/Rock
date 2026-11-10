@@ -79,17 +79,6 @@
                 <IconButton icon="x" icon-size="sm" label="Cancel quote" @click="emit('cancelQuote')" />
             </div>
 
-            <!--
-                Someone else typing, on the composer's top edge just before the box, so a reader meets it
-                right before the text box. Read where a person moves to it, never announced: a live region
-                would speak every pause.
-            -->
-            <span v-if="typingLine" class="chat-composer-typing" data-testid="composer-typing">
-                <span class="chat-composer-typing-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-                <span class="chat-composer-typing-text" aria-hidden="true"><span v-if="typingLine.names" class="chat-composer-typing-names">{{ typingLine.names }}</span><span class="chat-composer-typing-verb">{{ typingLine.names ? ` ${typingLine.verb}` : typingLine.verb }}</span></span>
-                <span class="chat-sr-only">{{ typingLine.names ? `${typingLine.names} ${typingLine.verb}` : typingLine.verb }}</span>
-            </span>
-
             <form ref="boxElement" class="chat-composer-box" @submit.prevent="onSubmit" @focusin="onBoxFocusIn" @focusout="onBoxFocusOut" @paste.capture="onPaste">
                 <IconButton ref="emojiButton"
                             icon="smile"
@@ -196,26 +185,21 @@
 </template>
 
 <style scoped>
-/* The inset is the composer's side padding, which the typing band's text also starts from. */
 .chat-composer {
-    --chat-composer-inset: 20px;
-    position: relative;
     display: flex;
     flex: none;
     flex-direction: column;
     gap: 6px;
-    padding: 0 var(--chat-composer-inset) 14px;
+    padding: 0 20px 14px;
 }
 
 /* A thread's composer sits tighter in the narrower panel; a phone's padding, after it, wins there too. */
 .chat-composer.is-thread {
-    --chat-composer-inset: 14px;
-    padding-bottom: 12px;
+    padding: 0 14px 12px;
 }
 
 .chat-composer.is-phone {
-    --chat-composer-inset: 10px;
-    padding-bottom: 10px;
+    padding: 0 10px 10px;
 }
 
 /*
@@ -505,81 +489,6 @@
     color: var(--chat-text);
 }
 
-/*
- * Someone else typing, in a band of its own standing on the composer's top edge over the scroller's
- * bottom padding: it takes no space, so neither the composer nor the feed moves as it comes and goes,
- * and it shares its width with nothing, so the verb always has room. Its text starts where the
- * foot's does, the composer's inset plus the foot's own 14px. The surface behind it, feathered at its
- * top, hides rows scrolled under it, and it takes a press rather than passing it to a row the person
- * cannot see; drawn after the rows, it stands over their reactions, though a hovered row's action bar
- * may draw over it in the drawer. It stops at the composer's inset on the right, short of the
- * scrollbar of the feed or panel above, so the bar's arrow and thumb stay whole and pressable. It
- * fades in and leaves at once, so it never lingers past the message that ended it.
- */
-.chat-composer-typing {
-    position: absolute;
-    right: var(--chat-composer-inset);
-    bottom: 100%;
-    left: 0;
-    z-index: 1;
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    height: 16px;
-    padding: 0 14px 0 calc(var(--chat-composer-inset) + 14px);
-    overflow: hidden;
-    font-size: 11.5px;
-    color: var(--chat-muted);
-    background: linear-gradient(to bottom, transparent, var(--chat-surface) 4px);
-    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-out);
-}
-
-/*
- * The names give way with an ellipsis and the verb never does, so however narrow the band, what is
- * left still reads as someone typing. The space before the verb is its own text, kept by `pre`.
- * Flex items are blocks, so a screen reader is given the sentence from a visually hidden copy and
- * never these drawn parts.
- */
-.chat-composer-typing-text {
-    display: flex;
-    min-width: 0;
-    white-space: nowrap;
-}
-
-.chat-composer-typing-names {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.chat-composer-typing-verb {
-    flex: none;
-    white-space: pre;
-}
-
-.chat-composer-typing-dots {
-    display: inline-flex;
-    flex: none;
-    gap: 3px;
-}
-
-.chat-composer-typing-dots i {
-    width: 4px;
-    height: 4px;
-    background: currentColor;
-    border-radius: 50%;
-    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
-}
-
-/* Each dot a fifth of the cycle after the one before. */
-.chat-composer-typing-dots i:nth-child(2) {
-    animation-delay: calc(var(--chat-d-pulse) / 5);
-}
-
-.chat-composer-typing-dots i:nth-child(3) {
-    animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
-}
-
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
     flex: none;
@@ -640,11 +549,6 @@
         grid-template-rows: 1fr;
         margin-bottom: 0;
     }
-
-    /* A looping animation stops: the dots stand at full strength. */
-    .chat-composer-typing-dots i {
-        animation: none;
-    }
 }
 </style>
 
@@ -656,7 +560,6 @@
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { gifsKey } from "../composables/useGifs.partial";
-    import { TypingLine } from "../composables/usePresence.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import { useIsMotionReduced } from "../ui/brand.partial";
@@ -793,12 +696,6 @@
          */
         lastFailure: {
             type: Object as PropType<SendFailureNews | null>,
-            default: null
-        },
-
-        /** Who else is typing where the box types, drawn in a band on the composer's top edge; null for no one. */
-        typingLine: {
-            type: Object as PropType<TypingLine | null>,
             default: null
         },
 

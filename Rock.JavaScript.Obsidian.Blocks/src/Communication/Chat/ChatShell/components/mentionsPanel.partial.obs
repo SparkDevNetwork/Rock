@@ -256,7 +256,7 @@
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, timeLabel } from "../feedLayout.partial";
-    import { messageDisplay } from "../composables/useHistory.partial";
+    import { messageDisplay } from "../heldMessage.partial";
     import { ChatError, DisplayPiece, MentionRow, MessageBlock, TimelineMessage } from "../types.partial";
 
     // #region Types

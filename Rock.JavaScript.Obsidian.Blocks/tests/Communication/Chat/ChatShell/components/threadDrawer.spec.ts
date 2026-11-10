@@ -57,9 +57,16 @@ import Composer from "../../../../../src/Communication/Chat/ChatShell/components
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
+import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
+import { playAnimations } from "../tailStage";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
+
+/** The place the stores record a send or an arrival in; the drawer here is woken by what it draws. */
+const place = "c1/1";
 const ben = "a0000003-0000-4000-8000-000000000000";
 
 /** The channel's name as the header shows it: plain, the hash being an icon, never a character. */
@@ -109,9 +116,9 @@ let wrapper: VueWrapper | null = null;
  * A test about an entrance keeps Vue's real Transition, which marks an element entering as a
  * browser plays it.
  */
-function draw(props: Record<string, unknown> = {}, isTransitionKept = false): VueWrapper {
+function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion()): VueWrapper {
     const drawn: VueWrapper = mount(ThreadDrawer, {
-        global: isTransitionKept ? { stubs: { transition: false } } : {},
+        global: { provide: { [messageMotionKey as symbol]: motion }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
         props: {
             draft: { text: "", mentions: [] },
             onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
@@ -166,6 +173,155 @@ afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     document.body.innerHTML = "";
+});
+
+// The tail's motions run through the browser's animations, which jsdom lacks, so a stand-in keeps them.
+let animations: ReturnType<typeof playAnimations>;
+beforeEach(() => {
+    animations = playAnimations();
+});
+afterEach(() => {
+    animations.restore();
+});
+
+/**
+ * The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped
+ * to them; the thread's body fills it from its top, so the newest end read from layout is where
+ * the scroll height puts it at rest.
+ */
+function layOut(w: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
+    const scroller = w.get(".chat-panel-body").element as HTMLElement;
+    const body = w.get(".chat-th-body").element as HTMLElement;
+    Object.defineProperty(body, "offsetTop", { configurable: true, get: () => 0 });
+    Object.defineProperty(body, "offsetHeight", { configurable: true, get: () => sizes.scrollHeight });
+    Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
+    Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+    Object.defineProperty(scroller, "scrollTop", {
+        configurable: true,
+        get: () => sizes.scrollTop,
+        set: (value: number) => sizes.scrollTop = Math.max(0, Math.min(value, sizes.scrollHeight - sizes.clientHeight))
+    });
+}
+
+// The reply composer under the thread grows with its text and takes that height from the thread,
+// as the conversation's composer takes it from the feed. Whether the reader is at the newest reply
+// is theirs to change by scrolling, never measured again as the drawer changes size, so a reader
+// there stays there, and their own reply arrives as the conversation's does.
+describe("a reader at the newest reply", () => {
+    const sending = { localId: "k1", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
+    let observers: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+    let previous: typeof ResizeObserver;
+
+    beforeEach(() => {
+        observers = [];
+        previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                observers.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+    });
+
+    afterEach(() => {
+        window.ResizeObserver = previous;
+    });
+
+    /** The reply composer growing by the height given, with no scroll; `isObserved` once the browser has told the drawer. */
+    async function composerGrows(w: VueWrapper, sizes: { clientHeight: number }, by: number, isObserved: boolean): Promise<void> {
+        sizes.clientHeight -= by;
+        if (isObserved) {
+            const scroller = w.get(".chat-panel-body").element;
+            for (const observer of observers.filter(o => o.targets.includes(scroller))) {
+                observer.callback([], observer as unknown as ResizeObserver);
+            }
+        }
+        await nextTick();
+    }
+
+    test("keeps the newest reply in view as the reply composer grows past the near-bottom reach", async () => {
+        const w = draw({ isChannel: false });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+
+        await composerGrows(w, sizes, 100, true);
+
+        expect(sizes.scrollTop).toBe(700);
+    });
+
+    test("scrolled up, is left where they are as the reply composer grows", async () => {
+        const w = draw({ isChannel: false });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        // the reader scrolls up from the newest reply, the browser telling the drawer along the way
+        const scroller = w.get(".chat-panel-body").element;
+        scroller.dispatchEvent(new Event("scroll"));
+        sizes.scrollTop = 200;
+        scroller.dispatchEvent(new Event("scroll"));
+
+        await composerGrows(w, sizes, 100, true);
+
+        expect(sizes.scrollTop).toBe(200);
+    });
+
+    // The send can land in the frame the composer grew, before the browser has said so.
+    test.each([true, false])("their own reply sent once the reply composer grew arrives at the thread's end as the conversation's does (resize heard first: %s)", async isObserved => {
+        const motion = createMessageMotion();
+        const w = draw({ isChannel: false, replies: replies(3), pending: [] }, false, motion);
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        await composerGrows(w, sizes, 100, isObserved);
+
+        motion.sent("k1", place);
+        await w.setProps({ pending: [sending] });
+        await nextTick();
+        await nextTick();
+
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
+        expect(sizes.scrollTop).toBe(700);
+    });
+
+    // A push or a link lands the reader on a reply far up with a smooth scroll, whose first scroll
+    // event comes a frame or more later. A reply's photo decoding before it must not read them as
+    // still at the newest reply and pull them back there.
+    test("landed on a reply far up, a size change before the scroll's first frame leaves them going to it", async () => {
+        const w = draw({ isChannel: false, replies: replies(20) });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        const scroller = w.get(".chat-panel-body").element as HTMLElement;
+        const landed = w.get("[data-reply-id='42']").element as HTMLElement;
+        // the reply stands 320 px above the scroller's top, so centring it scrolls to 100
+        landed.getBoundingClientRect = () => ({ top: -320, height: 40, bottom: -280, left: 0, right: 300, width: 300, x: 0, y: -320, toJSON: () => ({}) }) as DOMRect;
+        scroller.getBoundingClientRect = () => ({ top: 0, height: 400, bottom: 400, left: 0, right: 300, width: 300, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect;
+        const centred = jest.fn();
+        landed.scrollIntoView = centred;
+
+        await w.setProps({ landOnId: 42 });
+        await nextTick();
+        await nextTick();
+        expect(centred).toHaveBeenCalledTimes(1);
+
+        // a photo decodes in a reply, before the smooth scroll has moved
+        sizes.scrollHeight = 1100;
+        for (const observer of observers.filter(o => o.targets.includes(scroller))) {
+            observer.callback([], observer as unknown as ResizeObserver);
+        }
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(600);
+    });
 });
 
 describe("the header", () => {
@@ -230,7 +386,8 @@ describe("the body", () => {
 
 // A reply the person sends is one row from the moment it is sent, as in the conversation: the row
 // still sending and every copy of the reply share the send's key, and a reply this session sent
-// never rises a second time when it is drawn afresh.
+// never rises a second time when it is drawn afresh. What rises is what was sent here or heard live
+// while the drawer was open; a reply a page or a reread brings is simply there.
 describe("the person's own reply", () => {
     const sending = { localId: "k1", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
     const mine = (id: number, key: string): TimelineMessage => message(id, { parent_id: 40, person_alias_guid: me, sender_nick_name: "Jordan", sender_last_name: "Lee", client_key: key });
@@ -249,19 +406,29 @@ describe("the person's own reply", () => {
     test("moved between groups by another person's newer reply, it rises only once; another tab's reply rises", async () => {
         const recent = { created_at: new Date().toISOString() };
         const earlier = { ...mine(45, "k0"), ...recent };
-        const w = draw({ isChannel: false, replies: [earlier], pending: [sending], sentKeys: new Set(["k0", "k1"]) });
+        const motion = createMessageMotion();
+        motion.sent("k0", place);
+        const w = draw({ isChannel: false, replies: [earlier], pending: [] }, false, motion);
         await afterOpen();
-        expect(w.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+        motion.sent("k1", place);
+        await w.setProps({ pending: [sending] });
+        await nextTick();
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         const ben51 = message(51, { parent_id: 40, ...recent });
+        motion.arrived(ben51, place);
         await w.setProps({ replies: [earlier, ben51] });
-        expect(w.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
+        await nextTick();
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
 
-        await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, { ...mine(52, "another-tab"), ...recent }], pending: [] });
+        const anotherTab = { ...mine(52, "another-tab"), ...recent };
+        motion.arrived(anotherTab, place);
+        await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, anotherTab], pending: [] });
+        await nextTick();
 
-        expect(w.get("[data-reply-id='50']").classes()).not.toContain("is-arriving");
-        expect(w.get("[data-reply-id='51']").classes()).toContain("is-arriving");
-        expect(w.get("[data-reply-id='52']").classes()).toContain("is-arriving");
+        expect(w.get("[data-reply-id='50']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
+        expect(w.get("[data-reply-id='51']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
+        expect(w.get("[data-reply-id='52']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
     });
 
     test("a reply that settles while the thread is open shows Sent for 2.2 seconds, then the time alone; another tab's never does", async () => {
@@ -545,12 +712,150 @@ test("the reply composer is keyed by its thread", () => {
     expect(w.findComponent(Composer).props("conversationKey")).toBe("thread:40");
 });
 
-// Who is typing a reply in this thread is told on the reply composer's top edge, as the conversation's
-// composer tells its own.
-test("the reply composer is given the thread's typing line", () => {
-    const w = draw({ typingLine: { names: "Anna", verb: "is typing…" } });
+// Someone typing a reply in this thread is drawn as the thread's newest row, as the conversation
+// draws its own, and kept in view the way a new reply is: followed by a reader at the bottom, and
+// out of sight below one scrolled up, who is not moved.
+describe("the marks the tail reads", () => {
+    test("a group's face and name line carry its first reply's key, and every reply its box and time line", () => {
+        const w = draw({ isChannel: false, replies: [...replies(2), message(43, { parent_id: 40 })] });
+        const rows = w.findAll("[data-reply-id]").map(row => row.element as HTMLElement);
+        const keys = rows.map(row => row.dataset.rowKey);
 
-    expect(w.findComponent(Composer).props("typingLine")).toEqual({ names: "Anna", verb: "is typing…" });
+        expect(rows[0].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[0]}`);
+        expect(rows[1].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[0]}`);
+        expect(rows[0].querySelector("[data-tail^='face:']")).toBeNull();
+        expect(rows[2].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[2]}`);
+        expect(rows.every(row => row.querySelectorAll("[data-tail='box']").length === 1 && row.querySelectorAll("[data-tail='meta']").length === 1)).toBe(true);
+    });
+});
+
+describe("someone typing a reply", () => {
+    const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
+
+    test("is the thread's newest row, after the last reply, in a group with its name line", () => {
+        const w = draw({ isChannel: false, typing: annaTyping });
+        const bubble = w.get("[data-testid='typing-bubble']").element;
+        const rows = w.findAll("[data-reply-id]").map(row => row.element);
+
+        expect(rows.every(row => (row.compareDocumentPosition(bubble) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0)).toBe(true);
+        // its layout is its own, so no group rule of the drawer's can turn its grid into another box
+        expect(bubble.classList.contains("chat-grp")).toBe(false);
+        expect(w.get("[data-testid='typing-names']").text()).toBe("Anna");
+    });
+
+    // As in the conversation, a reply of hers newest makes the bubble her run's next row.
+    test("after the typist's own newest reply it is her run's next row, the face moving to it", () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const hers = message(44, { parent_id: 40 });
+            const w = draw({ isChannel: false, replies: [...replies(3), hers], typing: annaTyping });
+            const row = w.get("[data-reply-id='44']");
+
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(true);
+            expect(w.find("[data-testid='typing-names']").exists()).toBe(false);
+            expect(row.find("[data-testid='sender-avatar']").exists()).toBe(false);
+            expect(row.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(true);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("in her run it is a group of its own once her run's five minutes are over", async () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const w = draw({ isChannel: false, replies: [...replies(3), message(44, { parent_id: 40 })], typing: annaTyping });
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+            jest.advanceTimersByTime(5 * 60 * 1000 + 1);
+            await nextTick();
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("after someone else's reply it is a group of its own", () => {
+        jest.useFakeTimers({ now: new Date(2026, 9, 13, 9, 44), doNotFake: ["queueMicrotask", "nextTick"] });
+        try {
+            const w = draw({ isChannel: false, typing: annaTyping });
+
+            expect(w.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    test("is not drawn before the thread's first page is there", async () => {
+        const w = draw({ isChannel: false, root: null, replies: [], isLoading: true, typing: annaTyping });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
+
+        await w.setProps({ root: rootWith(3), replies: replies(3), isLoading: false });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(true);
+    });
+
+    test("in a direct message it has no name line, and with no one typing it is not drawn", async () => {
+        const w = draw({ isChannel: false, isDirectMessage: true, typing: annaTyping });
+        expect(w.findComponent(TypingBubble).props("isGroup")).toBe(false);
+        expect(w.find("[data-testid='typing-names']").exists()).toBe(false);
+
+        await w.setProps({ typing: null });
+        expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
+    });
+
+    test("is given no replies, only who types and where it stands", () => {
+        const w = draw({ isChannel: false, typing: annaTyping });
+
+        expect(Object.keys(w.findComponent(TypingBubble).props()).sort()).toEqual(["groupKey", "isGroup", "isInRun", "typing"]);
+    });
+
+    test("the reply composer is the same with someone typing as without, and is given no typing", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        const alone = w.get("[data-testid='composer-input']").element.closest(".chat-composer")?.outerHTML;
+
+        await w.setProps({ typing: annaTyping });
+
+        expect(w.findComponent(Composer).props()).not.toHaveProperty("typingLine");
+        expect(w.get("[data-testid='composer-input']").element.closest(".chat-composer")?.outerHTML).toBe(alone);
+    });
+
+    test("a reader at the bottom follows it into view", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        await nextTick();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+
+        await w.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 1065;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(665);
+    });
+
+    test("a reader scrolled up is not moved", async () => {
+        const w = draw({ isChannel: false });
+        await nextTick();
+        await nextTick();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        // the reader scrolls up from the newest reply, the browser telling the drawer along the way
+        const scroller = w.get(".chat-panel-body").element;
+        scroller.dispatchEvent(new Event("scroll"));
+        sizes.scrollTop = 200;
+        scroller.dispatchEvent(new Event("scroll"));
+
+        await w.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 1065;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(200);
+    });
 });
 
 describe("the reply composer's @ picker", () => {

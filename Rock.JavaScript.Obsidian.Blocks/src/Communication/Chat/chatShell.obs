@@ -15,6 +15,7 @@
         </NotificationBox>
 
         <div v-else
+             :key="shellBuild"
              class="chat-frame"
              :class="{ 'is-pane-motion-on': isPaneMotionOn }"
              data-testid="chat-frame"
@@ -120,7 +121,6 @@
                                  :key="activeChannelId"
                                  :timeline="shell.timelines.state(activeChannelId)"
                                  :pending="shell.sender.pending(activeChannelId)"
-                                 :sentKeys="shell.sender.sentKeys"
                                  :personAliasGuid="personAliasGuid"
                                  :personName="personName"
                                  :personPhotoUrl="personPhotoUrl"
@@ -141,6 +141,8 @@
                                  :isEditSaving="isEditSavingIn(activeChannelId)"
                                  :landOnId="landingMessageId"
                                  :reactionHost="reactionHost"
+                                 :typing="conversationTyping"
+                                 :typingPlace="conversationQuoteKey"
                                  @seen="shell.seen"
                                  @markRead="shell.markRead"
                                  @firstShown="shell.firstMessageShown"
@@ -182,7 +184,6 @@
                               :sendFailure="conversationFailure"
                               :lastFailure="shell.sender.lastFailure()"
                               :tray="conversationTray"
-                              :typingLine="conversationTyping"
                               @retryFailed="onRetryFailed(conversationSends)"
                               @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
@@ -338,7 +339,6 @@
                                   :replies="drawnThread.replies"
                                   :pending="shell.sender.pending(drawnThread.channelId)"
                                   :lastFailure="shell.sender.lastFailure()"
-                                  :sentKeys="shell.sender.sentKeys"
                                   :isFollowing="drawnThread.following"
                                   :followError="drawerFollowError"
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
@@ -371,7 +371,8 @@
                                   :reactionHost="reactionHost"
                                   :emojiSource="emojiSource"
                                   :mentionSource="mentionSourceFor(threadRow)"
-                                  :typingLine="threadTyping"
+                                  :typing="threadTyping"
+                                  :typingPlace="threadQuoteKey"
                                   @mentionQuery="onMentionQuery(threadRow, $event)"
                                   @composerFocus="onComposerFocus(threadRow, 'thread')"
                                   @composerBlur="onComposerBlur"
@@ -746,6 +747,7 @@
     import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
     import { gifsKey } from "./ChatShell/composables/useGifs.partial";
     import { problemReportKey } from "./ChatShell/problemReport.partial";
+    import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrame } from "./ChatShell/composables/useFrame.partial";
@@ -810,6 +812,10 @@
     // session a fresh page load would have had.
     const shell = shallowRef(buildShell(config.session ?? {}));
 
+    // Which build of the shell the frame is drawn from. A new session draws a new frame, so every
+    // row and view takes its place in the new record of what happened, never the stopped one's.
+    const shellBuild = ref(0);
+
     // Every photo and face joins the first screen's reveal: it reads when the page releases and
     // reports what it is still decoding through this. The shell is rebuilt after a birthdate
     // answer, so the reveal is read through it each time.
@@ -837,6 +843,17 @@
         isOn: () => shell.value.gifs.isOn(),
         search: (query, page, signal) => shell.value.gifs.search(query, page, signal),
         turnOff: () => shell.value.gifs.turnOff()
+    });
+
+    // Every row and view reads what happened to its messages through this, from whichever shell is
+    // current, so a row drawn after the shell is built again never reads a record that has stopped.
+    // Read only: the shell's own stores are what record.
+    provide(messageMotionKey, {
+        now: () => shell.value.motion.now(),
+        of: key => shell.value.motion.of(key),
+        typingOf: place => shell.value.motion.typingOf(place),
+        versionOf: place => shell.value.motion.versionOf(place),
+        scope: () => shell.value.motion.scope()
     });
 
     // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.
@@ -1100,6 +1117,7 @@
         personCampusGuid.value = outcome.session.personCampusGuid ?? null;
         isProfileLavaConfigured.value = outcome.session.isProfileLavaConfigured === true;
         shell.value = buildShell(outcome.session);
+        shellBuild.value++;
         void shell.value.start();
     }
 

@@ -8,7 +8,7 @@
                isConversation
                :runAction="on.runBlockAction" />
     <template v-else>
-        <div v-if="isNameShown" class="chat-msg-name">
+        <div v-if="isNameShown" class="chat-msg-name" :data-tail="groupKey ? `name:${groupKey}` : undefined">
             <component :is="view.authorGuid ? 'button' : 'span'"
                        :type="view.authorGuid ? 'button' : undefined"
                        :class="{ 'chat-person-opener': !!view.authorGuid }"
@@ -24,7 +24,8 @@
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
         <div class="chat-msg-line">
-            <span v-if="!view.isOwn" class="chat-msg-face">
+            <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. -->
+            <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">
                 <template v-if="isLastOfGroup">
                     <button v-if="view.authorGuid"
                             type="button"
@@ -43,14 +44,15 @@
                                :isSaving="view.isEditSaving"
                                v-on="on.editor" />
                 <div v-else-if="isBubbleShown"
-                     class="chat-bubble" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
+                     class="chat-bubble"
+                     data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
                     <div v-if="view.isAnnouncement" class="chat-bubble-label">
                         <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
                     </div>
                     <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
                 </div>
-                <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
+                <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :data-tail="isBubbleShown ? undefined : 'box'" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
                 <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
             </div>
         </div>
@@ -59,8 +61,7 @@
                 <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" @open="on.openThread" />
             </template>
         </MessageReactions>
-        <div v-if="isEditedUnder && !view.isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</div>
-        <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': view.state === 'failed' }" data-testid="message-meta">
+        <div class="chat-meta" :hidden="!isMetaDrawn" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
             <template v-if="view.state === 'failed'">
                 <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
             </template>
@@ -68,13 +69,13 @@
                 <Icon name="clock" size="xs" />
                 <span data-testid="message-state">Sending…</span>
             </template>
-            <template v-else>
+            <template v-else-if="isMetaShown && (view.state === 'sent' || !view.isEdited)">
                 <span class="chat-meta-time">{{ view.time }}</span>
                 <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
-                <template v-else-if="view.isEdited">
-                    <span aria-hidden="true">·</span>
-                    <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
-                </template>
+            </template>
+            <template v-else-if="isMetaShown || isEditedShown">
+                <span class="chat-meta-stamp" :hidden="!isMetaShown" data-tail="stamp"><span class="chat-meta-time">{{ view.time }}</span><span aria-hidden="true">·</span></span>
+                <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-tail="edited" data-testid="message-edited">Edited</span>
             </template>
         </div>
         <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
@@ -314,8 +315,7 @@
     color: var(--chat-muted);
 }
 
-.chat-meta,
-.chat-msg-edited {
+.chat-meta {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -330,9 +330,19 @@
     margin-top: 2px;
 }
 
-.is-conversational:not(.is-own) .chat-meta,
-.is-conversational:not(.is-own) .chat-msg-edited {
+.is-conversational:not(.is-own) .chat-meta {
     padding-left: 54px;
+}
+
+/*
+    A time line its row does not show is kept, out of the flow and unseen at its row's top, rather
+    than mounted and unmounted, so no row of a long conversation mounts a motion of its own: the
+    view's tail fades out the one a row stops showing, from where it stood.
+*/
+.chat-meta[hidden] {
+    position: absolute;
+    top: 0;
+    visibility: hidden;
 }
 
 /* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
@@ -347,6 +357,22 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+}
+
+/*
+    An edited message's time and its dot, kept when its row gives the time up as the time line is,
+    so the view's tail fades them where they stood while Edited moves into their room.
+*/
+.chat-meta-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-meta-stamp[hidden] {
+    position: absolute;
+    top: 0;
+    visibility: hidden;
 }
 
 /* "Sent" always arrives fresh; "Edited" slides in only for an edit that lands while it is on screen. */
@@ -488,10 +514,25 @@
             default: "single"
         },
 
+        /**
+         * The group's sender is typing her next row after this one: that row takes the face and the
+         * corners, as her message will, and the time stays here under her newest message.
+         */
+        isTypingNext: {
+            type: Boolean,
+            default: false
+        },
+
         /** The message was jumped to, so its bubble flashes. */
         isFlashing: {
             type: Boolean,
             default: false
+        },
+
+        /** The key of the row's group, which its face and name line are marked by for the view's tail. */
+        groupKey: {
+            type: String,
+            default: ""
         }
     });
 
@@ -502,10 +543,14 @@
     /** Bubbles name another person's group once, over its first message, and never in a direct message. */
     const isNameShown = computed((): boolean => !props.view.isOwn && !props.isDirectMessage && props.view.isHead);
 
-    /** The meta sits under a group's last bubble, and under any send that says Sending… or failed. */
-    const isMetaShown = computed((): boolean => isLastOfGroup.value || props.view.state === "failed" || props.view.isSendingShown);
+    /** The time sits under a group's last message, and under any send that says Sending… or failed. */
+    const isMetaShown = computed((): boolean => isLastOfGroup.value || props.isTypingNext || props.view.state === "failed" || props.view.isSendingShown);
 
-    const isEditedUnder = computed((): boolean => props.view.isEdited && !isMetaShown.value);
+    /** A message edited mid-group says so in its time line, with no time, so Edited has one home. */
+    const isEditedShown = computed((): boolean => props.view.isEdited && !props.view.isEditorShown);
+
+    /** The time line is drawn while it has something to say: the time, or Edited alone. */
+    const isMetaDrawn = computed((): boolean => isMetaShown.value || isEditedShown.value);
 
     /** A message of files alone draws no empty bubble; every other message draws its bubble. */
     const isBubbleShown = computed((): boolean => props.view.files.length === 0 || !!props.view.text?.trim());

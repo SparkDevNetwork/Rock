@@ -21,9 +21,10 @@
 // neither works any of them out again. A fact only one look draws lives in that look.
 
 import { ComponentPublicInstance, computed, inject, Ref, UnwrapNestedRefs, watch } from "vue";
-import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "./useHistory.partial";
+import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../heldMessage.partial";
 import { MessageRowRequests } from "./useMessageActions.partial";
 import { ReactionReader } from "./useReactions.partial";
+import type { ReactionMotion } from "../messageMotion.partial";
 import { RowPosition, timeLabel } from "../feedLayout.partial";
 import { problemReportKey } from "../problemReport.partial";
 import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
@@ -86,6 +87,7 @@ export type MessageRowReactionsProps = {
     reader: ReactionReader;
     listReactors: (code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>;
     isCardDisabled: boolean;
+    motion: ReactionMotion | null;
 };
 
 /** What the row lends its look of what can be done to the message and of the row's own motion. */

@@ -26,7 +26,8 @@ import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
-import { createTimelines, Timelines } from "./composables/useHistory.partial";
+import { createTimelines, TimelineDependencies, Timelines } from "./composables/useHistory.partial";
+import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
@@ -34,7 +35,7 @@ import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./com
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
-import { createThreads, Threads } from "./composables/useThreads.partial";
+import { createThreads, Threads, ThreadsDependencies } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
@@ -235,6 +236,9 @@ export type ChatShell = {
     reveal: PageReveal;
     channels: ChannelStore;
     timelines: Timelines;
+
+    /** What happened to each message's row while it was on screen, which is all its motion plays. */
+    motion: MessageMotion;
 
     /** Tells the platform, a few codes a page load, what this client met and could not handle. */
     problems: ProblemReporter;
@@ -526,6 +530,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal.stop();
         live.stop();
         timelines.stop();
+        motion.stop();
         problems.stop();
         threads.stop();
         messageActions.stop();
@@ -617,6 +622,24 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return { message: result.error.code, hint: result.error.text, status: result.status };
     }
 
+    // The stores record each live change as they apply it, and the rows and views read it.
+    const motion = createMessageMotion();
+
+    // What the conversation's timeline and the open thread both tell and ask, the same for each.
+    // Whichever copy of the person's send lands first, from a page, live or its answer, settles it,
+    // and a typing signal that waited for it to land goes then; what a page says of typing goes to
+    // presence, made below and reached only once running.
+    const heldTogether: Pick<TimelineDependencies, "onLanded" | "typing"> & Pick<ThreadsDependencies, "onLanded" | "typing"> = {
+        onLanded: message => {
+            sender.landed(message);
+            presence.caughtUp();
+        },
+        typing: {
+            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
+            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
+        }
+    };
+
     const timelines = createTimelines({
         fetchPage: async (channelId, page): Promise<HistoryPage> => {
             const result = await call("chat_get_history", {
@@ -642,14 +665,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onGap: () => problems.tally("live", "gap"),
         // the open thread of a room being repaired reads its newest page again; made below
         onRepair: channelId => threads.repair(channelId),
-        // whichever copy of the person's send lands first, from a page, live or its answer, settles it
-        onLanded: message => sender.landed(message),
+        ...heldTogether,
         // A reaction moves the conversation's copy of its message when the timeline lets it
         // through, held like any other change until the channel's first page is in; the open
         // thread's copies are moved as the event arrives.
-        applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload),
+        applyReaction: (channelId, event, payload, isLive) => reactions.applyEvent(channelId, event, payload, isLive),
         // every holder writes through the blocks' mask, made below and called only once running
-        mask: message => blocks.mask(message)
+        mask: message => blocks.mask(message),
+        motion
     });
 
     // The sidebar's reads are the live part's, made below and reached only once running.
@@ -702,10 +725,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
-        onLanded: message => sender.landed(message),
+        ...heldTogether,
         isOffline: () => state.connection !== null,
         mask: message => blocks.mask(message),
-        isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid)
+        isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid),
+        motion
     });
 
     /**
@@ -742,7 +766,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         churchKey: tenantId,
         storage: options.storage,
         maskFaces: people => blocks.maskFaces(people),
-        mask: message => blocks.mask(message)
+        mask: message => blocks.mask(message),
+        motion
     });
 
     const mentions = createMentions({
@@ -918,6 +943,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
         newLocalId,
+        motion,
         isOffline: () => state.connection !== null,
         roomKind: roomKindOf,
         onRoomRefused: (channelId, error) => channels.applyPosting(channelId, {
@@ -1057,6 +1083,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const row = channels.rows.find(r => r.channel_id === channelId)?.last_message_id ?? null;
             return newest === null && row === null ? null : Math.max(newest ?? 0, row ?? 0);
         },
+        // A late signal is judged by the typist's newest message held in its place, a conversation's
+        // timeline or the open thread's replies, however it came: a page after a rejoin included.
+        newestFrom: (channelId, rootId, alias) => {
+            const thread = threads.state.thread;
+            const isOpen = rootId !== null && thread?.channelId === channelId && thread.rootId === rootId;
+            const messages = rootId === null ? timelines.state(channelId).messages : isOpen ? thread.replies : [];
+            for (let index = messages.length - 1; index >= 0; index--) {
+                if ((messages[index].person_alias_guid ?? "").toLowerCase() === alias) {
+                    return messages[index].id;
+                }
+            }
+            return null;
+        },
         // what the client holds of a place is behind the person while a send of theirs is out, or
         // while the thread's first page, which may hold a reply of theirs, is on its way
         isBehind: (channelId, rootId) => {
@@ -1066,8 +1105,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             return sender.pending(channelId).some(row => row.status === "sending" && (row.parentId ?? null) === rootId);
         },
+        // the open conversation, or the thread open in its drawer
+        isOnScreen: (channelId, rootId) => {
+            const thread = threads.state.thread;
+            return rootId === null ? state.activeChannelId === channelId : thread?.channelId === channelId && thread.rootId === rootId;
+        },
         personAliasGuid,
         isBlocked: alias => blocks.isBlocked(alias),
+        motion,
         report: code => problems.report("typing", code),
         isStopped: () => isStopped
     });
@@ -1108,6 +1153,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reveal,
         channels,
         timelines,
+        motion,
         problems,
         sender,
         directMessages,
@@ -1217,6 +1263,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             else if (state.activeChannelId && isSendKeyed()) {
                 const place = quoteKey(state.activeChannelId);
+                // a send ends the person's typing turn here, so their next message's shows at once
+                presence.sent(state.activeChannelId, null);
                 await sender.send(state.activeChannelId, body, undefined, undefined, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }
@@ -1229,6 +1277,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             if (channelId && isSendKeyed()) {
                 // the thread's own quote, never the conversation's, which waits for a send there
                 const place = quoteKey(channelId, rootId);
+                presence.sent(channelId, rootId);
                 await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel }, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }
@@ -1305,6 +1354,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             state.isPushOffered = false;
             live.stop();
             timelines.stop();
+            motion.stop();
             problems.stop();
             sender.stop();
             directMessages.stop();

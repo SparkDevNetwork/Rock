@@ -16,12 +16,13 @@
 //
 
 // The composers as the block wires them: a change the person makes to a box is kept as that
-// place's draft and told to typing as the place it was typed in, and each box is given the line of
-// who else is typing there. A box handing back the text it already holds is not the person typing.
+// place's draft and told to typing as the place it was typed in, and the conversation and the open
+// thread are each given who else is typing there, for their typing bubbles. A box handing back the
+// text it already holds is not the person typing.
 import { computed, ref } from "vue";
 import { useComposers } from "../../../../../src/Communication/Chat/ChatShell/composables/useComposers.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
-import type { TypingLine } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import type { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import type { OpenThreadState } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 
@@ -31,7 +32,10 @@ const otherRoom = "c000000b-0000-4000-8000-000000000000";
 function build() {
     const drafts: Record<string, string> = {};
     const typed: Array<[string, number | null, string]> = [];
-    const lines: Record<string, TypingLine> = { [group]: { names: "Anna", verb: "is typing…" }, [quoteKey(otherRoom, 40)]: { names: "Sam", verb: "is typing…" } };
+    const typing: Record<string, Typing> = {
+        [group]: { typists: [{ alias: "anna", person: null }], names: "Anna", sentence: "Anna is typing…" },
+        [quoteKey(otherRoom, 40)]: { typists: [{ alias: "sam", person: null }], names: "Sam", sentence: "Sam is typing…" }
+    };
     const shell = ref({
         drafts: {
             of: (place: string) => ({ text: drafts[place] ?? "", mentions: [], isAlsoSent: false }),
@@ -42,7 +46,7 @@ function build() {
         },
         presence: {
             typed: (channelId: string, rootId: number | null, text: string) => typed.push([channelId, rootId, text]),
-            lineFor: (place: string | null) => (place ? lines[place] : null) ?? null
+            typingIn: (place: string | null) => (place ? typing[place] : null) ?? null
         }
     } as unknown as ChatShell);
     const activeChannelId = ref<string | null>(group);
@@ -89,9 +93,9 @@ test("a box handing back the text its draft already holds, as a send that keeps 
     expect(h.typed).toEqual([]);
 });
 
-test("each box is given the line of who else is typing in its place", () => {
+test("the conversation and the open thread are each given who else is typing in their place", () => {
     const h = build();
 
-    expect(h.composers.conversationTyping.value).toEqual({ names: "Anna", verb: "is typing…" });
-    expect(h.composers.threadTyping.value).toEqual({ names: "Sam", verb: "is typing…" });
+    expect(h.composers.conversationTyping.value?.sentence).toBe("Anna is typing…");
+    expect(h.composers.threadTyping.value?.sentence).toBe("Sam is typing…");
 });

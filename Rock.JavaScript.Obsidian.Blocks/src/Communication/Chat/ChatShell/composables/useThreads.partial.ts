@@ -51,7 +51,11 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, combine, defaultCatchUp, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
+import { defaultCatchUp, Timelines } from "./useHistory.partial";
+import { applyMessageChange, holdMessage, isMessageChange, maskHeld, MessageMask } from "../heldMessage.partial";
+import type { MessageMotion } from "../messageMotion.partial";
+import type { Presence } from "./usePresence.partial";
+import { quoteKey } from "./useMessageActions.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
@@ -173,6 +177,12 @@ export type ThreadsDependencies = {
 
     /** Whether an alias is someone the reader blocked, whose reply is not news to them. Required, for the same reason. */
     isBlocked: (personAliasGuid: string | null) => boolean;
+
+    /** Told of each reply heard arriving live, each live change to what the drawer holds, and each thread's first reply, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "arrived" | "changed" | "threadStarted">;
+
+    /** Told what each page of the open thread says of typing: every reply it holds now, and who the platform says is typing a reply. */
+    typing?: Pick<Presence, "heldThrough" | "stated">;
 };
 
 /** The threads a shell holds. */
@@ -285,9 +295,6 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     }) as ThreadsState;
     const me = dependencies.personAliasGuid.toLowerCase();
     const mask = dependencies.mask;
-
-    /** A message as the threads hold it: masked as the people blocked now stand, its key lowered. */
-    const own = (message: TimelineMessage): TimelineMessage => withSendKey(mask(message));
 
     // The one stopped state every resumed await checks before it touches anything.
     let isStopped = false;
@@ -441,6 +448,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             markRow(row, { isFollowing: row.following, isUnread: false });
         }
 
+        // the clock as the read is asked, before it goes, for the typing it answers
+        const askedAt = Date.now();
         const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
         if (isStopped || thisOpen !== threadOpen || !state.thread) {
             return;
@@ -465,17 +474,18 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         }
         pendingRootUpdate = null;
         // masked after the counts are laid on, so a replier they name is masked too
-        thread.root = pageRoot ? mask(pageRoot) : null;
+        thread.root = pageRoot ? holdMessage(undefined, pageRoot, mask) : null;
 
         // A reply that arrived live while the page was on its way may be newer than the page,
         // so what is held joins the page by id rather than being replaced by it; a change that
         // arrived above the page's revision is laid over its copy.
         const live = thread.replies;
-        thread.replies = (page.messages ?? []).map(message => own(layNewer(ledger, message, pageRev))).sort((a, b) => a.id - b.id);
+        thread.replies = (page.messages ?? []).map(message => holdMessage(undefined, layNewer(ledger, message, pageRev), mask)).sort((a, b) => a.id - b.id);
         reportLanded(thread.replies);
         for (const reply of live) {
             insertReply(reply);
         }
+        tellTyping(channelId, rootId, thread.replies, page.typing, askedAt);
         thread.following = landedFollowing(rootId, page.following === true);
         thread.readCursor = page.read_cursor ?? null;
         thread.hasMore = page.has_more === true;
@@ -513,6 +523,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const oldestHeld = open.replies[0]?.id ?? null;
         const read: TimelineMessage[] = [];
         let root: TimelineMessage | null = null;
+        let typing: unknown = undefined;
+        // the clock as the first page is asked, before it goes, for the typing it answers
+        const askedAt = Date.now();
         let hasMore = false;
         let beforeId: number | null = null;
         do {
@@ -528,24 +541,27 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const pageRev = revOf(page);
             const messages = (page.messages ?? []).filter(message => beforeId === null || message.id < (beforeId as number));
             root = root ?? (page.root ? layNewer(ledger, page.root, pageRev) : null);
-            read.push(...messages.map(message => withSendKey(layNewer(ledger, message, pageRev))));
+            // only the first page reaches the newest reply, and only it says who is typing one
+            typing = beforeId === null ? page.typing : typing;
+            read.push(...messages.map(message => layNewer(ledger, message, pageRev)));
             hasMore = page.has_more === true;
             beforeId = messages.length > 0 ? Math.min(...messages.map(message => message.id)) : null;
         } while (hasMore && beforeId !== null && oldestHeld !== null && beforeId > oldestHeld && read.length < max);
 
         // masked as the set stands once every page is in, not as each was read
         if (root && open.root) {
-            open.root = mask(combine(open.root, root));
+            open.root = holdMessage(open.root, root, mask);
         }
         read.sort((a, b) => a.id - b.id);
         const oldest = read[0]?.id ?? null;
         const held = new Map(open.replies.map(reply => [reply.id, reply]));
         const readIds = new Set(read.map(message => message.id));
         const live = open.replies.filter(reply => (oldest === null || reply.id >= oldest) && !readIds.has(reply.id));
-        open.replies = [...read.map(message => mask(held.has(message.id) ? combine(held.get(message.id) as TimelineMessage, message) : message)), ...live]
+        open.replies = [...read.map(message => holdMessage(held.get(message.id), message, mask)), ...live]
             .sort((a, b) => a.id - b.id);
         open.hasMore = hasMore;
         reportLanded(read);
+        tellTyping(open.channelId, open.rootId, read, typing, askedAt);
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -643,7 +659,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
      */
     function landRow(row: ThreadListRow, readAt: number | null): ThreadListRow {
         const read = { ...row.root, reply_count: row.reply_count, last_reply_at: row.last_reply_at, participant_count: row.participant_count };
-        const root = mask(layNewer(listLedger, read, readAt));
+        const root = holdMessage(undefined, layNewer(listLedger, read, readAt), mask);
         const counts = countsOf(root);
         const held = { count: row.reply_count, isFollowing: landedFollowing(root.id, row.following), isUnread: row.has_unread };
         const marks = marksAfter(counts, held, isReading(row.channel_id, root.id));
@@ -847,7 +863,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         // row by the list's own record.
         const held = timelineRoot(channelId, update.root_id);
         if (held && dependencies.timelines.isNewer(update.root_id, "thread", rev)) {
+            // the conversation's root is the copy whose pill a first reply brings
+            const isStarting = (held.reply_count ?? 0) === 0 && update.reply_count > 0;
             moveRoot(held, update, isOpen);
+            if (isStarting) {
+                dependencies.motion.threadStarted(held);
+            }
         }
         moveRow(channelId, update.root_id, counts, rev, isOpen);
         const isNewerHere = isOpen && takeChange(ledger, update.root_id, "thread", rev, counts) !== null;
@@ -911,6 +932,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             nameFromRepliers(message, thread.root?.repliers ?? pendingRootUpdate?.repliers);
         }
         insertReply(message);
+        // One heard while the first page is out is part of that page, as the timeline holds such a
+        // message until its page lands: the drawer draws them together, and neither rises.
+        if (!thread.isLoading) {
+            dependencies.motion.arrived(message, quoteKey(thread.channelId, thread.rootId));
+        }
     }
 
     /**
@@ -918,8 +944,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
      * a reply already held is still reported, since it may be the first the sender hears of.
      */
     function insertReply(arrived: TimelineMessage): void {
-        // held in the case the sender and the drawer compare keys in
-        const message = own(arrived);
+        // held in the case the sender and the drawer compare keys in, in the one shape every copy has
+        const message = holdMessage(undefined, arrived, mask);
         const replies = state.thread?.replies;
         if (!replies) {
             return;
@@ -933,6 +959,19 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     }
 
     /** Tells the sender of each reply here sent under a key. */
+    /**
+     * Tells typing what a page of the open thread says: a reply of someone's held now ends the
+     * typing a signal before it named, and the platform's answer of who is typing a reply is drawn.
+     */
+    function tellTyping(channelId: string, rootId: number, replies: readonly TimelineMessage[], typing: unknown, askedAt: number): void {
+        for (const reply of replies) {
+            dependencies.typing?.heldThrough(channelId, rootId, reply.person_alias_guid, reply.id);
+        }
+        if (typing !== undefined) {
+            dependencies.typing?.stated(channelId, rootId, typing, askedAt);
+        }
+    }
+
     function reportLanded(messages: TimelineMessage[]): void {
         for (const message of messages) {
             if (message.client_key) {
@@ -1073,7 +1112,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
 
                     const page = body<ThreadPage>(result);
                     state.thread.olderError = null;
-                    const older = (page.messages ?? []).filter(m => m.id < oldest.id).map(own).sort((a, b) => a.id - b.id);
+                    const older = (page.messages ?? []).filter(m => m.id < oldest.id).map(message => holdMessage(undefined, message, mask)).sort((a, b) => a.id - b.id);
                     state.thread.replies.unshift(...older);
                     reportLanded(older);
                     state.thread.hasMore = page.has_more === true;
@@ -1142,6 +1181,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 return;
             }
 
+            if (!isMessageChange(event)) {
+                return;
+            }
+
             // an edit, a delete or a hide reaches the root and the replies the drawer holds, when newer
             // than the copy, and waits in the ledger for a page still on its way
             const fields = changedFields(event, payload);
@@ -1154,6 +1197,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 applyMessageChange(held, event, payload, newer);
                 // a change in place is a write like any other: its pieces may name someone blocked
                 maskHeld([held], mask);
+                dependencies.motion.changed(held, event);
             }
         },
 

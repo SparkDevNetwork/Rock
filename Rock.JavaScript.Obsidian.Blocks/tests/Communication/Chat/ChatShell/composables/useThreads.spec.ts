@@ -64,11 +64,13 @@
 // ThreadListRow is chat_list_threads' row; TimelineMessage gains repliers, thread_following and
 // thread_unread, as chat_messages_json now answers them.
 import { createThreads, unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Fixtures
 
@@ -186,7 +188,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }, blocked: string[] = []): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }, blocked: string[] = [], typing?: Parameters<typeof createThreads>[0]["typing"]): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -196,6 +198,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const timelines = createTimelines({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => historyPage ?? { messages: [], read_cursor: null, unread_count: 0, has_more: false }
@@ -203,6 +206,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     await timelines.loadNewest(channel);
 
     const threads = createThreads({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: threadLimits,
         call: (name, args) => {
@@ -218,6 +222,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
         catchUp: () => catchUp,
         isBlocked: guid => guid !== null && blocked.includes(guid.toLowerCase()),
         onLanded,
+        typing,
         ...(isOffline ? { isOffline } : {})
     });
 
@@ -1769,10 +1774,11 @@ describe("a block, as what the threads hold is masked where it is written", () =
         answers: Record<string, Array<CallResult | Deferred<CallResult>>>
     } {
         const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         // eslint-disable-next-line prefer-const
         let blocks: ReturnType<typeof createBlocks>;
         const threads = createThreads({
+            motion: createMessageMotion(),
             limits: threadLimits,
             call: name => {
                 const next = answers[name]?.shift();
@@ -1958,5 +1964,55 @@ describe("the room's revision, as the open thread holds it", () => {
         await opening;
 
         expect(h.threads.state.thread?.replies[0].body).toBe("while loading");
+    });
+});
+
+// Each page of the open thread tells typing what it now holds and, on its first page, who the
+// platform says is typing a reply, so a thread opened while someone types shows them.
+describe("the open thread's typing", () => {
+    // As the conversation's page, the thread's read takes its clock before the request goes, so
+    // anyone heard while it is out is kept against its answer.
+    test("the first page tells typing the clock as it was asked, before the request went", async () => {
+        const told: number[] = [];
+        const typing = {
+            heldThrough: (): void => undefined,
+            stated: (_channel: string, _root: number | null, _typists: unknown, askedAt: number): void => void told.push(askedAt)
+        };
+        const h = await setup(undefined, undefined, undefined, undefined, [], typing);
+        const first = deferred<CallResult>();
+        h.answers["chat_get_thread_history"] = [first];
+        let clock = 1_000;
+        const now = jest.spyOn(Date, "now").mockImplementation(() => clock);
+        try {
+            const opening = h.threads.openThread(channel, 1);
+            await settle();
+            clock = 2_000;
+            first.resolve(threadAnswer(root(1), [reply(2, 1)], { typing: [] }));
+            await opening;
+        }
+        finally {
+            now.mockRestore();
+        }
+
+        expect(told).toEqual([1_000]);
+    });
+
+    test("the first page and a reread tell typing every reply they hold and the typists the first page answers", async () => {
+        const told: string[] = [];
+        const typing = {
+            heldThrough: (channelId: string, rootId: number | null, alias: string | null | undefined, id: number): void => void told.push(`held ${rootId} ${id}`),
+            stated: (channelId: string, rootId: number | null, typists: unknown): void => void told.push(`stated ${rootId} ${JSON.stringify(typists)}`)
+        };
+        const h = await setup(undefined, undefined, undefined, undefined, [], typing);
+        const typists = [{ person_alias_guid: anna, after: 3, age_ms: 100 }];
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1)], { typing: typists })];
+        await h.threads.openThread(channel, 1);
+        expect(told).toEqual(["held 1 2", "held 1 3", `stated 1 ${JSON.stringify(typists)}`]);
+
+        told.length = 0;
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1), reply(3, 1), reply(2, 1)])];
+        h.threads.repair(channel);
+        await settle();
+        expect(told).toEqual(["held 1 2", "held 1 3", "held 1 4"]);
     });
 });

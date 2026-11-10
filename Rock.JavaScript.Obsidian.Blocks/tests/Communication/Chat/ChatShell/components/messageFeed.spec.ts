@@ -30,14 +30,22 @@ import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/compon
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
-import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
+import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { Typing, typingWords, TypingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
+import { playAnimations, tailPlayed } from "../tailStage";
 
 const me = "a0000001-0000-4000-8000-000000000000";
+const ben = "a0000003-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
+
+/** The place the stores record a send or an arrival in; the feed here is woken by what it draws. */
+const place = "c1";
 
 // #region Browser stand-ins
 
@@ -95,12 +103,23 @@ class FakeIntersectionObserver {
  * The first time, the scroller is laid out where the feed scrolled itself as it mounted, at its
  * newest message, which the browser reports with a scroll before the reader moves from there.
  */
+/**
+ * Lays the feed's content out as tall as the scroller's height, from its top: the newest end the
+ * feed reads from layout is then where the browser's scroll height puts it at rest.
+ */
+function layContent(wrapper: VueWrapper, height: () => number): void {
+    const content = wrapper.get("[data-testid='feed-content']").element as HTMLElement;
+    Object.defineProperty(content, "offsetTop", { configurable: true, get: () => 0 });
+    Object.defineProperty(content, "offsetHeight", { configurable: true, get: height });
+}
+
 function placeScroll(wrapper: VueWrapper, scrollTop: number, scrollHeight = 2000, clientHeight = 500): void {
     const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
     const isFirstLayout = !Object.getOwnPropertyDescriptor(scroller, "scrollHeight");
     let top = isFirstLayout ? scrollHeight - clientHeight : scroller.scrollTop;
     Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => scrollHeight });
     Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => clientHeight });
+    layContent(wrapper, () => scrollHeight);
     Object.defineProperty(scroller, "scrollTop", { configurable: true, get: () => top, set: (value: number) => top = value });
     if (isFirstLayout) {
         scroller.dispatchEvent(new Event("scroll"));
@@ -164,7 +183,12 @@ type FeedProps = {
     isDirectMessage?: boolean;
     isEntering?: boolean;
     isCovered?: boolean;
+    typing?: Typing | null;
 };
+
+/** Anna typing, as the presence gives it. */
+const annaPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+const annaTyping: Typing = { typists: [{ alias: anna, person: annaPerson }], ...typingWords([annaPerson]) as TypingWords };
 
 function draw(props: FeedProps, reveal?: { isMainRevealed: boolean }): VueWrapper {
     const provide = reveal ? { [pageRevealKey as symbol]: { state: reveal, holdFace: () => undefined } } : {};
@@ -198,6 +222,15 @@ beforeEach(() => {
 
 afterEach(() => {
     jest.useRealTimers();
+});
+
+// The tail's motions run through the browser's animations, which jsdom lacks, so a stand-in keeps them.
+let animations: ReturnType<typeof playAnimations>;
+beforeEach(() => {
+    animations = playAnimations();
+});
+afterEach(() => {
+    animations.restore();
 });
 
 describe("the timeline", () => {
@@ -309,8 +342,8 @@ describe("the timeline", () => {
 
 // A person's own message is one thing on the page from the moment it is sent: the row still sending
 // and every copy of the message share the send's key, and the feed keys its rows by it. A message
-// newer than the feed's first page rises in as it is drawn, unless this session sent it, since its
-// pending row already rose; a copy drawn afresh in another group does not rise a second time.
+// sent here or heard arriving live while the feed is open rises in as it is drawn, once: a send's
+// pending row rose, so none of its copies rises again, even drawn afresh in another group.
 // A conversation opened in place of another enters, as the switch's one motion; the first one
 // the block draws is simply there when its page is already held. Decided as the feed mounts and
 // never again, so nothing a redraw changes can replay it. A feed that mounts before its first
@@ -493,33 +526,60 @@ describe("the person's own message is one row from send to stored", () => {
     // person's group to below hers, and the stored copy then moves back above it: each time into
     // another group, which is a new element, and neither rises a second time.
     test("moved between groups by another person's newer message, the person's own send rises only once", async () => {
+        const motion = createMessageMotion();
         const state = timeline([message(1, me, at(14, 58))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        motion.sent("k1", place);
+        await wrapper.setProps({ pending: [pendingRow("k1")] });
         await nextTick();
-        expect(wrapper.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+        expect(wrapper.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
-        state.messages.push(message(3, anna, at(15, 0)));
+        const annas = message(3, anna, at(15, 0));
+        motion.arrived(annas, place);
+        state.messages.push(annas);
         await nextTick();
-        expect(wrapper.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
-        expect(wrapper.get("[data-message-id='3']").classes()).toContain("is-arriving");
+        await nextTick();
+        expect(wrapper.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
+        expect(wrapper.get("[data-message-id='3']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         state.messages.splice(1, 0, message(2, me, at(15, 0), { client_key: "k1", body: "pending k1" }));
         await wrapper.setProps({ pending: [] });
         await nextTick();
+        await nextTick();
 
         expect(wrapper.findAll(".chat-msg")).toHaveLength(3);
-        expect(wrapper.get("[data-message-id='2']").classes()).not.toContain("is-arriving");
+        expect(wrapper.get("[data-message-id='2']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
     });
 
     test("the person's message sent from another tab is news here, and rises in", async () => {
+        const motion = createMessageMotion();
+        motion.sent("k1", place);
         const state = timeline([message(1, anna, at(14, 50))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me, sentKeys: new Set(["k1"]) } });
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
         await nextTick();
 
-        state.messages.push(message(2, me, at(15, 0), { client_key: "from-another-tab" }));
+        const fromAnotherTab = message(2, me, at(15, 0), { client_key: "from-another-tab" });
+        motion.arrived(fromAnotherTab, place);
+        state.messages.push(fromAnotherTab);
+        await nextTick();
         await nextTick();
 
-        expect(wrapper.get("[data-message-id='2']").classes()).toContain("is-arriving");
+        expect(wrapper.get("[data-message-id='2']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
+    });
+
+    // A message the timeline gains with nothing recorded, as a page, a catch-up or a switch back
+    // brings it, is simply there; so is a send's row drawn by a feed opened after it was sent.
+    test("a message the timeline gains with no arrival recorded, and a send made before the feed opened, do not rise", async () => {
+        const motion = createMessageMotion();
+        motion.sent("k1", place);
+        const state = timeline([message(1, anna, at(14, 50))]);
+        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        await nextTick();
+
+        state.messages.push(message(2, anna, at(15, 0)));
+        await nextTick();
+
+        expect(wrapper.findAll(tailPlayed("chat-tail-in"))).toHaveLength(0);
     });
 });
 
@@ -543,7 +603,9 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
     async function race(isChannel = false, isPersonLeader = false): Promise<Race> {
         const answer = deferred<SendResult>();
         let sender: ReturnType<typeof createSender> | null = null;
+        const motion = createMessageMotion();
         const timelines = createTimelines({
+            motion,
             mask: platformMask,
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: [message(1, anna, at(14, 50))], read_cursor: null, unread_count: 0, has_more: false }),
@@ -554,16 +616,17 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
             send: () => answer.promise,
             timelines,
             personAliasGuid: me,
-            newLocalId: () => "local-1"
+            newLocalId: () => "local-1",
+            motion
         });
         const created = (id: number, sender: string, key: string | null): Record<string, unknown> => ({
             id, channel_id: "c1", parent_id: null, shown_in_channel: false, person_alias_guid: sender,
             message_type: "text", body: id === 2 ? "On my way" : `m${id}`, created_at: at(15, 0), client_key: key
         });
         const Host = defineComponent({
-            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader, sentKeys: sender?.sentKeys })
+            setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader })
         });
-        const wrapper = mount(Host);
+        const wrapper = mount(Host, { global: { provide: { [messageMotionKey as symbol]: motion } } });
 
         return {
             wrapper,
@@ -672,7 +735,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
 
         // Either the row's own element, moved with its group, or a new one that does not rise.
         const settled = r.wrapper.get("[data-message-id='2']").element;
-        expect(settled === drawn || !settled.classList.contains("is-arriving")).toBe(true);
+        expect(settled === drawn || !((settled as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
         expect(r.wrapper.findAll(".chat-msg")).toHaveLength(3);
         expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
         expect(isSent(r.wrapper)).toBe(true);
@@ -689,21 +752,21 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         const sending = r.send();
         await flush();
         const drawn = r.wrapper.get("[data-testid='pending-row']").element;
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
 
         r.answer.resolve(confirmedAnswer);
         await sending;
         await flush();
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
         expect(isSent(r.wrapper)).toBe(true);
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
         expect(r.wrapper.findAll(".chat-msg")).toHaveLength(2);
 
         jest.advanceTimersByTime(2200);
         await flush();
         expect(isSent(r.wrapper)).toBe(false);
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
     });
 
     // A leader's own send carries the Leader pill from its first frame to its last, one element
@@ -735,9 +798,15 @@ describe("day sections", () => {
         expect(sections.map(section => section.get("[data-testid='day-pill']").text())).toEqual(["Yesterday", "Today"]);
     });
 
-    /** Puts an element at a height on screen, as a browser lays it out. */
-    function placeAt(element: Element, top: number): void {
-        element.getBoundingClientRect = () => ({ top, bottom: top + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+    /**
+     * Lays a pill out at a height in the feed's view, however far the feed is scrolled, and draws it
+     * there, or where a motion in flight draws it.
+     */
+    function placeAt(element: Element, top: number, drawnBy = 0): void {
+        const scroller = element.closest<HTMLElement>("[data-testid='message-feed']");
+        Object.defineProperty(element, "offsetTop", { configurable: true, get: () => top + (scroller?.scrollTop ?? 0) });
+        const drawn = top + drawnBy;
+        element.getBoundingClientRect = () => ({ top: drawn, bottom: drawn + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: drawn, toJSON: () => ({}) }) as DOMRect;
     }
 
     /**
@@ -804,12 +873,12 @@ describe("day sections", () => {
         layOut(element, top, 38);
     }
 
-    /** Draws two days with their pills at the given heights on screen, the label's band at 108. */
-    async function twoDaysAt(wrapper: VueWrapper, yesterday: number, today: number): Promise<void> {
+    /** Draws two days with their pills laid out at the given heights, the label's band at 108, and drawn where a motion has them. */
+    async function twoDaysAt(wrapper: VueWrapper, yesterday: number, today: number, drawnBy = 0): Promise<void> {
         const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
         placeBand(wrapper.get("[data-testid='day-float']").element, 108);
-        placeAt(pills[0], yesterday);
-        placeAt(pills[1], today);
+        placeAt(pills[0], yesterday, drawnBy);
+        placeAt(pills[1], today, drawnBy);
         placeScroll(wrapper, 400);
         await nextTick();
     }
@@ -865,19 +934,24 @@ describe("day sections", () => {
     });
 
     // The feed rises 6px into place as a conversation opens, and the landing scroll runs while it
-    // does. A pill is placed by where the feed lays it out, so the label carries the same pill the
-    // same distance during the rise as after it.
-    test("a feed still rising in carries the pill by where it is laid out, not where the rise has it", async () => {
+    // does; a message arriving glides the stack up from 17px below. A pill is placed by where the
+    // feed lays it out, so the label carries the same pill the same distance during either motion
+    // as after it, and never keeps a wrong day once the motion ends.
+    test.each([
+        ["the feed rising in", 6],
+        ["the stack gliding up", 17]
+    ])("during %s the label carries the pill by where it is laid out, not where the motion draws it", async (_motion, drawnBy) => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
-        const scroller = wrapper.get("[data-testid='message-feed']").element;
 
-        // Laid out, Today's pill stands at 140, 32px into the band; the rise draws everything 6px lower.
-        placeAt(scroller, 6);
-        await twoDaysAt(wrapper, -214, 146);
-        expect(shown(wrapper)).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+        // Laid out, Today's pill stands at 140, 32px into the band.
+        await twoDaysAt(wrapper, -220, 140, drawnBy);
+        const during = shown(wrapper);
+        await twoDaysAt(wrapper, -220, 140);
+        expect(during).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+        expect(shown(wrapper)).toEqual(during);
 
-        // Laid out at 143, 3px above the band's foot: the rise would put it past the foot, uncarried.
-        await twoDaysAt(wrapper, -211, 149);
+        // Laid out at 143, 3px above the band's foot: the motion would put it past the foot, uncarried.
+        await twoDaysAt(wrapper, -217, 143, drawnBy);
         expect(shown(wrapper)).toEqual({ label: "Today", offset: "35px", carried: [false, true] });
     });
 
@@ -1215,27 +1289,28 @@ describe("Jump to latest", () => {
         expect(wrapper.findAll("[data-state='blocked']")).toHaveLength(1);
     });
 
-    // One near-bottom rule, the design's 48 px, decides both whether Jump shows and whether a new
-    // message is followed, so Jump never shows and then vanishes as the feed snaps down anyway.
-    test("a reader 60 px up stays put when another person sends, and Jump counts it", async () => {
+    // One near-bottom rule, 72 px, decides both whether Jump shows and whether a new message is
+    // followed, so Jump never shows and then vanishes as the feed snaps down anyway. It covers a
+    // group's typing bubble, so the bubble's coming and going never moves a reader it counts as up.
+    test("a reader 80 px up stays put when another person sends, and Jump counts it", async () => {
         const state = timeline([message(1, anna, at(14, 0))]);
         const wrapper = draw({ timeline: state });
-        placeScroll(wrapper, 1440);
+        placeScroll(wrapper, 1420);
         await nextTick();
 
         state.messages.push(message(2, anna, at(14, 1)));
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(1440);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(1420);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
     });
 
-    test("a reader 40 px up follows another person's message to the bottom, and Jump stays hidden", async () => {
+    test("a reader 60 px up follows another person's message to the bottom, and Jump stays hidden", async () => {
         const state = timeline([message(1, anna, at(14, 0))]);
         const wrapper = draw({ timeline: state });
-        placeScroll(wrapper, 1460);
+        placeScroll(wrapper, 1440);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
 
@@ -1243,7 +1318,7 @@ describe("Jump to latest", () => {
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2000);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2000 - 500);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
     });
 
@@ -1256,12 +1331,12 @@ describe("Jump to latest", () => {
         await nextTick();
 
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-        Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 1442 });
+        Object.defineProperty(scroller, "scrollTop", { configurable: true, writable: true, value: 1426 });
         state.messages.push(message(2, anna, at(14, 1)));
         await nextTick();
         await nextTick();
 
-        expect(scroller.scrollTop).toBe(1442);
+        expect(scroller.scrollTop).toBe(1426);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
         expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
     });
@@ -1283,6 +1358,174 @@ describe("Jump to latest", () => {
     });
 });
 
+// What the view's tail moves is marked on the rows the feed really draws: a group's face and name
+// line by its group's key, each row's box and time line as its row's.
+describe("the marks the tail reads", () => {
+    test("a group's face and name line carry its first row's key, and every row its box and time line", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, anna, at(14, 51)), message(3, ben, at(14, 52))]) });
+        const rows = wrapper.findAll("[data-testid='message-row']").map(row => row.element as HTMLElement);
+        const keys = rows.map(row => row.dataset.rowKey);
+
+        expect(rows[0].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[0]}`);
+        expect(rows[1].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[0]}`);
+        expect(rows[0].querySelector("[data-tail^='face:']")).toBeNull();
+        expect(rows[2].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[2]}`);
+        expect(rows[2].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[2]}`);
+        expect(rows.every(row => row.querySelectorAll("[data-tail='box']").length === 1 && row.querySelectorAll("[data-tail='meta']").length === 1)).toBe(true);
+    });
+});
+
+// Someone else typing is drawn as their next message would be, the feed's newest row, after the
+// person's own sends too. It is no message: it is never seen, and Jump to latest neither shows for
+// it nor counts it.
+describe("someone else typing", () => {
+    test("is the feed's newest row, after the stored messages and the person's own sends", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")], isDirectMessage: true, typing: annaTyping });
+        const bubble = wrapper.get("[data-testid='typing-bubble']").element;
+        const rows = wrapper.findAll("[data-testid='message-row'], [data-testid='pending-row']").map(row => row.element);
+
+        expect(rows).toHaveLength(2);
+        expect(rows.every(row => isBefore(row, bubble))).toBe(true);
+        expect(wrapper.get("[data-testid='feed-content']").element.contains(bubble)).toBe(true);
+        // its layout is its own, so no group rule of the feed's can turn its grid into another box
+        expect(bubble.classList.contains("chat-grp")).toBe(false);
+    });
+
+    // The bubble is laid out as her next row: with her run newest it continues the run, which
+    // gives it the face its last row had and keeps the time under her newest message; with anyone
+    // else's newest it starts a group of its own, as her message will.
+    test("after the typist's own run it is that run's next row: the face moves to it and the time stays under her message", () => {
+        const wrapper = draw({ timeline: timeline([message(1, me, at(14, 50)), message(2, anna, at(14, 58))]), typing: annaTyping });
+        const hers = wrapper.get("[data-message-id='2']");
+
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+        expect(wrapper.find("[data-testid='typing-names']").exists()).toBe(false);
+        expect(hers.attributes("data-position")).toBe("first");
+        expect(hers.find("[data-testid='sender-avatar']").exists()).toBe(false);
+        expect(hers.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(true);
+        expect(hers.find("[data-testid='sender-name']").exists()).toBe(true);
+    });
+
+    // Her message sent after the window starts a group, so the bubble starts one as the window
+    // closes, rather than her message jogging the feed as it lands.
+    test("in her run it starts a group of its own once her run's five minutes are over, and her message gets its face back", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 58))]), typing: annaTyping });
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+        jest.advanceTimersByTime(3 * 60 * 1000);
+        await nextTick();
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(true);
+
+        jest.advanceTimersByTime(1);
+        await nextTick();
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        expect(wrapper.get("[data-message-id='1']").attributes("data-position")).toBe("single");
+    });
+
+    test("after someone else's message it starts a group of its own, and that message keeps its face", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, ben, at(14, 58))]), typing: annaTyping });
+        const bens = wrapper.get("[data-message-id='2']");
+
+        expect(wrapper.findComponent(TypingBubble).props("isInRun")).toBe(false);
+        expect(wrapper.get("[data-testid='typing-names']").text()).toBe("Anna Reyes");
+        expect(bens.attributes("data-position")).toBe("single");
+        expect(bens.find("[data-testid='sender-avatar']").exists()).toBe(true);
+    });
+
+    test("her run gets its face back as she stops", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 58))]), typing: annaTyping });
+
+        await wrapper.setProps({ typing: null });
+
+        expect(wrapper.get("[data-message-id='1']").attributes("data-position")).toBe("single");
+        expect(wrapper.find("[data-message-id='1'] [data-testid='sender-avatar']").exists()).toBe(true);
+    });
+
+    // The name line glides from the bubble into her group as her message lands, so it says what her
+    // group's will: a name that changed as it landed would swap in one frame.
+    test("her group's name line, as her message lands, reads what the bubble's said", async () => {
+        const state = timeline([message(1, ben, at(14, 58))]);
+        const wrapper = draw({ timeline: state, typing: annaTyping });
+        const said = wrapper.get("[data-testid='typing-names']").text();
+
+        state.messages.push(message(2, anna, at(14, 59)));
+        await wrapper.setProps({ typing: null });
+
+        expect(wrapper.get("[data-message-id='2'] [data-testid='sender-name']").text()).toBe(said);
+    });
+
+    test("is not drawn while the first page is still loading", async () => {
+        const state = timeline([], { isLoaded: false });
+        const wrapper = draw({ timeline: state, isDirectMessage: true, typing: annaTyping });
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
+
+        state.messages.push(message(1, anna, at(14, 50)));
+        state.isLoaded = true;
+        await nextTick();
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(true);
+    });
+
+    test("is not drawn with no one typing", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true });
+
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
+    });
+
+    test("a group's bubble has its name line, a direct message's has none", () => {
+        const group = draw({ timeline: timeline([message(1, anna, at(14, 50))]), typing: annaTyping });
+        const direct = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true, typing: annaTyping });
+
+        expect(group.findComponent(TypingBubble).props("isGroup")).toBe(true);
+        expect(group.get("[data-testid='typing-names']").text()).toBe("Anna Reyes");
+        expect(direct.findComponent(TypingBubble).props("isGroup")).toBe(false);
+        expect(direct.find("[data-testid='typing-names']").exists()).toBe(false);
+    });
+
+    // What ended someone's typing, and whether it was her message, is the record's: the bubble
+    // compares no messages and keeps no memory of what it drew.
+    test("the bubble is given no messages, only who types and where it stands", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), typing: annaTyping });
+
+        expect(Object.keys(wrapper.findComponent(TypingBubble).props()).sort()).toEqual(["groupKey", "isGroup", "isInRun", "typing"]);
+    });
+
+    test("is never watched as seen, so it is never read as a message", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), isDirectMessage: true, typing: annaTyping });
+        await nextTick();
+
+        const bubble = wrapper.get("[data-testid='typing-bubble']").element;
+        expect(FakeIntersectionObserver.all.some(observer => [...observer.watched].some(watched => watched === bubble || bubble.contains(watched)))).toBe(false);
+    });
+
+    test("scrolled up, typing coming and going is not counted by Jump to latest, and a message after it is counted once", async () => {
+        const state = timeline([message(1, anna, at(14, 0))]);
+        const wrapper = draw({ timeline: state, isDirectMessage: true });
+        placeScroll(wrapper, 0);
+        await nextTick();
+
+        await wrapper.setProps({ typing: annaTyping });
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("Jump to latest");
+
+        state.messages.push(message(2, anna, at(14, 1)));
+        await wrapper.setProps({ typing: null });
+        await nextTick();
+        expect(wrapper.get("[data-testid='jump-latest']").text()).toBe("1 new message");
+    });
+
+    test("leaves the unread strip and the New divider as they were, above it", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))], { readCursor: 1, unreadCount: 1, firstUnreadId: 2 });
+        const wrapper = draw({ timeline: state, isDirectMessage: true });
+        const before = wrapper.get("[data-testid='unread-strip']").text();
+
+        await wrapper.setProps({ typing: annaTyping });
+
+        expect(wrapper.get("[data-testid='unread-strip']").text()).toBe(before);
+        expect(isBefore(wrapper.get("[data-testid='unread-divider']").element, wrapper.get("[data-testid='typing-bubble']").element)).toBe(true);
+    });
+});
+
 describe("a send that fails", () => {
     test("is scrolled into view, out from under the feed's bottom fade", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), pending: [pendingRow("a")] });
@@ -1294,7 +1537,7 @@ describe("a send that fails", () => {
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2060);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2060 - 500);
     });
 });
 
@@ -1346,7 +1589,7 @@ describe("the feed giving height to the composer", () => {
         await shrinkTo(wrapper, 430);
 
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-        expect(scroller.scrollTop).toBe(2000);
+        expect(scroller.scrollTop).toBe(2000 - 430);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
     });
 
@@ -1403,6 +1646,7 @@ describe("a feed holding its reader at the newest message", () => {
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
         Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
         Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+        layContent(wrapper, () => sizes.scrollHeight);
         Object.defineProperty(scroller, "scrollTop", {
             configurable: true,
             get: () => sizes.scrollTop,
@@ -1457,7 +1701,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a held conversation whose newest page replaces it at the same count opens at the newest message, its new rows watched", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
         timelines.leave(channel);
 
@@ -1518,7 +1762,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a reader scrolled up stays where they are when content grows and when the timeline is replaced", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
 
         const wrapper = draw({ timeline: timelines.state(channel) });
@@ -1653,7 +1897,7 @@ describe("a feed holding its reader at the newest message", () => {
         const wrapper = draw({ timeline: state });
         const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
         layOut(wrapper, sizes);
-        scrollReader(wrapper, 1440);
+        scrollReader(wrapper, 1400);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
 
@@ -1678,7 +1922,7 @@ describe("a feed holding its reader at the newest message", () => {
         const wrapper = draw({ timeline: state });
         const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
         layOut(wrapper, sizes);
-        scrollReader(wrapper, 1440);
+        scrollReader(wrapper, 1400);
         await nextTick();
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(true);
 
@@ -1690,6 +1934,88 @@ describe("a feed holding its reader at the newest message", () => {
         await nextTick();
 
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // Someone typing is the feed's newest row, inside the content the feed watches, so it is kept in
+    // view by the rule every growth is: a reader at the newest message follows it as it rises in
+    // and as it settles away, and one scrolled up is not moved by either.
+    test("a reader at the newest message follows someone else's typing bubble into view, and back as it goes", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]), isDirectMessage: true });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        expect(sizes.scrollTop).toBe(1500);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2048;
+        await resize();
+        expect(sizes.scrollTop).toBe(1548);
+
+        // she stops without sending: the content shrinks back and the browser clamps the reader to the end
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        sizes.scrollTop = 1500;
+        echoScroll(wrapper);
+        await resize();
+        expect(sizes.scrollTop).toBe(1500);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    // A group's bubble is 70 px; a reader nearer the end than that is at the newest message and
+    // follows it, so its settling away never clamps a reader counted as scrolled up.
+    test("a reader within a group bubble's height of the end follows the bubble into view and back as it goes", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]) });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 1440);
+        await nextTick();
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2070;
+        await resize();
+        expect(sizes.scrollTop).toBe(1570);
+
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        sizes.scrollTop = 1500;
+        echoScroll(wrapper);
+        await resize();
+        expect(sizes.scrollTop).toBe(1500);
+        expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
+    });
+
+    test("a reader scrolled up is not moved by someone else's typing bubble coming or going", async () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]), isDirectMessage: true });
+        const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+        scrollReader(wrapper, 700);
+
+        await wrapper.setProps({ typing: annaTyping });
+        sizes.scrollHeight = 2048;
+        await resize();
+        expect(sizes.scrollTop).toBe(700);
+
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2000;
+        await resize();
+        expect(sizes.scrollTop).toBe(700);
+    });
+
+    // Her message takes the bubble's place: the feed follows it as it follows any arrival.
+    test("a reader at the newest message follows the typist's message that takes the bubble's place", async () => {
+        const state = timeline([message(1, anna, at(14, 0)), message(2, me, at(14, 1))]);
+        const wrapper = draw({ timeline: state, isDirectMessage: true, typing: annaTyping });
+        const sizes = { scrollHeight: 2048, clientHeight: 500, scrollTop: 0 };
+        layOut(wrapper, sizes);
+
+        state.messages.push(message(3, anna, at(14, 2)));
+        await wrapper.setProps({ typing: null });
+        sizes.scrollHeight = 2070;
+        await nextTick();
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(1570);
+        expect(wrapper.find("[data-testid='typing-bubble']").exists()).toBe(false);
     });
 });
 

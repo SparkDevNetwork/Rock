@@ -37,7 +37,7 @@ import { CallResult } from "../platformCall.partial";
 import { ChatError, ChatPerson, ChipReactor, DisplayPiece, QuotedMessage, Reaction, Replier, TimelineMessage } from "../types.partial";
 import { personName } from "../ui/face.partial";
 import { Note } from "../ui/settingNote.partial.obs";
-import { blockedCopy, isWithheld, MessageMask } from "./useHistory.partial";
+import { blockedCopy, isWithheld, MessageMask } from "../heldMessage.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { failureNote } from "./saveRule.partial";
 

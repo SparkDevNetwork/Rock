@@ -18,8 +18,9 @@
 // where each day starts and what it is called, where the New divider sits, and the words of the
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
-// reason; the feed passes the browser's own.
-import { blockedSentence, sendKey } from "./composables/useHistory.partial";
+// reason; the feed passes the browser's own, and lays out again when a moment the layout names passes.
+import { onScopeDispose, Ref, ref, watchPostEffect } from "vue";
+import { blockedSentence, rowKey, sendKey } from "./heldMessage.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
 /** Messages from one sender this close together share a group. */
@@ -40,9 +41,11 @@ export const skeletonDelayMs = 1000;
 /**
  * How far from the bottom a reader may be and still count as at the newest message, in the
  * conversation and the thread drawer alike: such a reader follows what arrives, anyone further up
- * stays put and is offered Jump to latest. The design's own figure.
+ * stays put and is offered Jump to latest. It covers a group's typing bubble, 70px with its gap
+ * and name line, so a reader nearer the end than the bubble follows it, and its settling away
+ * never clamps the scroll of a reader counted as scrolled up.
  */
-export const nearBottomPx = 48;
+export const nearBottomPx = 72;
 
 /**
  * How far from the whole-pixel end a feed still counts as at it. The sizes the browser reports are
@@ -63,6 +66,12 @@ export type FeedRow = {
     message: TimelineMessage | null;
     pending: PendingMessage | null;
     position: RowPosition;
+
+    /**
+     * The group's sender is typing her next row after this one. That row has the run's face and
+     * corners, as her message will, but no time, so the time stays under this row.
+     */
+    isTypingNext: boolean;
 };
 
 /**
@@ -92,6 +101,34 @@ export type FeedLayoutOptions = {
     layout: FeedLayout;
     now: Date;
     locale?: string;
+
+    /** Who else is typing here, by lower-case alias, in the order first heard. */
+    typists?: readonly string[];
+};
+
+/**
+ * Where someone else typing is drawn: the newest row, either the next row of the typist's own run
+ * or the first of a group of its own. It never starts a day of its own; her message brings its
+ * day's pill when it lands.
+ */
+export type TypingRow = {
+    isInRun: boolean;
+
+    /** The key of the group it is drawn in: her run's when it continues it, else its own, "typing". */
+    groupKey: string;
+
+    /**
+     * In her run, the first moment it no longer holds the typing row, in epoch milliseconds: past
+     * her newest message's five minutes, or the day's end if sooner. The layout reads the clock
+     * only as its inputs change, so its owner lays out again then. Null outside her run.
+     */
+    endsAt: number | null;
+};
+
+/** The feed as laid out: its day sections, and the typing row after them while someone types. */
+export type FeedLayoutResult = {
+    sections: FeedSection[];
+    typing: TypingRow | null;
 };
 
 /** A message or a pending send, with what grouping reads from it. */
@@ -134,11 +171,15 @@ export function isOwnMessage(message: Pick<TimelineMessage, "is_own" | "person_a
  * arrive; a new element would cut its rise short and play it again. A pending row whose message is
  * already here is not drawn, since the message stands for it.
  *
- * @param options The messages, the pending sends, the reader and where the divider sits.
+ * Someone else typing is laid out as the typist's next row by the same grouping rule, so her
+ * message lands where it stood: one typist who sent the newest group today, within the window,
+ * continues that run, and anyone else typing starts a group after it.
  *
- * @returns The sections, oldest first.
+ * @param options The messages, the pending sends, the reader, where the divider sits and who is typing.
+ *
+ * @returns The sections, oldest first, and the typing row.
  */
-export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
+export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
     const me = options.personAliasGuid.toLowerCase();
     const sections: FeedSection[] = [];
     let section: FeedSection | null = null;
@@ -205,7 +246,7 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
             group = null;
         }
         else if (group && previous && joinsGroup(previous, entry, options.layout)) {
-            group.rows.push({ key: entry.key, message, pending: entry.pending, position: "single" });
+            group.rows.push({ key: entry.key, message, pending: entry.pending, position: "single", isTypingNext: false });
         }
         else {
             group = {
@@ -213,12 +254,29 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
                 key: entry.key,
                 isOwn: entry.sender === me,
                 senderGuid: message ? message.person_alias_guid : options.personAliasGuid,
-                rows: [{ key: entry.key, message, pending: entry.pending, position: "single" }]
+                rows: [{ key: entry.key, message, pending: entry.pending, position: "single", isTypingNext: false }]
             };
             section.items.push(group);
         }
 
         previous = entry;
+    }
+
+    // The typing row is one more row after the newest, laid out by the rule a message there would
+    // be: it continues the newest group when that is the one typist's, today and within the window.
+    const typists = options.typists ?? [];
+    let typing: TypingRow | null = null;
+    if (typists.length > 0) {
+        const next: Entry = { key: "typing", message: null, pending: null, sender: typists.length === 1 ? typists[0].toLowerCase() : "", at: options.now };
+        const isInRun = !!group && !!previous && section?.key === localDayKey(options.now) && next.sender !== "" && next.sender !== me
+            && joinsGroup(previous, next, options.layout);
+        let endsAt: number | null = null;
+        if (isInRun && group && previous) {
+            group.rows[group.rows.length - 1].isTypingNext = true;
+            const midnight = new Date(options.now.getFullYear(), options.now.getMonth(), options.now.getDate() + 1).getTime();
+            endsAt = Math.min(previous.at.getTime() + groupWindowMs + 1, midnight);
+        }
+        typing = { isInRun, groupKey: isInRun && group ? group.key : "typing", endsAt };
     }
 
     for (const item of sections.flatMap(s => s.items)) {
@@ -227,7 +285,41 @@ export function layoutFeed(options: FeedLayoutOptions): FeedSection[] {
         }
     }
 
-    return sections;
+    return { sections, typing };
+}
+
+/**
+ * A count a feed's layout reads, moved when a moment the last layout named passes, such as the
+ * typing row's run ending: a layout reads the clock only as its inputs change, so without this it
+ * would keep a moment's answer past it. One timer, for the moment named last; stopped with its owner.
+ *
+ * @param at The moment the layout drawn last names, in epoch milliseconds, or null for none.
+ *
+ * @returns The count, for the layout to read.
+ */
+export function useLayoutAgain(at: () => number | null): Ref<number> {
+    const count = ref(0);
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    function stop(): void {
+        if (timer !== null) {
+            clearTimeout(timer);
+            timer = null;
+        }
+    }
+
+    // after the draw, so a layout that reads the count can name the moment from the first
+    watchPostEffect(() => {
+        stop();
+        const moment = at();
+        if (moment !== null) {
+            timer = setTimeout(() => count.value++, Math.max(0, moment - Date.now()));
+        }
+    });
+
+    onScopeDispose(stop);
+
+    return count;
 }
 
 /**
@@ -358,18 +450,6 @@ export function jumpLabel(newCount: number): string {
     return newCount > 0 ? newMessagesText(newCount) : "Jump to latest";
 }
 
-/**
- * The key a message's row is drawn under: its send's key when it has one, which its pending row
- * was drawn under too, else its id. A send key is a UUID and an id a number, so the two never meet.
- *
- * @param message The message.
- *
- * @returns The row's key.
- */
-function rowKey(message: TimelineMessage): string {
-    return `k:${sendKey(message.client_key) ?? message.id}`;
-}
-
 /** Whether a message is laid out in blocks, which draws it as a card of its own. */
 function hasBlocks(message: TimelineMessage): boolean {
     return Array.isArray(message.blocks) && message.blocks.length > 0;
@@ -393,12 +473,13 @@ function joinsGroup(previous: Entry, entry: Entry, layout: FeedLayout): boolean 
     return !isAnnouncement(entry) && !isAnnouncement(previous) && !entry.message?.quoted_message_id;
 }
 
-/** Marks each row with its place in the group. */
+/** Marks each row with its place in the group, counting a typing row after the last as one more. */
 function setPositions(rows: FeedRow[]): void {
+    const count = rows.length + (rows[rows.length - 1]?.isTypingNext ? 1 : 0);
     rows.forEach((row, index) => {
-        row.position = rows.length === 1 ? "single"
+        row.position = count === 1 ? "single"
             : index === 0 ? "first"
-                : index === rows.length - 1 ? "last" : "middle";
+                : index === count - 1 ? "last" : "middle";
     });
 }
 

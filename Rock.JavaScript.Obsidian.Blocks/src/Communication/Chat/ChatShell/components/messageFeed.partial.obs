@@ -89,8 +89,8 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key, item.messages[item.messages.length - 1])"
                                     :reactionHost="reactionHost"
+                                    :data-row-key="item.key"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
                                     @openThread="emit('openThread', $event)"
                                     @messageAction="emit('messageAction', $event)" />
@@ -103,15 +103,16 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key, item.message)"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
+                                    :data-row-key="item.key"
                                     :data-message-id="item.message.id"
                                     @messageAction="emit('messageAction', $event)" />
 
                         <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
                             <MessageRow v-for="row in item.rows"
                                         :key="row.key"
+                                        :groupKey="item.key"
                                         :message="row.message"
                                         :pending="row.pending"
                                         :isOwn="item.isOwn"
@@ -122,11 +123,11 @@
                                         :organizationName="organizationName"
                                         :isChannel="isChannel"
                                         :position="row.position"
+                                        :isTypingNext="row.isTypingNext"
                                         :isPhone="isPhone"
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                         :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
-                                        :isArriving="isRowArriving(row.key, row.message)"
                                         :isFlashing="!!row.message && row.message.id === flashingId"
                                         :senderNames="senderNames"
                                         :isPreviewing="isPreviewing"
@@ -134,6 +135,7 @@
                                         :editError="editError"
                                         :isEditSaving="isEditSaving"
                                         :reactionHost="reactionHost"
+                                        :data-row-key="row.key"
                                         :data-message-id="row.message?.id"
                                         @openThread="emit('openThread', $event)"
                                         @jump="emit('jump', $event)"
@@ -143,6 +145,17 @@
                         </div>
                     </template>
                 </section>
+
+                <!--
+                    Someone else typing, as the newest row the layout placed: inside the watched
+                    content, so a reader at the newest message follows it into view and one scrolled
+                    up is not moved. One element after the days rather than a row inside them, so it
+                    is the same row wherever it stands and can settle away once its row is gone.
+                -->
+                <TypingBubble :typing="drawnTyping"
+                              :isGroup="!isChannel && !isDirectMessage"
+                              :isInRun="laidOut.typing?.isInRun ?? false"
+                              :groupKey="laidOut.typing?.groupKey ?? 'typing'" />
             </div>
         </div>
 
@@ -222,6 +235,21 @@
     /* Where the content starts, scrolled to the very top: below that band, and the strip while it may show. */
     --chat-feed-top-room: calc(var(--chat-day-inset) + var(--chat-day-height) + var(--chat-day-fade));
     --chat-feed-bottom-mask: 14px;
+
+    /*
+        Another person's group: the space above it, the gap between its rows, its inset on the
+        sender's side and the room kept on the far side. Stated once here for the groups and for the
+        typing bubble, which stands where that person's next group or row will.
+    */
+    --chat-grp-space: 14px;
+    --chat-grp-gap: 2px;
+    --chat-grp-inset: 20px;
+    --chat-grp-room: 64px;
+}
+
+.chat-feed-frame.is-phone:not(.is-community) {
+    --chat-grp-inset: 12px;
+    --chat-grp-room: 36px;
 }
 
 .chat-feed-frame.has-strip {
@@ -233,10 +261,12 @@
 }
 
 .chat-feed-frame.has-jump {
-    --chat-feed-bottom-mask: 72px;
+    --chat-feed-bottom-mask: 64px;
 }
 
+/* Its content's offset parent, so where the newest end is reads from the feed's own top. */
 .chat-feed {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -254,8 +284,13 @@
     mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
-/* The one box around what the feed draws, which takes the feed's spare height so a short conversation still sits at the bottom. */
+/*
+    The one box around what the feed draws, which takes the feed's spare height so a short
+    conversation still sits at the bottom. The tail moves it as one, and a typing bubble going
+    stands in it out of the flow while the rows settle into its room.
+*/
 .chat-feed-content {
+    position: relative;
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
@@ -387,17 +422,13 @@
 .chat-grp {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    margin-top: 14px;
-    padding: 0 64px 0 20px;
+    gap: var(--chat-grp-gap);
+    margin-top: var(--chat-grp-space);
+    padding: 0 var(--chat-grp-room) 0 var(--chat-grp-inset);
 }
 
 .chat-grp.is-own {
     padding: 0 20px 0 64px;
-}
-
-.is-phone:not(.is-community) .chat-grp {
-    padding: 0 36px 0 12px;
 }
 
 .is-phone:not(.is-community) .chat-grp.is-own {
@@ -514,8 +545,7 @@
 
 .chat-jump {
     position: absolute;
-    /* Clear of the composer's 16px typing band over the feed's bottom edge, always, so it never moves as a line comes. */
-    bottom: 22px;
+    bottom: 14px;
     /* Centred by layout, not by a transform of half its own width: its text changes with the count, and a width-dependent transform would slide it sideways as that changes while it fades in. */
     left: 0;
     right: 0;
@@ -677,15 +707,20 @@
     import ActionBar from "./actionBar.partial.obs";
     import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
+    import TypingBubble from "./typingBubble.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
+    import { useViewArrivals } from "../messageMotion.partial";
+    import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
+    import { Typing } from "../composables/usePresence.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
-    import { endSlackPx, FeedLayout, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText } from "../feedLayout.partial";
+    import { FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText, useLayoutAgain } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -756,12 +791,6 @@
             default: false
         },
 
-        /** Every key this session sent under; a message carrying one already rose as its pending row. */
-        sentKeys: {
-            type: Object as PropType<ReadonlySet<string>>,
-            default: () => new Set<string>()
-        },
-
         /** A room the person has not joined, where they may read but not act on a message. */
         isPreviewing: {
             type: Boolean,
@@ -820,6 +849,18 @@
         reactionHost: {
             type: Object as PropType<ReactionHost | null>,
             default: null
+        },
+
+        /** Who else is typing in the conversation, drawn as its newest row; null for no one. */
+        typing: {
+            type: Object as PropType<Typing | null>,
+            default: null
+        },
+
+        /** The conversation's place, whose typing the record names. */
+        typingPlace: {
+            type: String as PropType<string | null>,
+            default: null
         }
     });
 
@@ -859,12 +900,6 @@
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
 
-    /**
-     * Watches the feed's own box and the content in it, which change with no scroll: the composer
-     * below growing with its text, its strip of files or its failure strip, the column resizing, or
-     * a row growing as its photo, font or reactions settle.
-     */
-    let sizeObserver: ResizeObserver | null = null;
     let dividerElement: Element | null = null;
 
     /** Whether the New divider is out of view, and on which side, as the browser last reported. */
@@ -882,20 +917,15 @@
     const clearedThroughId = ref<number | null>(null);
 
     /**
-     * Whether the reader is at the newest message. It is the reader's state, changed only by a
-     * move: the reader scrolling up out of the newest message's reach clears it and scrolling down
-     * into it sets it, and the feed taking the reader somewhere (a jump, a follow) sets it from
-     * where they are going. A scroll with no move, as the browser reports a frame after the feed
-     * scrolled itself and content grew meanwhile, changes nothing, so a reader at the newest
-     * message is kept there through growth and a reader on their way to an older message is not
-     * pulled back.
+     * Whether the reader is at the newest message, kept there through the feed's own box and the
+     * content in it changing with no scroll: the composer below growing with its text, its strip of
+     * files or its failure strip, the column resizing, or a row growing as its photo, font or
+     * reactions settle. The day label is placed again after, since the pills moved with no scroll.
      */
-    const isAtNewest = ref(true);
+    const reader = useNewestEnd(() => feed.value, content, placeTopDay);
+    const isAtNewest = reader.isAtNewest;
 
     const isScrolledUp = computed((): boolean => !isAtNewest.value);
-
-    /** Where the feed was scrolled to when the reader's place was last read, which tells a move up from a move down. */
-    let readerTop = 0;
 
     /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
     const newCount = ref(0);
@@ -904,14 +934,14 @@
     let skeletonTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * The keys whose row has risen in this feed. A row moved into another group is a new element,
-     * as when someone else's message takes the next id while the person's send is out, and a key
-     * here never rises again. Kept while the feed is open: one short string per message drawn new.
+     * What this feed has drawn new since it mounted: a message sent here or heard arriving live
+     * while it was open arrives once, under its row's key, as its tail first draws it. A row moved
+     * into another group keeps its key and never arrives again. A message a page, a catch-up or a
+     * switch back brings is simply there.
      */
-    const risenKeys = new Set<string>();
+    const { arrives } = useViewArrivals(() => blockedRuns.value);
 
-    /** The newest message when the feed first had any; anything newer arrived while it was open. */
-    let newestAtLoad: number | null = null;
+    /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
 
     const announcement = ref("");
@@ -963,14 +993,49 @@
     const justSentKeys = useSentHold(() => channelPending.value, feed);
     const slowSendKeys = useSlowSend(() => channelPending.value);
 
-    const sections = computed((): FeedSection[] => layoutFeed({
-        messages: props.timeline.messages,
-        pending: channelPending.value,
-        personAliasGuid: props.personAliasGuid,
-        newDividerBeforeId: dividerBeforeId.value,
-        layout: layout.value,
-        now: new Date()
-    }));
+    /** Who is typing as the feed draws it: no one until the first page is drawn, so nothing types under the skeleton. */
+    const drawnTyping = computed((): Typing | null => props.timeline.isLoaded ? props.typing : null);
+
+    // the typing row's run ending changes where the bubble stands, though no input of the layout moves
+    const runEnded = useLayoutAgain(() => laidOut.value.typing?.endsAt ?? null);
+
+    const laidOut = computed((): FeedLayoutResult => {
+        void runEnded.value;
+        return layoutFeed({
+            messages: props.timeline.messages,
+            pending: channelPending.value,
+            personAliasGuid: props.personAliasGuid,
+            newDividerBeforeId: dividerBeforeId.value,
+            layout: layout.value,
+            now: new Date(),
+            typists: drawnTyping.value?.typists.map(typist => typist.alias) ?? []
+        });
+    });
+
+    const sections = computed((): FeedSection[] => laidOut.value.sections);
+
+    /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
+    const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(sections.value
+        .flatMap(section => section.items)
+        .flatMap(item => item.kind === "blocked" ? [[item.key, item.messages] as const] : [])));
+
+    /**
+     * The feed's tail: a message arriving at the newest end glides the stack up as it fades in,
+     * someone typing comes and goes with it, and her message grows out of her bubble.
+     */
+    useFeedTail({
+        content,
+        scroller: () => feed.value,
+        place: () => props.typingPlace,
+        // a message can land mid-scroll, before the scroll event for where the reader now is has run
+        isFollowing: () => {
+            reader.read();
+            return isAtNewest.value;
+        },
+        follow: reader.toNewest,
+        arrives,
+        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
+    });
 
     /**
      * The name of each person seen sending in this timeline, by alias guid, so a mention typed in
@@ -1022,7 +1087,7 @@
     function onScroll(): void {
         actionBar.onScroll();
         placeTopDay();
-        readReader();
+        reader.read();
         if (isAtNewest.value) {
             newCount.value = 0;
         }
@@ -1047,7 +1112,7 @@
 
         // Just below the band the day label keeps once the strip has gone, which the divider coming
         // into view puts away, so the divider is the first thing read.
-        moveReaderTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
+        reader.moveTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
     }
 
     /** A row's flash plays once: the flash goes from the row as it ends. */
@@ -1058,9 +1123,7 @@
     }
 
     function onJump(event: Event): void {
-        if (feed.value) {
-            moveReaderTo(feed.value.scrollHeight);
-        }
+        reader.moveTo(reader.endOf());
         newCount.value = 0;
 
         // The button hides once the feed is at the bottom, which would drop a keyboard's focus
@@ -1094,7 +1157,7 @@
         }
 
         const box = row.getBoundingClientRect();
-        moveReaderTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
+        reader.moveTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
         row.focus({ preventScroll: true });
     }
 
@@ -1106,9 +1169,10 @@
      * passes it, and lets the pill go as it leaves the band below. Read from where the pills are,
      * so a fling, a jump or a page drawn above lands right in one frame.
      *
-     * Every height is where the frame lays things out, from the feed's top: the feed's own rise as
-     * it enters moves its box and the pills in it alike, so a pill measured from the feed's box is
-     * where it will stand once the rise ends, and the band is laid out where it always is.
+     * Every height is where the frame lays things out, from the feed's top, which no transform
+     * moves: the feed's own rise as it enters and the stack's glide as a message arrives both draw
+     * the pills away from where they stand, and the label is placed for where they will be once
+     * the motion ends, so it never keeps a wrong day after it.
      */
     function placeTopDay(): void {
         const scroller = feed.value;
@@ -1119,11 +1183,14 @@
 
         const bandTop = float.offsetTop - scroller.offsetTop;
         const bandBottom = bandTop + float.offsetHeight;
-        const feedTop = scroller.getBoundingClientRect().top;
         const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
         let day: { key: string, label: string, offset: number } | null = null;
         for (let index = 0; index < pills.length; index++) {
-            const top = pills[index].getBoundingClientRect().top - feedTop;
+            // its place in the frame, up the boxes it is laid out in, less how far the feed is scrolled
+            let top = -scroller.offsetTop - scroller.scrollTop;
+            for (let box: HTMLElement | null = pills[index]; box && box !== scroller.offsetParent; box = box.offsetParent as HTMLElement | null) {
+                top += box.offsetTop;
+            }
 
             // Half a pixel either way is the browser's rounding, not a pill inside the band.
             if (top > bandBottom - 0.5) {
@@ -1138,109 +1205,6 @@
 
         carried.value = day;
         gutterPx.value = scroller.offsetWidth - scroller.clientWidth;
-    }
-
-    /**
-     * The feed's box or its content changed size. A reader at the newest message is kept there, as
-     * the browser keeps a scroll's top and would leave the newest rows under the composer, or above
-     * the foot of a row that grew; then the day label is placed for where the reader now is, since
-     * the pills moved with no scroll.
-     */
-    function onFeedResize(): void {
-        if (isAtNewest.value) {
-            scrollToBottom();
-        }
-
-        placeTopDay();
-    }
-
-    /** Whether the person is at, or near, the bottom of the feed. */
-    function isNearBottom(): boolean {
-        const element = feed.value;
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
-    }
-
-    /**
-     * Reads the reader's place from where the feed is scrolled to: a move down into the newest
-     * message's reach, or a scroll that lands at the very end whoever moved it (the browser clamps
-     * a reader to the end when content shrinks), puts them at it, and only a move up out of the
-     * reach takes them from it. With no move, nothing changes, whatever the content did meanwhile.
-     * The first frames of a smooth scroll up are still in reach but not at the end, so they stay
-     * a move up.
-     */
-    function readReader(): void {
-        const top = feed.value?.scrollTop ?? 0;
-        const isNear = isNearBottom();
-        const element = feed.value;
-        const isAtEnd = !element || element.scrollHeight - top - element.clientHeight <= endSlackPx;
-        if (isNear && (top > readerTop || isAtEnd)) {
-            isAtNewest.value = true;
-        }
-        else if (!isNear && top < readerTop) {
-            isAtNewest.value = false;
-        }
-        readerTop = top;
-    }
-
-    /**
-     * Takes the reader to a place in the feed, as a jump does. They are where it goes from the
-     * moment it starts, so a smooth scroll's first frames, still near the bottom, and rows settling
-     * on the way neither read as the reader at the newest message nor pull them back to it.
-     */
-    function moveReaderTo(top: number): void {
-        const scroller = feed.value;
-        if (!scroller) {
-            return;
-        }
-
-        const end = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
-        const target = Math.min(Math.max(0, top), end);
-        isAtNewest.value = end - target < nearBottomPx;
-        readerTop = scroller.scrollTop;
-        scroller.scrollTo?.({ top: target, behavior: scrollBehavior() });
-    }
-
-    /** Scrolls to the newest message, where the reader is then. */
-    function scrollToBottom(): void {
-        if (feed.value) {
-            feed.value.scrollTop = feed.value.scrollHeight;
-            isAtNewest.value = true;
-            readerTop = feed.value.scrollTop;
-        }
-    }
-
-    /** Smooth unless the person asked the system for less motion. */
-    function scrollBehavior(): ScrollBehavior {
-        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    }
-
-    /**
-     * Whether a message arrived while the feed was open, so it rises in rather than just being
-     * there. A row reads this once, when it mounts. A send of this session already rose as its
-     * pending row, so its message never rises again, even drawn afresh in another group because
-     * someone else's message took the next id first; the person's message from another tab is
-     * news here and rises like anyone's.
-     */
-    function isArriving(message: TimelineMessage): boolean {
-        const isSentHere = !!message.client_key && props.sentKeys.has(message.client_key);
-        return newestAtLoad !== null && message.id > newestAtLoad && !isSentHere;
-    }
-
-    /**
-     * Whether a row rises as it is drawn: a send still pending always, a message by the rule
-     * above, and either only the first time its key is drawn. A row reads this once, as it
-     * mounts, so the later renders that answer false leave a row already drawn as it is.
-     */
-    function isRowArriving(key: string, message: TimelineMessage | null): boolean {
-        if (risenKeys.has(key)) {
-            return false;
-        }
-
-        const isNew = message ? isArriving(message) : true;
-        if (isNew) {
-            risenKeys.add(key);
-        }
-        return isNew;
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
@@ -1290,7 +1254,6 @@
         const previous = newestSeenInTimeline;
         newestSeenInTimeline = newestId();
         if (previous === null) {
-            newestAtLoad ??= newestSeenInTimeline;
             return;
         }
 
@@ -1313,7 +1276,7 @@
     // counting and following.
     watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
-        readReader();
+        reader.read();
 
         const shouldFollow = isAtNewest.value;
         noteArrivals(!shouldFollow);
@@ -1321,7 +1284,7 @@
         observeRows();
 
         if (shouldFollow) {
-            scrollToBottom();
+            reader.toNewest();
         }
 
         if (props.timeline.messages.length > 0) {
@@ -1338,7 +1301,7 @@
         }
 
         await nextTick();
-        scrollToBottom();
+        reader.toNewest();
     });
 
     // A send that fails opens the strip over the composer, which takes its height from the feed
@@ -1346,7 +1309,7 @@
     watch(() => channelPending.value.filter(row => row.status === "failed").length, async (failed, previous) => {
         if (failed > previous) {
             await nextTick();
-            scrollToBottom();
+            reader.toNewest();
         }
     });
 
@@ -1420,14 +1383,6 @@
             dividerObserver.observe(dividerElement);
         }
 
-        if (typeof ResizeObserver !== "undefined" && feed.value) {
-            sizeObserver = new ResizeObserver(onFeedResize);
-            sizeObserver.observe(feed.value);
-            if (content.value) {
-                sizeObserver.observe(content.value);
-            }
-        }
-
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
         if (!props.timeline.isLoaded) {
             skeletonTimer = setTimeout(() => {
@@ -1437,11 +1392,10 @@
         }
 
         newestSeenInTimeline = newestId();
-        newestAtLoad = newestSeenInTimeline;
 
         observeRows();
         if (props.timeline.messages.length > 0) {
-            scrollToBottom();
+            reader.toNewest();
             emit("firstShown");
         }
     });
@@ -1452,8 +1406,6 @@
         observer = null;
         dividerObserver?.disconnect();
         dividerObserver = null;
-        sizeObserver?.disconnect();
-        sizeObserver = null;
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
         }

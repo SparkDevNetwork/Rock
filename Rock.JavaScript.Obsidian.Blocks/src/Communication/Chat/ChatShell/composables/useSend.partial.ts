@@ -36,8 +36,11 @@ import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGi
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalRefusals, finalWords, inRoomKind, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
-import { sendKey, Timelines } from "./useHistory.partial";
+import { Timelines } from "./useHistory.partial";
+import { sendKey } from "../heldMessage.partial";
+import type { MessageMotion } from "../messageMotion.partial";
 import { ChatSettings } from "./useSession.partial";
+import { quoteKey } from "./useMessageActions.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -393,6 +396,9 @@ export type SenderDependencies = {
     /** A fresh identifier for a pending row, a UUID, since it is also the send's key; null when none can be made. */
     newLocalId: () => string | null;
 
+    /** Told of each new send as its row is put up, so the row rises once and no copy of its message rises again. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "sent">;
+
     /** The platform refused a GIF because the church has GIFs off, which hides them at once. */
     onGifsOff?: () => void;
 
@@ -443,13 +449,6 @@ export type Sender = {
     discard: (localId: string) => void;
 
     /**
-     * Every key this session has sent under, kept for the session: a few dozen bytes a message.
-     * A message carrying one of them already rose in as its pending row, so a feed that draws it
-     * again, in another group, does not raise it a second time.
-     */
-    sentKeys: ReadonlySet<string>;
-
-    /**
      * A copy of a message reached the page: put in a timeline, or in the open thread. One sent
      * under a key of this session settles that send.
      */
@@ -468,6 +467,7 @@ export type Sender = {
  */
 export function createSender(dependencies: SenderDependencies): Sender {
     const rows = reactive<PendingMessage[]>([]) as PendingMessage[];
+    // Every key this session sent under, kept for the session, so any copy of one of its messages settles its send.
     const sentKeys = new Set<string>();
     const failures = reactive<{ last: SendFailureNews | null }>({ last: null });
 
@@ -738,6 +738,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
             sentKeys.add(localId);
+            dependencies.motion.sent(localId, quoteKey(channelId, reply?.parentId));
 
             rows.push({
                 localId,
@@ -817,7 +818,6 @@ export function createSender(dependencies: SenderDependencies): Sender {
             }
         },
 
-        sentKeys,
         landed,
 
         stop: (): void => {

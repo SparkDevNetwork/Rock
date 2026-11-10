@@ -31,9 +31,11 @@
 //   }
 import { ref, shallowRef, watch } from "vue";
 import { useJump } from "../../../../../src/Communication/Chat/ChatShell/composables/useJump.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Fixtures
 
@@ -78,7 +80,7 @@ async function setup(): Promise<{
     olderPages: Array<Deferred<void>>,
     holdOlderPages: () => void
 }> {
-    const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage });
+    const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage });
     const active = ref<string | null>(channel);
     await timelines.loadNewest(channel);
 

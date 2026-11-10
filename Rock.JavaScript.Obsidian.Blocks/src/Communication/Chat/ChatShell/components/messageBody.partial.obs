@@ -143,7 +143,7 @@ button.chat-mn {
     import { avatarHue } from "../ui/brand.partial";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { isActionCall } from "../composables/useMessageActions.partial";
-    import { isRoomMention } from "../composables/useHistory.partial";
+    import { isRoomMention } from "../heldMessage.partial";
     import { problemReportKey } from "../problemReport.partial";
     import { MessageAction } from "../types.partial";
 

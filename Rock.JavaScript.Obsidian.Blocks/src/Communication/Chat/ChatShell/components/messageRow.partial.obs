@@ -40,7 +40,7 @@
         <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
-        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isFlashing="isFlashing" />
+        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
 
         <!-- A phone's actions, from a tap on the message; drawn over the whole chat. -->
         <ActionSheet v-if="isSheetSurface"
@@ -95,23 +95,6 @@
         outline: none;
         border-radius: var(--chat-cm-radius, 0);
     }
-}
-
-.chat-msg.is-arriving {
-    animation: chat-msg-in var(--chat-t-msg) var(--chat-ease-in) both;
-}
-
-/*
-    An own message grows from the corner it is anchored to: a bubble from its bottom right, by the
-    sender's side; Community's full-width row from its bottom left, where its text starts, so the
-    text does not slide sideways as the row scales.
-*/
-.chat-msg.is-conversational.is-own.is-arriving {
-    transform-origin: bottom right;
-}
-
-.chat-msg.is-community.is-own.is-arriving {
-    transform-origin: 0 100%;
 }
 
 /*
@@ -312,13 +295,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-@keyframes chat-msg-in {
-    from {
-        opacity: 0;
-        transform: translateY(var(--chat-rise)) scale(var(--chat-msg-scale));
-    }
-}
-
 /* The row's own background is where the flash ends, so no last frame is named. */
 @keyframes chat-cm-flash {
     0%,
@@ -342,6 +318,8 @@
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
+    import { rowKey, sendKey } from "../heldMessage.partial";
+    import { useRowMotion } from "../messageMotion.partial";
     import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -404,6 +382,18 @@
             default: "single"
         },
 
+        /** The group's sender is typing her next row after this one, so the group's time stays under this row. */
+        isTypingNext: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The key of the row's group, which its face and name line are marked by for the view's tail. */
+        groupKey: {
+            type: String,
+            default: ""
+        },
+
         /** Whether the chat is in its one-pane phone layout, where Community's gutter and faces are smaller. */
         isPhone: {
             type: Boolean,
@@ -424,12 +414,6 @@
 
         /** A send still going has taken long enough to say "Sending…"; before that it says nothing. */
         isSendingSlow: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The message arrived while the feed was open, so it rises in. */
-        isArriving: {
             type: Boolean,
             default: false
         },
@@ -520,11 +504,6 @@
 
     const columnBar = useColumnActionBar();
 
-    const isCrossfading = ref(false);
-
-    /** An edit landed while the row was on screen, so its "Edited" slides in once. */
-    const isEditedNow = ref(false);
-
     const isSheetOpen = ref(false);
 
     /**
@@ -534,20 +513,16 @@
     const isHoverless = typeof window !== "undefined" && typeof window.matchMedia === "function"
         && window.matchMedia("(hover: none)").matches;
 
-    /**
-     * Whether the row rises in, read once as it mounts and never again. The feed's answer changes
-     * as a send is confirmed and its Sent hold ends; a class that followed it would start the rise
-     * over on a row already on screen.
-     */
-    const isArrivalDrawn = props.isArriving;
 
     /**
-     * Whether this row's thread started while the row was on screen: its first reply arrived
-     * live. Read from the thread appearing, not from when the summary mounts, since a page opened
-     * straight onto a conversation redraws its rows in the conversation's look once its kind is
-     * known, and a thread that was there all along must not pop then.
+     * The row's own motion, each played only for what the stores recorded happening to its message
+     * since the row mounted: an edit, a delete or a hide crossfades, a thread's first reply pops its
+     * pill, the reader's own reaction pops or rolls its chip. A page, a re-read or a remount that only
+     * states the message again plays none of them, whatever it changes. A folded line by people
+     * blocked watches its newest message, though its view claims its arrival by all of them: the line
+     * shows no words to crossfade, and a root with replies always stands as a line of its own.
      */
-    const isThreadStartedHere = ref(false);
+    const { isCrossfading, isEditedNow, isThreadStartedHere, reaction } = useRowMotion(() => props.pending ? `k:${sendKey(props.pending.localId)}` : props.message ? rowKey(props.message) : null);
 
     // #endregion Values
 
@@ -650,7 +625,8 @@
         isPhone: isTouchLayout.value,
         reader: { personAliasGuid: props.personAliasGuid, name: props.personName, photoUrl: props.personPhotoUrl },
         listReactors,
-        isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id)
+        isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id),
+        motion: reaction.value
     }));
 
     const rootClasses = computed((): Record<string, boolean> => ({
@@ -663,7 +639,6 @@
         "is-jumbo": isJumbo.value,
         // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
-        "is-arriving": isArrivalDrawn,
         "is-flashing": props.isFlashing,
         "has-thread": hasThread.value,
         "has-reactions": hasReactions.value
@@ -799,14 +774,6 @@
 
     // #region Watchers
 
-    // An edit, a delete or a moderator's hide replaces what the bubble holds, so it crossfades.
-    watch(() => [props.message?.edited_at, props.message?.deleted_at, props.message?.visibility], (now, before) => {
-        if (before && now.some((value, index) => value !== before[index])) {
-            isCrossfading.value = true;
-            isEditedNow.value = !!now[0] && now[0] !== before[0];
-        }
-    });
-
     // The row lends the column's bar its dock while its message offers one, and takes it back as
     // the message stops offering it or the row goes.
     watch([isBarOffered, barDock, () => props.message?.id], ([isOffered, element, messageId], _before, onCleanup) => {
@@ -818,13 +785,6 @@
         columnBar.offer(messageId, dock);
         onCleanup(() => columnBar.withdraw(messageId, dock));
     }, { immediate: true, flush: "post" });
-
-    // Not immediate, so a thread already there when the row draws is not taken for a new one.
-    watch(hasThread, (now, before) => {
-        if (now && !before) {
-            isThreadStartedHere.value = true;
-        }
-    });
 
     // #endregion Watchers
 </script>

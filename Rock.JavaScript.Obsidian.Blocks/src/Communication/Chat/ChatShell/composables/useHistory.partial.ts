@@ -41,9 +41,13 @@
 import { reactive, toRaw } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
-import { DisplayPiece, HistoryPage, MessageCreatedEvent, MessageDeletedEvent, MessageEditedEvent, MessageVisibilityEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
+import { HistoryPage, MessageCreatedEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
+import { applyMessageChange, holdMessage, isMessageChange, isTimelineMessage, MessageChangeEvent, MessageMask, maskHeld } from "../heldMessage.partial";
 import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
+import type { MessageMotion } from "../messageMotion.partial";
+import type { Presence } from "./usePresence.partial";
+import { quoteKey } from "./useMessageActions.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -51,244 +55,8 @@ export const defaultCatchUp = { page: 100, max: 500 };
 /** How long a failed catch-up page waits before it is tried again, at first and at most: estimates. */
 export const defaultRetryDelay = { baseMs: 1000, capMs: 30000 };
 
-/** What a message row draws: what kind of row, and its text. */
-export type MessageDisplay = {
-    kind: "message" | "system" | "deleted" | "notice" | "blocked";
-    text: string | null;
-};
-
-/**
- * A send's key in the one form every comparison uses. The platform stores the key as a UUID, and
- * a UUID may be written back in either case, so a key is matched only once lowered; otherwise a
- * copy of the person's message would stand beside its pending row and never settle the send.
- *
- * @param key The key as it arrived, if any.
- *
- * @returns The key in lower case, or null when there is none.
- */
-export function sendKey(key: string | null | undefined): string | null {
-    return key ? key.toLowerCase() : null;
-}
-
-/**
- * A message as it is held: its send's key, if any, in the form every comparison uses. A message
- * already in that form is returned as it is, so most copies cost nothing.
- *
- * @param message The message as it arrived.
- *
- * @returns The message with its key lowered.
- */
-export function withSendKey<T extends Pick<TimelineMessage, "client_key">>(message: T): T {
-    const key = sendKey(message.client_key);
-    return message.client_key && key !== message.client_key ? { ...message, client_key: key } : message;
-}
-
 /** How a missed live change is noticed and repaired when nothing is passed: the settings' own defaults, so the two never differ. */
 export const defaultRevRules = { reorderMs: defaultLimits.gap_reorder_ms, repairWaitMs: defaultLimits.gap_repair_wait_ms, staleMs: defaultLimits.stale_reload_ms };
-
-/**
- * What a row shows for a message. The server decides when a message is hidden or removed and
- * writes the sentence shown in its place, and a message type this client was not built with is
- * drawn by its text, so a released client still shows what later releases of the platform send.
- *
- * @param message The message.
- *
- * @returns The kind of row and its text.
- */
-export function messageDisplay(message: TimelineMessage): MessageDisplay {
-    // Before a delete or a hide, which would tell the reader what became of it.
-    if (message.blocked) {
-        return { kind: "blocked", text: blockedSentence };
-    }
-
-    if (message.deleted_at) {
-        return { kind: "deleted", text: "This message was deleted." };
-    }
-
-    if (message.visibility === "hidden" || message.visibility === "removed") {
-        return { kind: "notice", text: message.visibility_notice ?? "This message is not shown." };
-    }
-
-    return { kind: message.message_type === "system" ? "system" : "message", text: message.body };
-}
-
-/** What stands in place of a message by someone the reader blocked. */
-export const blockedSentence = "Message from someone you blocked";
-
-/**
- * A message by someone the reader blocked, as the platform answers it on a page: its row, id, time
- * and thread counts kept, and its sender and everything it says withheld. A live copy is one
- * payload for every subscriber, so the client makes it so itself; the one list of what is withheld.
- *
- * @param message The message as it arrived.
- *
- * @returns The message withheld and marked blocked.
- */
-export function blockedCopy<T extends Partial<TimelineMessage>>(message: T): T {
-    const copy: Record<string, unknown> = { ...message, blocked: true };
-    for (const field of withheldFields) {
-        copy[field] = null;
-    }
-    return copy as T;
-}
-
-/** What a message by someone the reader blocked withholds, the one list every copy is read by. */
-const withheldFields = ["sender_nick_name", "sender_last_name", "sender_avatar_url", "body", "pieces", "blocks", "attachments", "metadata", "actions", "quoted"] as const;
-
-/** Every field a mask can change on a message: what it withholds, its mark, and the faces it carries. */
-const maskedFields: readonly string[] = [...withheldFields, "blocked", "repliers", "reactions"];
-
-/**
- * Whether a message is already withheld as blockedCopy makes it, so masking it again writes
- * nothing and wakes nothing that draws it.
- *
- * @param message The message as it is held.
- *
- * @returns True when it is marked blocked and every withheld field is empty.
- */
-export function isWithheld(message: Partial<TimelineMessage>): boolean {
-    return message.blocked === true && withheldFields.every(field => message[field] === null || message[field] === undefined);
-}
-
-/**
- * Turns a message into what the reader may see under the people they blocked, as they stand when
- * it is written: the same object when nothing applies. Every holder of messages writes through
- * one, so an answer read before a block is masked by the set that holds when it lands.
- */
-export type MessageMask = <T extends Partial<TimelineMessage>>(message: T) => T;
-
-/**
- * The mask of a holder given none: a copy the platform withheld stays withheld, whatever is laid
- * over it, and anything else is as it came.
- */
-export const platformMask: MessageMask = message => message.blocked && !isWithheld(message) ? blockedCopy(message) : message;
-
-/**
- * Masks again the messages a holder keeps, writing on each row object itself rather than putting
- * a copy in its place, so a quote waiting in a composer, a drawer or an open sheet holding the row
- * shows the change too. The rows are read raw and only a row the mask changes is written, through
- * its reactive copy, so a room with nothing to withhold costs a walk and wakes nothing.
- *
- * @param messages The rows held.
- * @param mask The mask as the set now stands.
- */
-export function maskHeld(messages: readonly Partial<TimelineMessage>[], mask: MessageMask): void {
-    for (const held of toRaw(messages)) {
-        const row = toRaw(held);
-        const masked = mask(row) as Record<string, unknown>;
-        if (masked === row) {
-            continue;
-        }
-        // only the fields the mask changed go through the reactive copy, which wakes what draws them
-        const shown = reactive(row) as Record<string, unknown>;
-        const raw = row as Record<string, unknown>;
-        for (const key of maskedFields) {
-            if (masked[key] !== raw[key]) {
-                shown[key] = masked[key];
-            }
-        }
-    }
-}
-
-/** A mention token as a person types it: a person's alias guid, or the whole room, in any case. */
-const mentionToken = /<@(all|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})>/gi;
-
-/**
- * What a message not yet stored draws. Who may be mentioned is the platform's call, made when the
- * message is stored, so until then each token is plain text: the name this client already holds
- * for the person, else "someone". Never a mention piece, which would claim an admission the
- * platform has not made, and never the raw token.
- *
- * @param body The body as typed.
- * @param names Each person's name this client holds, by alias guid in lower case.
- *
- * @returns The body as text pieces.
- */
-export function pendingPieces(body: string, names: ReadonlyMap<string, string>): DisplayPiece[] {
-    const text = body.replace(mentionToken, (_token, target: string) => {
-        const key = target.toLowerCase();
-        return key === "all" ? "@all" : `@${names.get(key) ?? "someone"}`;
-    });
-
-    return [{ type: "text", text }];
-}
-
-/**
- * Whether a piece mentions the whole room. The platform marks the room's mention as such when it
- * admits it, and nothing else does, so a piece's text never makes one.
- *
- * @param piece A piece of a message's body.
- *
- * @returns True for the room's mention, @all.
- */
-export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean {
-    return piece.type === "mention" && piece.all === true;
-}
-
-/**
- * Lays an edit, a delete or a change of visibility over a message held on screen, wherever it is
- * held: the conversation's timeline or an open thread. A deleted message keeps no edit, and a
- * hidden or removed body never stays on screen. A change that arrived after a newer one of the
- * same message has the newer one's fields laid back over it, as a page read before a change does.
- *
- * @param message The message held, changed in place.
- * @param event The live event's name.
- * @param payload The live event's payload, about this message.
- * @param newer What newer changes to the message set, laid over this one.
- */
-export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown, newer: Partial<TimelineMessage> = {}): void {
-    if (event === "message.edited") {
-        const edited = payload as MessageEditedEvent;
-        // an edit by someone the reader blocked moves its time and says nothing of its words
-        if (message.blocked) {
-            message.edited_at = edited.edited_at;
-        }
-        else if (!message.deleted_at) {
-            message.body = edited.body;
-            message.pieces = edited.pieces ?? null;
-            message.edited_at = edited.edited_at;
-        }
-    }
-    else if (event === "message.deleted") {
-        message.deleted_at = (payload as MessageDeletedEvent).deleted_at;
-        message.body = null;
-        message.pieces = null;
-        message.blocks = null;
-        message.attachments = null;
-        message.metadata = null;
-    }
-    else if (event === "message.visibility") {
-        const changed = payload as MessageVisibilityEvent;
-        message.visibility = changed.state;
-        message.visibility_notice = changed.notice;
-
-        // A hidden or removed body must not stay on screen. One shown again carries its body
-        // back, so the row draws it without waiting for a page.
-        if (changed.state !== "visible") {
-            message.body = null;
-            message.pieces = null;
-            message.blocks = null;
-            message.attachments = null;
-            message.metadata = null;
-        }
-        else if (changed.body !== undefined && !message.deleted_at && !message.blocked) {
-            // a message of files alone comes back with its body null and its files
-            message.body = changed.body;
-            message.pieces = changed.pieces ?? null;
-            message.blocks = changed.blocks ?? null;
-            message.attachments = changed.attachments ?? null;
-        }
-    }
-
-    Object.assign(message, newer);
-    if (message.deleted_at || (message.visibility !== undefined && message.visibility !== "visible")) {
-        message.body = null;
-        message.pieces = null;
-        message.blocks = null;
-        message.attachments = null;
-        message.metadata = null;
-    }
-}
 
 /** A channel's timeline. */
 export type TimelineState = {
@@ -358,13 +126,23 @@ export type TimelineDependencies = {
      * reactions own that arithmetic; the timelines decide when it runs, held like every other
      * change until the channel's first page is in.
      */
-    applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+    applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean) => void;
 
     /** What the reader may see of a message, applied to every row as it is written. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
 
     /** How a missed live change is noticed and repaired, read from the settings each time. */
     revRules?: () => { reorderMs: number, repairWaitMs: number, staleMs: number };
+
+    /** Told of each message heard arriving live and each live edit, delete or hide as it is applied, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "arrived" | "changed">;
+
+    /**
+     * Told what each page says of typing: every message it holds now, and who the platform says is
+     * typing on a page that reaches the newest. A live message is told by the live router instead,
+     * after the arrival is recorded, since it can be the typist's own send.
+     */
+    typing?: Pick<Presence, "heldThrough" | "stated">;
 
     /** Runs a wait and answers its cancel, so a test can say when; a timer by default. */
     schedule?: (run: () => void, ms: number) => () => void;
@@ -449,14 +227,6 @@ export type Timelines = {
     stop: () => void;
 };
 
-/**
- * Whether a message belongs on the channel's timeline: a root, or a reply also shown in the
- * channel. A reply shown only in its thread is the thread panel's.
- */
-export function isTimelineMessage(message: Pick<TimelineMessage, "parent_id" | "shown_in_channel">): boolean {
-    return message.parent_id === null || message.parent_id === undefined || message.shown_in_channel === true;
-}
-
 /** Whether a live event is a reaction, which carries no revision and is ordered by when it arrived. */
 function isReactionEvent(event: string): event is "reaction.added" | "reaction.removed" {
     return event === "reaction.added" || event === "reaction.removed";
@@ -465,61 +235,6 @@ function isReactionEvent(event: string): event is "reaction.added" | "reaction.r
 /** Whether a live payload carries the message id every event is keyed by. */
 function hasId(payload: unknown): payload is { id: number } {
     return !!payload && typeof payload === "object" && typeof (payload as { id: unknown }).id === "number";
-}
-
-/**
- * Combines what is held for a message with a newer copy of it. A page can have been read
- * before an edit or a delete that has already arrived live, so an edit held is kept over an
- * older body and a delete held is never undone. A live copy lacks the sender's name, so a field
- * the newer copy does not carry keeps what is held.
- */
-export function combine(held: TimelineMessage, incoming: TimelineMessage): TimelineMessage {
-    const result: TimelineMessage = { ...held };
-
-    for (const [key, value] of Object.entries(incoming)) {
-        if (value !== undefined) {
-            (result as Record<string, unknown>)[key] = value;
-        }
-    }
-
-    // Whether a message is withheld for a block is each copy's own say, since the platform marks only
-    // a withheld one: a newer copy without the mark, read after an unblock, shows it again.
-    if (held.blocked && !incoming.blocked) {
-        delete result.blocked;
-    }
-
-    // A copy withheld for a block is final about its words, as a delete is: an edit held from before
-    // never puts them back.
-    const isNewerEditHeld = !held.blocked && !incoming.blocked && !!held.edited_at && (!incoming.edited_at || incoming.edited_at < held.edited_at);
-    if (isNewerEditHeld) {
-        result.body = held.body;
-        result.pieces = held.pieces;
-        result.edited_at = held.edited_at;
-    }
-
-    if (held.deleted_at && !incoming.deleted_at) {
-        result.deleted_at = held.deleted_at;
-        result.body = null;
-        result.pieces = null;
-        result.blocks = null;
-        result.attachments = null;
-        result.metadata = null;
-    }
-
-    // The person's own send is confirmed with the text they typed, and that answer can arrive after
-    // the platform hid the message, so a hide held is undone only by a copy that says so itself.
-    const isHiddenHeld = held.visibility === "hidden" || held.visibility === "removed";
-    if (isHiddenHeld && incoming.visibility === undefined) {
-        result.visibility = held.visibility;
-        result.visibility_notice = held.visibility_notice;
-        result.body = null;
-        result.pieces = null;
-        result.blocks = null;
-        result.attachments = null;
-        result.metadata = null;
-    }
-
-    return result;
 }
 
 /**
@@ -618,7 +333,8 @@ type ChannelSync = {
 };
 
 /** A page as it was fetched: when it was read on the client's clock, and the revision held when it was asked. */
-type Fetched = { page: HistoryPage, readAt: number, heldRev: number | null };
+/** A page as fetched: the live counter and the clock when it was asked, and the revision then held. */
+type Fetched = { page: HistoryPage, readAt: number, askedAt: number, heldRev: number | null };
 
 /**
  * Creates the timelines.
@@ -702,16 +418,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * Puts one message in place by id, masked as the people blocked now stand. The mask reads what
      * is combined, so a field the newer copy does not carry, kept from what is held, is masked too.
      */
-    function upsert(channelId: string, arrived: TimelineMessage): void {
-        const message = withSendKey(arrived);
+    function upsert(channelId: string, message: TimelineMessage): void {
         const messages = state(channelId).messages;
         const index = positionOf(messages, message.id);
 
         if (index < messages.length && messages[index].id === message.id) {
-            messages[index] = mask(combine(messages[index], message));
+            messages[index] = holdMessage(messages[index], message, mask);
         }
         else {
-            messages.splice(index, 0, mask(message));
+            messages.splice(index, 0, holdMessage(undefined, message, mask));
         }
 
         // Every way a message comes in passes here, so whichever copy of a send lands first is
@@ -728,7 +443,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * reaction or a thread mark that arrived after the read is laid over it. A deleted, hidden or
      * removed message never carries its body.
      */
-    function mergePage(channelId: string, page: HistoryPage, readAt: number): void {
+    function mergePage(channelId: string, page: HistoryPage, readAt: number, askedAt: number): void {
         const rev = revOf(page);
         for (const message of page.messages) {
             if ((pageReadAt.get(message.id) ?? 0) > readAt && find(channelId, message.id)) {
@@ -754,6 +469,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
 
             upsert(channelId, incoming);
+            dependencies.typing?.heldThrough(channelId, incoming.parent_id ?? null, incoming.person_alias_guid, incoming.id);
+        }
+        // read in the same statement as the page, so a typist its messages overtook is left out
+        if (page.typing !== undefined) {
+            dependencies.typing?.stated(channelId, null, page.typing, askedAt);
         }
     }
 
@@ -809,10 +529,14 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
     }
 
-    /** Applies one live event to a loaded timeline. A live event never moves where catch-up resumes. */
-    function apply(channelId: string, event: string, payload: unknown): void {
+    /**
+     * Applies one live event to a loaded timeline. A live event never moves where catch-up resumes.
+     * One held while the first page was read is applied as part of that page, so it is told to no
+     * row as something that happened: the rows it lands in are drawn with it.
+     */
+    function apply(channelId: string, event: string, payload: unknown, isLive: boolean): void {
         if (isReactionEvent(event)) {
-            dependencies.applyReaction?.(channelId, event, payload);
+            dependencies.applyReaction?.(channelId, event, payload, isLive);
             return;
         }
         const rev = revOf(payload);
@@ -852,12 +576,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_avatar_url: sender?.sender_avatar_url,
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage, rev));
+                if (isLive) {
+                    dependencies.motion.arrived(created, quoteKey(channelId));
+                }
             }
         }
-        else {
+        else if (isMessageChange(event)) {
             const fields = changedFields(event, payload);
             if (fields) {
-                changeMessage(channelId, event, payload, rev, fields);
+                changeMessage(channelId, event, payload, rev, fields, isLive);
             }
         }
     }
@@ -866,7 +593,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * Lays an edit, a delete or a change of visibility over the message held, when it is newer than
      * what is held, and records it, held or not, for a page read before it.
      */
-    function changeMessage(channelId: string, event: string, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>): void {
+    function changeMessage(channelId: string, event: MessageChangeEvent, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>, isLive: boolean): void {
         const newer = takeChange(ledger, payload.id, "message", rev, fields);
         if (!newer) {
             return;
@@ -876,6 +603,9 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             applyMessageChange(message, event, payload, newer);
             // a change in place is a write like any other: its pieces may name someone blocked
             maskHeld([message], mask);
+            if (isLive) {
+                dependencies.motion.changed(message, event);
+            }
         }
     }
 
@@ -888,7 +618,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * is held whether it joins or not. A page that replaces what is held is where the room's revision
      * is counted from.
      */
-    function takeNewest(channelId: string, page: HistoryPage, readAt: number, isReload: boolean = false): boolean {
+    function takeNewest(channelId: string, page: HistoryPage, readAt: number, askedAt: number, isReload: boolean = false): boolean {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
         const range = bounds(page);
@@ -898,7 +628,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         channelSync.isNewestDue = false;
 
         if (isJoined) {
-            mergePage(channelId, page, readAt);
+            mergePage(channelId, page, readAt, askedAt);
         }
         else {
             // an empty page replaces nothing: the channel has no messages yet, only what landed live
@@ -912,7 +642,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     timeline.messages.splice(positionOf(timeline.messages, message.id), 0, old);
                 }
             }
-            mergePage(channelId, page, readAt);
+            mergePage(channelId, page, readAt, askedAt);
             channelSync.epoch++;
             timeline.verifiedThrough = null;
             countFrom(channelId, revOf(page), isReload ? readAt : null);
@@ -934,12 +664,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     async function fetchCurrent(channelId: string, options: { limit: number, beforeId?: number, afterId?: number }): Promise<Fetched | null> {
         const epoch = sync(channelId).epoch;
         const readAt = ++seq;
+        // the clock as it is asked, before the request goes, so a typing signal heard while it is
+        // out is known to be newer than the answer
+        const askedAt = Date.now();
         // what was applied when asked, so a page is called backwards only against that, not against
         // live changes that arrived while it was out
         const heldRev = state(channelId).rev;
         const page = await dependencies.fetchPage(channelId, options);
 
-        return sync(channelId).epoch === epoch ? { page, readAt, heldRev } : null;
+        return sync(channelId).epoch === epoch ? { page, readAt, askedAt, heldRev } : null;
     }
 
     /**
@@ -1022,7 +755,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // far behind, when it joins what is held, is merged and the held run read again
                 // behind it, so the reader keeps their place and the room still holds every change
                 // up to what the reread was read at.
-                const isReplaced = takeNewest(channelId, answer.page, answer.readAt, channelSync.isReloadDue);
+                const isReplaced = takeNewest(channelId, answer.page, answer.readAt, answer.askedAt, channelSync.isReloadDue);
                 if (isReplaced) {
                     isReread = false;
                 }
@@ -1047,7 +780,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 const isMoved = rev === null || answer.heldRev === null ? !isFirst : rev !== answer.heldRev;
                 if (isMoved) {
                     isReread = true;
-                    mergePage(channelId, answer.page, answer.readAt);
+                    mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
                     afterId = rereadFrom;
                     continue;
                 }
@@ -1056,7 +789,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 rereadRev = Math.min(rereadRev ?? rev, rev);
             }
 
-            mergePage(channelId, answer.page, answer.readAt);
+            mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
             const range = bounds(answer.page);
             if (range && afterId <= (timeline.verifiedThrough ?? 0)) {
                 timeline.verifiedThrough = Math.max(timeline.verifiedThrough ?? 0, range.newest);
@@ -1315,7 +1048,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
-            let answer: { page: HistoryPage, readAt: number } | null;
+            let answer: Fetched | null;
             try {
                 answer = await fetchCurrent(channelId, { limit: pageSize, beforeId: next.id + 1 });
             }
@@ -1335,7 +1068,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             attempt = 0;
 
-            mergePage(channelId, answer.page, answer.readAt);
+            mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
             read += answer.page.messages.length;
             // strictly falling, so whatever the platform answers the walk ends
             const oldest = Math.min(bounds(answer.page)?.oldest ?? next.id, next.id);
@@ -1383,7 +1116,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             try {
                 const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size });
                 if (answer && !isStopped) {
-                    if (takeNewest(channelId, answer.page, answer.readAt, isRestarted(channelId, revOf(answer.page), answer.heldRev))) {
+                    if (takeNewest(channelId, answer.page, answer.readAt, answer.askedAt, isRestarted(channelId, revOf(answer.page), answer.heldRev))) {
                         channelSync.hasJoined = false;
                     }
 
@@ -1395,7 +1128,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                         if (isReactionEvent(event) && heldAt < answer.readAt) {
                             continue;
                         }
-                        apply(channelId, event, payload);
+                        apply(channelId, event, payload, false);
                     }
                 }
             }
@@ -1454,7 +1187,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     if (!answer || timeline.messages[0]?.id !== oldest.id) {
                         return;
                     }
-                    mergePage(channelId, answer.page, answer.readAt);
+                    mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
                     timeline.hasMore = answer.page.has_more;
                 }
                 finally {
@@ -1537,7 +1270,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
-            apply(channelId, event, payload);
+            apply(channelId, event, payload, true);
         },
 
         upsert,

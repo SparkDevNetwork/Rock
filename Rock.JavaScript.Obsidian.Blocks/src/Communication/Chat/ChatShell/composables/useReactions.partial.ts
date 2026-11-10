@@ -34,8 +34,10 @@ import { CallResult } from "../platformCall.partial";
 import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
-import { maskHeld, MessageMask, Timelines } from "./useHistory.partial";
+import { Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "../heldMessage.partial";
 import { Threads } from "./useThreads.partial";
+import type { MessageMotion } from "../messageMotion.partial";
 
 export type { CatalogEmoji, EmojiGlyph, Reaction, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
 
@@ -86,6 +88,9 @@ export type ReactionsDependencies = {
 
     /** What the reader may see of a message, applied to every copy a reaction changes. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
+
+    /** Told of the reader's own reaction landing on a message held, pressed here or echoed from another device, for its chip's motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "reacted">;
 };
 
 /** What the reactions hold. */
@@ -117,7 +122,7 @@ export type Reactions = {
      * Applies a reaction event a channel topic carried to the conversation's copy of its message,
      * once the conversation's timeline lets it through.
      */
-    applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+    applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean) => void;
 
     /**
      * Applies a reaction event a channel topic carried to the open thread's copies of its message
@@ -495,7 +500,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
      * What a reaction event does to a copy of its message, by who reacted; null for a payload
      * that names no message, emoji or count. A press of the message still out is told the event came.
      */
-    function eventChange(event: "reaction.added" | "reaction.removed", payload: unknown): { messageId: number, apply: (copy: TimelineMessage) => void } | null {
+    function eventChange(event: "reaction.added" | "reaction.removed", payload: unknown): { messageId: number, ownCode: string | null, apply: (copy: TimelineMessage) => void } | null {
         const reaction = payload as Partial<ReactionEvent> | null;
         if (typeof reaction?.message_id !== "number" || typeof reaction.code !== "string" || typeof reaction.count !== "number") {
             return null;
@@ -515,6 +520,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
         return {
             messageId: reaction.message_id,
+            ownCode: isReaders && isAdded ? reaction.code : null,
             apply: copy => {
                 setCount(copy, emoji, count, isReaders ? isAdded : null);
 
@@ -552,6 +558,19 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         }
         addChip(copy, emoji, mine ?? false, placeOf);
         (copy.reactions!.find(existing => existing.code === emoji.code) as Reaction).count = count;
+    }
+
+    /**
+     * Records the reader's own reaction landing on the copies one change writes: a chip of theirs
+     * where there was none pops in, joining others rolls the count. Once per reaction: nothing when
+     * a copy already shows it as theirs, as the change that ran first has made it, or none is held.
+     */
+    function noteOwnReaction(channelId: string, messageId: number, code: string, written: TimelineMessage[]): void {
+        const copy = written[0];
+        const isShown = copiesOf(channelId, messageId).some(held => held.reactions?.some(reaction => reaction.code === code && reaction.mine));
+        if (copy && !isShown) {
+            dependencies.motion.reacted(copy, code, copy.reactions?.some(reaction => reaction.code === code) ? "roll" : "pop");
+        }
     }
 
     /**
@@ -623,6 +642,9 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         const key = `${messageId}/${emoji.code}`;
 
         // Drawn at once, the mark and the count together, before the platform answers.
+        if (!isMine) {
+            noteOwnReaction(channelId, messageId, emoji.code, copiesOf(channelId, messageId));
+        }
         change(channelId, messageId, copy => setOwnReaction(copy, emoji, !isMine, placeOf));
 
         const out = presses.get(key);
@@ -695,9 +717,14 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
         toggleCode: (channelId: string, messageId: number, code: string): Promise<void> => toggle(channelId, messageId, glyphOf(channelId, messageId, code)),
 
-        applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
+        applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean): void => {
             const moved = isStopped ? null : eventChange(event, payload);
             if (moved) {
+                const copy = timelineCopy(channelId, moved.messageId);
+                // one held while the first page was read is part of that page, and no chip of it is drawn yet
+                if (moved.ownCode && copy && isLive) {
+                    noteOwnReaction(channelId, moved.messageId, moved.ownCode, [copy]);
+                }
                 changeTimeline(channelId, moved.messageId, moved.apply);
             }
         },
@@ -705,6 +732,11 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         applyThreadEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
             const moved = isStopped ? null : eventChange(event, payload);
             if (moved) {
+                // the copies this change writes, which the conversation's change leaves to it
+                const onTimeline = timelineCopy(channelId, moved.messageId);
+                if (moved.ownCode) {
+                    noteOwnReaction(channelId, moved.messageId, moved.ownCode, threadCopies(channelId, moved.messageId).filter(copy => copy !== onTimeline));
+                }
                 changeThread(channelId, moved.messageId, moved.apply);
             }
         },
