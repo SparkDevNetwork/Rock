@@ -134,6 +134,10 @@
                 }
             });
 
+            var encodeHtml = function (value) {
+                return $('<div/>').text(value).html();
+            };
+
             var autoCompleteCustomRenderItem = function ($ul, item) {
                 if (this.options.html) {
                     // override jQueryUI autocomplete's _renderItem so that we can do HTML for the ListItems
@@ -142,7 +146,7 @@
                     var inactiveWarning = "";
 
                     if (!item.IsActive && item.RecordStatus) {
-                        inactiveWarning = " <small>(" + item.RecordStatus + ")</small>";
+                        inactiveWarning = " <small>(" + encodeHtml(item.RecordStatus) + ")</small>";
                     }
                     if (item.IsDeceased) {
                         inactiveWarning = " <small class=\"text-danger\">(Deceased)</small>";
@@ -160,7 +164,7 @@
                                 quickSummaryInfo += "; ";
                             }
 
-                            quickSummaryInfo += "Spouse: " + item.SpouseNickName;
+                            quickSummaryInfo += "Spouse: " + encodeHtml(item.SpouseNickName);
                         }
 
                         quickSummaryInfo += "</small>";
@@ -169,7 +173,7 @@
                     var $div = $('<div/>').attr('class', 'radio'),
 
                         $label = $('<label/>')
-                            .html('<span class="label-text">' + item.Name + inactiveWarning + quickSummaryInfo + '</span><i class="ti ti-refresh ti-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
+                            .html('<span class="label-text">' + encodeHtml(item.Name) + inactiveWarning + quickSummaryInfo + '</span><i class="ti ti-refresh ti-spin margin-l-md loading-notification" style="display: none; opacity: .4;"></i>')
                             .prependTo($div),
 
                         $radio = $('<input type="radio" name="person-id" />')

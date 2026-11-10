@@ -360,7 +360,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     var sb = new StringBuilder();
 
-                    string personName = personItem.NickName + " " + personItem.LastName;
+                    string personName = personItem.NickName.EncodeHtml() + " " + personItem.LastName.EncodeHtml();
                     personName = string.IsNullOrWhiteSpace( _personProfileUrl ) ? personName : string.Format( "<a href='{0}'>{1}</a>", string.Format( _personProfileUrl, personItem.Id ), personName );
 
                     sb.Append( string.Format( "<div class=\"photo-round photo-round-sm pull-left\" data-original=\"{0}&w=100\" style=\"background-image: url('{1}');\"></div>", personItem.PhotoUrl, ResolveUrl( "~/Assets/Images/person-no-photo-unknown.svg" ) ) );
@@ -369,7 +369,7 @@ namespace RockWeb.Blocks.Crm
 
                     if ( _showEmail && !string.IsNullOrWhiteSpace( personItem.Email ) )
                     {
-                        sb.AppendFormat( "<br/>{0}", personItem.Email );
+                        sb.AppendFormat( "<br/>{0}", personItem.Email.EncodeHtml() );
                     }
 
                     sb.Append( "</div>" );
@@ -467,7 +467,7 @@ namespace RockWeb.Blocks.Crm
                 if ( lFamily != null )
                 {
                     var sb = new StringBuilder();
-                    sb.Append( string.Format( "<strong>{0}</strong>", familyItem.Name ) );
+                    sb.Append( string.Format( "<strong>{0}</strong>", familyItem.Name.EncodeHtml() ) );
 
                     if ( _showAddress && _addresses != null )
                     {
