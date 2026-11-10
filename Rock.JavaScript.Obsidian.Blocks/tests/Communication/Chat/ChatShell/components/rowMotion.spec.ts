@@ -24,10 +24,10 @@ import { defineComponent, h, nextTick, ref } from "vue";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
-import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { createReactions } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
 import { createSender, Sender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
+import { Blocks, createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -37,6 +37,9 @@ import { anna, channelId, liveCreated, me, pageRow } from "../messageShapes";
 const motionSelector = ".is-crossfading, .is-swapping, .is-popping, .is-rolling, .chat-msg.is-arriving";
 
 const heart = { code: "heart", emoji: "❤️", image_url: null, label: "Heart" };
+
+/** Someone the reader blocks and unblocks. */
+const dee = "a0000003-0000-4000-8000-000000000000";
 
 /** A page as the platform answers it. */
 function page(messages: TimelineMessage[], rev = 1): HistoryPage {
@@ -54,14 +57,17 @@ function deferred<T>(): Deferred<T> {
 
 /**
  * The stores a shell holds, wired to each other as the shell wires them, with the platform's
- * answers queued by the test, and a live router that hands an event to each holder in the shell's
- * order: the threads, the thread's reactions, then the timeline, then the sender.
+ * answers queued by the test, and a live router that masks an event for the people blocked and
+ * hands it to each holder in the shell's order: the threads, the thread's reactions, then the
+ * timeline, then the sender.
  */
 function wire() {
     const pages: HistoryPage[] = [];
     const threadPages: Record<string, unknown>[] = [];
     const answers: Deferred<SendResult>[] = [];
     let sender: Sender | null = null;
+    // eslint-disable-next-line prefer-const
+    let blocks: Blocks;
     let keys = 0;
     const motion = createMessageMotion();
 
@@ -73,11 +79,11 @@ function wire() {
     };
 
     const timelines = createTimelines({
-        mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => pages.shift() ?? page([]),
         onLanded: message => sender?.landed(message),
         applyReaction: (id, event, payload) => reactions.applyEvent(id, event, payload),
+        mask: message => blocks.mask(message),
         motion
     });
     const threads = createThreads({
@@ -86,8 +92,8 @@ function wire() {
         personAliasGuid: me,
         limits: () => ({ history_page_size: 50, thread_page_size: 25 }),
         onLanded: message => sender?.landed(message),
-        mask: platformMask,
-        isBlocked: () => false,
+        mask: message => blocks.mask(message),
+        isBlocked: alias => blocks.isBlocked(alias),
         motion
     });
     const reactions = createReactions({
@@ -98,8 +104,8 @@ function wire() {
         notify: () => undefined,
         favorites: [],
         churchKey: "t",
-        maskFaces: people => people,
-        mask: platformMask,
+        maskFaces: people => blocks.maskFaces(people),
+        mask: message => blocks.mask(message),
         motion
     });
     sender = createSender({
@@ -114,8 +120,20 @@ function wire() {
         newLocalId: () => `k${++keys}`,
         motion
     });
+    // a change of the set masks again what is held, and an unblock marks what only a read gives back
+    blocks = createBlocks({
+        call,
+        onChanged: (_isInSidebarAnswer, removed) => timelines.release(removed),
+        remask: added => {
+            timelines.remask(added);
+            threads.remask();
+        },
+        notify: () => undefined
+    });
+    blocks.setAliases([]);
 
-    function live(event: string, payload: Record<string, unknown>): void {
+    function live(event: string, rawPayload: Record<string, unknown>): void {
+        const payload = blocks.maskEvent(event, rawPayload) as Record<string, unknown>;
         threads.applyEvent(channelId, event, payload);
         if (event === "reaction.added" || event === "reaction.removed") {
             reactions.applyThreadEvent(channelId, event, payload);
@@ -126,7 +144,7 @@ function wire() {
         }
     }
 
-    return { pages, threadPages, answers, motion, timelines, threads, reactions, sender: sender as Sender, live, provide: { [messageMotionKey as symbol]: motion } };
+    return { pages, threadPages, answers, motion, timelines, threads, reactions, blocks, sender: sender as Sender, live, provide: { [messageMotionKey as symbol]: motion } };
 }
 
 type Wired = ReturnType<typeof wire>;
@@ -174,12 +192,30 @@ async function open(w: Wired, messages: TimelineMessage[]): Promise<void> {
     await w.timelines.loadNewest(channelId);
 }
 
-/** Every one-off motion drawn now, by the row it is on: the message's id, or a send still out. */
+/** A motion's element, named by the row it is on: the message's id, or a send still out. */
+function named(element: Element): string {
+    const row = element.closest("[data-message-id], [data-reply-id], [data-testid='pending-row']");
+    return `${row?.getAttribute("data-message-id") ?? row?.getAttribute("data-reply-id") ?? "pending"}: ${element.className}`;
+}
+
+/** Every one-off motion drawn now, by the row it is on. */
 function moving(wrapper: VueWrapper): string[] {
-    return [...wrapper.element.querySelectorAll(motionSelector)].map(element => {
-        const row = element.closest("[data-message-id], [data-reply-id], [data-testid='pending-row']");
-        return `${row?.getAttribute("data-message-id") ?? row?.getAttribute("data-reply-id") ?? "pending"}: ${element.className}`;
-    });
+    return [...wrapper.element.querySelectorAll(motionSelector)].map(named);
+}
+
+/**
+ * Watches views for motion added from now: an element that already played keeps its class, so
+ * only an element that did not carry one when last marked counts, a new element included.
+ */
+function motionSince(...views: VueWrapper[]): { added: () => string[], mark: () => void } {
+    const all = (): Element[] => views.flatMap(view => [...view.element.querySelectorAll(motionSelector)]);
+    let before = new Set(all());
+    return {
+        added: () => all().filter(element => !before.has(element)).map(named),
+        mark: () => {
+            before = new Set(all());
+        }
+    };
 }
 
 /** Ends every one-off motion as the browser would at its keyframe's end. */
@@ -494,12 +530,12 @@ describe("the thread drawer's reread plays nothing", () => {
     });
 });
 
-// The guard against the class coming back: a feed over every state a row can carry, some held
-// as heard live and some as a page states them, then every way state is written without anything
-// happening. Any motion inferred from comparing what a row was handed across renders, on any field,
-// shows here without anyone having to name the field.
+// The guard against the class coming back: a feed and an open thread over every state a row can
+// carry, some held as heard live and some as a page states them, then every way state is written
+// without anything happening. Any motion inferred from comparing what a row was handed across
+// renders, on any field, shows here without anyone having to name the field.
 describe("the quiet sweep", () => {
-    test("a re-read, a newest page that replaces what is held, a catch-up and a remount play no motion anywhere", async () => {
+    test("a re-read, the drawer's reread, a newest page that replaces what is held, a catch-up, a block, an unblock and a remount play no motion anywhere", async () => {
         const w = wire();
         const replied = { reply_count: 2, last_reply_at: "2026-10-12T14:05:00.000Z", participant_count: 1, repliers: [{ person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null }] };
         const held = [
@@ -512,26 +548,39 @@ describe("the quiet sweep", () => {
         ];
         await open(w, held);
         const feed = drawFeed(w);
-        // heard live: someone's message, the person's own send answered, and a send still out
+        const reply = (id: number, extra: Partial<TimelineMessage> = {}): TimelineMessage => pageRow({ id, sender: anna, parentId: 5 }, extra);
+        const drawer = await drawThread(w, held[4], [reply(51), reply(52)]);
+        // heard live: someone's message, the person's own send answered, a send still out, a reply
+        // in the open thread and the reader's own reaction to it from another device
         w.live("message.created", liveCreated({ id: 7, sender: anna }));
         const sending = w.sender.send(channelId, "On my way");
         await settle();
         w.answers[0].resolve({ ok: true, id: 8, createdAt: "2026-10-12T14:08:00.000Z", notice: null, pieces: null, blocks: null });
         await sending;
         void w.sender.send(channelId, "Still going");
+        w.live("message.created", liveCreated({ id: 53, sender: anna, parentId: 5 }));
         await settle();
+        w.live("reaction.added", { message_id: 53, channel_id: channelId, person_alias_guid: me, ...heart, count: 1, reactors: [] });
+        await settle();
+        expect(drawer.get("[data-reply-id='53'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
         await endMotion(feed.wrapper);
+        await endMotion(drawer);
         const readAgain = (): HistoryPage => page([...held, pageRow({ id: 7, sender: anna }), pageRow({ id: 8, key: "k1", body: "On my way" })], 2);
-        // what rose as it arrived keeps its class on its element; nothing may be added to it
-        const before = moving(feed.wrapper);
-        const added = (): string[] => moving(feed.wrapper).filter(entry => !before.includes(entry));
+        const motion = motionSince(feed.wrapper, drawer);
 
         // a re-read of the room while it is open, as a reconnect's catch-up reads it
         await w.timelines.onJoined(channelId);
         w.pages.push(readAgain());
         await w.timelines.onJoined(channelId);
         await settle();
-        expect(added()).toEqual([]);
+        expect(motion.added()).toEqual([]);
+
+        // the drawer's reread, as a repair reads it, stating as a page does what was heard live
+        w.threadPages.push({ root: { ...held[4], reply_count: 3 }, messages: [reply(51), reply(52), reply(53, { reactions: [{ ...heart, count: 1, mine: true }] })], has_more: false, following: true, read_cursor: 53, unread_count: 0, rev: 2 });
+        w.threads.repair(channelId);
+        await settle();
+        expect(drawer.find("[data-reply-id='53'] [data-testid='reaction-chip']").exists()).toBe(true);
+        expect(motion.added()).toEqual([]);
 
         // a newest page that does not join what is held, which replaces it in one step, and brings
         // messages the reader has not seen
@@ -539,10 +588,55 @@ describe("the quiet sweep", () => {
         await w.timelines.loadNewest(channelId);
         await settle();
         expect(feed.wrapper.find("[data-message-id='10']").exists()).toBe(true);
-        expect(added()).toEqual([]);
+        expect(motion.added()).toEqual([]);
+
+        // a block of someone whose message is on screen folds it into a line, and two more heard
+        // while blocked join that line
+        w.live("message.created", liveCreated({ id: 11, sender: dee }));
+        await settle();
+        motion.mark();
+        w.blocks.setAliases([dee]);
+        await settle();
+        w.live("message.created", liveCreated({ id: 12, sender: dee }));
+        w.live("message.created", liveCreated({ id: 13, sender: dee }));
+        await settle();
+        expect(feed.wrapper.findAll("[data-message-id='13']")).toHaveLength(1);
+        expect(motion.added()).toEqual([]);
+
+        // an unblock, and the room read again with their words: the line's messages are drawn
+        // one by one, and none of them rises as if heard now
+        w.blocks.setAliases([]);
+        const unblocked = page([pageRow({ id: 9, sender: anna }), pageRow({ id: 10, sender: anna }), pageRow({ id: 11, sender: dee }), pageRow({ id: 12, sender: dee }), pageRow({ id: 13, sender: dee })], 4);
+        w.pages.push(unblocked, unblocked, unblocked);
+        await w.timelines.onJoined(channelId);
+        await settle();
+        expect(feed.wrapper.get("[data-message-id='13']").text()).toContain("m13");
+        expect(feed.wrapper.get("[data-message-id='12']").text()).toContain("m12");
+        expect(motion.added()).toEqual([]);
 
         // a switch away and back, the page read again
-        await feed.switchAwayAndBack(page([pageRow({ id: 9, sender: anna }), pageRow({ id: 10, sender: anna }, { edited_at: "2026-10-12T14:09:00.000Z", reactions: [{ ...heart, count: 1, mine: true }] })], 4));
+        await feed.switchAwayAndBack(page([pageRow({ id: 9, sender: anna }), pageRow({ id: 10, sender: anna }, { edited_at: "2026-10-12T14:09:00.000Z", reactions: [{ ...heart, count: 1, mine: true }] })], 5));
         expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("an unblock in the open thread draws again the replies its line folded, and none of them rises", async () => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1, participant_count: 1 });
+        await open(w, [root]);
+        const drawer = await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
+        w.blocks.setAliases([dee]);
+        w.live("message.created", liveCreated({ id: 42, sender: dee, parentId: 40 }));
+        w.live("message.created", liveCreated({ id: 43, sender: dee, parentId: 40 }));
+        await settle();
+        await endMotion(drawer);
+        const motion = motionSince(drawer);
+
+        w.blocks.setAliases([]);
+        w.threadPages.push({ root: { ...root, reply_count: 3 }, messages: [41, 42, 43].map(id => pageRow({ id, sender: id === 41 ? anna : dee, parentId: 40 })), has_more: false, following: true, read_cursor: 43, unread_count: 0, rev: 2 });
+        w.threads.repair(channelId);
+        await settle();
+
+        expect(drawer.get("[data-reply-id='43']").text()).toContain("m43");
+        expect(motion.added()).toEqual([]);
     });
 });
