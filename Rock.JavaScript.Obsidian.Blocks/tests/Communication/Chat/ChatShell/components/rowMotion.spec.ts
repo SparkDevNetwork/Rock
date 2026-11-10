@@ -89,7 +89,7 @@ function wire() {
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => pages.shift() ?? page([]),
         onLanded: message => sender?.landed(message),
-        applyReaction: (id, event, payload) => reactions.applyEvent(id, event, payload),
+        applyReaction: (id, event, payload, isLive) => reactions.applyEvent(id, event, payload, isLive),
         mask: message => blocks.mask(message),
         motion
     });
@@ -485,6 +485,21 @@ describe("what happens while a row is on screen plays once", () => {
         await settle();
 
         expect(feed.wrapper.find("[data-message-id='2']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("the reader's own reaction heard while the first page was still on its way is part of that page, recorded as nothing", async () => {
+        const w = wire();
+        const feed = drawFeed(w);
+        // heard after the page was read and before it landed, so held and laid over it
+        w.pages.push(page([pageRow({ id: 1, sender: anna })]));
+        const loading = w.timelines.loadNewest(channelId);
+        w.live("reaction.added", { message_id: 1, channel_id: channelId, person_alias_guid: me, ...heart, count: 1, reactors: [] });
+        await loading;
+        await settle();
+
+        expect(feed.wrapper.find("[data-message-id='1'] [data-testid='reaction-chip']").exists()).toBe(true);
+        expect(w.motion.of("k:1")).toBeUndefined();
         expect(moving(feed.wrapper)).toEqual([]);
     });
 

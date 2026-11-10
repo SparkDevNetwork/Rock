@@ -64,7 +64,25 @@ describe("the record", () => {
         expect(motion.of("k:3")?.content?.isEdit).toBe(true);
     });
 
-    test("a view gone lets go of what no open view could play, and keeps what one could and every send", () => {
+    test("a send's mark is kept until its live copy is heard, then let go as a view goes like any other", () => {
+        const motion = createMessageMotion();
+        const feed = motion.scope();
+        motion.sent("k1");
+        motion.sent("k2");
+        // the live copy of the first, its key in another case as the platform may write it back
+        motion.arrived({ id: 2, client_key: "K1" });
+
+        feed.dispose();
+
+        expect(motion.of("k:k1")).toBeUndefined();
+        expect(motion.of("k:k2")?.arrival?.how).toBe("sent");
+        motion.arrived({ id: 3, client_key: "k2" });
+        expect(motion.of("k:k2")?.arrival?.how).toBe("sent");
+        motion.scope().dispose();
+        expect(motion.of("k:k2")).toBeUndefined();
+    });
+
+    test("a view gone lets go of what no open view could play, and keeps what one could and every send not yet heard", () => {
         const motion = createMessageMotion();
         const old = motion.scope();
         motion.sent("k1");
