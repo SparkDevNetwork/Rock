@@ -61,8 +61,7 @@
                 <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" @open="on.openThread" />
             </template>
         </MessageReactions>
-        <div v-if="isEditedUnder && !view.isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</div>
-        <div class="chat-meta" :hidden="!isMetaShown" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
+        <div class="chat-meta" :hidden="!isMetaDrawn" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
             <template v-if="view.state === 'failed'">
                 <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
             </template>
@@ -70,14 +69,15 @@
                 <Icon name="clock" size="xs" />
                 <span data-testid="message-state">Sending…</span>
             </template>
-            <template v-else>
+            <template v-else-if="isMetaShown">
                 <span class="chat-meta-time">{{ view.time }}</span>
                 <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
-                <template v-else-if="view.isEdited && isMetaShown">
+                <template v-else-if="view.isEdited">
                     <span aria-hidden="true">·</span>
                     <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
                 </template>
             </template>
+            <span v-else-if="isEditedShown" class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
         </div>
         <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
     </template>
@@ -316,8 +316,7 @@
     color: var(--chat-muted);
 }
 
-.chat-meta,
-.chat-msg-edited {
+.chat-meta {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -332,12 +331,10 @@
     margin-top: 2px;
 }
 
-.is-conversational:not(.is-own) .chat-meta,
-.is-conversational:not(.is-own) .chat-msg-edited {
+.is-conversational:not(.is-own) .chat-meta {
     padding-left: 54px;
 }
 
-/* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
 /*
     A time line its row does not show is kept, out of the flow and unseen at its row's top, rather
     than mounted and unmounted, so no row of a long conversation mounts a motion of its own: the
@@ -349,6 +346,7 @@
     visibility: hidden;
 }
 
+/* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
 .chat-meta.is-failed {
     gap: 4px;
     font-weight: 700;
@@ -530,10 +528,14 @@
     /** Bubbles name another person's group once, over its first message, and never in a direct message. */
     const isNameShown = computed((): boolean => !props.view.isOwn && !props.isDirectMessage && props.view.isHead);
 
-    /** The meta sits under a group's last message, and under any send that says Sending… or failed. */
+    /** The time sits under a group's last message, and under any send that says Sending… or failed. */
     const isMetaShown = computed((): boolean => isLastOfGroup.value || props.isTypingNext || props.view.state === "failed" || props.view.isSendingShown);
 
-    const isEditedUnder = computed((): boolean => props.view.isEdited && !isMetaShown.value);
+    /** A message edited mid-group says so in its time line, with no time, so Edited has one home. */
+    const isEditedShown = computed((): boolean => props.view.isEdited && !props.view.isEditorShown);
+
+    /** The time line is drawn while it has something to say: the time, or Edited alone. */
+    const isMetaDrawn = computed((): boolean => isMetaShown.value || isEditedShown.value);
 
     /** A message of files alone draws no empty bubble; every other message draws its bubble. */
     const isBubbleShown = computed((): boolean => props.view.files.length === 0 || !!props.view.text?.trim());

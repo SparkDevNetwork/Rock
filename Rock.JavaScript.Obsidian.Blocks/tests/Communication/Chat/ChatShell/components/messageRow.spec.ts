@@ -323,11 +323,13 @@ describe("the states, in Conversational", () => {
         expect(wrapper.get("[data-testid='message-meta'] [data-testid='message-edited']").text()).toBe("Edited");
     });
 
-    test("edited, mid-group: Edited under that bubble, with no meta", () => {
+    test("edited, mid-group: its time line says Edited alone, with no time", () => {
         const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "middle" });
 
-        expect(wrapper.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(false);
-        expect(wrapper.get("[data-testid='message-edited']").text()).toBe("Edited");
+        const meta = wrapper.get("[data-testid='message-meta']");
+        expect((meta.element as HTMLElement).hidden).toBe(false);
+        expect(plain(meta.text())).toBe("Edited");
+        expect(meta.get("[data-testid='message-edited']").text()).toBe("Edited");
     });
 
     test("the server's sentence about the person's own send stays under it", () => {
@@ -387,10 +389,27 @@ describe("the group's furniture, in Conversational", () => {
         expect(meta.hidden).toBe(false);
     });
 
-    test("a hidden time line says nothing a person could read twice: Edited is under the bubble alone", () => {
-        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "middle" });
+    // Edited has one home, the time line: a row giving up its time keeps the line, saying Edited
+    // alone, so nothing new appears where the time stood for a time line going to be drawn over.
+    test("an edited row giving up its time keeps its time line shown, the same element, saying Edited alone", async () => {
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "last" });
+        const meta = wrapper.get("[data-testid='message-meta']").element as HTMLElement;
+        expect(plain(meta.textContent ?? "")).toBe("9:02 AM·Edited");
 
+        await wrapper.setProps({ position: "middle" });
+
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(false);
+        expect(plain(meta.textContent ?? "")).toBe("Edited");
         expect(wrapper.findAll("[data-testid='message-edited']")).toHaveLength(1);
+        expect(wrapper.find(".chat-msg-edited").exists()).toBe(false);
+    });
+
+    test("a hidden time line holds no Sent, so its arriving motion never runs unseen", () => {
+        const wrapper = draw({ message: ownConfirmed(), isOwn: true, isJustSent: true, position: "first" });
+
+        expect((wrapper.get("[data-testid='message-meta']").element as HTMLElement).hidden).toBe(true);
+        expect(wrapper.find(".chat-meta-sent").exists()).toBe(false);
     });
 
     test("a failed send mid-group still shows its own Not sent line", () => {
