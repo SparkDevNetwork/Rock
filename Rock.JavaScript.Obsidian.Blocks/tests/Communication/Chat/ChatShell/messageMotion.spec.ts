@@ -23,13 +23,16 @@ import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShel
 const mine = { id: 2, client_key: "K1" };
 const annas = { id: 3, client_key: null };
 
+/** The conversation the stores record these in. */
+const place = "c1";
+
 describe("the record", () => {
     test("a live copy of a message sent here keeps the send's arrival, so it never rises as heard", () => {
         const motion = createMessageMotion();
         const scope = motion.scope();
 
-        motion.sent("k1");
-        motion.arrived(mine);
+        motion.sent("k1", place);
+        motion.arrived(mine, place);
 
         expect(motion.of("k:k1")?.arrival?.how).toBe("sent");
         expect(scope.arrives("k:k1")).toBe("rise");
@@ -41,7 +44,7 @@ describe("the record", () => {
         const feed = motion.scope();
         const drawer = motion.scope();
 
-        motion.arrived(annas);
+        motion.arrived(annas, place);
         const later = motion.scope();
 
         expect(feed.arrives("k:3")).toBe("rise");
@@ -67,16 +70,16 @@ describe("the record", () => {
     test("a send's mark is kept until its live copy is heard, then let go as a view goes like any other", () => {
         const motion = createMessageMotion();
         const feed = motion.scope();
-        motion.sent("k1");
-        motion.sent("k2");
+        motion.sent("k1", place);
+        motion.sent("k2", place);
         // the live copy of the first, its key in another case as the platform may write it back
-        motion.arrived({ id: 2, client_key: "K1" });
+        motion.arrived({ id: 2, client_key: "K1" }, place);
 
         feed.dispose();
 
         expect(motion.of("k:k1")).toBeUndefined();
         expect(motion.of("k:k2")?.arrival?.how).toBe("sent");
-        motion.arrived({ id: 3, client_key: "k2" });
+        motion.arrived({ id: 3, client_key: "k2" }, place);
         expect(motion.of("k:k2")?.arrival?.how).toBe("sent");
         motion.scope().dispose();
         expect(motion.of("k:k2")).toBeUndefined();
@@ -85,8 +88,8 @@ describe("the record", () => {
     test("a view gone lets go of what no open view could play, and keeps what one could and every send not yet heard", () => {
         const motion = createMessageMotion();
         const old = motion.scope();
-        motion.sent("k1");
-        motion.arrived(annas);
+        motion.sent("k1", place);
+        motion.arrived(annas, place);
         const open = motion.scope();
         motion.changed({ id: 4, client_key: null }, "message.deleted");
 
@@ -103,11 +106,11 @@ describe("the record", () => {
     test("once stopped nothing is recorded, nothing rises, and nothing throws", () => {
         const motion = createMessageMotion();
         const scope = motion.scope();
-        motion.arrived(annas);
+        motion.arrived(annas, place);
         motion.stop();
 
-        motion.sent("k9");
-        motion.arrived({ id: 5, client_key: null });
+        motion.sent("k9", place);
+        motion.arrived({ id: 5, client_key: null }, place);
         motion.changed(annas, "message.edited");
         motion.reacted(annas, "heart", "pop");
         motion.threadStarted(annas);
@@ -127,7 +130,7 @@ describe("the record", () => {
         const feed = motion.scope();
         motion.typingStarted("c1");
 
-        motion.arrived(annas);
+        motion.arrived(annas, place);
         motion.typingEnded("c1", "sent", annas);
 
         const arrival = motion.of("k:3")?.arrival;
@@ -143,7 +146,7 @@ describe("the record", () => {
         const motion = createMessageMotion();
         const feed = motion.scope();
         motion.typingStarted("c1");
-        motion.arrived(annas);
+        motion.arrived(annas, place);
 
         motion.typingEnded("c1", "stopped");
 
@@ -153,12 +156,12 @@ describe("the record", () => {
         expect(feed.arrives("k:3")).toBe("rise");
     });
 
-    // The views watch one count before the render, so they read where things stand on screen
-    // before any of them move: it moves for what changes the tail, and for nothing else.
-    test("the tail's count moves for a send, an arrival and typing starting or ending, never for a row's own change", async () => {
+    // The views watch their place's version before the render, so they read where things stand on
+    // screen before any of them move: it moves for what changes that place's tail, and for nothing else.
+    test("a place's version moves for a send, an arrival and typing starting or ending there, never for a row's own change", async () => {
         const motion = createMessageMotion();
         const woken = jest.fn();
-        watch(() => motion.tail(), woken, { flush: "pre" });
+        watch(() => motion.versionOf(place), woken, { flush: "pre" });
 
         motion.changed(annas, "message.edited");
         motion.reacted(annas, "heart", "pop");
@@ -166,13 +169,67 @@ describe("the record", () => {
         await nextTick();
         expect(woken).not.toHaveBeenCalled();
 
-        for (const write of [() => motion.sent("k1"), () => motion.arrived(annas), () => motion.typingStarted("c1"), () => motion.typingEnded("c1", "expired")]) {
-            const before = motion.tail();
+        for (const write of [() => motion.sent("k1", place), () => motion.arrived(annas, place), () => motion.typingStarted(place), () => motion.typingEnded(place, "expired")]) {
+            const before = motion.versionOf(place);
             write();
-            expect(motion.tail()).toBeGreaterThan(before);
+            expect(motion.versionOf(place)).toBeGreaterThan(before);
         }
         await nextTick();
         expect(woken).toHaveBeenCalledTimes(1);
+    });
+
+    test("an event in another place moves this place's version not at all, and a copy heard again in the same place moves nothing", async () => {
+        const motion = createMessageMotion();
+        const woken = jest.fn();
+        watch(() => motion.versionOf(place), woken, { flush: "pre" });
+
+        motion.arrived({ id: 9, client_key: null }, "c2");
+        motion.typingStarted("c2");
+        motion.typingEnded("c2", "expired");
+        motion.sent("k7", "c2/4");
+        await nextTick();
+        expect(woken).not.toHaveBeenCalled();
+
+        motion.arrived(annas, place);
+        await nextTick();
+        const after = motion.versionOf(place);
+        motion.arrived(annas, place);
+        expect(motion.versionOf(place)).toBe(after);
+    });
+
+    // A reply also sent to the conversation is drawn in both: each view wakes for its own copy.
+    test("an also-sent reply heard in the thread and in the conversation moves both places once each", () => {
+        const motion = createMessageMotion();
+        const reply = { id: 12, client_key: null };
+
+        motion.arrived(reply, "c1/4");
+        motion.arrived(reply, place);
+        const thread = motion.versionOf("c1/4");
+        const conversation = motion.versionOf(place);
+        expect(thread).toBeGreaterThan(0);
+        expect(conversation).toBeGreaterThan(0);
+
+        motion.arrived(reply, "c1/4");
+        motion.arrived(reply, place);
+        expect([motion.versionOf("c1/4"), motion.versionOf(place)]).toEqual([thread, conversation]);
+    });
+
+    test("a place no open view could play is let go quietly, and its next event still moves it", async () => {
+        const motion = createMessageMotion();
+        const old = motion.scope();
+        motion.arrived(annas, place);
+        const seen = motion.versionOf(place);
+        const woken = jest.fn();
+        watch(() => motion.versionOf(place), woken, { flush: "pre" });
+
+        old.dispose();
+        await nextTick();
+        expect(woken).not.toHaveBeenCalled();
+
+        motion.arrived({ id: 20, client_key: null }, place);
+        await nextTick();
+        expect(woken).toHaveBeenCalledTimes(1);
+        expect(motion.versionOf(place)).not.toBe(seen);
     });
 
     test("a view gone lets go of typing no open view could play; once stopped typing records nothing", () => {
@@ -194,8 +251,8 @@ describe("the record", () => {
         try {
             const motion = createMessageMotion();
             const scope = motion.scope();
-            motion.sent("k1");
-            motion.arrived(annas);
+            motion.sent("k1", place);
+            motion.arrived(annas, place);
             motion.changed(annas, "message.visibility");
             motion.reacted(annas, "heart", "roll");
             motion.threadStarted(annas);

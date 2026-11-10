@@ -73,11 +73,15 @@ export type MotionScope = {
 
 /** The shell's one record of what happened to each row. */
 export type MessageMotion = {
-    /** The person sent a message here, under its send's key. */
-    sent: (localId: string) => void;
+    /** The person sent a message in a place, under its send's key. */
+    sent: (localId: string, place: string) => void;
 
-    /** A message was heard arriving live. One already sent here or heard keeps its first arrival. */
-    arrived: (message: Pick<TimelineMessage, "id" | "client_key">) => void;
+    /**
+     * A message was heard arriving live, in the place of the view that draws it: the conversation,
+     * or the thread. One already sent here or heard keeps its first arrival; a copy heard again in
+     * another place, an also-sent reply, wakes that place's views once.
+     */
+    arrived: (message: Pick<TimelineMessage, "id" | "client_key">, place: string) => void;
 
     /** A live edit, delete or change of visibility, by its event's name, was applied to a held copy. */
     changed: (message: Pick<TimelineMessage, "id" | "client_key">, event: MessageChangeEvent) => void;
@@ -107,11 +111,12 @@ export type MessageMotion = {
     typingOf: (place: string) => PlaceTyping | undefined;
 
     /**
-     * A count that moves with every event that changes a view's tail: a send, an arrival, typing
-     * starting or ending. Reactive, so a view watching it before the render reads where its tail
-     * stands on screen before anything moves; a row's own changes never move it.
+     * A place's version, which moves with every event that changes the tail of the views drawing
+     * that place: a send, an arrival, typing starting or ending there. Reactive per place, so a
+     * view watching its own before the render reads where its tail stands on screen before
+     * anything moves, and an event in another place wakes nothing; a row's own changes never move it.
      */
-    tail: () => number;
+    versionOf: (place: string) => number;
 
     /** A new view's arrivals, from now. */
     scope: () => MotionScope;
@@ -121,7 +126,7 @@ export type MessageMotion = {
 };
 
 /** What the rows and views read of the record. Only the stores record, so a component never holds a writer. */
-export type MotionReader = Pick<MessageMotion, "now" | "of" | "typingOf" | "tail" | "scope">;
+export type MotionReader = Pick<MessageMotion, "now" | "of" | "typingOf" | "versionOf" | "scope">;
 
 /** How the shell hands the record to the rows and views it draws, to read only. */
 export const messageMotionKey: InjectionKey<MotionReader> = Symbol("chat-message-motion");
@@ -135,7 +140,13 @@ export function createMessageMotion(): MessageMotion {
     // Vue tracks a reactive Map's get per key, so a write wakes only the rows that read that key.
     const rows = reactive(new Map<string, RowEvents>());
     const places = reactive(new Map<string, PlaceTyping>());
-    const tail = ref(0);
+    // Each place's version is a stamp of its own count, never reused, so one let go and moved again
+    // never reads as a value a view saw before; beside it, plain, the record's number when it moved.
+    const versions = reactive(new Map<string, number>());
+    const movedAt = new Map<string, number>();
+    let stamp = 0;
+    // The places each row's arrival was heard in, so a copy heard again in the same place wakes nothing. Plain, since no view reads it.
+    const heardIn = new Map<string, Set<string>>();
     const liveScopes = new Set<{ since: number }>();
     // Sends whose live copy has not been heard yet, by row key: until it is, the mark is what keeps
     // that copy from rising as heard, however late it comes. Plain, since no view reads it.
@@ -154,20 +165,21 @@ export function createMessageMotion(): MessageMotion {
         }
     }
 
-    /** Writes typing in a place, in a new entry so every reader of the place sees it, and moves the tail's count. */
+    /** Moves a place's version, which wakes the views drawing it. */
+    function bump(place: string): void {
+        if (!isStopped) {
+            versions.set(place, ++stamp);
+            movedAt.set(place, seq);
+        }
+    }
+
+    /** Writes typing in a place, in a new entry so every reader of the place sees it, and moves its version. */
     function recordTyping(place: string, typing: (held: PlaceTyping | undefined) => PlaceTyping): void {
         if (isStopped) {
             return;
         }
         places.set(place, typing(toRaw(places).get(place)));
-        tail.value++;
-    }
-
-    /** A row came to a view's tail, as a new arrival or a copy of one recorded already. */
-    function arrivedAtTail(): void {
-        if (!isStopped) {
-            tail.value++;
-        }
+        bump(place);
     }
 
     /**
@@ -185,6 +197,7 @@ export function createMessageMotion(): MessageMotion {
             const newest = Math.max(events.arrival?.seq ?? 0, events.content?.seq ?? 0, events.reaction?.seq ?? 0, events.thread?.seq ?? 0);
             if (newest <= floor && !unheardSends.has(key)) {
                 rows.delete(key);
+                heardIn.delete(key);
             }
         }
         for (const [place, typing] of toRaw(places)) {
@@ -192,31 +205,45 @@ export function createMessageMotion(): MessageMotion {
                 places.delete(place);
             }
         }
+        // Let go of quietly: a view still watching a place keeps the value it read, and the next
+        // event there is a newer number than any it saw.
+        for (const [place, at] of movedAt) {
+            if (at <= floor) {
+                toRaw(versions).delete(place);
+                movedAt.delete(place);
+            }
+        }
     }
 
     return {
-        sent: localId => {
-            record(`k:${sendKey(localId)}`, held => {
+        sent: (localId, place) => {
+            const key = `k:${sendKey(localId)}`;
+            record(key, held => {
                 if (held?.arrival) {
                     return null;
                 }
-                unheardSends.add(`k:${sendKey(localId)}`);
+                unheardSends.add(key);
                 return { ...held, arrival: { seq: ++seq, how: "sent" } };
             });
-            arrivedAtTail();
+            heardIn.set(key, new Set([place]));
+            bump(place);
         },
 
-        // A copy of a message already arrived still moves the tail's count: its row may change size,
-        // as a send's row does once its live copy stands in it, and the view glides that too.
-        arrived: message => {
-            record(rowKey(message), held => {
+        arrived: (message, place) => {
+            const key = rowKey(message);
+            record(key, held => {
                 if (held?.arrival) {
-                    unheardSends.delete(rowKey(message));
+                    unheardSends.delete(key);
                     return null;
                 }
                 return { ...held, arrival: { seq: ++seq, how: "live" } };
             });
-            arrivedAtTail();
+            const heard = heardIn.get(key) ?? new Set<string>();
+            if (!heard.has(place) && !isStopped) {
+                heard.add(place);
+                heardIn.set(key, heard);
+                bump(place);
+            }
         },
 
         changed: (message, event) => record(rowKey(message), held => ({ ...held, content: { seq: ++seq, isEdit: event === "message.edited" } })),
@@ -242,7 +269,7 @@ export function createMessageMotion(): MessageMotion {
 
         typingOf: place => places.get(place),
 
-        tail: () => tail.value,
+        versionOf: place => versions.get(place) ?? 0,
 
         scope: (): MotionScope => {
             const scope = { since: seq };
@@ -274,8 +301,11 @@ export function createMessageMotion(): MessageMotion {
             isStopped = true;
             liveScopes.clear();
             unheardSends.clear();
+            heardIn.clear();
             rows.clear();
             places.clear();
+            versions.clear();
+            movedAt.clear();
         }
     };
 }
@@ -346,32 +376,32 @@ export type ViewArrivals = {
      * How a row arrives: the first time its key is drawn after its message was sent here or heard
      * live it rises, or grows in place out of its sender's typing bubble; asked again, it is
      * already drawn and arrives no more. The person's message from another tab is news here and
-     * rises like anyone's; one sent here rose as its pending row and never rises again.
+     * rises like anyone's; one sent here rose as its pending row and never rises again. A folded
+     * line of messages by people the reader blocked claims every message it draws, not only the
+     * one it is keyed by, so the messages an unblock draws again one by one were already drawn here
+     * and none arrives as if heard now.
      */
     arrives: (key: string) => ArrivalMotion | null;
-
-    /**
-     * How a folded line of messages by people the reader blocked arrives. Every message the line
-     * draws is claimed, not only the one it is keyed by, so the messages an unblock draws again one
-     * by one were already drawn here and none arrives as if heard now.
-     */
-    arrivesRun: (messages: readonly Pick<TimelineMessage, "id" | "client_key">[]) => ArrivalMotion | null;
 };
 
 /**
  * A view's arrivals, from the moment it mounts until it goes: the feed's and the thread drawer's.
  * A view drawn where no record is provided draws nothing new.
  *
+ * @param runs The folded lines the view draws, by their key, with the messages each stands for.
+ *
  * @returns What the view's tail asks of each row's arrival.
  */
-export function useViewArrivals(): ViewArrivals {
+export function useViewArrivals(runs: () => ReadonlyMap<string, readonly Pick<TimelineMessage, "id" | "client_key">[]>): ViewArrivals {
     const scope = inject(messageMotionKey, null)?.scope() ?? null;
     onBeforeUnmount(() => scope?.dispose());
-    const arrives = (key: string): ArrivalMotion | null => scope?.arrives(key) ?? null;
+    const one = (key: string): ArrivalMotion | null => scope?.arrives(key) ?? null;
 
     return {
-        arrives,
-        // every key asked, never cut short at the first that arrives, so each is claimed
-        arrivesRun: messages => messages.map(message => arrives(rowKey(message))).includes("rise") ? "rise" : null
+        arrives: key => {
+            const run = runs().get(key);
+            // every key asked, never cut short at the first that arrives, so each is claimed
+            return run ? run.map(message => one(rowKey(message))).includes("rise") ? "rise" : null : one(key);
+        }
     };
 }

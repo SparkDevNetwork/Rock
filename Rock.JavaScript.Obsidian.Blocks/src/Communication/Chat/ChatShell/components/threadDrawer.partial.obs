@@ -371,7 +371,7 @@
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
-    import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
+    import { useViewArrivals } from "../messageMotion.partial";
     import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -669,7 +669,7 @@
      * What this drawer has drawn new since it opened: a reply sent here or heard arriving live
      * arrives once, as in the conversation; a reply its page or a reread brings is simply there.
      */
-    const { arrives, arrivesRun } = useViewArrivals();
+    const { arrives } = useViewArrivals(() => blockedRuns.value);
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
@@ -763,10 +763,7 @@
         place: () => props.typingPlace,
         isFollowing: () => isPlaced && isNearBottom(),
         follow: scrollToBottom,
-        arrives: (key: string): ArrivalMotion | null => {
-            const run = blockedRuns.value.get(key);
-            return run ? arrivesRun(run) : arrives(key);
-        },
+        arrives,
         drawn: () => [drawnTyping.value, newestReplyId(), pendingReplies.value.length, repliesLaidOut.value?.typing?.isInRun]
     });
 

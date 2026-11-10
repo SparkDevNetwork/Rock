@@ -64,6 +64,9 @@ import { playAnimations } from "../tailStage";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
+
+/** The place the stores record a send or an arrival in; the drawer here is woken by what it draws. */
+const place = "c1/1";
 const ben = "a0000003-0000-4000-8000-000000000000";
 
 /** The channel's name as the header shows it: plain, the hash being an icon, never a character. */
@@ -264,22 +267,22 @@ describe("the person's own reply", () => {
         const recent = { created_at: new Date().toISOString() };
         const earlier = { ...mine(45, "k0"), ...recent };
         const motion = createMessageMotion();
-        motion.sent("k0");
+        motion.sent("k0", place);
         const w = draw({ isChannel: false, replies: [earlier], pending: [] }, false, motion);
         await afterOpen();
-        motion.sent("k1");
+        motion.sent("k1", place);
         await w.setProps({ pending: [sending] });
         await nextTick();
         expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         const ben51 = message(51, { parent_id: 40, ...recent });
-        motion.arrived(ben51);
+        motion.arrived(ben51, place);
         await w.setProps({ replies: [earlier, ben51] });
         await nextTick();
         expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
 
         const anotherTab = { ...mine(52, "another-tab"), ...recent };
-        motion.arrived(anotherTab);
+        motion.arrived(anotherTab, place);
         await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, anotherTab], pending: [] });
         await nextTick();
 

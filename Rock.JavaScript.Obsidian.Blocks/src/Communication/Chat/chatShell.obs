@@ -852,7 +852,7 @@
         now: () => shell.value.motion.now(),
         of: key => shell.value.motion.of(key),
         typingOf: place => shell.value.motion.typingOf(place),
-        tail: () => shell.value.motion.tail(),
+        versionOf: place => shell.value.motion.versionOf(place),
         scope: () => shell.value.motion.scope()
     });
 

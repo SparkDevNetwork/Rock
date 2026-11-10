@@ -86,6 +86,8 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
     const isInRun = ref(options.isInRun ?? false);
     const following = ref(options.isFollowing ?? true);
     const follows = { count: 0 };
+    // each time the tail reads where it stands, as it does once for every change it is woken for
+    const reads = { count: 0 };
     const scroller = ref<HTMLElement | null>(null);
     const content = ref<HTMLElement | null>(null);
     const stage = stageOf(() => scroller.value, () => content.value);
@@ -98,7 +100,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
 
     const View = defineComponent({
         setup() {
-            const { arrives } = useViewArrivals();
+            const { arrives } = useViewArrivals(() => new Map());
             // the view's own follow of its newest row, which runs on the render after the tail's or before it
             const ownFollow = (): void => {
                 watch(() => rows.length, () => void nextTick(follow));
@@ -110,7 +112,10 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                 content,
                 scroller: () => scroller.value,
                 place: () => place,
-                isFollowing: () => following.value,
+                isFollowing: () => {
+                    reads.count++;
+                    return following.value;
+                },
                 follow,
                 arrives,
                 drawn: () => [typing.value, rows.length, isInRun.value, rows.map(row => row.h).join()]
@@ -153,7 +158,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
     const wrapper = mount(View, { attachTo: document.body, global: { stubs: { transition: false }, provide: { [messageMotionKey as symbol]: motion } } });
     follow();
     follows.count = 0;
-    return { wrapper, rows, typing, isInRun, following, follows, stage, scroller, content, endOf };
+    return { wrapper, rows, typing, isInRun, following, follows, reads, stage, scroller, content, endOf };
 }
 
 type View = ReturnType<typeof draw>;
@@ -254,7 +259,7 @@ function named(played: Played[]): string[] {
 
 /** Her message heard live, recorded as the live router does: the arrival, then the typing's end naming it. */
 function sends(motion: MessageMotion, v: View, id: number, sender = anna, extra: Partial<Row> = {}): void {
-    motion.arrived(message(id));
+    motion.arrived(message(id), place);
     motion.typingEnded(place, "sent", message(id));
     v.rows.push({ key: `k:${id}`, sender, ...extra });
     v.typing.value = null;
@@ -280,7 +285,7 @@ describe("a message arriving", () => {
         const v = view(motion, { rows: [{ key: "k:1", sender: anna }, { key: "k:2", sender: anna }] });
         const top = seen(row(v, "k:2")).top;
 
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: anna });
         await settle();
 
@@ -294,7 +299,7 @@ describe("a message arriving", () => {
 
         // the same message heard again, and a page restating it, move nothing more
         s.played.length = 0;
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         await settle();
         expect(s.played).toEqual([]);
     });
@@ -303,8 +308,8 @@ describe("a message arriving", () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: anna }] });
 
-        motion.arrived(message(2));
-        motion.arrived(message(3));
+        motion.arrived(message(2), place);
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:2", sender: anna }, { key: "k:3", sender: anna });
         await settle();
 
@@ -315,14 +320,14 @@ describe("a message arriving", () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: anna }], isFollowing: false });
 
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: anna });
         await settle();
         expect((stage as Stage).played).toEqual([]);
         expect(v.follows.count).toBe(0);
 
         v.following.value = true;
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: anna });
         await settle();
         expect(named((stage as Stage).played)).toContain("chat-tail-in k:3");
@@ -341,7 +346,7 @@ describe("a message arriving", () => {
 
     test("a view opened after a message arrived plays nothing for it", async () => {
         const motion = createMessageMotion();
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         const v = view(motion, { rows: [{ key: "k:1", sender: anna }] });
 
         v.rows.push({ key: "k:2", sender: ted });
@@ -366,7 +371,7 @@ describe("a message arriving", () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: anna }] });
 
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: ted });
         await settle();
 
@@ -392,7 +397,7 @@ describe("a message arriving", () => {
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }, { key: "k:3", sender: anna }] });
         const top = seen(row(v, "k:3")).top;
 
-        motion.arrived(message(4));
+        motion.arrived(message(4), place);
         v.rows[0].h = 80;
         v.rows.push({ key: "k:4", sender: anna });
         await settle();
@@ -405,7 +410,7 @@ describe("a message arriving", () => {
             const motion = createMessageMotion();
             const rows = Array.from({ length: 14 }, (_, index) => ({ key: `k:${index + 1}`, sender: index % 3 === 0 ? ted : anna }));
             const v = view(motion, { rows, ownFollow });
-            motion.arrived(message(15));
+            motion.arrived(message(15), place);
             v.rows.push({ key: "k:15", sender: anna });
             await settle();
             const end = (): number => v.content.value!.offsetTop + v.content.value!.offsetHeight + padBottom - scrollerHeight;
@@ -547,7 +552,7 @@ describe("someone typing", () => {
         await settle();
         sample(() => undefined, [60]);
 
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: anna });
         await settle();
 
@@ -574,7 +579,7 @@ describe("someone typing", () => {
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: tedTyping });
         const was = seen(dots(v));
 
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: me });
         await settle();
 
@@ -589,7 +594,7 @@ describe("someone typing", () => {
         const was = seen(dots(v));
         const wasFace = seen(bubbleFace(v));
 
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: ted });
         v.typing.value = typingBy(person(marcus, "Marcus"));
         await settle();
@@ -762,14 +767,14 @@ describe("a change landing mid-motion", () => {
     test("an arrival 100 ms into an arrival continues every fade and every box from where it is", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }] });
-        motion.arrived(message(2));
+        motion.arrived(message(2), place);
         v.rows.push({ key: "k:2", sender: anna });
         await settle();
         sample(() => undefined, [100]);
         const top = seen(row(v, "k:2")).top;
         const was = strengths(v);
 
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: ted });
         await settle();
 
@@ -789,7 +794,7 @@ describe("a change landing mid-motion", () => {
         const was = seen(box);
         const strengthsWas = strengths(v);
 
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: ted });
         await settle();
 
@@ -800,13 +805,30 @@ describe("a change landing mid-motion", () => {
     });
 });
 
+describe("what wakes a view", () => {
+    test("an arrival, typing or its expiry in another place reads nothing of this view's tail", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: annaTyping });
+        v.reads.count = 0;
+
+        motion.arrived(message(7), "c2");
+        motion.typingStarted("c2");
+        motion.typingEnded("c2", "expired");
+        motion.typingStarted("c1/9");
+        await settle();
+
+        expect(v.reads.count).toBe(0);
+        expect((stage as Stage).played).toEqual([]);
+    });
+});
+
 describe("an also-sent reply", () => {
     test("drawn in the conversation while someone else types there, it rides in above the bubble and grows out of nothing", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: me }], typing: tedTyping });
 
         // her typing ended in the thread, where she sent it; the conversation's bubble is Ted's
-        motion.arrived(message(5));
+        motion.arrived(message(5), place);
         motion.typingEnded("c1:thread", "sent", message(5));
         v.rows.push({ key: "k:5", sender: anna });
         await settle();
@@ -827,7 +849,7 @@ describe("the newest end", () => {
         const content = v.content.value as HTMLElement;
         expect(endOf(scroller, content)).toBe(scroller.scrollHeight - scroller.clientHeight);
 
-        motion.arrived(message(40));
+        motion.arrived(message(40), place);
         v.rows.push({ key: "k:40", sender: me, h: 80 });
         await settle();
 
@@ -842,7 +864,7 @@ describe("faces belong to their group", () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }] });
 
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: ted });
         await settle();
 
@@ -857,7 +879,7 @@ describe("faces belong to their group", () => {
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });
         const was = seen(part(v, "face:k:2"));
 
-        motion.arrived(message(3));
+        motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: anna });
         await settle();
 

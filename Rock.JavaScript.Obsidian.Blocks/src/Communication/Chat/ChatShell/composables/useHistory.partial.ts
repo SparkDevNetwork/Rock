@@ -47,6 +47,7 @@ import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import type { Presence } from "./usePresence.partial";
+import { quoteKey } from "./useMessageActions.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -576,7 +577,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage, rev));
                 if (isLive) {
-                    dependencies.motion.arrived(created);
+                    dependencies.motion.arrived(created, quoteKey(channelId));
                 }
             }
         }

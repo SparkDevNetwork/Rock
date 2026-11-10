@@ -623,7 +623,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
     // Before the render, so where the tail stands is read before anything in it moves. Every
     // writer records in the same pass as its change of state, so the count and the state move together.
-    watch([() => motion?.tail(), options.drawn], () => {
+    watch([() => {
+        const place = options.place();
+        return place ? motion?.versionOf(place) : undefined;
+    }, options.drawn], () => {
         if (isStopped || before) {
             return;
         }

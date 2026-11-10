@@ -40,6 +40,7 @@ import { Timelines } from "./useHistory.partial";
 import { sendKey } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import { ChatSettings } from "./useSession.partial";
+import { quoteKey } from "./useMessageActions.partial";
 
 /** What Rock's Join door answers. */
 export type JoinResult = {
@@ -737,7 +738,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
             sentKeys.add(localId);
-            dependencies.motion.sent(localId);
+            dependencies.motion.sent(localId, quoteKey(channelId, reply?.parentId));
 
             rows.push({
                 localId,

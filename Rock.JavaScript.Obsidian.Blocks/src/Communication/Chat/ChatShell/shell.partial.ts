@@ -26,7 +26,7 @@ import { reactive } from "vue";
 import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
 import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
-import { createTimelines, Timelines } from "./composables/useHistory.partial";
+import { createTimelines, TimelineDependencies, Timelines } from "./composables/useHistory.partial";
 import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
@@ -35,7 +35,7 @@ import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./com
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
-import { createThreads, Threads } from "./composables/useThreads.partial";
+import { createThreads, Threads, ThreadsDependencies } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
 import { createReactions, Reactions } from "./composables/useReactions.partial";
@@ -625,6 +625,21 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // The stores record each live change as they apply it, and the rows and views read it.
     const motion = createMessageMotion();
 
+    // What the conversation's timeline and the open thread both tell and ask, the same for each.
+    // Whichever copy of the person's send lands first, from a page, live or its answer, settles it,
+    // and a typing signal that waited for it to land goes then; what a page says of typing goes to
+    // presence, made below and reached only once running.
+    const heldTogether: Pick<TimelineDependencies, "onLanded" | "typing"> & Pick<ThreadsDependencies, "onLanded" | "typing"> = {
+        onLanded: message => {
+            sender.landed(message);
+            presence.caughtUp();
+        },
+        typing: {
+            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
+            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
+        }
+    };
+
     const timelines = createTimelines({
         fetchPage: async (channelId, page): Promise<HistoryPage> => {
             const result = await call("chat_get_history", {
@@ -650,24 +665,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onGap: () => problems.tally("live", "gap"),
         // the open thread of a room being repaired reads its newest page again; made below
         onRepair: channelId => threads.repair(channelId),
-        // Whichever copy of the person's send lands first, from a page, live or its answer, settles
-        // it; a typing signal that waited for it to land goes then.
-        onLanded: message => {
-            sender.landed(message);
-            presence.caughtUp();
-        },
+        ...heldTogether,
         // A reaction moves the conversation's copy of its message when the timeline lets it
         // through, held like any other change until the channel's first page is in; the open
         // thread's copies are moved as the event arrives.
         applyReaction: (channelId, event, payload, isLive) => reactions.applyEvent(channelId, event, payload, isLive),
         // every holder writes through the blocks' mask, made below and called only once running
         mask: message => blocks.mask(message),
-        motion,
-        // what a page says of typing, made below and reached only once running
-        typing: {
-            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
-            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
-        }
+        motion
     });
 
     // The sidebar's reads are the live part's, made below and reached only once running.
@@ -720,18 +725,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
-        onLanded: message => {
-            sender.landed(message);
-            presence.caughtUp();
-        },
+        ...heldTogether,
         isOffline: () => state.connection !== null,
         mask: message => blocks.mask(message),
         isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid),
-        motion,
-        typing: {
-            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
-            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
-        }
+        motion
     });
 
     /**

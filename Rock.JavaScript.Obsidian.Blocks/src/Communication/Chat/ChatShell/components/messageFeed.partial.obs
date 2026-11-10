@@ -711,7 +711,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
-    import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
+    import { useViewArrivals } from "../messageMotion.partial";
     import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
@@ -949,7 +949,7 @@
      * into another group keeps its key and never arrives again. A message a page, a catch-up or a
      * switch back brings is simply there.
      */
-    const { arrives, arrivesRun } = useViewArrivals();
+    const { arrives } = useViewArrivals(() => blockedRuns.value);
 
     /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
@@ -1043,10 +1043,7 @@
             return isAtNewest.value;
         },
         follow: scrollToBottom,
-        arrives: (key: string): ArrivalMotion | null => {
-            const run = blockedRuns.value.get(key);
-            return run ? arrivesRun(run) : arrives(key);
-        },
+        arrives,
         drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
     });
 

@@ -44,6 +44,9 @@ const me = "a0000001-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
 
+/** The place the stores record a send or an arrival in; the feed here is woken by what it draws. */
+const place = "c1";
+
 // #region Browser stand-ins
 
 /** An IntersectionObserver the test reports through, since jsdom computes no intersections. */
@@ -525,13 +528,13 @@ describe("the person's own message is one row from send to stored", () => {
         const motion = createMessageMotion();
         const state = timeline([message(1, me, at(14, 58))]);
         const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
-        motion.sent("k1");
+        motion.sent("k1", place);
         await wrapper.setProps({ pending: [pendingRow("k1")] });
         await nextTick();
         expect(wrapper.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         const annas = message(3, anna, at(15, 0));
-        motion.arrived(annas);
+        motion.arrived(annas, place);
         state.messages.push(annas);
         await nextTick();
         await nextTick();
@@ -549,13 +552,13 @@ describe("the person's own message is one row from send to stored", () => {
 
     test("the person's message sent from another tab is news here, and rises in", async () => {
         const motion = createMessageMotion();
-        motion.sent("k1");
+        motion.sent("k1", place);
         const state = timeline([message(1, anna, at(14, 50))]);
         const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
         await nextTick();
 
         const fromAnotherTab = message(2, me, at(15, 0), { client_key: "from-another-tab" });
-        motion.arrived(fromAnotherTab);
+        motion.arrived(fromAnotherTab, place);
         state.messages.push(fromAnotherTab);
         await nextTick();
         await nextTick();
@@ -567,7 +570,7 @@ describe("the person's own message is one row from send to stored", () => {
     // brings it, is simply there; so is a send's row drawn by a feed opened after it was sent.
     test("a message the timeline gains with no arrival recorded, and a send made before the feed opened, do not rise", async () => {
         const motion = createMessageMotion();
-        motion.sent("k1");
+        motion.sent("k1", place);
         const state = timeline([message(1, anna, at(14, 50))]);
         const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
         await nextTick();

@@ -55,6 +55,7 @@ import { defaultCatchUp, Timelines } from "./useHistory.partial";
 import { applyMessageChange, holdMessage, isMessageChange, maskHeld, MessageMask } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import type { Presence } from "./usePresence.partial";
+import { quoteKey } from "./useMessageActions.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
@@ -934,7 +935,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         // One heard while the first page is out is part of that page, as the timeline holds such a
         // message until its page lands: the drawer draws them together, and neither rises.
         if (!thread.isLoading) {
-            dependencies.motion.arrived(message);
+            dependencies.motion.arrived(message, quoteKey(thread.channelId, thread.rootId));
         }
     }
 
