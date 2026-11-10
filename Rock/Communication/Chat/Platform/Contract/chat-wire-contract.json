@@ -482,9 +482,11 @@
     "dm_name_max_length": 100,
     "people_search_size": 10,
     "typing_interval_ms": 4000,
+    "typing_min_show_ms": 1000,
     "directory_page_size": 50,
     "attachment_max_bytes": 26214400,
-    "attachment_max_files": 10
+    "attachment_max_files": 10,
+    "typing_first_after_ms": 700
   },
   "attachment_previews": {
     "gif": "GIF",
