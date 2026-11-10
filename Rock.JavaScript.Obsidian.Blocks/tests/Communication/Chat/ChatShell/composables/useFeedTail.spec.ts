@@ -56,7 +56,7 @@ const padTop = 10;
 const padBottom = 18;
 
 /** A row: its key, who sent it, its bubble's size, and its files' box when it has no text. */
-type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean };
+type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean, isFull?: boolean };
 
 /** A row group: its key is its first row's, as the feed's layout keys a group. */
 type Group = { key: string, sender: string, rows: Row[] };
@@ -138,12 +138,19 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                             const isMetaShown = index === group.rows.length - 1;
                             return h("div", { key: row.key, class: ["chat-msg", { "is-head": index === 0 }], "data-row-key": row.key }, [
                                 options.isGroup && index === 0 && !isOwn ? h("div", { class: "chat-msg-name", "data-tail": `name:${group.key}` }, group.sender) : null,
+                                // a message with everything a row can carry: the thread label, a quote, files beside its text, reactions
+                                row.isFull ? h("button", { class: "chat-thread-label" }, "Replied to a thread") : null,
+                                row.isFull ? h("div", { class: "chat-quote" }, "quoted") : null,
                                 h("div", { class: "chat-msg-line" }, [
                                     isOwn ? null : h("span", { class: "chat-msg-face", "data-tail": isLast ? `face:${group.key}` : undefined, "data-tail-face": isLast ? group.sender : undefined }),
                                     h("div", { class: "chat-bub-anchor" }, row.filesOnly
                                         ? [h("div", { class: "chat-msg-files", "data-tail": "box", "data-w": row.w ?? 160, "data-h": row.h ?? 120 })]
-                                        : [h("div", { class: "chat-bubble", "data-tail": "box", "data-w": row.w ?? 200, "data-h": row.h ?? 40 }, [h("span", { class: "chat-words" }, row.key)])])
+                                        : [
+                                            h("div", { class: "chat-bubble", "data-tail": "box", "data-w": row.w ?? 200, "data-h": row.h ?? 40 }, [h("span", { class: "chat-words" }, row.key)]),
+                                            row.isFull ? h("div", { class: "chat-msg-files", "data-w": 160, "data-h": 120 }) : null
+                                        ])
                                 ]),
+                                row.isFull ? h("div", { class: "chat-reacts" }, "👍 1") : null,
                                 h("div", { class: "chat-meta", "data-tail": "meta", hidden: !isMetaShown }, "2:15 PM")
                             ]);
                         })),
@@ -171,6 +178,8 @@ const sizes: [string, { w?: number, h?: number, mt?: number, pl?: number, line?:
     [".chat-msg-line, .chat-typing-line", { line: 8 }],
     [".chat-msg-face, .chat-typing-face", { w: 34, h: 34 }],
     [".chat-meta", { h: 16 }],
+    [".chat-thread-label, .chat-reacts", { h: 16 }],
+    [".chat-quote", { h: 30 }],
     [".chat-typing.is-in-run", { mt: 2, pl: 20 }],
     [".chat-typing", { mt: 12, pl: 20 }],
     [".chat-typing-bubble", { w: 60, h: 34 }],
@@ -589,6 +598,43 @@ describe("someone typing", () => {
         expect(named((stage as Stage).played)).toContain("chat-tail-in k:2");
     });
 
+    // A bubble standing at the foot is the foot, as the scroller's edge is: a reply wide enough to
+    // reach the dots comes out from under it rather than riding up through it.
+    test.each([
+        ["a reply wide enough to reach the dots", undefined],
+        ["a reply 100 ms into a reply", 100]
+    ])("%s comes out from under a bubble that stands: never drawn over its dots or its face", async (_, into) => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: tedTyping });
+        /** How far, in pixels down the screen, a reply a person sees is drawn over the dots or the bubble's face. */
+        const drawnOver = (): number => Math.max(0, ...v.rows.filter(each => each.sender === me).map(each => {
+            const holder = row(v, each.key);
+            if (opacity(holder) === 0) {
+                return 0;
+            }
+            // what a person sees of the reply: its box, inside its row's clip
+            const clip = seen(holder);
+            const box = seen(part(v, `box:${each.key}`));
+            const top = Math.max(box.top, clip.top);
+            const bottom = Math.min(box.bottom, clip.bottom);
+            return Math.max(...[seen(dots(v)), seen(bubbleFace(v))].map(other => Math.min(box.right, other.right) > Math.max(box.left, other.left)
+                ? Math.max(0, Math.min(bottom, other.bottom) - Math.max(top, other.top))
+                : 0));
+        }));
+
+        motion.arrived(message(2), place);
+        v.rows.push({ key: "k:2", sender: me, w: 320 });
+        await settle();
+        const first = into === undefined ? [] : sample(drawnOver, [0, 16, 52, into]);
+        if (into !== undefined) {
+            motion.arrived(message(3), place);
+            v.rows.push({ key: "k:3", sender: me, w: 320 });
+            await settle();
+        }
+
+        expect(Math.max(...first, ...sample(drawnOver))).toBeLessThanOrEqual(1);
+    });
+
     test("one of two typists sending rides in above the bubble, which stands still, its faces crossing", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: me }], typing: typingBy(person(ted, "Ted"), person(marcus, "Marcus")), isGroup: true });
@@ -719,6 +765,27 @@ describe("her message ending her typing", () => {
         expect(opacity(row(v, "k:2"))).toBeCloseTo(shownDots, 1);
     });
 
+    // Only her box grows; everything else of her row with no motion of its own comes in with her
+    // words, so nothing of it stands at full beside a box still growing.
+    test("a message with a quote, the thread label, files beside its text and reactions: her box grows, the rest fades in with her words", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: annaTyping });
+
+        sends(motion, v, 2, anna, { isFull: true });
+        await settle();
+
+        const hers = row(v, "k:2");
+        const rest = [".chat-thread-label", ".chat-quote", ".chat-msg-files", ".chat-reacts"].map(selector => hers.querySelector(selector) as HTMLElement);
+        const handoff = (stage as Stage).played.filter(motion => motion.id === "chat-tail-handoff");
+        expect(handoff.some(motion => motion.element === part(v, "box:k:2") && motion.keyframes.some(frame => frame.clipPath !== undefined))).toBe(true);
+        const shown = sample(() => rest.map(opacity), [0, .3 * msg, .9 * msg]);
+        expect(shown[0]).toEqual([0, 0, 0, 0]);
+        expect(shown[1]).toEqual([0, 0, 0, 0]);
+        expect(shown[2]).toEqual([1, 1, 1, 1]);
+        // none of them grows or moves: only her box does
+        expect(handoff.filter(motion => rest.includes(motion.element)).every(motion => motion.keyframes.every(frame => frame.transform === undefined && frame.clipPath === undefined))).toBe(true);
+    });
+
     test("a message of files alone grows its files box out of the dots", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: annaTyping });
@@ -785,6 +852,23 @@ describe("her message ending her typing", () => {
 
         expect(opacity(meta)).toBe(0);
         expect((stage as Stage).played.some(motion => motion.element === meta)).toBe(false);
+    });
+
+    // Every row of a run keeps a hidden time line; one hidden before and after a change is no part
+    // of it, or each change would lift every one on screen and fade it out from full.
+    test("a time line hidden before and after a change is never drawn", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }, { key: "k:3", sender: anna }] });
+        const meta = part(v, "meta:k:2");
+        expect(meta.hidden).toBe(true);
+
+        motion.arrived(message(4), place);
+        v.rows.push({ key: "k:4", sender: anna });
+        await settle();
+
+        expect(sample(() => opacity(meta)).every(value => value === 0)).toBe(true);
+        expect((stage as Stage).played.some(motion => motion.element === meta)).toBe(false);
+        expect(meta.style.position).toBe("");
     });
 
     test("a time line its row shows again while it fades is back in the flow at once", async () => {

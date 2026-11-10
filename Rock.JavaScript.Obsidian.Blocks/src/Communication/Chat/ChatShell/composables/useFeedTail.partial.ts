@@ -99,10 +99,10 @@ type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeOut
 type Offset = { x: number, y: number };
 
 const glideIds = ["chat-tail-glide", "chat-tail-open"];
+const moveIds = ["chat-tail-move", "chat-tail-foot"];
 
 /** What the tail writes on a part it takes out of the flow, taken off again when a kept part is done. */
 const liftedStyles = ["position", "top", "left", "width", "margin", "visibility"];
-const moveIds = ["chat-tail-move"];
 
 /** A token's milliseconds, as the sheet writes them ("260ms", ".26s"). */
 function ms(value: string, fallback: number): number {
@@ -515,11 +515,24 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             const from = fromOf(part);
             return from ? [from.element] : [];
         }));
+        // A bubble that stands is the foot, as the scroller's edge is: a row riding up from below
+        // its top is clipped there for as long as it rides, so it comes out from under the bubble.
+        // The clip closes with the stack, both linear in the same timing, so from where the row
+        // starts to where it lands it never shows past the bubble's top.
+        const foot = bubbleNow && !typing.isStart && !reduced && Math.abs(offset) >= .5 ? was.parts.get("typing:typing") : undefined;
+        const under = foot
+            ? [...tailNow].filter(holder => holder !== bubbleNow).map(holder => ({ holder, by: holder.getBoundingClientRect().bottom + offset - foot.box.top })).filter(clip => clip.by >= .5)
+            : [];
 
         // Plan step 6 and play. The stack first, then its parts in the document's order, so each
         // container's start is planned before what is in it.
         if (!reduced && Math.abs(offset) >= .5) {
             play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-glide" });
+        }
+        // only the foot clips: above and beside, a face gliding in from the row above is drawn whole
+        const open = Number.isFinite(height) ? height : 0;
+        for (const { holder, by } of under) {
+            play(holder, [{ clipPath: `inset(-${open}px -${open}px ${by}px)` }, { clipPath: `inset(-${open}px -${open}px 0px)` }], { ...geometry, id: "chat-tail-foot" });
         }
 
         const dotsBefore = was.parts.get("dots:typing");
