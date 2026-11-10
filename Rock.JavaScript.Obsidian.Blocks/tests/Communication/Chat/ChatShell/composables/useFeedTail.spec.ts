@@ -24,6 +24,9 @@
 // Drawn in a host of its own over the real typing bubble, on a stage that lays the view out and
 // moves its boxes as the browser does, so each cell reads what a person sees frame by frame: where
 // each box stands on screen and how strongly it shows. Every motion runs linear here.
+import { readFileSync } from "fs";
+import { join } from "path";
+import { compileStyle, parse } from "@vue/compiler-sfc";
 import { flushPromises, mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick, reactive, ref, watch } from "vue";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
@@ -1257,12 +1260,46 @@ describe("a time line giving up its time", () => {
 });
 
 describe("the view's own entrance", () => {
-    /** The scroller entering, as the feed's entrance plays on it, this much of its time left. */
+    /**
+     * The name the feed's entrance plays under in the page, read from the feed's own style blocks
+     * compiled as the build compiles them: a keyframe defined in a scoped block is renamed there,
+     * so the stage plays the entrance under the name the page does, not the one the source spells.
+     */
+    function builtEntranceName(): string {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const css = parse(source).descriptor.styles
+            .map(style => compileStyle({ source: style.content, id: "data-v-feed", scoped: style.scoped, filename: "messageFeed.partial.obs" }).code)
+            .join("\n");
+        return /\.chat-feed\.is-entering[^{]*\{\s*animation:\s*([\w-]+)/.exec(css)?.[1] ?? "";
+    }
+
+    /** The scroller entering, as the feed's entrance plays on it in the page, this much of its time left. */
     function entering(v: View, left: number): void {
         const scroller = v.scroller.value as HTMLElement;
-        const entrance = { animationName: "chat-feed-enter", playState: "running", currentTime: 220 - left, effect: { getComputedTiming: () => ({ endTime: 220 }) } };
+        const entrance = { animationName: builtEntranceName(), playState: "running", currentTime: 220 - left, effect: { getComputedTiming: () => ({ endTime: 220 }) } };
         scroller.getAnimations = (() => [entrance]) as never;
     }
+
+    // The open's re-read names a typist about a tenth of a second in, as the only change. No event
+    // is recorded for her, so only the entrance can carry the bubble's room: the rows above rise
+    // with it to the entrance's end, never stepping in one frame.
+    test("a typist the open's read names, alone, rides the entrance: the rows above never step", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }] });
+        entering(v, 140);
+        const top = seen(row(v, "k:1")).top;
+
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect(named((stage as Stage).played)).toEqual(["chat-tail-open tail-content"]);
+        const tops = sample(() => seen(row(v, "k:1")).top, [0, 16, 35, 70, 105, 140]);
+        expect(near(tops[0], top)).toBe(true);
+        for (let index = 1; index < tops.length; index++) {
+            expect(Math.abs(tops[index] - tops[index - 1])).toBeLessThan(16);
+        }
+        expect(tops[tops.length - 1]).toBeLessThan(top - 20);
+    });
 
     // The open's re-read lands about a tenth of a second in: what it brings rides the entrance to its end.
     test("what lands at the tail while the view enters, a page's rows or a typist it names, rides the entrance to its end", async () => {
