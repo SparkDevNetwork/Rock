@@ -89,8 +89,8 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRunArriving(item.messages)"
                                     :reactionHost="reactionHost"
+                                    :data-row-key="item.key"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
                                     @openThread="emit('openThread', $event)"
                                     @messageAction="emit('messageAction', $event)" />
@@ -103,9 +103,9 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key)"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
+                                    :data-row-key="item.key"
                                     :data-message-id="item.message.id"
                                     @messageAction="emit('messageAction', $event)" />
 
@@ -127,7 +127,6 @@
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                         :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
-                                        :isArriving="isRowArriving(row.key)"
                                         :isFlashing="!!row.message && row.message.id === flashingId"
                                         :senderNames="senderNames"
                                         :isPreviewing="isPreviewing"
@@ -135,6 +134,7 @@
                                         :editError="editError"
                                         :isEditSaving="isEditSaving"
                                         :reactionHost="reactionHost"
+                                        :data-row-key="row.key"
                                         :data-message-id="row.message?.id"
                                         @openThread="emit('openThread', $event)"
                                         @jump="emit('jump', $event)"
@@ -153,8 +153,7 @@
                 -->
                 <TypingBubble :typing="drawnTyping"
                               :isGroup="!isChannel && !isDirectMessage"
-                              :isInRun="laidOut.typing?.isInRun ?? false"
-                              :messages="timeline.messages" />
+                              :isInRun="laidOut.typing?.isInRun ?? false" />
             </div>
         </div>
 
@@ -281,8 +280,13 @@
     mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
 
-/* The one box around what the feed draws, which takes the feed's spare height so a short conversation still sits at the bottom. */
+/*
+    The one box around what the feed draws, which takes the feed's spare height so a short
+    conversation still sits at the bottom. The tail moves it as one, and a typing bubble going
+    stands in it out of the flow while the rows settle into its room.
+*/
 .chat-feed-content {
+    position: relative;
     display: flex;
     flex: 1 0 auto;
     flex-direction: column;
@@ -703,7 +707,8 @@
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
-    import { useViewArrivals } from "../messageMotion.partial";
+    import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
+    import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
@@ -845,6 +850,12 @@
         typing: {
             type: Object as PropType<Typing | null>,
             default: null
+        },
+
+        /** The conversation's place, whose typing the record names. */
+        typingPlace: {
+            type: String as PropType<string | null>,
+            default: null
         }
     });
 
@@ -930,11 +941,11 @@
 
     /**
      * What this feed has drawn new since it mounted: a message sent here or heard arriving live
-     * while it was open rises in once, under its row's key. A row moved into another group is a new
-     * element, as when someone else's message takes the next id while the person's send is out, and
-     * its key never rises again. A message a page, a catch-up or a switch back brings is simply there.
+     * while it was open arrives once, under its row's key, as its tail first draws it. A row moved
+     * into another group keeps its key and never arrives again. A message a page, a catch-up or a
+     * switch back brings is simply there.
      */
-    const { isRowArriving, isRunArriving } = useViewArrivals();
+    const { arrives, arrivesRun } = useViewArrivals();
 
     /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
@@ -1008,6 +1019,32 @@
     });
 
     const sections = computed((): FeedSection[] => laidOut.value.sections);
+
+    /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
+    const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(sections.value
+        .flatMap(section => section.items)
+        .flatMap(item => item.kind === "blocked" ? [[item.key, item.messages] as const] : [])));
+
+    /**
+     * The feed's tail: a message arriving at the newest end glides the stack up as it fades in,
+     * someone typing comes and goes with it, and her message grows out of her bubble.
+     */
+    useFeedTail({
+        content,
+        scroller: () => feed.value,
+        place: () => props.typingPlace,
+        // a message can land mid-scroll, before the scroll event for where the reader now is has run
+        isFollowing: () => {
+            readReader();
+            return isAtNewest.value;
+        },
+        follow: scrollToBottom,
+        arrives: (key: string): ArrivalMotion | null => {
+            const run = blockedRuns.value.get(key);
+            return run ? arrivesRun(run) : arrives(key);
+        },
+        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length]
+    });
 
     /**
      * The name of each person seen sending in this timeline, by alias guid, so a mention typed in
@@ -1143,9 +1180,10 @@
      * passes it, and lets the pill go as it leaves the band below. Read from where the pills are,
      * so a fling, a jump or a page drawn above lands right in one frame.
      *
-     * Every height is where the frame lays things out, from the feed's top: the feed's own rise as
-     * it enters moves its box and the pills in it alike, so a pill measured from the feed's box is
-     * where it will stand once the rise ends, and the band is laid out where it always is.
+     * Every height is where the frame lays things out, from the feed's top, which no transform
+     * moves: the feed's own rise as it enters and the stack's glide as a message arrives both draw
+     * the pills away from where they stand, and the label is placed for where they will be once
+     * the motion ends, so it never keeps a wrong day after it.
      */
     function placeTopDay(): void {
         const scroller = feed.value;
@@ -1156,11 +1194,14 @@
 
         const bandTop = float.offsetTop - scroller.offsetTop;
         const bandBottom = bandTop + float.offsetHeight;
-        const feedTop = scroller.getBoundingClientRect().top;
         const pills = scroller.querySelectorAll<HTMLElement>("[data-testid='day-pill']");
         let day: { key: string, label: string, offset: number } | null = null;
         for (let index = 0; index < pills.length; index++) {
-            const top = pills[index].getBoundingClientRect().top - feedTop;
+            // its place in the frame, up the boxes it is laid out in, less how far the feed is scrolled
+            let top = -scroller.offsetTop - scroller.scrollTop;
+            for (let box: HTMLElement | null = pills[index]; box && box !== scroller.offsetParent; box = box.offsetParent as HTMLElement | null) {
+                top += box.offsetTop;
+            }
 
             // Half a pixel either way is the browser's rounding, not a pill inside the band.
             if (top > bandBottom - 0.5) {

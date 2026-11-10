@@ -97,23 +97,6 @@
     }
 }
 
-.chat-msg.is-arriving {
-    animation: chat-msg-in var(--chat-t-msg) var(--chat-ease-in) both;
-}
-
-/*
-    An own message grows from the corner it is anchored to: a bubble from its bottom right, by the
-    sender's side; Community's full-width row from its bottom left, where its text starts, so the
-    text does not slide sideways as the row scales.
-*/
-.chat-msg.is-conversational.is-own.is-arriving {
-    transform-origin: bottom right;
-}
-
-.chat-msg.is-community.is-own.is-arriving {
-    transform-origin: 0 100%;
-}
-
 /*
     A message jumped to flashes the church's wash, held for most of its length and then let go, so
     the eye finds it before it fades. A channel's row fades it out of its own background; a bubble
@@ -312,13 +295,6 @@
     font-variant-numeric: tabular-nums;
 }
 
-@keyframes chat-msg-in {
-    from {
-        opacity: 0;
-        transform: translateY(var(--chat-rise)) scale(var(--chat-msg-scale));
-    }
-}
-
 /* The row's own background is where the flash ends, so no last frame is named. */
 @keyframes chat-cm-flash {
     0%,
@@ -436,12 +412,6 @@
             default: false
         },
 
-        /** The message arrived while the feed was open, so it rises in. */
-        isArriving: {
-            type: Boolean,
-            default: false
-        },
-
         /** The message was jumped to, so it flashes. */
         isFlashing: {
             type: Boolean,
@@ -537,12 +507,6 @@
     const isHoverless = typeof window !== "undefined" && typeof window.matchMedia === "function"
         && window.matchMedia("(hover: none)").matches;
 
-    /**
-     * Whether the row rises in, read once as it mounts and never again. The feed's answer changes
-     * as a send is confirmed and its Sent hold ends; a class that followed it would start the rise
-     * over on a row already on screen.
-     */
-    const isArrivalDrawn = props.isArriving;
 
     /**
      * The row's own motion, each played only for what the stores recorded happening to its message
@@ -669,7 +633,6 @@
         "is-jumbo": isJumbo.value,
         // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
-        "is-arriving": isArrivalDrawn,
         "is-flashing": props.isFlashing,
         "has-thread": hasThread.value,
         "has-reactions": hasReactions.value

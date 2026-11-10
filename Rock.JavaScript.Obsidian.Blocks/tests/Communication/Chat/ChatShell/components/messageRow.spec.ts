@@ -84,7 +84,6 @@ type RowProps = {
     isDirectMessage?: boolean;
     isSendingSlow?: boolean;
     isJustSent?: boolean;
-    isArriving?: boolean;
     senderNames?: ReadonlyMap<string, string>;
     isEditing?: boolean;
     editError?: { code: string, severity: string, text?: string | null } | null;
@@ -150,26 +149,18 @@ describe("every message row", () => {
     });
 });
 
-// A row rises in once, as it first appears. Whether it does is read when it mounts: a class that
-// came and went later would start the rise over on a row already on screen.
+// A message arriving is the tail's motion, played by the feed or the thread it is drawn in: the
+// stack glides and the new row fades in riding it. The row has no arrival of its own, so nothing a
+// row is handed can start a rise over on a row already on screen.
 describe("the arrival", () => {
-    test("a row drawn arriving keeps its rise when the feed later stops calling it arriving", async () => {
-        const wrapper = draw({ pending: pendingRow(), isOwn: true, isArriving: true });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
+    test("is not the row's: it takes no word of it and draws no rise of its own", async () => {
+        const wrapper = draw({ pending: pendingRow(), isOwn: true });
+        await wrapper.setProps({ pending: null, message: ownConfirmed(), isJustSent: true });
 
-        await wrapper.setProps({ pending: null, message: ownConfirmed(), isJustSent: true, isArriving: false });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
-
-        await wrapper.setProps({ isJustSent: false, isArriving: true });
-        expect(root(wrapper).classList.contains("is-arriving")).toBe(true);
-    });
-
-    test("a row drawn settled never rises later", async () => {
-        const wrapper = draw({ message: message(), isArriving: false });
-
-        await wrapper.setProps({ isArriving: true });
-
+        expect(Object.keys(wrapper.props())).not.toContain("isArriving");
         expect(root(wrapper).classList.contains("is-arriving")).toBe(false);
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        expect(source).not.toMatch(/is-arriving|chat-msg-in/);
     });
 });
 

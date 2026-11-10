@@ -60,6 +60,7 @@ import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
+import { playAnimations } from "../tailFakes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -171,6 +172,15 @@ afterEach(() => {
     document.body.innerHTML = "";
 });
 
+// The tail's motions run through the browser's animations, which jsdom lacks, so a stand-in keeps them.
+let animations: ReturnType<typeof playAnimations>;
+beforeEach(() => {
+    animations = playAnimations();
+});
+afterEach(() => {
+    animations.restore();
+});
+
 describe("the header", () => {
     test("titles the thread and names its conversation, labelled by its title", () => {
         const w = draw();
@@ -259,20 +269,23 @@ describe("the person's own reply", () => {
         await afterOpen();
         motion.sent("k1");
         await w.setProps({ pending: [sending] });
-        expect(w.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+        await nextTick();
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         const ben51 = message(51, { parent_id: 40, ...recent });
         motion.arrived(ben51);
         await w.setProps({ replies: [earlier, ben51] });
-        expect(w.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
+        await nextTick();
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
 
         const anotherTab = { ...mine(52, "another-tab"), ...recent };
         motion.arrived(anotherTab);
         await w.setProps({ replies: [earlier, { ...mine(50, "k1"), ...recent }, ben51, anotherTab], pending: [] });
+        await nextTick();
 
-        expect(w.get("[data-reply-id='50']").classes()).not.toContain("is-arriving");
-        expect(w.get("[data-reply-id='51']").classes()).toContain("is-arriving");
-        expect(w.get("[data-reply-id='52']").classes()).toContain("is-arriving");
+        expect(w.get("[data-reply-id='50']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
+        expect(w.get("[data-reply-id='51']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
+        expect(w.get("[data-reply-id='52']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
     });
 
     test("a reply that settles while the thread is open shows Sent for 2.2 seconds, then the time alone; another tab's never does", async () => {
@@ -647,10 +660,10 @@ describe("someone typing a reply", () => {
         expect(w.find("[data-testid='typing-bubble']").exists()).toBe(false);
     });
 
-    test("is given the replies, so the typist's reply can take its place", () => {
+    test("is given no replies, only who types and where it stands", () => {
         const w = draw({ isChannel: false, typing: annaTyping });
 
-        expect((w.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([41, 42, 43]);
+        expect(Object.keys(w.findComponent(TypingBubble).props()).sort()).toEqual(["isGroup", "isInRun", "typing"]);
     });
 
     test("the reply composer is the same with someone typing as without, and is given no typing", async () => {

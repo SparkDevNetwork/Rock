@@ -90,8 +90,8 @@
                             :isChannel="isChannel"
                             :isPhone="isPhone"
                             :isInThread="true"
-                            :isArriving="isRunArriving(item.messages)"
                             :reactionHost="reactionHost"
+                            :data-row-key="item.key"
                             :data-reply-id="item.isReply ? item.messages[item.messages.length - 1].id : undefined"
                             @messageAction="emit('messageAction', $event)" />
 
@@ -108,6 +108,7 @@
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
                             :reactionHost="reactionHost"
+                            :data-row-key="item.key"
                             :data-reply-id="item.isReply ? item.message.id : undefined"
                             @jump="emit('jump', $event)"
                             @messageAction="emit('messageAction', $event)" />
@@ -128,7 +129,6 @@
                                 :isTypingNext="row.isTypingNext"
                                 :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
-                                :isArriving="isRowArriving(row.key)"
                                 :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                 :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
                                 :senderNames="senderNames"
@@ -139,6 +139,7 @@
                                 :editError="editError"
                                 :isEditSaving="isEditSaving"
                                 :reactionHost="reactionHost"
+                                :data-row-key="row.key"
                                 :data-reply-id="item.isReply && row.message ? row.message.id : undefined"
                                 @jump="emit('jump', $event)"
                                 @messageAction="emit('messageAction', $event)"
@@ -150,8 +151,7 @@
             <!-- Someone typing a reply, as the newest row the layout placed; one element, so it can settle away once its row is gone. -->
             <TypingBubble :typing="drawnTyping"
                           :isGroup="!isChannel && !isDirectMessage"
-                          :isInRun="repliesLaidOut?.typing?.isInRun ?? false"
-                          :messages="replies" />
+                          :isInRun="repliesLaidOut?.typing?.isInRun ?? false" />
 
             <!--
                 The thread's one action bar, drawn in the dock of the message it is on. One element for
@@ -285,8 +285,11 @@
     A group, as the feed draws one, in the panel's narrower room: 16px on the sender's side and 40px
     on the far side. A phone keeps the feed's own phone padding. Another person's measures are
     stated once, for the groups and for the typing bubble, which stands where their next one will.
+    The tail moves the body as one, and a typing bubble going stands in it out of the flow while the
+    replies settle into its room.
 */
 .chat-th-body {
+    position: relative;
     --chat-grp-space: 14px;
     --chat-grp-gap: 2px;
     --chat-grp-inset: 16px;
@@ -366,7 +369,8 @@
     import { failedSends, retryableSends, sendFailure, SendFailure, SendFailureNews, useSentHold, useSlowSend } from "../composables/useSend.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
-    import { useViewArrivals } from "../messageMotion.partial";
+    import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
+    import { useFeedTail } from "../composables/useFeedTail.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -548,6 +552,12 @@
             default: null
         },
 
+        /** The thread's place, whose typing the record names. */
+        typingPlace: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         /** The message being quoted into the next reply, drawn in the composer's strip. */
         quote: {
             type: Object as PropType<TimelineMessage | null>,
@@ -654,10 +664,10 @@
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
-     * What this drawer has drawn new since it opened: a reply sent here or heard arriving live rises
-     * in once, as in the conversation; a reply its page or a reread brings is simply there.
+     * What this drawer has drawn new since it opened: a reply sent here or heard arriving live
+     * arrives once, as in the conversation; a reply its page or a reread brings is simply there.
      */
-    const { isRowArriving, isRunArriving } = useViewArrivals();
+    const { arrives, arrivesRun } = useViewArrivals();
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
@@ -737,6 +747,25 @@
             { kind: "thread-divider", key: "thread-divider" },
             ...flatten(repliesLaidOut.value, true)
         ];
+    });
+
+    /** The folded lines drawn, by key, for their tail to claim every message each stands for. */
+    const blockedRuns = computed((): ReadonlyMap<string, TimelineMessage[]> => new Map(items.value
+        .flatMap(item => item.kind === "blocked" ? [[item.key, item.messages] as const] : [])));
+
+    /** The drawer's tail, as the conversation's: replies glide in, someone typing comes and goes, her reply grows out of her bubble. */
+    useFeedTail({
+        content: bodyElement,
+        // the panel's own entrance plays on its parts, not its scroller
+        scroller: () => null,
+        place: () => props.typingPlace,
+        isFollowing: () => isPlaced && isNearBottom(),
+        follow: scrollToBottom,
+        arrives: (key: string): ArrivalMotion | null => {
+            const run = blockedRuns.value.get(key);
+            return run ? arrivesRun(run) : arrives(key);
+        },
+        drawn: () => [drawnTyping.value, newestReplyId(), pendingReplies.value.length]
     });
 
     /** The thread's parts for the panel's entrance, none until the root is there to draw. */

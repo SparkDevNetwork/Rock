@@ -24,7 +24,8 @@
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
         <div class="chat-msg-line">
-            <span v-if="!view.isOwn" class="chat-msg-face">
+            <!-- Her face is marked as hers, so the tail moves it with her newest message when it changes row. -->
+            <span v-if="!view.isOwn" class="chat-msg-face" :data-tail-face="isLastOfGroup ? view.message?.person_alias_guid?.toLowerCase() : undefined">
                 <template v-if="isLastOfGroup">
                     <button v-if="view.authorGuid"
                             type="button"

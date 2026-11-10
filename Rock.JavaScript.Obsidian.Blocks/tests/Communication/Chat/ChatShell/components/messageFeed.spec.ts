@@ -38,6 +38,7 @@ import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/he
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
+import { playAnimations, tailPlayed } from "../tailFakes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
@@ -206,6 +207,15 @@ beforeEach(() => {
 
 afterEach(() => {
     jest.useRealTimers();
+});
+
+// The tail's motions run through the browser's animations, which jsdom lacks, so a stand-in keeps them.
+let animations: ReturnType<typeof playAnimations>;
+beforeEach(() => {
+    animations = playAnimations();
+});
+afterEach(() => {
+    animations.restore();
 });
 
 describe("the timeline", () => {
@@ -506,21 +516,24 @@ describe("the person's own message is one row from send to stored", () => {
         const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
         motion.sent("k1");
         await wrapper.setProps({ pending: [pendingRow("k1")] });
-        expect(wrapper.get("[data-testid='pending-row']").classes()).toContain("is-arriving");
+        await nextTick();
+        expect(wrapper.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         const annas = message(3, anna, at(15, 0));
         motion.arrived(annas);
         state.messages.push(annas);
         await nextTick();
-        expect(wrapper.get("[data-testid='pending-row']").classes()).not.toContain("is-arriving");
-        expect(wrapper.get("[data-message-id='3']").classes()).toContain("is-arriving");
+        await nextTick();
+        expect(wrapper.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
+        expect(wrapper.get("[data-message-id='3']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
 
         state.messages.splice(1, 0, message(2, me, at(15, 0), { client_key: "k1", body: "pending k1" }));
         await wrapper.setProps({ pending: [] });
         await nextTick();
+        await nextTick();
 
         expect(wrapper.findAll(".chat-msg")).toHaveLength(3);
-        expect(wrapper.get("[data-message-id='2']").classes()).not.toContain("is-arriving");
+        expect(wrapper.get("[data-message-id='2']").attributes("data-tail-played") ?? "").not.toContain("chat-tail-in");
     });
 
     test("the person's message sent from another tab is news here, and rises in", async () => {
@@ -534,8 +547,9 @@ describe("the person's own message is one row from send to stored", () => {
         motion.arrived(fromAnotherTab);
         state.messages.push(fromAnotherTab);
         await nextTick();
+        await nextTick();
 
-        expect(wrapper.get("[data-message-id='2']").classes()).toContain("is-arriving");
+        expect(wrapper.get("[data-message-id='2']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
     });
 
     // A message the timeline gains with nothing recorded, as a page, a catch-up or a switch back
@@ -550,7 +564,7 @@ describe("the person's own message is one row from send to stored", () => {
         state.messages.push(message(2, anna, at(15, 0)));
         await nextTick();
 
-        expect(wrapper.findAll(".chat-msg.is-arriving")).toHaveLength(0);
+        expect(wrapper.findAll(tailPlayed("chat-tail-in"))).toHaveLength(0);
     });
 });
 
@@ -706,7 +720,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
 
         // Either the row's own element, moved with its group, or a new one that does not rise.
         const settled = r.wrapper.get("[data-message-id='2']").element;
-        expect(settled === drawn || !settled.classList.contains("is-arriving")).toBe(true);
+        expect(settled === drawn || !((settled as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
         expect(r.wrapper.findAll(".chat-msg")).toHaveLength(3);
         expect(r.wrapper.find("[data-testid='pending-row']").exists()).toBe(false);
         expect(isSent(r.wrapper)).toBe(true);
@@ -723,21 +737,21 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         const sending = r.send();
         await flush();
         const drawn = r.wrapper.get("[data-testid='pending-row']").element;
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
 
         r.answer.resolve(confirmedAnswer);
         await sending;
         await flush();
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
         expect(isSent(r.wrapper)).toBe(true);
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
         expect(r.wrapper.findAll(".chat-msg")).toHaveLength(2);
 
         jest.advanceTimersByTime(2200);
         await flush();
         expect(isSent(r.wrapper)).toBe(false);
         expect(r.wrapper.get("[data-message-id='2']").element).toBe(drawn);
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
     });
 
     // A leader's own send carries the Leader pill from its first frame to its last, one element
@@ -769,9 +783,15 @@ describe("day sections", () => {
         expect(sections.map(section => section.get("[data-testid='day-pill']").text())).toEqual(["Yesterday", "Today"]);
     });
 
-    /** Puts an element at a height on screen, as a browser lays it out. */
-    function placeAt(element: Element, top: number): void {
-        element.getBoundingClientRect = () => ({ top, bottom: top + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: top, toJSON: () => ({}) }) as DOMRect;
+    /**
+     * Lays a pill out at a height in the feed's view, however far the feed is scrolled, and draws it
+     * there, or where a motion in flight draws it.
+     */
+    function placeAt(element: Element, top: number, drawnBy = 0): void {
+        const scroller = element.closest<HTMLElement>("[data-testid='message-feed']");
+        Object.defineProperty(element, "offsetTop", { configurable: true, get: () => top + (scroller?.scrollTop ?? 0) });
+        const drawn = top + drawnBy;
+        element.getBoundingClientRect = () => ({ top: drawn, bottom: drawn + 26, left: 0, right: 300, width: 300, height: 26, x: 0, y: drawn, toJSON: () => ({}) }) as DOMRect;
     }
 
     /**
@@ -838,12 +858,12 @@ describe("day sections", () => {
         layOut(element, top, 38);
     }
 
-    /** Draws two days with their pills at the given heights on screen, the label's band at 108. */
-    async function twoDaysAt(wrapper: VueWrapper, yesterday: number, today: number): Promise<void> {
+    /** Draws two days with their pills laid out at the given heights, the label's band at 108, and drawn where a motion has them. */
+    async function twoDaysAt(wrapper: VueWrapper, yesterday: number, today: number, drawnBy = 0): Promise<void> {
         const pills = wrapper.findAll("[data-testid='day-pill']").map(pill => pill.element);
         placeBand(wrapper.get("[data-testid='day-float']").element, 108);
-        placeAt(pills[0], yesterday);
-        placeAt(pills[1], today);
+        placeAt(pills[0], yesterday, drawnBy);
+        placeAt(pills[1], today, drawnBy);
         placeScroll(wrapper, 400);
         await nextTick();
     }
@@ -899,19 +919,24 @@ describe("day sections", () => {
     });
 
     // The feed rises 6px into place as a conversation opens, and the landing scroll runs while it
-    // does. A pill is placed by where the feed lays it out, so the label carries the same pill the
-    // same distance during the rise as after it.
-    test("a feed still rising in carries the pill by where it is laid out, not where the rise has it", async () => {
+    // does; a message arriving glides the stack up from 17px below. A pill is placed by where the
+    // feed lays it out, so the label carries the same pill the same distance during either motion
+    // as after it, and never keeps a wrong day once the motion ends.
+    test.each([
+        ["the feed rising in", 6],
+        ["the stack gliding up", 17]
+    ])("during %s the label carries the pill by where it is laid out, not where the motion draws it", async (_motion, drawnBy) => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(9, 0, 1)), message(2, anna, at(9, 0))]) });
-        const scroller = wrapper.get("[data-testid='message-feed']").element;
 
-        // Laid out, Today's pill stands at 140, 32px into the band; the rise draws everything 6px lower.
-        placeAt(scroller, 6);
-        await twoDaysAt(wrapper, -214, 146);
-        expect(shown(wrapper)).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+        // Laid out, Today's pill stands at 140, 32px into the band.
+        await twoDaysAt(wrapper, -220, 140, drawnBy);
+        const during = shown(wrapper);
+        await twoDaysAt(wrapper, -220, 140);
+        expect(during).toEqual({ label: "Today", offset: "32px", carried: [false, true] });
+        expect(shown(wrapper)).toEqual(during);
 
-        // Laid out at 143, 3px above the band's foot: the rise would put it past the foot, uncarried.
-        await twoDaysAt(wrapper, -211, 149);
+        // Laid out at 143, 3px above the band's foot: the motion would put it past the foot, uncarried.
+        await twoDaysAt(wrapper, -217, 143, drawnBy);
         expect(shown(wrapper)).toEqual({ label: "Today", offset: "35px", carried: [false, true] });
     });
 
@@ -1411,14 +1436,12 @@ describe("someone else typing", () => {
         expect(direct.find("[data-testid='typing-names']").exists()).toBe(false);
     });
 
-    test("the bubble is given the stored messages, so the typist's own can take its place", async () => {
-        const state = timeline([message(1, anna, at(14, 50)), message(2, me, at(14, 51))]);
-        const wrapper = draw({ timeline: state, typing: annaTyping });
-        expect((wrapper.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([1, 2]);
+    // What ended someone's typing, and whether it was her message, is the record's: the bubble
+    // compares no messages and keeps no memory of what it drew.
+    test("the bubble is given no messages, only who types and where it stands", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), typing: annaTyping });
 
-        state.messages.push(message(3, anna, at(14, 52)));
-        await nextTick();
-        expect((wrapper.findComponent(TypingBubble).props("messages") as TimelineMessage[]).map(m => m.id)).toEqual([1, 2, 3]);
+        expect(Object.keys(wrapper.findComponent(TypingBubble).props()).sort()).toEqual(["isGroup", "isInRun", "typing"]);
     });
 
     test("is never watched as seen, so it is never read as a message", async () => {

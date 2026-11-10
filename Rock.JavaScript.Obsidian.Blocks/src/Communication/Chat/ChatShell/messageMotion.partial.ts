@@ -340,38 +340,38 @@ export function useRowMotion(key: () => string | null): RowMotion {
     return { isCrossfading, isEditedNow, isThreadStartedHere, reaction };
 }
 
-/** A view's arrivals as its rows ask them, each read once as the row mounts. */
+/** A view's arrivals as its tail claims them, each once, as a row is first drawn after a change. */
 export type ViewArrivals = {
     /**
-     * Whether a row rises as it is drawn: the first time its key is drawn after its message was
-     * sent here or heard live. The later renders that answer false leave a row already drawn as it
-     * is. The person's message from another tab is news here and rises like anyone's; one sent here
-     * rose as its pending row and never rises again.
+     * How a row arrives: the first time its key is drawn after its message was sent here or heard
+     * live it rises, or grows in place out of its sender's typing bubble; asked again, it is
+     * already drawn and arrives no more. The person's message from another tab is news here and
+     * rises like anyone's; one sent here rose as its pending row and never rises again.
      */
-    isRowArriving: (key: string) => boolean;
+    arrives: (key: string) => ArrivalMotion | null;
 
     /**
-     * Whether a folded line of messages by people the reader blocked rises. Every message the line
+     * How a folded line of messages by people the reader blocked arrives. Every message the line
      * draws is claimed, not only the one it is keyed by, so the messages an unblock draws again one
-     * by one were already drawn here and none rises as if heard now.
+     * by one were already drawn here and none arrives as if heard now.
      */
-    isRunArriving: (messages: readonly Pick<TimelineMessage, "id" | "client_key">[]) => boolean;
+    arrivesRun: (messages: readonly Pick<TimelineMessage, "id" | "client_key">[]) => ArrivalMotion | null;
 };
 
 /**
  * A view's arrivals, from the moment it mounts until it goes: the feed's and the thread drawer's.
  * A view drawn where no record is provided draws nothing new.
  *
- * @returns What the view's rows ask of their arrival.
+ * @returns What the view's tail asks of each row's arrival.
  */
 export function useViewArrivals(): ViewArrivals {
     const scope = inject(messageMotionKey, null)?.scope() ?? null;
     onBeforeUnmount(() => scope?.dispose());
-    const isRowArriving = (key: string): boolean => scope?.arrives(key) === "rise";
+    const arrives = (key: string): ArrivalMotion | null => scope?.arrives(key) ?? null;
 
     return {
-        isRowArriving,
-        // every key asked, never cut short at the first that rises, so each is claimed
-        isRunArriving: messages => messages.map(message => isRowArriving(rowKey(message))).includes(true)
+        arrives,
+        // every key asked, never cut short at the first that arrives, so each is claimed
+        arrivesRun: messages => messages.map(message => arrives(rowKey(message))).includes("rise") ? "rise" : null
     };
 }

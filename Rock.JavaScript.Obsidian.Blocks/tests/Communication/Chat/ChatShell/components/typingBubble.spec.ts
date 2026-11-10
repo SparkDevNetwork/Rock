@@ -16,9 +16,8 @@
 //
 // Someone else typing, drawn as their next message would be: their face, or the group face of
 // everyone typing, beside an incoming bubble of three dots, and in a group a name line saying who.
-// A screen reader meets one hidden sentence, never announced. When a typist's message arrives the
-// bubble goes at once and the message stands in its place; when they stop without sending it
-// settles away.
+// A screen reader meets one hidden sentence, never announced. How it comes and goes is the tail's
+// of the feed or the thread it is drawn in.
 import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -27,7 +26,8 @@ import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/compon
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import GroupFace from "../../../../../src/Communication/Chat/ChatShell/ui/groupFace.partial.obs";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
-import { ChatPerson, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { FeedTail, feedTailKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial";
+import { ChatPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const anna = "a0000002-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
@@ -48,10 +48,6 @@ const severalTyping: Typing = {
     names: "Several people",
     sentence: "Several people are typing…"
 };
-
-function message(id: number, sender: string): TimelineMessage {
-    return { id, person_alias_guid: sender, body: `m${id}`, created_at: new Date(2026, 10, 9, 9, id % 60).toISOString() } as unknown as TimelineMessage;
-}
 
 /**
  * Mounts the bubble in a host of its own. A test about how it goes keeps Vue's real Transition,
@@ -153,117 +149,111 @@ describe("the typing bubble", () => {
     });
 });
 
+// The bubble has no motion of its own: the feed or the thread it is drawn in owns its tail, and
+// the bubble hands that tail its element as it goes, which says when it is gone. Drawn alone, as a
+// test or a view with no tail draws it, it comes and goes at once.
 describe("the typing bubble going", () => {
-    test("a typist's message arriving takes its place at once", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
+    /** A tail standing in for the view's, which keeps each bubble it is handed until told it is gone. */
+    function fakeTail(): { tail: FeedTail, handed: Array<{ element: Element, done: () => void }> } {
+        const handed: Array<{ element: Element, done: () => void }> = [];
+        return { tail: { leave: (element, done) => void handed.push({ element, done }) }, handed };
+    }
 
-        await wrapper.setProps({ typing: null, messages: [message(10, ben), message(11, anna.toUpperCase())] });
+    test("drawn alone it goes at once, whatever ended the typing", async () => {
+        const wrapper = draw({ typing: annaTyping }, true);
+
+        await wrapper.setProps({ typing: null });
 
         expect(rowIn(wrapper)).toBeNull();
     });
 
-    test("one of several typists' message takes the place of the whole bubble when it ends their typing too", async () => {
-        const wrapper = draw({ typing: twoTyping, isGroup: true, messages: [message(10, cal)] }, true);
+    test("in a view its going is the tail's: the tail is handed the row, which stays until the tail is done", async () => {
+        const { tail, handed } = fakeTail();
+        const host = document.createElement("div");
+        document.body.append(host);
+        const wrapper = mount(TypingBubble, { props: { typing: annaTyping }, attachTo: host, global: { stubs: { transition: false }, provide: { [feedTailKey as symbol]: tail } } });
+        const row = rowIn(wrapper);
 
-        await wrapper.setProps({ typing: null, messages: [message(10, cal), message(11, ben)] });
+        await wrapper.setProps({ typing: null });
+        expect(handed.map(going => going.element)).toEqual([row]);
+        expect(rowIn(wrapper)).toBe(row);
 
+        handed[0].done();
+        await nextTick();
         expect(rowIn(wrapper)).toBeNull();
     });
 
-    test("a typist who stops without sending settles away rather than vanishing", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
+    // The built block runs Vue's production runtime, which keeps no element for a comment in a
+    // Transition's slot, so a second going would find stale DOM: mounted here in that runtime.
+    test("comes and goes again and again in the production runtime the block ships with, handed to the tail each time", async () => {
+        const previousEnvironment = process.env.NODE_ENV;
+        process.env.NODE_ENV = "production";
+        let production!: { mount: typeof mount, nextTick: typeof nextTick, bubble: typeof TypingBubble, key: typeof feedTailKey };
+        jest.isolateModules(() => {
+            production = {
+                mount: jest.requireActual("@vue/test-utils").mount,
+                nextTick: jest.requireActual("vue").nextTick,
+                bubble: jest.requireActual("../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs").default,
+                key: jest.requireActual("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial").feedTailKey
+            };
+        });
+        process.env.NODE_ENV = previousEnvironment;
 
-        await wrapper.setProps({ typing: null });
-        await nextTick();
+        const logged = jest.spyOn(console, "error");
+        const { tail, handed } = fakeTail();
+        const host = document.createElement("div");
+        document.body.append(host);
+        const wrapper = production.mount(production.bubble, { props: { typing: annaTyping }, attachTo: host, global: { provide: { [production.key as symbol]: tail } } });
 
-        expect(rowIn(wrapper)?.classList.contains("is-leaving")).toBe(true);
+        for (let turn = 0; turn < 3; turn++) {
+            await wrapper.setProps({ typing: null });
+            handed[handed.length - 1]?.done();
+            await production.nextTick();
+            await wrapper.setProps({ typing: twoTyping });
+            await production.nextTick();
+        }
+
+        expect(handed).toHaveLength(3);
+        expect(host.querySelectorAll("[data-testid='typing-bubble']")).toHaveLength(1);
+        expect(logged).not.toHaveBeenCalled();
+        logged.mockRestore();
+        wrapper.unmount();
     });
 
-    test("someone else's message as the typist stops is no message of theirs, so the bubble still settles away", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
-
-        await wrapper.setProps({ typing: null, messages: [message(10, ben), message(11, ben)] });
-        await nextTick();
-
-        expect(rowIn(wrapper)?.classList.contains("is-leaving")).toBe(true);
-    });
-
-    // Her message and someone else's can land in one flush, either one newest.
-    test("a typist's message takes its place at once even when someone else's lands after it in the same change", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
-
-        await wrapper.setProps({ typing: null, messages: [message(10, ben), message(11, anna), message(12, ben)] });
-
-        expect(rowIn(wrapper)).toBeNull();
-    });
-
-    // Her typing expiring just before she sends starts the settling; the message landing during it
-    // ends it at once, so the feed makes one move, not the message's and the settling's together.
-    test("a typist's message landing while the bubble settles away ends the settling at once", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
-        await wrapper.setProps({ typing: null });
-        await nextTick();
-        expect(rowIn(wrapper)?.classList.contains("is-leaving")).toBe(true);
-
-        await wrapper.setProps({ messages: [message(10, ben), message(11, anna)] });
-
-        expect(rowIn(wrapper)?.classList.contains("is-replaced")).toBe(true);
-    });
-
-    test("someone else's message landing while the bubble settles away leaves the settling to finish", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
-        await wrapper.setProps({ typing: null });
-        await nextTick();
-
-        await wrapper.setProps({ messages: [message(10, ben), message(11, ben)] });
-
-        expect(rowIn(wrapper)?.classList.contains("is-leaving")).toBe(true);
-        expect(rowIn(wrapper)?.classList.contains("is-replaced")).toBe(false);
-    });
-
-    // A message of hers drawn while she still types (her signal named it as followed) is older
-    // than the bubble she then stops, so it is not what took the bubble's place.
-    test("a typist's message that came while she kept typing does not count as taking the bubble's place when she stops", async () => {
-        const wrapper = draw({ typing: annaTyping, messages: [message(10, ben)] }, true);
-        await wrapper.setProps({ messages: [message(10, ben), message(11, anna)] });
-
-        await wrapper.setProps({ typing: null });
-        await nextTick();
-
-        expect(rowIn(wrapper)?.classList.contains("is-leaving")).toBe(true);
+    test("marks its row, its dots and the one typist's face for the tail to read where they stand", () => {
+        const one = draw({ typing: annaTyping });
+        expect(one.get("[data-testid='typing-bubble']").attributes()).toHaveProperty("data-tail-typing");
+        expect(one.get("[data-testid='typing-dots']").attributes()).toHaveProperty("data-tail-bubble");
+        expect(one.get(".chat-typing-face").attributes("data-tail-face")).toBe(anna);
+        expect(draw({ typing: twoTyping }).find("[data-tail-face]").exists()).toBe(false);
     });
 });
 
-describe("the typing bubble's motion", () => {
+describe("the typing bubble's look", () => {
     const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs"), "utf8");
     const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
     const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
 
-    test("comes in as a message arrives, and settles away over the base time with its gap above", () => {
-        expect(style).toMatch(/\.chat-typing\.is-arriving\s*\{[^}]*animation: chat-typing-in var\(--chat-t-msg\) var\(--chat-ease-in\)/);
-        expect(style).toMatch(/@keyframes chat-typing-in\s*\{\s*from\s*\{[^}]*transform: translateY\(var\(--chat-rise\)\) scale\(var\(--chat-msg-scale\)\)/);
-        expect(style).toMatch(/\.chat-typing\.is-leaving\s*\{[^}]*grid-template-rows var\(--chat-t-base\)/);
-        expect(style).toMatch(/\.chat-typing\.is-gone\s*\{[^}]*grid-template-rows: 0fr;[^}]*margin-top: 0;/);
+    test("draws no motion of its own: its Transition plays no class, and no keyframe but its dots' bob is its own", () => {
+        expect(source).toMatch(/<Transition :css="false" @leave="onLeave">/);
+        expect(style).not.toMatch(/is-arriving|is-gone|is-replaced|chat-typing-in|transition:/);
+        expect(style.match(/@keyframes [\w-]+/g)).toEqual(["@keyframes chat-typing-bob"]);
     });
 
-    // Stopping in her run, her last message takes the run's face back in the same draw, so the
-    // bubble settling away shows none and her face is never drawn twice.
-    test("in her run, its face is hidden at once as it settles away", () => {
+    // Going in her run, her last message takes the run's face back in the same draw, so the bubble
+    // going shows none and her face is never drawn twice.
+    test("in her run, its face is hidden as it goes", () => {
         expect(draw({ typing: annaTyping, isInRun: true }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
         expect(draw({ typing: twoTyping }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
         expect(style).toMatch(/\.chat-typing\.is-in-run\.is-leaving \.chat-typing-face\s*\{[^}]*visibility: hidden;/);
     });
 
-    // The bubble's layout is its own: nothing the feed or the thread draws is on it, so no sheet's
-    // order can turn its grid into another box. It reads the group measures they state for their
-    // groups, so it stands where a group or a row of her run would.
-    test("is a grid inset and spaced by the group measures, a row's gap when in her run, and its leave and cut-short are its own", () => {
-        expect(style).toMatch(/\.chat-typing\s*\{[^}]*display: grid;[^}]*grid-template-rows: 1fr;[^}]*margin-top: var\(--chat-grp-space\);[^}]*padding: 0 var\(--chat-grp-room\) 0 var\(--chat-grp-inset\);/);
+    // The bubble's layout is its own: nothing the feed or the thread draws is on it. It reads the
+    // group measures they state for their groups, so it stands where a group or a row of her run would.
+    test("is inset and spaced by the group measures, a row's gap when in her run", () => {
+        expect(style).toMatch(/\.chat-typing\s*\{[^}]*position: relative;[^}]*margin-top: var\(--chat-grp-space\);[^}]*padding: 0 var\(--chat-grp-room\) 0 var\(--chat-grp-inset\);/);
         expect(style).toMatch(/\.chat-typing\.is-in-run\s*\{[^}]*margin-top: var\(--chat-grp-gap\);/);
         expect(style).toMatch(/\.chat-typing\.is-in-run \.chat-typing-bubble\s*\{[^}]*border-top-left-radius: var\(--chat-r-tail\);/);
-        expect(style).toMatch(/\.chat-typing\.is-replaced\s*\{[^}]*display: none;/);
-        // the leave's end state comes after the run's gap, so it closes that gap too
-        expect(style.indexOf(".chat-typing.is-gone")).toBeGreaterThan(style.indexOf(".chat-typing.is-in-run {"));
         expect(source).not.toMatch(/inheritAttrs|\$attrs/);
     });
 
@@ -283,9 +273,8 @@ describe("the typing bubble's motion", () => {
         }
     });
 
-    test("its dots bob, and under reduced motion stand still at full strength and a stop is not animated", () => {
+    test("its dots bob, and under reduced motion stand still at full strength", () => {
         expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-typing-bob var\(--chat-d-pulse\)/);
         expect(reduced).toMatch(/\.chat-typing-bubble i\s*\{[^}]*opacity: 1;[^}]*animation: none;/);
-        expect(reduced).toMatch(/\.chat-typing\.is-leaving\s*\{[^}]*transition: none;/);
     });
 });

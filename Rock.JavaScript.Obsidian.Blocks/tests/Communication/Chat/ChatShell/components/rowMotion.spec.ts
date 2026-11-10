@@ -32,9 +32,10 @@ import { createMessageMotion, messageMotionKey } from "../../../../../src/Commun
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna, channelId, liveCreated, me, pageRow } from "../messageShapes";
+import { playAnimations, tailPlayed } from "../tailFakes";
 
-/** Every class a row's one-off motion sets: a crossfade, Edited sliding in, a chip's pop or roll, a thread's pill, a rise. */
-const motionSelector = ".is-crossfading, .is-swapping, .is-popping, .is-rolling, .chat-msg.is-arriving";
+/** Every class a row's one-off motion sets, a crossfade, Edited sliding in, a chip's pop or roll, a thread's pill, and the tail's arrival on a row. */
+const motionSelector = `.is-crossfading, .is-swapping, .is-popping, .is-rolling, ${tailPlayed("chat-tail-in")}, ${tailPlayed("chat-tail-handoff")}`;
 
 const heart = { code: "heart", emoji: "❤️", image_url: null, label: "Heart" };
 
@@ -202,7 +203,8 @@ async function open(w: Wired, messages: TimelineMessage[]): Promise<void> {
 /** A motion's element, named by the row it is on: the message's id, or a send still out. */
 function named(element: Element): string {
     const row = element.closest("[data-message-id], [data-reply-id], [data-testid='pending-row']");
-    return `${row?.getAttribute("data-message-id") ?? row?.getAttribute("data-reply-id") ?? "pending"}: ${element.className}`;
+    const tail = (element as HTMLElement).dataset.tailPlayed;
+    return `${row?.getAttribute("data-message-id") ?? row?.getAttribute("data-reply-id") ?? "pending"}: ${element.className}${tail ? ` ${tail}` : ""}`;
 }
 
 /** Every one-off motion drawn now, by the row it is on. */
@@ -236,6 +238,15 @@ async function endMotion(wrapper: VueWrapper): Promise<void> {
     }
     await nextTick();
 }
+
+// The tail's motions run through the browser's animations, which jsdom lacks, so a stand-in keeps them.
+let animations: ReturnType<typeof playAnimations>;
+beforeEach(() => {
+    animations = playAnimations();
+});
+afterEach(() => {
+    animations.restore();
+});
 
 class QuietObserver {
     observe(): void { /* jsdom lays nothing out */ }
@@ -331,7 +342,7 @@ describe("a room switch and back plays nothing on its rows", () => {
         await settle();
 
         await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, key: "k1", body: "First", createdAt })]));
-        const rising = (): (string | null | undefined)[] => feed.wrapper.findAll(".chat-msg.is-arriving").map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"));
+        const rising = (): (string | null | undefined)[] => feed.wrapper.findAll(tailPlayed("chat-tail-in")).map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"));
         expect(rising()).toEqual([]);
 
         // someone's message and the send's live copy heard in one turn: the person's message now
@@ -470,11 +481,11 @@ describe("what happens while a row is on screen plays once", () => {
 
         w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
         await settle();
-        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-arriving"]);
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message chat-tail-in"]);
 
         w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
         await settle();
-        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-arriving"]);
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message chat-tail-in"]);
     });
 
     test("a message heard while the first page was still on its way is drawn with that page, not risen", async () => {
@@ -538,7 +549,7 @@ describe("what happens while a row is on screen plays once", () => {
         const sending = w.sender.send(channelId, "On my way");
         await settle();
         const drawn = feed.wrapper.get("[data-testid='pending-row']").element;
-        expect(drawn.classList.contains("is-arriving")).toBe(true);
+        expect(((drawn as HTMLElement).dataset.tailPlayed?.includes("chat-tail-in") === true)).toBe(true);
 
         // stored now, so it is drawn in today's section beside where its row was
         const createdAt = new Date().toISOString();
@@ -548,7 +559,7 @@ describe("what happens while a row is on screen plays once", () => {
         await settle();
 
         expect(feed.wrapper.get("[data-message-id='2']").element).toBe(drawn);
-        expect(feed.wrapper.findAll(".chat-msg.is-arriving")).toHaveLength(1);
+        expect(feed.wrapper.findAll(tailPlayed("chat-tail-in"))).toHaveLength(1);
     });
 
     test("a reply heard live in the open drawer rises there once", async () => {
@@ -560,7 +571,7 @@ describe("what happens while a row is on screen plays once", () => {
         w.live("message.created", liveCreated({ id: 42, sender: anna, parentId: 40 }, 2));
         await settle();
 
-        expect(moving(drawer)).toEqual(["42: chat-msg is-conversational is-message is-arriving"]);
+        expect(moving(drawer)).toEqual(["42: chat-msg is-conversational is-message chat-tail-in"]);
     });
 
     test("the reader's press adds a first chip that pops, and joining others' chip rolls it without a pop", async () => {
@@ -608,7 +619,7 @@ describe("what happens while a row is on screen plays once", () => {
         w.live("message.created", liveCreated({ id: 2, key: "c0ffee00-0000-4000-8000-000000000000", body: "From my phone" }, 2));
         await settle();
 
-        expect(feed.wrapper.findAll(".chat-msg.is-arriving").map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"))).toEqual(["2"]);
+        expect(feed.wrapper.findAll(tailPlayed("chat-tail-in")).map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"))).toEqual(["2"]);
     });
 
     test("the reader's own reaction made on another device pops as it is heard; someone else's moves nothing", async () => {

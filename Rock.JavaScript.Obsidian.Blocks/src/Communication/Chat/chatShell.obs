@@ -142,6 +142,7 @@
                                  :landOnId="landingMessageId"
                                  :reactionHost="reactionHost"
                                  :typing="conversationTyping"
+                                 :typingPlace="conversationQuoteKey"
                                  @seen="shell.seen"
                                  @markRead="shell.markRead"
                                  @firstShown="shell.firstMessageShown"
@@ -371,6 +372,7 @@
                                   :emojiSource="emojiSource"
                                   :mentionSource="mentionSourceFor(threadRow)"
                                   :typing="threadTyping"
+                                  :typingPlace="threadQuoteKey"
                                   @mentionQuery="onMentionQuery(threadRow, $event)"
                                   @composerFocus="onComposerFocus(threadRow, 'thread')"
                                   @composerBlur="onComposerBlur"
@@ -849,6 +851,8 @@
     provide(messageMotionKey, {
         now: () => shell.value.motion.now(),
         of: key => shell.value.motion.of(key),
+        typingOf: place => shell.value.motion.typingOf(place),
+        tail: () => shell.value.motion.tail(),
         scope: () => shell.value.motion.scope()
     });
 
