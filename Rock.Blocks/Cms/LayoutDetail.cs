@@ -180,8 +180,8 @@ namespace Rock.Blocks.Cms
 
             if ( entity != null )
             {
-                var isViewable = BlockCache.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
-                box.IsEditable = BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
+                var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
+                box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
 
                 if ( loadAttributes )
                 {
@@ -435,7 +435,7 @@ namespace Rock.Blocks.Cms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 error = ActionBadRequest( $"Not authorized to edit {Layout.FriendlyTypeName}." );
                 return false;
@@ -496,6 +496,16 @@ namespace Rock.Blocks.Cms
                 if ( !UpdateEntityFromBox( entity, box, rockContext ) )
                 {
                     return ActionBadRequest( "Invalid data." );
+                }
+
+                // The site of a new layout comes from the posted bag, so check Edit on that site.
+                if ( entity.Id == 0 )
+                {
+                    var site = SiteCache.Get( entity.SiteId );
+                    if ( site == null || !site.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                    {
+                        return ActionBadRequest( "Not authorized to add a layout to this site." );
+                    }
                 }
 
                 // Ensure everything is valid before saving.
