@@ -110,9 +110,8 @@ namespace Rock.Blocks.Engagement
                 .ThenBy( ct => ct.Name )
                 .ToListItemBagList();
 
-            var personEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.PERSON ).Id;
             var personNoteTypeItems = NoteTypeCache.All()
-                .Where( nt => nt.EntityTypeId == personEntityTypeId && nt.UserSelectable )
+                .Where( nt => IsOfferedPersonNoteType( nt ) )
                 .ToListItemBagList();
 
             var options = new ConnectionTypeDetailOptionsBag
@@ -368,6 +367,163 @@ namespace Rock.Blocks.Engagement
                 if ( !TryValidateConnectionWorkflowDependencies( bag, connectionType.Id, statusGuids, activityTypeGuids, out errorMessage ) )
                 {
                     return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines whether the note type is one of the person note types that
+        /// the activity type note type dropdown offers.
+        /// </summary>
+        /// <param name="noteType">The note type to check.</param>
+        /// <returns><c>true</c> if the note type is offered; otherwise <c>false</c>.</returns>
+        private bool IsOfferedPersonNoteType( NoteTypeCache noteType )
+        {
+            return noteType.EntityTypeId == EntityTypeCache.Get( SystemGuid.EntityType.PERSON ).Id && noteType.UserSelectable;
+        }
+
+        /// <summary>
+        /// Determines whether the posted status automation data view is a connection
+        /// request data view, as the status automation data view picker requires. The
+        /// data view already on the automation is accepted.
+        /// </summary>
+        /// <param name="posted">The posted data view.</param>
+        /// <param name="currentId">The data view identifier currently on the automation.</param>
+        /// <returns><c>true</c> if the data view is allowed; otherwise <c>false</c>.</returns>
+        private bool IsPostedConnectionRequestDataView( ListItemBag posted, int? currentId )
+        {
+            var guid = posted?.Value.AsGuidOrNull();
+            if ( !guid.HasValue )
+            {
+                return true;
+            }
+
+            var dataView = DataViewCache.Get( guid.Value );
+            if ( dataView == null )
+            {
+                return false;
+            }
+
+            return dataView.Id == currentId || dataView.EntityTypeId == EntityTypeCache.Get( typeof( ConnectionRequest ) ).Id;
+        }
+
+        /// <summary>
+        /// Determines whether a posted reference to another entity is allowed.
+        /// An empty value and the value the row already stores are always allowed;
+        /// anything else requires the current person to be able to view the entity.
+        /// </summary>
+        /// <typeparam name="T">The type of entity the reference points to.</typeparam>
+        /// <param name="posted">The reference posted by the client.</param>
+        /// <param name="currentId">The identifier the existing row already stores, if any.</param>
+        /// <returns><c>true</c> if the reference is allowed; otherwise <c>false</c>.</returns>
+        private bool IsPostedReferenceAllowed<T>( ListItemBag posted, int? currentId ) where T : Model<T>, new()
+        {
+            var guid = posted?.Value.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return true;
+            }
+
+            var item = new Service<T>( RockContext ).Get( guid.Value );
+
+            if ( item == null )
+            {
+                return false;
+            }
+
+            return item.Id == currentId || item.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Validates the workflow types, data views and note types posted by the
+        /// client against what the current person is allowed to select.
+        /// </summary>
+        /// <param name="box">The box that contains the posted values.</param>
+        /// <param name="entity">The connection type being saved.</param>
+        /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
+        /// <returns><c>true</c> if every posted reference is allowed; otherwise <c>false</c>.</returns>
+        private bool TryValidatePostedReferences( ValidPropertiesBox<ConnectionTypeBag> box, ConnectionType entity, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( box.IsValidProperty( nameof( box.Bag.Workflows ) ) )
+            {
+                var currentWorkflows = new ConnectionWorkflowService( RockContext ).Queryable()
+                    .Where( wf => wf.ConnectionTypeId == entity.Id )
+                    .ToList()
+                    .ToDictionary( wf => wf.Guid );
+
+                foreach ( var bag in ( box.Bag.Workflows ?? new List<ConnectionWorkflowBag>() ).Where( b => b != null ) )
+                {
+                    currentWorkflows.TryGetValue( bag.Guid, out var current );
+
+                    var isAllowed = IsPostedReferenceAllowed<WorkflowType>( bag.WorkflowType, current?.WorkflowTypeId );
+
+                    // The save ignores the data views for any trigger other than Manual.
+                    if ( isAllowed && bag.TriggerType == ConnectionWorkflowTriggerType.Manual )
+                    {
+                        isAllowed = IsPostedReferenceAllowed<DataView>( bag.IncludeDataViewId, current?.IncludeDataViewId )
+                            && IsPostedReferenceAllowed<DataView>( bag.ExcludeDataViewId, current?.ExcludeDataViewId );
+                    }
+
+                    if ( !isAllowed )
+                    {
+                        errorMessage = "One or more selected workflow types or data views are not available.";
+                        return false;
+                    }
+                }
+            }
+
+            if ( box.IsValidProperty( nameof( box.Bag.ActivityTypes ) ) )
+            {
+                var currentActivityTypes = new ConnectionActivityTypeService( RockContext ).Queryable()
+                    .Where( a => a.ConnectionTypeId == entity.Id )
+                    .ToList()
+                    .ToDictionary( a => a.Guid );
+
+                foreach ( var bag in ( box.Bag.ActivityTypes ?? new List<ConnectionActivityTypeBag>() ).Where( b => b != null ) )
+                {
+                    var noteTypeGuid = bag.PersonNoteType?.Value.AsGuidOrNull();
+
+                    if ( !noteTypeGuid.HasValue )
+                    {
+                        continue;
+                    }
+
+                    currentActivityTypes.TryGetValue( bag.Guid, out var current );
+
+                    var noteType = NoteTypeCache.Get( noteTypeGuid.Value );
+
+                    if ( noteType == null || ( !IsOfferedPersonNoteType( noteType ) && noteType.Id != current?.PersonNoteTypeId ) )
+                    {
+                        errorMessage = "The selected note type is not available.";
+                        return false;
+                    }
+                }
+            }
+
+            if ( box.IsValidProperty( nameof( box.Bag.Statuses ) ) )
+            {
+                var currentAutomations = new ConnectionStatusAutomationService( RockContext ).Queryable()
+                    .Where( a => a.SourceStatus.ConnectionTypeId == entity.Id )
+                    .ToList()
+                    .ToDictionary( a => a.Guid );
+
+                foreach ( var statusBag in ( box.Bag.Statuses ?? new List<ConnectionStatusBag>() ).Where( b => b != null ) )
+                {
+                    foreach ( var bag in ( statusBag.Automations ?? new List<ConnectionStatusAutomationBag>() ).Where( b => b != null ) )
+                    {
+                        currentAutomations.TryGetValue( bag.Guid, out var current );
+
+                        if ( !IsPostedReferenceAllowed<DataView>( bag.DataView, current?.DataViewId ) || !IsPostedConnectionRequestDataView( bag.DataView, current?.DataViewId ) )
+                        {
+                            errorMessage = "The selected data view is not available.";
+                            return false;
+                        }
+                    }
                 }
             }
 
@@ -1521,6 +1677,23 @@ namespace Rock.Blocks.Engagement
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            /*
+                11/10/2026 - MSE
+
+                The workflow types, data views and note types come from the browser as
+                Guids and the Save below turns them straight into database ids. The
+                pickers only offer items the person can view (and the note types that
+                are user selectable), so repeat that filter here. A value the row
+                already stores is accepted so an unchanged type keeps saving. This runs
+                before anything is written.
+
+                Reason: Prevent saving workflow types, data views and note types the person was not offered.
+            */
+            if ( !TryValidatePostedReferences( box, entity, out var referenceError ) )
+            {
+                return ActionBadRequest( referenceError );
             }
 
             // Update the entity instance from the information in the bag.

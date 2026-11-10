@@ -297,6 +297,178 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Determines whether a posted reference to another entity is allowed.
+        /// An empty value and the value the row already stores are always allowed;
+        /// anything else requires the current person to be able to view the entity.
+        /// </summary>
+        /// <typeparam name="T">The type of entity the reference points to.</typeparam>
+        /// <param name="posted">The reference posted by the client.</param>
+        /// <param name="currentId">The identifier the existing row already stores, if any.</param>
+        /// <returns><c>true</c> if the reference is allowed; otherwise <c>false</c>.</returns>
+        private bool IsPostedReferenceAllowed<T>( ListItemBag posted, int? currentId ) where T : Model<T>, new()
+        {
+            var guid = posted?.Value.AsGuidOrNull();
+
+            if ( !guid.HasValue )
+            {
+                return true;
+            }
+
+            var item = new Service<T>( RockContext ).Get( guid.Value );
+
+            if ( item == null )
+            {
+                return false;
+            }
+
+            return item.Id == currentId || item.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
+        /// Validates the workflow types and data views posted by the client
+        /// against what the current person is allowed to select.
+        /// </summary>
+        /// <param name="box">The box that contains the posted values.</param>
+        /// <param name="entity">The connection opportunity being saved.</param>
+        /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
+        /// <returns><c>true</c> if every posted reference is allowed; otherwise <c>false</c>.</returns>
+        private bool TryValidatePostedWorkflowReferences( ValidPropertiesBox<ConnectionOpportunityBag> box, ConnectionOpportunity entity, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( !box.IsValidProperty( nameof( box.Bag.ConnectionWorkflows ) ) )
+            {
+                return true;
+            }
+
+            var currentWorkflows = new ConnectionWorkflowService( RockContext ).Queryable()
+                .Where( wf => wf.ConnectionOpportunityId == entity.Id )
+                .ToList()
+                .ToDictionary( wf => wf.Guid );
+
+            foreach ( var bag in ( box.Bag.ConnectionWorkflows ?? new List<ConnectionWorkflowBag>() ).Where( b => b != null ) )
+            {
+                currentWorkflows.TryGetValue( bag.Guid, out var current );
+
+                var isAllowed = IsPostedReferenceAllowed<WorkflowType>( bag.WorkflowType, current?.WorkflowTypeId );
+
+                // The save ignores the data views for any trigger other than Manual.
+                if ( isAllowed && bag.TriggerType == ConnectionWorkflowTriggerType.Manual )
+                {
+                    isAllowed = IsPostedReferenceAllowed<DataView>( bag.IncludeDataViewId, current?.IncludeDataViewId )
+                        && IsPostedReferenceAllowed<DataView>( bag.ExcludeDataViewId, current?.ExcludeDataViewId );
+                }
+
+                if ( !isAllowed )
+                {
+                    errorMessage = "One or more selected workflow types or data views are not available.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates the placement groups and connector groups posted by the client
+        /// against what the current person is allowed to select and the placement
+        /// group types the opportunity is configured for.
+        /// </summary>
+        /// <param name="box">The box that contains the posted values.</param>
+        /// <param name="entity">The connection opportunity being saved.</param>
+        /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
+        /// <returns><c>true</c> if every posted group is allowed; otherwise <c>false</c>.</returns>
+        private bool TryValidatePostedGroups( ValidPropertiesBox<ConnectionOpportunityBag> box, ConnectionOpportunity entity, out string errorMessage )
+        {
+            errorMessage = null;
+
+            if ( box.IsValidProperty( nameof( box.Bag.ConnectorGroups ) ) )
+            {
+                var currentConnectorGroups = new ConnectionOpportunityConnectorGroupService( RockContext ).Queryable()
+                    .Where( g => g.ConnectionOpportunityId == entity.Id )
+                    .ToList()
+                    .ToDictionary( g => g.Guid );
+
+                foreach ( var bag in ( box.Bag.ConnectorGroups ?? new List<ConnectorGroupBag>() ).Where( b => b != null ) )
+                {
+                    currentConnectorGroups.TryGetValue( bag.Guid, out var current );
+
+                    if ( !IsPostedReferenceAllowed<Rock.Model.Group>( bag.ConnectorGroup, current?.ConnectorGroupId ) )
+                    {
+                        errorMessage = "One or more selected groups are not available.";
+                        return false;
+                    }
+                }
+            }
+
+            // The save only stores placement groups when the connection type has group placement enabled.
+            var connectionType = ConnectionTypeCache.Get( entity.ConnectionTypeId );
+            var isGroupPlacementEnabled = connectionType?.EnabledFeatures.HasFlag( EnabledFeatureFlags.GroupPlacement ) ?? false;
+
+            if ( !isGroupPlacementEnabled || !box.IsValidProperty( nameof( box.Bag.PlacementGroups ) ) )
+            {
+                return true;
+            }
+
+            // Specific groups are only allowed for the group types that do not use all groups of the type.
+            List<int> allowedGroupTypeIds;
+
+            if ( box.IsValidProperty( nameof( box.Bag.PlacementGroupConfigs ) ) )
+            {
+                allowedGroupTypeIds = ( box.Bag.PlacementGroupConfigs ?? new List<PlacementGroupConfigBag>() )
+                    .Where( c => c != null && !c.UseAllGroupsOfType )
+                    .Select( c => c.GroupType?.GetEntityId<GroupType>( RockContext ) )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+            }
+            else
+            {
+                allowedGroupTypeIds = new ConnectionOpportunityGroupConfigService( RockContext ).Queryable()
+                    .Where( c => c.ConnectionOpportunityId == entity.Id && !c.UseAllGroupsOfType )
+                    .Select( c => c.GroupTypeId )
+                    .ToList();
+            }
+
+            var currentPlacementGroups = new ConnectionOpportunityGroupService( RockContext ).Queryable()
+                .Where( g => g.ConnectionOpportunityId == entity.Id )
+                .ToList()
+                .ToDictionary( g => g.Guid );
+
+            var groupService = new GroupService( RockContext );
+
+            foreach ( var bag in ( box.Bag.PlacementGroups ?? new List<PlacementGroupBag>() ).Where( b => b != null ) )
+            {
+                var groupGuid = bag.Group?.Value.AsGuidOrNull();
+
+                if ( !groupGuid.HasValue )
+                {
+                    continue;
+                }
+
+                currentPlacementGroups.TryGetValue( bag.Guid, out var current );
+
+                if ( !IsPostedReferenceAllowed<Rock.Model.Group>( bag.Group, current?.GroupId ) )
+                {
+                    errorMessage = "One or more selected groups are not available.";
+                    return false;
+                }
+
+                // Only new or changed groups are checked so an opportunity that already lists a
+                // group keeps saving. The group's own type is used, never the type in the posted bag.
+                var group = groupService.Get( groupGuid.Value );
+
+                if ( group.Id != current?.GroupId && !allowedGroupTypeIds.Contains( group.GroupTypeId ) )
+                {
+                    errorMessage = "One or more of the selected groups is not one of the configured group types that allow specifying a group.";
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Validates the ConnectionOpportunity for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
@@ -1147,6 +1319,41 @@ namespace Rock.Blocks.Engagement
             if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
                 return actionError;
+            }
+
+            /*
+                11/10/2026 - MSE
+
+                The workflow types and data views come from the browser as Guids and the
+                Save below turns them straight into database ids. The pickers only offer
+                items the person can view, so repeat that filter here. A value the row
+                already stores is accepted so an unchanged opportunity keeps saving. This
+                runs before anything is written.
+
+                Reason: Prevent saving workflow types and data views the person was not offered.
+            */
+            if ( !TryValidatePostedWorkflowReferences( box, entity, out var workflowReferenceError ) )
+            {
+                return ActionBadRequest( workflowReferenceError );
+            }
+
+            /*
+                11/10/2026 - MSE
+
+                The placement groups and connector groups come from the browser as Guids
+                and the Save below turns them straight into database ids. The group
+                picker only offers groups the person can view, and the browser only
+                accepts a placement group of a configured group type that does not use
+                all groups of the type, so repeat both checks here. A group the row
+                already stores is accepted so an unchanged opportunity keeps saving. The
+                group's own type is used, not the type in the posted bag. This runs
+                before anything is written.
+
+                Reason: Prevent saving groups the person was not offered as placement or connector groups.
+            */
+            if ( !TryValidatePostedGroups( box, entity, out var groupReferenceError ) )
+            {
+                return ActionBadRequest( groupReferenceError );
             }
 
             int? originalPhotoId = entity.PhotoId;
