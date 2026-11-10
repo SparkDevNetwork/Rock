@@ -432,7 +432,6 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         onPersonalRejoined: reloadAfterRejoin,
         onJoined: channelId => {
             mark("chat:join");
-            presence.joined(channelId);
             timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
         },
         onUnknownError: () => {

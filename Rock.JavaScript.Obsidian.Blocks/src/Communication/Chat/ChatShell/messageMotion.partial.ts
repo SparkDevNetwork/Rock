@@ -20,22 +20,38 @@
 // it; a page, a re-read, a catch-up or a remount only says what is and records nothing, so nothing
 // can play for it. Each event carries a number from one counter, and a row or a view takes the
 // counter as it mounts: it plays only what is above that. No clock and no timer: a switch, a remount
-// or a reload takes a new number, so everything before it is history.
+// or a reload takes a new number, so everything before it is history. Typing is recorded the same
+// way, by place: where someone starts being drawn typing, and where the last typist stops and why.
 import { inject, InjectionKey, onBeforeUnmount, reactive, Ref, ref, toRaw, watch } from "vue";
 import { rowKey, sendKey } from "./heldMessage.partial";
 import { TimelineMessage } from "./types.partial";
 import type { MessageChangeEvent } from "./heldMessage.partial";
 
-/** How a row came to be drawn new: risen in as it was sent here or heard live. */
-export type ArrivalMotion = "rise";
+/**
+ * How a row came to be drawn new: risen in as it was sent here or heard live, or in place, grown out
+ * of its sender's typing bubble.
+ */
+export type ArrivalMotion = "rise" | "inPlace";
+
+/** Why the last typist in a place stopped being drawn; only some of these are motion. */
+export type TypingEnd = "sent" | "stopped" | "expired" | "overtaken" | "blocked" | "cleared";
+
+/** Typing in one place: where its bubble last came and last went, and why it went. */
+export type PlaceTyping = {
+    started?: { seq: number };
+    ended?: { seq: number, cause: TypingEnd };
+};
 
 /** The reader's own reaction landing: a new chip pops in, joining others rolls the count. */
 export type ReactionMotion = { seq: number, code: string, motion: "pop" | "roll" };
 
 /** What happened to one message's row, the newest of each kind, as the stores applied it. */
 export type RowEvents = {
-    /** The message arrived: sent here, or heard live. Only the first is kept. */
-    arrival?: { seq: number, how: "sent" | "live" };
+    /**
+     * The message arrived: sent here, or heard live. Only the first is kept, except that her message
+     * ending the last typing in its place turns its live arrival into the handoff.
+     */
+    arrival?: { seq: number, how: "sent" | "live" | "handoff" };
 
     /** Its words were replaced: an edit, a delete or a moderator's hide or show. */
     content?: { seq: number, isEdit: boolean };
@@ -72,11 +88,30 @@ export type MessageMotion = {
     /** A held root's thread got its first reply. */
     threadStarted: (root: Pick<TimelineMessage, "id" | "client_key">) => void;
 
+    /** Someone is drawn typing in a place where no one was. */
+    typingStarted: (place: string) => void;
+
+    /**
+     * The last typist drawn in a place stopped being drawn. Her own message ending it is named, and
+     * its arrival, recorded just before in the same pass, becomes the handoff.
+     */
+    typingEnded: (place: string, cause: TypingEnd, message?: Pick<TimelineMessage, "id" | "client_key">) => void;
+
     /** The counter now, read once as something mounts; not reactive. */
     now: () => number;
 
     /** What happened to a row, reactive per key. */
     of: (key: string) => RowEvents | undefined;
+
+    /** Typing in a place, reactive per place. */
+    typingOf: (place: string) => PlaceTyping | undefined;
+
+    /**
+     * A count that moves with every event that changes a view's tail: a send, an arrival, typing
+     * starting or ending. Reactive, so a view watching it before the render reads where its tail
+     * stands on screen before anything moves; a row's own changes never move it.
+     */
+    tail: () => number;
 
     /** A new view's arrivals, from now. */
     scope: () => MotionScope;
@@ -86,7 +121,7 @@ export type MessageMotion = {
 };
 
 /** What the rows and views read of the record. Only the stores record, so a component never holds a writer. */
-export type MotionReader = Pick<MessageMotion, "now" | "of" | "scope">;
+export type MotionReader = Pick<MessageMotion, "now" | "of" | "typingOf" | "tail" | "scope">;
 
 /** How the shell hands the record to the rows and views it draws, to read only. */
 export const messageMotionKey: InjectionKey<MotionReader> = Symbol("chat-message-motion");
@@ -99,6 +134,8 @@ export const messageMotionKey: InjectionKey<MotionReader> = Symbol("chat-message
 export function createMessageMotion(): MessageMotion {
     // Vue tracks a reactive Map's get per key, so a write wakes only the rows that read that key.
     const rows = reactive(new Map<string, RowEvents>());
+    const places = reactive(new Map<string, PlaceTyping>());
+    const tail = ref(0);
     const liveScopes = new Set<{ since: number }>();
     // Sends whose live copy has not been heard yet, by row key: until it is, the mark is what keeps
     // that copy from rising as heard, however late it comes. Plain, since no view reads it.
@@ -114,6 +151,22 @@ export function createMessageMotion(): MessageMotion {
         const next = events(toRaw(rows).get(key));
         if (next) {
             rows.set(key, next);
+        }
+    }
+
+    /** Writes typing in a place, in a new entry so every reader of the place sees it, and moves the tail's count. */
+    function recordTyping(place: string, typing: (held: PlaceTyping | undefined) => PlaceTyping): void {
+        if (isStopped) {
+            return;
+        }
+        places.set(place, typing(toRaw(places).get(place)));
+        tail.value++;
+    }
+
+    /** A row came to a view's tail, as a new arrival or a copy of one recorded already. */
+    function arrivedAtTail(): void {
+        if (!isStopped) {
+            tail.value++;
         }
     }
 
@@ -134,24 +187,37 @@ export function createMessageMotion(): MessageMotion {
                 rows.delete(key);
             }
         }
+        for (const [place, typing] of toRaw(places)) {
+            if (Math.max(typing.started?.seq ?? 0, typing.ended?.seq ?? 0) <= floor) {
+                places.delete(place);
+            }
+        }
     }
 
     return {
-        sent: localId => record(`k:${sendKey(localId)}`, held => {
-            if (held?.arrival) {
-                return null;
-            }
-            unheardSends.add(`k:${sendKey(localId)}`);
-            return { ...held, arrival: { seq: ++seq, how: "sent" } };
-        }),
+        sent: localId => {
+            record(`k:${sendKey(localId)}`, held => {
+                if (held?.arrival) {
+                    return null;
+                }
+                unheardSends.add(`k:${sendKey(localId)}`);
+                return { ...held, arrival: { seq: ++seq, how: "sent" } };
+            });
+            arrivedAtTail();
+        },
 
-        arrived: message => record(rowKey(message), held => {
-            if (held?.arrival) {
-                unheardSends.delete(rowKey(message));
-                return null;
-            }
-            return { ...held, arrival: { seq: ++seq, how: "live" } };
-        }),
+        // A copy of a message already arrived still moves the tail's count: its row may change size,
+        // as a send's row does once its live copy stands in it, and the view glides that too.
+        arrived: message => {
+            record(rowKey(message), held => {
+                if (held?.arrival) {
+                    unheardSends.delete(rowKey(message));
+                    return null;
+                }
+                return { ...held, arrival: { seq: ++seq, how: "live" } };
+            });
+            arrivedAtTail();
+        },
 
         changed: (message, event) => record(rowKey(message), held => ({ ...held, content: { seq: ++seq, isEdit: event === "message.edited" } })),
 
@@ -159,9 +225,24 @@ export function createMessageMotion(): MessageMotion {
 
         threadStarted: root => record(rowKey(root), held => ({ ...held, thread: { seq: ++seq } })),
 
+        typingStarted: place => recordTyping(place, held => ({ ...held, started: { seq: ++seq } })),
+
+        typingEnded: (place, cause, message) => {
+            // Her arrival was recorded just before, in the same live pass, so the view reads the two
+            // side by side: the arrival's number one below the end's.
+            if (cause === "sent" && message) {
+                record(rowKey(message), held => held?.arrival?.how === "live" ? { ...held, arrival: { ...held.arrival, how: "handoff" } } : null);
+            }
+            recordTyping(place, held => ({ ...held, ended: { seq: ++seq, cause } }));
+        },
+
         now: () => seq,
 
         of: key => rows.get(key),
+
+        typingOf: place => places.get(place),
+
+        tail: () => tail.value,
 
         scope: (): MotionScope => {
             const scope = { since: seq };
@@ -178,7 +259,7 @@ export function createMessageMotion(): MessageMotion {
                         return null;
                     }
                     claimed.add(key);
-                    return "rise";
+                    return arrival.how === "handoff" ? "inPlace" : "rise";
                 },
 
                 dispose: () => {
@@ -194,6 +275,7 @@ export function createMessageMotion(): MessageMotion {
             liveScopes.clear();
             unheardSends.clear();
             rows.clear();
+            places.clear();
         }
     };
 }

@@ -4605,7 +4605,8 @@ describe("typing", () => {
 
     async function typingStarted(row: Partial<SidebarRow> = {}): Promise<ReturnType<typeof build>> {
         const h = build();
-        h.exchangeSettings.value = { limits: platformLimits, flags: { typing: true }, routes: { region: "us-east-1" } };
+        // the shortest first wait the settings take, so a turn's first signal goes a moment after its first key
+        h.exchangeSettings.value = { limits: { ...platformLimits, typing_first_after_ms: 1 }, flags: { typing: true }, routes: { region: "us-east-1" } };
         h.listAnswers.chat_list_threads = { threads: [], has_more: false };
         h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
         h.bootstrap.value = { channels: [{ ...groupRow, ...row }], me: { blocked_aliases: [] } };
@@ -4628,6 +4629,12 @@ describe("typing", () => {
     }
 
     const typing = { channel_id: channelA, parent_id: null, person_alias_guid: anna, id: "sig-1", after: 10 };
+
+    /** The turn's first wait passes, and what it set going settles. */
+    async function firstWait(): Promise<void> {
+        await new Promise(resolve => setTimeout(resolve, 5));
+        await settle();
+    }
 
     afterEach(() => {
         jest.restoreAllMocks();
@@ -4689,21 +4696,65 @@ describe("typing", () => {
         expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
     });
 
-    test("the conversation's topic joined again forgets every typist", async () => {
+    // A missed signal costs at most one expiry, and her message the catch-up brings ends her typing.
+    test("the conversation's topic joined again keeps every typist", async () => {
         const h = await typingStarted();
         channelEvent(h, "typing", typing);
 
         topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
         await settle();
 
-        expect(h.shell.presence.state.typists).toEqual({});
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+    });
+
+    // The newest page says who is typing, so a conversation opened while someone types shows them
+    // with no Realtime event; a page that brings her newer message ends the typing a signal before it named.
+    test("a newest page's typists are drawn with no motion recorded, and a later page bringing her newer message ends her", async () => {
+        const h = build();
+        h.exchangeSettings.value = { limits: platformLimits, flags: { typing: true }, routes: { region: "us-east-1" } };
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [groupRow], me: { blocked_aliases: [] } };
+        const starting = h.shell.start();
+        await settle();
+        const first = h.history[channelA]?.shift();
+        first?.resolve(fakeResponse(200, { ...page(10), typing: [{ person_alias_guid: anna, after: 10, age_ms: 1000 }] }));
+        await starting;
+        await settle();
+
+        expect(h.shell.presence.state.typists[channelA]).toEqual([anna]);
+        expect(h.shell.motion.typingOf(channelA)).toBeUndefined();
+
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 11);
+            await settle();
+        }
+
+        expect(h.shell.presence.state.typists[channelA]).toBeUndefined();
+        expect(h.shell.motion.typingOf(channelA)?.ended?.cause).toBe("overtaken");
+    });
+
+    // The live handler records her arrival, then presence ends her typing as sent: the two side by
+    // side, so the view grows the bubble into her message.
+    test("the typist's live message is recorded as the handoff, its arrival just before the typing's end", async () => {
+        const h = await typingStarted();
+        channelEvent(h, "typing", typing);
+
+        channelEvent(h, "message.created", { id: 11, channel_id: channelA, person_alias_guid: anna, message_type: "text", body: "hi", created_at: "2026-09-23T10:01:00Z", parent_id: null, rev: 6 });
+        await settle();
+
+        const arrival = h.shell.motion.of("k:11")?.arrival;
+        expect(arrival?.how).toBe("handoff");
+        expect(h.shell.motion.typingOf(channelA)?.ended).toEqual({ seq: (arrival?.seq ?? 0) + 1, cause: "sent" });
     });
 
     test("the person's typing goes to the typing route pinned to the database's region, naming the newest message the timeline holds", async () => {
         const h = await typingStarted();
 
         h.shell.presence.typed(channelA, null, "H");
-        await settle();
+        await firstWait();
 
         expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10 }]);
         expect(h.typingCalls[0].headers["x-region"]).toBe("us-east-1");
@@ -4718,7 +4769,7 @@ describe("typing", () => {
         const h = await typingStarted({ last_message_id: rowNewest });
 
         h.shell.presence.typed(channelA, null, "H");
-        await settle();
+        await firstWait();
 
         expect(h.typingCalls.map(c => c.body.p_after)).toEqual([expected]);
     });
@@ -4742,12 +4793,12 @@ describe("typing", () => {
         const h = await typingStarted();
         await threadOpened(h, [41, 44]);
         h.shell.presence.typed(channelA, 40, "H");
-        await settle();
+        await firstWait();
 
         const empty = await typingStarted();
         await threadOpened(empty, []);
         empty.shell.presence.typed(channelA, 40, "H");
-        await settle();
+        await firstWait();
 
         expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44 }]);
         expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40 }]);
@@ -4761,7 +4812,7 @@ describe("typing", () => {
         await settle();
 
         h.shell.presence.typed(channelA, 40, "H");
-        await settle();
+        await firstWait();
         expect(h.typingCalls).toEqual([]);
 
         h.saves[h.saves.length - 1].answer.resolve(fakeResponse(200, {
@@ -4784,11 +4835,26 @@ describe("typing", () => {
 
         h.shell.presence.typed(channelA, 40, "H");
         h.shell.presence.typed(channelA, null, "H");
-        await settle();
+        await firstWait();
 
         expect(h.typingCalls.map(c => c.body.p_parent_id)).toEqual([null]);
         h.heldSends.value[0].resolve();
         await settle();
+    });
+
+    // A send ends the person's turn, so the next message's first signal goes after the first wait
+    // rather than the interval: the platform passes it as a new turn.
+    test("a send ends the person's typing turn in its place, and the next message's first signal goes after the first wait", async () => {
+        const h = await typingStarted();
+        h.shell.presence.typed(channelA, null, "H");
+        await firstWait();
+
+        void (h.shell as unknown as { send: (body: string) => Promise<void> }).send("Hi");
+        await settle();
+        h.shell.presence.typed(channelA, null, "n");
+        await firstWait();
+
+        expect(h.typingCalls).toHaveLength(2);
     });
 
     test("someone blocked on another tab leaves the line at once", async () => {

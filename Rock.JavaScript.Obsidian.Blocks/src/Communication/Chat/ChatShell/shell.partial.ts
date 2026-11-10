@@ -650,15 +650,24 @@ export function createChatShell(options: ShellOptions): ChatShell {
         onGap: () => problems.tally("live", "gap"),
         // the open thread of a room being repaired reads its newest page again; made below
         onRepair: channelId => threads.repair(channelId),
-        // whichever copy of the person's send lands first, from a page, live or its answer, settles it
-        onLanded: message => sender.landed(message),
+        // Whichever copy of the person's send lands first, from a page, live or its answer, settles
+        // it; a typing signal that waited for it to land goes then.
+        onLanded: message => {
+            sender.landed(message);
+            presence.caughtUp();
+        },
         // A reaction moves the conversation's copy of its message when the timeline lets it
         // through, held like any other change until the channel's first page is in; the open
         // thread's copies are moved as the event arrives.
         applyReaction: (channelId, event, payload, isLive) => reactions.applyEvent(channelId, event, payload, isLive),
         // every holder writes through the blocks' mask, made below and called only once running
         mask: message => blocks.mask(message),
-        motion
+        motion,
+        // what a page says of typing, made below and reached only once running
+        typing: {
+            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
+            stated: (channelId, rootId, typists) => presence.stated(channelId, rootId, typists)
+        }
     });
 
     // The sidebar's reads are the live part's, made below and reached only once running.
@@ -711,11 +720,18 @@ export function createChatShell(options: ShellOptions): ChatShell {
         personAliasGuid,
         limits: () => session.settings().limits,
         catchUp: () => ({ page: session.settings().limits.catch_up_page, max: session.settings().limits.catch_up_max }),
-        onLanded: message => sender.landed(message),
+        onLanded: message => {
+            sender.landed(message);
+            presence.caughtUp();
+        },
         isOffline: () => state.connection !== null,
         mask: message => blocks.mask(message),
         isBlocked: personAliasGuid => blocks.isBlocked(personAliasGuid),
-        motion
+        motion,
+        typing: {
+            heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
+            stated: (channelId, rootId, typists) => presence.stated(channelId, rootId, typists)
+        }
     });
 
     /**
@@ -1091,8 +1107,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             return sender.pending(channelId).some(row => row.status === "sending" && (row.parentId ?? null) === rootId);
         },
+        // the open conversation, or the thread open in its drawer
+        isOnScreen: (channelId, rootId) => {
+            const thread = threads.state.thread;
+            return rootId === null ? state.activeChannelId === channelId : thread?.channelId === channelId && thread.rootId === rootId;
+        },
         personAliasGuid,
         isBlocked: alias => blocks.isBlocked(alias),
+        motion,
         report: code => problems.report("typing", code),
         isStopped: () => isStopped
     });
@@ -1243,6 +1265,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             }
             else if (state.activeChannelId && isSendKeyed()) {
                 const place = quoteKey(state.activeChannelId);
+                // a send ends the person's typing turn here, so their next message's shows at once
+                presence.sent(state.activeChannelId, null);
                 await sender.send(state.activeChannelId, body, undefined, undefined, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }
@@ -1255,6 +1279,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             if (channelId && isSendKeyed()) {
                 // the thread's own quote, never the conversation's, which waits for a send there
                 const place = quoteKey(channelId, rootId);
+                presence.sent(channelId, rootId);
                 await sender.send(channelId, body, undefined, { parentId: rootId, isShownInChannel }, takeQuote(place), attachments.take(place) ?? undefined);
                 notePushSend();
             }

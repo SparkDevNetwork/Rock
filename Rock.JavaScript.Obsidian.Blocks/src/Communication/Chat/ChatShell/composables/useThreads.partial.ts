@@ -54,6 +54,7 @@ import {
 import { defaultCatchUp, Timelines } from "./useHistory.partial";
 import { applyMessageChange, holdMessage, isMessageChange, maskHeld, MessageMask } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
+import type { Presence } from "./usePresence.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
@@ -178,6 +179,9 @@ export type ThreadsDependencies = {
 
     /** Told of each reply heard arriving live, each live change to what the drawer holds, and each thread's first reply, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
     motion: Pick<MessageMotion, "arrived" | "changed" | "threadStarted">;
+
+    /** Told what each page of the open thread says of typing: every reply it holds now, and who the platform says is typing a reply. */
+    typing?: Pick<Presence, "heldThrough" | "stated">;
 };
 
 /** The threads a shell holds. */
@@ -478,6 +482,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         for (const reply of live) {
             insertReply(reply);
         }
+        tellTyping(channelId, rootId, thread.replies, page.typing);
         thread.following = landedFollowing(rootId, page.following === true);
         thread.readCursor = page.read_cursor ?? null;
         thread.hasMore = page.has_more === true;
@@ -515,6 +520,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const oldestHeld = open.replies[0]?.id ?? null;
         const read: TimelineMessage[] = [];
         let root: TimelineMessage | null = null;
+        let typing: unknown = undefined;
         let hasMore = false;
         let beforeId: number | null = null;
         do {
@@ -530,6 +536,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const pageRev = revOf(page);
             const messages = (page.messages ?? []).filter(message => beforeId === null || message.id < (beforeId as number));
             root = root ?? (page.root ? layNewer(ledger, page.root, pageRev) : null);
+            // only the first page reaches the newest reply, and only it says who is typing one
+            typing = beforeId === null ? page.typing : typing;
             read.push(...messages.map(message => layNewer(ledger, message, pageRev)));
             hasMore = page.has_more === true;
             beforeId = messages.length > 0 ? Math.min(...messages.map(message => message.id)) : null;
@@ -548,6 +556,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             .sort((a, b) => a.id - b.id);
         open.hasMore = hasMore;
         reportLanded(read);
+        tellTyping(open.channelId, open.rootId, read, typing);
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -945,6 +954,19 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     }
 
     /** Tells the sender of each reply here sent under a key. */
+    /**
+     * Tells typing what a page of the open thread says: a reply of someone's held now ends the
+     * typing a signal before it named, and the platform's answer of who is typing a reply is drawn.
+     */
+    function tellTyping(channelId: string, rootId: number, replies: readonly TimelineMessage[], typing: unknown): void {
+        for (const reply of replies) {
+            dependencies.typing?.heldThrough(channelId, rootId, reply.person_alias_guid, reply.id);
+        }
+        if (typing !== undefined) {
+            dependencies.typing?.stated(channelId, rootId, typing);
+        }
+    }
+
     function reportLanded(messages: TimelineMessage[]): void {
         for (const message of messages) {
             if (message.client_key) {

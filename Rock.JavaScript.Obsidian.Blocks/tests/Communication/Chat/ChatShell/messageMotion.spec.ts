@@ -119,6 +119,76 @@ describe("the record", () => {
         expect(() => scope.dispose()).not.toThrow();
     });
 
+    // Typing: presence records where someone starts and stops being drawn and why. Her message that
+    // ends the last typing in its place is told in the same pass as its arrival, which it turns into
+    // the handoff: the view draws the bubble growing into it rather than the row rising.
+    test("her message ending the last typing in its place is a handoff, claimed in place, adjacent to its arrival", () => {
+        const motion = createMessageMotion();
+        const feed = motion.scope();
+        motion.typingStarted("c1");
+
+        motion.arrived(annas);
+        motion.typingEnded("c1", "sent", annas);
+
+        const arrival = motion.of("k:3")?.arrival;
+        const ended = motion.typingOf("c1")?.ended;
+        expect(arrival?.how).toBe("handoff");
+        expect(ended?.cause).toBe("sent");
+        expect(ended?.seq).toBe((arrival?.seq ?? 0) + 1);
+        expect(feed.arrives("k:3")).toBe("inPlace");
+        expect(feed.arrives("k:3")).toBeNull();
+    });
+
+    test("a typing end for any other cause leaves her arrival a rise, and names its cause", () => {
+        const motion = createMessageMotion();
+        const feed = motion.scope();
+        motion.typingStarted("c1");
+        motion.arrived(annas);
+
+        motion.typingEnded("c1", "stopped");
+
+        expect(motion.of("k:3")?.arrival?.how).toBe("live");
+        expect(motion.typingOf("c1")?.ended?.cause).toBe("stopped");
+        expect(motion.typingOf("c1")?.started?.seq).toBeLessThan(motion.typingOf("c1")?.ended?.seq ?? 0);
+        expect(feed.arrives("k:3")).toBe("rise");
+    });
+
+    // The views watch one count before the render, so they read where things stand on screen
+    // before any of them move: it moves for what changes the tail, and for nothing else.
+    test("the tail's count moves for a send, an arrival and typing starting or ending, never for a row's own change", async () => {
+        const motion = createMessageMotion();
+        const woken = jest.fn();
+        watch(() => motion.tail(), woken, { flush: "pre" });
+
+        motion.changed(annas, "message.edited");
+        motion.reacted(annas, "heart", "pop");
+        motion.threadStarted(annas);
+        await nextTick();
+        expect(woken).not.toHaveBeenCalled();
+
+        for (const write of [() => motion.sent("k1"), () => motion.arrived(annas), () => motion.typingStarted("c1"), () => motion.typingEnded("c1", "expired")]) {
+            const before = motion.tail();
+            write();
+            expect(motion.tail()).toBeGreaterThan(before);
+        }
+        await nextTick();
+        expect(woken).toHaveBeenCalledTimes(1);
+    });
+
+    test("a view gone lets go of typing no open view could play; once stopped typing records nothing", () => {
+        const motion = createMessageMotion();
+        const old = motion.scope();
+        motion.typingStarted("c1");
+        old.dispose();
+        expect(motion.typingOf("c1")).toBeUndefined();
+
+        motion.stop();
+        motion.typingStarted("c2");
+        motion.typingEnded("c2", "sent", annas);
+        expect(motion.typingOf("c2")).toBeUndefined();
+        expect(motion.of("k:3")).toBeUndefined();
+    });
+
     test("schedules nothing: no timer is left after every kind of record", () => {
         jest.useFakeTimers();
         try {
@@ -129,6 +199,8 @@ describe("the record", () => {
             motion.changed(annas, "message.visibility");
             motion.reacted(annas, "heart", "roll");
             motion.threadStarted(annas);
+            motion.typingStarted("c1");
+            motion.typingEnded("c1", "sent", annas);
             scope.arrives("k:3");
             scope.dispose();
 

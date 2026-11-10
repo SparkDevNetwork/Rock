@@ -188,7 +188,7 @@ type Call = { name: string, args: Record<string, unknown> };
  * result or a deferred the test resolves by hand; a function with nothing queued answers an
  * empty success.
  */
-async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }, blocked: string[] = []): Promise<{
+async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMessage) => void, isOffline?: () => boolean, catchUp = { page: 19, max: 40 }, blocked: string[] = [], typing?: Parameters<typeof createThreads>[0]["typing"]): Promise<{
     threads: ReturnType<typeof createThreads>,
     timelines: ReturnType<typeof createTimelines>,
     calls: Call[],
@@ -222,6 +222,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
         catchUp: () => catchUp,
         isBlocked: guid => guid !== null && blocked.includes(guid.toLowerCase()),
         onLanded,
+        typing,
         ...(isOffline ? { isOffline } : {})
     });
 
@@ -1963,5 +1964,28 @@ describe("the room's revision, as the open thread holds it", () => {
         await opening;
 
         expect(h.threads.state.thread?.replies[0].body).toBe("while loading");
+    });
+});
+
+// Each page of the open thread tells typing what it now holds and, on its first page, who the
+// platform says is typing a reply, so a thread opened while someone types shows them.
+describe("the open thread's typing", () => {
+    test("the first page and a reread tell typing every reply they hold and the typists the first page answers", async () => {
+        const told: string[] = [];
+        const typing = {
+            heldThrough: (channelId: string, rootId: number | null, alias: string | null | undefined, id: number): void => void told.push(`held ${rootId} ${id}`),
+            stated: (channelId: string, rootId: number | null, typists: unknown): void => void told.push(`stated ${rootId} ${JSON.stringify(typists)}`)
+        };
+        const h = await setup(undefined, undefined, undefined, undefined, [], typing);
+        const typists = [{ person_alias_guid: anna, after: 3, age_ms: 100 }];
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(3, 1), reply(2, 1)], { typing: typists })];
+        await h.threads.openThread(channel, 1);
+        expect(told).toEqual(["held 1 2", "held 1 3", `stated 1 ${JSON.stringify(typists)}`]);
+
+        told.length = 0;
+        h.answers["chat_get_thread_history"] = [threadAnswer(root(1), [reply(4, 1), reply(3, 1), reply(2, 1)])];
+        h.threads.repair(channel);
+        await settle();
+        expect(told).toEqual(["held 1 2", "held 1 3", "held 1 4"]);
     });
 });

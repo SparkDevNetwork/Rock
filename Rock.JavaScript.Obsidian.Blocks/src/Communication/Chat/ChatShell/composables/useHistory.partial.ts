@@ -46,6 +46,7 @@ import { applyMessageChange, holdMessage, isMessageChange, isTimelineMessage, Me
 import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import type { MessageMotion } from "../messageMotion.partial";
+import type { Presence } from "./usePresence.partial";
 
 /** How catch-up pages forward, when the settings name nothing else: estimates, not measurements. */
 export const defaultCatchUp = { page: 100, max: 500 };
@@ -134,6 +135,13 @@ export type TimelineDependencies = {
 
     /** Told of each message heard arriving live and each live edit, delete or hide as it is applied, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
     motion: Pick<MessageMotion, "arrived" | "changed">;
+
+    /**
+     * Told what each page says of typing: every message it holds now, and who the platform says is
+     * typing on a page that reaches the newest. A live message is told by the live router instead,
+     * after the arrival is recorded, since it can be the typist's own send.
+     */
+    typing?: Pick<Presence, "heldThrough" | "stated">;
 
     /** Runs a wait and answers its cancel, so a test can say when; a timer by default. */
     schedule?: (run: () => void, ms: number) => () => void;
@@ -459,6 +467,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
 
             upsert(channelId, incoming);
+            dependencies.typing?.heldThrough(channelId, incoming.parent_id ?? null, incoming.person_alias_guid, incoming.id);
+        }
+        // read in the same statement as the page, so a typist its messages overtook is left out
+        if (page.typing !== undefined) {
+            dependencies.typing?.stated(channelId, null, page.typing);
         }
     }
 
