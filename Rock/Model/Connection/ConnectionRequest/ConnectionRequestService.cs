@@ -1021,7 +1021,7 @@ namespace Rock.Model
             }
 
             // There are some scenarios where the current person can see the request even if the permissions say otherwise:
-            if ( !isConnectionRequestSecurityEnabled )
+            if ( !isConnectionRequestSecurityEnabled && currentPerson != null )
             {
                 // 1) Connection Request Security is not enabled, and the person is in a global (no campus) connector group
                 // 2) Connection Request Security is not enabled, and the person is in the campus specific connector group
@@ -1034,7 +1034,7 @@ namespace Rock.Model
             }
 
             // 3) The person is assigned to the request or the request security allows it and the connection type has EnableRequestSecurity
-            return ( connectionRequest.ConnectorPersonAlias != null && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
+            return ( currentPerson != null && connectionRequest.ConnectorPersonAlias != null && connectionRequest.ConnectorPersonAlias.PersonId == currentPerson.Id )
                     || connectionRequest.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
