@@ -67,7 +67,7 @@ namespace Rock.Blocks.Finance
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 100,
         IsRequired = true,
-        DefaultValue = @"<a href=""/Person/{{ Donor.Id }}"">{{ Donor.FullName }}</a>",
+        DefaultValue = @"<a href=""/Person/{{ Donor.Id }}"">{{ Donor.FullName | Escape }}</a>",
         Category = "Advanced",
         Order = 2 )]
     [CodeEditorField( "Participant Column",
@@ -80,7 +80,7 @@ namespace Rock.Blocks.Finance
         DefaultValue = @"<a href=""/Person/{{ Participant.PersonId }}"" class=""pull-right margin-l-sm btn btn-sm btn-default"">
     <i class=""fa fa-user""></i>
 </a>
-<a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName }}</a>",
+<a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName | Escape }}</a>",
         Category = "Advanced",
         Order = 3 )]
     [SystemGuid.EntityTypeGuid( "b80410e7-53d7-4ab1-8b17-39ff8b3e708f" )]
