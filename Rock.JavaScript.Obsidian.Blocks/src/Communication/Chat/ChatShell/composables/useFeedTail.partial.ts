@@ -554,7 +554,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 continue;
             }
             const start = startOf(part.element);
-            const by = { x: from.box.left - (part.box.left + start.x), y: from.box.top - (part.box.top + start.y) };
+            // A face hangs from its foot, and a row's face column is as tall as its line, so a face
+            // moves from foot to foot; anything else moves from its top.
+            const y = kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y);
+            const by = { x: from.box.left - (part.box.left + start.x), y };
             if (Math.abs(by.x) >= .5 || Math.abs(by.y) >= .5) {
                 starts.set(part.element, by);
                 play(part.element, [{ transform: `translate(${by.x}px, ${by.y}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-move" });

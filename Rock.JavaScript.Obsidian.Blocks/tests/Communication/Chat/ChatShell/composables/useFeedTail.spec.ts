@@ -142,7 +142,8 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                                 row.isFull ? h("button", { class: "chat-thread-label" }, "Replied to a thread") : null,
                                 row.isFull ? h("div", { class: "chat-quote" }, "quoted") : null,
                                 h("div", { class: "chat-msg-line" }, [
-                                    isOwn ? null : h("span", { class: "chat-msg-face", "data-tail": isLast ? `face:${group.key}` : undefined, "data-tail-face": isLast ? group.sender : undefined }),
+                                    // the face column stretches to its line's height, its face hanging from the foot
+                                    isOwn ? null : h("span", { class: "chat-msg-face", "data-tail": isLast ? `face:${group.key}` : undefined, "data-tail-face": isLast ? group.sender : undefined, "data-h": Math.max(34, row.h ?? (row.filesOnly ? 120 : 40)) }),
                                     h("div", { class: "chat-bub-anchor" }, row.filesOnly
                                         ? [h("div", { class: "chat-msg-files", "data-tail": "box", "data-w": row.w ?? 160, "data-h": row.h ?? 120 })]
                                         : [
