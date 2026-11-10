@@ -63,7 +63,8 @@ function deferred<T>(): Deferred<T> {
  */
 function wire() {
     const pages: HistoryPage[] = [];
-    const threadPages: Record<string, unknown>[] = [];
+    // a thread page the test may hold back, to land when it says
+    const threadPages: (Record<string, unknown> | Promise<Record<string, unknown>>)[] = [];
     const answers: Deferred<SendResult>[] = [];
     let sender: Sender | null = null;
     // eslint-disable-next-line prefer-const
@@ -73,7 +74,7 @@ function wire() {
 
     const call = async (name: string): Promise<CallResult> => {
         if (name === "chat_get_thread_history") {
-            return { ok: true, data: threadPages.shift() ?? { root: null, messages: [], has_more: false, following: false, read_cursor: null, unread_count: 0 } } as CallResult;
+            return { ok: true, data: await threadPages.shift() ?? { root: null, messages: [], has_more: false, following: false, read_cursor: null, unread_count: 0 } } as CallResult;
         }
         return { ok: true, data: {} } as CallResult;
     };
@@ -422,6 +423,32 @@ describe("what happens while a row is on screen plays once", () => {
 
         expect(feed.wrapper.find("[data-message-id='2']").exists()).toBe(true);
         expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("a reply heard while the thread's first page was still on its way is drawn with that page, not risen", async () => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: anna }, { reply_count: 1, participant_count: 1 });
+        await open(w, [root]);
+        const firstPage = deferred<Record<string, unknown>>();
+        w.threadPages.push(firstPage.promise);
+        const opening = w.threads.openThread(channelId, 40);
+        // the drawer as the shell draws it, from the moment the thread is asked, loading until its page lands
+        const Host = defineComponent({
+            setup: () => () => w.threads.state.thread
+                ? h(ThreadDrawer, { root: w.threads.state.thread.root, replies: w.threads.state.thread.replies, isLoading: w.threads.state.thread.isLoading, pending: [], isFollowing: true, isPhone: false, isFromList: false, personAliasGuid: me, conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, draft: { text: "", mentions: [] } })
+                : null
+        });
+        const drawer = mount(Host, { attachTo: document.body, global: { provide: w.provide } });
+        await settle();
+
+        w.live("message.created", liveCreated({ id: 42, sender: anna, parentId: 40 }, 2));
+        await settle();
+        firstPage.resolve({ root, messages: [pageRow({ id: 41, sender: anna, parentId: 40 })], has_more: false, following: true, read_cursor: 41, unread_count: 0, rev: 1 });
+        await opening;
+        await settle();
+
+        expect(drawer.find("[data-reply-id='42']").exists()).toBe(true);
+        expect(moving(drawer)).toEqual([]);
     });
 
     test("the person's send rises once as it is sent, and its answer and live copy keep it in the one element", async () => {
