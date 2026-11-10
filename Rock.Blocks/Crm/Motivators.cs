@@ -261,7 +261,7 @@ namespace Rock.Blocks.Crm
                     try
                     {
                         var personService = new PersonService( RockContext );
-                        return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByUrlEncodedKey( personKey );
+                        return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByImpersonationToken( personKey, false, PageCache.Id );
                     }
                     catch
                     {
