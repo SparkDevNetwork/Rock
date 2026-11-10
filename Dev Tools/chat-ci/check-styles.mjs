@@ -430,6 +430,35 @@ export function scan(file, text) {
   return hits;
 }
 
+/** A script comparing an animation's name to a string, the string. */
+const NAME_READ = /animationName\s*===?\s*(['"])([\w-]+)\1/g;
+
+/**
+ * Across files: a keyframe defined in a scoped style block is renamed by the build, so a script
+ * that finds an animation by that exact name never finds it in the page, though the test renderer,
+ * which keeps the name, does. Every name a chat script compares exactly is refused where a scoped
+ * block defines it; defined in the token sheet, it keeps its name.
+ */
+export function scanKeyframeNames(files) {
+  const read = new Set();
+  for (const { text } of files) {
+    for (const match of text.matchAll(NAME_READ)) read.add(match[2]);
+  }
+  const hits = [];
+  for (const { file, text } of files) {
+    if (!file.endsWith('.obs')) continue;
+    for (const style of text.matchAll(/<style[^>]*\bscoped\b[^>]*>([\s\S]*?)<\/style>/g)) {
+      const start = style.index + style[0].indexOf('>') + 1;
+      for (const keyframes of style[1].matchAll(/@keyframes\s+([\w-]+)/g)) {
+        if (read.has(keyframes[1])) {
+          hits.push(`${file}:${lineAt(text, start + keyframes.index)}: keyframes ${keyframes[1]}, which a script finds by name, defined in a scoped block`);
+        }
+      }
+    }
+  }
+  return hits;
+}
+
 /** Every component and script file under a folder, as paths from the repository root. */
 function walk(folder) {
   const out = [];
@@ -461,6 +490,7 @@ if (invokedDirectly) {
   for (const file of files) {
     hits.push(...scan(file, readFileSync(resolve(repoRoot, file), 'utf8')));
   }
+  hits.push(...scanKeyframeNames(files.map((file) => ({ file, text: readFileSync(resolve(repoRoot, file), 'utf8') }))));
 
   if (hits.length > 0) {
     console.error('style literals, kept comments or icon sizes in chat components:');

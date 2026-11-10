@@ -201,6 +201,7 @@ function seenOpacity(element: Element, scroller: Element | null): number {
 
 /** The time left of the view's own entrance, in milliseconds, or 0 when none plays. */
 function entranceLeft(scroller: HTMLElement | null): number {
+    // named in the token sheet, where no build renames it as it would a scoped keyframe
     const entrance = scroller?.getAnimations?.().find(animation => (animation as CSSAnimation).animationName === "chat-feed-enter");
     const timing = entrance?.effect?.getComputedTiming();
     if (!entrance || !timing || entrance.playState !== "running") {
