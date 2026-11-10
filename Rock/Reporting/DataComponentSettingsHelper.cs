@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Reporting
 {
@@ -60,6 +61,125 @@ namespace Rock.Reporting
             }
 
             return dataView;
+        }
+
+        /// <summary>
+        /// Determines whether the person may use every data view referenced by a posted data view filter.
+        /// A reference is allowed when the stored filter with the same Guid and entity type already held the
+        /// same data view. Any other reference is new or changed, so the person must be able to VIEW that data view.
+        /// </summary>
+        /// <param name="newFilter">The filter built from the posted controls.</param>
+        /// <param name="storedFilter">The filter that is currently stored for the data view, or <c>null</c> when there is none.</param>
+        /// <param name="filteredEntityType">The type of the entity the data view filters.</param>
+        /// <param name="person">The person who is saving or previewing the data view.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns><c>true</c> if every new or changed data view reference is allowed; otherwise <c>false</c>.</returns>
+        [Rock.Attribute.RockInternal( "17.13" )]
+        public static bool IsAuthorizedForNewDataViewReferences( DataViewFilter newFilter, DataViewFilter storedFilter, Type filteredEntityType, Person person, RockContext rockContext )
+        {
+            /*
+                11/09/2026 - MSE
+
+                The data view a filter references comes from a posted value, and the evaluation of the filter
+                does not check security on it. A new or changed reference must therefore be one the person
+                can VIEW. A reference the stored filter with the same Guid already holds is kept so data views
+                built by someone else can still be saved.
+
+                Reason: Stops a saved or previewed filter from using a data view the person cannot VIEW.
+            */
+
+            rockContext = rockContext ?? new RockContext();
+
+            var storedFiltersByGuid = new Dictionary<Guid, DataViewFilter>();
+            foreach ( var filter in FlattenFilters( storedFilter ) )
+            {
+                if ( !storedFiltersByGuid.ContainsKey( filter.Guid ) )
+                {
+                    storedFiltersByGuid.Add( filter.Guid, filter );
+                }
+            }
+
+            foreach ( var filter in FlattenFilters( newFilter ) )
+            {
+                var referencedDataViewId = GetReferencedDataViewId( filter, filteredEntityType, rockContext );
+
+                if ( !referencedDataViewId.HasValue )
+                {
+                    continue;
+                }
+
+                if ( storedFiltersByGuid.TryGetValue( filter.Guid, out var stored )
+                    && stored.EntityTypeId == filter.EntityTypeId
+                    && ( stored.Selection == filter.Selection || GetReferencedDataViewId( stored, filteredEntityType, rockContext ) == referencedDataViewId ) )
+                {
+                    continue;
+                }
+
+                var dataView = new DataViewService( rockContext ).Get( referencedDataViewId.Value );
+                if ( dataView == null || !dataView.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the data view id that a filter references. The recorded id is used first. Filters
+        /// that do not record it are read from their selection.
+        /// </summary>
+        /// <param name="filter">The filter.</param>
+        /// <param name="filteredEntityType">The type of the entity the data view filters.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The referenced data view id, or <c>null</c>.</returns>
+        private static int? GetReferencedDataViewId( DataViewFilter filter, Type filteredEntityType, RockContext rockContext )
+        {
+            if ( filter.RelatedDataViewId.HasValue )
+            {
+                return filter.RelatedDataViewId;
+            }
+
+            if ( filter.ExpressionType != FilterExpressionType.Filter || !filter.EntityTypeId.HasValue )
+            {
+                return null;
+            }
+
+            var componentName = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext )?.Name;
+
+            if ( componentName == typeof( Rock.Reporting.DataFilter.Group.ContainsPeopleFilter ).FullName )
+            {
+                return Rock.Reporting.DataFilter.Group.ContainsPeopleFilter.GetReferencedDataViewId( filter.Selection );
+            }
+
+            if ( componentName == typeof( Rock.Reporting.DataFilter.Group.ContainsGroupMembersFilter ).FullName )
+            {
+                return Rock.Reporting.DataFilter.Group.ContainsGroupMembersFilter.GetReferencedDataViewId( filter.Selection );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the filter and all of its child filters as a flat list.
+        /// </summary>
+        /// <param name="filter">The filter, or <c>null</c>.</param>
+        /// <returns>A list of filters, empty when the filter is <c>null</c>.</returns>
+        private static List<DataViewFilter> FlattenFilters( DataViewFilter filter )
+        {
+            var filters = new List<DataViewFilter>();
+
+            if ( filter != null )
+            {
+                filters.Add( filter );
+
+                foreach ( var childFilter in filter.ChildFilters )
+                {
+                    filters.AddRange( FlattenFilters( childFilter ) );
+                }
+            }
+
+            return filters;
         }
 
         /// <summary>
