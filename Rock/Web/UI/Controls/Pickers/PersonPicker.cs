@@ -693,7 +693,7 @@ namespace Rock.Web.UI.Controls
             var selectedText = this.Placeholder;
             if (this.PersonName.IsNotNullOrWhiteSpace())
             {
-                selectedText = this.PersonName;
+                selectedText = this.PersonName.EncodeHtml();
             }
 
             if ( this.Enabled )
