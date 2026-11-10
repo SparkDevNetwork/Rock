@@ -168,7 +168,7 @@ namespace Rock.Blocks.Crm
                 if ( personKey.IsNotNullOrWhiteSpace() )
                 {
                     var personService = new PersonService( RockContext );
-                    return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByUrlEncodedKey( personKey );
+                    return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByImpersonationToken( personKey, false, PageCache.Id );
                 }
                 else
                 {
