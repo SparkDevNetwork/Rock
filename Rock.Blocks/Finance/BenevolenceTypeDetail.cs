@@ -225,7 +225,7 @@ namespace Rock.Blocks.Finance
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) && IsAttributeEditable( a ) );
             }
 
             return bag;
@@ -330,7 +330,9 @@ namespace Rock.Blocks.Finance
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
+                    var attributeGuidList = GetAttributeValue( AttributeKey.BenevolenceTypeAttributes ).SplitDelimitedValues().AsGuidList();
+
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Contains( a.Guid ) && IsAttributeEditable( a ) );
                 } );
 
             return true;
@@ -442,6 +444,54 @@ namespace Rock.Blocks.Finance
                     benevolenceWorkflow.QualifierValue = $"|{DefinedValueCache.GetId( workflowBag.PrimaryQualifier.AsGuid() )}|{DefinedValueCache.GetId( workflowBag.SecondaryQualifier.AsGuid() )}|";
                 }
             }
+        }
+
+        /*
+            11/10/2026 - MSE
+
+            This block is secured by block security, not entity security, so the
+            attribute helpers are called with enforceSecurity: false. Turning it on
+            would fall back to Benevolence Type entity and Global Default security when
+            an attribute has no rule of its own, and Global Default Edit only allows
+            Rock Administration, so every attribute would disappear for people who
+            have access to this block. Instead these filters apply only the rules
+            set explicitly on the attribute itself (AuthorizedForEntity without the
+            parent authority walk). When the attribute has no rule for the action
+            the block security that was already checked decides. Attributes that
+            are viewable but not editable are left out of the edit form, and their
+            stored values are kept on save.
+
+            Reason: Honor attribute-level View and Edit security.
+        */
+
+        /// <summary>
+        /// Determines if the current person is allowed to view the attribute
+        /// on this block. Only security rules defined directly on the attribute
+        /// are considered; otherwise the block security applies.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be viewed; otherwise <c>false</c>.</returns>
+        private bool IsAttributeViewable( AttributeCache attribute )
+        {
+            return Authorization.AuthorizedForEntity( attribute, Authorization.VIEW, RequestContext.CurrentPerson ) ?? true;
+        }
+
+        /// <summary>
+        /// Determines if the current person is allowed to edit the attribute
+        /// on this block. The attribute must also be viewable. Only security
+        /// rules defined directly on the attribute are considered; otherwise
+        /// the block security applies.
+        /// </summary>
+        /// <param name="attribute">The attribute to check.</param>
+        /// <returns><c>true</c> if the attribute can be edited; otherwise <c>false</c>.</returns>
+        private bool IsAttributeEditable( AttributeCache attribute )
+        {
+            if ( !IsAttributeViewable( attribute ) )
+            {
+                return false;
+            }
+
+            return Authorization.AuthorizedForEntity( attribute, Authorization.EDIT, RequestContext.CurrentPerson ) ?? true;
         }
 
         #endregion
