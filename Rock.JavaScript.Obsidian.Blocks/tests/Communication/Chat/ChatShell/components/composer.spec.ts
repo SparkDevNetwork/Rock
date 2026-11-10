@@ -280,6 +280,27 @@ describe("the composer's keys", () => {
         expect(boxText(wrapper)).toBe("");
     });
 
+    // The send ends the person's typing turn, so the box emptied after it is not read as giving up
+    // and no stop goes for it.
+    test("hands the text to the send before it clears the box", async () => {
+        const told: string[] = [];
+        const wrapper: VueWrapper = mountComposer({
+            props: {
+                onSend: (body: string) => told.push(`send ${body}`),
+                "onUpdate:text": (text: string) => {
+                    told.push(`text ${text}`);
+                    void wrapper.setProps({ text });
+                }
+            }
+        });
+        await type(wrapper, "hello");
+        told.length = 0;
+
+        await wrapper.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
+
+        expect(told).toEqual(["send hello", "text "]);
+    });
+
     test("Shift and Enter does not send, leaving the new line to the box", async () => {
         const wrapper = mountComposer();
         const input = wrapper.get("[data-testid='composer-input']");

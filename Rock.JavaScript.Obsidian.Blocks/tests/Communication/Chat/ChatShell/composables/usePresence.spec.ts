@@ -305,6 +305,20 @@ describe("the person's own signals", () => {
         expect(h.calls.map(c => c.body.p_after)).toEqual([10, 11]);
     });
 
+    // The composer clears the box once it has handed the text to the send, which ends the turn
+    // first, so the clear is not someone giving up: her message takes the bubble's place.
+    test("a send that clears an announced box sends no stop", async () => {
+        const h = build();
+        h.presence.typed(group, null, "a");
+        await pass(700);
+
+        h.presence.sent(group, null);
+        h.presence.typed(group, null, "");
+        await pass(5000);
+
+        expect(h.calls.map(c => c.body)).toEqual([{ p_channel_id: group, p_parent_id: null, p_after: 10 }]);
+    });
+
     test("clearing an announced box sends one stop; a box never announced, or cleared again, sends none", async () => {
         const h = build();
         h.presence.typed(group, null, "a");
@@ -947,6 +961,20 @@ describe("the typing a page states", () => {
         h.presence.stated(group, null, undefined, Date.now());
 
         expect(h.presence.state.typists).toEqual({});
+    });
+
+    // An older platform leaves a null out of its answer rather than writing it, so a typist whose
+    // signal followed no message is read the same whether her after is null or missing.
+    test("a typist's after, null or left out, is read alike: drawn while no message of hers is held, left out once one is", () => {
+        const h = build();
+        h.presence.stated(group, null, [stated(anna, { after: null }), { person_alias_guid: sam, age_ms: 2000 }], Date.now());
+        expect(h.presence.state.typists[group]).toEqual([anna, sam]);
+
+        const later = build();
+        later.hold(11, anna);
+        later.hold(12, sam);
+        later.presence.stated(group, null, [stated(anna, { after: null }), { person_alias_guid: sam, age_ms: 2000 }], Date.now());
+        expect(later.presence.state.typists).toEqual({});
     });
 
     test("the answer is what is: a typist held in its place whom it leaves out ends as overtaken, unless heard after the read was asked", () => {
