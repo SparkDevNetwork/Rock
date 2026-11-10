@@ -342,7 +342,7 @@
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
-    import { rowKey, sendKey } from "../composables/useHistory.partial";
+    import { rowKey, sendKey } from "../heldMessage.partial";
     import { useRowMotion } from "../messageMotion.partial";
     import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 

@@ -34,7 +34,8 @@ import { CallResult } from "../platformCall.partial";
 import { CatalogEmoji, EmojiGlyph, Reaction, ReactionAnswer, ReactionEvent, ReactionFavorite, Reactor, ReactorsCursor, ReactorsPage, RoomKind, TimelineMessage } from "../types.partial";
 import type { AvatarPerson } from "../ui/avatar.partial.obs";
 import { personFace, personName } from "../ui/face.partial";
-import { maskHeld, MessageMask, Timelines } from "./useHistory.partial";
+import { Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "../heldMessage.partial";
 import { Threads } from "./useThreads.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 

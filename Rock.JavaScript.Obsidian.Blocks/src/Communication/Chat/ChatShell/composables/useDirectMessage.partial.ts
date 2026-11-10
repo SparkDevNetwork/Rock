@@ -45,7 +45,8 @@ import { reactive, toRaw } from "vue";
 import { failedWords } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
-import { defaultRetryDelay, maskHeld, MessageMask } from "./useHistory.partial";
+import { defaultRetryDelay } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "../heldMessage.partial";
 import { newLocalId, noKeySentence, SendTry } from "./useSend.partial";
 import { PlatformLimits } from "./useSession.partial";
 

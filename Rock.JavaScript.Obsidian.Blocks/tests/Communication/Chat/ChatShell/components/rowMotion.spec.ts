@@ -23,7 +23,8 @@ import { enableAutoUnmount, flushPromises, mount, VueWrapper } from "@vue/test-u
 import { defineComponent, h, nextTick, ref } from "vue";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { createReactions } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
 import { createSender, Sender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";

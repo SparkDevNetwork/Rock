@@ -22,7 +22,7 @@
 
 import { classifyPlatformError, inRoomKind } from "./errors.partial";
 import type { CallResult } from "./platformCall.partial";
-import { isTimelineMessage } from "./composables/useHistory.partial";
+import { isTimelineMessage } from "./heldMessage.partial";
 import type { RealtimeHubDependencies } from "./composables/useRealtimeHub.partial";
 import type { MeSettings } from "./composables/usePrefs.partial";
 import type { ChatShell, ShellState } from "./shell.partial";

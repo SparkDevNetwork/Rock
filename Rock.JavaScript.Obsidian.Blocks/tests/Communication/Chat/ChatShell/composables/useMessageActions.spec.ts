@@ -58,7 +58,8 @@
 // chat_delete_message do; a server action answers { notice }, the sentence the person is shown.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
 import { canEditMessage, createMessageActions } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { messageForError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";

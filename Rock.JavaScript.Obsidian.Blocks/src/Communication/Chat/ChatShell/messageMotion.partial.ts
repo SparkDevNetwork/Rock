@@ -22,7 +22,7 @@
 // counter as it mounts: it plays only what is above that. No clock and no timer: a switch, a remount
 // or a reload takes a new number, so everything before it is history.
 import { inject, InjectionKey, onBeforeUnmount, reactive, Ref, ref, toRaw, watch } from "vue";
-import { rowKey, sendKey } from "./composables/useHistory.partial";
+import { rowKey, sendKey } from "./heldMessage.partial";
 import { TimelineMessage } from "./types.partial";
 
 /** How a row came to be drawn new: risen in as it was sent here or heard live. */

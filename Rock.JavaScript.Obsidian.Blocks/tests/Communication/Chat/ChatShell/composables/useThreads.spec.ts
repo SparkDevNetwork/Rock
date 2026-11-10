@@ -64,7 +64,8 @@
 // ThreadListRow is chat_list_threads' row; TimelineMessage gains repliers, thread_following and
 // thread_unread, as chat_messages_json now answers them.
 import { createThreads, unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";

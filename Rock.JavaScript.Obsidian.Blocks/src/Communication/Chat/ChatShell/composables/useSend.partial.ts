@@ -36,7 +36,8 @@ import { AttachmentItem, ChatError, DisplayPiece, FailureWords, isFileItem, isGi
 import { sendingQuietMs, sentHoldMs } from "../feedLayout.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { failureWords, finalRefusals, finalWords, inRoomKind, isOfflineFailure, isRefusedForGood, messageForError, offlineWords, readOnlySentence } from "../errors.partial";
-import { sendKey, Timelines } from "./useHistory.partial";
+import { Timelines } from "./useHistory.partial";
+import { sendKey } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import { ChatSettings } from "./useSession.partial";
 

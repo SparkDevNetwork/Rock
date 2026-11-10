@@ -18,14 +18,16 @@
 // before the first page, and a message committed between the page's read and the join reaches
 // neither; every confirmed join pages forward from what a fetched page proved is held.
 import {
+    createTimelines
+} from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import {
     applyMessageChange,
-    createTimelines,
     holdMessage,
     keptAsStated,
     messageDisplay,
     newMessageState,
     platformMask
-} from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+} from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { AttachmentItem, HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna, channelId as shapesChannel, liveCreated, pageRow, sendAnswer } from "../messageShapes";

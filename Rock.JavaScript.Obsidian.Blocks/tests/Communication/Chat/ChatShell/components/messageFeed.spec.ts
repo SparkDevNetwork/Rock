@@ -30,11 +30,11 @@ import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/compon
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
-import { TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines, TimelineState } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";

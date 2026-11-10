@@ -51,7 +51,8 @@ import {
     ThreadUpdatedEvent,
     TimelineMessage
 } from "../types.partial";
-import { applyMessageChange, defaultCatchUp, holdMessage, maskHeld, MessageMask, Timelines, withSendKey } from "./useHistory.partial";
+import { defaultCatchUp, Timelines } from "./useHistory.partial";
+import { applyMessageChange, holdMessage, maskHeld, MessageMask, withSendKey } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";

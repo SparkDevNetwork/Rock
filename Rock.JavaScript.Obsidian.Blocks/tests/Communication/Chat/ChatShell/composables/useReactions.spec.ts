@@ -60,7 +60,8 @@
 // reacted_at, reactor_person_alias_guid, code }], has_more }; chat_list_emojis answers { emojis }.
 // A refusal is the call path's own: { ok: false, status, error: { code, severity, text }, retryAfterSeconds }.
 import { createReactions, whoReacted, whoReactedLine } from "../../../../../src/Communication/Chat/ChatShell/composables/useReactions.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";

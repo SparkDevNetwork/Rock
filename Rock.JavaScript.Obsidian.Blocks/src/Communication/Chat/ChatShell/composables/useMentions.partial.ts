@@ -29,7 +29,7 @@
 import { reactive } from "vue";
 import { CallResult } from "../platformCall.partial";
 import { ChannelMentionEvent, ChatError, MentionListPage, MentionPerson, MentionRow, MentionSearchAnswer, SidebarRow, UnreadMention } from "../types.partial";
-import { maskHeld, MessageMask } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "../heldMessage.partial";
 import { LandingCheck } from "./useJump.partial";
 import { PlatformLimits } from "./useSession.partial";
 

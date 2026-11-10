@@ -31,7 +31,8 @@
 //   }
 import { ref, shallowRef, watch } from "vue";
 import { useJump } from "../../../../../src/Communication/Chat/ChatShell/composables/useJump.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 

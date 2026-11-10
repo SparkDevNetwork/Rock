@@ -20,7 +20,8 @@ import { createSender, isComposerOpen, mediaArgs, useSlowSend, isInConversation,
 import { mount } from "@vue/test-utils";
 import { defineComponent, reactive } from "vue";
 import { sendingQuietMs } from "../../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
-import { createTimelines, platformMask } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { createTimelines } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { AttachmentItem, ChatErrorSeverity, GifItem, PendingMessage, SidebarRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 

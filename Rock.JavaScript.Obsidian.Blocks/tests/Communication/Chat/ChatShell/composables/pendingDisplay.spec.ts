@@ -18,7 +18,7 @@
 // mentioned is the platform's call, made when the message is stored, so until then a token is
 // drawn as plain text: the name the client already holds for that person, else "someone". Never a
 // mention, which would claim an admission the platform has not made, and never the raw token.
-import { pendingPieces } from "../../../../../src/Communication/Chat/ChatShell/composables/useHistory.partial";
+import { pendingPieces } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 
 const lee = "a0000007-0000-4000-8000-000000000000";
 const stranger = "a0000009-0000-4000-8000-000000000000";

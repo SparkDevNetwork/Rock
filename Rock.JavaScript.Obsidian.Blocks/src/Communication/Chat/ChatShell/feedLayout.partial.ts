@@ -19,7 +19,7 @@
 // unread strip and Jump to latest. Pure rules, so both layouts draw the same groups and a test
 // reads them without mounting anything. The clock and the locale are arguments for the same
 // reason; the feed passes the browser's own.
-import { blockedSentence, rowKey, sendKey } from "./composables/useHistory.partial";
+import { blockedSentence, rowKey, sendKey } from "./heldMessage.partial";
 import { PendingMessage, TimelineMessage } from "./types.partial";
 
 /** Messages from one sender this close together share a group. */

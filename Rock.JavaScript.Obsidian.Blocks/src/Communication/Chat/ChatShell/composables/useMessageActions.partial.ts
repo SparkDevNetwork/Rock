@@ -29,7 +29,8 @@ import { inRoomKind, messageForError } from "../errors.partial";
 import { isOwnMessage } from "../feedLayout.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError, DisplayPiece, MessageAction, RoomKind, TimelineMessage } from "../types.partial";
-import { maskHeld, MessageMask, Timelines } from "./useHistory.partial";
+import { Timelines } from "./useHistory.partial";
+import { maskHeld, MessageMask } from "../heldMessage.partial";
 import { Threads, ThreadPlace, threadPlaceOf } from "./useThreads.partial";
 
 export type { MessageAction } from "../types.partial";
