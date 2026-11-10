@@ -53,6 +53,7 @@ namespace Rock.Model
                 && this.ConnectionOpportunity.ConnectionType != null
                 && this.ConnectionOpportunity.ConnectionType.EnableRequestSecurity
                 && this.ConnectorPersonAlias != null
+                && person != null
                 && this.ConnectorPersonAlias.PersonId == person.Id )
             {
                 return true;
