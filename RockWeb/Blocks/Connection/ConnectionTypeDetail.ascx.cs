@@ -1708,6 +1708,22 @@ namespace RockWeb.Blocks.Connection
                 return;
             }
 
+            /*
+                11/10/2026 - MSE
+
+                The include and exclude data view picker values are posted form fields, so they can be changed after
+                the page renders. Repeat the pickers' filter here (a person data view, with VIEW on the data view and
+                on its filter). The data views already on the row being edited are accepted so an unchanged value
+                keeps saving. Both values are saved whatever the trigger type, so they are always checked, before
+                anything is changed so a refused save leaves nothing behind.
+
+                Reason: Posted data views must be ones the person is allowed to view.
+            */
+            if ( !AreWorkflowDataViewsAllowed( connectionWorkflow?.IncludeDataViewId, connectionWorkflow?.ExcludeDataViewId ) )
+            {
+                return;
+            }
+
             if ( connectionWorkflow == null )
             {
                 connectionWorkflow = new ConnectionWorkflow();
@@ -1738,6 +1754,56 @@ namespace RockWeb.Blocks.Connection
             WorkflowsState.Add( connectionWorkflow );
             BindConnectionWorkflowsGrid();
             HideDialog();
+        }
+
+        /// <summary>
+        /// Determines whether the include and exclude data views posted by the workflow dialog can be saved by the current person.
+        /// Shows a message when they cannot.
+        /// </summary>
+        /// <param name="currentIncludeDataViewId">The include data view already on the workflow being edited, if any.</param>
+        /// <param name="currentExcludeDataViewId">The exclude data view already on the workflow being edited, if any.</param>
+        /// <returns><c>true</c> if each data view is empty, unchanged, or a person data view the current person can view; otherwise <c>false</c>.</returns>
+        private bool AreWorkflowDataViewsAllowed( int? currentIncludeDataViewId, int? currentExcludeDataViewId )
+        {
+            return IsWorkflowDataViewAllowed( dvpIncludeDataView.SelectedValueAsId(), currentIncludeDataViewId )
+                && IsWorkflowDataViewAllowed( dvpExcludeDataView.SelectedValueAsId(), currentExcludeDataViewId );
+        }
+
+        /// <summary>
+        /// Determines whether a single data view posted by the workflow dialog can be saved by the current person.
+        /// Shows a message when it cannot.
+        /// </summary>
+        /// <param name="postedDataViewId">The posted data view identifier.</param>
+        /// <param name="currentDataViewId">The data view already on the workflow being edited, if any.</param>
+        /// <returns><c>true</c> if no data view is posted, it is unchanged, or it is a person data view the current person can view; otherwise <c>false</c>.</returns>
+        private bool IsWorkflowDataViewAllowed( int? postedDataViewId, int? currentDataViewId )
+        {
+            if ( !postedDataViewId.HasValue || postedDataViewId == currentDataViewId )
+            {
+                return true;
+            }
+
+            var postedDataView = DataViewCache.Get( postedDataViewId.Value );
+            if ( postedDataView != null &&
+                postedDataView.EntityTypeId == EntityTypeCache.Get( typeof( Person ) ).Id &&
+                postedDataView.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                var dataViewFilter = postedDataView.DataViewFilter;
+                if ( dataViewFilter == null )
+                {
+                    return true;
+                }
+
+                var allEntityFilters = DataViewFilterCache.All().Where( df => df.EntityTypeId == postedDataView.EntityTypeId ).ToList();
+                if ( dataViewFilter.IsAuthorized( Authorization.VIEW, CurrentPerson, allEntityFilters ) )
+                {
+                    return true;
+                }
+            }
+
+            nbWorkflowError.Text = "The selected data view is not available.";
+            nbWorkflowError.Visible = true;
+            return false;
         }
 
         /// <summary>
