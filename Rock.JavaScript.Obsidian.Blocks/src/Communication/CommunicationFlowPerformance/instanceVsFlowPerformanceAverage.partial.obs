@@ -10,7 +10,10 @@
                   type="percent" />
     </Panel>
 
-    <NothingToShow v-else title="Instance vs. Flow Performance Average" />
+    <Panel v-else
+           title="Instance vs. Flow Performance Average">
+        <EmptyState description="Check again once the initial message has been sent." />
+    </Panel>
 </template>
 
 <style scoped>
@@ -21,7 +24,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import NothingToShow from "./nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";

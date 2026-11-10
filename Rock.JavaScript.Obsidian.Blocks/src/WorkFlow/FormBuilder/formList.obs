@@ -24,6 +24,9 @@
                         <p class="mb-0">Choose a category from the tree to view its forms.</p>
                     </div>
                 </template>
+                <template v-else-if="!categoryHasForms">
+                    <EmptyState type="noItems" :description="canEditCategory ? 'There are no forms in this category yet. Use the add button to create one.' : 'There are no forms in this category yet.'" />
+                </template>
                 <template v-else>
                     <DisplayCardContainer>
                         <div class="formlist-main-actions">
@@ -162,6 +165,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import SecurityButton from "@Obsidian/Controls/securityButton.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";

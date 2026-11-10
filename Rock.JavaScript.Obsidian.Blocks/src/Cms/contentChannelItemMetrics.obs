@@ -2,10 +2,10 @@
 <template>
     <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning" v-html="config.errorMessage"></NotificationBox>
 
-    <NotificationBox v-else-if="!config.isCollectingData" :alertType="AlertType.Warning">
-        <strong>No view data is being collected for this content.</strong>
-        <p>Metrics appear here once interaction tracking is turned on. Enable Log Interactions on the Content Channel Item View block that displays this item, then check back after it receives traffic.</p>
-    </NotificationBox>
+    <EmptyState v-else-if="!config.isCollectingData"
+                isBordered
+                title="No View Data Collected"
+                description="Metrics appear here once interaction tracking is turned on. Enable Log Interactions on the Content Channel Item View block that displays this item, then check back after it receives traffic." />
 
     <ContextSlicer v-else :title="itemName">
         <ButtonGroup v-model="selectedView" :items="viewOptions" />
@@ -68,7 +68,7 @@
                 <div class="col-md-12">
                     <ContentSection title="Views Over Time" class="metric-section" light disableCollapse>
                         <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                        <NothingToShow v-else-if="!hasViewsOverTimeData" />
+                        <EmptyState v-else-if="!hasViewsOverTimeData" />
                         <LineChart v-else
                                    :labels="viewsOverTimeLabels"
                                    :series="viewsOverTimeSeries"
@@ -90,7 +90,7 @@
                 <div class="col-md-6">
                     <ContentSection title="Device Breakdown" class="metric-section" light disableCollapse>
                         <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                        <NothingToShow v-else-if="deviceBreakdownLabels.length === 0" />
+                        <EmptyState v-else-if="deviceBreakdownLabels.length === 0" />
                         <BarChart v-else
                                   :labels="deviceBreakdownLabels"
                                   :series="deviceBreakdownSeries"
@@ -110,7 +110,7 @@
                             <small class="text-muted">(Of Known People)</small>
                         </template>
                         <div v-if="isLoading" class="skeleton metric-skeleton"></div>
-                        <NothingToShow v-else-if="connectionStatusLabels.length === 0" />
+                        <EmptyState v-else-if="connectionStatusLabels.length === 0" />
                         <BarChart v-else
                                   :labels="connectionStatusLabels"
                                   :series="connectionStatusSeries"
@@ -230,7 +230,7 @@
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import KpiTile from "@Obsidian/Controls/kpiTile.obs";
-    import NothingToShow from "./ContentChannelItemMetrics/nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import RankedListBarChart from "@Obsidian/Controls/rankedListBarChart.obs";
     import UtmMetricsCard from "./ContentChannelItemMetrics/utmMetricsCard.partial.obs";
     import GridSettingsModal from "./ContentChannelItemMetrics/gridSettingsModal.partial.obs";

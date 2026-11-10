@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :value="{ type, title, description, iconCssClass }"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <EmptyState :type="typeProp"
+                    :title="title || undefined"
+                    :description="isDescriptionHidden ? '' : (description || undefined)"
+                    :iconCssClass="iconCssClass || undefined"
+                    :isClearFiltersButtonShown="isClearFiltersButtonShown"
+                    :isBordered="isBordered"
+                    @clearFilters="onClearFilters" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <DropDownList label="Type" v-model="type" :items="typeOptions" :showBlankItem="false" help="Picks the standard icon, title and description." />
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Title" v-model="title" help="Blank uses the standard title for the type." />
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Icon CSS Class" v-model="iconCssClass" help="Blank uses the standard icon for the type, e.g. ti ti-mood-empty." />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox label="Description" v-model="description" textMode="multiline" help="Blank uses the standard description for the type." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Hide Description" v-model="isDescriptionHidden" help="Passes an empty description, which hides the description line." />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Show Clear Filters Button" v-model="isClearFiltersButtonShown" help="Shows a Clear Filters link button below the message. Handle the clearFilters event to reset the filters." />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Bordered" v-model="isBordered" help="Adds a border. Use it when the empty state sits directly on the block surface, not inside a panel." />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const typeOptions: ListItemBag[] = [
+        { text: "No Data", value: "noData" },
+        { text: "No Items", value: "noItems" },
+        { text: "No Results", value: "noResults" },
+        { text: "No Access", value: "noAccess" },
+        { text: "Unavailable", value: "unavailable" }
+    ];
+
+    // The dropdowns emit plain strings, so these are typed as strings and narrowed below.
+    const type = ref("noData");
+    const title = ref("");
+    const description = ref("");
+    const iconCssClass = ref("");
+    const isDescriptionHidden = ref(false);
+    const isClearFiltersButtonShown = ref(false);
+    const isBordered = ref(false);
+
+    const onClearFilters = (): void => alert('"clearFilters" event fired. Parents are responsible for resetting the filters.');
+
+    const typeProp = computed(() => type.value as "noData" | "noItems" | "noResults" | "noAccess" | "unavailable");
+
+    const importCode = getSfcControlImportPath("emptyState");
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `type="${type.value}"`,
+            title.value ? `title="${title.value}"` : "",
+            isDescriptionHidden.value ? "description=\"\"" : description.value ? `description="${description.value}"` : "",
+            iconCssClass.value ? `iconCssClass="${iconCssClass.value}"` : "",
+            isClearFiltersButtonShown.value ? "isClearFiltersButtonShown" : "",
+            isBordered.value ? "isBordered" : "",
+            isClearFiltersButtonShown.value ? "@clearFilters=\"onClearFilters\"" : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<EmptyState ${attributes.join("\n            ")} />`;
+    });
+</script>

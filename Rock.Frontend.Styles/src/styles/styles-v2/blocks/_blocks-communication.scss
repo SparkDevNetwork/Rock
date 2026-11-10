@@ -69,21 +69,6 @@ iframe.email-body {
     overflow-y: unset;
 }
 
-// Empty State Messages
-.communication-detail-no-metrics {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color: var(--color-interface-medium);
-}
-
-.communication-detail-no-metrics-message {
-    font-size: var(--font-size-xsmall);
-    margin-top: var(--spacing-tiny);
-    text-align: center;
-}
-
 // KPI Cards
 
 .communication-detail-kpi .kpi { // Override default KPI margin to fill cols.
@@ -756,20 +741,32 @@ iframe.email-body {
 }
 
 // ======================== COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ========================
-// From CommunicationFlowPerformance/nothingToShow.partial.obs and CommunicationFlowInstanceMessageMetrics/nothingToShow.partial.obs
-// Matches the height of the charts the empty state stands in for.
-.panel .communication-flow-empty-state-panel-body {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 268px;
-  padding: var(--spacing-medium) var(--spacing-large);
+// From communicationFlowPerformance.obs and communicationFlowInstanceMessageMetrics.obs
+// Lets the panels in a row (used with row-eq-height-md) fill the height of the tallest panel beside them, so a panel
+// holding an empty state or a short chart lines up with its neighbor. The first div in each column is the Panel
+// control's fullscreen wrapper. Flex is used instead of a 100% height so the panel's bottom margin keeps the gap below the row.
+.communication-flow-panel-row {
+  > [class*="col-"] {
+    display: flex;
+    flex-direction: column;
+
+    > div {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+
+      > .panel {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+
+        > .panel-body {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+      }
+    }
+  }
 }
 // ====================== END COMMUNICATION FLOW PERFORMANCE & FLOW INSTANCE MESSAGE METRICS ======================
-
-// ======================== COMMUNICATION SATURATION REPORT ========================
-// From CommunicationSaturationReport/nothingToShow.partial.obs
-.communication-saturation-report-empty-state {
-  padding: var(--spacing-xlarge) 0;
-}
-// ====================== END COMMUNICATION SATURATION REPORT ======================

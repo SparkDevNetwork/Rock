@@ -8,13 +8,7 @@
 
         <div v-if="!hasItems">
             <slot name="empty">
-                <div class="nothing-to-show-container">
-                    <i class="nothing-to-show-icon ti ti-alert-triangle"></i>
-                    <div class="nothing-to-show-body">
-                        <p class="nothing-to-show-text">Nothing To Show</p>
-                        <small class="nothing-to-show-help-text">Not enough data has been collected yet. Check again later.</small>
-                    </div>
-                </div>
+                <EmptyState />
             </slot>
         </div>
 
@@ -110,44 +104,12 @@
     height: 100%;
     border-radius: 9999px;
 }
-
-/* The built-in empty state, matching the metrics block's Nothing To Show. Overridden entirely
-   when the consumer supplies the "empty" slot. */
-.nothing-to-show-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--spacing-small);
-    min-height: 300px;
-    color: var(--color-interface-medium);
-}
-
-.nothing-to-show-icon {
-    font-size: 60px;
-    line-height: 1;
-}
-
-.nothing-to-show-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--spacing-tiny);
-}
-
-.nothing-to-show-text {
-    margin: 0;
-}
-
-.nothing-to-show-help-text {
-    margin: 0;
-    font-size: var(--font-size-xsmall);
-}
 </style>
 
 <script setup lang="ts" generic="T extends { label?: string | null; count: number }">
     import { computed } from "vue";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { pluralize } from "@Obsidian/Utility/stringUtils";

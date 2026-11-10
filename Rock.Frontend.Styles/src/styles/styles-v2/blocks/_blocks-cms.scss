@@ -1202,12 +1202,6 @@ ul.activeusers {
 // ===================== END LAVA SHORTCODE LIST =====================
 
 // ==================== CONTENT CHANNEL ITEM METRICS =====================
-// From ContentChannelItemMetrics/nothingToShow.partial.obs
-.content-channel-item-metrics-empty-state {
-  min-height: 300px;
-}
-
-
 .content-channel-item-metrics {
 
   /* The inner Ant Select sizes to its content, so pin its width here; otherwise the picker grows

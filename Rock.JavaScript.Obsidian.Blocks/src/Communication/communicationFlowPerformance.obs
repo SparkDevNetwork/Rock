@@ -54,7 +54,7 @@
 
             <template v-if="!isNullish(config.flowPerformance?.conversionGoalType)">
                 <template v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime">
-                    <div class="row">
+                    <div class="row row-eq-height-md communication-flow-panel-row">
                         <div class="col-md-4">
                             <FlowKeyMetrics :messages="selectedFlowInstanceMessages"
                                             :flowPerformance="config.flowPerformance"
@@ -73,7 +73,7 @@
                 <template v-else-if="hasMultipleFlowInstances">
                     <FlowKeyMetrics :messages="selectedFlowInstanceMessages" />
 
-                    <div class="row">
+                    <div class="row row-eq-height-md communication-flow-panel-row">
                         <div class="col-md-6">
                             <TotalFlowPerformanceOverTime :messages="selectedFlowInstanceMessages"
                                                           :dateUnit="dateUnit"

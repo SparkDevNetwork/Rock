@@ -10,7 +10,10 @@
                    type="percent" />
     </Panel>
 
-    <NothingToShow v-else title="Total Flow Performance Over Time" />
+    <Panel v-else
+           title="Total Flow Performance Over Time">
+        <EmptyState description="Check again once the initial message has been sent." />
+    </Panel>
 </template>
 
 <style scoped>
@@ -22,7 +25,7 @@
 <script setup lang="ts">
     /* eslint-disable @typescript-eslint/naming-convention */
     import { computed, PropType } from "vue";
-    import NothingToShow from "./nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
     import LineChart from "@Obsidian/Controls/lineChart.obs";
     import { alignDataPointsByDate, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";

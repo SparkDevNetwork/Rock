@@ -1,8 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="!config.options?.canView" alertType="warning">
-        <strong>Note</strong> You are not authorized to view this workflow type.
-    </NotificationBox>
+    <EmptyState v-if="!config.options?.canView"
+                type="unavailable"
+                description="This content is unavailable. It may not exist, or you may not have permission to view it."
+                isBordered />
 
     <Grid v-else
           :definition="config.gridDefinition ?? undefined"
@@ -171,7 +172,7 @@
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import { Guid } from "@Obsidian/Types";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { appendQueryParam } from "@Obsidian/Utility/url";

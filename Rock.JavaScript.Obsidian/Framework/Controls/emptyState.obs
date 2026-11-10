@@ -1,0 +1,138 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="empty-state" :class="{ 'empty-state-bordered': isBordered }" role="status">
+        <i class="empty-state-icon" :class="resolvedIconCssClass" aria-hidden="true"></i>
+        <div class="empty-state-body">
+            <p class="empty-state-text">{{ resolvedTitle }}</p>
+            <small v-if="resolvedDescription" class="empty-state-help-text">{{ resolvedDescription }}</small>
+        </div>
+        <RockButton v-if="isClearFiltersButtonShown" :btnType="BtnType.Link" @click="onClearFiltersClick">Clear Filters</RockButton>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+
+    // #region Types
+
+    type EmptyStateType = "noData" | "noItems" | "noResults" | "noAccess" | "unavailable";
+
+    // #endregion Types
+
+    const props = defineProps({
+        /**
+         * Why there is nothing to show. "noData" means nothing has been collected yet,
+         * "noItems" means a list or collection has no entries,
+         * "noResults" means the current filters matched nothing, and "noAccess" means the
+         * person is not permitted to view the content. "unavailable" means the content
+         * could not be found, such as a missing or unknown ID. The type picks the standard
+         * icon, title and description, any of which can be overridden by the props below.
+         */
+        type: {
+            type: String as PropType<EmptyStateType>,
+            default: "noData"
+        },
+
+        /** Overrides the standard title for the type. */
+        title: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * Overrides the standard description for the type. An empty string hides the
+         * description entirely.
+         */
+        description: {
+            type: String as PropType<string | undefined>
+        },
+
+        /** Overrides the standard icon for the type, e.g. "ti ti-mood-empty". */
+        iconCssClass: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * When true, a "Clear Filters" link button is shown below the message. Use it with
+         * the "noResults" type and handle the clearFilters event to reset the filters.
+         */
+        isClearFiltersButtonShown: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * When true, the empty state gets a border. Use it when the empty state sits directly on
+         * the block surface, where the soft background blends into the page, and leave it off
+         * inside a panel, which already has its own border.
+         */
+        isBordered: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Raised when the "Clear Filters" button is clicked. */
+        (event: "clearFilters"): void;
+    }>();
+
+    // #region Values
+
+    // The standard content for each type. Keep the wording generic so a "noAccess" state
+    // does not confirm whether any data exists.
+    const standardContent: Record<EmptyStateType, { iconCssClass: string, title: string, description: string }> = {
+        noData: {
+            iconCssClass: "ti ti-chart-bar-off",
+            title: "Nothing To Show",
+            description: "Not enough data has been collected yet. Check again later."
+        },
+        noItems: {
+            iconCssClass: "ti ti-inbox",
+            title: "No Items",
+            description: "There are no items to show yet."
+        },
+        noResults: {
+            iconCssClass: "ti ti-filter-off",
+            title: "No Results Found",
+            description: "No results match your current filters. Try adjusting them to see more data."
+        },
+        noAccess: {
+            iconCssClass: "ti ti-lock",
+            title: "Access Restricted",
+            description: "You do not have permission to view this content."
+        },
+        unavailable: {
+            iconCssClass: "ti ti-alert-triangle",
+            title: "Content Unavailable",
+            description: "This content could not be found. Check the link and try again."
+        }
+    };
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const resolvedIconCssClass = computed((): string => {
+        return props.iconCssClass ?? standardContent[props.type].iconCssClass;
+    });
+
+    const resolvedTitle = computed((): string => {
+        return props.title ?? standardContent[props.type].title;
+    });
+
+    const resolvedDescription = computed((): string => {
+        return props.description ?? standardContent[props.type].description;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    const onClearFiltersClick = (): void => {
+        emit("clearFilters");
+    };
+
+    // #endregion Event Handlers
+</script>

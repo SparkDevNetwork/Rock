@@ -9,7 +9,10 @@
                    type="percent" />
     </Panel>
 
-    <NothingToShowPartial v-else title="Message Performance Over Time" />
+    <Panel v-else
+           title="Message Performance Over Time">
+        <EmptyState description="Check again once the initial message has been sent." />
+    </Panel>
 </template>
 
 <style scoped>
@@ -20,7 +23,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import NothingToShowPartial from "./nothingToShow.partial.obs";
+    import EmptyState from "@Obsidian/Controls/emptyState.obs";
     import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
     import LineChart from "@Obsidian/Controls/lineChart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
