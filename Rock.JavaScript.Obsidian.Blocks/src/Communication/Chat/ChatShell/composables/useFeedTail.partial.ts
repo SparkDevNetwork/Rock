@@ -551,6 +551,9 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         }
 
         const dotsBefore = was.parts.get("dots:typing");
+        // name lines going as a new one takes their place: two names drawn over each other read as
+        // neither, so the one going is gone by half way and the new one comes in the second half
+        const namesGoing = new Set<Element>();
         for (const part of now) {
             const kind = kindOf(part.id);
             if (part.element === handoffBox || kind === "meta" || kind === "box" || kind === "dots") {
@@ -560,8 +563,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             // a face or a name line new in a bubble that stays crosses with the one going, both where it stood
             const crossing = parting.find(other => other !== bubbleGoing && other.element !== part.element && idOf(other.element) === part.id);
             if (crossing) {
+                if (kind === "name") {
+                    namesGoing.add(crossing.element);
+                }
                 if (!reduced) {
-                    play(part.element, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.base, easing: tokens.easeState, id: "chat-tail-in" });
+                    const timing = kind === "name" ? { delay: tokens.base / 2, duration: tokens.base / 2, fill: "backwards" as const } : { duration: tokens.base };
+                    play(part.element, [{ opacity: 0 }, { opacity: 1 }], { ...timing, easing: tokens.easeState, id: "chat-tail-in" });
                 }
                 continue;
             }
@@ -641,7 +648,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 fadeAway(part.element, part.done, seen, { duration: tokens.fast, easing: tokens.easeOut });
             }
             else if (!reduced) {
-                fadeAway(part.element, part.done, seen, { duration: tokens.base, easing: tokens.easeState });
+                fadeAway(part.element, part.done, seen, { duration: namesGoing.has(part.element) ? tokens.base / 2 : tokens.base, easing: tokens.easeState });
             }
             else {
                 part.done();

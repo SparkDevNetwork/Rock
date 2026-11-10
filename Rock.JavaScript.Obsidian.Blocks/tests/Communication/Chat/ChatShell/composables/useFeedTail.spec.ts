@@ -664,6 +664,25 @@ describe("someone typing", () => {
         expect(shown[1].faces.every(face => near(face.box.top, wasFace.top) && near(face.box.left, wasFace.left))).toBe(true);
         expect(shown[1].faces.map(face => Math.round(face.seen * 10) / 10).sort()).toEqual([.5, .5]);
     });
+
+    // Two names drawn over each other read as neither, so the line that names the two goes before
+    // the one that names who is left comes, in the same time a face takes to cross.
+    test("one of two typists sending: the name line naming both goes, then the one naming who is left comes, never two drawn at once", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: me }], typing: typingBy(person(ted, "Ted"), person(marcus, "Marcus")), isGroup: true });
+
+        motion.arrived(message(2), place);
+        v.rows.push({ key: "k:2", sender: ted });
+        v.typing.value = typingBy(person(marcus, "Marcus"));
+        await settle();
+
+        const lines = sample(() => [...(bubble(v) as HTMLElement).querySelectorAll<HTMLElement>(".chat-typing-names")]
+            .map(line => ({ text: line.textContent?.trim(), seen: opacity(line) }))
+            .filter(line => line.seen > .01), [0, 30, 60, 89, 91, 120, 150, base - 1, base]);
+        expect(lines.filter(frame => frame.length > 1)).toEqual([]);
+        expect(lines[0]).toEqual([expect.objectContaining({ text: "Ted and Marcus" })]);
+        expect(lines[lines.length - 1]).toEqual([{ text: "Marcus", seen: 1 }]);
+    });
 });
 
 describe("her message ending her typing", () => {
