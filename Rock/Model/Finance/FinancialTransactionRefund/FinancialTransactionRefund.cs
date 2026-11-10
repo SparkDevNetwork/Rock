@@ -101,6 +101,38 @@ namespace Rock.Model
         public virtual DefinedValue RefundReasonValue { get; set; }
 
         #endregion Navigation Properties
+
+        #region Public Methods
+
+        /// <inheritdoc/>
+        public override bool IsAuthorized( string action, Person person )
+        {
+            /*
+                11/10/2026 - MSE
+
+                A refund is only available to people who are allowed the same action on its
+                transaction. The refund's own rules still apply too, so this can only narrow
+                access. FinancialTransaction has no ParentAuthority or IsAuthorized override,
+                so a copy with only the Id is authorized exactly like the stored transaction,
+                without a database read or a lazy load on a disposed context. If one is ever
+                added, load the transaction instead of using a copy.
+
+                Reason: Transaction security must also protect the transaction's refunds.
+            */
+            if ( !base.IsAuthorized( action, person ) )
+            {
+                return false;
+            }
+
+            if ( Id == 0 )
+            {
+                return true;
+            }
+
+            return new FinancialTransaction { Id = Id }.IsAuthorized( action, person );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
