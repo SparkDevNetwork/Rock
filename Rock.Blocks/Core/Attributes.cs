@@ -601,6 +601,15 @@ namespace Rock.Blocks.Core
                 var entityId = GetEntityId();
                 var attributeValueService = new AttributeValueService( rockContext );
                 var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, entityId );
+                var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
+
+                // Ignore binary file values that reference a file other than the current or a new temporary file.
+                var currentValue = attributeValue != null && !string.IsNullOrWhiteSpace( attributeValue.Value ) ? attributeValue.Value : attribute.DefaultValue;
+
+                if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, newValue, currentValue ) )
+                {
+                    return ActionOk( GetAttributeRow( new AttributeService( rockContext ).Get( attribute.Id ) ) );
+                }
 
                 if ( attributeValue == null )
                 {
@@ -611,8 +620,6 @@ namespace Rock.Blocks.Core
                     };
                     attributeValueService.Add( attributeValue );
                 }
-
-                var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
 
                 if ( attributeValue.Value != newValue )
                 {

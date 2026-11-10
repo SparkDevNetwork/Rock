@@ -1706,7 +1706,22 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = args.FieldValues.GetValueOrNull( attribute.Guid );
+                /*
+                    11/09/2026 - MSE
+
+                    A posted binary file attribute value may only reference the file already stored
+                    or a newly uploaded temporary file, so skip values that fail that check.
+
+                    Reason: Restrict which binary files a posted attribute value may reference.
+                */
+
                 var newValue = PublicAttributeHelper.GetPrivateValue( attribute, value.ToStringSafe() );
+
+                if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, newValue, context.Registration.GetAttributeValue( attribute.Key ) ) )
+                {
+                    continue;
+                }
+
                 context.Registration.SetAttributeValue( attribute.Key, newValue );
             }
 
@@ -3440,6 +3455,21 @@ namespace Rock.Blocks.Event
                             // value, even if the new value is blank.
                             var originalValue = person.GetAttributeValue( attribute.Key );
                             var newValue = PublicAttributeHelper.GetPrivateValue( attribute, fieldValue.ToString() );
+
+                            /*
+                                11/09/2026 - MSE
+
+                                A posted binary file attribute value may only reference the file already stored
+                                or a newly uploaded temporary file, so skip values that fail that check.
+
+                                Reason: Restrict which binary files a posted attribute value may reference.
+                            */
+
+                            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, newValue, originalValue ) )
+                            {
+                                newValue = originalValue;
+                            }
+
                             person.SetAttributeValue( attribute.Key, newValue );
 
                             if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )
@@ -3936,7 +3966,7 @@ namespace Rock.Blocks.Event
                 if ( IsFieldUnlockedForEditing( field, registrant, attribute.Key ) )
                 {
                     var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
-                    newValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue );
+                    newValue = PublicAttributeHelper.GetAllowedPrivateValue( attribute, newValue, originalValue );
 
                     finalValue = newValue;
 
@@ -6123,6 +6153,21 @@ namespace Rock.Blocks.Event
                         {
                             var originalValue = groupMember.GetAttributeValue( attribute.Key );
                             var newValue = PublicAttributeHelper.GetPrivateValue( attribute, fieldValue.ToString() );
+
+                            /*
+                                11/09/2026 - MSE
+
+                                A posted binary file attribute value may only reference the file already stored
+                                or a newly uploaded temporary file, so skip values that fail that check.
+
+                                Reason: Restrict which binary files a posted attribute value may reference.
+                            */
+
+                            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, newValue, originalValue ) )
+                            {
+                                newValue = originalValue;
+                            }
+
                             groupMember.SetAttributeValue( attribute.Key, newValue );
 
                             if ( ( originalValue ?? string.Empty ).Trim() != ( newValue ?? string.Empty ).Trim() )

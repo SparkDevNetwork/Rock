@@ -1731,6 +1731,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     request.AssignedGroupMemberStatus = requestDetails.PlacementGroupMemberStatus.Value;
 
                     var memberAttributeValues = new Dictionary<string, string>();
+                    var previousMemberAttributeValues = request.AssignedGroupMemberAttributeValues?.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
                     if ( requestDetails.PlacementGroupMemberAttributeValues != null )
                     {
                         // Load the attribute data for an empty group member so we can
@@ -1756,6 +1758,29 @@ namespace Rock.Blocks.Types.Mobile.Connection
                             }
 
                             var value = PublicAttributeHelper.GetPrivateValue( attribute, memberValue.Value );
+
+                            /*
+                                11/09/2026 - MSE
+
+                                A posted binary file attribute value may only reference the file already stored
+                                or a newly uploaded temporary file, so skip values that fail that check.
+
+                                Reason: Restrict which binary files a posted attribute value may reference.
+                            */
+
+                            // The group member does not exist yet, so compare against the
+                            // value previously saved on the request.
+                            previousMemberAttributeValues.TryGetValue( memberValue.Key, out var previousValue );
+
+                            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, value, previousValue ) )
+                            {
+                                if ( previousValue == null )
+                                {
+                                    continue;
+                                }
+
+                                value = previousValue;
+                            }
 
                             memberAttributeValues.Add( memberValue.Key, value );
                         }
