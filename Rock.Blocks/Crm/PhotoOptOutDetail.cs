@@ -95,7 +95,7 @@ namespace Rock.Blocks.Crm
 
             try
             {
-                entity = personService.GetByPersonActionIdentifier( personKey, "OptOut" ) ?? personService.GetByUrlEncodedKey( personKey );
+                entity = personService.GetByPersonActionIdentifier( personKey, "OptOut" ) ?? personService.GetByImpersonationToken( personKey, false, PageCache.Id );
             }
             catch
             {
