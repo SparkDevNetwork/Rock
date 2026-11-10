@@ -42,7 +42,7 @@ import { reactive, toRaw } from "vue";
 import { classifyPlatformError } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { HistoryPage, MessageCreatedEvent, Reaction, ThreadUpdatedEvent, TimelineMessage } from "../types.partial";
-import { applyMessageChange, holdMessage, isTimelineMessage, MessageMask, maskHeld, withSendKey } from "../heldMessage.partial";
+import { applyMessageChange, holdMessage, isMessageChange, isTimelineMessage, MessageChangeEvent, MessageMask, maskHeld } from "../heldMessage.partial";
 import { defaultLimits, PlatformLimits } from "./useSession.partial";
 import { changedFields, FieldGroup, isNewerChange, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import type { MessageMotion } from "../messageMotion.partial";
@@ -124,7 +124,7 @@ export type TimelineDependencies = {
      * reactions own that arithmetic; the timelines decide when it runs, held like every other
      * change until the channel's first page is in.
      */
-    applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+    applyReaction?: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean) => void;
 
     /** What the reader may see of a message, applied to every row as it is written. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
@@ -408,8 +408,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * Puts one message in place by id, masked as the people blocked now stand. The mask reads what
      * is combined, so a field the newer copy does not carry, kept from what is held, is masked too.
      */
-    function upsert(channelId: string, arrived: TimelineMessage): void {
-        const message = withSendKey(arrived);
+    function upsert(channelId: string, message: TimelineMessage): void {
         const messages = state(channelId).messages;
         const index = positionOf(messages, message.id);
 
@@ -522,7 +521,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      */
     function apply(channelId: string, event: string, payload: unknown, isLive: boolean): void {
         if (isReactionEvent(event)) {
-            dependencies.applyReaction?.(channelId, event, payload);
+            dependencies.applyReaction?.(channelId, event, payload, isLive);
             return;
         }
         const rev = revOf(payload);
@@ -567,7 +566,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 }
             }
         }
-        else {
+        else if (isMessageChange(event)) {
             const fields = changedFields(event, payload);
             if (fields) {
                 changeMessage(channelId, event, payload, rev, fields, isLive);
@@ -579,7 +578,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * Lays an edit, a delete or a change of visibility over the message held, when it is newer than
      * what is held, and records it, held or not, for a page read before it.
      */
-    function changeMessage(channelId: string, event: string, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>, isLive: boolean): void {
+    function changeMessage(channelId: string, event: MessageChangeEvent, payload: { id: number }, rev: number | null, fields: Partial<TimelineMessage>, isLive: boolean): void {
         const newer = takeChange(ledger, payload.id, "message", rev, fields);
         if (!newer) {
             return;

@@ -24,6 +24,7 @@
 import { inject, InjectionKey, onBeforeUnmount, reactive, Ref, ref, toRaw, watch } from "vue";
 import { rowKey, sendKey } from "./heldMessage.partial";
 import { TimelineMessage } from "./types.partial";
+import type { MessageChangeEvent } from "./heldMessage.partial";
 
 /** How a row came to be drawn new: risen in as it was sent here or heard live. */
 export type ArrivalMotion = "rise";
@@ -63,7 +64,7 @@ export type MessageMotion = {
     arrived: (message: Pick<TimelineMessage, "id" | "client_key">) => void;
 
     /** A live edit, delete or change of visibility, by its event's name, was applied to a held copy. */
-    changed: (message: Pick<TimelineMessage, "id" | "client_key">, event: string) => void;
+    changed: (message: Pick<TimelineMessage, "id" | "client_key">, event: MessageChangeEvent) => void;
 
     /** The reader's own reaction landed on a held copy. */
     reacted: (message: Pick<TimelineMessage, "id" | "client_key">, code: string, motion: ReactionMotion["motion"]) => void;
@@ -99,6 +100,9 @@ export function createMessageMotion(): MessageMotion {
     // Vue tracks a reactive Map's get per key, so a write wakes only the rows that read that key.
     const rows = reactive(new Map<string, RowEvents>());
     const liveScopes = new Set<{ since: number }>();
+    // Sends whose live copy has not been heard yet, by row key: until it is, the mark is what keeps
+    // that copy from rising as heard, however late it comes. Plain, since no view reads it.
+    const unheardSends = new Set<string>();
     let seq = 0;
     let isStopped = false;
 
@@ -115,24 +119,39 @@ export function createMessageMotion(): MessageMotion {
 
     /**
      * Lets go of every row no view still open could play: everything at or below the oldest open
-     * view's number. A send's mark is kept for the session, as it says the person's own message never
-     * rises a second time however late its live copy comes; one short string a send.
+     * view's number, as a view goes. A send's mark stays until its live copy is heard, since it is
+     * what keeps that copy from rising as heard however late it comes. While one room stays open
+     * nothing newer than its feed is let go: about one small entry for each message heard live in
+     * it, the same count of messages its timeline holds, and let go at the next switch (an estimate:
+     * 10,000 messages heard in a day at about 150 bytes each is 1.5 MB).
      */
     function prune(): void {
         const floor = Math.min(seq, ...[...liveScopes].map(scope => scope.since));
         const held = toRaw(rows);
         for (const [key, events] of held) {
             const newest = Math.max(events.arrival?.seq ?? 0, events.content?.seq ?? 0, events.reaction?.seq ?? 0, events.thread?.seq ?? 0);
-            if (newest <= floor && events.arrival?.how !== "sent") {
+            if (newest <= floor && !unheardSends.has(key)) {
                 rows.delete(key);
             }
         }
     }
 
     return {
-        sent: localId => record(`k:${sendKey(localId)}`, held => held?.arrival ? null : { ...held, arrival: { seq: ++seq, how: "sent" } }),
+        sent: localId => record(`k:${sendKey(localId)}`, held => {
+            if (held?.arrival) {
+                return null;
+            }
+            unheardSends.add(`k:${sendKey(localId)}`);
+            return { ...held, arrival: { seq: ++seq, how: "sent" } };
+        }),
 
-        arrived: message => record(rowKey(message), held => held?.arrival ? null : { ...held, arrival: { seq: ++seq, how: "live" } }),
+        arrived: message => record(rowKey(message), held => {
+            if (held?.arrival) {
+                unheardSends.delete(rowKey(message));
+                return null;
+            }
+            return { ...held, arrival: { seq: ++seq, how: "live" } };
+        }),
 
         changed: (message, event) => record(rowKey(message), held => ({ ...held, content: { seq: ++seq, isEdit: event === "message.edited" } })),
 
@@ -173,6 +192,7 @@ export function createMessageMotion(): MessageMotion {
         stop: () => {
             isStopped = true;
             liveScopes.clear();
+            unheardSends.clear();
             rows.clear();
         }
     };

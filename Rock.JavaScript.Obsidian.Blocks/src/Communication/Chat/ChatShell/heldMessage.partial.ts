@@ -261,6 +261,20 @@ export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean
     return piece.type === "mention" && piece.all === true;
 }
 
+/** A live change to a message held: an edit, a delete, or a moderator's change of visibility. */
+export type MessageChangeEvent = "message.edited" | "message.deleted" | "message.visibility";
+
+/**
+ * Whether a live event is a change to a message held.
+ *
+ * @param event The live event's name.
+ *
+ * @returns True for an edit, a delete or a change of visibility.
+ */
+export function isMessageChange(event: string): event is MessageChangeEvent {
+    return event === "message.edited" || event === "message.deleted" || event === "message.visibility";
+}
+
 /**
  * Lays an edit, a delete or a change of visibility over a message held on screen, wherever it is
  * held: the conversation's timeline or an open thread. A deleted message keeps no edit, and a
@@ -272,7 +286,7 @@ export function isRoomMention(piece: Readonly<Record<string, unknown>>): boolean
  * @param payload The live event's payload, about this message.
  * @param newer What newer changes to the message set, laid over this one.
  */
-export function applyMessageChange(message: TimelineMessage, event: string, payload: unknown, newer: Partial<TimelineMessage> = {}): void {
+export function applyMessageChange(message: TimelineMessage, event: MessageChangeEvent, payload: unknown, newer: Partial<TimelineMessage> = {}): void {
     if (event === "message.edited") {
         const edited = payload as MessageEditedEvent;
         // an edit by someone the reader blocked moves its time and says nothing of its words

@@ -52,7 +52,7 @@ import {
     TimelineMessage
 } from "../types.partial";
 import { defaultCatchUp, Timelines } from "./useHistory.partial";
-import { applyMessageChange, holdMessage, maskHeld, MessageMask, withSendKey } from "../heldMessage.partial";
+import { applyMessageChange, holdMessage, isMessageChange, maskHeld, MessageMask } from "../heldMessage.partial";
 import type { MessageMotion } from "../messageMotion.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
 import { PageEventTargets } from "./useMarkRead.partial";
@@ -530,7 +530,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const pageRev = revOf(page);
             const messages = (page.messages ?? []).filter(message => beforeId === null || message.id < (beforeId as number));
             root = root ?? (page.root ? layNewer(ledger, page.root, pageRev) : null);
-            read.push(...messages.map(message => withSendKey(layNewer(ledger, message, pageRev))));
+            read.push(...messages.map(message => layNewer(ledger, message, pageRev)));
             hasMore = page.has_more === true;
             beforeId = messages.length > 0 ? Math.min(...messages.map(message => message.id)) : null;
         } while (hasMore && beforeId !== null && oldestHeld !== null && beforeId > oldestHeld && read.length < max);
@@ -1151,6 +1151,10 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 if (created.parent_id === thread.rootId) {
                     applyReply(created);
                 }
+                return;
+            }
+
+            if (!isMessageChange(event)) {
                 return;
             }
 

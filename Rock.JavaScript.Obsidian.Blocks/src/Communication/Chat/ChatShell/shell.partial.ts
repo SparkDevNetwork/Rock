@@ -655,7 +655,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // A reaction moves the conversation's copy of its message when the timeline lets it
         // through, held like any other change until the channel's first page is in; the open
         // thread's copies are moved as the event arrives.
-        applyReaction: (channelId, event, payload) => reactions.applyEvent(channelId, event, payload),
+        applyReaction: (channelId, event, payload, isLive) => reactions.applyEvent(channelId, event, payload, isLive),
         // every holder writes through the blocks' mask, made below and called only once running
         mask: message => blocks.mask(message),
         motion

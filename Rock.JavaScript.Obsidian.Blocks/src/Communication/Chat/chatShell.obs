@@ -15,6 +15,7 @@
         </NotificationBox>
 
         <div v-else
+             :key="shellBuild"
              class="chat-frame"
              :class="{ 'is-pane-motion-on': isPaneMotionOn }"
              data-testid="chat-frame"
@@ -809,6 +810,10 @@
     // session a fresh page load would have had.
     const shell = shallowRef(buildShell(config.session ?? {}));
 
+    // Which build of the shell the frame is drawn from. A new session draws a new frame, so every
+    // row and view takes its place in the new record of what happened, never the stopped one's.
+    const shellBuild = ref(0);
+
     // Every photo and face joins the first screen's reveal: it reads when the page releases and
     // reports what it is still decoding through this. The shell is rebuilt after a birthdate
     // answer, so the reveal is read through it each time.
@@ -1108,6 +1113,7 @@
         personCampusGuid.value = outcome.session.personCampusGuid ?? null;
         isProfileLavaConfigured.value = outcome.session.isProfileLavaConfigured === true;
         shell.value = buildShell(outcome.session);
+        shellBuild.value++;
         void shell.value.start();
     }
 

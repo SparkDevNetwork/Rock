@@ -122,7 +122,7 @@ export type Reactions = {
      * Applies a reaction event a channel topic carried to the conversation's copy of its message,
      * once the conversation's timeline lets it through.
      */
-    applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown) => void;
+    applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean) => void;
 
     /**
      * Applies a reaction event a channel topic carried to the open thread's copies of its message
@@ -717,11 +717,12 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
 
         toggleCode: (channelId: string, messageId: number, code: string): Promise<void> => toggle(channelId, messageId, glyphOf(channelId, messageId, code)),
 
-        applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown): void => {
+        applyEvent: (channelId: string, event: "reaction.added" | "reaction.removed", payload: unknown, isLive: boolean): void => {
             const moved = isStopped ? null : eventChange(event, payload);
             if (moved) {
                 const copy = timelineCopy(channelId, moved.messageId);
-                if (moved.ownCode && copy) {
+                // one held while the first page was read is part of that page, and no chip of it is drawn yet
+                if (moved.ownCode && copy && isLive) {
                     noteOwnReaction(channelId, moved.messageId, moved.ownCode, [copy]);
                 }
                 changeTimeline(channelId, moved.messageId, moved.apply);
