@@ -659,6 +659,20 @@ async function settle(): Promise<void> {
 }
 
 /**
+ * Lets a dialog's fade finish and the frames after it run, as a browser would. Vue ends a leave
+ * two animation frames after it starts, and jsdom runs frames on a timer of its own that a busy
+ * runner delays past any fixed wait, so the frames themselves are waited for: two asked after
+ * the leave's first run after its two, wherever it had got to.
+ */
+async function fadeOut(): Promise<void> {
+    await settle();
+    for (let i = 0; i < 2; i++) {
+        await new Promise(resolve => requestAnimationFrame(resolve));
+    }
+    await settle();
+}
+
+/**
  * Mounts the block. A test about what happens while a part fades out keeps Vue's real Transition,
  * which holds a leaving element on the page until the frames after its fade, as a browser does.
  */
@@ -3075,13 +3089,6 @@ describe("delete confirm", () => {
         return { w, row: w.get("[data-testid='frame-main'] [data-message-id='7']").element };
     }
 
-    /** Lets the dialog's fade finish and the frames after it run, as a browser would. */
-    async function fadeOut(): Promise<void> {
-        await settle();
-        await new Promise(resolve => setTimeout(resolve, 50));
-        await settle();
-    }
-
     test("Escape gives focus to the message", async () => {
         const { w, row } = await openConfirm();
 
@@ -3208,13 +3215,6 @@ describe("delete confirm", () => {
 describe("block confirm focus", () => {
     const sam = "a0000005-0000-4000-8000-000000000000";
 
-    /** Lets the dialog's fade finish and the frames after it run, as a browser would. */
-    async function fadeOut(): Promise<void> {
-        await settle();
-        await new Promise(resolve => setTimeout(resolve, 50));
-        await settle();
-    }
-
     /** Opens the confirmation from message 7's menu, whose More button then leaves with its bar. */
     async function askFromMessage(): Promise<{ w: VueWrapper, target: TimelineMessage }> {
         const w = await mountBlock(1200, true);
@@ -3270,6 +3270,9 @@ describe("block confirm focus", () => {
         mockThreadPages = { newest: [41, 42], older: [] };
         await settle();
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        // the drawer gives its composer focus a moment after it opens, which is over before the block is asked
+        await new Promise(resolve => setTimeout(resolve, 150));
         await settle();
         const thread = (mockShell!.threads as unknown as { state: { thread: { replies: TimelineMessage[] } } }).state.thread;
         const blocks = mockShell!.blocks as Record<string, jest.Mock>;
