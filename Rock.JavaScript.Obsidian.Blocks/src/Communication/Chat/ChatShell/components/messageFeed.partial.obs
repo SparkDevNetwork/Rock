@@ -712,14 +712,15 @@
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
     import { useViewArrivals } from "../messageMotion.partial";
-    import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
+    import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { isInConversation, useSentHold, useSlowSend } from "../composables/useSend.partial";
-    import { endSlackPx, FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, nearBottomPx, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText, useLayoutAgain } from "../feedLayout.partial";
+    import { FeedLayout, FeedLayoutResult, FeedSection, jumpLabel, layoutFeed, newMessagesText, skeletonDelayMs, timeLabel, unreadStripText, useLayoutAgain } from "../feedLayout.partial";
     import { ChannelFacts, ChatError, PendingMessage, TimelineMessage } from "../types.partial";
 
     const props = defineProps({
@@ -899,12 +900,6 @@
     let observer: IntersectionObserver | null = null;
     let dividerObserver: IntersectionObserver | null = null;
 
-    /**
-     * Watches the feed's own box and the content in it, which change with no scroll: the composer
-     * below growing with its text, its strip of files or its failure strip, the column resizing, or
-     * a row growing as its photo, font or reactions settle.
-     */
-    let sizeObserver: ResizeObserver | null = null;
     let dividerElement: Element | null = null;
 
     /** Whether the New divider is out of view, and on which side, as the browser last reported. */
@@ -922,20 +917,15 @@
     const clearedThroughId = ref<number | null>(null);
 
     /**
-     * Whether the reader is at the newest message. It is the reader's state, changed only by a
-     * move: the reader scrolling up out of the newest message's reach clears it and scrolling down
-     * into it sets it, and the feed taking the reader somewhere (a jump, a follow) sets it from
-     * where they are going. A scroll with no move, as the browser reports a frame after the feed
-     * scrolled itself and content grew meanwhile, changes nothing, so a reader at the newest
-     * message is kept there through growth and a reader on their way to an older message is not
-     * pulled back.
+     * Whether the reader is at the newest message, kept there through the feed's own box and the
+     * content in it changing with no scroll: the composer below growing with its text, its strip of
+     * files or its failure strip, the column resizing, or a row growing as its photo, font or
+     * reactions settle. The day label is placed again after, since the pills moved with no scroll.
      */
-    const isAtNewest = ref(true);
+    const reader = useNewestEnd(() => feed.value, content, placeTopDay);
+    const isAtNewest = reader.isAtNewest;
 
     const isScrolledUp = computed((): boolean => !isAtNewest.value);
-
-    /** Where the feed was scrolled to when the reader's place was last read, which tells a move up from a move down. */
-    let readerTop = 0;
 
     /** Messages that arrived while the reader was scrolled up, for Jump to latest. */
     const newCount = ref(0);
@@ -1039,10 +1029,10 @@
         place: () => props.typingPlace,
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
         isFollowing: () => {
-            readReader();
+            reader.read();
             return isAtNewest.value;
         },
-        follow: scrollToBottom,
+        follow: reader.toNewest,
         arrives,
         drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
     });
@@ -1097,7 +1087,7 @@
     function onScroll(): void {
         actionBar.onScroll();
         placeTopDay();
-        readReader();
+        reader.read();
         if (isAtNewest.value) {
             newCount.value = 0;
         }
@@ -1122,7 +1112,7 @@
 
         // Just below the band the day label keeps once the strip has gone, which the divider coming
         // into view puts away, so the divider is the first thing read.
-        moveReaderTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
+        reader.moveTo(feed.value.scrollTop + dividerElement.getBoundingClientRect().top - feed.value.getBoundingClientRect().top - 52);
     }
 
     /** A row's flash plays once: the flash goes from the row as it ends. */
@@ -1133,9 +1123,7 @@
     }
 
     function onJump(event: Event): void {
-        if (feed.value) {
-            moveReaderTo(endOfFeed(feed.value));
-        }
+        reader.moveTo(reader.endOf());
         newCount.value = 0;
 
         // The button hides once the feed is at the bottom, which would drop a keyboard's focus
@@ -1169,7 +1157,7 @@
         }
 
         const box = row.getBoundingClientRect();
-        moveReaderTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
+        reader.moveTo(scroller.scrollTop + box.top - scroller.getBoundingClientRect().top - (scroller.clientHeight - box.height) / 2);
         row.focus({ preventScroll: true });
     }
 
@@ -1217,85 +1205,6 @@
 
         carried.value = day;
         gutterPx.value = scroller.offsetWidth - scroller.clientWidth;
-    }
-
-    /**
-     * The feed's box or its content changed size. A reader at the newest message is kept there, as
-     * the browser keeps a scroll's top and would leave the newest rows under the composer, or above
-     * the foot of a row that grew; then the day label is placed for where the reader now is, since
-     * the pills moved with no scroll.
-     */
-    function onFeedResize(): void {
-        if (isAtNewest.value) {
-            scrollToBottom();
-        }
-
-        placeTopDay();
-    }
-
-    /** The scroll top at the feed's newest end, read from layout so a glide in flight does not move it. */
-    function endOfFeed(element: HTMLElement): number {
-        return content.value ? endOf(element, content.value) : element.scrollHeight - element.clientHeight;
-    }
-
-    /** Whether the person is at, or near, the bottom of the feed. */
-    function isNearBottom(): boolean {
-        const element = feed.value;
-        return !element || endOfFeed(element) - element.scrollTop < nearBottomPx;
-    }
-
-    /**
-     * Reads the reader's place from where the feed is scrolled to: a move down into the newest
-     * message's reach, or a scroll that lands at the very end whoever moved it (the browser clamps
-     * a reader to the end when content shrinks), puts them at it, and only a move up out of the
-     * reach takes them from it. With no move, nothing changes, whatever the content did meanwhile.
-     * The first frames of a smooth scroll up are still in reach but not at the end, so they stay
-     * a move up.
-     */
-    function readReader(): void {
-        const top = feed.value?.scrollTop ?? 0;
-        const isNear = isNearBottom();
-        const element = feed.value;
-        const isAtEnd = !element || endOfFeed(element) - top <= endSlackPx;
-        if (isNear && (top > readerTop || isAtEnd)) {
-            isAtNewest.value = true;
-        }
-        else if (!isNear && top < readerTop) {
-            isAtNewest.value = false;
-        }
-        readerTop = top;
-    }
-
-    /**
-     * Takes the reader to a place in the feed, as a jump does. They are where it goes from the
-     * moment it starts, so a smooth scroll's first frames, still near the bottom, and rows settling
-     * on the way neither read as the reader at the newest message nor pull them back to it.
-     */
-    function moveReaderTo(top: number): void {
-        const scroller = feed.value;
-        if (!scroller) {
-            return;
-        }
-
-        const end = endOfFeed(scroller);
-        const target = Math.min(Math.max(0, top), end);
-        isAtNewest.value = end - target < nearBottomPx;
-        readerTop = scroller.scrollTop;
-        scroller.scrollTo?.({ top: target, behavior: scrollBehavior() });
-    }
-
-    /** Scrolls to the newest message, where the reader is then. */
-    function scrollToBottom(): void {
-        if (feed.value) {
-            feed.value.scrollTop = endOfFeed(feed.value);
-            isAtNewest.value = true;
-            readerTop = feed.value.scrollTop;
-        }
-    }
-
-    /** Smooth unless the person asked the system for less motion. */
-    function scrollBehavior(): ScrollBehavior {
-        return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
@@ -1367,7 +1276,7 @@
     // counting and following.
     watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
-        readReader();
+        reader.read();
 
         const shouldFollow = isAtNewest.value;
         noteArrivals(!shouldFollow);
@@ -1375,7 +1284,7 @@
         observeRows();
 
         if (shouldFollow) {
-            scrollToBottom();
+            reader.toNewest();
         }
 
         if (props.timeline.messages.length > 0) {
@@ -1392,7 +1301,7 @@
         }
 
         await nextTick();
-        scrollToBottom();
+        reader.toNewest();
     });
 
     // A send that fails opens the strip over the composer, which takes its height from the feed
@@ -1400,7 +1309,7 @@
     watch(() => channelPending.value.filter(row => row.status === "failed").length, async (failed, previous) => {
         if (failed > previous) {
             await nextTick();
-            scrollToBottom();
+            reader.toNewest();
         }
     });
 
@@ -1474,14 +1383,6 @@
             dividerObserver.observe(dividerElement);
         }
 
-        if (typeof ResizeObserver !== "undefined" && feed.value) {
-            sizeObserver = new ResizeObserver(onFeedResize);
-            sizeObserver.observe(feed.value);
-            if (content.value) {
-                sizeObserver.observe(content.value);
-            }
-        }
-
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
         if (!props.timeline.isLoaded) {
             skeletonTimer = setTimeout(() => {
@@ -1494,7 +1395,7 @@
 
         observeRows();
         if (props.timeline.messages.length > 0) {
-            scrollToBottom();
+            reader.toNewest();
             emit("firstShown");
         }
     });
@@ -1505,8 +1406,6 @@
         observer = null;
         dividerObserver?.disconnect();
         dividerObserver = null;
-        sizeObserver?.disconnect();
-        sizeObserver = null;
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
         }

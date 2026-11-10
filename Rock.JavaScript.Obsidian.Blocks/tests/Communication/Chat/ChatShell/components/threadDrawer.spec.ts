@@ -184,6 +184,115 @@ afterEach(() => {
     animations.restore();
 });
 
+/**
+ * The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped
+ * to them; the thread's body fills it from its top, so the newest end read from layout is where
+ * the scroll height puts it at rest.
+ */
+function layOut(w: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
+    const scroller = w.get(".chat-panel-body").element as HTMLElement;
+    const body = w.get(".chat-th-body").element as HTMLElement;
+    Object.defineProperty(body, "offsetTop", { configurable: true, get: () => 0 });
+    Object.defineProperty(body, "offsetHeight", { configurable: true, get: () => sizes.scrollHeight });
+    Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
+    Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+    Object.defineProperty(scroller, "scrollTop", {
+        configurable: true,
+        get: () => sizes.scrollTop,
+        set: (value: number) => sizes.scrollTop = Math.max(0, Math.min(value, sizes.scrollHeight - sizes.clientHeight))
+    });
+}
+
+// The reply composer under the thread grows with its text and takes that height from the thread,
+// as the conversation's composer takes it from the feed. Whether the reader is at the newest reply
+// is theirs to change by scrolling, never measured again as the drawer changes size, so a reader
+// there stays there, and their own reply arrives as the conversation's does.
+describe("a reader at the newest reply", () => {
+    const sending = { localId: "k1", channelId: "c1", body: "On my way", status: "sending", errorCode: null, parentId: 40, isShownInChannel: false };
+    let observers: Array<{ callback: ResizeObserverCallback, targets: Element[] }> = [];
+    let previous: typeof ResizeObserver;
+
+    beforeEach(() => {
+        observers = [];
+        previous = window.ResizeObserver;
+        window.ResizeObserver = class {
+            private readonly entry: { callback: ResizeObserverCallback, targets: Element[] };
+            constructor(callback: ResizeObserverCallback) {
+                this.entry = { callback, targets: [] };
+                observers.push(this.entry);
+            }
+            observe(target: Element): void {
+                this.entry.targets.push(target);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.entry.targets = [];
+            }
+        } as unknown as typeof ResizeObserver;
+    });
+
+    afterEach(() => {
+        window.ResizeObserver = previous;
+    });
+
+    /** The reply composer growing by the height given, with no scroll; `isObserved` once the browser has told the drawer. */
+    async function composerGrows(w: VueWrapper, sizes: { clientHeight: number }, by: number, isObserved: boolean): Promise<void> {
+        sizes.clientHeight -= by;
+        if (isObserved) {
+            const scroller = w.get(".chat-panel-body").element;
+            for (const observer of observers.filter(o => o.targets.includes(scroller))) {
+                observer.callback([], observer as unknown as ResizeObserver);
+            }
+        }
+        await nextTick();
+    }
+
+    test("keeps the newest reply in view as the reply composer grows past the near-bottom reach", async () => {
+        const w = draw({ isChannel: false });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+
+        await composerGrows(w, sizes, 100, true);
+
+        expect(sizes.scrollTop).toBe(700);
+    });
+
+    test("scrolled up, is left where they are as the reply composer grows", async () => {
+        const w = draw({ isChannel: false });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        // the reader scrolls up from the newest reply, the browser telling the drawer along the way
+        const scroller = w.get(".chat-panel-body").element;
+        scroller.dispatchEvent(new Event("scroll"));
+        sizes.scrollTop = 200;
+        scroller.dispatchEvent(new Event("scroll"));
+
+        await composerGrows(w, sizes, 100, true);
+
+        expect(sizes.scrollTop).toBe(200);
+    });
+
+    // The send can land in the frame the composer grew, before the browser has said so.
+    test.each([true, false])("their own reply sent once the reply composer grew arrives at the thread's end as the conversation's does (resize heard first: %s)", async isObserved => {
+        const motion = createMessageMotion();
+        const w = draw({ isChannel: false, replies: replies(3), pending: [] }, false, motion);
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        await composerGrows(w, sizes, 100, isObserved);
+
+        motion.sent("k1", place);
+        await w.setProps({ pending: [sending] });
+        await nextTick();
+        await nextTick();
+
+        expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
+        expect(sizes.scrollTop).toBe(700);
+    });
+});
+
 describe("the header", () => {
     test("titles the thread and names its conversation, labelled by its title", () => {
         const w = draw();
@@ -592,25 +701,6 @@ describe("the marks the tail reads", () => {
 describe("someone typing a reply", () => {
     const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
 
-    /**
-     * The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped
-     * to them; the thread's body fills it from its top, so the newest end read from layout is where
-     * the scroll height puts it at rest.
-     */
-    function layOut(w: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
-        const scroller = w.get(".chat-panel-body").element as HTMLElement;
-        const body = w.get(".chat-th-body").element as HTMLElement;
-        Object.defineProperty(body, "offsetTop", { configurable: true, get: () => 0 });
-        Object.defineProperty(body, "offsetHeight", { configurable: true, get: () => sizes.scrollHeight });
-        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
-        Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
-        Object.defineProperty(scroller, "scrollTop", {
-            configurable: true,
-            get: () => sizes.scrollTop,
-            set: (value: number) => sizes.scrollTop = Math.max(0, Math.min(value, sizes.scrollHeight - sizes.clientHeight))
-        });
-    }
-
     test("is the thread's newest row, after the last reply, in a group with its name line", () => {
         const w = draw({ isChannel: false, typing: annaTyping });
         const bubble = w.get("[data-testid='typing-bubble']").element;
@@ -720,8 +810,13 @@ describe("someone typing a reply", () => {
         const w = draw({ isChannel: false });
         await nextTick();
         await nextTick();
-        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 200 };
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
         layOut(w, sizes);
+        // the reader scrolls up from the newest reply, the browser telling the drawer along the way
+        const scroller = w.get(".chat-panel-body").element;
+        scroller.dispatchEvent(new Event("scroll"));
+        sizes.scrollTop = 200;
+        scroller.dispatchEvent(new Event("scroll"));
 
         await w.setProps({ typing: annaTyping });
         sizes.scrollHeight = 1065;

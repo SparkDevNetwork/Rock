@@ -372,8 +372,9 @@
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { useViewArrivals } from "../messageMotion.partial";
-    import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
-    import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText, useLayoutAgain } from "../feedLayout.partial";
+    import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { useNewestEnd } from "../composables/useNewestEnd.partial";
+    import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -661,6 +662,13 @@
     const bodyElement = ref<HTMLElement | null>(null);
     const topElement = ref<HTMLElement | null>(null);
 
+    /**
+     * Whether the reader is at the newest reply, as the conversation keeps its own: kept there
+     * through the reply composer growing under the scroller and replies growing as their photos
+     * settle, and changed only by the reader's own scroll.
+     */
+    const reader = useNewestEnd(scroller, bodyElement);
+
     let rowObserver: IntersectionObserver | null = null;
     let topObserver: IntersectionObserver | null = null;
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
@@ -761,8 +769,12 @@
         // the panel's own entrance plays on its parts, not its scroller
         scroller: () => null,
         place: () => props.typingPlace,
-        isFollowing: () => isPlaced && isNearBottom(),
-        follow: scrollToBottom,
+        // a reply can land mid-scroll, before the scroll event for where the reader now is has run
+        isFollowing: () => {
+            reader.read();
+            return isPlaced && reader.isAtNewest.value;
+        },
+        follow: reader.toNewest,
         arrives,
         drawn: () => [drawnTyping.value, newestReplyId(), pendingReplies.value.length, repliesLaidOut.value?.typing?.isInRun]
     });
@@ -800,6 +812,11 @@
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    function onScroll(): void {
+        actionBar.onScroll();
+        reader.read();
+    }
 
     function onFollow(): void {
         hideFollowTip();
@@ -855,23 +872,6 @@
         return bodyElement.value?.closest<HTMLElement>(".chat-panel-body") ?? null;
     }
 
-    /** The scroll top at the thread's newest end, read from layout so a glide in flight does not move it. */
-    function endOfBody(element: HTMLElement): number {
-        return bodyElement.value ? endOf(element, bodyElement.value) : element.scrollHeight - element.clientHeight;
-    }
-
-    function isNearBottom(): boolean {
-        const element = scroller();
-        return !element || endOfBody(element) - element.scrollTop < nearBottomPx;
-    }
-
-    function scrollToBottom(): void {
-        const element = scroller();
-        if (element) {
-            element.scrollTop = endOfBody(element);
-        }
-    }
-
     function newestReplyId(): number | null {
         return props.replies.length > 0 ? props.replies[props.replies.length - 1].id : null;
     }
@@ -883,7 +883,7 @@
         }
 
         await nextTick();
-        scrollToBottom();
+        reader.toNewest();
         observeRows();
         isPlaced = true;
         void land();
@@ -916,6 +916,12 @@
             focusTimer = null;
         }
 
+        // the reader is where the landing takes them from its first frame, so a reply settling on the way does not pull them back
+        const element = scroller();
+        if (element) {
+            const box = row.getBoundingClientRect();
+            reader.goingTo(element.scrollTop + box.top - element.getBoundingClientRect().top - (element.clientHeight - box.height) / 2);
+        }
         const isMotionReduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         row.scrollIntoView({ block: "center", behavior: isMotionReduced ? "auto" : "smooth" });
         row.focus({ preventScroll: true });
@@ -964,8 +970,9 @@
     // replies always are.
     watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!drawnTyping.value], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
         const element = scroller();
-        const fromEnd = element ? endOfBody(element) - element.scrollTop : 0;
-        const shouldFollow = isNearBottom() || pendingCount > oldPendingCount;
+        const fromEnd = element ? reader.endOf() - element.scrollTop : 0;
+        reader.read();
+        const shouldFollow = reader.isAtNewest.value || pendingCount > oldPendingCount;
 
         await nextTick();
         observeRows();
@@ -974,10 +981,10 @@
         }
 
         if (firstId !== oldFirstId && oldFirstId !== undefined && newestId === oldNewestId) {
-            element.scrollTop = endOfBody(element) - fromEnd;
+            element.scrollTop = reader.endOf() - fromEnd;
         }
         else if (shouldFollow) {
-            scrollToBottom();
+            reader.toNewest();
         }
     });
 
@@ -1013,7 +1020,7 @@
 
         // A scroll does not bubble, and the scroller is the panel host's, outside this body.
         scrollElement = scroller();
-        scrollElement?.addEventListener("scroll", actionBar.onScroll, { passive: true });
+        scrollElement?.addEventListener("scroll", onScroll, { passive: true });
 
         // A phone never focuses the composer on its own, since the keyboard would rise over the
         // thread; its back chevron takes focus instead, because the pane that opened the drawer
@@ -1026,7 +1033,7 @@
     });
 
     onBeforeUnmount(() => {
-        scrollElement?.removeEventListener("scroll", actionBar.onScroll);
+        scrollElement?.removeEventListener("scroll", onScroll);
         actionBar.stop();
         rowObserver?.disconnect();
         topObserver?.disconnect();
