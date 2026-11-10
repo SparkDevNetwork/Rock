@@ -1404,8 +1404,8 @@ namespace RockWeb.Blocks.Finance
 
                     if ( pbxComponent != null )
                     {
-                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, number.ToString(), CurrentPerson.FullName, _requester.FullName, formattedNumber );
-                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript, formattedNumber );
+                        var jsScript = string.Format( "javascript: Rock.controls.pbx.originate('{0}', '{1}', '{2}','{3}','{4}');", CurrentPerson.Guid, EncodeForJavaScriptUrl( number.ToString() ), EncodeForJavaScriptUrl( CurrentPerson.FullName ), EncodeForJavaScriptUrl( _requester.FullName ), EncodeForJavaScriptUrl( formattedNumber ) );
+                        phoneMarkup = string.Format( "<a class='originate-call js-originate-call' href=\"{0}\">{1}</a>", jsScript.EncodeHtml(), formattedNumber );
                     }
                     else if ( RockPage.IsMobileRequest )
                     {
@@ -1418,6 +1418,25 @@ namespace RockWeb.Blocks.Finance
             }
 
             return formattedNumber;
+        }
+
+        /// <summary>
+        /// Encodes a value for use inside a single quoted JavaScript string in a javascript: URL.
+        /// </summary>
+        /// <param name="value">The value to encode.</param>
+        /// <returns>The encoded value.</returns>
+        private static string EncodeForJavaScriptUrl( string value )
+        {
+            /*
+                11/09/2026 - MSE
+
+                A javascript: URL is percent decoded before the script runs, so a
+                percent sign is replaced with its JavaScript escape to keep a value
+                like %27 from turning into a quote that closes the string.
+
+                Reason: Prevent script injection through the person's name.
+            */
+            return System.Web.HttpUtility.JavaScriptStringEncode( value ?? string.Empty ).Replace( "%", "\\u0025" );
         }
 
         /// <summary>
@@ -1435,7 +1454,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( _requester == null )
             {
-                nameText = $"<span class='first-word nickname'>{benevolenceRequest.FirstName}</span> <span class='lastname'>{ benevolenceRequest.LastName}</span>";
+                nameText = $"<span class='first-word nickname'>{benevolenceRequest.FirstName.EncodeHtml()}</span> <span class='lastname'>{ benevolenceRequest.LastName.EncodeHtml()}</span>";
                 lName.Text = nameText;
                 return;
             }
@@ -1449,17 +1468,17 @@ namespace RockWeb.Blocks.Finance
 
             if ( isBusiness )
             {
-                nameText = _requester.LastName;
+                nameText = _requester.LastName.EncodeHtml();
             }
             else
             {
                 if ( GetAttributeValue( AttributeKey.DisplayMiddleName ).AsBoolean() && !string.IsNullOrWhiteSpace( _requester.MiddleName ) )
                 {
-                    nameText = $"<span class='first-word nickname'>{ _requester.NickName}</span> <span class='middlename'>{_requester.MiddleName}</span> <span class='lastname'>{ _requester.LastName}</span>";
+                    nameText = $"<span class='first-word nickname'>{ _requester.NickName.EncodeHtml()}</span> <span class='middlename'>{_requester.MiddleName.EncodeHtml()}</span> <span class='lastname'>{ _requester.LastName.EncodeHtml()}</span>";
                 }
                 else
                 {
-                    nameText = $"<span class='first-word nickname'>{_requester.NickName}</span> <span class='lastname'>{ _requester.LastName}</span>";
+                    nameText = $"<span class='first-word nickname'>{_requester.NickName.EncodeHtml()}</span> <span class='lastname'>{ _requester.LastName.EncodeHtml()}</span>";
                 }
 
                 // Prefix with Title if they have a Title with IsFormal=True
@@ -1477,7 +1496,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     if ( !string.IsNullOrWhiteSpace( _requester.FirstName ) )
                     {
-                        nameText += $" <span class='firstname'>({_requester.FirstName})</span>";
+                        nameText += $" <span class='firstname'>({_requester.FirstName.EncodeHtml()})</span>";
                     }
                 }
 
@@ -1498,7 +1517,7 @@ namespace RockWeb.Blocks.Finance
 
                     if ( previousNames.Any() )
                     {
-                        nameText += $"{Environment.NewLine}<span class='previous-names'>(Previous Names: {previousNames.ToList().AsDelimited( ", " )})</span>";
+                        nameText += $"{Environment.NewLine}<span class='previous-names'>(Previous Names: {previousNames.ToList().AsDelimited( ", ", null, true )})</span>";
                     }
                 }
             }
@@ -1671,7 +1690,7 @@ namespace RockWeb.Blocks.Finance
                 lViewAddress.Text = _requester.GetHomeLocation( new RockContext() )?.FormattedHtmlAddress;
             }
 
-            lViewAssignedTo.Text = _assignedTo?.FullName ?? "Not assigned";
+            lViewAssignedTo.Text = _assignedTo?.FullName.EncodeHtml() ?? "Not assigned";
             lViewRequestDate.Text = $"{benevolenceRequest.RequestDateTime.ToShortDateString()} <small>({RockDateTime.Now.Subtract( benevolenceRequest.RequestDateTime ).Days} days)</small>";
 
             if ( ( benevolenceRequest?.GovernmentId?.IsNotNullOrWhiteSpace() ).GetValueOrDefault( false ) && GetAttributeValue( AttributeKey.DisplayGovernmentId ).AsBoolean() )
