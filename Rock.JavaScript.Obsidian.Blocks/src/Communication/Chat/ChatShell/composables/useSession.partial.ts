@@ -378,6 +378,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      * that could not answer this time is not, and says nothing about the token already held.
      */
     async function acquire(): Promise<"ok" | "refused" | "unavailable"> {
+        // A Retry-After answers the one exchange that carried it, so each refresh starts without
+        // one: a refresh that fails at Rock's mint waits the backoff alone.
+        retryAfterSeconds = null;
         for (let attempt = 0; attempt < 2; attempt++) {
             const minted = await dependencies.mintChurchToken();
 

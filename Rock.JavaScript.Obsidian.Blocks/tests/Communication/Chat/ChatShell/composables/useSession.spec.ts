@@ -802,6 +802,42 @@ describe("waiting after a refresh the platform could not serve", () => {
         expect(f.timers[f.timers.length - 1].milliseconds).toBe(30000);
     });
 
+    test("a failure at Rock's mint after the platform's 503 waits the backoff, not that old Retry-After", async () => {
+        // The Retry-After was the platform's answer to one exchange; a later refresh that never
+        // reached the platform has nothing from it to honour.
+        let mints = 0;
+        let exchanges = 0;
+        const clock = { now: 0 };
+        const f = fakes({
+            now: () => clock.now,
+            mintChurchToken: async (): Promise<ChurchTokenResult> => {
+                mints++;
+                return mints === 3
+                    ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
+                    : { gate: "ok", churchToken: `church-${mints}` };
+            },
+            exchange: async (churchToken: string): Promise<ExchangeResult> => {
+                exchanges++;
+                return exchanges === 1
+                    ? { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 }
+                    : unavailable(8);
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        await session.refresh();
+        const first = f.timers[f.timers.length - 1];
+        expect(first.milliseconds).toBe(8000);
+        clock.now += first.milliseconds;
+        first.callback();
+        await settle();
+
+        // The second failure's ceiling is 2 s from the 1 s base, and the random draw sits at its middle.
+        expect(mints).toBe(3);
+        expect(f.timers[f.timers.length - 1].milliseconds).toBe(1500);
+    });
+
     test("a call refused as expired inside the wait does not mint or exchange", async () => {
         const { f, clock } = failing(unavailable(8));
         const session = createSession(f.dependencies);
