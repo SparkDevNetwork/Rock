@@ -235,14 +235,38 @@ export function useRowMotion(key: () => string | null): RowMotion {
     return { isCrossfading, isEditedNow, isThreadStartedHere, reaction };
 }
 
+/** A view's arrivals as its rows ask them, each read once as the row mounts. */
+export type ViewArrivals = {
+    /**
+     * Whether a row rises as it is drawn: the first time its key is drawn after its message was
+     * sent here or heard live. The later renders that answer false leave a row already drawn as it
+     * is. The person's message from another tab is news here and rises like anyone's; one sent here
+     * rose as its pending row and never rises again.
+     */
+    isRowArriving: (key: string) => boolean;
+
+    /**
+     * Whether a folded line of messages by people the reader blocked rises. Every message the line
+     * draws is claimed, not only the one it is keyed by, so the messages an unblock draws again one
+     * by one were already drawn here and none rises as if heard now.
+     */
+    isRunArriving: (messages: readonly Pick<TimelineMessage, "id" | "client_key">[]) => boolean;
+};
+
 /**
  * A view's arrivals, from the moment it mounts until it goes: the feed's and the thread drawer's.
  * A view drawn where no record is provided draws nothing new.
  *
- * @returns The view's scope, or null when no record is provided.
+ * @returns What the view's rows ask of their arrival.
  */
-export function useMotionScope(): MotionScope | null {
+export function useViewArrivals(): ViewArrivals {
     const scope = inject(messageMotionKey, null)?.scope() ?? null;
     onBeforeUnmount(() => scope?.dispose());
-    return scope;
+    const isRowArriving = (key: string): boolean => scope?.arrives(key) === "rise";
+
+    return {
+        isRowArriving,
+        // every key asked, never cut short at the first that rises, so each is claimed
+        isRunArriving: messages => messages.map(message => isRowArriving(rowKey(message))).includes(true)
+    };
 }

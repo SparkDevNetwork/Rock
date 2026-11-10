@@ -90,6 +90,7 @@
                             :isChannel="isChannel"
                             :isPhone="isPhone"
                             :isInThread="true"
+                            :isArriving="isRunArriving(item.messages)"
                             :reactionHost="reactionHost"
                             :data-reply-id="item.isReply ? item.messages[item.messages.length - 1].id : undefined"
                             @messageAction="emit('messageAction', $event)" />
@@ -350,7 +351,7 @@
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { FeedItem, layoutFeed, nearBottomPx, replyCountText } from "../feedLayout.partial";
-    import { useMotionScope } from "../messageMotion.partial";
+    import { useViewArrivals } from "../messageMotion.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -640,7 +641,7 @@
      * What this drawer has drawn new since it opened: a reply sent here or heard arriving live rises
      * in once, as in the conversation; a reply its page or a reread brings is simply there.
      */
-    const arrivals = useMotionScope();
+    const { isRowArriving, isRunArriving } = useViewArrivals();
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
@@ -802,11 +803,6 @@
         if (element) {
             element.scrollTop = element.scrollHeight;
         }
-    }
-
-    /** Whether a row rises as it is drawn, read once as it mounts: the first time its key is drawn after it was sent here or heard live. */
-    function isRowArriving(key: string): boolean {
-        return arrivals?.arrives(key) === "rise";
     }
 
     function newestReplyId(): number | null {

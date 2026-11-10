@@ -89,7 +89,7 @@
                                     :organizationName="organizationName"
                                     :isChannel="isChannel"
                                     :isPhone="isPhone"
-                                    :isArriving="isRowArriving(item.key)"
+                                    :isArriving="isRunArriving(item.messages)"
                                     :reactionHost="reactionHost"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
                                     @openThread="emit('openThread', $event)"
@@ -680,7 +680,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
-    import { useMotionScope } from "../messageMotion.partial";
+    import { useViewArrivals } from "../messageMotion.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
@@ -904,7 +904,7 @@
      * element, as when someone else's message takes the next id while the person's send is out, and
      * its key never rises again. A message a page, a catch-up or a switch back brings is simply there.
      */
-    const arrivals = useMotionScope();
+    const { isRowArriving, isRunArriving } = useViewArrivals();
 
     /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
@@ -1207,16 +1207,6 @@
     /** Smooth unless the person asked the system for less motion. */
     function scrollBehavior(): ScrollBehavior {
         return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-    }
-
-    /**
-     * Whether a row rises as it is drawn: the first time its key is drawn after its message was sent
-     * here or heard live. A row reads this once, as it mounts, so the later renders that answer
-     * false leave a row already drawn as it is. The person's message from another tab is news here
-     * and rises like anyone's; one sent here rose as its pending row and never rises again.
-     */
-    function isRowArriving(key: string): boolean {
-        return arrivals?.arrives(key) === "rise";
     }
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */

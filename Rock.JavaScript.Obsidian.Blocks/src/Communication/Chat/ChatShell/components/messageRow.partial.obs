@@ -542,7 +542,9 @@
      * The row's own motion, each played only for what the stores recorded happening to its message
      * since the row mounted: an edit, a delete or a hide crossfades, a thread's first reply pops its
      * pill, the reader's own reaction pops or rolls its chip. A page, a re-read or a remount that only
-     * states the message again plays none of them, whatever it changes.
+     * states the message again plays none of them, whatever it changes. A folded line by people
+     * blocked watches its newest message, though its view claims its arrival by all of them: the line
+     * shows no words to crossfade, and a root with replies always stands as a line of its own.
      */
     const { isCrossfading, isEditedNow, isThreadStartedHere, reaction } = useRowMotion(() => props.pending ? `k:${sendKey(props.pending.localId)}` : props.message ? rowKey(props.message) : null);
 
