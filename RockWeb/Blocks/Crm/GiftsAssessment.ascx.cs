@@ -344,7 +344,7 @@ namespace Rockweb.Blocks.Crm
                 try
                 {
                     var personService = new PersonService( new RockContext() );
-                    _targetPerson = personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByUrlEncodedKey( personKey );
+                    _targetPerson = personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByImpersonationToken( personKey, false, this.PageCache.Id );
                     _isQuerystringPersonKey = true;
                 }
                 catch ( Exception )
