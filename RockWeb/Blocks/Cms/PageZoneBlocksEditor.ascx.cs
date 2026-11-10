@@ -143,6 +143,17 @@ namespace RockWeb.Blocks.Cms
             return page.Blocks.Any( b => b.Id == blockId );
         }
 
+        /// <summary>
+        /// Determines whether the current person can manage blocks on the page, which requires
+        /// Edit on the page or Edit on this block.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns><c>true</c> if the current person can edit the page's blocks; otherwise, <c>false</c>.</returns>
+        private bool CanEditPage( PageCache page )
+        {
+            return page != null && ( page.IsAuthorized( Authorization.EDIT, CurrentPerson ) || IsUserAuthorized( Authorization.EDIT ) );
+        }
+
         private void SortPanelWidgets( string eventParam, string[] values )
         {
             string panelWidgetClientId = values[0];
@@ -172,7 +183,7 @@ namespace RockWeb.Blocks.Cms
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
                 var page = PageCache.Get( hfPageId.Value, true );
-                if ( block != null && page != null && IsBlockOnPage( block.Id, page ) )
+                if ( block != null && page != null && IsBlockOnPage( block.Id, page ) && CanEditPage( page ) )
                 {
                     List<Block> zoneBlocks = null;
                     switch ( block.BlockLocation )
@@ -234,7 +245,11 @@ namespace RockWeb.Blocks.Cms
             hfPageId.Value = pageId;
             var page = PageCache.Get( pageId, true );
 
-            this.Visible = page != null;
+            this.Visible = CanEditPage( page );
+            if ( !this.Visible )
+            {
+                return;
+            }
 
             // Try to set the zone for the selected page.
             LoadDropDowns();
@@ -633,8 +648,9 @@ namespace RockWeb.Blocks.Cms
                 var rockContext = new RockContext();
                 var blockService = new BlockService( rockContext );
                 var block = blockService.Get( blockId.Value );
+                var page = PageCache.Get( hfPageId.Value, true );
 
-                if ( block != null )
+                if ( block != null && CanEditPage( page ) && IsBlockOnPage( block.Id, page ) )
                 {
                     string pageId = block.PageId.ToString();
                     int? layoutId = block.LayoutId;
@@ -755,6 +771,11 @@ namespace RockWeb.Blocks.Cms
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddBlock_Click( object sender, EventArgs e )
         {
+            if ( !CanEditPage( PageCache.Get( hfPageId.Value, true ) ) )
+            {
+                return;
+            }
+
             tbNewBlockName.Text = string.Empty;
             var siteType = PageCache.Get( hfPageId.Value, true ).Layout.Site.SiteType;
 
@@ -856,7 +877,7 @@ namespace RockWeb.Blocks.Cms
             var page = PageCache.Get( hfPageId.Value, true );
 
             // The block id comes from a hidden field, so the block must be one this editor lists for the page.
-            if ( block != null && page != null && IsBlockOnPage( block.Id, page ) )
+            if ( block != null && page != null && IsBlockOnPage( block.Id, page ) && CanEditPage( page ) )
             {
                 block.Zone = ddlMoveToZoneList.SelectedValue;
                 if ( cblBlockMovePageLayoutOrSite.SelectedValue == "Page" )
@@ -895,6 +916,10 @@ namespace RockWeb.Blocks.Cms
                 BlockService blockService = new BlockService( rockContext );
 
                 var page = PageCache.Get(hfPageId.Value, true);
+                if ( !CanEditPage( page ) )
+                {
+                    return;
+                }
 
                 Block block = new Rock.Model.Block();
                 block.Zone = ddlZones.SelectedValue;
