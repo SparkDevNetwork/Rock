@@ -366,6 +366,12 @@ function ()
             return DataComponentSettingsHelper.GetDataViewId( new FilterSettings( selection ?? string.Empty ).PersonDataViewGuid );
         }
 
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return GetReferencedDataViewId( selection );
+        }
+
         /// <summary>
         /// Gets a formatted string representing the current filter control values.
         /// </summary>

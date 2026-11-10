@@ -415,6 +415,13 @@ namespace Rock.Reporting.DataFilter
 
             return ddlDataView.SelectedValueAsId();
         }
+
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            var dataViewId = SelectionConfig.Parse( selection ).DataViewId;
+            return dataViewId.HasValue && dataViewId.Value > 0 ? dataViewId : null;
+        }
         #endregion
 
         #region IDataFilterWithOverrides

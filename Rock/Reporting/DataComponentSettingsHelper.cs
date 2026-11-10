@@ -149,6 +149,16 @@ namespace Rock.Reporting
 
             var componentName = EntityTypeCache.Get( filter.EntityTypeId.Value, rockContext )?.Name;
 
+            if ( filteredEntityType != null )
+            {
+                var componentDataViewId = DataFilterContainer.GetComponent( componentName )?.GetRelatedDataViewId( filteredEntityType, filter.Selection, rockContext );
+
+                if ( componentDataViewId.HasValue )
+                {
+                    return componentDataViewId;
+                }
+            }
+
             if ( componentName == typeof( Rock.Reporting.DataFilter.Group.ContainsPeopleFilter ).FullName )
             {
                 return Rock.Reporting.DataFilter.Group.ContainsPeopleFilter.GetReferencedDataViewId( filter.Selection );
