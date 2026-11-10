@@ -268,6 +268,11 @@ function named(played: Played[]): string[] {
     return played.map(motion => `${motion.id} ${motion.element.dataset.rowKey ?? motion.element.dataset.tail ?? motion.element.dataset.testid ?? motion.element.className}`);
 }
 
+/** The rows that faded in, each once: on the row, or on its parts around the run's face moving into it. */
+function fadedIn(played: Played[]): string[] {
+    return [...new Set(played.filter(motion => motion.id === "chat-tail-in").map(motion => motion.element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? ""))].filter(key => !!key);
+}
+
 /** Her message heard live, recorded as the live router does: the arrival, then the typing's end naming it. */
 function sends(motion: MessageMotion, v: View, id: number, sender = anna, extra: Partial<Row> = {}): void {
     motion.arrived(message(id), place);
@@ -301,7 +306,8 @@ describe("a message arriving", () => {
         await settle();
 
         const s = stage as Stage;
-        expect(named(s.played).filter(name => !name.includes("meta") && !name.includes("face"))).toEqual(["chat-tail-glide tail-content", "chat-tail-in k:3"]);
+        expect(named(s.played).filter(name => name.includes("tail-content"))).toEqual(["chat-tail-glide tail-content"]);
+        expect(fadedIn(s.played)).toEqual(["k:3"]);
         expect(v.follows.count).toBeGreaterThan(0);
         // the row that stood stays where it stood at the change's first frame, then rises by the new row's room
         expect(near(seen(row(v, "k:2")).top, top)).toBe(true);
@@ -324,7 +330,8 @@ describe("a message arriving", () => {
         v.rows.push({ key: "k:2", sender: anna }, { key: "k:3", sender: anna });
         await settle();
 
-        expect(named((stage as Stage).played).filter(name => name.includes("tail-content") || name.includes("chat-tail-in"))).toEqual(["chat-tail-glide tail-content", "chat-tail-in k:2", "chat-tail-in k:3"]);
+        expect(named((stage as Stage).played).filter(name => name.includes("tail-content"))).toEqual(["chat-tail-glide tail-content"]);
+        expect(fadedIn((stage as Stage).played)).toEqual(["k:2", "k:3"]);
     });
 
     test("scrolled up nothing moves, and the row is claimed, so it never fades in later", async () => {
@@ -341,8 +348,7 @@ describe("a message arriving", () => {
         motion.arrived(message(3), place);
         v.rows.push({ key: "k:3", sender: anna });
         await settle();
-        expect(named((stage as Stage).played)).toContain("chat-tail-in k:3");
-        expect(named((stage as Stage).played)).not.toContain("chat-tail-in k:2");
+        expect(fadedIn((stage as Stage).played)).toEqual(["k:3"]);
     });
 
     test("a row a page, a catch-up or a switch back brings, with nothing recorded, is simply there", async () => {
@@ -1091,6 +1097,23 @@ describe("faces belong to their group", () => {
         expect(corner(seen(part(v, "face:k:2")))).toEqual(corner(was));
         sample(() => undefined, [msg]);
         expect(near(seen(part(v, "face:k:2")).bottom, seen(part(v, "box:k:3")).bottom)).toBe(true);
+    });
+
+    // Her new row fades in, but the run's face moving into it is the face that stood a moment
+    // ago, so it keeps its strength rather than blinking out and fading back with the row.
+    test.each([false, true])("her own run continuing keeps the run's face at full in every frame, her new message fading in around it (reduced motion: %s)", async isReduced => {
+        setReducedMotion(isReduced);
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+
+        const shown = sample(() => ({ face: opacity(part(v, "face:k:2")), box: opacity(part(v, "box:k:3")) }));
+        expect(shown.every(frame => frame.face > .999)).toBe(true);
+        expect(shown[0].box).toBeLessThan(.1);
+        expect(shown[shown.length - 1].box).toBeGreaterThan(.9);
     });
 });
 

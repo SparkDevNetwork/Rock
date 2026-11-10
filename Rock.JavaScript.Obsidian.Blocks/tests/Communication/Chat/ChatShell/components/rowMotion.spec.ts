@@ -479,13 +479,14 @@ describe("what happens while a row is on screen plays once", () => {
         const feed = drawFeed(w);
         await settle();
 
-        w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
+        // another person's, so the whole row fades in; in her own run it fades in around the run's face
+        w.live("message.created", liveCreated({ id: 2, sender: dee }, 2));
         await settle();
-        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message chat-tail-in"]);
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-head chat-tail-in"]);
 
-        w.live("message.created", liveCreated({ id: 2, sender: anna }, 2));
+        w.live("message.created", liveCreated({ id: 2, sender: dee }, 2));
         await settle();
-        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message chat-tail-in"]);
+        expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-head chat-tail-in"]);
     });
 
     test("a message heard while the first page was still on its way is drawn with that page, not risen", async () => {
@@ -568,10 +569,11 @@ describe("what happens while a row is on screen plays once", () => {
         await open(w, [root]);
         const drawer = await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
 
-        w.live("message.created", liveCreated({ id: 42, sender: anna, parentId: 40 }, 2));
+        // another person's, so the whole row fades in; in her own run it fades in around the run's face
+        w.live("message.created", liveCreated({ id: 42, sender: dee, parentId: 40 }, 2));
         await settle();
 
-        expect(moving(drawer)).toEqual(["42: chat-msg is-conversational is-message chat-tail-in"]);
+        expect(moving(drawer)).toEqual(["42: chat-msg is-conversational is-message is-head chat-tail-in"]);
     });
 
     test("the reader's press adds a first chip that pops, and joining others' chip rolls it without a pop", async () => {

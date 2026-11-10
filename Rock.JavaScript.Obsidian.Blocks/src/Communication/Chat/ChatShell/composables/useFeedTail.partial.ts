@@ -142,6 +142,21 @@ function motionsOf(element: Element, isSubtree = false): Animation[] {
     return element.getAnimations?.({ subtree: isSubtree }) ?? [];
 }
 
+/** Fades in everything in a box but one part, which keeps the strength it has. */
+function fadeAround(holder: Element, kept: Element, fadeIn: (element: Element) => void): void {
+    for (const child of holder.children) {
+        if (child === kept) {
+            continue;
+        }
+        if (child.contains(kept)) {
+            fadeAround(child, kept, fadeIn);
+        }
+        else {
+            fadeIn(child);
+        }
+    }
+}
+
 /** The rows drawn in a box, in order. */
 function rowsOf(content: HTMLElement): HTMLElement[] {
     return [...content.querySelectorAll<HTMLElement>("[data-row-key]")];
@@ -570,7 +585,16 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 grow(row, handoffBox, handoffAt, dotsBefore.box, startOf(handoffBox), dotsSeen, tokens, reduced);
             }
             else {
-                play(row, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
+                // The run's face moving into her new row is the face that stood a moment ago, so it
+                // keeps its strength while the rest of the row fades in around it.
+                const face = now.find(other => kindOf(other.id) === "face" && row.contains(other.element) && was.parts.has(other.id))?.element;
+                const fadeIn = (element: Element): void => void play(element, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
+                if (face) {
+                    fadeAround(row, face, fadeIn);
+                }
+                else {
+                    fadeIn(row);
+                }
             }
         }
 
