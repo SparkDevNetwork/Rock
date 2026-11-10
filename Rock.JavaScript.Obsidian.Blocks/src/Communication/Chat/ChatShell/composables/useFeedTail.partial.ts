@@ -567,10 +567,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         }
 
         const dotsBefore = was.parts.get("dots:typing");
-        // name lines going as a new one takes their place: two names drawn over each other read as
-        // neither, so the one going is gone by half way and the new one comes in the second half,
-        // one half each
-        const nameHalf = tokens.base / 2;
+        // Text crossing text: a name line going as a new one takes its place, and Edited taking the
+        // room of the time going beside it. Two words drawn over each other read as neither, so what
+        // goes is gone by half way and what comes in comes in over the second half, one half each.
+        const crossHalf = tokens.base / 2;
         const namesGoing = new Set<Element>();
         for (const part of now) {
             const kind = kindOf(part.id);
@@ -585,7 +585,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                     namesGoing.add(crossing.element);
                 }
                 if (!reduced) {
-                    const timing = kind === "name" ? { delay: nameHalf, duration: nameHalf, fill: "backwards" as const } : { duration: tokens.base };
+                    const timing = kind === "name" ? { delay: crossHalf, duration: crossHalf, fill: "backwards" as const } : { duration: tokens.base };
                     play(part.element, [{ opacity: 0 }, { opacity: 1 }], { ...timing, easing: tokens.easeState, id: "chat-tail-in" });
                 }
                 continue;
@@ -598,7 +598,19 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             // moves from foot to foot; anything else moves from its top.
             const y = kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y);
             const by = { x: from.box.left - (part.box.left + start.x), y };
-            if (Math.abs(by.x) >= .5 || Math.abs(by.y) >= .5) {
+            if (kind === "edited" && Math.abs(by.x) >= .5) {
+                // Edited moving along its line crosses the time going beside it, so it does not
+                // move: it fades out where it stood as the time does, then in where it now lays out.
+                // It holds a transform, so a later change lets it go and replans it as a move.
+                const stood = `translate(${by.x}px, ${by.y}px)`;
+                play(part.element, [
+                    { offset: 0, transform: stood, opacity: 1, easing: tokens.easeState },
+                    { offset: .5, transform: stood, opacity: 0 },
+                    { offset: .5, transform: "none", opacity: 0, easing: tokens.easeState },
+                    { offset: 1, transform: "none", opacity: 1 }
+                ], { duration: 2 * crossHalf, id: "chat-tail-move" });
+            }
+            else if (Math.abs(by.x) >= .5 || Math.abs(by.y) >= .5) {
                 starts.set(part.element, by);
                 play(part.element, [{ transform: `translate(${by.x}px, ${by.y}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-move" });
             }
@@ -661,12 +673,16 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 // the bubble goes down out under the edge with the stack; under reduced motion it fades where it stands
                 fadeAway(part.element, part.done, seen, reduced ? { duration: tokens.fast, easing: tokens.easeState } : { duration: tokens.base, easing: tokens.easeState });
             }
+            else if (part.element.dataset.tail === "stamp") {
+                // a time its row no longer shows gives Edited its room, so it is gone by half way, riding its row
+                fadeAway(part.element, part.done, seen, { duration: crossHalf, easing: tokens.easeState });
+            }
             else if (keptMarks.includes(part.element.dataset.tail ?? "")) {
-                // a time line or a time its row no longer shows fades out where it stood, riding its row
+                // a time line its row no longer shows fades out where it stood, riding its row
                 fadeAway(part.element, part.done, seen, { duration: tokens.fast, easing: tokens.easeOut });
             }
             else if (!reduced) {
-                fadeAway(part.element, part.done, seen, { duration: namesGoing.has(part.element) ? nameHalf : tokens.base, easing: tokens.easeState });
+                fadeAway(part.element, part.done, seen, { duration: namesGoing.has(part.element) ? crossHalf : tokens.base, easing: tokens.easeState });
             }
             else {
                 part.done();

@@ -1195,9 +1195,11 @@ describe("faces belong to their group", () => {
 });
 
 describe("a time line giving up its time", () => {
-    // Another person's time line stands at its row's left, so the time going moves Edited to where
-    // the time stood: it moves from where it stood, as a face or a name line does, never in a frame.
-    test("another person's edited message followed up: the time and its dot fade where they stood, Edited moves from where it stood to where it now lays out", async () => {
+    // Another person's time line stands at its row's left, so the time going gives Edited the time's
+    // room. Two words drawn over each other read as neither, so it crosses as a name line does: the
+    // time fades out where it stood over the first half of t-base, and Edited fades out where it
+    // stood over the same half and in at its new place over the second.
+    test("another person's edited message followed up: the time fades where it stood by half way, Edited fades out there and in where it now lays out, never drawn over the time", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna, isEdited: true }] });
         const edited = (): HTMLElement => row(v, "k:2").querySelector<HTMLElement>(".chat-meta-edited") as HTMLElement;
@@ -1211,18 +1213,30 @@ describe("a time line giving up its time", () => {
         v.rows.push({ key: "k:3", sender: anna });
         await settle();
 
-        const at = Array.from({ length: 21 }, (_, index) => Math.round(index * msg / 20));
-        const shown = sample(() => ({ left: seen(edited()).left, inRow: seen(edited()).top - seen(row(v, "k:2")).top, stamp: opacity(stamp) }), at);
-        // it starts where it stood and lands where its row lays it out, the time's room closed
-        expect(near(shown[0].left, was.left)).toBe(true);
-        expect(near(shown[0].inRow, was.top - rowWas.top)).toBe(true);
-        expect(near(shown[shown.length - 1].left, was.left - room)).toBe(true);
-        // and never steps: no frame moves it more than a smooth move over the glide would
-        const steps = shown.slice(1).map((frame, index) => Math.abs(frame.left - shown[index].left));
-        expect(Math.max(...steps)).toBeLessThan(room / 20 * 1.5);
-        // the time and its dot fade out from full where they stood, gone by t-fast
+        const half = base / 2;
+        const at = Array.from({ length: 27 }, (_, index) => Math.round(index * msg / 26));
+        const shown = sample(() => {
+            const box = seen(edited());
+            const time = seen(stamp);
+            const isOver = Math.min(box.right, time.right) - Math.max(box.left, time.left) > 1 && Math.min(box.bottom, time.bottom) - Math.max(box.top, time.top) > 1;
+            return { left: box.left, inRow: box.top - seen(row(v, "k:2")).top, edited: opacity(edited()), stamp: opacity(stamp), isOver };
+        }, at);
+        const first = shown.filter((_, index) => at[index] < half);
+        const second = shown.filter((_, index) => at[index] > half);
+        // the first half: it stands where it stood in its row, fading out from full
+        expect(first.every(frame => near(frame.left, was.left) && near(frame.inRow, was.top - rowWas.top))).toBe(true);
+        expect(first[0].edited).toBeGreaterThan(.95);
+        expect(first.slice(1).every((frame, index) => frame.edited < first[index].edited)).toBe(true);
+        // the second half: it stands where its row lays it out, the time's room closed, fading in to full
+        expect(second.every(frame => near(frame.left, was.left - room))).toBe(true);
+        expect(second.slice(1).every((frame, index) => frame.edited >= second[index].edited)).toBe(true);
+        expect(second.filter((_, index) => at[shown.indexOf(second[index])] >= base).every(frame => frame.edited > .99)).toBe(true);
+        // never seen between the two places, and never drawn over the time while both are seen
+        expect(shown.filter(frame => frame.edited > .05 && !near(frame.left, was.left) && !near(frame.left, was.left - room))).toEqual([]);
+        expect(shown.filter(frame => frame.isOver && frame.edited > .05 && frame.stamp > .05)).toEqual([]);
+        // the time and its dot fade out from full where they stood, gone by half way
         expect(shown[0].stamp).toBeGreaterThan(.95);
-        expect(shown.filter((_, index) => at[index] >= fast).every(frame => frame.stamp < .01)).toBe(true);
+        expect(shown.filter((_, index) => at[index] >= half).every(frame => frame.stamp < .01)).toBe(true);
         expect(stamp.hidden).toBe(true);
         expect(stamp.style.position).toBe("");
     });
