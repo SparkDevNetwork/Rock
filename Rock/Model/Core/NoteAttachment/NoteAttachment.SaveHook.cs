@@ -34,12 +34,39 @@ namespace Rock.Model
                 BinaryFileService binaryFileService = new BinaryFileService( RockContext );
                 var binaryFile = binaryFileService.Get( this.Entity.BinaryFileId );
 
+                if ( this.Entry.State == EntityContextState.Added || this.Entry.State == EntityContextState.Modified )
+                {
+                    /*
+                        11/10/2026 - MSE
+
+                        The attachment file id comes from the caller (REST), so only allow the file the
+                        attachment already has or a temporary file the current person uploaded. Otherwise
+                        a caller could point an attachment at someone else's file, which would flag it as
+                        permanent when saved and as temporary (cleanup) when the attachment is deleted.
+                        Saves with no current person (jobs, imports) are not checked.
+
+                        Reason: Prevent an attachment from taking over a file the person did not upload.
+                    */
+                    var originalBinaryFileId = this.Entry.State == EntityContextState.Modified ? OriginalValues[nameof( NoteAttachment.BinaryFileId )] as int? : null;
+
+                    if ( this.Entity.BinaryFileId != originalBinaryFileId )
+                    {
+                        var currentPersonAlias = DbContext.GetCurrentPersonAlias();
+                        var currentPerson = currentPersonAlias != null ? new PersonAliasService( RockContext ).GetPerson( currentPersonAlias.Id ) : null;
+
+                        if ( currentPerson != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( this.Entity.BinaryFileId, originalBinaryFileId, currentPerson ) )
+                        {
+                            throw new System.ComponentModel.DataAnnotations.ValidationException( "The attachment file must be a file you uploaded." );
+                        }
+                    }
+                }
+
                 switch ( this.Entry.State )
                 {
                     case EntityContextState.Added:
                         {
                             // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
-                            if ( binaryFile.IsTemporary )
+                            if ( binaryFile != null && binaryFile.IsTemporary )
                             {
                                 binaryFile.IsTemporary = false;
                             }
@@ -50,7 +77,7 @@ namespace Rock.Model
                     case EntityContextState.Modified:
                         {
                             // if there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=False
-                            if ( binaryFile.IsTemporary )
+                            if ( binaryFile != null && binaryFile.IsTemporary )
                             {
                                 binaryFile.IsTemporary = false;
                             }
@@ -62,7 +89,7 @@ namespace Rock.Model
                         {
                             // if deleting, and there is an binaryfile (attachment) associated with this, make sure that it is flagged as IsTemporary=true
                             // so that it'll get cleaned up
-                            if ( !binaryFile.IsTemporary )
+                            if ( binaryFile != null && !binaryFile.IsTemporary )
                             {
                                 binaryFile.IsTemporary = true;
                             }

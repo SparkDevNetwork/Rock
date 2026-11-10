@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using Rock.Data;
 using Rock.ElectronicSignature;
 
@@ -44,6 +45,36 @@ namespace Rock.Model
                             var signatureDocumentValidationException = new SignatureDocumentValidationException( $"{nameof( Entity.SignatureVerificationHash )} can not be modified once it is set." );
                             ExceptionLogService.LogException( signatureDocumentValidationException );
                             throw signatureDocumentValidationException;
+                        }
+
+                        /*
+                            11/10/2026 - MSE
+
+                            Once the document is signed (the hash is set), the fields the hash covers can not be
+                            changed, otherwise the stored hash would no longer match the signed evidence. Keep this
+                            list in step with the fields used by SignatureDocumentService.CalculateSignatureVerificationHash.
+
+                            Reason: Protect the signed evidence from being rewritten after signing.
+                        */
+                        var signedFieldValues = new Dictionary<string, object>
+                        {
+                            { nameof( SignatureDocument.SignedDocumentText ), Entity.SignedDocumentText },
+                            { nameof( SignatureDocument.SignedClientIp ), Entity.SignedClientIp },
+                            { nameof( SignatureDocument.SignedClientUserAgent ), Entity.SignedClientUserAgent },
+                            { nameof( SignatureDocument.SignedDateTime ), Entity.SignedDateTime },
+                            { nameof( SignatureDocument.SignedByPersonAliasId ), Entity.SignedByPersonAliasId },
+                            { nameof( SignatureDocument.SignatureDataEncrypted ), Entity.SignatureDataEncrypted },
+                            { nameof( SignatureDocument.SignedName ), Entity.SignedName }
+                        };
+
+                        foreach ( var signedFieldValue in signedFieldValues )
+                        {
+                            if ( !object.Equals( OriginalValues[signedFieldValue.Key], signedFieldValue.Value ) )
+                            {
+                                var signatureDocumentValidationException = new SignatureDocumentValidationException( $"{signedFieldValue.Key} can not be modified once the document is signed." );
+                                ExceptionLogService.LogException( signatureDocumentValidationException );
+                                throw signatureDocumentValidationException;
+                            }
                         }
                     }
                 }
