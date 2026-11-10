@@ -1165,10 +1165,29 @@ namespace Rock.Rest
         /// <returns><c>true</c> if the person is authorized to EDIT the model; otherwise <c>false</c>.</returns>
         private bool IsAuthorizedForNewModel( ISecured securedModel, Person person )
         {
+            return IsAuthorizedForNewModel( ( T ) securedModel, person, rockContext => ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext ) );
+        }
+
+        /// <summary>
+        /// Determines whether the person is authorized to EDIT a new model of any type, the same
+        /// way a POST of that model to its own controller authorizes it. Use this for a new
+        /// related record that is posted with the model (see <see cref="IsRelatedEntityAllowed(string, bool)"/>).
+        /// A proxy copy is created in a separate context and populated from the posted values so
+        /// that any parent authorities resolve from the posted foreign keys. That context is never
+        /// saved, so the model being inserted is left completely unaffected.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the model.</typeparam>
+        /// <param name="model">The new model to authorize.</param>
+        /// <param name="person">The person to check authorization for.</param>
+        /// <param name="createService">Creates the service for the model on the given context.</param>
+        /// <returns><c>true</c> if the person is authorized to EDIT the model; otherwise <c>false</c>.</returns>
+        protected static bool IsAuthorizedForNewModel<TEntity>( TEntity model, Person person, Func<RockContext, Service<TEntity>> createService )
+            where TEntity : Rock.Data.Entity<TEntity>, new()
+        {
             using ( var rockContext = new RockContext() )
             {
-                var service = ( Service<T> ) Activator.CreateInstance( Service.GetType(), rockContext );
-                var proxyModel = rockContext.Set<T>().Create();
+                var service = createService( rockContext );
+                var proxyModel = rockContext.Set<TEntity>().Create();
 
                 /*
                     10/27/2026 - MSE
@@ -1181,8 +1200,8 @@ namespace Rock.Rest
 
                     Reason: Creating a Step through the REST API failed for a valid step type.
                 */
-                rockContext.Set<T>().Add( proxyModel );
-                service.SetValues( ( T ) securedModel, proxyModel );
+                rockContext.Set<TEntity>().Add( proxyModel );
+                service.SetValues( model, proxyModel );
 
                 /*
                     10/15/2026 - MSE
@@ -1352,7 +1371,7 @@ namespace Rock.Rest
 
                 Reason: Authorize every record a POST inserts.
             */
-            var propertyName = GetUntrackedRelatedEntityPropertyName( value, Service.Context, IsRelatedEntityCollectionAllowed );
+            var propertyName = GetUntrackedRelatedEntityPath( value, Service.Context, IsRelatedEntityAllowed );
 
             if ( propertyName != null )
             {
@@ -1373,6 +1392,25 @@ namespace Rock.Rest
         protected virtual bool IsRelatedEntityCollectionAllowed( string propertyName )
         {
             return false;
+        }
+
+        /// <summary>
+        /// Determines whether the related records at the path may be inserted along with a
+        /// posted model. The path starts at the posted model, such as <c>PhoneNumbers</c> or
+        /// <c>FinancialTransaction.TransactionDetails</c>. Records that are allowed are checked
+        /// the same way, so each level below them must be allowed too. Only allow records whose
+        /// permissions are checked by the controller, since they are not checked on their own.
+        /// By default only a top level collection allowed by
+        /// <see cref="IsRelatedEntityCollectionAllowed(string)"/> may be inserted.
+        /// </summary>
+        /// <param name="path">The path of the navigation property from the posted model.</param>
+        /// <param name="isCollection"><c>true</c> if the property is a collection of related records; <c>false</c> if it holds a single related record.</param>
+        /// <returns><c>true</c> if the related records may be inserted with the posted model; otherwise <c>false</c>.</returns>
+        protected virtual bool IsRelatedEntityAllowed( string path, bool isCollection )
+        {
+            return isCollection
+                && !path.Contains( "." )
+                && IsRelatedEntityCollectionAllowed( path );
         }
 
         /// <summary>
