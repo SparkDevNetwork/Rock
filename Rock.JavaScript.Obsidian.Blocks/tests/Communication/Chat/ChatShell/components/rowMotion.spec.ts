@@ -489,6 +489,39 @@ describe("what happens while a row is on screen plays once", () => {
         expect(moving(feed.wrapper)).toEqual(["2: chat-msg is-conversational is-message is-head chat-tail-in"]);
     });
 
+    // In her own run her new row fades in around the run's face, which moves down into it, so
+    // several parts of the row fade rather than the row: each once, and nothing on a duplicate.
+    test.each(["conversation", "thread"] as const)("her message continuing her run heard live in the %s fades in around the run's face, each part once; the same message heard again moves nothing more", async where => {
+        const w = wire();
+        const root = pageRow({ id: 40, sender: dee }, { reply_count: 1, participant_count: 1 });
+        await open(w, where === "conversation" ? [pageRow({ id: 1, sender: dee }), pageRow({ id: 2, sender: anna })] : [root]);
+        const view = where === "conversation" ? drawFeed(w).wrapper : await drawThread(w, root, [pageRow({ id: 41, sender: anna, parentId: 40 })]);
+        await settle();
+        const id = where === "conversation" ? 3 : 42;
+        const fades = (): Element[] => animations.played.filter(motion => motion.id === "chat-tail-in").map(motion => motion.element);
+        const rowOf = (element: Element): string => (element.closest<HTMLElement>("[data-message-id], [data-reply-id]")?.dataset.messageId ?? element.closest<HTMLElement>("[data-reply-id]")?.dataset.replyId) ?? "";
+
+        w.live("message.created", liveCreated({ id, sender: anna, parentId: where === "thread" ? 40 : undefined }, 2));
+        await settle();
+
+        const faded = fades();
+        const face = view.get(`[data-message-id='${id}'] [data-tail^='face:'], [data-reply-id='${id}'] [data-tail^='face:']`).element;
+        expect(faded.length).toBeGreaterThan(1);
+        expect(new Set(faded).size).toBe(faded.length);
+        expect(faded.every(element => rowOf(element) === String(id))).toBe(true);
+        // the face, and nothing holding it, fades: it keeps the strength it stood at
+        expect(faded.some(element => element === face || element.contains(face))).toBe(false);
+        // everything else her row draws fades with it: what is left of her row outside a fade is the face's own column
+        const row = face.closest("[data-testid='message-row']") as HTMLElement;
+        expect(faded.some(element => !!element.querySelector("[data-testid='message-body']") || element.matches("[data-testid='message-body']"))).toBe(true);
+        expect(row.contains(face)).toBe(true);
+
+        animations.played.length = 0;
+        w.live("message.created", liveCreated({ id, sender: anna, parentId: where === "thread" ? 40 : undefined }, 2));
+        await settle();
+        expect(fades()).toEqual([]);
+    });
+
     test("a message heard while the first page was still on its way is drawn with that page, not risen", async () => {
         const w = wire();
         const feed = drawFeed(w);

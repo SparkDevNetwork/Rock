@@ -971,6 +971,8 @@
     watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!drawnTyping.value], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
         const element = scroller();
         const fromEnd = element ? reader.endOf() - element.scrollTop : 0;
+        // the tail reads the reader too, before the same render, and either may run first; a
+        // second read with no scroll between changes nothing
         reader.read();
         const shouldFollow = reader.isAtNewest.value || pendingCount > oldPendingCount;
 

@@ -291,6 +291,37 @@ describe("a reader at the newest reply", () => {
         expect(w.get("[data-testid='pending-row']").attributes("data-tail-played") ?? "").toContain("chat-tail-in");
         expect(sizes.scrollTop).toBe(700);
     });
+
+    // A push or a link lands the reader on a reply far up with a smooth scroll, whose first scroll
+    // event comes a frame or more later. A reply's photo decoding before it must not read them as
+    // still at the newest reply and pull them back there.
+    test("landed on a reply far up, a size change before the scroll's first frame leaves them going to it", async () => {
+        const w = draw({ isChannel: false, replies: replies(20) });
+        await afterOpen();
+        const sizes = { scrollHeight: 1000, clientHeight: 400, scrollTop: 600 };
+        layOut(w, sizes);
+        const scroller = w.get(".chat-panel-body").element as HTMLElement;
+        const landed = w.get("[data-reply-id='42']").element as HTMLElement;
+        // the reply stands 320 px above the scroller's top, so centring it scrolls to 100
+        landed.getBoundingClientRect = () => ({ top: -320, height: 40, bottom: -280, left: 0, right: 300, width: 300, x: 0, y: -320, toJSON: () => ({}) }) as DOMRect;
+        scroller.getBoundingClientRect = () => ({ top: 0, height: 400, bottom: 400, left: 0, right: 300, width: 300, x: 0, y: 0, toJSON: () => ({}) }) as DOMRect;
+        const centred = jest.fn();
+        landed.scrollIntoView = centred;
+
+        await w.setProps({ landOnId: 42 });
+        await nextTick();
+        await nextTick();
+        expect(centred).toHaveBeenCalledTimes(1);
+
+        // a photo decodes in a reply, before the smooth scroll has moved
+        sizes.scrollHeight = 1100;
+        for (const observer of observers.filter(o => o.targets.includes(scroller))) {
+            observer.callback([], observer as unknown as ResizeObserver);
+        }
+        await nextTick();
+
+        expect(sizes.scrollTop).toBe(600);
+    });
 });
 
 describe("the header", () => {
