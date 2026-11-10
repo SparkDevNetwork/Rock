@@ -51,6 +51,27 @@ namespace Rock.Tests.Rest
             return ( string ) method.Invoke( null, new object[] { entity, null, isCollectionAllowed } );
         }
 
+        private static string GetUntrackedRelatedEntityPath( object entity, Func<string, bool, bool> isRelatedEntityAllowed )
+        {
+            var method = _apiControllerBaseType.GetMethods( BindingFlags.NonPublic | BindingFlags.Static )
+                .Single( m => m.Name == "GetUntrackedRelatedEntityPath" && m.GetParameters().Length == 3 );
+
+            return ( string ) method.Invoke( null, new object[] { entity, null, isRelatedEntityAllowed } );
+        }
+
+        /// <summary>
+        /// Gets the controller's IsRelatedEntityAllowed as a predicate. The controller is not
+        /// constructed (that would need a database) because the overrides read no state.
+        /// </summary>
+        private static Func<string, bool, bool> GetIsRelatedEntityAllowed( string controllerName )
+        {
+            var controllerType = Assembly.Load( "Rock.Rest" ).GetType( $"Rock.Rest.Controllers.{controllerName}", true );
+            var method = controllerType.GetMethod( "IsRelatedEntityAllowed", BindingFlags.NonPublic | BindingFlags.Instance );
+            var controller = System.Runtime.Serialization.FormatterServices.GetUninitializedObject( controllerType );
+
+            return ( path, isCollection ) => ( bool ) method.Invoke( controller, new object[] { path, isCollection } );
+        }
+
         private static bool IsMappedEntityType( Type type )
         {
             var method = _apiControllerBaseType.GetMethod( "IsMappedEntityType", BindingFlags.NonPublic | BindingFlags.Static );
@@ -250,6 +271,89 @@ namespace Rock.Tests.Rest
             Assert.IsTrue( IsNavigationProperty( typeof( Note ).GetProperty( nameof( Note.ParentNote ) ) ) );
             Assert.IsFalse( IsNavigationProperty( typeof( Note ).GetProperty( nameof( Note.ParentNoteId ) ) ) );
             Assert.IsFalse( IsNavigationProperty( typeof( Note ).GetProperty( nameof( Note.Text ) ) ) );
+        }
+
+        [TestMethod]
+        public void PathCheck_AllowedSingleRecord_ChecksItsOwnRelatedRecords()
+        {
+            Func<string, bool, bool> isAllowed = ( path, isCollection ) => !isCollection && path == nameof( GroupMember.Person );
+
+            var groupMember = new GroupMember { Person = new Person() };
+            Assert.IsNull( GetUntrackedRelatedEntityPath( groupMember, isAllowed ) );
+
+            groupMember.Person.Users = new List<UserLogin> { new UserLogin() };
+            Assert.AreEqual( "Person.Users", GetUntrackedRelatedEntityPath( groupMember, isAllowed ) );
+
+            // A path allowed as a single record is not allowed as a collection, and the reverse.
+            Assert.AreEqual( nameof( Note.ChildNotes ), GetUntrackedRelatedEntityPath( new Note { ChildNotes = new List<Note> { new Note() } }, ( path, isCollection ) => !isCollection ) );
+            Assert.AreEqual( nameof( GroupMember.Person ), GetUntrackedRelatedEntityPath( new GroupMember { Person = new Person() }, ( path, isCollection ) => isCollection ) );
+        }
+
+        [TestMethod]
+        public void ExistingCollectionOverrides_BehaveTheSame_ThroughPathCheck()
+        {
+            var isTransactionAllowed = GetIsRelatedEntityAllowed( "FinancialTransactionsController" );
+            var transaction = new FinancialTransaction();
+            transaction.TransactionDetails.Add( new FinancialTransactionDetail { AccountId = 1, Amount = 10 } );
+            Assert.IsNull( GetUntrackedRelatedEntityPath( transaction, isTransactionAllowed ) );
+            transaction.TransactionDetails.First().Account = new FinancialAccount();
+            Assert.AreEqual( "TransactionDetails.Account", GetUntrackedRelatedEntityPath( transaction, isTransactionAllowed ) );
+            Assert.AreEqual( nameof( FinancialTransaction.RefundDetails ), GetUntrackedRelatedEntityPath( new FinancialTransaction { RefundDetails = new FinancialTransactionRefund() }, isTransactionAllowed ) );
+            Assert.IsFalse( isTransactionAllowed( nameof( FinancialTransaction.TransactionDetails ), false ) );
+
+            var isScheduleAllowed = GetIsRelatedEntityAllowed( "FinancialScheduledTransactionsController" );
+            var schedule = new FinancialScheduledTransaction();
+            schedule.ScheduledTransactionDetails.Add( new FinancialScheduledTransactionDetail { AccountId = 1, Amount = 25 } );
+            Assert.IsNull( GetUntrackedRelatedEntityPath( schedule, isScheduleAllowed ) );
+            schedule.ScheduledTransactionDetails.First().Account = new FinancialAccount();
+            Assert.AreEqual( "ScheduledTransactionDetails.Account", GetUntrackedRelatedEntityPath( schedule, isScheduleAllowed ) );
+            schedule = new FinancialScheduledTransaction();
+            schedule.Transactions.Add( new FinancialTransaction() );
+            Assert.AreEqual( nameof( FinancialScheduledTransaction.Transactions ), GetUntrackedRelatedEntityPath( schedule, isScheduleAllowed ) );
+
+            var isPersonAllowed = GetIsRelatedEntityAllowed( "PeopleController" );
+            var person = new Person { PhoneNumbers = new List<PhoneNumber> { new PhoneNumber { Number = "5555555555" } } };
+            Assert.IsNull( GetUntrackedRelatedEntityPath( person, isPersonAllowed ) );
+            person.PhoneNumbers.First().NumberTypeValue = new DefinedValue();
+            Assert.AreEqual( "PhoneNumbers.NumberTypeValue", GetUntrackedRelatedEntityPath( person, isPersonAllowed ) );
+            Assert.AreEqual( nameof( Person.Users ), GetUntrackedRelatedEntityPath( new Person { Users = new List<UserLogin> { new UserLogin() } }, isPersonAllowed ) );
+
+            // A controller with no override allows nothing.
+            var isAttributeAllowed = GetIsRelatedEntityAllowed( "AttributesController" );
+            var attribute = new Rock.Model.Attribute();
+            attribute.AttributeQualifiers.Add( new AttributeQualifier { Key = "values", Value = "A,B" } );
+            Assert.AreEqual( nameof( Rock.Model.Attribute.AttributeQualifiers ), GetUntrackedRelatedEntityPath( attribute, isAttributeAllowed ) );
+        }
+
+        [TestMethod]
+        public void RefundsController_AllowsOnlyTransactionAndItsDetails()
+        {
+            var isAllowed = GetIsRelatedEntityAllowed( "FinancialTransactionRefundsController" );
+
+            var refund = new FinancialTransactionRefund { OriginalTransactionId = 1, FinancialTransaction = new FinancialTransaction { FinancialPaymentDetailId = 1 } };
+            refund.FinancialTransaction.TransactionDetails.Add( new FinancialTransactionDetail { AccountId = 1, Amount = -25 } );
+            Assert.IsNull( GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            refund.FinancialTransaction.TransactionDetails.First().Account = new FinancialAccount();
+            Assert.AreEqual( "FinancialTransaction.TransactionDetails.Account", GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            refund.FinancialTransaction.TransactionDetails.First().Account = null;
+            refund.FinancialTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
+            Assert.AreEqual( "FinancialTransaction.FinancialPaymentDetail", GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            refund.FinancialTransaction.FinancialPaymentDetail = null;
+            refund.FinancialTransaction.Images.Add( new FinancialTransactionImage() );
+            Assert.AreEqual( "FinancialTransaction.Images", GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            refund = new FinancialTransactionRefund { OriginalTransaction = new FinancialTransaction() };
+            Assert.AreEqual( nameof( FinancialTransactionRefund.OriginalTransaction ), GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            refund = new FinancialTransactionRefund { RefundReasonValue = new DefinedValue() };
+            Assert.AreEqual( nameof( FinancialTransactionRefund.RefundReasonValue ), GetUntrackedRelatedEntityPath( refund, isAllowed ) );
+
+            Assert.IsFalse( isAllowed( nameof( FinancialTransactionRefund.FinancialTransaction ), true ) );
+            Assert.IsFalse( isAllowed( "FinancialTransaction.TransactionDetails", false ) );
+            Assert.IsFalse( isAllowed( "TransactionDetails", true ) );
         }
 
         /// <summary>
