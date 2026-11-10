@@ -1,13 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Transition :css="false" @leave="onLeave">
-        <div v-if="typing" class="chat-typing" :class="{ 'is-in-run': isInRun }" data-tail-typing data-testid="typing-bubble">
+        <div v-if="typing" class="chat-typing" :class="{ 'is-in-run': isInRun }" data-tail="typing:typing" data-testid="typing-bubble">
             <div class="chat-typing-in">
-                <div v-if="isGroup && !isInRun" class="chat-typing-names" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
+                <Transition :css="false" @leave="onLeave">
+                    <div v-if="isGroup && !isInRun" :key="who" class="chat-typing-names" :data-tail="`name:${groupKey}`" data-testid="typing-names" aria-hidden="true">{{ typing.names }}</div>
+                </Transition>
                 <div class="chat-typing-line" aria-hidden="true">
-                    <Avatar v-if="faces.length === 1" class="chat-typing-face" :data-tail-face="typing.typists[0].alias" :people="faces" :size="34" />
-                    <GroupFace v-else class="chat-typing-face" :people="faces" :size="34" />
-                    <span class="chat-typing-bubble" data-tail-bubble data-testid="typing-dots"><i></i><i></i><i></i></span>
+                    <Transition :css="false" @leave="onLeave">
+                        <Avatar v-if="faces.length === 1" :key="who" class="chat-typing-face" :data-tail="`face:${groupKey}`" :people="faces" :size="34" />
+                        <GroupFace v-else :key="who" class="chat-typing-face" :data-tail="`face:${groupKey}`" :people="faces" :size="34" />
+                    </Transition>
+                    <span class="chat-typing-bubble" data-tail="dots:typing" data-testid="typing-dots"><i></i><i></i><i></i></span>
                 </div>
                 <span class="chat-sr-only">{{ typing.sentence }}</span>
             </div>
@@ -88,11 +92,6 @@
     animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
 }
 
-/* Going while she types on in her run, her last message takes the run's face back, so the bubble going shows none. */
-.chat-typing.is-in-run.is-leaving .chat-typing-face {
-    visibility: hidden;
-}
-
 /* Asked for less motion, the dots stand still at full strength. */
 @media (prefers-reduced-motion: reduce) {
     .chat-typing-bubble i {
@@ -141,6 +140,12 @@
         isInRun: {
             type: Boolean,
             default: false
+        },
+
+        /** The key of the group this is drawn in: her run's when it continues it, else its own, so its face and name line move only while her run does. */
+        groupKey: {
+            type: String,
+            default: "typing"
         }
     });
 
@@ -155,6 +160,9 @@
 
     /** Each typist's face; one the room's facts do not name draws the people icon. */
     const faces = computed((): AvatarPerson[] => (props.typing?.typists ?? []).map(typist => typist.person ? personFace(typist.person) : { name: "", photoUrl: null }));
+
+    /** Who is drawn, so a change of typists is the face and name line going and new ones coming, crossing. */
+    const who = computed((): string => (props.typing?.typists ?? []).map(typist => typist.alias).join());
 
     // #endregion Computed Values
 

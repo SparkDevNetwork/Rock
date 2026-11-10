@@ -38,7 +38,7 @@ import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/he
 import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
-import { playAnimations, tailPlayed } from "../tailFakes";
+import { playAnimations, tailPlayed } from "../tailStage";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
@@ -100,12 +100,23 @@ class FakeIntersectionObserver {
  * The first time, the scroller is laid out where the feed scrolled itself as it mounted, at its
  * newest message, which the browser reports with a scroll before the reader moves from there.
  */
+/**
+ * Lays the feed's content out as tall as the scroller's height, from its top: the newest end the
+ * feed reads from layout is then where the browser's scroll height puts it at rest.
+ */
+function layContent(wrapper: VueWrapper, height: () => number): void {
+    const content = wrapper.get("[data-testid='feed-content']").element as HTMLElement;
+    Object.defineProperty(content, "offsetTop", { configurable: true, get: () => 0 });
+    Object.defineProperty(content, "offsetHeight", { configurable: true, get: height });
+}
+
 function placeScroll(wrapper: VueWrapper, scrollTop: number, scrollHeight = 2000, clientHeight = 500): void {
     const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
     const isFirstLayout = !Object.getOwnPropertyDescriptor(scroller, "scrollHeight");
     let top = isFirstLayout ? scrollHeight - clientHeight : scroller.scrollTop;
     Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => scrollHeight });
     Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => clientHeight });
+    layContent(wrapper, () => scrollHeight);
     Object.defineProperty(scroller, "scrollTop", { configurable: true, get: () => top, set: (value: number) => top = value });
     if (isFirstLayout) {
         scroller.dispatchEvent(new Event("scroll"));
@@ -1303,7 +1314,7 @@ describe("Jump to latest", () => {
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2000);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2000 - 500);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
     });
 
@@ -1441,7 +1452,7 @@ describe("someone else typing", () => {
     test("the bubble is given no messages, only who types and where it stands", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50))]), typing: annaTyping });
 
-        expect(Object.keys(wrapper.findComponent(TypingBubble).props()).sort()).toEqual(["isGroup", "isInRun", "typing"]);
+        expect(Object.keys(wrapper.findComponent(TypingBubble).props()).sort()).toEqual(["groupKey", "isGroup", "isInRun", "typing"]);
     });
 
     test("is never watched as seen, so it is never read as a message", async () => {
@@ -1492,7 +1503,7 @@ describe("a send that fails", () => {
         await nextTick();
         await nextTick();
 
-        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2060);
+        expect((wrapper.get("[data-testid='message-feed']").element as HTMLElement).scrollTop).toBe(2060 - 500);
     });
 });
 
@@ -1544,7 +1555,7 @@ describe("the feed giving height to the composer", () => {
         await shrinkTo(wrapper, 430);
 
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-        expect(scroller.scrollTop).toBe(2000);
+        expect(scroller.scrollTop).toBe(2000 - 430);
         expect(isShown(wrapper, "[data-testid='jump-latest']")).toBe(false);
     });
 
@@ -1601,6 +1612,7 @@ describe("a feed holding its reader at the newest message", () => {
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
         Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
         Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
+        layContent(wrapper, () => sizes.scrollHeight);
         Object.defineProperty(scroller, "scrollTop", {
             configurable: true,
             get: () => sizes.scrollTop,

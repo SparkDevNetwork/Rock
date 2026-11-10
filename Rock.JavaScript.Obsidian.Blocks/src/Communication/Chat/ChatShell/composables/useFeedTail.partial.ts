@@ -22,10 +22,17 @@
 // or a switch states, and nothing moves for a reader scrolled up.
 //
 // Before the render that draws a change it reads where the tail stands on screen, motion in flight
-// included; after it, it plays from there to where the change put things, so a change that lands
+// included. After it, it plans, then plays: it takes what is going out of the flow, lets go of the
+// motions this change moves again, reads where everything now lays out with nothing of its own
+// moving, and plays each part from where it stood on screen to there, so a change that lands
 // mid-motion continues from what is on screen and two motions never stack. While the view's own
 // entrance plays, whatever lands at its tail is laid into the entrance rather than stepping after it.
-// The motion is one transform on the box that holds everything, plus the few parts that change row.
+//
+// The motion is one transform on the box that holds everything, plus the parts that do not ride
+// their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
+// (so a face moves only while its run continues), the typing bubble and its dots, and a row's time
+// line and its message's box, `meta` and `box`, which are their row's. A part leaving comes through the tail's one leave
+// hook, from a Transition that hands it over.
 
 import { inject, InjectionKey, nextTick, onBeforeUnmount, provide, Ref, watch } from "vue";
 import { ArrivalMotion, messageMotionKey } from "../messageMotion.partial";
@@ -54,34 +61,44 @@ export type FeedTailOptions = {
     drawn: () => unknown;
 };
 
-/** What the typing bubble hands its tail: its element going, so it has no motion of its own. */
+/** What the parts a view draws hand its tail: a part going, so it has no motion of its own. */
 export type FeedTail = {
-    /** The bubble is going; `done` takes it away. */
+    /** A marked part is going; `done` takes it away. */
     leave: (element: Element, done: () => void) => void;
 };
 
-/** How a view hands its tail to the typing bubble it draws. */
+/** How a view hands its tail to the parts it draws. */
 export const feedTailKey: InjectionKey<FeedTail> = Symbol("chat-feed-tail");
+
+/** A part of the tail, where it stood on screen and how strongly it showed. */
+type Part = { id: string, element: HTMLElement, box: DOMRect };
 
 /** Where the tail stood on screen before a change. */
 type Before = {
     isFollowing: boolean;
 
-    /** A row that stands before and after, by its key, and its top. */
-    anchor: { key: string, top: number } | null;
-
     /** Every row key drawn. */
     keys: Set<string>;
 
-    /** The typing bubble's dots, its face, and each row's face by its mark, where each is on screen. */
-    bubble: DOMRect | null;
-    faces: Map<string, DOMRect>;
+    /** The rows on screen at the tail, newest first, with their tops. */
+    rows: { key: string, top: number }[];
+
+    /** The parts on screen at the tail, by mark and by element. */
+    parts: Map<string, Part>;
+    elements: Map<Element, Part>;
 };
 
-/** The motion tokens, read from the view, so reduced motion's shorter values apply. */
-type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeState: string };
+/** A part going, with its way to be taken away. */
+type Leaving = { element: HTMLElement, done: () => void };
 
-const tailIds = ["chat-tail-glide", "chat-tail-open", "chat-tail-in", "chat-tail-out", "chat-tail-handoff"];
+/** The motion tokens, read from the view, so reduced motion's shorter values apply. */
+type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeOut: string, easeState: string };
+
+/** One start offset, the transform a part or the stack plays from to none. */
+type Offset = { x: number, y: number };
+
+const glideIds = ["chat-tail-glide", "chat-tail-open"];
+const moveIds = ["chat-tail-move"];
 
 /** A token's milliseconds, as the sheet writes them ("260ms", ".26s"). */
 function ms(value: string, fallback: number): number {
@@ -102,6 +119,7 @@ function tokensOf(element: Element): Tokens {
         base: ms(read("--chat-t-base"), 0),
         fast: ms(read("--chat-t-fast"), 0),
         easeIn: read("--chat-ease-in").trim() || "linear",
+        easeOut: read("--chat-ease-out").trim() || "linear",
         easeState: read("--chat-ease-state").trim() || "linear"
     };
 }
@@ -115,33 +133,35 @@ function play(element: Element, frames: Keyframe[], options: KeyframeAnimationOp
     return typeof (element as HTMLElement).animate === "function" ? (element as HTMLElement).animate(frames, options) : null;
 }
 
-/** Fades a leaving bubble out, and takes it away once it has. */
-function fadeOut(element: Element, duration: number, tokens: Tokens, done: () => void): void {
-    const fade = play(element, [{ opacity: 1 }, { opacity: 0 }], { duration, easing: tokens.easeState, id: "chat-tail-out" });
-    if (fade) {
-        fade.onfinish = done;
-        fade.oncancel = done;
-    }
-    else {
-        done();
-    }
+/** The running motions on an element, or in it too. */
+function motionsOf(element: Element, isSubtree = false): Animation[] {
+    return element.getAnimations?.({ subtree: isSubtree }) ?? [];
 }
 
-/** The row keys drawn in a box, in order. */
+/** The rows drawn in a box, in order. */
 function rowsOf(content: HTMLElement): HTMLElement[] {
     return [...content.querySelectorAll<HTMLElement>("[data-row-key]")];
 }
 
-/** Each mark's last element, the newest: a face is marked by whose it is, and the tail moves only the newest. */
-function facesOf(content: HTMLElement): Map<string, HTMLElement> {
-    const faces = new Map<string, HTMLElement>();
-    content.querySelectorAll<HTMLElement>("[data-tail-face]").forEach(element => faces.set(element.dataset.tailFace ?? "", element));
-    return faces;
+const kindOf = (id: string): string => id.split(":")[0];
+
+/** A part's id: its mark, or for a row's own time line and box, its mark and its row's key. */
+function idOf(element: HTMLElement): string | undefined {
+    const mark = element.dataset?.tail;
+    return mark === "meta" || mark === "box" ? `${mark}:${element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? ""}` : mark;
 }
 
-/**
- * The time left of the view's own entrance, in milliseconds, or 0 when none plays.
- */
+/** How strongly an element shows as a person sees it: its opacity and every ancestor's, to the scroller. */
+function seenOpacity(element: Element, scroller: Element | null): number {
+    let product = 1;
+    for (let at: Element | null = element; at && at !== scroller; at = at.parentElement) {
+        const value = parseFloat(getComputedStyle(at).opacity);
+        product *= Number.isNaN(value) ? 1 : value;
+    }
+    return product;
+}
+
+/** The time left of the view's own entrance, in milliseconds, or 0 when none plays. */
 function entranceLeft(scroller: HTMLElement | null): number {
     const entrance = scroller?.getAnimations?.().find(animation => (animation as CSSAnimation).animationName === "chat-feed-enter");
     const timing = entrance?.effect?.getComputedTiming();
@@ -152,8 +172,24 @@ function entranceLeft(scroller: HTMLElement | null): number {
 }
 
 /**
- * A view's tail: the conversation's feed or the thread's drawer. Provides itself to the typing
- * bubble the view draws.
+ * Where the newest end of a scroller is, read from layout so no motion in flight moves it: a
+ * transform on the content grows the scroller's whole height while it plays, so a follow to that
+ * height scrolls into the motion and the browser pulls it back frame by frame. The scroller is
+ * its content's offset parent, so the content's offset is from the scroller's own top.
+ *
+ * @param scroller The view's scroller.
+ * @param content The box that holds what it draws.
+ *
+ * @returns The scroll top at the newest end.
+ */
+export function endOf(scroller: HTMLElement, content: HTMLElement): number {
+    const padding = parseFloat(getComputedStyle(scroller).paddingBottom);
+    return Math.max(0, content.offsetTop + content.offsetHeight + (Number.isNaN(padding) ? 0 : padding) - scroller.clientHeight);
+}
+
+/**
+ * A view's tail: the conversation's feed or the thread's drawer. Provides itself to the parts the
+ * view draws.
  *
  * @param options What the view hands its tail.
  *
@@ -166,8 +202,11 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     /** Where the tail stood before the change being drawn, read once per change. */
     let before: Before | null = null;
 
-    /** The bubble going, with its way to be taken away. */
-    let leaving: { element: Element, done: () => void } | null = null;
+    /** The parts going in the change being drawn. */
+    let leaving: Leaving[] = [];
+
+    /** Parts out of the flow still playing their way out, from this change or one before. */
+    const going = new Map<HTMLElement, () => void>();
 
     /** The newest typing start and end this view has played, so each plays once. */
     let playedStart = since;
@@ -175,38 +214,60 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
     let isStopped = false;
 
-    /** Reads where the tail stands on screen, before anything moves. */
+    /**
+     * Reads where the tail stands on screen, before anything moves: the rows from the newest back to
+     * the first one above the scroller's top, so a wakeup reads about the rows a person sees, and
+     * the parts in them and in the typing bubble.
+     */
     function read(): Before | null {
         const content = options.content.value;
         if (!content) {
             return null;
         }
         const rows = rowsOf(content);
-        const first = rows[0];
-        const faces = new Map<string, DOMRect>();
-        facesOf(content).forEach((element, key) => faces.set(key, element.getBoundingClientRect()));
+        const edge = options.scroller()?.getBoundingClientRect().top ?? Number.NEGATIVE_INFINITY;
+        const onScreen: { key: string, top: number }[] = [];
+        const parts = new Map<string, Part>();
+        const elements = new Map<Element, Part>();
+        const take = (holder: Element): void => {
+            for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
+                const id = idOf(element);
+                if (id && !going.has(element) && !isInGoing(element)) {
+                    const part = { id, element, box: element.getBoundingClientRect() };
+                    parts.set(id, part);
+                    elements.set(element, part);
+                }
+            }
+        };
+        for (let index = rows.length - 1; index >= 0; index--) {
+            const top = rows[index].getBoundingClientRect().top;
+            onScreen.push({ key: rows[index].dataset.rowKey ?? "", top });
+            take(rows[index]);
+            if (top < edge) {
+                break;
+            }
+        }
+        const bubble = content.querySelector<HTMLElement>("[data-tail='typing:typing']");
+        if (bubble) {
+            take(bubble);
+        }
         return {
             isFollowing: options.isFollowing(),
-            anchor: first ? { key: first.dataset.rowKey ?? "", top: first.getBoundingClientRect().top } : null,
             keys: new Set(rows.map(row => row.dataset.rowKey ?? "")),
-            bubble: content.querySelector("[data-tail-bubble]")?.getBoundingClientRect() ?? null,
-            faces
+            rows: onScreen,
+            parts,
+            elements
         };
     }
 
-    /** How far the stack moved, from where it stood on screen to where it now lays out. */
-    function offsetFrom(content: HTMLElement, was: Before): number {
-        if (!was.anchor) {
-            return 0;
+    /** Whether an element is inside a part already going. */
+    function isInGoing(element: Element): boolean {
+        for (const held of going.keys()) {
+            if (held !== element && held.contains(element)) {
+                return true;
+            }
         }
-        const anchor = rowsOf(content).find(row => row.dataset.rowKey === was.anchor?.key);
-        return anchor ? was.anchor.top - anchor.getBoundingClientRect().top : 0;
-    }
-
-    /** Takes a leaving bubble out of the flow where it stands, so the stack can settle into its room while it goes. */
-    function lift(element: HTMLElement): void {
-        const { offsetTop, offsetLeft, offsetWidth } = element;
-        Object.assign(element.style, { position: "absolute", top: `${offsetTop}px`, left: `${offsetLeft}px`, width: `${offsetWidth}px`, margin: "0" });
+        return false;
     }
 
     /** The typing in this view's place that this view has not played yet: a start, an end and why. */
@@ -222,142 +283,341 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         return { isStart, end };
     }
 
-    /** Lets a leaving bubble go now. */
-    function release(): void {
-        const going = leaving;
-        leaving = null;
-        going?.done();
+    /** Takes a part going out of the flow, its room closing as the stack settles; where it stands is placed once the layout is read. */
+    function lift(element: HTMLElement, width: number): void {
+        Object.assign(element.style, { position: "absolute", top: "0px", left: "0px", width: `${width}px`, margin: "0" });
     }
 
-    /** Grows her message out of the bubble it ends: from the bubble's box on screen to its own, its words fading in. */
-    function grow(row: HTMLElement, from: DOMRect, offset: number, tokens: Tokens): void {
-        const target = row.querySelector<HTMLElement>(".chat-bubble") ?? row;
-        const to = target.getBoundingClientRect();
-        const dx = from.left - to.left;
-        const dy = from.bottom - (to.bottom + offset);
-        // the box grows up and toward the far side from the corner by her face; a message narrower
-        // than the bubble starts at its own width
-        const top = Math.max(0, to.height - from.height);
-        const right = Math.max(0, to.width - from.width);
-        const timing = { duration: tokens.msg, easing: tokens.easeIn, id: "chat-tail-handoff" };
-        play(target, [
-            { transform: `translate(${dx}px, ${dy}px)`, clipPath: `inset(${top}px ${right}px 0 0 round var(--chat-r-bubble))` },
-            { transform: "none", clipPath: "inset(0 0 0 0 round var(--chat-r-bubble))" }
-        ], timing);
-        for (const part of target.children) {
-            play(part, [{ opacity: 0, offset: 0 }, { opacity: 0, offset: .3 }, { opacity: 1, offset: .9 }, { opacity: 1, offset: 1 }], timing);
+    /** Places a part out of the flow in its container, laid out at `holder`: at a box on screen less what its container plays from. */
+    function placeAt(element: HTMLElement, holder: DOMRect, screen: { left: number, top: number }, from: Offset): void {
+        Object.assign(element.style, { top: `${screen.top - holder.top - from.y}px`, left: `${screen.left - holder.left - from.x}px` });
+    }
+
+    /** The laid-out box of the container a part out of the flow is placed in. */
+    function holderBox(element: HTMLElement): DOMRect | undefined {
+        return ((element.offsetParent as HTMLElement | null) ?? element.parentElement)?.getBoundingClientRect();
+    }
+
+    /** A part going: kept out of the flow while it fades, then taken away; a cancel takes it away at once. */
+    function fadeAway(element: HTMLElement, done: () => void, from: number, timing: KeyframeAnimationOptions): void {
+        going.set(element, done);
+        const finish = (): void => {
+            going.delete(element);
+            done();
+        };
+        const fade = play(element, [{ opacity: from }, { opacity: 0 }], { ...timing, id: "chat-tail-out" });
+        if (fade) {
+            fade.onfinish = finish;
+            fade.oncancel = finish;
+        }
+        else {
+            finish();
         }
     }
 
     /** Plays the change, from where the tail stood before it to where it now lays out. */
     function settle(was: Before): void {
         const content = options.content.value;
+        const parting = leaving;
+        leaving = [];
+        const release = (): void => parting.forEach(part => part.done());
         if (isStopped || !content) {
             release();
             return;
         }
 
         const typing = typingNow();
-        const reduced = isMotionReduced();
-        const tokens = tokensOf(content);
-
         // Every row drawn is claimed, whether or not anything plays, so a row drawn again later is
         // never news: a folded line claims the messages that joined it too. Only a row new to the
         // view can arrive.
         const arrivals = rowsOf(content)
             .map(row => ({ row, how: options.arrives(row.dataset.rowKey ?? "") }))
-            .filter(({ row }) => !was.keys.has(row.dataset.rowKey ?? ""));
+            .filter(({ row, how }) => !was.keys.has(row.dataset.rowKey ?? "") && how !== null);
         const handoff = typing.end === "sent" ? arrivals.find(arrival => arrival.how === "inPlace") : undefined;
+        const goes = typing.end === "stopped" || typing.end === "expired" || typing.end === "blocked";
         // This view moves only for what its own place recorded: a message arriving here, typing
         // starting, or typing ending as a person sees it end. An end for what a page brought, or
         // a session's stop, is state, and so is whatever else changed with it.
-        const isMotion = arrivals.some(arrival => arrival.how !== null) || typing.isStart || (typing.end !== null && typing.end !== "overtaken" && typing.end !== "cleared");
-
-        // A bubble going for her message goes as it lands, which grows out of it; one going as
-        // state goes at once. Under less motion it fades where it stands before its room closes.
-        const goes = typing.end === "stopped" || typing.end === "expired" || typing.end === "blocked";
-        if (leaving && reduced && was.isFollowing && (goes || handoff)) {
-            const { element, done } = leaving;
-            leaving = null;
-            if (handoff) {
-                lift(element as HTMLElement);
-            }
-            fadeOut(element, handoff ? tokens.msg : tokens.fast, tokens, done);
-        }
-        else if (leaving && !reduced && was.isFollowing && goes) {
-            lift(leaving.element as HTMLElement);
-        }
-        else {
-            release();
-        }
-
-        const entrance = entranceLeft(options.scroller());
+        const isMotion = arrivals.length > 0 || typing.isStart || goes || !!handoff;
+        const scroller = options.scroller();
+        const entrance = entranceLeft(scroller);
         if (!was.isFollowing || (!isMotion && entrance === 0)) {
             // Scrolled up, nothing moves; a change of state alone after the entrance is simply there.
             release();
             return;
         }
 
-        // Only the stack's own glide is let go: it is read on screen above, so the new one takes over from there.
-        content.getAnimations?.().filter(animation => tailIds.includes(animation.id)).forEach(animation => animation.cancel());
+        const tokens = tokensOf(content);
+        const reduced = isMotionReduced();
+        const bubbleGoing = parting.find(part => part.element.dataset.tail === "typing:typing");
+        const dotsWere = bubbleGoing?.element.querySelector<HTMLElement>("[data-tail='dots:typing']");
+        // what the dots showed, read before anything is let go: her message starts from it
+        const dotsSeen = dotsWere ? seenOpacity(dotsWere, scroller) : 1;
+        const partingSeen = new Map(parting.map(part => [part.element, seenOpacity(part.element, scroller)]));
+
+        // Plan step 1: what goes leaves the flow, so the layout read next is final. A part the tail
+        // did not read before goes at once; under reduced motion a bubble going keeps its room.
+        const lifted: Leaving[] = [];
+        for (const part of parting) {
+            const at = was.elements.get(part.element);
+            const keepsRoom = reduced && part === bubbleGoing && !handoff;
+            if (!at || entrance > 0) {
+                part.done();
+                continue;
+            }
+            if (!keepsRoom) {
+                lift(part.element, at.box.width);
+            }
+            lifted.push(part);
+        }
+
+        // Plan step 2: let go of what this change moves again, each already read where it is on
+        // screen: the stack, every part's own move, and anything still going that this change takes
+        // the room of. A fade, a grow and the words in it run on inside boxes that now continue from
+        // the screen.
+        const isFilled = arrivals.length > 0 || typing.isStart;
+        for (const [element, done] of [...going]) {
+            if (isFilled && element.dataset.tail === "typing:typing") {
+                going.delete(element);
+                motionsOf(element, true).forEach(animation => animation.cancel());
+                done();
+            }
+        }
+        motionsOf(content, true).filter(animation => glideIds.includes(animation.id) || moveIds.includes(animation.id)).forEach(animation => animation.cancel());
+        if (bubbleGoing) {
+            motionsOf(bubbleGoing.element, true).forEach(animation => animation.cancel());
+        }
+
+        // Plan step 3: the reader follows to the newest end, read from layout.
         options.follow();
-        const offset = offsetFrom(content, was);
+
+        // Plan step 4: read after, once, with nothing of the tail's own moving. The stack moved by
+        // how far the newest row that stands before and after moved; a row changing height above it
+        // does not move where the stack starts. A move longer than the scroller starts just off it.
+        const height = scroller?.clientHeight ?? Number.POSITIVE_INFINITY;
+        const drawnRows = new Map(rowsOf(content).map(row => [row.dataset.rowKey ?? "", row]));
+        let offset = 0;
+        for (const stood of was.rows) {
+            const now = drawnRows.get(stood.key);
+            if (now) {
+                offset = Math.max(-height, Math.min(height, stood.top - now.getBoundingClientRect().top));
+                break;
+            }
+        }
+
+        // where each part going is placed from, and her box, laid out before anything plays
+        const holders = new Map(lifted.map(part => [part.element, holderBox(part.element)]));
+        const handoffRow = handoff?.row;
+        const handoffBox = handoffRow?.querySelector<HTMLElement>("[data-tail='box']") ?? null;
+        const handoffAt = handoffBox?.getBoundingClientRect();
 
         if (entrance > 0) {
-            // The open's one motion: what lands while the view enters rides the entrance to its end.
+            // The open's one motion: what lands while the view enters rides the entrance to its end,
+            // closing the rest of the way evenly so a short remainder does not open with a jump.
             if (Math.abs(offset) >= .5 && !reduced) {
-                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: entrance, easing: tokens.easeIn, id: "chat-tail-open" });
+                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: entrance, easing: tokens.easeState, id: "chat-tail-open" });
             }
-            release();
+            lifted.forEach(part => part.done());
             return;
         }
 
-        const duration = goes && arrivals.length === 0 ? tokens.base : tokens.msg;
-        const easing = goes && arrivals.length === 0 ? tokens.easeState : tokens.easeIn;
+        // Plan step 5: every motion as data. Each geometric motion of one change shares one timing,
+        // so a part inside a moving box lands with it exactly.
+        const isLeaveOnly = goes && arrivals.length === 0;
+        const geometry: KeyframeAnimationOptions = { duration: isLeaveOnly ? tokens.base : tokens.msg, easing: isLeaveOnly ? tokens.easeState : tokens.easeIn };
+        const starts = new Map<Element, Offset>([[content, { x: 0, y: reduced ? 0 : offset }]]);
+        const startOf = (element: Element): Offset => {
+            const sum = { x: 0, y: 0 };
+            for (let at: Element | null = element.parentElement; at; at = at.parentElement) {
+                const start = starts.get(at);
+                if (start) {
+                    sum.x += start.x;
+                    sum.y += start.y;
+                }
+                if (at === content) {
+                    break;
+                }
+            }
+            return sum;
+        };
+        const isLifted = (element: Element): boolean => lifted.some(part => part.element === element || part.element.contains(element));
+
+        // the parts drawn now, at the rows read before and the rows new here, and in the bubble
+        const tailNow = new Set<Element>();
+        const stoodKeys = new Set(was.rows.map(stood => stood.key));
+        for (const [key, row] of drawnRows) {
+            if (stoodKeys.has(key) || !was.keys.has(key)) {
+                tailNow.add(row);
+            }
+        }
+        const bubbleNow = [...content.querySelectorAll<HTMLElement>("[data-tail='typing:typing']")].find(element => !isLifted(element) && !going.has(element));
+        if (bubbleNow) {
+            tailNow.add(bubbleNow);
+        }
+        const now: Part[] = [];
+        for (const holder of tailNow) {
+            for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
+                const id = idOf(element);
+                if (id && !isLifted(element) && !going.has(element)) {
+                    now.push({ id, element, box: element.getBoundingClientRect() });
+                }
+            }
+        }
+        // A hand-off gives her new row the bubble's face and name line: they move into hers.
+        const fromOf = (part: Part): Part | undefined => was.parts.get(part.id)
+            ?? (handoff && (kindOf(part.id) === "face" || kindOf(part.id) === "name") ? was.parts.get(`${kindOf(part.id)}:typing`) : undefined);
+        const taken = new Set(now.flatMap(part => {
+            const from = fromOf(part);
+            return from ? [from.element] : [];
+        }));
+
+        // Plan step 6 and play. The stack first, then its parts in the document's order, so each
+        // container's start is planned before what is in it.
         if (!reduced && Math.abs(offset) >= .5) {
-            play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration, easing, id: "chat-tail-glide" });
+            play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-glide" });
         }
 
-        // A leaving bubble slides down out under the edge with the stack and fades.
-        if (leaving) {
-            const { element, done } = leaving;
-            leaving = null;
-            fadeOut(element, tokens.base, tokens, done);
-        }
-
-        // Each message new here fades in riding the stack; hers grows out of the bubble.
-        for (const { row, how } of arrivals) {
-            if (how === null) {
+        const dotsBefore = was.parts.get("dots:typing");
+        for (const part of now) {
+            const kind = kindOf(part.id);
+            if (part.element === handoffBox || kind === "meta" || kind === "box" || kind === "dots") {
                 continue;
             }
-            if (row === handoff?.row && was.bubble && !reduced) {
-                grow(row, was.bubble, offset, tokens);
+            const from = fromOf(part);
+            // a face or a name line new in a bubble that stays crosses with the one going, both where it stood
+            const crossing = parting.find(other => other !== bubbleGoing && other.element !== part.element && idOf(other.element) === part.id);
+            if (crossing) {
+                if (!reduced) {
+                    play(part.element, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.base, easing: tokens.easeState, id: "chat-tail-in" });
+                }
+                continue;
+            }
+            if (!from || reduced) {
+                continue;
+            }
+            const start = startOf(part.element);
+            const by = { x: from.box.left - (part.box.left + start.x), y: from.box.top - (part.box.top + start.y) };
+            if (Math.abs(by.x) >= .5 || Math.abs(by.y) >= .5) {
+                starts.set(part.element, by);
+                play(part.element, [{ transform: `translate(${by.x}px, ${by.y}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-move" });
+            }
+        }
+
+        // Each message new here fades in riding the stack; hers grows out of the dots.
+        for (const { row } of arrivals) {
+            if (row === handoffRow && handoffBox && handoffAt && dotsBefore && !reduced) {
+                grow(row, handoffBox, handoffAt, dotsBefore.box, startOf(handoffBox), dotsSeen, tokens);
             }
             else {
                 play(row, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
             }
         }
 
-        // Typing starting: the bubble fades in riding the stack.
-        const bubble = typing.isStart ? content.querySelector("[data-tail-typing]:not(.is-leaving)") : null;
-        if (bubble) {
-            play(bubble, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
+        // Typing starting: its dots and name line fade in riding the stack, and a face new with it;
+        // a face moving in from her run keeps its strength.
+        if (typing.isStart && bubbleNow) {
+            for (const part of now) {
+                const kind = kindOf(part.id);
+                if (bubbleNow.contains(part.element) && (kind === "dots" || kind === "name" || (kind === "face" && !fromOf(part)))) {
+                    play(part.element, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
+                }
+            }
         }
 
-        // The parts that change row: her face from the bubble, or from the row above, to her newest message.
-        if (!reduced) {
-            facesOf(content).forEach((element, key) => {
-                const at = was.faces.get(key);
-                if (!at) {
-                    return;
-                }
-                const to = element.getBoundingClientRect();
-                const dx = at.left - to.left;
-                const dy = at.top - (to.top + offset);
-                if (Math.abs(dx) >= .5 || Math.abs(dy) >= .5) {
-                    play(element, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration, easing, id: "chat-tail-glide" });
+        // What goes: placed where it stood on screen, less what its container now plays from, then faded.
+        for (const part of lifted) {
+            const at = was.elements.get(part.element) as Part;
+            const seen = partingSeen.get(part.element) ?? 1;
+            // a face or a name line a part drawn now takes is not drawn twice
+            part.element.querySelectorAll<HTMLElement>("[data-tail^='face:'], [data-tail^='name:']").forEach(inner => {
+                if (taken.has(inner)) {
+                    inner.style.visibility = "hidden";
                 }
             });
+            const isKept = part.element.style.position !== "absolute";
+            const holder = holders.get(part.element);
+            if (part === bubbleGoing && handoffBox && handoffAt && dotsBefore && holder) {
+                // the dots ride her box's corner as it grows, fading over its first third
+                placeDots(part.element, holder, dotsBefore, at, handoffAt, startOf(handoffBox), reduced, tokens);
+                fadeAway(part.element, part.done, Math.min(seen, dotsSeen), reduced
+                    ? { duration: tokens.msg, easing: tokens.easeState }
+                    : { duration: .35 * tokens.msg, easing: tokens.easeOut });
+                continue;
+            }
+            if (!isKept && holder) {
+                placeAt(part.element, holder, at.box, startOf(part.element));
+            }
+            if (part === bubbleGoing) {
+                // the bubble goes down out under the edge with the stack; under reduced motion it fades where it stands
+                fadeAway(part.element, part.done, seen, reduced ? { duration: tokens.fast, easing: tokens.easeState } : { duration: tokens.base, easing: tokens.easeState });
+            }
+            else if (part.element.dataset.tail === "meta") {
+                // a time line its row no longer shows fades out where it stood, riding its row
+                fadeAway(part.element, part.done, seen, { duration: tokens.fast, easing: tokens.easeOut });
+            }
+            else if (!reduced) {
+                fadeAway(part.element, part.done, seen, { duration: tokens.base, easing: tokens.easeState });
+            }
+            else {
+                part.done();
+            }
+        }
+    }
+
+    /**
+     * Grows her message out of the dots: her box from the dots' box on screen to its own, clipped
+     * from the corner by her face; her words, and every other part of her row with no motion of its
+     * own, coming in from a third of the way to nine tenths; her time line rising in after.
+     */
+    function grow(row: HTMLElement, box: HTMLElement, to: DOMRect, from: DOMRect, start: Offset, seen: number, tokens: Tokens): void {
+        const dx = from.left - (to.left + start.x);
+        const dy = from.bottom - (to.bottom + start.y);
+        const top = Math.max(0, to.height - from.height);
+        const right = Math.max(0, to.width - from.width);
+        const timing = { duration: tokens.msg, easing: tokens.easeIn };
+        play(box, [
+            { transform: `translate(${dx}px, ${dy}px)`, clipPath: `inset(${top}px ${right}px 0 0 round var(--chat-r-bubble))` },
+            { transform: "none", clipPath: "inset(0 0 0 0 round var(--chat-r-bubble))" }
+        ], { ...timing, id: "chat-tail-handoff" });
+        const words: KeyframeAnimationOptions = { delay: .3 * tokens.msg, duration: .6 * tokens.msg, easing: tokens.easeState, fill: "backwards", id: "chat-tail-handoff" };
+        const fadeIn = (element: Element): void => void play(element, [{ opacity: 0 }, { opacity: 1 }], words);
+        [...box.children].forEach(fadeIn);
+        // the rest of her row that is not a part of its own: files beside text, a quote, a label, reactions
+        const rest = (holder: Element): void => {
+            for (const child of holder.children) {
+                if ((child as HTMLElement).dataset?.tail !== undefined) {
+                    continue;
+                }
+                if (child.querySelector("[data-tail]")) {
+                    rest(child);
+                }
+                else {
+                    fadeIn(child);
+                }
+            }
+        };
+        rest(row);
+        const meta = row.querySelector<HTMLElement>("[data-tail='meta']");
+        if (meta) {
+            play(meta, [{ opacity: 0, transform: "translateY(3px)" }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
+        }
+        if (seen < .999) {
+            // the dots were still coming in: her row comes the rest of the way from what they showed
+            play(row, [{ opacity: seen }, { opacity: 1 }], { duration: .6 * tokens.msg, easing: tokens.easeState, id: "chat-tail-in" });
+        }
+    }
+
+    /**
+     * Places the going bubble in its container, laid out at `holder`, so its dots stand on her box's
+     * laid-out corner, and moves it as her box moves, so the two are one box while the dots fade.
+     */
+    function placeDots(element: HTMLElement, holder: DOMRect, dots: Part, bubble: Part, to: DOMRect, start: Offset, reduced: boolean, tokens: Tokens): void {
+        const inBubble = { x: dots.box.left - bubble.box.left, y: dots.box.bottom - bubble.box.top };
+        Object.assign(element.style, { top: `${to.bottom - holder.top - inBubble.y}px`, left: `${to.left - holder.left - inBubble.x}px` });
+        if (!reduced) {
+            const dx = dots.box.left - (to.left + start.x);
+            const dy = dots.box.bottom - (to.bottom + start.y);
+            play(element, [{ transform: `translate(${dx}px, ${dy}px)` }, { transform: "none" }], { duration: tokens.msg, easing: tokens.easeIn, id: "chat-tail-handoff" });
         }
     }
 
@@ -368,31 +628,27 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             return;
         }
         before = read();
-        // after the whole render, the bubble's own coming and going included
+        // after the whole render, every part's coming and going included
         void nextTick(() => {
             const was = before;
             before = null;
             if (was) {
                 settle(was);
             }
+            else {
+                leaving.splice(0).forEach(part => part.done());
+            }
         });
     }, { flush: "pre" });
 
     const tail: FeedTail = {
         leave: (element, done) => {
-            // Going, it is no longer where her face or her message's box is read from.
-            element.classList.add("is-leaving");
-            element.querySelectorAll("[data-tail-face], [data-tail-bubble]").forEach(part => {
-                part.removeAttribute("data-tail-face");
-                part.removeAttribute("data-tail-bubble");
-            });
-            // A bubble going with no change read before it has nothing to play from, and goes at once.
-            if (!before) {
+            // A part going with no change read before it has nothing to play from, and goes at once.
+            if (!before || isStopped) {
                 done();
                 return;
             }
-            release();
-            leaving = { element, done };
+            leaving.push({ element: element as HTMLElement, done });
         }
     };
 
@@ -400,7 +656,9 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
     onBeforeUnmount(() => {
         isStopped = true;
-        release();
+        leaving.splice(0).forEach(part => part.done());
+        [...going.values()].forEach(done => done());
+        going.clear();
     });
 
     return tail;

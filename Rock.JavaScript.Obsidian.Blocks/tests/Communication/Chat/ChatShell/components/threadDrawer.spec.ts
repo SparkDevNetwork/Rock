@@ -60,7 +60,7 @@ import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
-import { playAnimations } from "../tailFakes";
+import { playAnimations } from "../tailStage";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -575,9 +575,16 @@ test("the reply composer is keyed by its thread", () => {
 describe("someone typing a reply", () => {
     const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
 
-    /** The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped to them. */
+    /**
+     * The panel host's scroller laid out at the sizes given, as a browser would, its scroll clamped
+     * to them; the thread's body fills it from its top, so the newest end read from layout is where
+     * the scroll height puts it at rest.
+     */
     function layOut(w: VueWrapper, sizes: { scrollHeight: number, clientHeight: number, scrollTop: number }): void {
         const scroller = w.get(".chat-panel-body").element as HTMLElement;
+        const body = w.get(".chat-th-body").element as HTMLElement;
+        Object.defineProperty(body, "offsetTop", { configurable: true, get: () => 0 });
+        Object.defineProperty(body, "offsetHeight", { configurable: true, get: () => sizes.scrollHeight });
         Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => sizes.scrollHeight });
         Object.defineProperty(scroller, "clientHeight", { configurable: true, get: () => sizes.clientHeight });
         Object.defineProperty(scroller, "scrollTop", {
@@ -663,7 +670,7 @@ describe("someone typing a reply", () => {
     test("is given no replies, only who types and where it stands", () => {
         const w = draw({ isChannel: false, typing: annaTyping });
 
-        expect(Object.keys(w.findComponent(TypingBubble).props()).sort()).toEqual(["isGroup", "isInRun", "typing"]);
+        expect(Object.keys(w.findComponent(TypingBubble).props()).sort()).toEqual(["groupKey", "isGroup", "isInRun", "typing"]);
     });
 
     test("the reply composer is the same with someone typing as without, and is given no typing", async () => {

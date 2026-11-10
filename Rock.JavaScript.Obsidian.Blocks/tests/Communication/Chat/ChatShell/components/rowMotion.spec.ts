@@ -32,7 +32,7 @@ import { createMessageMotion, messageMotionKey } from "../../../../../src/Commun
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna, channelId, liveCreated, me, pageRow } from "../messageShapes";
-import { playAnimations, tailPlayed } from "../tailFakes";
+import { playAnimations, tailPlayed } from "../tailStage";
 
 /** Every class a row's one-off motion sets, a crossfade, Edited sliding in, a chip's pop or roll, a thread's pill, and the tail's arrival on a row. */
 const motionSelector = `.is-crossfading, .is-swapping, .is-popping, .is-rolling, ${tailPlayed("chat-tail-in")}, ${tailPlayed("chat-tail-handoff")}`;

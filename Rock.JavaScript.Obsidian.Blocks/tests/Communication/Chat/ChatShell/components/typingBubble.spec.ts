@@ -220,12 +220,50 @@ describe("the typing bubble going", () => {
         wrapper.unmount();
     });
 
-    test("marks its row, its dots and the one typist's face for the tail to read where they stand", () => {
+    test("marks its row, its dots, and its face and name line by the group it is drawn in, for the tail to read where they stand", () => {
         const one = draw({ typing: annaTyping });
-        expect(one.get("[data-testid='typing-bubble']").attributes()).toHaveProperty("data-tail-typing");
-        expect(one.get("[data-testid='typing-dots']").attributes()).toHaveProperty("data-tail-bubble");
-        expect(one.get(".chat-typing-face").attributes("data-tail-face")).toBe(anna);
-        expect(draw({ typing: twoTyping }).find("[data-tail-face]").exists()).toBe(false);
+        expect(one.get("[data-testid='typing-bubble']").attributes("data-tail")).toBe("typing:typing");
+        expect(one.get("[data-testid='typing-dots']").attributes("data-tail")).toBe("dots:typing");
+        expect(one.get(".chat-typing-face").attributes("data-tail")).toBe("face:typing");
+        expect(draw({ typing: twoTyping, isGroup: true }).get(".chat-typing-face").attributes("data-tail")).toBe("face:typing");
+        expect(draw({ typing: twoTyping, isGroup: true }).get("[data-testid='typing-names']").attributes("data-tail")).toBe("name:typing");
+        // continuing her run, its face is her run's, so it moves from her last row and back
+        expect(draw({ typing: annaTyping, isInRun: true, groupKey: "k:7" }).get(".chat-typing-face").attributes("data-tail")).toBe("face:k:7");
+    });
+
+    test("a change of who types hands the face and the name line going to the tail, the new ones drawn beside them, in the production runtime too", async () => {
+        const previousEnvironment = process.env.NODE_ENV;
+        process.env.NODE_ENV = "production";
+        let production!: { mount: typeof mount, nextTick: typeof nextTick, bubble: typeof TypingBubble, key: typeof feedTailKey };
+        jest.isolateModules(() => {
+            production = {
+                mount: jest.requireActual("@vue/test-utils").mount,
+                nextTick: jest.requireActual("vue").nextTick,
+                bubble: jest.requireActual("../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs").default,
+                key: jest.requireActual("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial").feedTailKey
+            };
+        });
+        process.env.NODE_ENV = previousEnvironment;
+
+        const logged = jest.spyOn(console, "error");
+        const { tail, handed } = fakeTail();
+        const host = document.createElement("div");
+        document.body.append(host);
+        const wrapper = production.mount(production.bubble, { props: { typing: twoTyping, isGroup: true }, attachTo: host, global: { provide: { [production.key as symbol]: tail } } });
+
+        for (const typing of [annaTyping, twoTyping, annaTyping]) {
+            await wrapper.setProps({ typing });
+            await production.nextTick();
+            expect(host.querySelectorAll(".chat-typing-face")).toHaveLength(2);
+            handed.splice(0).forEach(going => going.done());
+            await production.nextTick();
+            expect(host.querySelectorAll(".chat-typing-face")).toHaveLength(1);
+        }
+
+        expect(host.querySelectorAll("[data-testid='typing-bubble']")).toHaveLength(1);
+        expect(logged).not.toHaveBeenCalled();
+        logged.mockRestore();
+        wrapper.unmount();
     });
 });
 
@@ -240,12 +278,11 @@ describe("the typing bubble's look", () => {
         expect(style.match(/@keyframes [\w-]+/g)).toEqual(["@keyframes chat-typing-bob"]);
     });
 
-    // Going in her run, her last message takes the run's face back in the same draw, so the bubble
-    // going shows none and her face is never drawn twice.
-    test("in her run, its face is hidden as it goes", () => {
+    // Going in her run, her last message takes the run's face back in the same draw; the tail hides
+    // the going bubble's face because a part drawn after takes its mark, so no rule of its own does.
+    test("keeps no rule of its own for a face going: which face shows is the tail's", () => {
         expect(draw({ typing: annaTyping, isInRun: true }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
-        expect(draw({ typing: twoTyping }).find(".chat-typing-line .chat-typing-face").exists()).toBe(true);
-        expect(style).toMatch(/\.chat-typing\.is-in-run\.is-leaving \.chat-typing-face\s*\{[^}]*visibility: hidden;/);
+        expect(style).not.toMatch(/is-leaving/);
     });
 
     // The bubble's layout is its own: nothing the feed or the thread draws is on it. It reads the

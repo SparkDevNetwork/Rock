@@ -94,7 +94,9 @@
     text-overflow: ellipsis;
 }
 
+/* Its content's offset parent, so a thread's newest end reads from the body's own top, not the panel's under its header. */
 .chat-panel-body {
+    position: relative;
     flex: 1;
     min-height: 0;
     padding: 4px 0 16px;

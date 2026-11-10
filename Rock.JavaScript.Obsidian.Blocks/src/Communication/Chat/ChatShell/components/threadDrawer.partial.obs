@@ -116,6 +116,7 @@
                 <div v-else class="chat-grp chat-enter" :class="{ 'is-own': item.isOwn }" :style="{ '--chat-enter-i': index }">
                     <MessageRow v-for="row in item.rows"
                                 :key="row.key"
+                                :groupKey="item.key"
                                 :message="row.message"
                                 :pending="row.pending"
                                 :isOwn="item.isOwn"
@@ -151,7 +152,8 @@
             <!-- Someone typing a reply, as the newest row the layout placed; one element, so it can settle away once its row is gone. -->
             <TypingBubble :typing="drawnTyping"
                           :isGroup="!isChannel && !isDirectMessage"
-                          :isInRun="repliesLaidOut?.typing?.isInRun ?? false" />
+                          :isInRun="repliesLaidOut?.typing?.isInRun ?? false"
+                          :groupKey="repliesLaidOut?.typing?.groupKey ?? 'typing'" />
 
             <!--
                 The thread's one action bar, drawn in the dock of the message it is on. One element for
@@ -370,7 +372,7 @@
     import { FollowError } from "../composables/useThreads.partial";
     import { messageForError } from "../errors.partial";
     import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
-    import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, nearBottomPx, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -765,7 +767,7 @@
             const run = blockedRuns.value.get(key);
             return run ? arrivesRun(run) : arrives(key);
         },
-        drawn: () => [drawnTyping.value, newestReplyId(), pendingReplies.value.length]
+        drawn: () => [drawnTyping.value, newestReplyId(), pendingReplies.value.length, repliesLaidOut.value?.typing?.isInRun]
     });
 
     /** The thread's parts for the panel's entrance, none until the root is there to draw. */
@@ -856,15 +858,20 @@
         return bodyElement.value?.closest<HTMLElement>(".chat-panel-body") ?? null;
     }
 
+    /** The scroll top at the thread's newest end, read from layout so a glide in flight does not move it. */
+    function endOfBody(element: HTMLElement): number {
+        return bodyElement.value ? endOf(element, bodyElement.value) : element.scrollHeight - element.clientHeight;
+    }
+
     function isNearBottom(): boolean {
         const element = scroller();
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
+        return !element || endOfBody(element) - element.scrollTop < nearBottomPx;
     }
 
     function scrollToBottom(): void {
         const element = scroller();
         if (element) {
-            element.scrollTop = element.scrollHeight;
+            element.scrollTop = endOfBody(element);
         }
     }
 
@@ -960,7 +967,7 @@
     // replies always are.
     watch([() => props.replies[0]?.id, newestReplyId, () => pendingReplies.value.length, () => !!drawnTyping.value], async ([firstId, newestId, pendingCount], [oldFirstId, oldNewestId, oldPendingCount]) => {
         const element = scroller();
-        const fromBottom = element ? element.scrollHeight - element.scrollTop : 0;
+        const fromEnd = element ? endOfBody(element) - element.scrollTop : 0;
         const shouldFollow = isNearBottom() || pendingCount > oldPendingCount;
 
         await nextTick();
@@ -970,7 +977,7 @@
         }
 
         if (firstId !== oldFirstId && oldFirstId !== undefined && newestId === oldNewestId) {
-            element.scrollTop = element.scrollHeight - fromBottom;
+            element.scrollTop = endOfBody(element) - fromEnd;
         }
         else if (shouldFollow) {
             scrollToBottom();

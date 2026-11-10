@@ -112,6 +112,7 @@
                         <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
                             <MessageRow v-for="row in item.rows"
                                         :key="row.key"
+                                        :groupKey="item.key"
                                         :message="row.message"
                                         :pending="row.pending"
                                         :isOwn="item.isOwn"
@@ -153,7 +154,8 @@
                 -->
                 <TypingBubble :typing="drawnTyping"
                               :isGroup="!isChannel && !isDirectMessage"
-                              :isInRun="laidOut.typing?.isInRun ?? false" />
+                              :isInRun="laidOut.typing?.isInRun ?? false"
+                              :groupKey="laidOut.typing?.groupKey ?? 'typing'" />
             </div>
         </div>
 
@@ -262,7 +264,9 @@
     --chat-feed-bottom-mask: 64px;
 }
 
+/* Its content's offset parent, so where the newest end is reads from the feed's own top. */
 .chat-feed {
+    position: relative;
     display: flex;
     flex: 1;
     flex-direction: column;
@@ -708,7 +712,7 @@
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";
     import { ArrivalMotion, useViewArrivals } from "../messageMotion.partial";
-    import { useFeedTail } from "../composables/useFeedTail.partial";
+    import { endOf, useFeedTail } from "../composables/useFeedTail.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
@@ -1043,7 +1047,7 @@
             const run = blockedRuns.value.get(key);
             return run ? arrivesRun(run) : arrives(key);
         },
-        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length]
+        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
     });
 
     /**
@@ -1133,7 +1137,7 @@
 
     function onJump(event: Event): void {
         if (feed.value) {
-            moveReaderTo(feed.value.scrollHeight);
+            moveReaderTo(endOfFeed(feed.value));
         }
         newCount.value = 0;
 
@@ -1232,10 +1236,15 @@
         placeTopDay();
     }
 
+    /** The scroll top at the feed's newest end, read from layout so a glide in flight does not move it. */
+    function endOfFeed(element: HTMLElement): number {
+        return content.value ? endOf(element, content.value) : element.scrollHeight - element.clientHeight;
+    }
+
     /** Whether the person is at, or near, the bottom of the feed. */
     function isNearBottom(): boolean {
         const element = feed.value;
-        return !element || element.scrollHeight - element.scrollTop - element.clientHeight < nearBottomPx;
+        return !element || endOfFeed(element) - element.scrollTop < nearBottomPx;
     }
 
     /**
@@ -1250,7 +1259,7 @@
         const top = feed.value?.scrollTop ?? 0;
         const isNear = isNearBottom();
         const element = feed.value;
-        const isAtEnd = !element || element.scrollHeight - top - element.clientHeight <= endSlackPx;
+        const isAtEnd = !element || endOfFeed(element) - top <= endSlackPx;
         if (isNear && (top > readerTop || isAtEnd)) {
             isAtNewest.value = true;
         }
@@ -1271,7 +1280,7 @@
             return;
         }
 
-        const end = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+        const end = endOfFeed(scroller);
         const target = Math.min(Math.max(0, top), end);
         isAtNewest.value = end - target < nearBottomPx;
         readerTop = scroller.scrollTop;
@@ -1281,7 +1290,7 @@
     /** Scrolls to the newest message, where the reader is then. */
     function scrollToBottom(): void {
         if (feed.value) {
-            feed.value.scrollTop = feed.value.scrollHeight;
+            feed.value.scrollTop = endOfFeed(feed.value);
             isAtNewest.value = true;
             readerTop = feed.value.scrollTop;
         }

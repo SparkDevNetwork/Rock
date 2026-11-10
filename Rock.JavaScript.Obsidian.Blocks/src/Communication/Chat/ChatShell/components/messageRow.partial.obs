@@ -40,7 +40,7 @@
         <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
-        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :isFlashing="isFlashing" />
+        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
 
         <!-- A phone's actions, from a tap on the message; drawn over the whole chat. -->
         <ActionSheet v-if="isSheetSurface"
@@ -386,6 +386,12 @@
         isTypingNext: {
             type: Boolean,
             default: false
+        },
+
+        /** The key of the row's group, which its face and name line are marked by for the view's tail. */
+        groupKey: {
+            type: String,
+            default: ""
         },
 
         /** Whether the chat is in its one-pane phone layout, where Community's gutter and faces are smaller. */

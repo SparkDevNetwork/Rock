@@ -419,7 +419,8 @@ describe("someone else typing", () => {
     test("the one typist who sent the newest group within five minutes is her run's next row", () => {
         const list = [message(1, ben, at(14, 50)), message(2, anna, at(14, 57)), message(3, anna, at(14, 58))];
 
-        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: true, endsAt: new Date(2026, 9, 12, 15, 3, 0, 1).getTime() });
+        // in her run, its group is hers, keyed by its first row, so her face moves from her last row to it
+        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: true, groupKey: "k:2", endsAt: new Date(2026, 9, 12, 15, 3, 0, 1).getTime() });
         expect(lastRun(list, { typists: [anna] })).toEqual([["first", false], ["middle", true]]);
     });
 
@@ -430,20 +431,20 @@ describe("someone else typing", () => {
     test("is a group of its own when someone else sent the newest group, and leaves that group as it was", () => {
         const list = [message(1, anna, at(14, 57)), message(2, ben, at(14, 58))];
 
-        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
+        expect(typingOf(list, { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
         expect(lastRun(list, { typists: [anna] })).toEqual([["single", false]]);
     });
 
     test("is a group of its own after the reader's own sends, a stored one or one still pending", () => {
-        expect(typingOf([message(1, anna, at(14, 57)), message(2, me, at(14, 58))], { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
-        expect(typingOf([message(1, anna, at(14, 58))], { typists: [anna], pending: [pendingRow("a")] })).toEqual({ isInRun: false, endsAt: null });
+        expect(typingOf([message(1, anna, at(14, 57)), message(2, me, at(14, 58))], { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
+        expect(typingOf([message(1, anna, at(14, 58))], { typists: [anna], pending: [pendingRow("a")] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
     });
 
     test("is a group of its own past five minutes, on a day after her run, or after a system line or a block post", () => {
-        expect(typingOf([message(1, anna, at(14, 54, 59))], { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
-        expect(typingOf([message(1, anna, at(23, 59, 0, 1))], { typists: [anna], now: new Date(2026, 9, 12, 0, 1) })).toEqual({ isInRun: false, endsAt: null });
-        expect(typingOf([message(1, anna, at(14, 58)), message(2, ben, at(14, 59), { message_type: "system" })], { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
-        expect(typingOf([message(1, anna, at(14, 58), { blocks: [{ type: "text" }] as unknown as TimelineMessage["blocks"] })], { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
+        expect(typingOf([message(1, anna, at(14, 54, 59))], { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
+        expect(typingOf([message(1, anna, at(23, 59, 0, 1))], { typists: [anna], now: new Date(2026, 9, 12, 0, 1) })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
+        expect(typingOf([message(1, anna, at(14, 58)), message(2, ben, at(14, 59), { message_type: "system" })], { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
+        expect(typingOf([message(1, anna, at(14, 58), { blocks: [{ type: "text" }] as unknown as TimelineMessage["blocks"] })], { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
     });
 
     // The layout reads the clock only as its inputs change, so it says when the run stops holding
@@ -456,15 +457,15 @@ describe("someone else typing", () => {
     test("two typing are a group of their own, even when one of them sent the newest group", () => {
         const list = [message(1, anna, at(14, 58))];
 
-        expect(typingOf(list, { typists: [anna, ben] })).toEqual({ isInRun: false, endsAt: null });
+        expect(typingOf(list, { typists: [anna, ben] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
         expect(lastRun(list, { typists: [anna, ben] })).toEqual([["single", false]]);
     });
 
     test("her run is found under the alias in any case", () => {
-        expect(typingOf([message(1, anna.toUpperCase(), at(14, 58))], { typists: [anna] })).toEqual({ isInRun: true, endsAt: new Date(2026, 9, 12, 15, 3, 0, 1).getTime() });
+        expect(typingOf([message(1, anna.toUpperCase(), at(14, 58))], { typists: [anna] })).toEqual({ isInRun: true, groupKey: "k:1", endsAt: new Date(2026, 9, 12, 15, 3, 0, 1).getTime() });
     });
 
     test("with no messages at all it is a group of its own", () => {
-        expect(typingOf([], { typists: [anna] })).toEqual({ isInRun: false, endsAt: null });
+        expect(typingOf([], { typists: [anna] })).toEqual({ isInRun: false, groupKey: "typing", endsAt: null });
     });
 });

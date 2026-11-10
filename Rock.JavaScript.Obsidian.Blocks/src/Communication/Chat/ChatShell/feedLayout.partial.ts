@@ -114,6 +114,9 @@ export type FeedLayoutOptions = {
 export type TypingRow = {
     isInRun: boolean;
 
+    /** The key of the group it is drawn in: her run's when it continues it, else its own, "typing". */
+    groupKey: string;
+
     /**
      * In her run, the first moment it no longer holds the typing row, in epoch milliseconds: past
      * her newest message's five minutes, or the day's end if sooner. The layout reads the clock
@@ -273,7 +276,7 @@ export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
             const midnight = new Date(options.now.getFullYear(), options.now.getMonth(), options.now.getDate() + 1).getTime();
             endsAt = Math.min(previous.at.getTime() + groupWindowMs + 1, midnight);
         }
-        typing = { isInRun, endsAt };
+        typing = { isInRun, groupKey: isInRun && group ? group.key : "typing", endsAt };
     }
 
     for (const item of sections.flatMap(s => s.items)) {
