@@ -160,7 +160,7 @@ namespace Rock.Blocks.Crm
                         6/18/26 - MSE
 
                         A malformed or corrupt person key can throw while being decoded (e.g. a decryption
-                        failure in GetByUrlEncodedKey). Swallow it and return null so the caller surfaces the
+                        failure in GetByImpersonationToken). Swallow it and return null so the caller surfaces the
                         friendly "issue locating the person" message rather than an unhandled block error.
 
                         Reason: Preserves the graceful handling of a bad person key.
@@ -168,7 +168,7 @@ namespace Rock.Blocks.Crm
                     try
                     {
                         var personService = new PersonService( RockContext );
-                        return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByUrlEncodedKey( personKey );
+                        return personService.GetByPersonActionIdentifier( personKey, "Assessment" ) ?? personService.GetByImpersonationToken( personKey, false, PageCache.Id );
                     }
                     catch
                     {
