@@ -1,0 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <LineChart v-if="chart.type === KpiChartType.Line"
+               :labels="chart.labels"
+               :series="chart.series"
+               :labelDateFormat="lineLabelDateFormat"
+               :tooltip="formatTooltip"
+               height="100%"
+               linear
+               hideLegend
+               categoryHideAxisLabels
+               categoryHideAxisLine
+               valueHideAxisLabels
+               valueHideAxisLine
+               valueHideGridLines />
+
+    <BarChart v-else-if="chart.type === KpiChartType.Bar"
+              :labels="chart.labels"
+              :series="chart.series"
+              :tooltip="formatTooltip"
+              appearance="stylized"
+              height="100%"
+              hideLegend />
+
+    <PieChart v-else-if="chart.type === KpiChartType.Pie"
+              :labels="chart.labels"
+              :series="chart.series"
+              :tooltip="formatTooltip"
+              height="100%"
+              hideLegend />
+
+    <div v-else-if="chart.type === KpiChartType.LinearGauge" class="kpi-v2-card-chart-centered">
+        <LinearGaugeChart :series="chart.series"
+                          :tooltip="formatTooltip"
+                          gaugeHeight="40px"
+                          height="auto"
+                          hideLegend />
+    </div>
+
+    <div v-else-if="chart.type === KpiChartType.Progress" class="kpi-v2-card-chart-centered">
+        <EnhancedProgressBar :modelValue="progressBarValue"
+                             :tooltip="formatKpiValue(chart.value, KpiValueFormat.Percent)"
+                             progressType="metric"
+                             height="40px" />
+    </div>
+</template>
+
+<style scoped>
+.kpi-v2-card-chart-centered {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.kpi-v2-card-chart-centered > * {
+    flex: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import EnhancedProgressBar from "@Obsidian/Controls/enhancedProgressBar.obs";
+    import LinearGaugeChart from "@Obsidian/Controls/linearGaugeChart.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import PieChart from "@Obsidian/Controls/pieChart.obs";
+    import { LabelDateFormat, TooltipContext } from "@Obsidian/Core/Controls/chart";
+    import { formatKpiValue, KpiChart, KpiChartType, KpiValueFormat } from "@Obsidian/Core/Controls/kpi";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
+
+    const props = defineProps({
+        /** The chart to draw. */
+        chart: {
+            type: Object as PropType<KpiChart>,
+            required: true
+        },
+
+        /** How values are formatted in the chart tooltips, matching the headline value. */
+        valueFormat: {
+            type: String as PropType<KpiValueFormat | undefined>
+        },
+
+        /** The organization currency used when the value format is "currency". */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            default: null
+        }
+    });
+
+    // #region Values
+
+    // A label must start with a full date (YYYY-MM-DD) to be treated as a date. A time may follow.
+    const fullIsoDatePattern = /^\d{4}-\d{2}-\d{2}/;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // Line chart labels are treated as dates only when every label is an ISO date.
+    // A full date (YYYY-MM-DD) is required because Luxon also parses a bare year such as "2021"
+    // or a year and month such as "2024-05", and those are usually meant as plain category labels.
+    const lineLabelDateFormat = computed((): LabelDateFormat | undefined => {
+        if (props.chart.type !== KpiChartType.Line || props.chart.labels.length === 0) {
+            return undefined;
+        }
+
+        const isEveryLabelADate = props.chart.labels.every(label => fullIsoDatePattern.test(label) && RockDateTime.parseISO(label) !== null);
+
+        return isEveryLabelADate ? LabelDateFormat.Auto : undefined;
+    });
+
+    // The bar is drawn within 0 to 100 so an over or under target value can't spill out of the card. The tooltip keeps the real percent.
+    const progressBarValue = computed((): number => {
+        if (props.chart.type !== KpiChartType.Progress || !Number.isFinite(props.chart.value)) {
+            return 0;
+        }
+
+        return Math.min(Math.max(props.chart.value, 0), 100);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Formats a chart tooltip value with the same format as the headline value.
+     *
+     * @param context The tooltip context from the chart.
+     * @returns The tooltip text.
+     */
+    function formatTooltip(context: TooltipContext): string {
+        const value = formatKpiValue(context.value, props.valueFormat, props.currencyInfo);
+
+        return context.seriesLabel ? `${context.seriesLabel}: ${value}` : value;
+    }
+
+    // #endregion Functions
+</script>

@@ -28,6 +28,13 @@
         },
 
         /**
+         * Whether to hide the category axis labels. Shown by default.
+         */
+        categoryHideAxisLabels: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
          * Whether to hide the category axis line. Shown by default.
          */
         categoryHideAxisLine: {
@@ -180,6 +187,13 @@
          * The per series property, `props.data[n].isUnfilled`, overrides this setting.
          */
         unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the value axis labels. Shown by default.
+         */
+        valueHideAxisLabels: {
             type: Boolean as PropType<boolean | undefined>
         },
 
@@ -717,6 +731,9 @@
                         autoSkipPadding: 10,
                         color: getCssVar("--color-interface-strong"),
 
+                        // Show/hide the category axis labels.
+                        display: props.categoryHideAxisLabels !== true,
+
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),
                             size: parseInt(getCssVar("--font-size-xsmall")) || undefined,
@@ -826,6 +843,9 @@
 
                         color: getCssVar("--color-interface-strong"),
                         count: clamp(props.valueTickCount, 0),
+
+                        // Show/hide the value axis labels.
+                        display: props.valueHideAxisLabels !== true,
 
                         font: {
                             family: getCssVar("--font-family-segoe") || getCssVar("--font-family-sans"),

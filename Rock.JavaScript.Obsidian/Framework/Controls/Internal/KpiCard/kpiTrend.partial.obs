@@ -1,0 +1,126 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span v-if="trendInfo"
+          class="kpi-v2-trend"
+          :class="cssClasses"
+          :aria-label="trendInfo.ariaLabel"
+          v-tooltip="tooltipText">
+        <i :class="trendInfo.iconCssClass"></i>
+        <span v-if="trendInfo.text">{{ trendInfo.text }}</span>
+    </span>
+</template>
+
+<style scoped>
+.kpi-v2-trend {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    padding: 0 var(--spacing-xsmall);
+    border-radius: var(--rounded-small);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    white-space: nowrap;
+}
+
+.kpi-v2-trend.positive {
+    background-color: var(--color-success-soft);
+    color: var(--color-success-strong);
+}
+
+.kpi-v2-trend.negative {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger-strong);
+}
+
+.kpi-v2-trend.neutral {
+    background-color: var(--color-interface-softer);
+    color: var(--color-interface-strong);
+}
+
+/* "unknown" is drawn with no badge fill. */
+.kpi-v2-trend.plain {
+    background-color: transparent;
+    color: var(--color-interface-medium);
+}
+
+/* Content rows show the trend as plain colored text with a larger icon. */
+.kpi-v2-trend.compact {
+    gap: calc(var(--spacing-tiny) / 2);
+    padding: 0;
+    background-color: transparent;
+}
+
+.kpi-v2-trend.compact i {
+    font-size: var(--font-size-regular);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { getKpiTrendInfo, KpiTrend, KpiTrendDisplay, KpiTrendInfo } from "@Obsidian/Core/Controls/kpi";
+
+    const props = defineProps({
+        /** The trend to show. Nothing renders when it is null or undefined. */
+        trend: {
+            type: [Number, String] as PropType<KpiTrend | null | undefined>
+        },
+
+        /** When true a rise is shown as negative and a drop as positive. */
+        isLowerBetter: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the headline shows the arrow and percent, or the arrow only. */
+        display: {
+            type: String as PropType<KpiTrendDisplay | undefined>
+        },
+
+        /** An optional tooltip for the trend. */
+        tooltip: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** When true the trend is drawn as plain text for a content row instead of a badge. */
+        isCompact: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const trendInfo = computed((): KpiTrendInfo | null => {
+        return getKpiTrendInfo(props.trend, {
+            isLowerBetter: props.isLowerBetter,
+            display: props.isCompact ? undefined : props.display,
+            tooltip: props.tooltip
+        });
+    });
+
+    const cssClasses = computed((): string[] => {
+        if (!trendInfo.value) {
+            return [];
+        }
+
+        return [
+            trendInfo.value.sentiment,
+            trendInfo.value.isPlain ? "plain" : "",
+            props.isCompact ? "compact" : ""
+        ].filter(cssClass => cssClass !== "");
+    });
+
+    // The headline only shows its tooltip when the percent is hidden; content rows always show it.
+    const tooltipText = computed((): string => {
+        if (!trendInfo.value?.tooltip) {
+            return "";
+        }
+
+        return props.isCompact || trendInfo.value.isIconOnly ? trendInfo.value.tooltip : "";
+    });
+
+    // #endregion Computed Values
+</script>

@@ -184,6 +184,7 @@ import JavaScriptAnchorGallery from "./ControlGallery/javascriptAnchorGallery.pa
 import LoadingGallery from "./ControlGallery/loadingGallery.partial.obs";
 import LoadingIndicatorGallery from "./ControlGallery/loadingIndicatorGallery.partial.obs";
 import NumberUpDownGroupGallery from "./ControlGallery/numberUpDownGroupGallery.partial.obs";
+import EnhancedProgressBarGallery from "./ControlGallery/enhancedProgressBarGallery.partial.obs";
 import ProgressBarGallery from "./ControlGallery/progressBarGallery.partial.obs";
 import RockButtonGallery from "./ControlGallery/rockButtonGallery.partial.obs";
 import RockLabelGallery from "./ControlGallery/rockLabelGallery.partial.obs";
@@ -245,6 +246,8 @@ import AdaptiveMessagePickerGallery from "./ControlGallery/adaptiveMessagePicker
 import EmailEditorGallery from "./ControlGallery/emailEditorGallery.partial.obs";
 import KpiGallery from "./ControlGallery/kpiGallery.partial.obs";
 import KpiTileGallery from "./ControlGallery/kpiTileGallery.partial.obs";
+import KpiCardGallery from "./ControlGallery/kpiCardGallery.partial.obs";
+import KpiContainerGallery from "./ControlGallery/kpiContainerGallery.partial.obs";
 import RankedListBarChartGallery from "./ControlGallery/rankedListBarChartGallery.partial.obs";
 import EmptyStateGallery from "./ControlGallery/emptyStateGallery.partial.obs";
 import LearningClassPickerGallery from "./ControlGallery/learningClassPickerGallery.partial.obs";
@@ -367,6 +370,7 @@ const controlGalleryComponents: Record<string, Component> = [
     LoadingGallery,
     LoadingIndicatorGallery,
     NumberUpDownGroupGallery,
+    EnhancedProgressBarGallery,
     ProgressBarGallery,
     RockButtonGallery,
     RockLabelGallery,
@@ -461,6 +465,8 @@ const controlGalleryComponents: Record<string, Component> = [
     EmailEditorGallery,
     KpiGallery,
     KpiTileGallery,
+    KpiCardGallery,
+    KpiContainerGallery,
     RankedListBarChartGallery,
     EmptyStateGallery,
     LearningClassPickerGallery,

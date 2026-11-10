@@ -1,0 +1,436 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+        <div class="kpi-card-gallery-preview" :class="{ 'kpi-card-gallery-preview-compact': layout === 'compact' }">
+            <KpiCard :title="title"
+                     :help="hasHelp ? helpSections : undefined"
+                     :iconCssClass="iconCssClass || undefined"
+                     :layout="layout"
+                     :accent="accent || undefined"
+                     :value="parsedValue"
+                     :valueFormat="valueFormat"
+                     :valueSize="valueSize || undefined"
+                     :valueTrend="parsedTrend"
+                     :valueTrendDisplay="valueTrendDisplay"
+                     :valueTrendTooltip="valueTrendTooltip || undefined"
+                     :valueDescription="valueDescription || undefined"
+                     :isLowerBetter="isLowerBetter"
+                     :label="labelText ? { text: labelText, type: labelType } : undefined"
+                     :chart="chart"
+                     :content="content"
+                     :hasError="hasError"
+                     :isLoading="isLoading"
+                     :action="action"
+                     :footerText="footerText || undefined"
+                     :updatedDateTime="isUpdatedShown ? updatedDateTime : undefined"
+                     @actionClick="onActionClick">
+                <div class="text-center text-muted">Custom content slot</div>
+            </KpiCard>
+        </div>
+
+        <template #settings>
+            <div class="settings">
+                <ContentSection title="Settings">
+                    <ContentStack title="Card">
+                        <div class="autolayout">
+                            <TextBox v-model="title" label="Title" />
+                            <TextBox v-model="iconCssClass" label="Icon CSS Class" />
+                            <DropDownList v-model="layout" :items="layoutItems" label="Layout" :showBlankItem="false" />
+                            <DropDownList v-model="accent" :items="accentItems" label="Accent" />
+                            <CheckBox v-model="hasHelp" label="Has Help" />
+                            <CheckBox v-model="hasError" label="Has Error" />
+                            <CheckBox v-model="isLoading" label="Is Loading" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Value">
+                        <div class="autolayout">
+                            <TextBox v-model="valueText" label="Value" help="A number, any text, or blank for a dash. Clear the value, chart and content to see the empty state." />
+                            <DropDownList v-model="valueFormat" :items="valueFormatItems" label="Value Format" :showBlankItem="false" />
+                            <DropDownList v-model="valueSize" :items="valueSizeItems" label="Value Size" help="Blank lets the card pick: small when a compact card is too narrow beside its chart." />
+                            <TextBox v-model="valueDescription" label="Value Description" />
+                            <TextBox v-model="labelText" label="Label Text" />
+                            <DropDownList v-model="labelType" :items="labelTypeItems" label="Label Type" :showBlankItem="false" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Trend">
+                        <div class="autolayout">
+                            <TextBox v-model="trendText" label="Trend" help="A percent such as 28 or -12, or up, down, flat, unknown or new. Blank hides the trend." />
+                            <DropDownList v-model="valueTrendDisplay" :items="trendDisplayItems" label="Trend Display" :showBlankItem="false" />
+                            <TextBox v-model="valueTrendTooltip" label="Trend Tooltip" />
+                            <CheckBox v-model="isLowerBetter" label="Is Lower Better" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Chart and Content">
+                        <div class="autolayout">
+                            <DropDownList v-model="chartType" :items="chartTypeItems" label="Chart Type" help="Compact cards only allow line and bar charts." />
+                            <div class="form-group button-wrapper">
+                                <span class="control-label">&nbsp;</span>
+                                <div class="button-wrapper-control">
+                                    <RockButton btnType="primary"
+                                                @click="onRandomizeDataClicked">Randomize Data</RockButton>
+                                </div>
+                            </div>
+                            <DropDownList v-model="contentDisplay" :items="contentDisplayItems" label="Content" help="Not shown on compact cards." />
+                            <TextBox v-model="contentTitle" label="Content Title" />
+                            <NumberBox v-model="microCardsColumns" label="Micro-card Columns" :minimumValue="2" :maximumValue="4" />
+                            <CheckBox v-model="isNumbered" label="Is Numbered" help="Micro-grid only." />
+                            <CheckBox v-model="hasMutedItem" label="Has Muted Item" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Footer">
+                        <div class="autolayout">
+                            <DropDownList v-model="actionMode" :items="actionModeItems" label="Action" />
+                            <TextBox v-model="footerText" label="Footer Text" help="Takes precedence over the updated date." />
+                            <CheckBox v-model="isUpdatedShown" label="Show Updated Date" />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.kpi-card-gallery-preview {
+    max-width: 400px;
+}
+
+.kpi-card-gallery-preview-compact {
+    max-width: 480px;
+}
+
+/* A blank label row keeps the button centered on the inputs beside it, below their labels. */
+.button-wrapper {
+    display: flex;
+    flex-direction: column;
+}
+
+.button-wrapper-control {
+    display: flex;
+    flex: 1;
+    align-items: center;
+}
+
+.settings {
+    max-height: 400px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import KpiCard from "@Obsidian/Controls/kpiCard.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
+    import {
+        KpiAccent,
+        KpiAction,
+        KpiChart,
+        KpiContent,
+        KpiContentDisplay,
+        KpiContentItem,
+        KpiHelpSection,
+        KpiLayout,
+        KpiTrend,
+        KpiTrendDirection,
+        KpiTrendDisplay,
+        KpiValue,
+        KpiValueFormat,
+        KpiValueSize
+    } from "@Obsidian/Core/Controls/kpi";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const importCode = getSfcControlImportPath("kpiCard");
+
+    const layoutItems: ListItemBag[] = [
+        { value: KpiLayout.Default, text: "Default" },
+        { value: KpiLayout.Compact, text: "Compact" }
+    ];
+
+    const accentItems: ListItemBag[] = Object.values(KpiAccent).map(value => ({ value, text: value }));
+
+    const valueFormatItems: ListItemBag[] = Object.values(KpiValueFormat).map(value => ({ value, text: value }));
+
+    const valueSizeItems: ListItemBag[] = Object.values(KpiValueSize).map(value => ({ value, text: value }));
+
+    const labelTypeItems: ListItemBag[] = Object.values(BadgeType).map(value => ({ value, text: value }));
+
+    const trendDisplayItems: ListItemBag[] = Object.values(KpiTrendDisplay).map(value => ({ value, text: value }));
+
+    const chartTypeItems: ListItemBag[] = [
+        { value: "line", text: "Line" },
+        { value: "bar", text: "Bar" },
+        { value: "pie", text: "Pie" },
+        { value: "linearGauge", text: "Linear Gauge" },
+        { value: "progress", text: "Progress" }
+    ];
+
+    const contentDisplayItems: ListItemBag[] = [
+        { value: KpiContentDisplay.MicroGrid, text: "Micro-grid" },
+        { value: KpiContentDisplay.MicroCards, text: "Micro-cards" },
+        { value: KpiContentDisplay.Custom, text: "Custom" }
+    ];
+
+    const actionModeItems: ListItemBag[] = [
+        { value: "url", text: "Link (has a URL)" },
+        { value: "click", text: "Button (emits actionClick)" }
+    ];
+
+    const helpSections: KpiHelpSection[] = [
+        { label: "What it measures", text: "Weekend Attendance counts the unique individuals who checked in to any worship service, children's class, or student gathering during a given week." },
+        { label: "How it's measured", text: "Each check-in record is tied to a person, a group, a schedule, and a date. A person who checks in to multiple services on the same weekend is counted once, so the total represents people, not visits." },
+        { label: "Source", text: "Check-in attendance records." }
+    ];
+
+    const chartLabels = ["2026-04-01", "2026-05-01", "2026-06-01", "2026-07-01", "2026-08-01", "2026-09-01"];
+
+    // Randomize Data shows between 2 and all of these bars.
+    const barLabels = ["Desktop", "Mobile", "Tablet", "TV", "Kiosk", "Watch", "Console", "Car", "Speaker", "Unknown"];
+
+    // #region Values
+
+    const title = ref("Views");
+    const iconCssClass = ref("ti ti-eye");
+    const layout = ref<KpiLayout>(KpiLayout.Default);
+    const accent = ref<KpiAccent | "">("");
+    const hasHelp = ref(true);
+    const hasError = ref(false);
+    const isLoading = ref(false);
+    const valueText = ref("1000");
+    const valueFormat = ref<KpiValueFormat>(KpiValueFormat.Number);
+    const valueSize = ref<KpiValueSize | "">("");
+    const valueDescription = ref("Previous Period: 820");
+    const labelText = ref("");
+    const labelType = ref<BadgeType>(BadgeType.Info);
+    const trendText = ref("28");
+    const valueTrendDisplay = ref<KpiTrendDisplay>(KpiTrendDisplay.Full);
+    const valueTrendTooltip = ref("");
+    const isLowerBetter = ref(false);
+    const chartType = ref("line");
+    const contentDisplay = ref<string>(KpiContentDisplay.MicroGrid);
+    const contentTitle = ref("By Device");
+    const microCardsColumns = ref<number | null>(3);
+    const isNumbered = ref(false);
+    const hasMutedItem = ref(false);
+    const actionMode = ref("url");
+    const footerText = ref("");
+    const isUpdatedShown = ref(true);
+    const updatedDateTime = RockDateTime.now().addDays(-3).toISOString();
+    const lineData = ref([620, 710, 680, 820, 900, 1000]);
+    const barData = ref([550, 350, 240, 120, 60]);
+    const pieData = ref([480, 440, 80]);
+    const gaugeData = ref([55, 18, 8]);
+    const progressValue = ref(68);
+
+    // Desktop, Mobile, Tablet, TV, Kiosk and the muted Unknown item, in that order.
+    const contentValues = ref([550, 350, 100, 60, 25, 15]);
+
+    // Only Desktop, Mobile and Kiosk have percent trends, so the flat and unknown states stay visible.
+    const contentTrends = ref([5, -3, 12]);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const parsedValue = computed((): KpiValue => {
+        const text = valueText.value.trim();
+
+        if (text === "") {
+            return null;
+        }
+
+        const numberValue = Number(text);
+
+        return isNaN(numberValue) ? text : numberValue;
+    });
+
+    const parsedTrend = computed((): KpiTrend | null => {
+        const text = trendText.value.trim().toLowerCase();
+
+        if (text === "") {
+            return null;
+        }
+
+        if ((Object.values(KpiTrendDirection) as string[]).includes(text)) {
+            return text as KpiTrendDirection;
+        }
+
+        const numberValue = Number(text);
+
+        return isNaN(numberValue) ? null : numberValue;
+    });
+
+    const chart = computed((): KpiChart | undefined => {
+        switch (chartType.value) {
+            case "line":
+                return { type: "line", labels: chartLabels, series: [{ label: title.value, data: lineData.value }] };
+
+            case "bar":
+                return {
+                    type: "bar",
+                    labels: barLabels.slice(0, barData.value.length),
+                    series: [{ label: title.value, data: barData.value }]
+                };
+
+            case "pie":
+                return { type: "pie", labels: ["Male", "Female", "Unknown"], series: [{ label: title.value, data: pieData.value }] };
+
+            case "linearGauge":
+                return {
+                    type: "linearGauge",
+                    series: [
+                        { label: "On Track", data: [gaugeData.value[0]], color: "var(--color-success-strong)" },
+                        { label: "Due Soon", data: [gaugeData.value[1]], color: "var(--color-warning-strong)" },
+                        { label: "Overdue", data: [gaugeData.value[2]], color: "var(--color-danger-strong)" }
+                    ]
+                };
+
+            case "progress":
+                return { type: "progress", value: progressValue.value };
+
+            default:
+                return undefined;
+        }
+    });
+
+    const contentItems = computed((): KpiContentItem[] => {
+        const values = contentValues.value;
+        const trends = contentTrends.value;
+
+        const items: KpiContentItem[] = [
+            { label: "Desktop", value: values[0], valueTrend: trends[0] },
+            { label: "Mobile", value: values[1], valueTrend: trends[1], url: "#" },
+            { label: "Tablet", value: values[2], valueTrend: "flat", help: "Includes iPad and Android tablets." }
+        ];
+
+        if (contentDisplay.value === KpiContentDisplay.MicroCards) {
+            items.push(
+                { label: "TV", value: values[3], valueTrend: "unknown" },
+                { label: "Kiosk", value: values[4], valueTrend: trends[2] }
+            );
+        }
+
+        if (hasMutedItem.value) {
+            items.push({ label: "Unknown", value: values[5], isMuted: true });
+        }
+
+        return items;
+    });
+
+    const content = computed((): KpiContent | undefined => {
+        if (!contentDisplay.value) {
+            return undefined;
+        }
+
+        return {
+            title: contentTitle.value || undefined,
+            display: contentDisplay.value as KpiContentDisplay,
+            columns: (microCardsColumns.value ?? 3) as 2 | 3 | 4,
+            valueFormat: valueFormat.value,
+            isNumbered: isNumbered.value,
+            items: contentItems.value
+        };
+    });
+
+    const action = computed((): KpiAction | undefined => {
+        if (actionMode.value === "url") {
+            return { text: "View Report", url: "#" };
+        }
+
+        if (actionMode.value === "click") {
+            return { text: "View Report" };
+        }
+
+        return undefined;
+    });
+
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `title="${title.value}"`,
+            hasHelp.value ? `:help="helpSections"` : "",
+            iconCssClass.value ? `iconCssClass="${iconCssClass.value}"` : "",
+            layout.value !== KpiLayout.Default ? `layout="${layout.value}"` : "",
+            accent.value ? `accent="${accent.value}"` : "",
+            `:value="${JSON.stringify(parsedValue.value)}"`,
+            valueFormat.value !== KpiValueFormat.Number ? `valueFormat="${valueFormat.value}"` : "",
+            valueSize.value ? `valueSize="${valueSize.value}"` : "",
+            parsedTrend.value !== null ? `:valueTrend="${JSON.stringify(parsedTrend.value)}"` : "",
+            valueTrendDisplay.value !== KpiTrendDisplay.Full ? `valueTrendDisplay="${valueTrendDisplay.value}"` : "",
+            valueTrendTooltip.value ? `valueTrendTooltip="${valueTrendTooltip.value}"` : "",
+            valueDescription.value ? `valueDescription="${valueDescription.value}"` : "",
+            isLowerBetter.value ? "isLowerBetter" : "",
+            labelText.value ? `:label="{ text: '${labelText.value}', type: '${labelType.value}' }"` : "",
+            chart.value ? `:chart="chart"` : "",
+            content.value ? `:content="content"` : "",
+            hasError.value ? "hasError" : "",
+            isLoading.value ? "isLoading" : "",
+            action.value ? `:action="${JSON.stringify(action.value).replace(/"/g, "'")}"` : "",
+            footerText.value ? `footerText="${footerText.value}"` : "",
+            isUpdatedShown.value && !footerText.value ? `updatedDateTime="${updatedDateTime}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<KpiCard ${attributes.join("\n         ")} />`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Shows that the card emitted `actionClick` for an action without a URL.
+     */
+    async function onActionClick(): Promise<void> {
+        await alert("The card emitted actionClick.");
+    }
+
+    /**
+     * Replaces the data for every chart type and the content items with random values.
+     */
+    function onRandomizeDataClicked(): void {
+        contentValues.value = generateRandomData(contentValues.value.length, 10, 1000);
+        contentTrends.value = generateRandomData(contentTrends.value.length, -50, 50);
+        lineData.value = generateRandomData(lineData.value.length, 100, 1000);
+        barData.value = generateRandomData(generateRandomData(1, 2, barLabels.length)[0], 10, 1000);
+        pieData.value = generateRandomData(pieData.value.length, 10, 500);
+        gaugeData.value = generateRandomData(gaugeData.value.length, 1, 60);
+        progressValue.value = generateRandomData(1, 0, 100)[0];
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Generates whole numbers between `min` and `max`.
+     *
+     * @param count The number of values to generate.
+     * @param min The smallest value.
+     * @param max The largest value.
+     * @returns The random values.
+     */
+    function generateRandomData(count: number, min: number, max: number): number[] {
+        return Array.from({ length: count }, () => Math.round(min + Math.random() * (max - min)));
+    }
+
+    // #endregion Functions
+</script>

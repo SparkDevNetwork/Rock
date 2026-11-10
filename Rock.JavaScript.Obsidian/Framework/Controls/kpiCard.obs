@@ -1,0 +1,913 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="cardElement" class="kpi-v2-card" :class="cardCssClasses">
+        <!-- Header: hovering the help button opens the help popover, and clicking it pins the popover open. -->
+        <div ref="headerElement"
+             class="kpi-v2-card-header"
+             :class="{ 'kpi-v2-card-header-help-open': isHelpOpen }"
+             @mouseleave="onHeaderMouseLeave">
+            <div v-if="iconCssClass" class="kpi-v2-card-icon">
+                <i :class="iconCssClass"></i>
+            </div>
+
+            <div class="kpi-v2-card-title" v-tooltip.overflow="title">{{ title }}</div>
+
+            <!-- The popover renders inside the header, so once open it stays open anywhere over either. -->
+            <div v-if="hasHelp"
+                 ref="helpElement"
+                 class="kpi-v2-card-help-wrapper"
+                 @mouseenter="onHelpMouseEnter">
+                <PopOver v-model:isVisible="isHelpOpen"
+                         trigger="manual"
+                         placement="bottom"
+                         :anchorX="helpAnchorX"
+                         :anchorY="helpAnchorY"
+                         :maxHeight="helpMaxHeight"
+                         width="80%"
+                         isArrowHidden>
+                    <template #activator="activatorProps">
+                        <button v-bind="activatorProps"
+                                type="button"
+                                class="kpi-v2-card-help"
+                                aria-label="About this KPI"
+                                :aria-expanded="isHelpOpen"
+                                @click="onHelpClick">
+                            <i class="ti ti-info-circle"></i>
+                        </button>
+                    </template>
+
+                    <div class="kpi-v2-card-help-content">
+                        <div class="kpi-v2-card-help-title">About this KPI</div>
+
+                        <div v-for="(section, index) in help"
+                             :key="index"
+                             class="kpi-v2-card-help-section">
+                            <div v-if="section.label" class="kpi-v2-card-help-section-label">{{ section.label }}</div>
+                            <div class="kpi-v2-card-help-section-text">{{ section.text }}</div>
+                        </div>
+                    </div>
+                </PopOver>
+            </div>
+        </div>
+
+        <!-- Loading: the header stays and the body is a skeleton until the data arrives. -->
+        <div v-if="isLoading" class="kpi-v2-card-loading">
+            <div class="skeleton kpi-v2-card-loading-bar"></div>
+            <div class="skeleton kpi-v2-card-loading-bar kpi-v2-card-loading-bar-short"></div>
+            <div v-if="!isCompact" class="skeleton kpi-v2-card-loading-block"></div>
+        </div>
+
+        <!-- Error: checked before data so a failed card never reads as empty. -->
+        <div v-else-if="hasError" class="kpi-v2-card-state">
+            <i class="ti ti-alert-circle kpi-v2-card-state-icon-error"></i>
+            <div class="kpi-v2-card-state-title">Error Loading Data</div>
+            <small class="kpi-v2-card-state-text">Try reloading the page.</small>
+        </div>
+
+        <template v-else-if="hasData">
+            <!-- Compact cards draw a small chart beside the metric instead of below it. -->
+            <div class="kpi-v2-card-metric" :class="{ 'kpi-v2-card-metric-compact': isCompact, 'kpi-v2-card-metric-compact-chart': isCompact && hasCompactChart }">
+                <div class="kpi-v2-card-metric-details">
+                    <div class="kpi-v2-card-metric-row">
+                        <span class="kpi-v2-card-value"
+                              :class="{ 'kpi-v2-card-value-small': isValueSmall }"
+                              v-tooltip.overflow="formattedValue">{{ formattedValue }}</span>
+
+                        <KpiTrend v-if="hasValue"
+                                  :trend="valueTrend"
+                                  :display="valueTrendDisplay"
+                                  :tooltip="valueTrendTooltip"
+                                  :isLowerBetter="isLowerBetter" />
+
+                        <Badge v-if="hasValue && label" class="kpi-v2-card-label" :badgeType="label.type">{{ label.text }}</Badge>
+                    </div>
+
+                    <div v-if="valueDescription" class="kpi-v2-card-value-description">{{ valueDescription }}</div>
+                </div>
+
+                <div v-if="isCompact && hasCompactChart" class="kpi-v2-card-chart-compact">
+                    <slot name="chart">
+                        <KpiCardChart v-if="compactChart" :chart="compactChart" :valueFormat="valueFormat" :currencyInfo="currencyInfo" />
+                    </slot>
+                </div>
+            </div>
+
+            <div v-if="!isCompact && hasChart" class="kpi-v2-card-chart">
+                <slot name="chart">
+                    <KpiCardChart v-if="chart" :chart="chart" :valueFormat="valueFormat" :currencyInfo="currencyInfo" />
+                </slot>
+            </div>
+
+            <KpiCardContent v-if="hasContent && content"
+                            class="kpi-v2-card-content-area"
+                            :content="content"
+                            :currencyInfo="currencyInfo"
+                            :isLowerBetter="isLowerBetter">
+                <slot />
+            </KpiCardContent>
+        </template>
+
+        <!-- Empty: nothing to show in any region. -->
+        <div v-else class="kpi-v2-card-state">
+            <i class="ti ti-chart-bar-off kpi-v2-card-state-icon"></i>
+            <div class="kpi-v2-card-state-title">Nothing to Show</div>
+            <small v-if="emptyHelpText" class="kpi-v2-card-state-text">{{ emptyHelpText }}</small>
+        </div>
+
+        <!-- Footer: the action on the left, the note on the right. Either may stand alone. -->
+        <div v-if="isFooterShown" class="kpi-v2-card-footer">
+            <a v-if="action && action.url"
+               :href="action.url"
+               class="btn btn-default btn-xs">{{ action.text }}</a>
+            <RockButton v-else-if="action"
+                        :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        @click="onActionClick">{{ action.text }}</RockButton>
+
+            <span v-if="footerNote" class="kpi-v2-card-footer-note" v-tooltip.overflow="footerNote">{{ footerNote }}</span>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/*
+    The card is a subgrid of the KPI container so the header, metric, chart, content and
+    footer line up across every card in a row. Outside a grid it lays out as a single column.
+*/
+.kpi-v2-card {
+    position: relative;
+    display: grid;
+    grid-row: span 5;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: subgrid;
+    row-gap: 0;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-large);
+    background-color: var(--color-interface-softest);
+}
+
+/* The card can't clip its overflow because the help popover must be able to spill out of compact cards. */
+.kpi-v2-card > :first-child {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.kpi-v2-card > :last-child {
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+
+/* The Figma accent is a 4px top border that curves down into the card's rounded corners. */
+.kpi-v2-card-accent {
+    border-top-width: var(--spacing-tiny);
+}
+
+.kpi-v2-card-accent-success {
+    border-top-color: var(--color-success-strong);
+}
+
+.kpi-v2-card-accent-info {
+    border-top-color: var(--color-info-strong);
+}
+
+.kpi-v2-card-accent-warning {
+    border-top-color: var(--color-warning-strong);
+}
+
+.kpi-v2-card-accent-danger {
+    border-top-color: var(--color-danger-strong);
+}
+
+.kpi-v2-card-accent-category-1 {
+    border-top-color: var(--color-categorical-1);
+}
+
+.kpi-v2-card-accent-category-2 {
+    border-top-color: var(--color-categorical-2);
+}
+
+.kpi-v2-card-accent-category-3 {
+    border-top-color: var(--color-categorical-3);
+}
+
+.kpi-v2-card-accent-category-4 {
+    border-top-color: var(--color-categorical-4);
+}
+
+.kpi-v2-card-accent-category-5 {
+    border-top-color: var(--color-categorical-5);
+}
+
+.kpi-v2-card-accent-category-6 {
+    border-top-color: var(--color-categorical-6);
+}
+
+.kpi-v2-card-accent-category-7 {
+    border-top-color: var(--color-categorical-7);
+}
+
+.kpi-v2-card-accent-category-8 {
+    border-top-color: var(--color-categorical-8);
+}
+
+/* Each region keeps its own row so it aligns with the same region of the neighboring cards. */
+.kpi-v2-card-header {
+    grid-row: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-small);
+    transition: background-color 0.15s linear;
+}
+
+/* Highlights the header while its help popover is open, in the Obsidian grid row hover color. */
+.kpi-v2-card-header-help-open {
+    background-color: var(--color-info-soft);
+}
+
+.kpi-v2-card-icon {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: var(--spacing-xsmall);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    background-color: var(--color-interface-softer);
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-strong);
+}
+
+.kpi-v2-card-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kpi-v2-card-help-wrapper {
+    display: flex;
+    flex-shrink: 0;
+}
+
+/*
+    Bridges the gap between the header and the popover so crossing it doesn't close the popover.
+    The popover is 80% of the card's width, so 12.5% of its own width on each side spans the whole card.
+*/
+.kpi-v2-card-help-wrapper :deep(.popover)::before {
+    position: absolute;
+    right: -12.5%;
+    bottom: 100%;
+    left: -12.5%;
+    height: var(--spacing-small);
+    content: "";
+}
+
+.kpi-v2-card-help {
+    display: flex;
+    padding: 0 var(--spacing-tiny);
+    border: 0;
+    background: none;
+    font-size: var(--font-size-regular);
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-card-help-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+}
+
+.kpi-v2-card-help-title {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.kpi-v2-card-help-section-label {
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-card-help-section-text {
+    color: var(--color-interface-strong);
+}
+
+.kpi-v2-card-metric {
+    grid-row: 2;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-small);
+}
+
+.kpi-v2-card-metric-compact {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
+.kpi-v2-card-metric-details {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    min-width: 0;
+}
+
+/* Only beside a chart do compact details shrink to 40% to half the row, so the chart never passes 60%. */
+.kpi-v2-card-metric-compact-chart .kpi-v2-card-metric-details {
+    flex: 0 1 auto;
+    min-width: 40%;
+    max-width: calc((100% - var(--spacing-small)) / 2);
+}
+
+.kpi-v2-card-metric-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    min-width: 0;
+}
+
+/* Clips only sideways for the ellipsis, so the compact line height doesn't cut off letters like "g". */
+.kpi-v2-card-value {
+    min-width: 0;
+    overflow-x: clip;
+    font-size: var(--font-size-h3);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-compact);
+    color: var(--color-interface-stronger);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kpi-v2-card-value-small {
+    font-size: var(--font-size-h5);
+}
+
+/* Sized to match the trend badge beside it. */
+.kpi-v2-card-label {
+    flex-shrink: 0;
+    padding: 0 var(--spacing-xsmall);
+    border-radius: var(--rounded-small);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+}
+
+.kpi-v2-card-value-description {
+    padding-top: var(--spacing-tiny);
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    overflow-wrap: anywhere;
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-card-chart {
+    grid-row: 3;
+    height: 100px;
+    padding: var(--spacing-small);
+}
+
+.kpi-v2-card-chart-compact {
+    flex: 1;
+    min-width: 0;
+    height: 48px;
+}
+
+.kpi-v2-card-content-area {
+    grid-row: 4;
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+/*
+    Loading skeleton sizes and shades are the Figma's. The shared .skeleton class supplies the
+    pulse; these rules are written at its selector weight so they win over its pill shape and color.
+*/
+.kpi-v2-card-loading {
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: var(--spacing-tiny) var(--spacing-small) var(--spacing-small);
+}
+
+.kpi-v2-card-loading .skeleton.kpi-v2-card-loading-bar,
+.kpi-v2-card-loading .skeleton.kpi-v2-card-loading-block {
+    border-radius: var(--rounded-medium);
+    background-color: color-mix(in srgb, var(--color-interface-soft) 50%, transparent);
+}
+
+.kpi-v2-card-loading .skeleton.kpi-v2-card-loading-bar {
+    height: 28px;
+}
+
+.kpi-v2-card-loading .skeleton.kpi-v2-card-loading-bar-short {
+    width: 60%;
+    background-color: var(--color-interface-soft);
+}
+
+.kpi-v2-card-loading .skeleton.kpi-v2-card-loading-block {
+    flex: 1;
+    min-height: 166px;
+}
+
+.kpi-v2-card-state {
+    grid-row: 2 / span 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-large);
+    text-align: center;
+}
+
+.kpi-v2-card-state-icon,
+.kpi-v2-card-state-icon-error {
+    margin-bottom: var(--spacing-xsmall);
+    font-size: var(--font-size-h4);
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-card-state-icon-error {
+    color: var(--color-danger-strong);
+}
+
+.kpi-v2-card-state-title {
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-tight);
+    color: var(--color-interface-strong);
+}
+
+.kpi-v2-card-state-text {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-card-footer {
+    grid-row: 5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    border-top: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softer);
+}
+
+/* Card text stays on one line so a long note can't make the footer taller. */
+.kpi-v2-card-footer-note {
+    min-width: 0;
+    margin-left: auto;
+    overflow: hidden;
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-medium);
+    text-align: right;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, onBeforeUnmount, onBeforeUpdate, PropType, ref, useSlots, watch } from "vue";
+    import Badge from "./badge.obs";
+    import PopOver from "./popOver.obs";
+    import RockButton from "./rockButton.obs";
+    import KpiCardChart from "./Internal/KpiCard/kpiCardChart.partial.obs";
+    import KpiCardContent from "./Internal/KpiCard/kpiCardContent.partial.obs";
+    import KpiTrend from "./Internal/KpiCard/kpiTrend.partial.obs";
+    import { KpiCompactSmallValueWidth, KpiContainerValueSizeKey } from "./Internal/KpiCard/utils.partial";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import {
+        formatKpiValue,
+        hasKpiValue,
+        KpiAccent,
+        KpiAction,
+        KpiChart,
+        KpiChartType,
+        KpiContent,
+        KpiContentDisplay,
+        KpiHelpSection,
+        KpiLabel,
+        KpiLayout,
+        KpiTrend as KpiTrendValue,
+        KpiTrendDisplay,
+        KpiValue,
+        KpiValueFormat,
+        KpiValueSize
+    } from "@Obsidian/Core/Controls/kpi";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
+
+    const props = defineProps({
+        /** The card title, such as "Views". */
+        title: {
+            type: String,
+            required: true
+        },
+
+        /** Sections of the "About this KPI" popover. Omit it for no help. */
+        help: {
+            type: Array as PropType<KpiHelpSection[] | null | undefined>
+        },
+
+        /** An optional icon shown before the title, such as "ti ti-eye". */
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** The card layout. Compact cards have no content area and only allow line and bar charts. */
+        layout: {
+            type: String as PropType<KpiLayout>,
+            default: KpiLayout.Default
+        },
+
+        /** An optional colored top border. */
+        accent: {
+            type: String as PropType<KpiAccent | null | undefined>
+        },
+
+        /** The headline value. `null` or an empty string shows a dash and hides the trend and label. */
+        value: {
+            type: [Number, String] as PropType<KpiValue | undefined>
+        },
+
+        /** How a numeric headline value is formatted. Also used by the chart tooltips. */
+        valueFormat: {
+            type: String as PropType<KpiValueFormat>,
+            default: KpiValueFormat.Number
+        },
+
+        /**
+         * The organization currency formatting details used for the "currency" value format, in
+         * the headline value, the chart tooltips and the content items. When omitted, the
+         * default currency symbol and decimal places are used.
+         */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            default: null
+        },
+
+        /**
+         * The size of the headline value. When not set, the card uses the small size if it is
+         * too narrow for the default size, and inside a KpiContainer it matches the other cards.
+         */
+        valueSize: {
+            type: String as PropType<KpiValueSize | undefined>
+        },
+
+        /** The trend of the headline value. */
+        valueTrend: {
+            type: [Number, String] as PropType<KpiTrendValue | null | undefined>
+        },
+
+        /** Whether the headline trend shows the arrow and percent, or the arrow only. */
+        valueTrendDisplay: {
+            type: String as PropType<KpiTrendDisplay>,
+            default: KpiTrendDisplay.Full
+        },
+
+        /** An optional tooltip for the headline trend when only its icon shows. */
+        valueTrendTooltip: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** A short line below the value, such as "Previous Period: 820". */
+        valueDescription: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** When true a drop is positive and a rise is negative, for the headline and every content item. */
+        isLowerBetter: {
+            type: Boolean,
+            default: false
+        },
+
+        /** An optional badge that qualifies the value. */
+        label: {
+            type: Object as PropType<KpiLabel | null | undefined>
+        },
+
+        /** An optional chart. The `chart` slot replaces it. */
+        chart: {
+            type: Object as PropType<KpiChart | null | undefined>
+        },
+
+        /** Optional content below the chart. Not shown on compact cards. */
+        content: {
+            type: Object as PropType<KpiContent | null | undefined>
+        },
+
+        /** The help text shown when the card has nothing to show. */
+        emptyHelpText: {
+            type: String as PropType<string | null | undefined>,
+            default: "No data available for selected period."
+        },
+
+        /** When true the card shows "Error Loading Data" instead of its value, chart and content. */
+        hasError: {
+            type: Boolean,
+            default: false
+        },
+
+        /** When true the card keeps its header and shows a loading skeleton in place of its body and footer. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The single footer action. */
+        action: {
+            type: Object as PropType<KpiAction | null | undefined>
+        },
+
+        /** Custom footer text, such as "Excludes online giving". Takes precedence over `updatedDateTime`. */
+        footerText: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** The ISO date and time the data was last updated. Leave it off when the container shows it. */
+        updatedDateTime: {
+            type: String as PropType<string | null | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "actionClick"): void
+    }>();
+
+    const slots = useSlots();
+
+    // The popover's padding, border and offset below the header.
+    const helpPopoverChromeHeight = 32;
+    const helpPopoverMinHeight = 200;
+
+    // #region Values
+
+    const cardElement = ref<HTMLElement | null>(null);
+    const headerElement = ref<HTMLElement | null>(null);
+    const helpElement = ref<HTMLElement | null>(null);
+    const isHelpOpen = ref(false);
+    const isHelpPinned = ref(false);
+
+    // True when the parent fills the chart slot. Kept current in onBeforeUpdate, the same as panel.obs.
+    const hasChartSlot = ref(!!slots.chart);
+    const helpAnchorX = ref(0);
+    const helpAnchorY = ref(0);
+    const helpMaxHeight = ref(`${helpPopoverMinHeight}px`);
+    const cardWidth = ref(0);
+    const containerValueSize = inject(KpiContainerValueSizeKey, null);
+    const valueSizeKey = newGuid();
+    let resizeObserver: ResizeObserver | null = null;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isCompact = computed((): boolean => props.layout === KpiLayout.Compact);
+
+    const hasHelp = computed((): boolean => !!props.help && props.help.length > 0);
+
+    const hasValue = computed((): boolean => hasKpiValue(props.value));
+
+    const formattedValue = computed((): string => formatKpiValue(props.value, props.valueFormat, props.currencyInfo));
+
+    const hasChart = computed((): boolean => !!props.chart || hasChartSlot.value);
+
+    // Compact cards only allow line and bar charts.
+    const compactChart = computed((): KpiChart | null => {
+        if (props.chart?.type === KpiChartType.Line || props.chart?.type === KpiChartType.Bar) {
+            return props.chart;
+        }
+
+        return null;
+    });
+
+    const hasCompactChart = computed((): boolean => !!compactChart.value || hasChartSlot.value);
+
+    // Only a compact card with a chart is squeezed enough to need the small value size.
+    const isTooNarrowForDefaultValue = computed((): boolean => {
+        return isCompact.value && hasCompactChart.value && cardWidth.value > 0 && cardWidth.value < KpiCompactSmallValueWidth;
+    });
+
+    // What this card reports to its container: an explicit small size, or an unset size that doesn't fit.
+    const needsSmallValue = computed((): boolean => {
+        if (props.valueSize) {
+            return props.valueSize === KpiValueSize.Small;
+        }
+
+        return isTooNarrowForDefaultValue.value;
+    });
+
+    // An explicit size always wins; otherwise the container decides, or the card itself when standalone.
+    const isValueSmall = computed((): boolean => {
+        if (props.valueSize) {
+            return props.valueSize === KpiValueSize.Small;
+        }
+
+        return containerValueSize ? containerValueSize.isSmall.value : isTooNarrowForDefaultValue.value;
+    });
+
+    // Micro-grid and micro-cards with no items count as no content, the same as no content at all.
+    const hasContent = computed((): boolean => {
+        if (isCompact.value || !props.content) {
+            return false;
+        }
+
+        if (props.content.display === KpiContentDisplay.Custom) {
+            return true;
+        }
+
+        return !!props.content.items && props.content.items.length > 0;
+    });
+
+    const hasData = computed((): boolean => {
+        const hasChartData = isCompact.value ? hasCompactChart.value : hasChart.value;
+
+        return hasValue.value || hasChartData || hasContent.value;
+    });
+
+    const cardCssClasses = computed((): string[] => {
+        const cssClasses: string[] = [];
+
+        if (props.accent) {
+            cssClasses.push("kpi-v2-card-accent", `kpi-v2-card-accent-${props.accent}`);
+        }
+
+        return cssClasses;
+    });
+
+    // The loading and error states have no footer. The empty state keeps it so an action such as "Configure" is still reachable.
+    const isFooterShown = computed((): boolean => {
+        return !props.isLoading && !props.hasError && (!!props.action || !!footerNote.value);
+    });
+
+    // Custom footer text wins over the updated date and time.
+    const footerNote = computed((): string => {
+        if (props.footerText) {
+            return props.footerText;
+        }
+
+        if (!props.updatedDateTime) {
+            return "";
+        }
+
+        const updated = RockDateTime.parseISO(props.updatedDateTime);
+
+        return updated ? `Updated: ${updated.toElapsedString()}` : "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Opens the help popover when the pointer enters the help button.
+     */
+    function onHelpMouseEnter(): void {
+        openHelp();
+    }
+
+    /**
+     * Closes the help popover when the pointer leaves the header and the popover, unless it is pinned.
+     */
+    function onHeaderMouseLeave(): void {
+        if (!isHelpPinned.value) {
+            closeHelp();
+        }
+    }
+
+    /**
+     * Pins the help popover open, or unpins and closes it, the same as the help icon on a field label.
+     */
+    function onHelpClick(): void {
+        isHelpPinned.value = !isHelpPinned.value;
+
+        if (isHelpPinned.value) {
+            openHelp();
+        }
+        else {
+            closeHelp();
+        }
+    }
+
+    /**
+     * Unpins and closes the help popover when the user clicks anywhere outside it.
+     *
+     * @param event The click event.
+     */
+    function onDocumentClick(event: MouseEvent): void {
+        if (!helpElement.value?.contains(event.target as Node)) {
+            isHelpPinned.value = false;
+            closeHelp();
+        }
+    }
+
+    /**
+     * Emits `actionClick` for an action that has no URL, so the block can open a modal.
+     */
+    function onActionClick(): void {
+        emit("actionClick");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Opens the help popover centered under the header and sized to sit over the card body.
+     */
+    function openHelp(): void {
+        if (!hasHelp.value) {
+            return;
+        }
+
+        const card = cardElement.value;
+        const header = headerElement.value;
+
+        if (card && header) {
+            helpAnchorX.value = card.clientWidth / 2;
+            helpAnchorY.value = header.offsetTop + header.offsetHeight;
+
+            const availableHeight = card.clientHeight - helpAnchorY.value - helpPopoverChromeHeight;
+
+            helpMaxHeight.value = `${Math.max(availableHeight, helpPopoverMinHeight)}px`;
+        }
+
+        isHelpOpen.value = true;
+    }
+
+    /**
+     * Closes the help popover.
+     */
+    function closeHelp(): void {
+        isHelpOpen.value = false;
+    }
+
+    /**
+     * Stops listening for the outside clicks that close a pinned help popover.
+     */
+    function removeHelpListeners(): void {
+        document.removeEventListener("click", onDocumentClick);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Only a pinned popover listens for outside clicks. A hover popover closes when the pointer leaves.
+    watch(isHelpPinned, isPinned => {
+        if (isPinned) {
+            document.addEventListener("click", onDocumentClick);
+        }
+        else {
+            removeHelpListeners();
+        }
+    });
+
+    // The card width only matters to a compact card with a chart, so only those cards observe it.
+    watch([cardElement, () => isCompact.value && hasCompactChart.value], ([element, isWidthNeeded]) => {
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+        cardWidth.value = 0;
+
+        if (!element || !isWidthNeeded) {
+            return;
+        }
+
+        resizeObserver = new ResizeObserver(entries => {
+            cardWidth.value = entries[0]?.contentRect.width ?? 0;
+        });
+
+        resizeObserver.observe(element);
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    containerValueSize?.register(valueSizeKey, needsSmallValue);
+
+    onBeforeUpdate(() => {
+        // Slots aren't reactive, so a computed reading slots.chart would keep its first answer.
+        hasChartSlot.value = !!slots.chart;
+    });
+
+    onBeforeUnmount(() => {
+        resizeObserver?.disconnect();
+        removeHelpListeners();
+        containerValueSize?.unregister(valueSizeKey);
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,0 +1,80 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      enableReflection>
+
+        <EnhancedProgressBar :modelValue="value"
+                             :indicators="indicator !== null ? [indicator] : undefined"
+                             :progressType="progressType"
+                             :height="height || undefined"
+                             :tooltip="tooltip || undefined" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <RangeSlider label="Percent Done" v-model="value" showValueBar :step="1" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox label="Indicator" v-model="indicator" help="A percentage (0-100) where an indicator mark is shown." />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList label="Progress Type" v-model="progressType" :items="progressTypeItems" :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox label="Height" v-model="height" help="CSS size value (e.g., '40px'). Defaults to 16px." />
+                </div>
+                <div class="col-md-4">
+                    <TextBox label="Tooltip" v-model="tooltip" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import EnhancedProgressBar from "@Obsidian/Controls/enhancedProgressBar.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RangeSlider from "@Obsidian/Controls/rangeSlider.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    type ProgressBarType = "danger" | "success" | "critical" | "warning" | "info" | "metric" | "default";
+
+    const value = ref(60);
+    const indicator = ref<number | null>(null);
+    const progressType = ref<ProgressBarType>("default");
+    const height = ref("");
+    const tooltip = ref("");
+
+    const progressTypeItems: ListItemBag[] = [
+        { value: "default", text: "Default" },
+        { value: "info", text: "Info" },
+        { value: "success", text: "Success" },
+        { value: "warning", text: "Warning" },
+        { value: "danger", text: "Danger" },
+        { value: "critical", text: "Critical" },
+        { value: "metric", text: "Metric" }
+    ];
+
+    const importCode = getSfcControlImportPath("enhancedProgressBar");
+    const exampleCode = computed((): string => {
+        const attributes = [
+            `:modelValue="${value.value}"`,
+            indicator.value !== null ? `:indicators="[${indicator.value}]"` : "",
+            progressType.value !== "default" ? `progressType="${progressType.value}"` : "",
+            height.value ? `height="${height.value}"` : "",
+            tooltip.value ? `tooltip="${tooltip.value}"` : ""
+        ].filter(attribute => attribute !== "");
+
+        return `<EnhancedProgressBar ${attributes.join("\n                     ")} />`;
+    });
+</script>

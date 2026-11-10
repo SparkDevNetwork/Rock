@@ -1,0 +1,275 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="kpi-v2-card-content">
+        <div v-if="content.title" class="kpi-v2-card-content-title">{{ content.title }}</div>
+
+        <div v-if="content.display === KpiContentDisplay.MicroGrid" class="kpi-v2-micro-grid">
+            <div v-for="(item, index) in displayItems"
+                 :key="`${item.label}${index}`"
+                 class="kpi-v2-micro-grid-item"
+                 :class="{ 'kpi-v2-micro-grid-item-muted': item.isMuted }">
+                <span v-if="content.isNumbered" class="kpi-v2-micro-grid-item-position">{{ index + 1 }}.</span>
+
+                <a v-if="item.url && !item.isMuted"
+                   :href="item.url"
+                   class="kpi-v2-micro-grid-item-label"
+                   v-tooltip.overflow="item.label">{{ item.label }}</a>
+                <span v-else class="kpi-v2-micro-grid-item-label" v-tooltip.overflow="item.label">{{ item.label }}</span>
+
+                <span class="kpi-v2-micro-grid-item-value" v-tooltip="item.help ?? ''">{{ formatItemValue(item) }}</span>
+
+                <KpiTrend v-if="isItemTrendShown(item)"
+                          class="kpi-v2-micro-item-trend"
+                          :trend="item.valueTrend"
+                          :tooltip="item.valueTrendTooltip"
+                          :isLowerBetter="isLowerBetter"
+                          isCompact />
+            </div>
+        </div>
+
+        <div v-else-if="content.display === KpiContentDisplay.MicroCards"
+             class="kpi-v2-micro-cards"
+             :class="microCardsColumnsCssClass">
+            <div v-for="(item, index) in displayItems"
+                 :key="`${item.label}${index}`"
+                 class="kpi-v2-micro-cards-item"
+                 :class="{ 'kpi-v2-micro-cards-item-muted': item.isMuted }">
+                <div class="kpi-v2-micro-cards-item-header">
+                    <span class="kpi-v2-micro-cards-item-label" v-tooltip.overflow="item.label">{{ item.label }}</span>
+
+                    <KpiTrend v-if="isItemTrendShown(item)"
+                              class="kpi-v2-micro-item-trend"
+                              :trend="item.valueTrend"
+                              :tooltip="item.valueTrendTooltip"
+                              :isLowerBetter="isLowerBetter"
+                              isCompact />
+                </div>
+
+                <div class="kpi-v2-micro-cards-item-value" v-tooltip="item.help ?? ''">{{ formatItemValue(item) }}</div>
+            </div>
+        </div>
+
+        <div v-else-if="content.display === KpiContentDisplay.Custom" class="kpi-v2-card-content-custom">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.kpi-v2-card-content {
+    /* The micro-card columns react to the width of the card, not the browser window. */
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    padding: var(--spacing-small);
+}
+
+.kpi-v2-card-content-title {
+    font-size: var(--font-size-xsmall);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-strong);
+}
+
+.kpi-v2-micro-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.kpi-v2-micro-grid-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-xsmall);
+    background-color: var(--color-interface-softest);
+    box-shadow: var(--box-shadow);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+}
+
+.kpi-v2-micro-grid-item-position {
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-micro-grid-item-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    padding-right: var(--spacing-small);
+    color: var(--color-interface-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+a.kpi-v2-micro-grid-item-label {
+    color: var(--color-primary);
+}
+
+/* A fixed minimum width keeps the value column from shifting row to row. */
+.kpi-v2-micro-grid-item-value {
+    min-width: var(--spacing-xlarge);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+    text-align: right;
+    white-space: nowrap;
+}
+
+.kpi-v2-micro-grid-item-muted .kpi-v2-micro-grid-item-label,
+.kpi-v2-micro-grid-item-muted .kpi-v2-micro-grid-item-value {
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-micro-cards {
+    display: grid;
+    gap: var(--spacing-xsmall);
+}
+
+.kpi-v2-micro-cards-columns-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kpi-v2-micro-cards-columns-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpi-v2-micro-cards-columns-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/*
+    The columns setting is a maximum. Each breakpoint is the width where tiles would drop below
+    100px (columns x 100px plus the 8px gaps), so a label always has room beside its trend.
+*/
+@container (max-width: 423px) {
+    .kpi-v2-micro-cards-columns-4 {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 315px) {
+    .kpi-v2-micro-cards-columns-3,
+    .kpi-v2-micro-cards-columns-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 207px) {
+    .kpi-v2-micro-cards {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.kpi-v2-micro-cards-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+    padding: var(--spacing-xsmall);
+    border-radius: var(--rounded-xsmall);
+    background-color: var(--color-interface-softest);
+    box-shadow: var(--box-shadow);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+}
+
+.kpi-v2-micro-cards-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-tiny);
+}
+
+.kpi-v2-micro-cards-item-label {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--color-interface-strong);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kpi-v2-micro-cards-item-value {
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-stronger);
+}
+
+.kpi-v2-micro-cards-item-muted .kpi-v2-micro-cards-item-label,
+.kpi-v2-micro-cards-item-muted .kpi-v2-micro-cards-item-value {
+    color: var(--color-interface-medium);
+}
+
+/* A muted item keeps its trend but fades it to match the greyed label and value. */
+.kpi-v2-micro-grid-item-muted .kpi-v2-micro-item-trend,
+.kpi-v2-micro-cards-item-muted .kpi-v2-micro-item-trend {
+    opacity: 0.5;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import KpiTrend from "./kpiTrend.partial.obs";
+    import { vTooltip } from "@Obsidian/Directives/tooltip";
+    import { formatKpiValue, getKpiDisplayItems, hasKpiValue, KpiContent, KpiContentDisplay, KpiContentItem } from "@Obsidian/Core/Controls/kpi";
+    import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
+
+    const props = defineProps({
+        /** The content to show below the chart. */
+        content: {
+            type: Object as PropType<KpiContent>,
+            required: true
+        },
+
+        /** The organization currency used when the content's value format is "currency". */
+        currencyInfo: {
+            type: Object as PropType<CurrencyInfoBag | null>,
+            default: null
+        },
+
+        /** When true item trends treat a drop as positive and a rise as negative. */
+        isLowerBetter: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    // #region Computed Values
+
+    const displayItems = computed((): KpiContentItem[] => {
+        return getKpiDisplayItems(props.content.items);
+    });
+
+    // Columns outside 2 to 4 have no CSS class, so they are clamped into range. A missing or invalid value uses 3.
+    const microCardsColumnsCssClass = computed((): string => {
+        const requestedColumns = Number.isFinite(props.content.columns) ? props.content.columns as number : 3;
+        const columns = Math.min(Math.max(Math.round(requestedColumns), 2), 4);
+
+        return `kpi-v2-micro-cards-columns-${columns}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Formats an item value with the content's value format.
+     *
+     * @param item The content item.
+     * @returns The formatted value.
+     */
+    function formatItemValue(item: KpiContentItem): string {
+        return formatKpiValue(item.value, props.content.valueFormat, props.currencyInfo);
+    }
+
+    /**
+     * Determines if an item shows its trend. Items without a value never do.
+     *
+     * @param item The content item.
+     * @returns `true` if the trend should be shown.
+     */
+    function isItemTrendShown(item: KpiContentItem): boolean {
+        return hasKpiValue(item.value) && item.valueTrend !== null && item.valueTrend !== undefined;
+    }
+
+    // #endregion Functions
+</script>

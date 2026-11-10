@@ -11,7 +11,8 @@
                 <div v-for="gauge of gauges"
                      :key="gauge.id"
                      class="linear-gauge"
-                     :class="sectionStyle">
+                     :class="sectionStyle"
+                     :style="gaugeHeight ? { height: gaugeHeight } : undefined">
                     <div v-for="section of gauge.sections"
                          :key="section.id"
                          class="linear-gauge-section"
@@ -235,6 +236,16 @@
     };
 
     const props = defineProps({
+        /**
+         * The CSS style string to set the height of each linear gauge bar.
+         * - Accepts any valid CSS height value (e.g., "30px", "2rem").
+         * - When not set, each bar uses its default height of 30px.
+         */
+        gaugeHeight: {
+            type: String as PropType<string | undefined>,
+            required: false
+        },
+
         /**
          * The CSS style string to set the height of the doughnut chart component.
          * - Accepts any valid CSS height value (e.g., "400px", "50vh") or undefined.

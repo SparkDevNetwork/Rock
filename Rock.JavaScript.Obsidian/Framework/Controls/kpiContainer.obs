@@ -1,0 +1,166 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="kpi-v2-container">
+        <div class="kpi-v2-container-grid" :class="columnsCssClass">
+            <slot />
+        </div>
+
+        <div v-if="note || updatedText" class="kpi-v2-container-footer">
+            <div v-if="note" class="kpi-v2-container-note">
+                <i class="ti ti-info-circle"></i>
+                <span>{{ note }}</span>
+            </div>
+
+            <span v-if="updatedText" class="kpi-v2-container-updated">{{ updatedText }}</span>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.kpi-v2-container {
+    /* The grid reacts to the width this container is given, not the browser window. */
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softest);
+}
+
+.kpi-v2-container-grid {
+    display: grid;
+    column-gap: var(--spacing-medium);
+    row-gap: 0;
+    margin-bottom: calc(var(--spacing-medium) * -1);
+}
+
+.kpi-v2-container-grid > :slotted(*) {
+    margin-bottom: var(--spacing-medium);
+}
+
+.kpi-v2-container-columns-1 {
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.kpi-v2-container-columns-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kpi-v2-container-columns-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.kpi-v2-container-columns-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Each breakpoint is the width where columns would drop below 240px (columns x 240px plus the 16px gaps). */
+@container (max-width: 1007px) {
+    .kpi-v2-container-columns-4 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 751px) {
+    .kpi-v2-container-columns-3 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@container (max-width: 495px) {
+    .kpi-v2-container-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.kpi-v2-container-footer {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    line-height: var(--line-height-normal);
+    color: var(--color-interface-medium);
+}
+
+.kpi-v2-container-note {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    min-width: 0;
+}
+
+.kpi-v2-container-updated {
+    margin-left: auto;
+    white-space: nowrap;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, provide, Ref, shallowReactive } from "vue";
+    import { KpiContainerValueSizeKey } from "./Internal/KpiCard/utils.partial";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    const props = defineProps({
+        /**
+         * The maximum number of cards per row. Rows drop to fewer cards as the container narrows
+         * so no card is narrower than 240px.
+         */
+        columns: {
+            type: Number as PropType<1 | 2 | 3 | 4>,
+            default: 4
+        },
+
+        /** An optional caveat that applies to every card, shown in the bottom left. */
+        note: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        /** The ISO date and time the data was last updated, shown in the bottom right as "Last Updated: 3 Days Ago". */
+        updatedDateTime: {
+            type: String as PropType<string | null | undefined>
+        }
+    });
+
+    // #region Values
+
+    // Each card's need for the small value size, by card key.
+    const smallValueRequests = shallowReactive(new Map<string, Ref<boolean>>());
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    // The Figma rule: if one card uses the small value size, every card in the container does.
+    const isValueSmall = computed((): boolean => {
+        return [...smallValueRequests.values()].some(needsSmall => needsSmall.value);
+    });
+
+    const columnsCssClass = computed((): string => {
+        const columns = Math.min(Math.max(Math.round(props.columns), 1), 4);
+
+        return `kpi-v2-container-columns-${columns}`;
+    });
+
+    const updatedText = computed((): string => {
+        if (!props.updatedDateTime) {
+            return "";
+        }
+
+        const updated = RockDateTime.parseISO(props.updatedDateTime);
+
+        return updated ? `Last Updated: ${updated.toElapsedString()}` : "";
+    });
+
+    // #endregion Computed Values
+
+    provide(KpiContainerValueSizeKey, {
+        isSmall: isValueSmall,
+        register: (key, needsSmall) => {
+            smallValueRequests.set(key, needsSmall);
+        },
+        unregister: key => {
+            smallValueRequests.delete(key);
+        }
+    });
+</script>
