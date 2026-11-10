@@ -20,8 +20,12 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
+using Microsoft.Extensions.Logging;
+
 using Rock.Data;
 using Rock.Field;
+using Rock.Logging;
+using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -268,6 +272,95 @@ namespace Rock.Attribute
             return existingAttributes.All( a => a.EntityTypeId == entityTypeId
                 && string.Equals( a.EntityTypeQualifierColumn ?? string.Empty, qualifierColumn ?? string.Empty, StringComparison.OrdinalIgnoreCase )
                 && string.Equals( a.EntityTypeQualifierValue ?? string.Empty, qualifierValue, StringComparison.Ordinal ) );
+        }
+
+        /// <summary>
+        /// Parses the binary file unique identifier out of a stored value of a
+        /// binary file based field type. The value is either a Guid or a comma
+        /// separated string with the second part being the binary file Guid
+        /// (the BackgroundCheckFieldType stores the provider entity type id first).
+        /// </summary>
+        /// <param name="value">The stored attribute value.</param>
+        /// <returns>The binary file unique identifier or <c>null</c>.</returns>
+        internal static Guid? ParseBinaryFileGuid( string value )
+        {
+            var parts = ( value ?? "" ).Split( ',' );
+
+            return value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
+        }
+
+        /// <summary>
+        /// Converts a posted public value to its private value. A binary file value that
+        /// <see cref="IsPostedBinaryFileAllowed"/> rejects is replaced by the current value.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <param name="publicValue">The posted public value.</param>
+        /// <param name="currentValue">The value currently stored for the entity.</param>
+        /// <returns>The private value to store.</returns>
+        internal static string GetAllowedPrivateValue( AttributeCache attribute, string publicValue, string currentValue )
+        {
+            var privateValue = GetPrivateValue( attribute, publicValue );
+
+            return IsPostedBinaryFileAllowed( attribute, privateValue, currentValue ) ? privateValue : currentValue;
+        }
+
+        /// <summary>
+        /// Determines whether the binary file referenced by a value posted by a
+        /// remote client may be stored on the attribute. For File, Image and
+        /// BackgroundCheck based field types (the same types that
+        /// AttributeValue.SaveHook treats as binary file attributes) the posted
+        /// file must be the file already stored or a newly uploaded temporary file.
+        /// </summary>
+        /// <param name="attribute">The attribute being set.</param>
+        /// <param name="newValue">The private value about to be stored.</param>
+        /// <param name="currentValue">The value currently stored.</param>
+        /// <returns><c>true</c> if the value may be stored; otherwise <c>false</c>.</returns>
+        internal static bool IsPostedBinaryFileAllowed( AttributeCache attribute, string newValue, string currentValue )
+        {
+            /*
+                11/09/2026 - MSE
+
+                Saving a binary file attribute value permanently adopts the new file and queues the
+                previous file for deletion. A client must only be able to store its own freshly
+                uploaded (temporary) file or the file that is already stored, not any existing
+                permanent file by Guid.
+
+                Reason: Restrict which binary files a posted attribute value may reference.
+            */
+            var field = _fieldTypes.GetOrAdd( attribute.FieldType.Guid, GetFieldType );
+
+            if ( !( field is Field.Types.FileFieldType ||
+                field is Field.Types.ImageFieldType ||
+                field is Field.Types.BackgroundCheckFieldType ) )
+            {
+                return true;
+            }
+
+            var newGuid = ParseBinaryFileGuid( newValue );
+
+            if ( !newGuid.HasValue || newGuid == ParseBinaryFileGuid( currentValue ) )
+            {
+                return true;
+            }
+
+            bool isTemporary;
+
+            using ( var rockContext = new RockContext() )
+            {
+                isTemporary = new BinaryFileService( rockContext )
+                    .Queryable()
+                    .Where( f => f.Guid == newGuid.Value )
+                    .Select( f => ( bool? ) f.IsTemporary )
+                    .FirstOrDefault() == true;
+            }
+
+            if ( !isTemporary )
+            {
+                RockLogger.LoggerFactory.CreateLogger( typeof( PublicAttributeHelper ).FullName )
+                    .LogDebug( "Ignored posted binary file {BinaryFileGuid} for attribute {AttributeGuid} because it is not a temporary file.", newGuid.Value, attribute.Guid );
+            }
+
+            return isTemporary;
         }
 
         /// <summary>
