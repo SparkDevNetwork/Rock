@@ -103,7 +103,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
     // Places whose history may be behind the person, as a send still out leaves one.
     const behind = new Set<string>();
     // Places the person has left: every other is on screen.
-    const offScreen = new Set<string>();
+    const offScreen = reactive(new Set<string>());
     // The newest message the client holds from each person in each place, by place key and
     // lower-case alias, whether a page or a live copy brought it.
     const sent: Record<string, Record<string, number>> = {};
@@ -324,8 +324,7 @@ describe("the person's own signals", () => {
         expect(jest.getTimerCount()).toBe(0);
     });
 
-    // A platform older than the stop would pass it as typing, holding the bubble up longer.
-    test("a platform that does not name the first wait is sent no stop, and its turn still waits the client's own", async () => {
+    test("a stop goes whatever the platform's settings name, and a turn still waits the client's own first wait", async () => {
         const h = build({ limits: {} });
         h.presence.typed(group, null, "a");
         await pass(699);
@@ -335,8 +334,21 @@ describe("the person's own signals", () => {
         h.presence.typed(group, null, "");
         await settle();
 
-        expect(h.calls).toHaveLength(1);
-        expect(h.calls[0].body.p_stopped).toBeUndefined();
+        expect(h.calls.map(c => c.body.p_stopped)).toEqual([undefined, true]);
+    });
+
+    test("a stop the platform refuses is dropped quietly: nothing reported, nothing asked again, and the turn stays ended", async () => {
+        const h = build();
+        h.presence.typed(group, null, "a");
+        await pass(700);
+        h.answers.push(refused("rpc.unknown_option"));
+
+        h.presence.typed(group, null, "");
+        await pass(10000);
+
+        expect(h.calls).toHaveLength(2);
+        expect(h.reports).toEqual([]);
+        expect(jest.getTimerCount()).toBe(0);
     });
 
     test("a place that leaves the screen ends its turn with nothing sent: no first signal and no last", async () => {
@@ -348,6 +360,8 @@ describe("the person's own signals", () => {
 
         h.offScreen.add(group);
         h.offScreen.add(quoteKey(group, 40));
+        // ended as the place goes, not when a timer finds it gone
+        expect(jest.getTimerCount()).toBe(0);
         await pass(10000);
 
         expect(h.calls).toHaveLength(1);
@@ -360,6 +374,32 @@ describe("the person's own signals", () => {
         expect(h.calls).toHaveLength(1);
         await pass(1);
         expect(h.calls).toHaveLength(2);
+    });
+
+    test("a place left and come back to before its last signal was due sends nothing for the turn it left", async () => {
+        const h = build();
+        h.presence.typed(group, null, "a");
+        await pass(700);
+        h.presence.typed(group, null, "ab");
+
+        h.offScreen.add(group);
+        await pass(100);
+        h.offScreen.delete(group);
+        await pass(5000);
+
+        expect(h.calls).toHaveLength(1);
+    });
+
+    test("a thread left for another thread ends its turn with nothing sent", async () => {
+        const h = build();
+        h.presence.typed(group, 40, "a");
+        await pass(700);
+        h.presence.typed(group, 40, "ab");
+
+        h.offScreen.add(quoteKey(group, 40));
+        await pass(5000);
+
+        expect(h.calls).toHaveLength(1);
     });
 
     test("a turn holds one timer however many changes it hears", async () => {
@@ -876,7 +916,7 @@ describe("the typing a page states", () => {
     test("each typist answered is drawn with what is left of their expiry, and nothing is recorded", () => {
         const h = build();
 
-        h.presence.stated(group, null, [stated(anna), stated(sam, { parent_id: 40, interval_ms: 8000, age_ms: 1000 })]);
+        h.presence.stated(group, null, [stated(anna), stated(sam, { parent_id: 40, interval_ms: 8000, age_ms: 1000 })], Date.now());
 
         expect(h.presence.state.typists[group]).toEqual([anna, sam]);
         expect(h.records).toEqual([]);
@@ -891,7 +931,7 @@ describe("the typing a page states", () => {
     test("a typist answered for a thread is drawn under the thread's place", () => {
         const h = build();
 
-        h.presence.stated(group, 40, [stated(anna)]);
+        h.presence.stated(group, 40, [stated(anna)], Date.now());
 
         expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([anna]);
         expect(h.presence.state.typists[group]).toBeUndefined();
@@ -902,11 +942,46 @@ describe("the typing a page states", () => {
         h.blocked.add(lee);
         h.hold(11, anna);
 
-        h.presence.stated(group, null, [stated(anna), stated(me), stated(lee), stated(sam, { age_ms: 6000 }), { after: 10 }, null]);
-        h.presence.stated(group, null, { typing: [stated(sam)] });
-        h.presence.stated(group, null, undefined);
+        h.presence.stated(group, null, [stated(anna), stated(me), stated(lee), stated(sam, { age_ms: 6000 }), { after: 10 }, null], Date.now());
+        h.presence.stated(group, null, { typing: [stated(sam)] }, Date.now());
+        h.presence.stated(group, null, undefined, Date.now());
 
         expect(h.presence.state.typists).toEqual({});
+    });
+
+    test("the answer is what is: a typist held in its place whom it leaves out ends as overtaken, unless heard after the read was asked", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        h.presence.heard("typing", signal(sam));
+        jest.advanceTimersByTime(1000);
+        const askedAt = Date.now();
+        jest.advanceTimersByTime(50);
+        // a keep-alive heard while the read was out
+        h.presence.heard("typing", signal(sam));
+
+        h.presence.stated(group, null, [], askedAt);
+
+        expect(h.presence.state.typists[group]).toEqual([sam]);
+        expect(h.records).toEqual([`started ${group}`]);
+
+        // a read asked after her last signal was heard
+        jest.advanceTimersByTime(1);
+        h.presence.stated(group, null, [], Date.now());
+        expect(h.presence.state.typists[group]).toBeUndefined();
+        expect(h.records).toEqual([`started ${group}`, `ended ${group} overtaken`]);
+    });
+
+    test("an answer with no list of typists removes no one, and an answer for one place leaves another's typists", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        h.presence.heard("typing", signal(sam, { parent_id: 40 }));
+        jest.advanceTimersByTime(100);
+
+        h.presence.stated(group, null, undefined, Date.now());
+        h.presence.stated(group, 40, [stated(sam)], Date.now());
+
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.presence.state.typists[quoteKey(group, 40)]).toEqual([sam]);
     });
 
     test("a typist already drawn is stated again with nothing recorded, keeping when she was first shown", () => {
@@ -914,7 +989,7 @@ describe("the typing a page states", () => {
         h.presence.heard("typing", signal(anna), group);
         jest.advanceTimersByTime(500);
 
-        h.presence.stated(group, null, [stated(anna, { age_ms: 5800 })]);
+        h.presence.stated(group, null, [stated(anna, { age_ms: 5800 })], Date.now());
         h.presence.heard("typing", stop(anna), group);
 
         expect(h.records).toEqual([`started ${group}`]);
@@ -927,7 +1002,7 @@ describe("the typing a page states", () => {
     test("one nearly expired is still drawn for the minimum, never a blink", () => {
         const h = build();
 
-        h.presence.stated(group, null, [stated(anna, { age_ms: 5800 })]);
+        h.presence.stated(group, null, [stated(anna, { age_ms: 5800 })], Date.now());
 
         jest.advanceTimersByTime(999);
         expect(h.presence.state.typists[group]).toEqual([anna]);
@@ -938,7 +1013,7 @@ describe("the typing a page states", () => {
 
     test("her message heard live ends a stated typist as sent, at once", () => {
         const h = build();
-        h.presence.stated(group, null, [stated(anna)]);
+        h.presence.stated(group, null, [stated(anna)], Date.now());
 
         h.arrive(11, anna);
 
@@ -1015,6 +1090,34 @@ describe("the typing a place draws", () => {
     });
 });
 
+describe("typing switched off", () => {
+    test("a signal draws no one, and anyone drawn before is drawn no more", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        expect(h.presence.typingIn(group)).not.toBeNull();
+
+        h.settings.value = readSettings({ ...current, flags: { typing: false } });
+        h.presence.heard("typing", signal(sam));
+
+        expect(h.presence.typingIn(group)).toBeNull();
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+    });
+});
+
+describe("what a place last drew", () => {
+    test("goes with its last typist, so typing starting again there is a new value", () => {
+        const h = build();
+        h.presence.heard("typing", signal(anna));
+        const first = h.presence.typingIn(group);
+        jest.advanceTimersByTime(6000);
+        expect(h.presence.typingIn(group)).toBeNull();
+
+        h.presence.heard("typing", signal(anna));
+
+        expect(h.presence.typingIn(group)).not.toBe(first);
+    });
+});
+
 describe("a stopped presence", () => {
     test("forgets every typist, turn and timer, sends nothing, records nothing, and writes nothing an answer brings after", async () => {
         const h = build();
@@ -1037,7 +1140,7 @@ describe("a stopped presence", () => {
         h.presence.typed(group, null, "abc");
         h.presence.typed(group, null, "");
         h.presence.heard("typing", signal(sam), group);
-        h.presence.stated(group, null, [{ person_alias_guid: lee, after: 10, age_ms: 0 }]);
+        h.presence.stated(group, null, [{ person_alias_guid: lee, after: 10, age_ms: 0 }], Date.now());
         h.arrive(11, sam);
         h.presence.caughtUp();
         await pass(10000);

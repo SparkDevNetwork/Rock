@@ -31,7 +31,7 @@
 // This lives apart from the timelines because what it holds expires on its own clock and is never
 // history: a signal lost costs the bubble for a few seconds, and nothing is caught up or repaired.
 
-import { reactive } from "vue";
+import { reactive, shallowReactive, watch } from "vue";
 import type { CallResult, PlatformCall } from "../platformCall.partial";
 import { isReportedRefusal } from "../errors.partial";
 import type { MessageMotion, TypingEnd } from "../messageMotion.partial";
@@ -131,10 +131,12 @@ export type Presence = {
     heldThrough: (channelId: string, rootId: number | null, alias: string | null | undefined, id: number) => void;
 
     /**
-     * The platform's answer of who is typing in a place, read with its newest page. Drawn as what
-     * is, so nothing moves for it; a typist the page's own messages overtook is left out.
+     * The platform's answer of who is typing in a place, read with its newest page and asked at
+     * askedAt. It is what is, so nothing moves for it: a typist it names is drawn, one the page's
+     * own messages overtook is left out, and one held whom it leaves out has gone, unless a signal
+     * of hers was heard after the read was asked.
      */
-    stated: (channelId: string, rootId: number | null, typists: unknown) => void;
+    stated: (channelId: string, rootId: number | null, typists: unknown, askedAt: number) => void;
 
     /** The people blocked gained someone: their typing goes at once. */
     remask: () => void;
@@ -159,9 +161,10 @@ export type TypingWords = {
 
 /**
  * One typist drawn in a place: the newest message their signal followed, when they were first
- * drawn, when their typing expires, and when a stop heard takes them, if one was.
+ * drawn, when a signal of theirs was last heard, when their typing expires, and when a stop heard
+ * takes them, if one was.
  */
-type Typist = { after: number, shownAt: number, expiresAt: number, stopAt: number | null };
+type Typist = { after: number, shownAt: number, heardAt: number, expiresAt: number, stopAt: number | null };
 
 /**
  * The person's turn in one place, from its first key to its send: the box's text, when its last
@@ -228,8 +231,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
     // #region Send
 
-    /** The person's turn in each place that has one. */
-    const turns = new Map<string, Turn>();
+    /** The person's turn in each place that has one; its places are watched for leaving the screen. */
+    const turns = shallowReactive(new Map<string, Turn>());
 
     /** Whether a signal is out; the next waits for it, so a slow route never stacks calls. */
     let isCallOut = false;
@@ -286,15 +289,6 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (isStopped() || turns.get(place) !== turn) {
             return;
         }
-        // the person left the place, so nothing says they are typing in a room they are not in
-        if (!dependencies.isOnScreen(turn.channelId, turn.rootId)) {
-            forget(place);
-            return;
-        }
-        // announced and unchanged since: the person stopped, and the last signal already said so
-        if (turn.sentAt !== null && !turn.isChanged) {
-            return;
-        }
         if (!mayType(turn.channelId, place)) {
             return;
         }
@@ -331,8 +325,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         if (text.trim() === "") {
             forget(place);
             // An announced draft cleared says so once, so the others' bubble goes within a moment
-            // rather than lingering to its expiry; a platform without the stop would read it as typing.
-            if (turn?.sentAt != null && settings().flags.typing_stop && mayType(channelId, place)) {
+            // rather than lingering to its expiry.
+            if (turn?.sentAt != null && mayType(channelId, place)) {
                 void signal(channelId, rootId, place, true);
             }
             return;
@@ -399,8 +393,10 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             }
         }
 
-        // a pass and a throttled call answer alike, as success with nothing more to do
-        if (isStopped() || !result || result.ok) {
+        // A pass and a throttled call answer alike, as success with nothing more to do. A stop is
+        // the turn's last word, so one refused, as a platform that does not know it refuses it, is
+        // simply dropped: the others' bubble goes at its expiry instead.
+        if (isStopped() || !result || result.ok || isStop) {
             return;
         }
         refused(result.error, channelId, place, token);
@@ -421,6 +417,15 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             dependencies.report(error.code);
         }
     }
+
+    // A place that leaves the screen ends its turn there with nothing sent, whichever way it goes:
+    // a room switch, the drawer closing, or the drawer moving to another thread. Watched at once,
+    // so a timer set for it never fires for a room the person has left.
+    const stopWatchingScreen = watch(
+        () => [...turns].filter(([, turn]) => !dependencies.isOnScreen(turn.channelId, turn.rootId)).map(([place]) => place),
+        left => left.forEach(forget),
+        { flush: "sync" }
+    );
 
     // #endregion Send
 
@@ -504,6 +509,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
         if (held.size === 0) {
             typists.delete(place);
+            drawn.delete(place);
             motion.typingEnded(place, cause, message);
         }
     }
@@ -526,11 +532,12 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             typist.expiresAt = Math.max(typist.expiresAt, expiresAt);
             // still typing after a stop: the stop is past
             if (isHeard) {
+                typist.heardAt = Date.now();
                 typist.stopAt = null;
             }
             return;
         }
-        held.set(alias, { after, shownAt: Date.now(), expiresAt, stopAt: null });
+        held.set(alias, { after, shownAt: Date.now(), heardAt: isHeard ? Date.now() : 0, expiresAt, stopAt: null });
         if (isFirst && isHeard) {
             motion.typingStarted(place);
         }
@@ -554,7 +561,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     }
 
     function heard(event: string, payload: unknown, topicChannelId?: string): void {
-        if (isStopped() || event !== "typing") {
+        if (isStopped() || event !== "typing" || !settings().flags.typing) {
             return;
         }
 
@@ -615,12 +622,14 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         }
     }
 
-    function stated(channelId: string, rootId: number | null, answered: unknown): void {
+    function stated(channelId: string, rootId: number | null, answered: unknown, askedAt: number): void {
+        // an answer with no list says nothing of typing, as an older platform's or a channel's
         if (isStopped() || !Array.isArray(answered)) {
             return;
         }
         const place = quoteKey(channelId, rootId);
         const now = Date.now();
+        const named = new Set<string>();
         for (const entry of answered as Partial<TypingSnapshot>[]) {
             const alias = typeof entry?.person_alias_guid === "string" ? entry.person_alias_guid.toLowerCase() : null;
             if (!alias || !isOther(alias)) {
@@ -635,6 +644,15 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             const expiresAt = now + expiryOf(entry.interval_ms) - age;
             if (expiresAt > now) {
                 draw(place, alias, after, expiresAt, false);
+                named.add(alias);
+            }
+        }
+        // The answer read the typists in the same statement as the page, so one held here that it
+        // leaves out stopped, expired or was blocked before the read; a signal heard after the
+        // read was asked is newer than the answer, and stays.
+        for (const [alias, typist] of [...typists.get(place) ?? []]) {
+            if (!named.has(alias) && typist.heardAt < askedAt) {
+                end(place, alias, "overtaken");
             }
         }
         changed();
@@ -661,7 +679,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
         typingIn: place => {
             const aliases = place ? state.typists[place] : undefined;
-            if (!place || !aliases?.length) {
+            // switched off, no one is drawn typing, whatever is still held until it expires
+            if (!place || !aliases?.length || !settings().flags.typing) {
                 return null;
             }
             // a place key starts with its conversation's id
@@ -698,6 +717,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         },
 
         stop: () => {
+            stopWatchingScreen();
             for (const place of [...turns.keys()]) {
                 forget(place);
             }

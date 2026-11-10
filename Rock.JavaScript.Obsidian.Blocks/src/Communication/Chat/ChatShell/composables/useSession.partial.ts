@@ -72,10 +72,9 @@ export type ChatSettings = {
     } & PlatformLimits & AttachmentTypes;
     /**
      * Switches by name; gifs is whether the church may search for and send GIFs, and typing
-     * whether its conversations show who is typing, each off unless true. typing_stop is whether
-     * the platform takes a typist's stop, which came with its wait before the first signal.
+     * whether its conversations show who is typing, each off unless true.
      */
-    flags: Record<string, unknown> & { gifs: boolean, typing: boolean, typing_stop: boolean };
+    flags: Record<string, unknown> & { gifs: boolean, typing: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -214,9 +213,7 @@ export function readSettings(raw: unknown): ChatSettings {
                 : []
         },
         // only the JSON true turns a switch on, so a value this client cannot read leaves it off
-        // An older platform reads a stop as typing, so one is sent only to a platform that names the
-        // first signal's wait, which came with it.
-        flags: { ...flags, gifs: flags.gifs === true, typing: flags.typing === true, typing_stop: typeof limits.typing_first_after_ms === "number" },
+        flags: { ...flags, gifs: flags.gifs === true, typing: flags.typing === true },
         push: {
             web: hasPush ? web : null,
             vapid_key: hasPush ? push.vapid_key as string : null,

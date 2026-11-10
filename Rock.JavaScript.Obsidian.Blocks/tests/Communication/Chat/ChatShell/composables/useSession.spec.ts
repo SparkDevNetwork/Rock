@@ -510,7 +510,7 @@ describe("settings from the token exchange", () => {
             attachment_types: []
         },
         // GIFs and typing are off unless the platform says the church has them on
-        flags: { gifs: false, typing: false, typing_stop: false },
+        flags: { gifs: false, typing: false },
         push: { web: null, vapid_key: null, prompt: "after_send" }
     };
 
@@ -562,17 +562,15 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ flags: { gifs: "true" } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
-        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, typing_stop: false, other: "kept" });
+        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, other: "kept" });
     });
 
-    // The first signal's wait and the stop came in one change to the platform, and an older
-    // platform reads a stop as typing, so the stop is taken only where the wait is named.
-    test("the first wait and the minimum show are read as sent, else 0.7 and 1 second, and the stop is on only where the platform names the wait", () => {
+    test("the first wait and the minimum show are read as sent, else 0.7 and 1 second, and no setting says whether a stop is taken", () => {
         expect(readSettings({ limits: { typing_first_after_ms: 500, typing_min_show_ms: 1500 } }))
-            .toMatchObject({ limits: { typing_first_after_ms: 500, typing_min_show_ms: 1500 }, flags: { typing_stop: true } });
+            .toMatchObject({ limits: { typing_first_after_ms: 500, typing_min_show_ms: 1500 } });
         expect(readSettings({ limits: { typing_first_after_ms: "500", typing_min_show_ms: -1 } }))
-            .toMatchObject({ limits: { typing_first_after_ms: 700, typing_min_show_ms: 1000 }, flags: { typing_stop: false } });
-        expect(readSettings({ limits: {} }).flags.typing_stop).toBe(false);
+            .toMatchObject({ limits: { typing_first_after_ms: 700, typing_min_show_ms: 1000 } });
+        expect(readSettings({ limits: {} }).flags).not.toHaveProperty("typing_stop");
     });
 
     test("typing is on only when the platform's flag is the boolean true", () => {

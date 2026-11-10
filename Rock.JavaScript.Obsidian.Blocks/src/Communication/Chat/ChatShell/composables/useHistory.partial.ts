@@ -332,7 +332,8 @@ type ChannelSync = {
 };
 
 /** A page as it was fetched: when it was read on the client's clock, and the revision held when it was asked. */
-type Fetched = { page: HistoryPage, readAt: number, heldRev: number | null };
+/** A page as fetched: the live counter and the clock when it was asked, and the revision then held. */
+type Fetched = { page: HistoryPage, readAt: number, askedAt: number, heldRev: number | null };
 
 /**
  * Creates the timelines.
@@ -441,7 +442,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * reaction or a thread mark that arrived after the read is laid over it. A deleted, hidden or
      * removed message never carries its body.
      */
-    function mergePage(channelId: string, page: HistoryPage, readAt: number): void {
+    function mergePage(channelId: string, page: HistoryPage, readAt: number, askedAt: number): void {
         const rev = revOf(page);
         for (const message of page.messages) {
             if ((pageReadAt.get(message.id) ?? 0) > readAt && find(channelId, message.id)) {
@@ -471,7 +472,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         }
         // read in the same statement as the page, so a typist its messages overtook is left out
         if (page.typing !== undefined) {
-            dependencies.typing?.stated(channelId, null, page.typing);
+            dependencies.typing?.stated(channelId, null, page.typing, askedAt);
         }
     }
 
@@ -616,7 +617,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      * is held whether it joins or not. A page that replaces what is held is where the room's revision
      * is counted from.
      */
-    function takeNewest(channelId: string, page: HistoryPage, readAt: number, isReload: boolean = false): boolean {
+    function takeNewest(channelId: string, page: HistoryPage, readAt: number, askedAt: number, isReload: boolean = false): boolean {
         const timeline = state(channelId);
         const channelSync = sync(channelId);
         const range = bounds(page);
@@ -626,7 +627,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         channelSync.isNewestDue = false;
 
         if (isJoined) {
-            mergePage(channelId, page, readAt);
+            mergePage(channelId, page, readAt, askedAt);
         }
         else {
             // an empty page replaces nothing: the channel has no messages yet, only what landed live
@@ -640,7 +641,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     timeline.messages.splice(positionOf(timeline.messages, message.id), 0, old);
                 }
             }
-            mergePage(channelId, page, readAt);
+            mergePage(channelId, page, readAt, askedAt);
             channelSync.epoch++;
             timeline.verifiedThrough = null;
             countFrom(channelId, revOf(page), isReload ? readAt : null);
@@ -662,12 +663,15 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
     async function fetchCurrent(channelId: string, options: { limit: number, beforeId?: number, afterId?: number }): Promise<Fetched | null> {
         const epoch = sync(channelId).epoch;
         const readAt = ++seq;
+        // the clock as it is asked, before the request goes, so a typing signal heard while it is
+        // out is known to be newer than the answer
+        const askedAt = Date.now();
         // what was applied when asked, so a page is called backwards only against that, not against
         // live changes that arrived while it was out
         const heldRev = state(channelId).rev;
         const page = await dependencies.fetchPage(channelId, options);
 
-        return sync(channelId).epoch === epoch ? { page, readAt, heldRev } : null;
+        return sync(channelId).epoch === epoch ? { page, readAt, askedAt, heldRev } : null;
     }
 
     /**
@@ -750,7 +754,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 // far behind, when it joins what is held, is merged and the held run read again
                 // behind it, so the reader keeps their place and the room still holds every change
                 // up to what the reread was read at.
-                const isReplaced = takeNewest(channelId, answer.page, answer.readAt, channelSync.isReloadDue);
+                const isReplaced = takeNewest(channelId, answer.page, answer.readAt, answer.askedAt, channelSync.isReloadDue);
                 if (isReplaced) {
                     isReread = false;
                 }
@@ -775,7 +779,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 const isMoved = rev === null || answer.heldRev === null ? !isFirst : rev !== answer.heldRev;
                 if (isMoved) {
                     isReread = true;
-                    mergePage(channelId, answer.page, answer.readAt);
+                    mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
                     afterId = rereadFrom;
                     continue;
                 }
@@ -784,7 +788,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 rereadRev = Math.min(rereadRev ?? rev, rev);
             }
 
-            mergePage(channelId, answer.page, answer.readAt);
+            mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
             const range = bounds(answer.page);
             if (range && afterId <= (timeline.verifiedThrough ?? 0)) {
                 timeline.verifiedThrough = Math.max(timeline.verifiedThrough ?? 0, range.newest);
@@ -1043,7 +1047,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
-            let answer: { page: HistoryPage, readAt: number } | null;
+            let answer: Fetched | null;
             try {
                 answer = await fetchCurrent(channelId, { limit: pageSize, beforeId: next.id + 1 });
             }
@@ -1063,7 +1067,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             }
             attempt = 0;
 
-            mergePage(channelId, answer.page, answer.readAt);
+            mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
             read += answer.page.messages.length;
             // strictly falling, so whatever the platform answers the walk ends
             const oldest = Math.min(bounds(answer.page)?.oldest ?? next.id, next.id);
@@ -1111,7 +1115,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             try {
                 const answer = await fetchCurrent(channelId, { limit: dependencies.limits().history_page_size });
                 if (answer && !isStopped) {
-                    if (takeNewest(channelId, answer.page, answer.readAt, isRestarted(channelId, revOf(answer.page), answer.heldRev))) {
+                    if (takeNewest(channelId, answer.page, answer.readAt, answer.askedAt, isRestarted(channelId, revOf(answer.page), answer.heldRev))) {
                         channelSync.hasJoined = false;
                     }
 
@@ -1182,7 +1186,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     if (!answer || timeline.messages[0]?.id !== oldest.id) {
                         return;
                     }
-                    mergePage(channelId, answer.page, answer.readAt);
+                    mergePage(channelId, answer.page, answer.readAt, answer.askedAt);
                     timeline.hasMore = answer.page.has_more;
                 }
                 finally {

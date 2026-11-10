@@ -666,7 +666,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // what a page says of typing, made below and reached only once running
         typing: {
             heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
-            stated: (channelId, rootId, typists) => presence.stated(channelId, rootId, typists)
+            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
         }
     });
 
@@ -730,7 +730,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         motion,
         typing: {
             heldThrough: (channelId, rootId, alias, id) => presence.heldThrough(channelId, rootId, alias, id),
-            stated: (channelId, rootId, typists) => presence.stated(channelId, rootId, typists)
+            stated: (channelId, rootId, typists, askedAt) => presence.stated(channelId, rootId, typists, askedAt)
         }
     });
 

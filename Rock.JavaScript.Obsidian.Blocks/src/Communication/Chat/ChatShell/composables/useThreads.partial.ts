@@ -447,6 +447,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             markRow(row, { isFollowing: row.following, isUnread: false });
         }
 
+        // the clock as the read is asked, before it goes, for the typing it answers
+        const askedAt = Date.now();
         const result = await dependencies.call("chat_get_thread_history", { p_root_id: rootId, p_limit: dependencies.limits().history_page_size });
         if (isStopped || thisOpen !== threadOpen || !state.thread) {
             return;
@@ -482,7 +484,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         for (const reply of live) {
             insertReply(reply);
         }
-        tellTyping(channelId, rootId, thread.replies, page.typing);
+        tellTyping(channelId, rootId, thread.replies, page.typing, askedAt);
         thread.following = landedFollowing(rootId, page.following === true);
         thread.readCursor = page.read_cursor ?? null;
         thread.hasMore = page.has_more === true;
@@ -521,6 +523,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const read: TimelineMessage[] = [];
         let root: TimelineMessage | null = null;
         let typing: unknown = undefined;
+        // the clock as the first page is asked, before it goes, for the typing it answers
+        const askedAt = Date.now();
         let hasMore = false;
         let beforeId: number | null = null;
         do {
@@ -556,7 +560,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             .sort((a, b) => a.id - b.id);
         open.hasMore = hasMore;
         reportLanded(read);
-        tellTyping(open.channelId, open.rootId, read, typing);
+        tellTyping(open.channelId, open.rootId, read, typing, askedAt);
     }
 
     /** Fetches the list, replacing its rows, or adding the next page after them. */
@@ -958,12 +962,12 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
      * Tells typing what a page of the open thread says: a reply of someone's held now ends the
      * typing a signal before it named, and the platform's answer of who is typing a reply is drawn.
      */
-    function tellTyping(channelId: string, rootId: number, replies: readonly TimelineMessage[], typing: unknown): void {
+    function tellTyping(channelId: string, rootId: number, replies: readonly TimelineMessage[], typing: unknown, askedAt: number): void {
         for (const reply of replies) {
             dependencies.typing?.heldThrough(channelId, rootId, reply.person_alias_guid, reply.id);
         }
         if (typing !== undefined) {
-            dependencies.typing?.stated(channelId, rootId, typing);
+            dependencies.typing?.stated(channelId, rootId, typing, askedAt);
         }
     }
 
