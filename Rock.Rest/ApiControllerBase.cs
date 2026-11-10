@@ -240,6 +240,41 @@ namespace Rock.Rest
         /// <returns>The property name, or <c>null</c> if no untracked related records were found.</returns>
         internal static string GetUntrackedRelatedEntityPropertyName( object entity, DbContext context, Func<string, bool> isCollectionAllowed )
         {
+            // Only a top level collection may be allowed, and nothing below it.
+            return GetUntrackedRelatedEntityPath( entity, context, ( path, isCollection ) => isCollection
+                && !path.Contains( "." )
+                && isCollectionAllowed?.Invoke( path ) == true );
+        }
+
+        /// <summary>
+        /// Gets the path of the first navigation property in the entity's graph that holds a
+        /// related record which is not tracked by the context. Adding the entity to the context
+        /// would insert that related record too, without any authorization check of its own.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isRelatedEntityAllowed">
+        /// Returns <c>true</c> if the related records at the path (such as <c>FinancialTransaction.TransactionDetails</c>)
+        /// may be inserted with the entity. The second argument is <c>true</c> if the property is a collection.
+        /// Allowed records are checked the same way with this predicate. May be <c>null</c>.
+        /// </param>
+        /// <returns>The property path, or <c>null</c> if no untracked related records were found.</returns>
+        internal static string GetUntrackedRelatedEntityPath( object entity, DbContext context, Func<string, bool, bool> isRelatedEntityAllowed )
+        {
+            return GetUntrackedRelatedEntityPath( entity, context, isRelatedEntityAllowed, string.Empty );
+        }
+
+        /// <summary>
+        /// Gets the path of the first navigation property in the entity's graph that holds a
+        /// related record which is not tracked by the context.
+        /// </summary>
+        /// <param name="entity">The entity to check.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        /// <param name="isRelatedEntityAllowed">Returns <c>true</c> if the related records at the path may be inserted. May be <c>null</c>.</param>
+        /// <param name="pathPrefix">The path of the entity from the posted entity, ending with a period, or empty for the posted entity.</param>
+        /// <returns>The property path, or <c>null</c> if no untracked related records were found.</returns>
+        private static string GetUntrackedRelatedEntityPath( object entity, DbContext context, Func<string, bool, bool> isRelatedEntityAllowed, string pathPrefix )
+        {
             if ( entity == null )
             {
                 return null;
@@ -254,17 +289,31 @@ namespace Rock.Rest
                     continue;
                 }
 
+                var path = pathPrefix + property.Name;
+
                 if ( IsMappedEntityType( property.PropertyType ) )
                 {
-                    if ( !IsTrackedEntity( value, context ) )
+                    if ( IsTrackedEntity( value, context ) )
                     {
-                        return property.Name;
+                        continue;
+                    }
+
+                    if ( isRelatedEntityAllowed?.Invoke( path, false ) != true )
+                    {
+                        return path;
+                    }
+
+                    // An allowed record may still not carry related records of its own.
+                    var childPath = GetUntrackedRelatedEntityPath( value, context, isRelatedEntityAllowed, path + "." );
+                    if ( childPath != null )
+                    {
+                        return childPath;
                     }
 
                     continue;
                 }
 
-                var isAllowed = isCollectionAllowed?.Invoke( property.Name ) == true;
+                var isAllowed = isRelatedEntityAllowed?.Invoke( path, true ) == true;
 
                 foreach ( var relatedItem in ( ( IEnumerable ) value ).Cast<object>() )
                 {
@@ -275,14 +324,14 @@ namespace Rock.Rest
 
                     if ( !isAllowed )
                     {
-                        return property.Name;
+                        return path;
                     }
 
                     // An allowed child may still not carry related records of its own.
-                    var childPropertyName = GetUntrackedRelatedEntityPropertyName( relatedItem, context, null );
-                    if ( childPropertyName != null )
+                    var childPath = GetUntrackedRelatedEntityPath( relatedItem, context, isRelatedEntityAllowed, path + "." );
+                    if ( childPath != null )
                     {
-                        return $"{property.Name}.{childPropertyName}";
+                        return childPath;
                     }
                 }
             }
