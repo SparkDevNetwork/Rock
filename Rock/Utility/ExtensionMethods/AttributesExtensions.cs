@@ -441,6 +441,12 @@ namespace Rock
 
                 var value = PublicAttributeHelper.GetPrivateValue( attribute, kvp.Value );
 
+                // Skip binary file values that reference a file other than the current or a new temporary file.
+                if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, value, entity.GetAttributeValue( kvp.Key ) ) )
+                {
+                    continue;
+                }
+
                 entity.SetAttributeValue( kvp.Key, value );
             }
         }
@@ -482,6 +488,12 @@ namespace Rock
             }
 
             var databaseValue = PublicAttributeHelper.GetPrivateValue( attribute, value );
+
+            // Skip binary file values that reference a file other than the current or a new temporary file.
+            if ( !PublicAttributeHelper.IsPostedBinaryFileAllowed( attribute, databaseValue, entity.GetAttributeValue( key ) ) )
+            {
+                return;
+            }
 
             entity.SetAttributeValue( key, databaseValue );
         }
