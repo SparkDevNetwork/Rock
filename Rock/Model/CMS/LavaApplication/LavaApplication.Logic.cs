@@ -54,8 +54,9 @@ namespace Rock.Model
         public override bool IsAuthorized( string action, Person person )
         {
             // If the person is a Rock Admin always allow access to View/Edit/Administrate (but not Execute)
-            var isInOverrideRole = RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).IsPersonInRole( person.Guid )
-                || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() ).IsPersonInRole( person.Guid );
+            var isInOverrideRole = person != null
+                && ( RoleCache.Get( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid() ).IsPersonInRole( person.Guid )
+                    || RoleCache.Get( SystemGuid.Group.GROUP_LAVA_APPLICATION_DEVELOPERS.AsGuid() ).IsPersonInRole( person.Guid ) );
 
             if ( isInOverrideRole )
             {
