@@ -637,6 +637,19 @@ describe("the reader's own change", () => {
         expect(w.findAll(".is-rolling")).toHaveLength(0);
     });
 
+    test("a reaction whose chip is not drawn plays nothing, and the chip a later page brings does not pop for it", async () => {
+        const held = reactive(message([]));
+        const w = mountRow({ message: held });
+
+        // the reader's reaction landed on a copy, and was taken back before these chips drew it
+        await w.setProps({ motion: { seq: 1, code: "thumbsup", motion: "pop" } });
+        await settle();
+        held.reactions!.push(thumbsup(1, true));
+        await settle();
+
+        expect(w.findAll(".is-popping")).toHaveLength(0);
+    });
+
     test("a reaction that landed before the chips were drawn plays nothing on them", async () => {
         const w = mountRow({ message: message([thumbsup(1, true)]), motion: { seq: 1, code: "thumbsup", motion: "pop" } });
         await settle();

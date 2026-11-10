@@ -2962,9 +2962,14 @@ describe("one shape for every copy of a message", () => {
             { root: liveCreated({ id: 40, sender: anna }), messages: [reply(39)], has_more: false, following: true, read_cursor: null, unread_count: 0, rev: 1 },
             { root: liveCreated({ id: 40, sender: anna }), messages: [reply(39), reply(41)], has_more: false, following: true, read_cursor: null, unread_count: 0, rev: 2 }
         ];
-        const threads = createThreads({ motion: createMessageMotion(), call: async () => ({ ok: true, data: pages.shift() }) as never, timelines, personAliasGuid: anna, limits: () => ({ history_page_size: 50, thread_page_size: 25 }), mask: platformMask, isBlocked: () => false });
-        // every state field stated, whatever path brought the copy
-        const unstated = (): unknown[] => held().flatMap(stateOf).filter(value => value === undefined);
+        // the threads list states its roots as the live copy does, none of a message's state
+        const listed = { channel_id: shapesChannel, root: liveCreated({ id: 40, sender: anna }), reply_count: 3, last_reply_at: "2026-10-12T14:05:00.000Z", last_reply_id: 43, participant_count: 1, following: true, has_unread: false, mention_count: 0 };
+        const call = async (name: string): Promise<unknown> => ({ ok: true, data: name === "chat_list_threads" ? { threads: [listed], has_more: false } : pages.shift() });
+        const threads = createThreads({ motion: createMessageMotion(), call: call as never, timelines, personAliasGuid: anna, limits: () => ({ history_page_size: 50, thread_page_size: 25 }), mask: platformMask, isBlocked: () => false });
+        // every state field stated, whatever path brought the copy, named so a miss is seen (an
+        // undefined in a list would compare equal to an empty one)
+        const unstatedOf = (message: TimelineMessage): string[] => Object.keys(newMessageState).filter(field => (message as Record<string, unknown>)[field] === undefined).map(field => `${message.id}.${field}`);
+        const unstated = (): string[] => held().flatMap(unstatedOf);
 
         await threads.openThread(shapesChannel, 40);
         await threads.loadOlderReplies();
@@ -2976,5 +2981,9 @@ describe("one shape for every copy of a message", () => {
         threads.repair(shapesChannel);
         await flushPromisesOf();
         expect(unstated()).toEqual([]);
+
+        await threads.openList(shapesChannel);
+        expect(threads.state.list.rows).toHaveLength(1);
+        expect(unstatedOf(threads.state.list.rows[0].root)).toEqual([]);
     });
 });

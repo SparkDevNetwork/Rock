@@ -66,6 +66,7 @@ function wire() {
     // a thread page the test may hold back, to land when it says
     const threadPages: (Record<string, unknown> | Promise<Record<string, unknown>>)[] = [];
     const answers: Deferred<SendResult>[] = [];
+    const reactionAnswers: Deferred<CallResult>[] = [];
     let sender: Sender | null = null;
     // eslint-disable-next-line prefer-const
     let blocks: Blocks;
@@ -75,6 +76,11 @@ function wire() {
     const call = async (name: string): Promise<CallResult> => {
         if (name === "chat_get_thread_history") {
             return { ok: true, data: await threadPages.shift() ?? { root: null, messages: [], has_more: false, following: false, read_cursor: null, unread_count: 0 } } as CallResult;
+        }
+        if (name === "chat_add_reaction" || name === "chat_remove_reaction") {
+            const answer = deferred<CallResult>();
+            reactionAnswers.push(answer);
+            return answer.promise;
         }
         return { ok: true, data: {} } as CallResult;
     };
@@ -145,7 +151,7 @@ function wire() {
         }
     }
 
-    return { pages, threadPages, answers, motion, timelines, threads, reactions, blocks, sender: sender as Sender, live, provide: { [messageMotionKey as symbol]: motion } };
+    return { pages, threadPages, answers, reactionAnswers, motion, timelines, threads, reactions, blocks, sender: sender as Sender, live, provide: { [messageMotionKey as symbol]: motion } };
 }
 
 type Wired = ReturnType<typeof wire>;
@@ -290,12 +296,69 @@ describe("a room switch and back plays nothing on its rows", () => {
         const w = wire();
         await open(w, [pageRow({ id: 1, sender: anna })]);
         const feed = drawFeed(w);
-        void w.sender.send(channelId, "On my way");
+        const sending = w.sender.send(channelId, "On my way");
         await settle();
 
         await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna })]));
 
         expect(feed.wrapper.find("[data-testid='pending-row']").exists()).toBe(true);
+        expect(moving(feed.wrapper)).toEqual([]);
+
+        // its answer and its live copy land after the return, in the element the return drew,
+        // and still nothing rises: the send was made here, before this feed was drawn
+        const drawn = feed.wrapper.get("[data-testid='pending-row']").element;
+        const createdAt = new Date().toISOString();
+        w.answers[0].resolve({ ok: true, id: 2, createdAt, notice: null, pieces: null, blocks: null });
+        await sending;
+        w.live("message.created", liveCreated({ id: 2, key: "k1", body: "On my way", createdAt }, 2));
+        await settle();
+
+        expect(feed.wrapper.get("[data-message-id='2']").element).toBe(drawn);
+        expect(moving(feed.wrapper)).toEqual([]);
+    });
+
+    test("a send still on its way when the reader left, whose live copy lands after the return in a new element, does not rise", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        const createdAt = new Date().toISOString();
+        const first = w.sender.send(channelId, "First");
+        await settle();
+        w.answers[0].resolve({ ok: true, id: 2, createdAt, notice: null, pieces: null, blocks: null });
+        await first;
+        // a second send, drawn in the person's group under the first, still out as they leave
+        const second = w.sender.send(channelId, "Second");
+        await settle();
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }), pageRow({ id: 2, key: "k1", body: "First", createdAt })]));
+        const rising = (): (string | null | undefined)[] => feed.wrapper.findAll(".chat-msg.is-arriving").map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"));
+        expect(rising()).toEqual([]);
+
+        // someone's message and the send's live copy heard in one turn: the person's message now
+        // stands in a group of its own below hers, a new element, and only hers rises
+        w.live("message.created", liveCreated({ id: 3, sender: anna, createdAt }, 2));
+        w.live("message.created", liveCreated({ id: 4, key: "k2", body: "Second", createdAt }, 3));
+        await settle();
+        w.answers[1].resolve({ ok: true, id: 4, createdAt, notice: null, pieces: null, blocks: null });
+        await second;
+        await settle();
+
+        expect(feed.wrapper.find("[data-message-id='4']").exists()).toBe(true);
+        expect(rising()).toEqual(["3"]);
+    });
+
+    test("a chip of the reader's that popped before the switch does not pop again on the return", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+        void w.reactions.toggle(channelId, 1, heart);
+        await settle();
+        expect(feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
+
+        await feed.switchAwayAndBack(page([pageRow({ id: 1, sender: anna }, { reactions: [{ ...heart, count: 1, mine: true }] })]));
+
+        expect(feed.wrapper.find("[data-message-id='1'] [data-testid='reaction-chip']").exists()).toBe(true);
         expect(moving(feed.wrapper)).toEqual([]);
     });
 
@@ -498,6 +561,39 @@ describe("what happens while a row is on screen plays once", () => {
         expect(feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
         expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-chip']").classes()).not.toContain("is-popping");
         expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-count']").classes()).toContain("is-rolling");
+    });
+
+    test("the platform's answer to the reader's press states the chips again and pops nothing more", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+        void w.reactions.toggle(channelId, 1, heart);
+        await settle();
+        const chip = feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']");
+        expect(chip.classes()).toContain("is-popping");
+        chip.element.dispatchEvent(new Event("animationend"));
+        await nextTick();
+        expect(chip.classes()).not.toContain("is-popping");
+        const pressed = w.motion.of("k:1")?.reaction?.seq;
+
+        w.reactionAnswers[0].resolve({ ok: true, data: { message_id: 1, reactions: [{ ...heart, count: 1, mine: true, reactors: [] }] } } as CallResult);
+        await settle();
+
+        expect(feed.wrapper.findAll("[data-message-id='1'] .is-popping, [data-message-id='1'] .is-rolling")).toHaveLength(0);
+        expect(w.motion.of("k:1")?.reaction?.seq).toBe(pressed);
+    });
+
+    test("the person's own message sent from another tab rises as it is heard, as anyone's does", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 1, sender: anna })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live("message.created", liveCreated({ id: 2, key: "c0ffee00-0000-4000-8000-000000000000", body: "From my phone" }, 2));
+        await settle();
+
+        expect(feed.wrapper.findAll(".chat-msg.is-arriving").map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"))).toEqual(["2"]);
     });
 
     test("the reader's own reaction made on another device pops as it is heard; someone else's moves nothing", async () => {
