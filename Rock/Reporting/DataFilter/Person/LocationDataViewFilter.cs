@@ -434,6 +434,12 @@ function() {
 
             return ddlDataView.SelectedValueAsId();
         }
+
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return DataComponentSettingsHelper.GetDataViewId( new FilterSettings( selection ?? string.Empty ).DataViewGuid );
+        }
         #endregion
     }
 }
