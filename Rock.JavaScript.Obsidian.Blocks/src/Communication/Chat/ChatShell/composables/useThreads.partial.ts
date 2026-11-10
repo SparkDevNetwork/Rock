@@ -176,8 +176,8 @@ export type ThreadsDependencies = {
     /** Whether an alias is someone the reader blocked, whose reply is not news to them. Required, for the same reason. */
     isBlocked: (personAliasGuid: string | null) => boolean;
 
-    /** Told of each reply heard arriving live, each live change to what the drawer holds, and each thread's first reply, for the rows' motion. */
-    motion?: Pick<MessageMotion, "arrived" | "changed" | "threadStarted">;
+    /** Told of each reply heard arriving live, each live change to what the drawer holds, and each thread's first reply, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "arrived" | "changed" | "threadStarted">;
 };
 
 /** The threads a shell holds. */
@@ -853,7 +853,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             const isStarting = (held.reply_count ?? 0) === 0 && update.reply_count > 0;
             moveRoot(held, update, isOpen);
             if (isStarting) {
-                dependencies.motion?.threadStarted(held);
+                dependencies.motion.threadStarted(held);
             }
         }
         moveRow(channelId, update.root_id, counts, rev, isOpen);
@@ -918,7 +918,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             nameFromRepliers(message, thread.root?.repliers ?? pendingRootUpdate?.repliers);
         }
         insertReply(message);
-        dependencies.motion?.arrived(message);
+        dependencies.motion.arrived(message);
     }
 
     /**
@@ -1162,7 +1162,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 applyMessageChange(held, event, payload, newer);
                 // a change in place is a write like any other: its pieces may name someone blocked
                 maskHeld([held], mask);
-                dependencies.motion?.changed(held, event);
+                dependencies.motion.changed(held, event);
             }
         },
 

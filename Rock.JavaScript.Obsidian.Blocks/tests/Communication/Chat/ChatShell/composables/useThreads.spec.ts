@@ -70,6 +70,7 @@ import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/co
 import { PageEventTargets } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Fixtures
 
@@ -197,6 +198,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     const calls: Call[] = [];
     const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
     const timelines = createTimelines({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => historyPage ?? { messages: [], read_cursor: null, unread_count: 0, has_more: false }
@@ -204,6 +206,7 @@ async function setup(historyPage?: HistoryPage, onLanded?: (message: TimelineMes
     await timelines.loadNewest(channel);
 
     const threads = createThreads({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: threadLimits,
         call: (name, args) => {
@@ -1770,10 +1773,11 @@ describe("a block, as what the threads hold is masked where it is written", () =
         answers: Record<string, Array<CallResult | Deferred<CallResult>>>
     } {
         const answers: Record<string, Array<CallResult | Deferred<CallResult>>> = {};
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         // eslint-disable-next-line prefer-const
         let blocks: ReturnType<typeof createBlocks>;
         const threads = createThreads({
+            motion: createMessageMotion(),
             limits: threadLimits,
             call: name => {
                 const next = answers[name]?.shift();

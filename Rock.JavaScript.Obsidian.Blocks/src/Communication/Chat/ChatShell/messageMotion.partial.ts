@@ -84,8 +84,11 @@ export type MessageMotion = {
     stop: () => void;
 };
 
-/** How the shell hands the record to the rows and views it draws. */
-export const messageMotionKey: InjectionKey<MessageMotion> = Symbol("chat-message-motion");
+/** What the rows and views read of the record. Only the stores record, so a component never holds a writer. */
+export type MotionReader = Pick<MessageMotion, "now" | "of" | "scope">;
+
+/** How the shell hands the record to the rows and views it draws, to read only. */
+export const messageMotionKey: InjectionKey<MotionReader> = Symbol("chat-message-motion");
 
 /**
  * Creates the record.

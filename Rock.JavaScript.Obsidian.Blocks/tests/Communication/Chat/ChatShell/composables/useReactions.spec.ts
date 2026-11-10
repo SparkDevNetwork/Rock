@@ -66,6 +66,7 @@ import { createThreads } from "../../../../../src/Communication/Chat/ChatShell/c
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { HistoryPage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
+import { createMessageMotion } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 // #region Fixtures
 
@@ -178,6 +179,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     notices: jest.Mock
 }> {
     const timelines = createTimelines({
+        motion: createMessageMotion(),
         mask: platformMask,
         limits: () => ({ history_page_size: 50 }),
         fetchPage: async () => ({ messages, read_cursor: null, unread_count: 0, has_more: false })
@@ -187,6 +189,7 @@ async function setup(messages: TimelineMessage[], answers: Array<CallResult | De
     const calls: Call[] = [];
     const notices = jest.fn();
     const reactions = createReactions({
+        motion: createMessageMotion(),
         call: (name: string, args: Record<string, unknown>) => {
             calls.push({ name, args });
             const answer = answers.shift() ?? ok({});
@@ -734,8 +737,9 @@ describe("the full list", () => {
         const answer = deferred<CallResult>();
         const blocks = createBlocks({ call: async () => ({ ok: true, data: {} }), onChanged: () => undefined, remask: () => undefined, notify: () => undefined });
         blocks.setAliases([]);
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         const reactions = createReactions({
+            motion: createMessageMotion(),
             call: () => answer.promise,
             timelines,
             personAliasGuid: me,
@@ -979,6 +983,7 @@ describe("a page read before a reaction", () => {
         const answers: Array<CallResult | Deferred<CallResult>> = [];
         let reactions: ReturnType<typeof createReactions> | null = null;
         const timelines = createTimelines({
+            motion: createMessageMotion(),
             limits: () => ({ history_page_size: 50 }),
             fetchPage: () => {
                 const page = deferred<HistoryPage>();
@@ -988,8 +993,9 @@ describe("a page read before a reaction", () => {
             applyReaction: (channelId: string, event: string, payload: unknown) => reactions?.applyEvent(channelId, event as "reaction.added", payload),
             mask: platformMask
         } as never);
-        const threads = createThreads({ mask: platformMask, limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me, isBlocked: () => false });
+        const threads = createThreads({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: () => threadPage.promise, timelines, personAliasGuid: me, isBlocked: () => false });
         reactions = createReactions({
+            motion: createMessageMotion(),
             call: () => {
                 const answer = answers.shift() ?? ok({});
                 return "promise" in answer ? answer.promise : Promise.resolve(answer);
@@ -1220,12 +1226,13 @@ describe("a block, as what a reaction writes is masked", () => {
         let blocks: ReturnType<typeof createBlocks>;
         const mask = <T extends Partial<TimelineMessage>>(m: T): T => blocks.mask(m);
         const timelines = createTimelines({
+            motion: createMessageMotion(),
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: [message(42, [rx("heart", 1)], { person_alias_guid: david })], read_cursor: null, unread_count: 0, has_more: false }),
             mask
         });
-        const threads = createThreads({ limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: next, timelines, personAliasGuid: me, mask } as never);
-        const reactions = createReactions({ call: next, timelines, threads, personAliasGuid: me, notify: jest.fn(), favorites, churchKey: church, storage: null, mask, maskFaces: people => people } as never);
+        const threads = createThreads({ motion: createMessageMotion(), limits: () => ({ history_page_size: 50, thread_page_size: 30 }), call: next, timelines, personAliasGuid: me, mask } as never);
+        const reactions = createReactions({ motion: createMessageMotion(), call: next, timelines, threads, personAliasGuid: me, notify: jest.fn(), favorites, churchKey: church, storage: null, mask, maskFaces: people => people } as never);
         blocks = createBlocks({
             call: async () => ({ ok: true, data: { people: [], blocked_aliases: [] } }),
             onChanged: () => undefined,

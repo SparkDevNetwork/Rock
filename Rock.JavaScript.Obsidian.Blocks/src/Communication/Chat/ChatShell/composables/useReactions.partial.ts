@@ -89,8 +89,8 @@ export type ReactionsDependencies = {
     /** What the reader may see of a message, applied to every copy a reaction changes. Required, so a holder wired without the people blocked does not compile. */
     mask: MessageMask;
 
-    /** Told of the reader's own reaction landing on a message held, pressed here or echoed from another device, for its chip's motion. */
-    motion?: Pick<MessageMotion, "reacted">;
+    /** Told of the reader's own reaction landing on a message held, pressed here or echoed from another device, for its chip's motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "reacted">;
 };
 
 /** What the reactions hold. */
@@ -569,7 +569,7 @@ export function createReactions(dependencies: ReactionsDependencies): Reactions 
         const copy = written[0];
         const isShown = copiesOf(channelId, messageId).some(held => held.reactions?.some(reaction => reaction.code === code && reaction.mine));
         if (copy && !isShown) {
-            dependencies.motion?.reacted(copy, code, copy.reactions?.some(reaction => reaction.code === code) ? "roll" : "pop");
+            dependencies.motion.reacted(copy, code, copy.reactions?.some(reaction => reaction.code === code) ? "roll" : "pop");
         }
     }
 

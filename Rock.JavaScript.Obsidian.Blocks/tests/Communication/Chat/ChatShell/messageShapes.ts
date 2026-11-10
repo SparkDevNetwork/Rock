@@ -21,6 +21,7 @@
 // and the live copy state none of them, which is what a client that compares copies must survive.
 import { createSender } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 export const channelId = "c0000001-0000-4000-8000-000000000000";
 export const me = "a0000001-0000-4000-8000-000000000000";
@@ -50,6 +51,7 @@ export async function sendAnswer(facts: Facts): Promise<TimelineMessage> {
         confirmed = message;
     };
     const sender = createSender({
+        motion: createMessageMotion(),
         send: async () => ({ ok: true, id: facts.id, createdAt: facts.createdAt ?? nine, notice: null, pieces: null, blocks: null }),
         timelines: { upsert: capture },
         onReplyConfirmed: capture,

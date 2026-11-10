@@ -132,8 +132,8 @@ export type TimelineDependencies = {
     /** How a missed live change is noticed and repaired, read from the settings each time. */
     revRules?: () => { reorderMs: number, repairWaitMs: number, staleMs: number };
 
-    /** Told of each message heard arriving live and each live edit, delete or hide as it is applied, for the rows' motion. */
-    motion?: Pick<MessageMotion, "arrived" | "changed">;
+    /** Told of each message heard arriving live and each live edit, delete or hide as it is applied, for the rows' motion. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "arrived" | "changed">;
 
     /** Runs a wait and answers its cancel, so a test can say when; a timer by default. */
     schedule?: (run: () => void, ms: number) => () => void;
@@ -563,7 +563,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                     sender_listed: sender?.sender_listed
                 } as TimelineMessage, rev));
                 if (isLive) {
-                    dependencies.motion?.arrived(created);
+                    dependencies.motion.arrived(created);
                 }
             }
         }
@@ -590,7 +590,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             // a change in place is a write like any other: its pieces may name someone blocked
             maskHeld([message], mask);
             if (isLive) {
-                dependencies.motion?.changed(message, event);
+                dependencies.motion.changed(message, event);
             }
         }
     }

@@ -43,10 +43,11 @@ async function setup(answers: Array<SendResult | Deferred<SendResult>>, isOfflin
 }> {
     const sent: string[] = [];
     let next = 0;
-    const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+    const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
     await timelines.loadNewest(channel);
 
     const sender = createSender({
+        motion: createMessageMotion(),
         send: (_c, body) => {
             sent.push(body);
             const answer = answers.shift() as SendResult | Deferred<SendResult>;
@@ -96,9 +97,10 @@ describe("createSender", () => {
     });
 
     test("a send that rejects instead of answering leaves its row failed with its text, so it can be retried or discarded", async () => {
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
+            motion: createMessageMotion(),
             send: () => Promise.reject(new Error("network")),
             timelines,
             personAliasGuid: me,
@@ -196,9 +198,10 @@ describe("a send the platform can recognise again", () => {
             { ok: false, error: { code: "rpc.transport", severity: "failed" } },
             { ok: true, id: 45, createdAt: "2026-10-05T10:00:00Z" }
         ];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
+            motion: createMessageMotion(),
             send: (_c: string, _body: string, key?: string) => {
                 keys.push(key);
                 return Promise.resolve(answers.shift() as SendResult);
@@ -329,10 +332,11 @@ describe("a send into a room the person has not joined", () => {
         const joined: string[] = [];
         const waits: Array<Deferred<void>> = [];
         let next = 0;
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
 
         const sender = createSender({
+            motion: createMessageMotion(),
             send: (_c, body, key) => {
                 sent.push({ body, key });
                 const answer = answers.shift() as SendResult | Deferred<SendResult>;
@@ -615,8 +619,9 @@ describe("a send's key", () => {
 
     test("a sender with no key to give a message sends nothing and draws no row", async () => {
         const sent: string[] = [];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         const sender = createSender({
+            motion: createMessageMotion(),
             send: async (_c, body) => {
                 sent.push(body);
                 return { ok: true, id: 1, createdAt: "2026-10-14T10:00:00Z" };
@@ -688,9 +693,10 @@ describe("a reply in a thread", () => {
         sent: Sent[]
     }> {
         const sent: Sent[] = [];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
+            motion: createMessageMotion(),
             send: ((_c: string, body: string, key?: string, reply?: Reply) => {
                 sent.push({ body, key, reply });
                 return Promise.resolve(answers.shift() as SendResult);
@@ -824,9 +830,10 @@ describe("a quoted send", () => {
         sent: Sent[]
     }> {
         const sent: Sent[] = [];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         const sender = createSender({
+            motion: createMessageMotion(),
             send: ((_c: string, body: string, key?: string, _reply?: unknown, quotedMessageId?: number) => {
                 sent.push({ body, key, quotedMessageId });
                 return Promise.resolve(answers.shift() as SendResult);
@@ -898,6 +905,7 @@ describe("a send settles on the first copy of its message", () => {
         let next = 0;
         let sender: ReturnType<typeof createSender> | null = null;
         const timelines = createTimelines({
+            motion: createMessageMotion(),
             mask: platformMask,
             limits: () => ({ history_page_size: 50 }),
             fetchPage: async () => ({ messages: pages.shift()?.messages ?? [], read_cursor: null, unread_count: 0, has_more: false }),
@@ -905,6 +913,7 @@ describe("a send settles on the first copy of its message", () => {
         });
         await timelines.loadNewest(channel);
         sender = createSender({
+            motion: createMessageMotion(),
             send: (_c, body, key) => {
                 sent.push({ body, key });
                 const answer = answers.shift() as SendResult | Deferred<SendResult>;
@@ -1468,10 +1477,11 @@ describe("a send with files", () => {
         sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }>
     }> {
         const sent: Array<{ body: string, attachments: AttachmentItem[] | undefined }> = [];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         let next = 0;
         const sender = createSender({
+            motion: createMessageMotion(),
             send: (_c, body, _key, _reply, _quote, attachments) => {
                 sent.push({ body, attachments });
                 const answer = answers.shift() as SendResult | Deferred<SendResult>;
@@ -1742,10 +1752,11 @@ describe("a send with a GIF", () => {
         sent: Array<Record<string, unknown>>
     }> {
         const sent: Array<Record<string, unknown>> = [];
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage: async () => ({ messages: [], read_cursor: null, unread_count: 0, has_more: false }) });
         await timelines.loadNewest(channel);
         let next = 0;
         const sender = createSender({
+            motion: createMessageMotion(),
             // the arguments the platform is sent for the message's media, as the shell builds them
             send: async (_c, _body, _key, _reply, _quote, attachments) => {
                 sent.push(mediaArgs(attachments));

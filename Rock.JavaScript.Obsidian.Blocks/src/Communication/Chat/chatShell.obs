@@ -840,16 +840,11 @@
 
     // Every row and view reads what happened to its messages through this, from whichever shell is
     // current, so a row drawn after the shell is built again never reads a record that has stopped.
+    // Read only: the shell's own stores are what record.
     provide(messageMotionKey, {
-        sent: localId => shell.value.motion.sent(localId),
-        arrived: message => shell.value.motion.arrived(message),
-        changed: (message, event) => shell.value.motion.changed(message, event),
-        reacted: (message, code, motion) => shell.value.motion.reacted(message, code, motion),
-        threadStarted: root => shell.value.motion.threadStarted(root),
         now: () => shell.value.motion.now(),
         of: key => shell.value.motion.of(key),
-        scope: () => shell.value.motion.scope(),
-        stop: () => shell.value.motion.stop()
+        scope: () => shell.value.motion.scope()
     });
 
     // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.

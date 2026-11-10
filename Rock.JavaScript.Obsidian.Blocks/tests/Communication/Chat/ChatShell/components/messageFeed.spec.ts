@@ -1484,7 +1484,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a held conversation whose newest page replaces it at the same count opens at the newest message, its new rows watched", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
         timelines.leave(channel);
 
@@ -1545,7 +1545,7 @@ describe("a feed holding its reader at the newest message", () => {
 
     test("a reader scrolled up stays where they are when content grows and when the timeline is replaced", async () => {
         let answer = page([1, 2, 3], true);
-        const timelines = createTimelines({ mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
+        const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 3 }), fetchPage: async () => answer });
         await timelines.loadNewest(channel);
 
         const wrapper = draw({ timeline: timelines.state(channel) });

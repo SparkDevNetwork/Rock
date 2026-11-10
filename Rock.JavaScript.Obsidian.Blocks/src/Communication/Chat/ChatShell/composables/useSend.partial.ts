@@ -395,8 +395,8 @@ export type SenderDependencies = {
     /** A fresh identifier for a pending row, a UUID, since it is also the send's key; null when none can be made. */
     newLocalId: () => string | null;
 
-    /** Told of each new send as its row is put up, so the row rises once and no copy of its message rises again. */
-    motion?: Pick<MessageMotion, "sent">;
+    /** Told of each new send as its row is put up, so the row rises once and no copy of its message rises again. Required, so a store wired without the record does not compile rather than losing every motion. */
+    motion: Pick<MessageMotion, "sent">;
 
     /** The platform refused a GIF because the church has GIFs off, which hides them at once. */
     onGifsOff?: () => void;
@@ -737,7 +737,7 @@ export function createSender(dependencies: SenderDependencies): Sender {
                 return false;
             }
             sentKeys.add(localId);
-            dependencies.motion?.sent(localId);
+            dependencies.motion.sent(localId);
 
             rows.push({
                 localId,
