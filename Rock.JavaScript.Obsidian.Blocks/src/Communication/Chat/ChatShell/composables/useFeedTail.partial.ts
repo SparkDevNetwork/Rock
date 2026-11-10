@@ -31,9 +31,10 @@
 // The motion is one transform on the box that holds everything, plus the parts that do not ride
 // their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
 // (so a face moves only while its run continues), the typing bubble and its dots, and a row's time
-// line and its message's box, `meta` and `box`, which are their row's. A part of the bubble leaving
-// comes through the tail's one leave hook, from a Transition that hands it over; a row keeps its time
-// line and hides it, and the tail fades out the one it read standing that a row now hides.
+// line, its message's box, and in an edited message's time line its time and Edited, `meta`, `box`,
+// `stamp` and `edited`, which are their row's. A part of the bubble leaving comes through the tail's
+// one leave hook, from a Transition that hands it over; a row keeps its time line, and an edited
+// message's time, and hides them, and the tail fades out the one it read standing that a row now hides.
 
 import { inject, InjectionKey, nextTick, onBeforeUnmount, provide, Ref, watch } from "vue";
 import { ArrivalMotion, messageMotionKey } from "../messageMotion.partial";
@@ -157,6 +158,13 @@ function fadeAround(holder: Element, kept: Element, fadeIn: (element: Element) =
     }
 }
 
+/** How far up from its own bottom a foot clips a row now, its motion in flight included. */
+function footOf(holder: Element): number {
+    const inner = /inset\(([^)]*)\)/.exec(getComputedStyle(holder).clipPath)?.[1].trim().split(/\s+/) ?? [];
+    const bottom = parseFloat(inner[2] ?? inner[0] ?? "");
+    return Number.isNaN(bottom) ? 0 : bottom;
+}
+
 /** The rows drawn in a box, in order. */
 function rowsOf(content: HTMLElement): HTMLElement[] {
     return [...content.querySelectorAll<HTMLElement>("[data-row-key]")];
@@ -164,10 +172,16 @@ function rowsOf(content: HTMLElement): HTMLElement[] {
 
 const kindOf = (id: string): string => id.split(":")[0];
 
-/** A part's id: its mark, or for a row's own time line and box, its mark and its row's key. */
+/** The marks a row keys by its own key, since what draws them does not know it. */
+const rowMarks = ["meta", "box", "stamp", "edited"];
+
+/** The marks a row keeps and hides rather than drawing again: the tail fades out one it read standing. */
+const keptMarks = ["meta", "stamp"];
+
+/** A part's id: its mark, or for a row's own parts, its mark and its row's key. */
 function idOf(element: HTMLElement): string | undefined {
     const mark = element.dataset?.tail;
-    return mark === "meta" || mark === "box" ? `${mark}:${element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? ""}` : mark;
+    return mark && rowMarks.includes(mark) ? `${mark}:${element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? ""}` : mark;
 }
 
 /** An element's own opacity, its motions included. */
@@ -193,22 +207,6 @@ function entranceLeft(scroller: HTMLElement | null): number {
         return 0;
     }
     return Math.max(0, Number(timing.endTime ?? 0) - Number(entrance.currentTime ?? 0));
-}
-
-/**
- * Where the newest end of a scroller is, read from layout so no motion in flight moves it: a
- * transform on the content grows the scroller's whole height while it plays, so a follow to that
- * height scrolls into the motion and the browser pulls it back frame by frame. The scroller is
- * its content's offset parent, so the content's offset is from the scroller's own top.
- *
- * @param scroller The view's scroller.
- * @param content The box that holds what it draws.
- *
- * @returns The scroll top at the newest end.
- */
-export function endOf(scroller: HTMLElement, content: HTMLElement): number {
-    const padding = parseFloat(getComputedStyle(scroller).paddingBottom);
-    return Math.max(0, content.offsetTop + content.offsetHeight + (Number.isNaN(padding) ? 0 : padding) - scroller.clientHeight);
 }
 
 /**
@@ -350,9 +348,9 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const handed = leaving;
         leaving = [];
         const release = (): void => handed.forEach(part => part.done());
-        // a time line its row shows again is back in the flow at once, whatever plays
+        // a time line or a time its row shows again is back in the flow at once, whatever plays
         for (const [element, done] of [...going]) {
-            if (element.dataset.tail === "meta" && !element.hidden) {
+            if (keptMarks.includes(element.dataset.tail ?? "") && !element.hidden) {
                 going.delete(element);
                 motionsOf(element).forEach(animation => animation.cancel());
                 done();
@@ -386,9 +384,9 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
         const tokens = tokensOf(content);
         const reduced = isMotionReduced();
-        // What goes: the parts handed over, and each time line read standing that its row now hides.
+        // What goes: the parts handed over, and each time line or time read standing that its row now hides.
         const parting = [...handed, ...[...was.parts.values()]
-            .filter(part => kindOf(part.id) === "meta" && part.element.isConnected && part.element.hidden)
+            .filter(part => keptMarks.includes(kindOf(part.id)) && part.element.isConnected && part.element.hidden)
             .map(part => hiding(part.element))];
         const bubbleGoing = parting.find(part => part.element.dataset.tail === "typing:typing");
         const dotsWere = bubbleGoing?.element.querySelector<HTMLElement>("[data-tail='dots:typing']");
@@ -426,6 +424,14 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 done();
             }
         }
+        // a foot in flight is let go with the moves, so what it shows now is read first: it opens from there
+        const feetWere = new Map<Element, number>();
+        for (const animation of motionsOf(content, true)) {
+            const holder = (animation.effect as KeyframeEffect | null)?.target;
+            if (animation.id === "chat-tail-foot" && holder) {
+                feetWere.set(holder, footOf(holder));
+            }
+        }
         motionsOf(content, true).filter(animation => glideIds.includes(animation.id) || moveIds.includes(animation.id)).forEach(animation => animation.cancel());
         if (bubbleGoing) {
             motionsOf(bubbleGoing.element, true).forEach(animation => animation.cancel());
@@ -453,7 +459,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         // be drawn over what stands in its place; and a row that steps, as the rows above the newest
         // do when something above them changes, leaves it behind. Either way it goes at once.
         for (const part of [...lifted]) {
-            if (part.element.dataset.tail !== "meta") {
+            if (!keptMarks.includes(part.element.dataset.tail ?? "")) {
                 continue;
             }
             const key = part.element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? "";
@@ -544,19 +550,31 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         if (!reduced && Math.abs(offset) >= .5) {
             play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-glide" });
         }
-        // only the foot clips: above and beside, a face gliding in from the row above is drawn whole
-        const open = Number.isFinite(height) ? height : 0;
+        // Only the foot clips: above and beside, a face gliding in from the row above is drawn whole.
+        // Nothing moving in the content starts further from a row than the content is wide and tall
+        // plus the glide, so a margin that large never cuts; it is the content's, not the scroller's,
+        // since a view with no scroller has the same foot.
+        const extent = content.getBoundingClientRect();
+        const open = Math.ceil(extent.width + extent.height + Math.abs(offset));
         for (const { holder, by } of under) {
             play(holder, [{ clipPath: `inset(-${open}px -${open}px ${by}px)` }, { clipPath: `inset(-${open}px -${open}px 0px)` }], { ...geometry, id: "chat-tail-foot" });
+        }
+        // a row this change no longer clips at a foot, its foot cut short, opens from what it showed
+        for (const [holder, by] of feetWere) {
+            if (holder.isConnected && by >= .5 && !reduced && !under.some(clip => clip.holder === holder)) {
+                play(holder, [{ clipPath: `inset(-${open}px -${open}px ${by}px)` }, { clipPath: `inset(-${open}px -${open}px 0px)` }], { ...geometry, id: "chat-tail-foot" });
+            }
         }
 
         const dotsBefore = was.parts.get("dots:typing");
         // name lines going as a new one takes their place: two names drawn over each other read as
-        // neither, so the one going is gone by half way and the new one comes in the second half
+        // neither, so the one going is gone by half way and the new one comes in the second half,
+        // one half each
+        const nameHalf = tokens.base / 2;
         const namesGoing = new Set<Element>();
         for (const part of now) {
             const kind = kindOf(part.id);
-            if (part.element === handoffBox || kind === "meta" || kind === "box" || kind === "dots") {
+            if (part.element === handoffBox || kind === "meta" || kind === "stamp" || kind === "box" || kind === "dots") {
                 continue;
             }
             const from = fromOf(part);
@@ -567,7 +585,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                     namesGoing.add(crossing.element);
                 }
                 if (!reduced) {
-                    const timing = kind === "name" ? { delay: tokens.base / 2, duration: tokens.base / 2, fill: "backwards" as const } : { duration: tokens.base };
+                    const timing = kind === "name" ? { delay: nameHalf, duration: nameHalf, fill: "backwards" as const } : { duration: tokens.base };
                     play(part.element, [{ opacity: 0 }, { opacity: 1 }], { ...timing, easing: tokens.easeState, id: "chat-tail-in" });
                 }
                 continue;
@@ -643,12 +661,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 // the bubble goes down out under the edge with the stack; under reduced motion it fades where it stands
                 fadeAway(part.element, part.done, seen, reduced ? { duration: tokens.fast, easing: tokens.easeState } : { duration: tokens.base, easing: tokens.easeState });
             }
-            else if (part.element.dataset.tail === "meta") {
-                // a time line its row no longer shows fades out where it stood, riding its row
+            else if (keptMarks.includes(part.element.dataset.tail ?? "")) {
+                // a time line or a time its row no longer shows fades out where it stood, riding its row
                 fadeAway(part.element, part.done, seen, { duration: tokens.fast, easing: tokens.easeOut });
             }
             else if (!reduced) {
-                fadeAway(part.element, part.done, seen, { duration: namesGoing.has(part.element) ? tokens.base / 2 : tokens.base, easing: tokens.easeState });
+                fadeAway(part.element, part.done, seen, { duration: namesGoing.has(part.element) ? nameHalf : tokens.base, easing: tokens.easeState });
             }
             else {
                 part.done();

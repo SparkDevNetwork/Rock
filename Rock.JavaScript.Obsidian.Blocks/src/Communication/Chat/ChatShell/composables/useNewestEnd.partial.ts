@@ -22,7 +22,22 @@
 
 import { onBeforeUnmount, onMounted, readonly, Ref, ref } from "vue";
 import { nearBottomPx, endSlackPx } from "../feedLayout.partial";
-import { endOf } from "./useFeedTail.partial";
+
+/**
+ * Where the newest end of a scroller is, read from layout so no motion in flight moves it: a
+ * transform on the content grows the scroller's whole height while it plays, so a follow to that
+ * height scrolls into the motion and the browser pulls it back frame by frame. The scroller is
+ * its content's offset parent, so the content's offset is from the scroller's own top.
+ *
+ * @param scroller The view's scroller.
+ * @param content The box that holds what it draws.
+ *
+ * @returns The scroll top at the newest end.
+ */
+export function endOf(scroller: HTMLElement, content: HTMLElement): number {
+    const padding = parseFloat(getComputedStyle(scroller).paddingBottom);
+    return Math.max(0, content.offsetTop + content.offsetHeight + (Number.isNaN(padding) ? 0 : padding) - scroller.clientHeight);
+}
 
 /** Where a view's reader is, and the ways the view moves them. */
 export type NewestEnd = {

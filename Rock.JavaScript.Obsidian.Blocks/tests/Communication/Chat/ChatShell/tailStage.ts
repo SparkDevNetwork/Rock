@@ -245,7 +245,7 @@ export function createStage(options?: StageOptions): Stage {
                 get currentTime(): number {
                     return clock - entry.motion.start;
                 },
-                effect: { getComputedTiming: () => ({ endTime: entry.delay + entry.duration }) },
+                effect: { target: this, getComputedTiming: () => ({ endTime: entry.delay + entry.duration }) },
                 cancel: (): void => end(entry, "cancel"),
                 finish: (): void => end(entry, "finish")
             } as unknown as Animation;
@@ -499,12 +499,14 @@ export function createStage(options?: StageOptions): Stage {
     const ownStyle = window.getComputedStyle.bind(window);
     replace(windowRecord, "getComputedStyle", { writable: true, value: (element: Element, pseudo?: string | null): CSSStyleDeclaration => {
         const style = ownStyle(element, pseudo);
-        const value = animated(element, "opacity", mixNumber);
-        if (value === null) {
+        // what a motion in flight draws now, as the browser reports it
+        const values: Record<string, string | null> = { opacity: animated(element, "opacity", mixNumber), clipPath: animated(element, "clipPath", mixInset) };
+        if (values.opacity === null && values.clipPath === null) {
             return style;
         }
-        return new Proxy(style, { get: (target, name) => name === "opacity" ? value
-            : name === "getPropertyValue" ? (property: string): string => property === "opacity" ? value : target.getPropertyValue(property)
+        const now = (name: string): string | null => values[name === "clip-path" ? "clipPath" : name] ?? null;
+        return new Proxy(style, { get: (target, name) => typeof name === "string" && now(name) !== null ? now(name)
+            : name === "getPropertyValue" ? (property: string): string => now(property) ?? target.getPropertyValue(property)
                 : typeof Reflect.get(target, name) === "function" ? (Reflect.get(target, name) as (...args: unknown[]) => unknown).bind(target) : Reflect.get(target, name) });
     } });
 

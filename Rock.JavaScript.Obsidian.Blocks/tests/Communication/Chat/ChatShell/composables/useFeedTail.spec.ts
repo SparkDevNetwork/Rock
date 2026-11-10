@@ -27,7 +27,8 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick, reactive, ref, watch } from "vue";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
-import { endOf, useFeedTail } from "../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial";
+import { useFeedTail } from "../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial";
+import { endOf } from "../../../../../src/Communication/Chat/ChatShell/composables/useNewestEnd.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { createMessageMotion, MessageMotion, messageMotionKey, useViewArrivals } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createStage, Played, Stage } from "../tailStage";
@@ -56,7 +57,7 @@ const padTop = 10;
 const padBottom = 18;
 
 /** A row: its key, who sent it, its bubble's size, and its files' box when it has no text. */
-type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean, isFull?: boolean };
+type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean, isFull?: boolean, isEdited?: boolean };
 
 /** A row group: its key is its first row's, as the feed's layout keys a group. */
 type Group = { key: string, sender: string, rows: Row[] };
@@ -81,7 +82,7 @@ function groupsOf(rows: Row[]): Group[] {
  * time line as its row's, the time line kept and hidden when its row does not show it; the face
  * also carries the person mark the feed drew before.
  */
-function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after" } = {}) {
+function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after", isScrollerless?: boolean } = {}) {
     const rows = reactive<Row[]>([...(options.rows ?? [])]);
     const typing = ref<Typing | null>(options.typing ?? null);
     const isInRun = ref(options.isInRun ?? false);
@@ -111,7 +112,8 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
             }
             useFeedTail({
                 content,
-                scroller: () => scroller.value,
+                // the thread's drawer hands its tail no scroller
+                scroller: () => options.isScrollerless ? null : scroller.value,
                 place: () => place,
                 isFollowing: () => {
                     reads.count++;
@@ -152,7 +154,13 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                                         ])
                                 ]),
                                 row.isFull ? h("div", { class: "chat-reacts" }, "👍 1") : null,
-                                h("div", { class: "chat-meta", "data-tail": "meta", hidden: !isMetaShown }, "2:15 PM")
+                                // an edited message's time line keeps its time and says Edited alone when its row gives the time up
+                                h("div", { class: "chat-meta", "data-tail": "meta", hidden: !isMetaShown && !row.isEdited }, row.isEdited
+                                    ? [
+                                        h("span", { class: "chat-meta-stamp", "data-tail": "stamp", hidden: !isMetaShown }, [h("span", { class: "chat-meta-time" }, "2:15 PM"), h("span", { class: "chat-meta-dot" }, "·")]),
+                                        h("span", { class: "chat-meta-edited", "data-tail": "edited" }, "Edited")
+                                    ]
+                                    : [h("span", { class: "chat-meta-time" }, "2:15 PM")])
                             ]);
                         })),
                         h(TypingBubble, { typing: typing.value, isGroup: options.isGroup ?? false, isInRun: isInRun.value, groupKey: isInRun.value ? newest?.key : "typing" })
@@ -178,7 +186,11 @@ const sizes: [string, { w?: number, h?: number, mt?: number, pl?: number, line?:
     [".chat-msg-name, .chat-typing-names", { h: 18 }],
     [".chat-msg-line, .chat-typing-line", { line: 8 }],
     [".chat-msg-face, .chat-typing-face", { w: 34, h: 34 }],
-    [".chat-meta", { h: 16 }],
+    [".chat-meta", { line: 6, pl: 34 }],
+    [".chat-meta-stamp", { line: 6 }],
+    [".chat-meta-time", { w: 45, h: 16 }],
+    [".chat-meta-dot", { w: 4, h: 16 }],
+    [".chat-meta-edited", { w: 40, h: 16 }],
     [".chat-thread-label, .chat-reacts", { h: 16 }],
     [".chat-quote", { h: 30 }],
     [".chat-typing.is-in-run", { mt: 2, pl: 20 }],
@@ -198,7 +210,7 @@ function stageFor(scroller: () => HTMLElement | null, content: () => HTMLElement
         sizes,
         positioned: ".chat-msg, .chat-typing",
         fill: ".chat-feed-fill",
-        hidden: ".chat-meta[hidden]"
+        hidden: ".chat-meta[hidden], .chat-meta-stamp[hidden]"
     });
 }
 
@@ -640,6 +652,31 @@ describe("someone typing", () => {
         }
 
         expect(Math.max(...first, ...sample(drawnOver))).toBeLessThanOrEqual(1);
+    });
+
+    // A change cancels the foot with every move, so a clip in flight is replanned from what it
+    // shows, as a moved part is: the bubble going a moment after a reply rode in under it lets the
+    // reply's foot open from where it stood rather than showing its lower part in one frame.
+    test("the bubble going while a reply still comes out from under it: the reply's foot opens from where it stood", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: tedTyping });
+        /** How far down the screen a person sees the reply: its box inside its row's clip. */
+        const footOf = (): number => Math.min(seen(part(v, "box:k:2")).bottom, seen(row(v, "k:2")).bottom);
+
+        motion.arrived(message(2), place);
+        v.rows.push({ key: "k:2", sender: me, w: 320 });
+        await settle();
+        const was = sample(footOf, [0, 52, 100]);
+        expect(was[2]).toBeLessThan(seen(part(v, "box:k:2")).bottom - 5);
+
+        motion.typingEnded(place, "stopped", null);
+        v.typing.value = null;
+        await settle();
+
+        const after = sample(footOf, [0, 16, 52, 104, base]);
+        expect(Math.abs(after[0] - was[2])).toBeLessThanOrEqual(1);
+        const steps = after.slice(1).map((at, index) => Math.abs(at - after[index]));
+        expect(Math.max(...steps)).toBeLessThan(20);
     });
 
     test("one of two typists sending rides in above the bubble, which stands still, its faces crossing", async () => {
@@ -1133,6 +1170,75 @@ describe("faces belong to their group", () => {
         expect(shown.every(frame => frame.face > .999)).toBe(true);
         expect(shown[0].box).toBeLessThan(.1);
         expect(shown[shown.length - 1].box).toBeGreaterThan(.9);
+    });
+
+    // The thread's drawer hands its tail no scroller: the foot clip cuts only at the foot there too,
+    // so a run's face gliding into a row clipped under the bubble is drawn whole above it.
+    test.each([false, true])("her run continuing above a bubble that stands keeps the run's face whole in every frame (no scroller: %s)", async isScrollerless => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: me }, { key: "k:2", sender: anna }], typing: tedTyping, isScrollerless });
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+
+        expect((stage as Stage).played.some(motion => motion.id === "chat-tail-foot")).toBe(true);
+        // how much of the face a person does not see: its box outside its row's clip
+        const cut = sample(() => {
+            const face = seen(part(v, "face:k:2"));
+            const clip = seen(row(v, "k:3"));
+            const shown = Math.max(0, Math.min(face.bottom, clip.bottom) - Math.max(face.top, clip.top));
+            return Math.round((face.height - shown) * 10) / 10;
+        });
+        expect(Math.max(...cut)).toBe(0);
+    });
+});
+
+describe("a time line giving up its time", () => {
+    // Another person's time line stands at its row's left, so the time going moves Edited to where
+    // the time stood: it moves from where it stood, as a face or a name line does, never in a frame.
+    test("another person's edited message followed up: the time and its dot fade where they stood, Edited moves from where it stood to where it now lays out", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna, isEdited: true }] });
+        const edited = (): HTMLElement => row(v, "k:2").querySelector<HTMLElement>(".chat-meta-edited") as HTMLElement;
+        const stamp = row(v, "k:2").querySelector<HTMLElement>(".chat-meta-stamp") as HTMLElement;
+        const was = seen(edited());
+        const rowWas = seen(row(v, "k:2"));
+        // the time's room: the time and its dot, and the line's gap after them
+        const room = seen(stamp).width + 6;
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+
+        const at = Array.from({ length: 21 }, (_, index) => Math.round(index * msg / 20));
+        const shown = sample(() => ({ left: seen(edited()).left, inRow: seen(edited()).top - seen(row(v, "k:2")).top, stamp: opacity(stamp) }), at);
+        // it starts where it stood and lands where its row lays it out, the time's room closed
+        expect(near(shown[0].left, was.left)).toBe(true);
+        expect(near(shown[0].inRow, was.top - rowWas.top)).toBe(true);
+        expect(near(shown[shown.length - 1].left, was.left - room)).toBe(true);
+        // and never steps: no frame moves it more than a smooth move over the glide would
+        const steps = shown.slice(1).map((frame, index) => Math.abs(frame.left - shown[index].left));
+        expect(Math.max(...steps)).toBeLessThan(room / 20 * 1.5);
+        // the time and its dot fade out from full where they stood, gone by t-fast
+        expect(shown[0].stamp).toBeGreaterThan(.95);
+        expect(shown.filter((_, index) => at[index] >= fast).every(frame => frame.stamp < .01)).toBe(true);
+        expect(stamp.hidden).toBe(true);
+        expect(stamp.style.position).toBe("");
+    });
+
+    test("under reduced motion the time goes at once and Edited stands where it lays out", async () => {
+        setReducedMotion(true);
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna, isEdited: true }] });
+        const stamp = row(v, "k:2").querySelector<HTMLElement>(".chat-meta-stamp") as HTMLElement;
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+
+        expect(opacity(stamp)).toBe(0);
+        expect((stage as Stage).played.filter(motion => motion.element.dataset.tail === "edited")).toEqual([]);
     });
 });
 

@@ -104,6 +104,13 @@ function plain(text: string | undefined): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
 }
 
+/** What a person reads of an element: its text, less what it keeps hidden. */
+function shownText(element: Element): string {
+    const copy = element.cloneNode(true) as Element;
+    copy.querySelectorAll("[hidden]").forEach(hidden => hidden.remove());
+    return plain(copy.textContent ?? "");
+}
+
 /** The sources of the row and of the looks it draws in, each a file whose name starts with the row's. */
 function rowSources(): string[] {
     const components = join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components");
@@ -328,8 +335,12 @@ describe("the states, in Conversational", () => {
 
         const meta = wrapper.get("[data-testid='message-meta']");
         expect((meta.element as HTMLElement).hidden).toBe(false);
-        expect(plain(meta.text())).toBe("Edited");
+        expect(shownText(meta.element)).toBe("Edited");
         expect(meta.get("[data-testid='message-edited']").text()).toBe("Edited");
+        // the time is kept, hidden, so the view's tail can fade it where it stood as its row gives it up
+        const stamp = meta.get("[data-tail='stamp']").element as HTMLElement;
+        expect(stamp.hidden).toBe(true);
+        expect(plain(stamp.textContent ?? "")).toBe("9:02 AM·");
     });
 
     test("the server's sentence about the person's own send stays under it", () => {
@@ -400,7 +411,7 @@ describe("the group's furniture, in Conversational", () => {
 
         expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
         expect(meta.hidden).toBe(false);
-        expect(plain(meta.textContent ?? "")).toBe("Edited");
+        expect(shownText(meta)).toBe("Edited");
         expect(wrapper.findAll("[data-testid='message-edited']")).toHaveLength(1);
         expect(wrapper.find(".chat-msg-edited").exists()).toBe(false);
     });

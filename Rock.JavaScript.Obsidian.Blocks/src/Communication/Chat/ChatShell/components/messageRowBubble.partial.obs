@@ -69,15 +69,14 @@
                 <Icon name="clock" size="xs" />
                 <span data-testid="message-state">Sending…</span>
             </template>
-            <template v-else-if="isMetaShown">
+            <template v-else-if="isMetaShown && (view.state === 'sent' || !view.isEdited)">
                 <span class="chat-meta-time">{{ view.time }}</span>
                 <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
-                <template v-else-if="view.isEdited">
-                    <span aria-hidden="true">·</span>
-                    <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
-                </template>
             </template>
-            <span v-else-if="isEditedShown" class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
+            <template v-else-if="isMetaShown || isEditedShown">
+                <span class="chat-meta-stamp" :hidden="!isMetaShown" data-tail="stamp"><span class="chat-meta-time">{{ view.time }}</span><span aria-hidden="true">·</span></span>
+                <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-tail="edited" data-testid="message-edited">Edited</span>
+            </template>
         </div>
         <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
     </template>
@@ -358,6 +357,22 @@
     display: inline-flex;
     align-items: center;
     gap: 3px;
+}
+
+/*
+    An edited message's time and its dot, kept when its row gives the time up as the time line is,
+    so the view's tail fades them where they stood while Edited moves into their room.
+*/
+.chat-meta-stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-meta-stamp[hidden] {
+    position: absolute;
+    top: 0;
+    visibility: hidden;
 }
 
 /* "Sent" always arrives fresh; "Edited" slides in only for an edit that lands while it is on screen. */
