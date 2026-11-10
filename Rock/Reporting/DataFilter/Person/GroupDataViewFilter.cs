@@ -416,6 +416,12 @@ function ()
 
 #endif
 
+        /// <inheritdoc/>
+        public override int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return DataComponentSettingsHelper.GetDataViewId( new SelectSettings( selection ?? string.Empty ).DataViewGuid );
+        }
+
         #endregion
 
         #region Settings
