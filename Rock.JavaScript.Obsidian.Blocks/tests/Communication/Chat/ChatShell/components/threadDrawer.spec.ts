@@ -575,6 +575,20 @@ test("the reply composer is keyed by its thread", () => {
 // Someone typing a reply in this thread is drawn as the thread's newest row, as the conversation
 // draws its own, and kept in view the way a new reply is: followed by a reader at the bottom, and
 // out of sight below one scrolled up, who is not moved.
+describe("the marks the tail reads", () => {
+    test("a group's face and name line carry its first reply's key, and every reply its box and time line", () => {
+        const w = draw({ isChannel: false, replies: [...replies(2), message(43, { parent_id: 40 })] });
+        const rows = w.findAll("[data-reply-id]").map(row => row.element as HTMLElement);
+        const keys = rows.map(row => row.dataset.rowKey);
+
+        expect(rows[0].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[0]}`);
+        expect(rows[1].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[0]}`);
+        expect(rows[0].querySelector("[data-tail^='face:']")).toBeNull();
+        expect(rows[2].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[2]}`);
+        expect(rows.every(row => row.querySelectorAll("[data-tail='box']").length === 1 && row.querySelectorAll("[data-tail='meta']").length === 1)).toBe(true);
+    });
+});
+
 describe("someone typing a reply", () => {
     const annaTyping: Typing = { typists: [{ alias: anna, person: { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null } }], names: "Anna", sentence: "Anna is typing…" };
 
@@ -619,7 +633,7 @@ describe("someone typing a reply", () => {
             expect(w.findComponent(TypingBubble).props("isInRun")).toBe(true);
             expect(w.find("[data-testid='typing-names']").exists()).toBe(false);
             expect(row.find("[data-testid='sender-avatar']").exists()).toBe(false);
-            expect(row.find("[data-testid='message-meta']").exists()).toBe(true);
+            expect(row.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(true);
         }
         finally {
             jest.useRealTimers();

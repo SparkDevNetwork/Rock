@@ -62,25 +62,23 @@
             </template>
         </MessageReactions>
         <div v-if="isEditedUnder && !view.isEditorShown" class="chat-msg-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</div>
-        <Transition :css="false" @leave="onMetaLeave">
-            <div v-if="isMetaShown" class="chat-meta" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
-                <template v-if="view.state === 'failed'">
-                    <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
+        <div class="chat-meta" :hidden="!isMetaShown" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
+            <template v-if="view.state === 'failed'">
+                <FailedMarker :canRetry="view.canRetryFailed" :reason="view.failedReason" @retry="on.retry" @discard="on.discard" />
+            </template>
+            <template v-else-if="view.isSendingShown">
+                <Icon name="clock" size="xs" />
+                <span data-testid="message-state">Sending…</span>
+            </template>
+            <template v-else>
+                <span class="chat-meta-time">{{ view.time }}</span>
+                <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
+                <template v-else-if="view.isEdited && isMetaShown">
+                    <span aria-hidden="true">·</span>
+                    <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
                 </template>
-                <template v-else-if="view.isSendingShown">
-                    <Icon name="clock" size="xs" />
-                    <span data-testid="message-state">Sending…</span>
-                </template>
-                <template v-else>
-                    <span class="chat-meta-time">{{ view.time }}</span>
-                    <span v-if="view.state === 'sent'" class="chat-meta-sent"><Icon name="check" size="xs" /><span data-testid="message-state">Sent</span></span>
-                    <template v-else-if="view.isEdited">
-                        <span aria-hidden="true">·</span>
-                        <span class="chat-meta-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">Edited</span>
-                    </template>
-                </template>
-            </div>
-        </Transition>
+            </template>
+        </div>
         <div v-if="view.isOwn && view.message?.notice" class="chat-notice" data-testid="message-notice">{{ view.message.notice }}</div>
     </template>
 </template>
@@ -340,6 +338,17 @@
 }
 
 /* Not sent, in the spot Sending… held; what to do about it is the strip's, over the composer. */
+/*
+    A time line its row does not show is kept, out of the flow and unseen at its row's top, rather
+    than mounted and unmounted, so no row of a long conversation mounts a motion of its own: the
+    view's tail fades out the one a row stops showing, from where it stood.
+*/
+.chat-meta[hidden] {
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+}
+
 .chat-meta.is-failed {
     gap: 4px;
     font-weight: 700;
@@ -453,7 +462,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, inject, PropType } from "vue";
+    import { computed, PropType } from "vue";
     import Attachments from "./attachments.partial.obs";
     import BlockCard from "./blockCard.partial.obs";
     import MessageBody from "./messageBody.partial.obs";
@@ -466,7 +475,6 @@
     import FailedMarker from "./failedMarker.partial.obs";
     import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";
     import { RowPosition } from "../feedLayout.partial";
-    import { feedTailKey } from "../composables/useFeedTail.partial";
 
     const props = defineProps({
         /** What the message shows and what can be done to it, as the row worked them out. */
@@ -515,9 +523,6 @@
         }
     });
 
-    /** The tail of the view the row is drawn in, which plays a time line going; drawn alone, it goes at once. */
-    const tail = inject(feedTailKey, null);
-
     // #region Computed Values
 
     const isLastOfGroup = computed((): boolean => props.position === "last" || props.position === "single");
@@ -534,17 +539,4 @@
     const isBubbleShown = computed((): boolean => props.view.files.length === 0 || !!props.view.text?.trim());
 
     // #endregion Computed Values
-
-    // #region Event Handlers
-
-    function onMetaLeave(element: Element, done: () => void): void {
-        if (tail) {
-            tail.leave(element, done);
-        }
-        else {
-            done();
-        }
-    }
-
-    // #endregion Event Handlers
 </script>

@@ -85,6 +85,9 @@ export type StageOptions = {
 
     /** The element that takes a short conversation's spare height, so its rows stand at the foot. */
     fill?: string;
+
+    /** What a stylesheet keeps out of the flow and unseen, by selector, unless drawn by an inline visibility. */
+    hidden?: string;
 };
 
 /** A laid-out box, in the document's coordinates before any scroll or motion. */
@@ -336,8 +339,12 @@ export function createStage(options?: StageOptions): Stage {
         return position === "relative" || position === "absolute" || (!!options?.positioned && element.matches(options.positioned));
     }
 
+    function isHidden(element: Element): boolean {
+        return !!options?.hidden && element.matches(options.hidden) && (element as HTMLElement).style?.visibility !== "visible";
+    }
+
     function isOut(element: Element): boolean {
-        return (element as HTMLElement).style?.position === "absolute";
+        return (element as HTMLElement).style?.position === "absolute" || (!!options?.hidden && element.matches(options.hidden));
     }
 
     function isShown(element: Element): boolean {
@@ -552,7 +559,7 @@ export function createStage(options?: StageOptions): Stage {
         let product = 1;
         for (let at: Element | null = element; at && at !== scroller; at = at.parentElement) {
             const style = (at as HTMLElement).style;
-            if (style?.visibility === "hidden") {
+            if (style?.visibility === "hidden" || isHidden(at)) {
                 return 0;
             }
             const value = animated(at, "opacity", mixNumber);

@@ -31,8 +31,9 @@
 // The motion is one transform on the box that holds everything, plus the parts that do not ride
 // their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
 // (so a face moves only while its run continues), the typing bubble and its dots, and a row's time
-// line and its message's box, `meta` and `box`, which are their row's. A part leaving comes through the tail's one leave
-// hook, from a Transition that hands it over.
+// line and its message's box, `meta` and `box`, which are their row's. A part of the bubble leaving
+// comes through the tail's one leave hook, from a Transition that hands it over; a row keeps its time
+// line and hides it, and the tail fades out the one it read standing that a row now hides.
 
 import { inject, InjectionKey, nextTick, onBeforeUnmount, provide, Ref, watch } from "vue";
 import { ArrivalMotion, messageMotionKey } from "../messageMotion.partial";
@@ -70,7 +71,7 @@ export type FeedTail = {
 /** How a view hands its tail to the parts it draws. */
 export const feedTailKey: InjectionKey<FeedTail> = Symbol("chat-feed-tail");
 
-/** A part of the tail, where it stood on screen and how strongly it showed. */
+/** A part of the tail and where it stood on screen. */
 type Part = { id: string, element: HTMLElement, box: DOMRect };
 
 /** Where the tail stood on screen before a change. */
@@ -98,6 +99,9 @@ type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeOut
 type Offset = { x: number, y: number };
 
 const glideIds = ["chat-tail-glide", "chat-tail-open"];
+
+/** What the tail writes on a part it takes out of the flow, taken off again when a kept part is done. */
+const liftedStyles = ["position", "top", "left", "width", "margin", "visibility"];
 const moveIds = ["chat-tail-move"];
 
 /** A token's milliseconds, as the sheet writes them ("260ms", ".26s"). */
@@ -151,12 +155,17 @@ function idOf(element: HTMLElement): string | undefined {
     return mark === "meta" || mark === "box" ? `${mark}:${element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey ?? ""}` : mark;
 }
 
+/** An element's own opacity, its motions included. */
+function ownOpacity(element: Element): number {
+    const value = parseFloat(getComputedStyle(element).opacity);
+    return Number.isNaN(value) ? 1 : value;
+}
+
 /** How strongly an element shows as a person sees it: its opacity and every ancestor's, to the scroller. */
 function seenOpacity(element: Element, scroller: Element | null): number {
     let product = 1;
     for (let at: Element | null = element; at && at !== scroller; at = at.parentElement) {
-        const value = parseFloat(getComputedStyle(at).opacity);
-        product *= Number.isNaN(value) ? 1 : value;
+        product *= ownOpacity(at);
     }
     return product;
 }
@@ -232,7 +241,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const take = (holder: Element): void => {
             for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
                 const id = idOf(element);
-                if (id && !going.has(element) && !isInGoing(element)) {
+                if (id && !element.hidden && !going.has(element) && !isInGoing(element)) {
                     const part = { id, element, box: element.getBoundingClientRect() };
                     parts.set(id, part);
                     elements.set(element, part);
@@ -285,7 +294,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
     /** Takes a part going out of the flow, its room closing as the stack settles; where it stands is placed once the layout is read. */
     function lift(element: HTMLElement, width: number): void {
-        Object.assign(element.style, { position: "absolute", top: "0px", left: "0px", width: `${width}px`, margin: "0" });
+        Object.assign(element.style, { position: "absolute", top: "0px", left: "0px", width: `${width}px`, margin: "0", visibility: "visible" });
+    }
+
+    /** A part its row keeps, hidden now: going, it is drawn where it stood; done, it is left as its row draws it. */
+    function hiding(element: HTMLElement): Leaving {
+        return { element, done: () => liftedStyles.forEach(name => element.style.removeProperty(name)) };
     }
 
     /** Places a part out of the flow in its container, laid out at `holder`: at a box on screen less what its container plays from. */
@@ -318,9 +332,17 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     /** Plays the change, from where the tail stood before it to where it now lays out. */
     function settle(was: Before): void {
         const content = options.content.value;
-        const parting = leaving;
+        const handed = leaving;
         leaving = [];
-        const release = (): void => parting.forEach(part => part.done());
+        const release = (): void => handed.forEach(part => part.done());
+        // a time line its row shows again is back in the flow at once, whatever plays
+        for (const [element, done] of [...going]) {
+            if (element.dataset.tail === "meta" && !element.hidden) {
+                going.delete(element);
+                motionsOf(element).forEach(animation => animation.cancel());
+                done();
+            }
+        }
         if (isStopped || !content) {
             release();
             return;
@@ -349,11 +371,19 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
         const tokens = tokensOf(content);
         const reduced = isMotionReduced();
+        // What goes: the parts handed over, and each time line read standing that its row now hides.
+        // Under reduced motion the rows step, so a time line hidden goes at once rather than drawing
+        // over what stepped into its place.
+        const parting = reduced ? handed : [...handed, ...[...was.parts.values()]
+            .filter(part => kindOf(part.id) === "meta" && part.element.isConnected && part.element.hidden)
+            .map(part => hiding(part.element))];
         const bubbleGoing = parting.find(part => part.element.dataset.tail === "typing:typing");
         const dotsWere = bubbleGoing?.element.querySelector<HTMLElement>("[data-tail='dots:typing']");
         // what the dots showed, read before anything is let go: her message starts from it
         const dotsSeen = dotsWere ? seenOpacity(dotsWere, scroller) : 1;
-        const partingSeen = new Map(parting.map(part => [part.element, seenOpacity(part.element, scroller)]));
+        // A part going fades from its own strength: what holds it fades on around it, so its
+        // ancestors' strength is already in what a person sees.
+        const partingSeen = new Map(parting.map(part => [part.element, ownOpacity(part.element)]));
 
         // Plan step 1: what goes leaves the flow, so the layout read next is final. A part the tail
         // did not read before goes at once; under reduced motion a bubble going keeps its room.
@@ -505,8 +535,8 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
         // Each message new here fades in riding the stack; hers grows out of the dots.
         for (const { row } of arrivals) {
-            if (row === handoffRow && handoffBox && handoffAt && dotsBefore && !reduced) {
-                grow(row, handoffBox, handoffAt, dotsBefore.box, startOf(handoffBox), dotsSeen, tokens);
+            if (row === handoffRow && handoffBox && handoffAt && dotsBefore) {
+                grow(row, handoffBox, handoffAt, dotsBefore.box, startOf(handoffBox), dotsSeen, tokens, reduced);
             }
             else {
                 play(row, [{ opacity: 0 }, { opacity: 1 }], { duration: tokens.msg, easing: reduced ? tokens.easeState : tokens.easeIn, id: "chat-tail-in" });
@@ -567,19 +597,24 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     /**
      * Grows her message out of the dots: her box from the dots' box on screen to its own, clipped
      * from the corner by her face; her words, and every other part of her row with no motion of its
-     * own, coming in from a third of the way to nine tenths; her time line rising in after.
+     * own, coming in from a third of the way to nine tenths; her time line rising in after. Under
+     * reduced motion nothing grows: her box stands where it lays out with the dots fading over its
+     * corner, while everything in her row but the box and her face fades in.
      */
-    function grow(row: HTMLElement, box: HTMLElement, to: DOMRect, from: DOMRect, start: Offset, seen: number, tokens: Tokens): void {
-        const dx = from.left - (to.left + start.x);
-        const dy = from.bottom - (to.bottom + start.y);
-        const top = Math.max(0, to.height - from.height);
-        const right = Math.max(0, to.width - from.width);
-        const timing = { duration: tokens.msg, easing: tokens.easeIn };
-        play(box, [
-            { transform: `translate(${dx}px, ${dy}px)`, clipPath: `inset(${top}px ${right}px 0 0 round var(--chat-r-bubble))` },
-            { transform: "none", clipPath: "inset(0 0 0 0 round var(--chat-r-bubble))" }
-        ], { ...timing, id: "chat-tail-handoff" });
-        const words: KeyframeAnimationOptions = { delay: .3 * tokens.msg, duration: .6 * tokens.msg, easing: tokens.easeState, fill: "backwards", id: "chat-tail-handoff" };
+    function grow(row: HTMLElement, box: HTMLElement, to: DOMRect, from: DOMRect, start: Offset, seen: number, tokens: Tokens, reduced: boolean): void {
+        if (!reduced) {
+            const dx = from.left - (to.left + start.x);
+            const dy = from.bottom - (to.bottom + start.y);
+            const top = Math.max(0, to.height - from.height);
+            const right = Math.max(0, to.width - from.width);
+            play(box, [
+                { transform: `translate(${dx}px, ${dy}px)`, clipPath: `inset(${top}px ${right}px 0 0 round var(--chat-r-bubble))` },
+                { transform: "none", clipPath: "inset(0 0 0 0 round var(--chat-r-bubble))" }
+            ], { duration: tokens.msg, easing: tokens.easeIn, id: "chat-tail-handoff" });
+        }
+        const words: KeyframeAnimationOptions = reduced
+            ? { duration: tokens.msg, easing: tokens.easeState, id: "chat-tail-in" }
+            : { delay: .3 * tokens.msg, duration: .6 * tokens.msg, easing: tokens.easeState, fill: "backwards", id: "chat-tail-handoff" };
         const fadeIn = (element: Element): void => void play(element, [{ opacity: 0 }, { opacity: 1 }], words);
         [...box.children].forEach(fadeIn);
         // the rest of her row that is not a part of its own: files beside text, a quote, a label, reactions
@@ -598,8 +633,13 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         };
         rest(row);
         const meta = row.querySelector<HTMLElement>("[data-tail='meta']");
-        if (meta) {
-            play(meta, [{ opacity: 0, transform: "translateY(3px)" }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
+        if (meta && !meta.hidden) {
+            if (reduced) {
+                fadeIn(meta);
+            }
+            else {
+                play(meta, [{ opacity: 0, transform: "translateY(3px)" }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
+            }
         }
         if (seen < .999) {
             // the dots were still coming in: her row comes the rest of the way from what they showed

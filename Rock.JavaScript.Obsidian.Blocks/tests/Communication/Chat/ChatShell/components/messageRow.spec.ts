@@ -326,7 +326,7 @@ describe("the states, in Conversational", () => {
     test("edited, mid-group: Edited under that bubble, with no meta", () => {
         const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "middle" });
 
-        expect(wrapper.find("[data-testid='message-meta']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(false);
         expect(wrapper.get("[data-testid='message-edited']").text()).toBe("Edited");
     });
 
@@ -366,8 +366,31 @@ describe("the group's furniture, in Conversational", () => {
     });
 
     test("the meta sits under the group's last message only", () => {
-        expect(draw({ message: message(), position: "first" }).find("[data-testid='message-meta']").exists()).toBe(false);
+        expect(draw({ message: message(), position: "first" }).find("[data-testid='message-meta']:not([hidden])").exists()).toBe(false);
         expect(plain(draw({ message: message(), position: "last" }).get("[data-testid='message-meta']").text())).toBe("9:02 AM");
+    });
+
+    // The row keeps its time line and shows it by its state, so a 300-row room mounts no motion per
+    // row; the view's tail fades out the one a row stops showing, read from where it stood.
+    test("a time line its row stops showing is the same element, kept hidden, and shown again in place", async () => {
+        const wrapper = draw({ message: message(), position: "last" });
+        const meta = wrapper.get("[data-testid='message-meta']").element as HTMLElement;
+        expect(meta.hidden).toBe(false);
+
+        await wrapper.setProps({ position: "middle" });
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(true);
+        expect(meta.dataset.tail).toBe("meta");
+
+        await wrapper.setProps({ position: "last" });
+        expect(wrapper.get("[data-testid='message-meta']").element).toBe(meta);
+        expect(meta.hidden).toBe(false);
+    });
+
+    test("a hidden time line says nothing a person could read twice: Edited is under the bubble alone", () => {
+        const wrapper = draw({ message: message({ edited_at: nineOhTwo }), position: "middle" });
+
+        expect(wrapper.findAll("[data-testid='message-edited']")).toHaveLength(1);
     });
 
     test("a failed send mid-group still shows its own Not sent line", () => {

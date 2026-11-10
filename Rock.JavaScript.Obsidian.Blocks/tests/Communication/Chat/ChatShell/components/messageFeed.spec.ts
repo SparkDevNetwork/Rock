@@ -1357,6 +1357,23 @@ describe("Jump to latest", () => {
     });
 });
 
+// What the view's tail moves is marked on the rows the feed really draws: a group's face and name
+// line by its group's key, each row's box and time line as its row's.
+describe("the marks the tail reads", () => {
+    test("a group's face and name line carry its first row's key, and every row its box and time line", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 50)), message(2, anna, at(14, 51)), message(3, ben, at(14, 52))]) });
+        const rows = wrapper.findAll("[data-testid='message-row']").map(row => row.element as HTMLElement);
+        const keys = rows.map(row => row.dataset.rowKey);
+
+        expect(rows[0].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[0]}`);
+        expect(rows[1].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[0]}`);
+        expect(rows[0].querySelector("[data-tail^='face:']")).toBeNull();
+        expect(rows[2].querySelector("[data-tail^='face:']")?.getAttribute("data-tail")).toBe(`face:${keys[2]}`);
+        expect(rows[2].querySelector("[data-tail^='name:']")?.getAttribute("data-tail")).toBe(`name:${keys[2]}`);
+        expect(rows.every(row => row.querySelectorAll("[data-tail='box']").length === 1 && row.querySelectorAll("[data-tail='meta']").length === 1)).toBe(true);
+    });
+});
+
 // Someone else typing is drawn as their next message would be, the feed's newest row, after the
 // person's own sends too. It is no message: it is never seen, and Jump to latest neither shows for
 // it nor counts it.
@@ -1384,7 +1401,7 @@ describe("someone else typing", () => {
         expect(wrapper.find("[data-testid='typing-names']").exists()).toBe(false);
         expect(hers.attributes("data-position")).toBe("first");
         expect(hers.find("[data-testid='sender-avatar']").exists()).toBe(false);
-        expect(hers.find("[data-testid='message-meta']").exists()).toBe(true);
+        expect(hers.find("[data-testid='message-meta']:not([hidden])").exists()).toBe(true);
         expect(hers.find("[data-testid='sender-name']").exists()).toBe(true);
     });
 

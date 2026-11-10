@@ -25,7 +25,7 @@
 // moves its boxes as the browser does, so each cell reads what a person sees frame by frame: where
 // each box stands on screen and how strongly it shows. Every motion runs linear here.
 import { flushPromises, mount } from "@vue/test-utils";
-import { defineComponent, h, nextTick, reactive, ref, Transition, watch } from "vue";
+import { defineComponent, h, nextTick, reactive, ref, watch } from "vue";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 import { endOf, useFeedTail } from "../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial";
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
@@ -78,7 +78,8 @@ function groupsOf(rows: Row[]): Group[] {
 /**
  * A view over the real record and the real bubble, drawing each row as the feed does, with the
  * marks the tail reads: a group's face and name line by the group's key, each row's box and its
- * time line as its row's; the face also carries the person mark the feed drew before.
+ * time line as its row's, the time line kept and hidden when its row does not show it; the face
+ * also carries the person mark the feed drew before.
  */
 function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after" } = {}) {
     const rows = reactive<Row[]>([...(options.rows ?? [])]);
@@ -108,7 +109,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
             if (options.ownFollow === "before") {
                 ownFollow();
             }
-            const tail = useFeedTail({
+            useFeedTail({
                 content,
                 scroller: () => scroller.value,
                 place: () => place,
@@ -123,7 +124,6 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
             if (options.ownFollow === "after") {
                 ownFollow();
             }
-            const onLeave = (element: Element, done: () => void): void => tail.leave(element, done);
 
             return () => {
                 const groups = groupsOf(rows);
@@ -144,7 +144,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                                         ? [h("div", { class: "chat-msg-files", "data-tail": "box", "data-w": row.w ?? 160, "data-h": row.h ?? 120 })]
                                         : [h("div", { class: "chat-bubble", "data-tail": "box", "data-w": row.w ?? 200, "data-h": row.h ?? 40 }, [h("span", { class: "chat-words" }, row.key)])])
                                 ]),
-                                h(Transition, { css: false, onLeave }, () => isMetaShown ? h("div", { key: "meta", class: "chat-meta", "data-tail": "meta" }, "2:15 PM") : null)
+                                h("div", { class: "chat-meta", "data-tail": "meta", hidden: !isMetaShown }, "2:15 PM")
                             ]);
                         })),
                         h(TypingBubble, { typing: typing.value, isGroup: options.isGroup ?? false, isInRun: isInRun.value, groupKey: isInRun.value ? newest?.key : "typing" })
@@ -154,7 +154,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
         }
     });
 
-    // the real Transition, which keeps a leaving part while its tail plays it, as a browser does
+    // the bubble's real Transitions, which keep a leaving part while its tail plays it, as a browser does
     const wrapper = mount(View, { attachTo: document.body, global: { stubs: { transition: false }, provide: { [messageMotionKey as symbol]: motion } } });
     follow();
     follows.count = 0;
@@ -187,7 +187,8 @@ function stageFor(scroller: () => HTMLElement | null, content: () => HTMLElement
         padBottom,
         sizes,
         positioned: ".chat-msg, .chat-typing",
-        fill: ".chat-feed-fill"
+        fill: ".chat-feed-fill",
+        hidden: ".chat-meta[hidden]"
     });
 }
 
@@ -691,10 +692,16 @@ describe("her message ending her typing", () => {
         sends(motion, v, 3);
         await settle();
 
-        const shown = sample(t => ({ t, seen: meta.isConnected ? opacity(meta) : 0, at: meta.isConnected ? seen(meta).top - seen(row(v, "k:2")).top : was }));
+        const shown = sample(t => ({ t, seen: opacity(meta), at: seen(meta).top - seen(row(v, "k:2")).top }), [...frames, fast / 2].sort((a, b) => a - b));
         expect(shown.every(frame => frame.seen < 1 || frame.t === 0)).toBe(true);
-        expect(shown.every(frame => near(frame.at, was))).toBe(true);
+        expect(shown.filter(frame => frame.seen > 0).every(frame => near(frame.at, was))).toBe(true);
+        // still drawn half way through its fade, so a time line taken away at once fails here
+        const half = shown.find(frame => frame.t === fast / 2);
+        expect(half?.seen).toBeGreaterThan(0);
+        expect(half?.seen).toBeLessThan(1);
         expect(shown.filter(frame => frame.t >= fast).every(frame => frame.seen === 0)).toBe(true);
+        // done, it is kept as its row draws it: hidden, out of the flow
+        expect(meta.isConnected && meta.hidden && meta.style.position === "").toBe(true);
     });
 
     test("from a bubble still coming in, her message starts at the strength the dots showed", async () => {
@@ -734,7 +741,10 @@ describe("her message ending her typing", () => {
         await settle();
 
         const kept = bubble(v);
-        expect(opacity(row(v, "k:2"))).toBe(0);
+        // her row stands at full, so her face never blinks out; her words fade in under the dots
+        expect(opacity(row(v, "k:2"))).toBe(1);
+        expect(opacity(part(v, "face:k:2"))).toBe(1);
+        expect(opacity(row(v, "k:2").querySelector(".chat-words") as Element)).toBe(0);
         const shown = sample(() => ({ box: seen(part(v, "box:k:2")), dots: kept?.isConnected ? seen(kept.querySelector("[data-testid='typing-dots']") as Element) : null, seenDots: kept?.isConnected ? opacity(kept.querySelector("[data-testid='typing-dots']") as Element) : 0 }), [0, 35, 70, 105, 139]);
         for (const frame of shown) {
             if (frame.dots && frame.seenDots > 0) {
@@ -745,6 +755,40 @@ describe("her message ending her typing", () => {
         expect((stage as Stage).played.every(motion => motion.keyframes.every(frame => frame.transform === undefined && frame.clipPath === undefined))).toBe(true);
     });
 });
+
+    test("under reduced motion, continuing her run, the time line above goes at once: never drawn over what stepped into its place", async () => {
+        setReducedMotion(true);
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }], typing: annaTyping, isInRun: true });
+        const meta = part(v, "meta:k:2");
+
+        sends(motion, v, 3);
+        await settle();
+
+        expect(opacity(meta)).toBe(0);
+        expect((stage as Stage).played.some(motion => motion.element === meta && motion.id === "chat-tail-out")).toBe(false);
+    });
+
+    test("a time line its row shows again while it fades is back in the flow at once", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });
+        const meta = part(v, "meta:k:2");
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+        sample(() => undefined, [40]);
+        expect(meta.style.position).toBe("absolute");
+
+        // her newest goes, so the row above is her group's last again
+        v.rows.pop();
+        motion.arrived(message(4), place);
+        v.rows.push({ key: "k:4", sender: ted });
+        await settle();
+
+        expect(meta.hidden).toBe(false);
+        expect(meta.style.position).toBe("");
+        expect(opacity(meta)).toBe(1);
+    });
 
 describe("a change landing mid-motion", () => {
     /** Every part's seen opacity in a frame, by its mark. */
@@ -804,6 +848,64 @@ describe("a change landing mid-motion", () => {
         expect(isSmooth(shown, 20 / (.6 * msg))).toBe(true);
     });
 });
+
+    test("an arrival 30 ms into an arrival in her run: the time line her newer row gives up fades from what it showed, never dipping", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+        sample(() => undefined, [30]);
+        const meta = part(v, "meta:k:3");
+        const was = opacity(meta);
+        expect(was).toBeGreaterThan(0);
+
+        motion.arrived(message(4), place);
+        v.rows.push({ key: "k:4", sender: anna });
+        await settle();
+
+        const [first] = sample(() => opacity(meta), [0]);
+        expect(first).toBeCloseTo(was, 2);
+    });
+
+    test("an arrival 100 ms into an arrival in her run: the run's face, gliding, goes on from where it is to her newest row", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }] });
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: anna });
+        await settle();
+        sample(() => undefined, [100]);
+        const was = seen(part(v, "face:k:2"));
+
+        motion.arrived(message(4), place);
+        v.rows.push({ key: "k:4", sender: anna });
+        await settle();
+
+        const shown = sample(() => seen(part(v, "face:k:2")));
+        expect(corner(shown[0])).toEqual(corner(was));
+        sample(() => undefined, [msg + 1]);
+        const face = seen(part(v, "face:k:2"));
+        const box = seen(part(v, "box:k:4"));
+        expect(part(v, "face:k:2").closest("[data-row-key]")?.getAttribute("data-row-key")).toBe("k:4");
+        expect(near(face.bottom, box.bottom)).toBe(true);
+    });
+
+    test("a reply 100 ms into a reply under a bubble that stays: the bubble stands still in every frame", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: tedTyping });
+        const was = seen(dots(v));
+        motion.arrived(message(2), place);
+        v.rows.push({ key: "k:2", sender: me });
+        await settle();
+        const first = sample(() => seen(dots(v)), [0, 16, 52, 100]);
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: me });
+        await settle();
+
+        const then = sample(() => seen(dots(v)));
+        expect([...first, ...then].every(box => near(box.top, was.top) && near(box.left, was.left))).toBe(true);
+    });
 
 describe("what wakes a view", () => {
     test("an arrival, typing or its expiry in another place reads nothing of this view's tail", async () => {
