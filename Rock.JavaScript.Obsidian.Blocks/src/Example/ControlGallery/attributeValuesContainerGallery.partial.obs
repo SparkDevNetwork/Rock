@@ -13,22 +13,38 @@
                                   :showCategoryLabel="showCategoryLabel"
                                   :numberOfColumns="numberOfColumns"
                                   :entityTypeName="entityName"
-                                  :showPrePostHtml="showPrePost" />
+                                  :showPrePostHtml="showPrePost"
+                                  :displayWithinExistingRow="displayWithinExistingRow"
+                                  :displayAsCategoryDropdown="displayAsCategoryDropdown"
+                                  :displayAsContentSection="displayAsContentSection"
+                                  :isContentSectionCollapseDisabled="isContentSectionCollapseDisabled"
+                                  :contentSectionTitle="contentSectionTitle"
+                                  :columnBreakpoint="columnBreakpoint"
+                                  :globalCategoryNameOverride="globalCategoryNameOverride || undefined" />
 
         <template #settings>
             <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
-                <CheckBox formGroupClasses="col-sm-4" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
-                <CheckBox formGroupClasses="col-sm-4" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
             </div>
             <div class="row">
-                <CheckBox formGroupClasses="col-sm-4" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
-                <CheckBox formGroupClasses="col-sm-4" v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: false; Only applies when not displaying tabs." />
-                <CheckBox formGroupClasses="col-sm-4" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="displayAsTabs" label="Category Tabs" text="Show" help="Default: false; If any attributes are in a category, display each category as a tab. Not applicable while editing." />
+                <CheckBox formGroupClasses="col-sm-3" v-model="showCategoryLabel" label="Category Labels" text="Show" help="Default: true; Only applies when not displaying tabs." />
+                <CheckBox formGroupClasses="col-sm-3" v-model="displayAsCategoryDropdown" label="Category Dropdown" text="Show" help="Default: false; Shows a dropdown to pick which category's attributes to display. Takes priority over Content Section." />
+                <CheckBox formGroupClasses="col-sm-3" v-model="displayWithinExistingRow" label="Within Existing Row" text="Enable" help="Default: false; Renders each attribute as a column with no category grouping, for placing inside a parent row. Takes priority over the other display modes." />
             </div>
             <div class="row">
-                <NumberBox formGroupClasses="col-sm-6" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
-                <TextBox formGroupClasses="col-sm-6" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
+                <CheckBox formGroupClasses="col-sm-3" v-model="displayAsContentSection" label="Content Section" text="Wrap" help="Default: false; Wraps the attributes in a collapsible ContentSection." />
+                <CheckBox formGroupClasses="col-sm-3" v-model="isContentSectionCollapseDisabled" label="Content Section Collapse" text="Disable" help="Default: false; Only applies when displaying as a content section." />
+                <NumberBox formGroupClasses="col-sm-3" v-model="numberOfColumns" label="Number of Columns" help="Default: 1; Only applies when not displaying tabs." />
+                <DropDownList formGroupClasses="col-sm-3" v-model="columnBreakpoint" label="Column Breakpoint" :items="columnBreakpointOptions" :showBlankItem="false" help="Default: md; The breakpoint at which multiple columns appear. Only applies when Number of Columns is greater than 1." />
+            </div>
+            <div class="row">
+                <TextBox formGroupClasses="col-sm-4" v-model="entityName" label="Entity Type" help="Default: ''; Appears in the heading when category labels are showing." />
+                <TextBox formGroupClasses="col-sm-4" v-model="contentSectionTitle" label="Content Section Title" help="Default: Attributes; Only applies when displaying as a content section." />
+                <TextBox formGroupClasses="col-sm-4" v-model="globalCategoryNameOverride" label="Global Category Name Override" help="Default: Attributes; Names the group of attributes that have no category." />
             </div>
         </template>
     </GalleryAndResult>
@@ -40,9 +56,11 @@
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
     const isEditMode = ref(false);
@@ -52,6 +70,20 @@
     const showCategoryLabel = ref(true);
     const numberOfColumns = ref(2);
     const entityName = ref("Foo Entity");
+    const displayWithinExistingRow = ref(false);
+    const displayAsCategoryDropdown = ref(false);
+    const displayAsContentSection = ref(false);
+    const isContentSectionCollapseDisabled = ref(false);
+    const contentSectionTitle = ref("Attributes");
+    const columnBreakpoint = ref<"xs" | "sm" | "md" | "lg">("md");
+    const globalCategoryNameOverride = ref("");
+
+    const columnBreakpointOptions: ListItemBag[] = [
+        { value: "xs", text: "xs" },
+        { value: "sm", text: "sm" },
+        { value: "md", text: "md" },
+        { value: "lg", text: "lg" }
+    ];
 
     const categories = [{
         guid: newGuid(),
@@ -142,5 +174,5 @@
 
     const showPrePost = ref(false);
     const importCode = getControlImportPath("attributeValuesContainer");
-    const exampleCode = `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" />`;
+    const exampleCode = `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" :showPrePostHtml="true" :displayWithinExistingRow="false" :displayAsCategoryDropdown="false" :displayAsContentSection="false" :isContentSectionCollapseDisabled="false" contentSectionTitle="Attributes" columnBreakpoint="md" globalCategoryNameOverride="" />`;
 </script>
