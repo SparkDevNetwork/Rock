@@ -17,6 +17,11 @@
             <span class="chat-sr-only">{{ region === "sidebar" ? "Loading conversations" : "Loading the conversation" }}</span>
 
             <template v-if="region === 'sidebar'">
+                <!-- A phone's start that is waiting says so above the rows, wrapping rather than cut. -->
+                <div v-if="statusLine" class="chat-veil-status is-list" aria-hidden="true" data-testid="veil-status">
+                    <span class="chat-live-dot is-info"></span>
+                    <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
+                </div>
                 <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
                     <div v-for="width in sidebarWidths" :key="width" class="chat-veil-side-row">
                         <i class="chat-skeleton chat-veil-face"></i>
@@ -33,7 +38,12 @@
                         <i v-else class="chat-skeleton chat-veil-face"></i>
                         <span class="chat-veil-lines">
                             <i class="chat-skeleton chat-veil-name"></i>
-                            <i v-if="kind === 'channel'" class="chat-skeleton chat-veil-desc"></i>
+                            <!-- A start that is waiting says so in the second line's place, where "Reconnecting…" sits once chat has started. -->
+                            <span v-if="statusLine" class="chat-veil-status" aria-hidden="true" data-testid="veil-status">
+                                <span class="chat-live-dot is-info"></span>
+                                <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
+                            </span>
+                            <i v-else-if="kind === 'channel'" class="chat-skeleton chat-veil-desc"></i>
                         </span>
                     </template>
                 </div>
@@ -152,6 +162,26 @@
     height: 9px;
 }
 
+/*
+    The start's status line, in the header's second line type. It wraps rather than ellipsizes, so
+    "let your church know" is never cut on a narrow column or a phone; its words change in place.
+*/
+.chat-veil-status {
+    font-size: 12.5px;
+    line-height: 17px;
+    color: var(--chat-muted);
+    animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
+}
+
+.chat-veil-status.is-list {
+    flex: none;
+    padding: 8px;
+}
+
+.chat-veil-status-words {
+    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-in) both;
+}
+
 .chat-veil-feed {
     display: flex;
     flex: 1;
@@ -234,6 +264,12 @@
 
         /** The room the column's marks are shaped for. */
         kind: RoomLook;
+
+        /**
+         * What a start still signing in says, drawn for the eye only, or null for nothing; the
+         * frame gives it to the one veil in view and says it to a screen reader itself.
+         */
+        statusLine?: string | null;
     }>();
 
     /** The widths of a list's rows, as the sidebar's own loading rows vary them. */

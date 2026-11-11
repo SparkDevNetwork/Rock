@@ -14,17 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-// The shell's wiring: one place that builds the session and its call path, the timelines, the
-// sender, the read tracker, the threads, the mentions, the rooms and the person's settings, and
-// joins them to the part that keeps them current (shellLive) and the one that puts rooms on
-// screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
+// The shell's wiring: one place that builds the call path, the timelines, the sender, the read
+// tracker, the threads, the mentions, the rooms and the person's settings, and joins them to the
+// sign-in (shellSession), the part that keeps them current (shellLive) and the one that puts rooms
+// on screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
-import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
+import { classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
+import { CallResult, computeBackoff, createPlatformCall, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, TimelineDependencies, Timelines } from "./composables/useHistory.partial";
 import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
@@ -34,7 +34,7 @@ import { createPushRegistration, PushDependencies, PushRegistration, PushState }
 import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
-import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
+import { AttachmentTypes, ChatSettings, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads, ThreadsDependencies } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
@@ -49,6 +49,7 @@ import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rem
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
+import { createShellSession, MintActionResult } from "./shellSession.partial";
 import { createProblemReport, ProblemReporter } from "./problemReport.partial";
 
 /**
@@ -65,13 +66,6 @@ const foundHistoryLimit = 16;
 
 /** What the tray says where a GIF waited so long its token ran out and the send was handed back. */
 const expiredGifNotice = "That GIF expired. Pick it again to send it.";
-
-/** What the Rock token action answered. */
-export type MintActionResult = {
-    isSuccess: boolean;
-    statusCode: number;
-    data?: { gate?: string | null, churchToken?: string | null } | null;
-};
 
 /** Everything the shell reaches outside itself. */
 export type ShellOptions = {
@@ -157,30 +151,19 @@ export type ShellOptions = {
     newUploadRequest?: () => XMLHttpRequest;
 };
 
-/**
- * The person a platform token names, or null where it names none this client can read. The
- * token's signature is the platform's to check; this only reads whom it is for.
- */
-export function tokenPerson(token: string | null): string | null {
-    const payload = token?.split(".")[1];
-    if (!payload) {
-        return null;
-    }
-
-    try {
-        const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-        return typeof claims?.sub === "string" ? claims.sub.toLowerCase() : null;
-    }
-    catch {
-        // Not a token this client can read, so it says nothing about whom it is for.
-        return null;
-    }
-}
-
 /** What the page shows. */
 export type ShellState = {
     /** Where the shell has got to. */
     phase: "starting" | "ready" | "refused" | "failed";
+
+    /**
+     * How long the start has waited, in the words the page shows on the first load's veil: null
+     * while it is quiet, then connecting, slow and long. Set only while the phase is starting, and
+     * kept at ready so the leaving veil carries its words out. Drawing state only: the veil and
+     * the page's one announcement read it, and everything that asks whether chat is ready reads
+     * the phase.
+     */
+    startWait: "connecting" | "slow" | "long" | null;
 
     /**
      * Whether the page load is still choosing the first conversation, which it does after the
@@ -292,6 +275,12 @@ export type ChatShell = {
     /** Signs in and runs the page load. */
     start: () => Promise<void>;
 
+    /**
+     * A room asked for before chat has signed in, by a push's tap, becomes the room the page load
+     * opens, as a link to it would be; once chat has signed in it changes nothing.
+     */
+    relink: (channelId: string) => void;
+
     /** Opens a channel the person chose. */
     selectChannel: (channelId: string) => Promise<void>;
 
@@ -339,72 +328,6 @@ export type ChatShell = {
 };
 
 /**
- * The sentence shown for a gate that refused. The reason a person is refused is not always
- * theirs to know, so the sentences that could reveal a ban say no more than that chat is not
- * available to them.
- *
- * @param gate The gate code.
- *
- * @returns The sentence.
- */
-export function gateMessage(gate: string | null): string {
-    switch (gate) {
-        case "sign_in_required":
-            return "Sign in to use chat.";
-        case "not_configured":
-            return "Chat is not set up for this organization yet.";
-        case "age_verification_required":
-            return "Chat needs your birthdate before it can open.";
-        case "age_restricted":
-            return "Chat is not available at your age.";
-        case "invalid_key":
-        case "gate_unavailable":
-            return "Chat could not start. Try again later, and let your church know if this keeps happening.";
-        default:
-            return "Chat is not available for your account. If you think this is wrong, let your church know.";
-    }
-}
-
-/**
- * The sentence shown when chat does not open.
- *
- * @param phase Where the shell stopped.
- * @param gate The gate that refused, when one did.
- *
- * @returns The sentence.
- */
-export function refusalMessage(phase: ShellState["phase"], gate: string | null): string {
-    // Failed means Rock's gates passed and the platform did not finish signing in, so the
-    // sentence is about chat not starting rather than about the person.
-    return gateMessage(phase === "failed" ? "gate_unavailable" : gate);
-}
-
-/**
- * What the Rock token action's answer means to the session.
- *
- * @param result What the action answered.
- *
- * @returns The church token, or the reason there is none.
- */
-export function churchTokenFromAction(result: MintActionResult): ChurchTokenResult {
-    if (result.isSuccess && result.data) {
-        return { gate: result.data.gate ?? "gate_unavailable", churchToken: result.data.churchToken ?? null };
-    }
-
-    // Rock answers 401 when the person's Rock sign-in has ended.
-    if (result.statusCode === 401) {
-        return { gate: "sign_in_required", churchToken: null };
-    }
-
-    // No answer, too many requests, or a server fault may pass; anything else is Rock refusing.
-    const isPassing = result.statusCode === 0 || result.statusCode === 429 || result.statusCode >= 500;
-
-    return isPassing
-        ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
-        : { gate: "gate_unavailable", churchToken: null };
-}
-
-/**
  * Creates the shell.
  *
  * @param options Everything the shell reaches outside itself.
@@ -414,6 +337,7 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
 export function createChatShell(options: ShellOptions): ChatShell {
     const state = reactive<ShellState>({
         phase: "starting",
+        startWait: null,
         isOpening: true,
         gate: options.session.gate ?? null,
         connection: null,
@@ -467,37 +391,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
     }
 
-    const session: ChatSession = createSession({
-        mintChurchToken: async (): Promise<ChurchTokenResult> => {
-            const result = await options.mintChurchToken();
-            options.mark("chat:mint");
-
-            if (!result.isSuccess && !churchTokenFromAction(result).isUnreachable) {
-                report(classifyActionFailure(result.statusCode));
-            }
-
-            return churchTokenFromAction(result);
-        },
-        exchange: (churchToken: string) => exchange(churchToken),
-        pushTokenToConnection: async (): Promise<void> => {
-            showSettings();
-
-            // A token for someone other than the person the page loaded for means a merge made
-            // them part of another person. The page listens on a personal topic that is no longer
-            // theirs, so it loads again rather than move every topic under a live connection.
-            const person = tokenPerson(session.currentToken());
-            if (person !== null && personAliasGuid !== "" && person !== personAliasGuid.toLowerCase()) {
-                (options.reloadPage ?? (() => globalThis.location?.reload()))();
-                return;
-            }
-
+    const signIn = createShellSession({
+        state,
+        options,
+        projectUrl,
+        publishableKey,
+        personAliasGuid,
+        report,
+        showSettings,
+        setAuth: async () => {
             await client?.realtime.setAuth();
         },
-        random: Math.random,
-        setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
-        clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
-        onEnded: () => void end()
+        end: () => void end()
     });
+    const session = signIn.session;
 
     /** Puts the session's latest settings on the page: the banner and whether the composer is open. */
     function showSettings(): void {
@@ -545,14 +452,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
         await hub?.stop();
-    }
-
-    /** Exchanges a church token for a platform token and the settings beside it. */
-    async function exchange(churchToken: string): Promise<ExchangeResult> {
-        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken);
-        options.mark("chat:exchange");
-
-        return answer;
     }
 
     const platform = createPlatformCall({
@@ -1179,17 +1078,21 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            if (!await session.start()) {
+            const isSignedIn = await signIn.start();
+
+            // Stopped while signing in, or ended by then: nothing is joined, and nothing is shown.
+            if (isStopped) {
+                return;
+            }
+
+            if (!isSignedIn) {
                 state.gate = session.state.gate;
                 state.phase = session.state.gate === "ok" ? "failed" : "refused";
                 return;
             }
 
-            // Stopped while signing in, or ended by then: nothing is joined.
-            if (isStopped) {
-                return;
-            }
-
+            // The page load starts now, so the reveal's ceiling does too.
+            reveal.signedIn();
             showSettings();
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
                 realtimeOptions(session.settings().limits, Math.random));
@@ -1205,6 +1108,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachThreads = threads.attach(options.pageTargets);
             detachProblems = problems.attach(options.pageTargets);
             state.phase = "ready";
+
+            // A start that had to wait is counted once, with how long and how many tries it took
+            // and the words it reached, so a church's slow starts are seen without a report a try.
+            // In seconds, since the platform keeps a count up to a million and a start can wait
+            // past the quarter hour that many milliseconds would hold.
+            if (state.startWait !== null) {
+                problems.report("start", `waited.${state.startWait}`, Math.round((Date.now() - signIn.waited.at) / 1000), `tries-${signIn.waited.tries + 1}`);
+            }
 
             await opener.runPageLoad();
 
@@ -1236,6 +1147,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 state.push = push.state();
             }
         },
+
+        relink: (channelId: string): void => opener.relink(channelId),
 
         selectChannel: (channelId: string): Promise<void> => opener.select(channelId),
 
@@ -1378,6 +1291,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // kept, and the save still carries it.
             session.stop();
             await Promise.all([tracker.leave(), threadSaved]);
+            signIn.detach();
             detachPage?.();
             detachThreads?.();
             detachProblems?.();

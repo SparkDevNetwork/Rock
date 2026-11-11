@@ -214,7 +214,8 @@ export type ExchangeAnswer =
  * @param projectUrl The platform's address.
  * @param publishableKey The platform's publishable key.
  * @param churchToken The token Rock signed.
- * @param now The time now in milliseconds.
+ * @param options signal, which gives the exchange up, a request given up answering as one that
+ * reached nothing; now, the time in milliseconds a Retry-After date is read against.
  *
  * @returns The token and settings, or the refusal.
  */
@@ -223,14 +224,23 @@ export async function exchangeChurchToken(
     projectUrl: string,
     publishableKey: string,
     churchToken: string,
-    now: number = Date.now()
+    options: { signal?: AbortSignal, now?: number } = {}
 ): Promise<ExchangeAnswer> {
     try {
         const response = await fetch(`${projectUrl.replace(/\/+$/, "")}/functions/v1/token-exchange`, {
             method: "POST",
-            headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey }
+            headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey },
+            ...(options.signal ? { signal: options.signal } : {})
         });
-        const body = await response.json().catch(() => null) as TokenExchangeResponse | null;
+        // An unreadable body is a refusal, unless the signal ended the read: then the
+        // request was given up, and the outer catch answers it as one that reached nothing.
+        const body = await response.json().catch((error: unknown) => {
+            if (options.signal?.aborted) {
+                throw error;
+            }
+
+            return null;
+        }) as TokenExchangeResponse | null;
 
         if (response.ok && body?.access_token && typeof body.expires_in === "number") {
             return { ok: true, accessToken: body.access_token, expiresInSeconds: body.expires_in, settings: body.settings };
@@ -240,7 +250,7 @@ export async function exchangeChurchToken(
             ok: false,
             status: response.status,
             code: body?.error?.code ?? "auth.invalid_token",
-            retryAfterSeconds: parseRetryAfter(response.headers?.get("retry-after") ?? null, now)
+            retryAfterSeconds: parseRetryAfter(response.headers?.get("retry-after") ?? null, options.now ?? Date.now())
         };
     }
     catch {

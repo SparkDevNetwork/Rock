@@ -213,8 +213,9 @@ export function useFrame(dependencies: FrameDependencies): Frame {
     let threadOpenCount = 0;
 
     /**
-     * The reply a link to this page named, until the first conversation opens: its thread opens
-     * over that conversation, and over no other the page load falls back to.
+     * The reply a link to this page named, or a push's tap made before sign-in, until the first
+     * conversation opens: its thread opens over that conversation, and over no other the page load
+     * falls back to.
      */
     let linkedReply = dependencies.linkedReply;
 
@@ -519,6 +520,15 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * phone's panel would cover. A desktop shows a panel beside it, so keeps it.
      */
     function openFromTap(channelId: string, rootId: number | null, messageId: number | null): void {
+        // Before chat has signed in nothing can be read, so the tap is a link that arrived late: its
+        // room is the one the page load opens, and its reply, or none for a room's tap, the reply
+        // that opens over it, where a link's own are held. The last tap wins.
+        if (shell.value.state.phase === "starting") {
+            shell.value.relink(channelId);
+            linkedReply = rootId !== null ? { channelId, rootId, messageId } : null;
+            return;
+        }
+
         const isOpenConversation = channelId === activeChannelId.value;
         isListChosen.value = false;
         isPaneMotionOn.value = true;
