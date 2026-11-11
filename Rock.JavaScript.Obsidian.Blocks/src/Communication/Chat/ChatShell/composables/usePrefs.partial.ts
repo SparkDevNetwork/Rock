@@ -376,6 +376,9 @@ const inputPostGapMs = 30_000;
 /** A status save given up at its deadline, read as one that reached nothing. */
 const unreached: CallResult = { ok: false, status: 0, error: { code: "rpc.transport", severity: "failed", text: null }, retryAfterSeconds: null };
 
+/** The retry clock with no wait. */
+const noWait: RetryClock = { retryAt: 0, failures: 0, retryPage: null };
+
 /** What the lock's holder answers when it sent nothing: a saved post covered the choice, or this tab may not send it. */
 const nothingSent: SaveOutcome = { isSaved: true, sent: null };
 
@@ -388,12 +391,21 @@ type SavedPost =
     | { kind: "saved", choiceAt: number, me: StatusChoice }
     | { kind: "saved", choiceAt: number, page: string, refused: true, error: ChatError };
 
+/**
+ * The browser's one retry clock for her choice: when it is next asked after a failure, on
+ * Date.now()'s clock, which her tabs share; how many tries have failed in a row; and the tab that
+ * failed last, which asks at that time while every other tab waits a hand-off more, so it sends
+ * only if that tab has closed. No wait is 0.
+ */
+type RetryClock = { retryAt: number, failures: number, retryPage: string | null };
+
 /** What her tabs say to each other on her channel. */
 type StatusPost =
     | { kind: "choice", record: StatusRecord }
     | SavedPost
+    | { kind: "failed", choiceAt: number, retryAt: number, failures: number, page: string }
     | { kind: "hello" }
-    | { kind: "held", covered: number, me: StatusChoice | null, meStamp: number }
+    | ({ kind: "held", covered: number, me: StatusChoice | null, meStamp: number } & RetryClock)
     | { kind: "input", at: number };
 
 /** Her status's half of the settings. */
@@ -464,8 +476,8 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
     /** When the newest record's pause ends, on performance.now()'s clock: a second after this tab made or took it. */
     let pauseEnds = -Infinity;
 
-    /** How many tries of her choice have failed in a row here; any saved post ends the run. */
-    let failures = 0;
+    /** The retry clock as this tab knows it; any saved post ends the run. */
+    const clock: RetryClock = { ...noWait };
 
     /**
      * The tab's visit: a stay in the back-forward cache ends one, and every timer, wait and answer
@@ -474,7 +486,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
     let visit = 0;
     let isAway = false;
 
-    /** The save out, aborted when the tab leaves; and the lock requests still waiting. */
+    /** The save out, aborted when the tab leaves; and the lock requests and pause waits still waiting. */
     let callOut: AbortController | null = null;
     const lockWaits = new Set<AbortController>();
 
@@ -576,8 +588,19 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         }
 
         // Read the newest again after each wait, so a record heard during it waits its own pause.
+        // A tab leaving ends the wait at once: a page in the back-forward cache runs no timer, so
+        // a wait left to its timer would hold the lock from her other tabs until it came back.
         for (let wait = pauseEnds - performance.now(); wait > 0; wait = pauseEnds - performance.now()) {
-            await new Promise(resolve => setTimeout(resolve, wait));
+            const leaving = new AbortController();
+            lockWaits.add(leaving);
+            await new Promise<void>(resolve => {
+                const timer = setTimeout(resolve, wait);
+                leaving.signal.addEventListener("abort", () => {
+                    clearTimeout(timer);
+                    resolve();
+                });
+            });
+            lockWaits.delete(leaving);
             if (isGone()) {
                 return nothingSent;
             }
@@ -585,6 +608,14 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         const record = tab.newest;
         if (!record || record.at <= tab.covered) {
             return nothingSent;
+        }
+
+        // Granted before the clock's time, the lock is let go with nothing sent, no failure
+        // counted and nothing posted: the tab that failed asks at it, and this one a hand-off
+        // later, so it sends only if that tab has closed.
+        const dueIn = clock.retryAt + (clock.retryPage === tabId ? 0 : statusHandOffMs) - Date.now();
+        if (clock.retryAt > 0 && dueIn > 0) {
+            return { isSaved: false, failure: saveFailed, retryInMs: dueIn };
         }
 
         // The deadline settles the race whatever the call does, so the lock is never held by a
@@ -619,16 +650,21 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
             return nothingSent;
         }
 
-        const outcome = statusSaveOutcome(result, failures + 1);
+        const outcome = statusSaveOutcome(result, clock.failures + 1);
         if (outcome.isSaved) {
             // the value sent is what the server now holds, whatever shape its answer took
             settleEverywhere({ kind: "saved", choiceAt: record.at, me: record.choice });
             return { ...outcome, sent: record };
         }
         if (outcome.retryInMs !== undefined || result.ok) {
-            failures++;
             // the try left before the network or the platform came back, so it says nothing of now
-            return wakes !== wakesAtSend ? { ...outcome, retryInMs: 0 } : outcome;
+            const retryInMs = wakes !== wakesAtSend ? 0 : outcome.retryInMs ?? 0;
+            clock.failures++;
+            clock.retryAt = Date.now() + retryInMs;
+            clock.retryPage = tabId;
+            // told before the lock is let go, so a copy that asks it next waits the same clock
+            post({ kind: "failed", choiceAt: record.at, retryAt: clock.retryAt, failures: clock.failures, page: tabId });
+            return { ...outcome, retryInMs };
         }
         settleEverywhere({ kind: "saved", choiceAt: record.at, page: record.page, refused: true, error: result.error });
         return outcome;
@@ -647,7 +683,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
      * pending, whose answer will speak.
      */
     function settle(saved: SavedPost): void {
-        failures = 0;
+        Object.assign(clock, noWait);
         const wasCovered = tab.covered;
         tab.covered = Math.max(tab.covered, saved.choiceAt);
         if (!("refused" in saved)) {
@@ -676,6 +712,21 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         announce(`Not saved. ${words.alone}`, true);
     }
 
+    /**
+     * A tab of hers failed, or a hello's answer tells the clock: the later time is the browser's,
+     * with the tab that set it, and the larger count. Nothing without a later wait in it.
+     */
+    function takeClock(told: Partial<RetryClock>): void {
+        if (typeof told.retryAt !== "number" || !(told.retryAt > clock.retryAt)) {
+            return;
+        }
+        clock.retryAt = told.retryAt;
+        clock.retryPage = typeof told.retryPage === "string" ? told.retryPage : null;
+        if (typeof told.failures === "number" && told.failures > clock.failures) {
+            clock.failures = told.failures;
+        }
+    }
+
     /** A post from another tab of hers. */
     function heard(data: unknown): void {
         // a page in the back-forward cache is no channel's destination
@@ -689,8 +740,14 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         else if (message.kind === "saved") {
             settle(message);
         }
+        else if (message.kind === "failed") {
+            // a failure of a choice already saved here starts no wait
+            if (typeof message.choiceAt === "number" && message.choiceAt > tab.covered) {
+                takeClock({ retryAt: message.retryAt, failures: message.failures, retryPage: message.page });
+            }
+        }
         else if (message.kind === "hello") {
-            post({ kind: "held", covered: tab.covered, me: tab.isMeKnown ? { busy_until: state.me.busy_until, appear_offline: state.me.appear_offline } : null, meStamp });
+            post({ kind: "held", covered: tab.covered, me: tab.isMeKnown ? { busy_until: state.me.busy_until, appear_offline: state.me.appear_offline } : null, meStamp, ...clock });
             if (isPending() && tab.newest) {
                 post({ kind: "choice", record: tab.newest });
             }
@@ -700,6 +757,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
                 return;
             }
             tab.covered = Math.max(tab.covered, message.covered);
+            takeClock(message);
             if (message.me && (!tab.isMeKnown || message.meStamp > meStamp)) {
                 state.me.busy_until = message.me.busy_until;
                 state.me.appear_offline = message.me.appear_offline;
@@ -726,6 +784,10 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         if (isPending()) {
             tab.newest = null;
         }
+        // its queued save and its wait go with the records, and the clock it holds on its return
+        // is what its live tabs tell it
+        rule.drop("status");
+        Object.assign(clock, noWait);
         callOut?.abort();
         lockWaits.forEach(waiting => waiting.abort());
     }
@@ -742,12 +804,16 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         }
     }
 
-    /** The network or the platform is back: a save waiting out a failure is asked now. */
+    /**
+     * The network or the platform is back: the clock's time is now, its count kept, so the tab
+     * that failed last asks at once and every other a hand-off later; and the rule's wait ends.
+     */
     function wake(): void {
         if (isStopped()) {
             return;
         }
         wakes++;
+        clock.retryAt = Math.min(clock.retryAt, Date.now());
         rule.wake("status");
     }
 

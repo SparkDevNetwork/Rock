@@ -29,7 +29,7 @@ import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { FakeRequest, limits as attachmentLimits, nextUpload } from "./attachmentFakes";
-import { asOf, away, busy, dmPreview, nothing, online, pgTime, readerPerson, serverNow, typingRow } from "./statusShapes";
+import { asOf, away, busy, createChannelFake, createLockFake, dmPreview, nothing, online, pgTime, readerPerson, serverNow, statusSaveFailures, typingRow } from "./statusShapes";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -115,7 +115,10 @@ function build(options: {
     personAliasGuid?: string,
     stored?: Record<string, string>,
     // the channel a link names; channel A unless a test asks for a first visit with null
-    linkedChannelId?: string | null
+    linkedChannelId?: string | null,
+    // one tab's Web Locks and BroadcastChannel, which two builds of one person share as two tabs do
+    locks?: ShellOptions["locks"],
+    channel?: ShellOptions["channel"]
 } = {}): {
     shell: ReturnType<typeof createChatShell>,
     history: Record<string, Deferred<Response>[]>,
@@ -161,6 +164,8 @@ function build(options: {
     exchangeRead: { value: (() => void) | null },
     statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }>,
     statusAnswer: { value: { status: number, body: unknown } },
+    statusAnswers: { value: Array<{ status: number, body: unknown }> },
+    toasts: Array<{ code: string, text: string }>,
     bootstrapCalls: Array<Record<string, unknown>>,
     marks: string[],
     heldMint: { value: Deferred<void> | null },
@@ -246,6 +251,10 @@ function build(options: {
     // Every chat_set_status asked, and whether it was to survive the page closing.
     const statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }> = [];
     const statusAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { client: "leave" } } };
+    // What the next status calls answer, in order, before the one fixed answer above.
+    const statusAnswers: { value: Array<{ status: number, body: unknown }> } = { value: [] };
+    // Every notice the page raised.
+    const toasts: Array<{ code: string, text: string }> = [];
     const bootstrapCalls: Array<Record<string, unknown>> = [];
     const marks: string[] = [];
     // Set, the next mint waits for the test to let it answer.
@@ -386,7 +395,8 @@ function build(options: {
             // Every platform call is a POST through the shell's one call path.
             if (url.endsWith("/rest/v1/rpc/chat_set_status")) {
                 statusCalls.push({ body, keepalive: init.keepalive === true });
-                return fakeResponse(statusAnswer.value.status, statusAnswer.value.body);
+                const next = statusAnswers.value.shift() ?? statusAnswer.value;
+                return fakeResponse(next.status, next.body);
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
@@ -495,6 +505,9 @@ function build(options: {
         push: options.push,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mentionViews: options.mentionViews,
+        locks: options.locks,
+        channel: options.channel,
+        notify: notice => toasts.push({ code: notice.code, text: notice.text }),
         reloadPage: () => {
             reloads.count++;
         },
@@ -507,7 +520,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, bootstrapCalls, marks, heldMint, serverAheadSeconds, exchangeDelayMs, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, statusAnswers, toasts, bootstrapCalls, marks, heldMint, serverAheadSeconds, exchangeDelayMs, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
@@ -6232,5 +6245,125 @@ describe("online status into the store", () => {
 
         expect(h.exchangeBodies.slice(exchanges)).toEqual([null]);
         expect(h.statusCalls).toEqual([]);
+    });
+});
+
+// Her status saved through the real shell: its call path, its session's exchanges and the page's
+// settings, which a fake save in the settings' own cells cannot see. Two builds sharing one lock
+// fake and one channel fake are two tabs of hers in one browser.
+describe("her status through the shell", () => {
+    const hidden = { busy_until: null, appear_offline: true };
+    const settingsIn = (state: string): Record<string, unknown> => ({ limits: platformLimits, service: { state, banner: null } });
+
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: 0 });
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    /** One browser of hers: each tab a shell signed in with channel A open, sharing the browser's locks and channel. */
+    function browser(): { open: (tokenPerson?: string | null) => Promise<ReturnType<typeof build>> } {
+        const locks = createLockFake();
+        const channels = createChannelFake();
+        return {
+            open: async (tokenPerson: string | null = person) => {
+                const h = build({ locks: locks.tab(), channel: name => channels.open(name) });
+                h.tokenPerson.value = tokenPerson;
+                h.exchangeSettings.value = settingsIn("normal");
+                const starting = h.shell.start();
+                await advance(0);
+                answerHistory(h, channelA, 10);
+                await starting;
+                await settle();
+                return h;
+            }
+        };
+    }
+
+    /** The status saves a tab asked, leaving out its goodbyes. */
+    const saves = (h: ReturnType<typeof build>): unknown[] => h.statusCalls.filter(call => "p_change" in call.body).map(call => call.body.p_change);
+
+    /** An exchange this tab's session settles now, answering the service's state as given. */
+    async function exchange(h: ReturnType<typeof build>, state: string): Promise<void> {
+        h.exchangeSettings.value = settingsIn(state);
+        personal(h, "session.recheck", {});
+        await advance(0);
+    }
+
+    test("a save refused for maintenance waits through an ok exchange still answering maintenance, and goes at once at the first answering normal", async () => {
+        const h = await browser().open();
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        h.statusAnswers.value = [statusSaveFailures.maintenance as { status: number, body: unknown }];
+        void h.shell.prefs.setStatus(hidden);
+        await advance(1000);
+        expect(saves(h)).toEqual([{ status: "appear_offline" }]);
+        expect(h.shell.state.isComposerOpen).toBe(false);
+
+        await advance(2000);
+        await exchange(h, "maintenance");
+        expect(saves(h)).toHaveLength(1);
+
+        await advance(2000);
+        await exchange(h, "normal");
+        expect(saves(h)).toEqual([{ status: "appear_offline" }, { status: "appear_offline" }]);
+    });
+
+    test("a 503, then an ok exchange this tab's session settles: asked at once", async () => {
+        const h = await browser().open();
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        h.statusAnswers.value = [statusSaveFailures.serverError as { status: number, body: unknown }];
+        void h.shell.prefs.setStatus(hidden);
+        await advance(1000);
+        expect(saves(h)).toHaveLength(1);
+
+        await advance(3000);
+        await exchange(h, "normal");
+
+        expect(saves(h)).toHaveLength(2);
+    });
+
+    test("read only begun since either tab's last exchange: B's choice makes one call, refused; no tab shows it, B alone says why and closes, A follows its own settings", async () => {
+        const b = browser();
+        const a = await b.open();
+        const t2 = await b.open();
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        t2.statusAnswers.value = [statusSaveFailures.readOnlyBanner as { status: number, body: unknown }];
+
+        void t2.shell.prefs.setStatus(hidden);
+        await advance(1000);
+        await advance(60_000);
+
+        expect([...saves(a), ...saves(t2)]).toEqual([{ status: "appear_offline" }]);
+        expect([a, t2].map(tab => [tab.shell.prefs.shownStatus().appear_offline, tab.shell.prefs.isChoicePending()])).toEqual([[false, false], [false, false]]);
+        expect(t2.toasts.filter(t => t.code === "status").map(t => t.text)).toEqual(["Chat is read only tonight while Cedar Hill moves to its new server."]);
+        expect(a.toasts.filter(t => t.code === "status")).toEqual([]);
+        expect([t2.shell.state.isComposerOpen, t2.shell.state.service.state]).toEqual([false, "read_only"]);
+        expect([a.shell.state.isComposerOpen, a.shell.state.service.state]).toEqual([true, "normal"]);
+    });
+
+    test("B's own choice refused read only in A's call, heard on B's channel: B closes as its own refused call would", async () => {
+        const b = browser();
+        const a = await b.open();
+        // B's session holds a token that names no one when the lock reaches it, so A's copy sends B's choice
+        const t2 = await b.open(null);
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        a.statusAnswers.value = [statusSaveFailures.readOnlyBanner as { status: number, body: unknown }];
+
+        void t2.shell.prefs.setStatus(hidden);
+        await advance(3001);
+        await advance(0);
+
+        expect([saves(a), saves(t2)]).toEqual([[{ status: "appear_offline" }], []]);
+        expect([t2.shell.state.isComposerOpen, t2.shell.state.service.state]).toEqual([false, "read_only"]);
+        expect(t2.toasts.filter(t => t.code === "status").map(t => t.text)).toEqual(["Chat is read only tonight while Cedar Hill moves to its new server."]);
+        expect(a.toasts.filter(t => t.code === "status")).toEqual([]);
     });
 });

@@ -1088,6 +1088,8 @@ function statusBrowser(options: { hasLocks?: boolean } = {}): StatusBrowser {
                 currentPerson: () => person.value,
                 saveStatus: (change, signal) => {
                     const answer = deferred<CallResult>();
+                    // an aborted request reaches nothing, as the browser's fetch ends one
+                    signal.addEventListener("abort", () => void statusCallResult(statusSaveFailures.deadline).then(answer.resolve));
                     calls.push({ change, signal, answer, tab: n, at: Date.now() - start });
                     return answer.promise;
                 },
@@ -1164,6 +1166,7 @@ describe("her status across her tabs", () => {
     });
 
     afterEach(() => {
+        jest.restoreAllMocks();
         jest.useRealTimers();
     });
 
@@ -1262,19 +1265,19 @@ describe("her status across her tabs", () => {
         const b = statusBrowser();
         const a = b.open();
         await a.prefs.setStatus(hidden);
-        await after(1000);
-        b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
-        await after(1000);
+        await after(500);
 
         const c = b.open();
         await delivered();
         expect(shown(c)).toEqual(pending(hidden));
+        // A closes inside its pause, so only C's copy is left to send
+        a.close();
         await after(2999);
-        expect(b.calls).toHaveLength(1);
+        expect(b.calls).toHaveLength(0);
         await after(1);
 
         // taken a millisecond after the open, as the answer to its hello arrived
-        expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [c.n, 5001]]);
+        expect(b.calls.map(call => [call.tab, call.at])).toEqual([[c.n, 3501]]);
     });
 
     test("the lock's holder sending another tab's record posts what it sent, and the chooser settles on it", async () => {
@@ -1543,6 +1546,8 @@ describe("her status across her tabs", () => {
         test("C takes a pending Busy from a hello, its sidebar loads Appear offline, the Busy is refused: C shows Appear offline", async () => {
             const b = statusBrowser();
             const a = b.open();
+            // each wait at the middle of its range, once A's id is drawn
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
             a.prefs.setMe(sidebarMe(automatic));
             await a.prefs.setStatus(busy);
             await after(1000);
@@ -1552,8 +1557,9 @@ describe("her status across her tabs", () => {
             await delivered();
             expect(shown(c)).toEqual(pending(busy));
             c.prefs.setMe(sidebarMe(hidden));
-            await after(3000);
-            expect(b.calls.map(call => call.tab)).toEqual([a.n, c.n]);
+            // A asks again at the end of its wait, 10 s after the failure
+            await after(9999);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n, a.n]);
             b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
             await after(0);
 
@@ -1565,6 +1571,8 @@ describe("her status across her tabs", () => {
         test("C opens while A's Appear offline is pending, its save failing 503: C shows it and settles on the saved", async () => {
             const b = statusBrowser();
             const a = b.open();
+            // each wait at the middle of its range, once A's id is drawn
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
             a.prefs.setMe(sidebarMe(automatic));
             await a.prefs.setStatus(hidden);
             await after(1000);
@@ -1576,14 +1584,16 @@ describe("her status across her tabs", () => {
             await delivered();
             expect(shown(c)).toEqual(pending(hidden));
 
-            await after(3000);
+            // A asks again at the end of its wait, 10 s after the failure
+            await after(8999);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [a.n, 11_000]]);
             b.calls[1].answer.resolve(landed);
             await after(0);
             expect(shown(c)).toEqual(settled(hidden));
             expect(shown(a)).toEqual(settled(hidden));
         });
 
-        test("with nothing pending a hello is answered with what is covered and her saved status only", async () => {
+        test("with nothing pending a hello is answered with what is covered, her saved status and the retry clock, and no record", async () => {
             const b = statusBrowser();
             const a = b.open();
             a.prefs.setMe(sidebarMe(busy));
@@ -1592,7 +1602,7 @@ describe("her status across her tabs", () => {
             await delivered();
 
             const answers = b.posts.map(p => p.data as Record<string, unknown>).filter(d => d.kind !== "hello");
-            expect(answers).toEqual([{ kind: "held", covered: 0, me: busy, meStamp: 0 }]);
+            expect(answers).toEqual([{ kind: "held", covered: 0, me: busy, meStamp: 0, retryAt: 0, failures: 0, retryPage: null }]);
             expect(shown(c)).toEqual(settled(busy));
         });
 
@@ -1866,6 +1876,167 @@ describe("her status across her tabs", () => {
         });
     });
 
+    describe("one retry clock for the browser", () => {
+        const failing = async (): Promise<CallResult> => statusCallResult(statusSaveFailures.maintenance);
+        const failedPosts = (b: StatusBrowser): Array<Record<string, unknown>> => b.posts.map(p => p.data as Record<string, unknown>).filter(d => d.kind === "failed");
+
+        /** When the browser opened, which a post's retryAt is read from. */
+        let zero = 0;
+        const fromZero = (at: unknown): number => (at as number) - zero;
+
+        /** Two tabs of hers, each wait at the middle of its range once their ids are drawn, and A's Appear offline failed at 1 s: asked again at 11 s. */
+        async function failedOnce(): Promise<{ b: StatusBrowser, a: StatusTab, t2: StatusTab }> {
+            zero = Date.now();
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await failing());
+            await after(0);
+            return { b, a, t2 };
+        }
+
+        test("two tabs and three 503s: one send for each wait, at the backoff's times, from the tab that failed", async () => {
+            const { b, a, t2 } = await failedOnce();
+            await after(10_000);
+            b.calls[1].answer.resolve(await failing());
+            await after(20_000);
+            b.calls[2].answer.resolve(await failing());
+            await after(40_000);
+            b.calls[3].answer.resolve(landed);
+            await after(60_000);
+
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [a.n, 11_000], [a.n, 31_000], [a.n, 71_000]]);
+            // the other tab's copy reached the lock early and let it go, posting nothing
+            expect(failedPosts(b).map(post => [fromZero(post.retryAt), post.failures])).toEqual([[11_000, 1], [31_000, 2], [71_000, 3]]);
+            expect([a, t2].map(shown)).toEqual([settled(hidden), settled(hidden)]);
+        });
+
+        test("the tab that failed closes during the wait: the other sends at the wait's end plus the hand-off, its count carried on", async () => {
+            const { b, a, t2 } = await failedOnce();
+            await after(4000);
+            a.close();
+            await after(7999);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [t2.n, 13_000]]);
+
+            b.calls[1].answer.resolve(await failing());
+            await after(0);
+            // the second failure of the browser's, so its wait is 20 s
+            expect(failedPosts(b).map(post => [fromZero(post.retryAt), post.failures, post.page === failedPosts(b)[0].page])).toEqual([[11_000, 1, true], [33_000, 2, false]]);
+        });
+
+        test("the network returning during the wait, heard by both tabs: one send, from the tab that failed", async () => {
+            const { b, a, t2 } = await failedOnce();
+            await after(4000);
+            a.fire("online", {});
+            t2.fire("online", {});
+            await after(0);
+            b.calls[1].answer.resolve(landed);
+            await after(60_000);
+
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [a.n, 5000]]);
+            expect([a, t2].map(shown)).toEqual([settled(hidden), settled(hidden)]);
+        });
+
+        test("the network returning after the tab that failed closed: the other sends a hand-off later", async () => {
+            const { b, a, t2 } = await failedOnce();
+            await after(3000);
+            a.close();
+            await after(1000);
+            t2.fire("online", {});
+            await after(1999);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [t2.n, 7000]]);
+        });
+
+        test("a tab opened during the wait takes the clock from its hello and does not send at its 3 s due", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await failing());
+            await after(1000);
+
+            const c = b.open();
+            await delivered();
+            a.close();
+            await after(10_998);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [c.n, 13_000]]);
+
+            // the hello carried the count, so C's failure is the browser's second, waited 20 s
+            b.calls[1].answer.resolve(await failing());
+            await after(20_000);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [c.n, 13_000], [c.n, 33_000]]);
+        });
+
+        test("a failed post for a choice already saved starts no wait", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            const saved = b.calls[0];
+            const choiceAt = (b.posts.map(p => p.data as Record<string, unknown>).find(d => d.kind === "saved")?.choiceAt) as number;
+
+            b.raw().postMessage({ kind: "failed", choiceAt, retryAt: Date.now() + 60_000, failures: 3, page: "another tab" });
+            await delivered();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+
+            expect(b.calls.filter(call => call !== saved).map(call => call.change)).toEqual([{ status: "appear_offline" }]);
+        });
+
+        test("a saved ends the run: the next choice's first failure waits 10 s again", async () => {
+            const { b, a } = await failedOnce();
+            await after(10_000);
+            b.calls[1].answer.resolve(landed);
+            await after(0);
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[2].answer.resolve(await failing());
+            await after(0);
+
+            expect(failedPosts(b).map(post => [fromZero(post.retryAt), post.failures])).toEqual([[11_000, 1], [22_000, 1]]);
+        });
+
+        test("a failed post naming an earlier time than the clock holds leaves the later", async () => {
+            zero = Date.now();
+            const b = statusBrowser();
+            const t2 = b.open();
+            const raw = b.raw();
+            const record = { choice: hidden, at: Date.now() + 1, page: "another tab" };
+            raw.postMessage({ kind: "choice", record });
+            raw.postMessage({ kind: "failed", choiceAt: record.at, retryAt: zero + 60_000, failures: 2, page: "another tab" });
+            raw.postMessage({ kind: "failed", choiceAt: record.at, retryAt: zero + 5000, failures: 1, page: "another tab" });
+            await after(61_999);
+            expect(b.calls).toHaveLength(0);
+            await after(1);
+
+            expect(b.calls.map(call => [call.tab, fromZero(zero + call.at)])).toEqual([[t2.n, 62_000]]);
+        });
+
+        test("once stopped, a failed post, the retry's wait and the hand-off send nothing", async () => {
+            const { b, a, t2 } = await failedOnce();
+            t2.prefs.stop();
+            a.close();
+            b.raw().postMessage({ kind: "failed", choiceAt: Date.now(), retryAt: Date.now(), failures: 1, page: "another tab" });
+            await after(120_000);
+
+            expect(b.calls).toHaveLength(1);
+        });
+    });
+
     test("a saved post older than what the tab has covered changes nothing", async () => {
         const b = statusBrowser();
         const t2 = b.open();
@@ -1969,6 +2140,60 @@ describe("her status across her tabs", () => {
             await after(120_000);
 
             expect(b.calls).toHaveLength(1);
+        });
+
+        test("the holder's call out as it leaves is aborted at once: the lock goes free, the other tab's copy sends at its due, and no failed is posted", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+
+            a.fire("pagehide", { persisted: true });
+            await after(2000);
+
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [t2.n, 3000]]);
+            expect(kinds(b)).not.toContain("failed");
+        });
+
+        test("the holder waiting out a pause inside the lock as it leaves lets the lock go at once, and the other tab's copy sends", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            let free!: () => void;
+            void b.locks.tab().request(lockName, {}, () => new Promise<void>(resolve => free = resolve));
+            await a.prefs.setStatus(busy);
+            await after(1100);
+            await t2.prefs.setStatus(automatic);
+            await after(100);
+            free();
+            await after(0);
+            expect(b.locks.holder(lockName)).not.toBeNull();
+
+            // a page in the back-forward cache runs no timer, so a wait left to its timer would hold the lock until it came back
+            a.fire("pagehide", { persisted: true });
+            await after(0);
+            expect(b.locks.holder(lockName)).toBeNull();
+            await after(900);
+
+            expect(b.calls.map(call => [call.tab, call.change, call.at])).toEqual([[t2.n, { status: "auto" }, 2100]]);
+        });
+
+        test("a tab back from the cache forgot its wait: a choice it makes then goes at its pause", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+
+            a.fire("pagehide", { persisted: true });
+            a.fire("pageshow", { persisted: true });
+            await a.prefs.setStatus(busy);
+            await after(1000);
+
+            expect(b.calls.map(call => [call.change, call.at])).toEqual([[{ status: "appear_offline" }, 1000], [{ status: "busy" }, 2000]]);
         });
 
         test("a page closed for good is no visit to the cache: a pagehide that does not persist leaves the choice to be sent", async () => {

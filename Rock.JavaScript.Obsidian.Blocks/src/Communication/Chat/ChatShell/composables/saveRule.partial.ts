@@ -104,6 +104,12 @@ export type SaveRule = {
      */
     wake: (key: string) => void;
 
+    /**
+     * Drops a setting's change waiting, resolving false, so its named wait ends with it, as when
+     * its owner forgets the change; one out is still answered.
+     */
+    drop: (key: string) => void;
+
     /** Asks nothing more: what waits is dropped, each resolving false. */
     stop: () => void;
 };
@@ -150,6 +156,16 @@ function isWait(retryInMs: number | undefined): retryInMs is number {
 export function createSaveRule(isStopped: () => boolean): SaveRule {
     /** Each setting's saves, by a key naming it. */
     const tracks = new Map<string, SaveTrack>();
+
+    /** Drops a setting's waiting change, resolving false, and clears its timer. */
+    function dropWaiting(track: SaveTrack): void {
+        if (track.timer !== null) {
+            clearTimeout(track.timer);
+            track.timer = null;
+        }
+        track.waiting?.resolve(false);
+        track.waiting = null;
+    }
 
     /** Asks the waiting change once nothing is out and it is due, or sets a timer for when it is. */
     function next(track: SaveTrack): void {
@@ -259,14 +275,17 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
             next(track);
         },
 
+        drop: (key: string): void => {
+            const track = tracks.get(key);
+            // a setting with nothing out or waiting starts afresh at its next change, its wait with it
+            if (track) {
+                dropWaiting(track);
+            }
+        },
+
         stop: (): void => {
             for (const track of tracks.values()) {
-                if (track.timer !== null) {
-                    clearTimeout(track.timer);
-                    track.timer = null;
-                }
-                track.waiting?.resolve(false);
-                track.waiting = null;
+                dropWaiting(track);
             }
         }
     };

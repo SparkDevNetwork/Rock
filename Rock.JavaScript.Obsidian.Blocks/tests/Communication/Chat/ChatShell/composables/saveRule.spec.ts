@@ -479,6 +479,44 @@ describe("a wake", () => {
     });
 });
 
+describe("a drop", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("drops the change waiting out a named wait, resolving false, and ends the wait, so the next change waits only its own pause", async () => {
+        const s = setup();
+        const first = s.rule.save("status", s.change("busy"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs: 10_000 });
+        await settle();
+
+        s.rule.drop("status");
+        expect(await first).toBe(false);
+        expect(s.rule.isOut("status")).toBe(false);
+        jest.advanceTimersByTime(60_000);
+        expect(s.asks).toHaveLength(1);
+
+        void s.rule.save("status", s.change("auto", { settleMs: 1_000 }));
+        jest.advanceTimersByTime(1_000);
+        expect(s.asks.map(a => a.value)).toEqual(["busy", "auto"]);
+    });
+
+    test("leaves another setting's change waiting", async () => {
+        const s = setup();
+        void s.rule.save("status", s.change("busy", { settleMs: 1_000 }));
+        void s.rule.save("other", s.change("auto", { settleMs: 1_000 }));
+
+        s.rule.drop("status");
+        jest.advanceTimersByTime(1_000);
+
+        expect(s.asks.map(a => a.value)).toEqual(["auto"]);
+    });
+});
+
 describe("a failure that names no wait", () => {
     test("puts the control back and says why", async () => {
         const s = setup();
