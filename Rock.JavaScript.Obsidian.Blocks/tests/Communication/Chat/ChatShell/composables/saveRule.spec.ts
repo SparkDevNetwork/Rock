@@ -346,6 +346,27 @@ describe("a save that names a wait", () => {
         expect(await second).toBe(true);
     });
 
+    // A change made while the failing one was out goes into the same pace or outage, so it waits too.
+    test("answered while a newer change waits: the older resolves false at once and the newer waits it out before it is asked", async () => {
+        const s = setup();
+        let isOlderResolved: boolean | null = null;
+
+        void s.rule.save("status", s.change("busy")).then(saved => {
+            isOlderResolved = saved;
+        });
+        const newer = s.rule.save("status", s.change("auto"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs: 10_000 });
+        await settle();
+
+        expect(isOlderResolved).toBe(false);
+        jest.advanceTimersByTime(9_999);
+        expect(s.asks.map(a => a.value)).toEqual(["busy"]);
+        jest.advanceTimersByTime(1);
+        expect(s.asks.map(a => a.value)).toEqual(["busy", "auto"]);
+        s.asks[1].answer.resolve({ isSaved: true });
+        expect(await newer).toBe(true);
+    });
+
     test("is read from the wait alone, never from the words: final words with a wait are asked again, retryable words without one put the control back", async () => {
         const s = setup();
 
