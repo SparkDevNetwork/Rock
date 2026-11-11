@@ -159,6 +159,7 @@ function build(options: {
     exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null },
     exchangeRead: { value: (() => void) | null },
     statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }>,
+    statusAnswer: { value: { status: number, body: unknown } },
     bootstrapCalls: Array<Record<string, unknown>>,
     marks: string[],
     heldMint: { value: Deferred<void> | null },
@@ -241,6 +242,7 @@ function build(options: {
     const exchangeRead: { value: (() => void) | null } = { value: null };
     // Every chat_set_status asked, and whether it was to survive the page closing.
     const statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }> = [];
+    const statusAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { client: "leave" } } };
     const bootstrapCalls: Array<Record<string, unknown>> = [];
     const marks: string[] = [];
     // Set, the next mint waits for the test to let it answer.
@@ -373,7 +375,7 @@ function build(options: {
             // Every platform call is a POST through the shell's one call path.
             if (url.endsWith("/rest/v1/rpc/chat_set_status")) {
                 statusCalls.push({ body, keepalive: init.keepalive === true });
-                return fakeResponse(200, { client: "leave" });
+                return fakeResponse(statusAnswer.value.status, statusAnswer.value.body);
             }
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
@@ -494,7 +496,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, bootstrapCalls, marks, heldMint, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, bootstrapCalls, marks, heldMint, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
@@ -5387,9 +5389,10 @@ describe("online status on the token exchange", () => {
         expect(h.exchangeBodies[2]?.client_id).not.toBe(first);
     });
 
-    test("closing the page says goodbye for the id an exchange carried, through the call that survives the page and without minting; hiding it says nothing", async () => {
+    test("closing the page says goodbye for the id an exchange carried, through the call that survives the page and never mints, even refused as expired; hiding it says nothing", async () => {
         const h = await begin();
         const mints = h.counts.mints;
+        h.statusAnswer.value = { status: 401, body: { message: "auth.expired" } };
 
         h.pageDocument.visibilityState = "hidden";
         h.fireShown();
