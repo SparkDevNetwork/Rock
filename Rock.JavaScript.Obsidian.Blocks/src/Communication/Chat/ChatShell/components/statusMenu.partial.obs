@@ -6,7 +6,7 @@
               :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
               :isSheet="isPhone"
               :focusKey="focusKey"
-              :closedReason="closedReason"
+              :note="closedReason ?? ''"
               :anchorAttrs="anchorAttrs"
               @openChange="onOpenChange"
               @select="onSelect">
@@ -27,15 +27,24 @@
 /*
     The foot's face: its own round button, a hover disc a touch wider than the face, so lighting it
     never lights the settings button beside it. The badge is ringed in the sidebar's fill, which the
-    foot sets, and in the disc's under the pointer.
+    foot sets, and over it in whatever fill the button takes, hovered, pressed or open, in the
+    button's own order, so the ring always reads as the disc behind it.
 */
 .chat-status-menu :deep(.chat-status-face) {
     width: 40px;
     height: 40px;
 }
 
-.chat-status-menu :deep(.chat-status-face:hover:not([aria-disabled="true"])) {
+.chat-status-menu :deep(.chat-status-face:hover) {
     --chat-av-ring-over: var(--chat-hover);
+}
+
+.chat-status-menu :deep(.chat-status-face:active) {
+    --chat-av-ring-over: var(--chat-press);
+}
+
+.chat-status-menu :deep(.chat-status-face[aria-expanded="true"]) {
+    --chat-av-ring-over: var(--chat-brand-wash);
 }
 
 /* Change, outlined as the dialog's other small buttons are. */
@@ -51,25 +60,9 @@
     border-radius: var(--chat-r-full);
 }
 
-.chat-status-menu :deep(.chat-status-change:hover:not([aria-disabled="true"])) {
+.chat-status-menu :deep(.chat-status-change:hover) {
     background: var(--chat-surface);
     border-color: var(--chat-icon);
-}
-
-/* A button that cannot open its menu now is faded and gives no press; its tooltip says why. */
-.chat-status-menu :deep([aria-disabled="true"]) {
-    cursor: default;
-    opacity: .55;
-}
-
-.chat-status-menu :deep([aria-disabled="true"]:hover),
-.chat-status-menu :deep([aria-disabled="true"]:active) {
-    background: transparent;
-}
-
-.chat-status-menu :deep(.chat-status-change[aria-disabled="true"]:hover),
-.chat-status-menu :deep(.chat-status-change[aria-disabled="true"]:active) {
-    background: var(--chat-surface);
 }
 </style>
 
@@ -79,7 +72,7 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { untilWords } from "../ui/face.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
-    import { StatusChoice } from "../composables/usePrefs.partial";
+    import { busyEndOf, StatusChoice } from "../composables/usePrefs.partial";
 
     // #region Types
 
@@ -101,7 +94,11 @@
             required: true
         },
 
-        /** Why a choice cannot be saved now, the banner's words while the church is read only; null while it can. */
+        /**
+         * Why a choice cannot be saved now, the banner's words while the church is read only; null
+         * while it can. The menu still opens, so a phone, which shows no tooltip, is told too: every
+         * item is drawn but never chosen, the check where it stands, and these words are its note.
+         */
         closedReason: {
             type: String as PropType<string | null>,
             default: null
@@ -186,11 +183,12 @@
         );
         ends[0] = { ...ends[0], isSeparatorBefore: true, heading: "Busy · notifications paused" };
 
-        return [
+        const all: MenuItem[] = [
             { key: "auto", label: "Automatic", description: "Online or away, from your activity", isChecked: isAuto },
             ...ends,
             { key: "appear_offline", label: "Appear offline", description: "You'll look offline. Messages still arrive.", isChecked: props.choice.appear_offline, isSeparatorBefore: true }
         ];
+        return props.closedReason ? all.map(item => ({ ...item, isDisabled: true })) : all;
     });
 
     /** The Busy chosen, which the keyboard opens on; the morning end while none is, the end a person most often takes. */
@@ -261,18 +259,6 @@
             at.setHours(8, 0, 0, 0);
         }
         return at;
-    }
-
-    /** When her Busy ends, Infinity for no end, or null while she is not Busy, an ended Busy included. */
-    function busyEndOf(choice: StatusChoice, now: number): number | null {
-        if (choice.appear_offline || choice.busy_until === null) {
-            return null;
-        }
-        if (choice.busy_until === "infinity") {
-            return Infinity;
-        }
-        const end = Date.parse(choice.busy_until);
-        return end > now ? end : null;
     }
 
     // #endregion Functions

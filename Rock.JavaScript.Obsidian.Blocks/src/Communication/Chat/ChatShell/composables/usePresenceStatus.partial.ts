@@ -42,7 +42,7 @@ import { startOfDay } from "../feedLayout.partial";
 import { FaceStatus, PersonStatus, RosterMember } from "../types.partial";
 import { ownStatusWords, statusWords } from "../ui/face.partial";
 import type { PageEventTargets } from "./useMarkRead.partial";
-import type { MeSettings } from "./usePrefs.partial";
+import { busyEndOf, MeSettings } from "./usePrefs.partial";
 import type { ChatSession, ChatSettings, RefreshReason } from "./useSession.partial";
 
 /** What status reaches outside itself. */
@@ -202,18 +202,6 @@ function busyEnd(status: PersonStatus): number | null {
     return Number.isFinite(end) ? end : null;
 }
 
-/**
- * Her own Busy as her settings hold it, at a server time: its end in server milliseconds, null
- * for no end (infinity), or undefined when she is not Busy, its end passed included.
- */
-function ownBusyEnd(busyUntil: string | null, serverNow: number): number | null | undefined {
-    if (busyUntil === "infinity") {
-        return null;
-    }
-    const end = busyUntil === null ? NaN : Date.parse(busyUntil);
-    return end > serverNow ? end : undefined;
-}
-
 /** What a decision draws at a server time: nothing past her row's end, and Away once a Busy has ended under a live row. */
 function drawnAt(entry: StatusEntry | undefined, serverNow: number): Drawn | null {
     const status = entry?.status;
@@ -350,9 +338,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         if (mine.appear_offline) {
             return own("hidden", null);
         }
-        const busyUntil = ownBusyEnd(mine.busy_until, serverNow());
-        if (busyUntil !== undefined) {
-            return own("busy", busyUntil);
+        const busyUntil = busyEndOf(mine, serverNow());
+        if (busyUntil !== null) {
+            return own("busy", busyUntil === Infinity ? null : busyUntil);
         }
         if (isInputFresh()) {
             return own("online", null);
@@ -463,9 +451,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
         }
         if (isOn() && mine && !mine.appear_offline) {
-            const busyUntil = ownBusyEnd(mine.busy_until, now);
-            if (busyUntil !== undefined) {
-                soonest = Math.min(soonest, busyUntil ?? Infinity);
+            const busyUntil = busyEndOf(mine, now);
+            if (busyUntil !== null) {
+                soonest = Math.min(soonest, busyUntil);
             }
             else if (isInputFresh()) {
                 soonest = Math.min(soonest, inputAt + idleLineMs() + offsetMs);

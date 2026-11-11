@@ -63,6 +63,27 @@ export type MeSettings = {
 /** Her status as she chose it, in the two fields her settings carry it in. */
 export type StatusChoice = Pick<MeSettings, "busy_until" | "appear_offline">;
 
+/**
+ * When her Busy ends as her choice stands at a time: the one reading of it, which her own face,
+ * the status menu's check and Chat settings' line all take, so none of them can call her Busy
+ * while another does not.
+ *
+ * @param choice Her status as she chose it.
+ * @param now The time to read it at, in milliseconds on the clock the end is compared by.
+ *
+ * @returns The end in milliseconds, Infinity for a Busy with no end, or null while she is not Busy, a Busy whose end has passed and Appear offline included.
+ */
+export function busyEndOf(choice: StatusChoice, now: number): number | null {
+    if (choice.appear_offline || choice.busy_until === null) {
+        return null;
+    }
+    if (choice.busy_until === "infinity") {
+        return Infinity;
+    }
+    const end = Date.parse(choice.busy_until);
+    return end > now ? end : null;
+}
+
 /** A room's notify mode, as the platform names them. */
 export type NotifyMode = "all" | "mentions" | "silent";
 

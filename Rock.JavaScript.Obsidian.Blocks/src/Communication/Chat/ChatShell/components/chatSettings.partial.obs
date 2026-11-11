@@ -251,8 +251,9 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
-    import { MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { busyEndOf, MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
+    import { startOfDay } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
     import { ChatPerson } from "../types.partial";
     import { ownStatusWords, personFace, personName as nameOf } from "../ui/face.partial";
@@ -370,6 +371,15 @@
     /** The Blocked people group, whose rows focus moves along as one leaves. */
     const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
 
+    /** The viewer's clock as the status line last read it, moved on when the line's words would change. */
+    const statusNow = ref(Date.now());
+
+    /** The one timer that moves it, set while the dialog is open and the line has a change ahead. */
+    let statusTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** The longest a browser timer waits; a later change is waited for in steps. */
+    const longestTimerMs = 2_147_483_647;
+
     /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
     const unblocking = ref<Array<{ guid: string, name: string }>>([]);
 
@@ -414,18 +424,34 @@
      * changes, and kept with online status off, since a Busy still pauses her notifications. It
      * says what she chose rather than what her activity draws: Automatic,
      * a Busy saying what it does to her, or Appear offline. A Busy whose end has passed is
-     * Automatic again.
+     * Automatic again, by the line's own clock, which moves it on at the end.
      */
     const statusLine = computed((): string => {
-        const choice = props.statusChoice;
-        if (choice.appear_offline) {
-            return ownStatusWords("hidden", null, new Date());
+        const now = new Date(statusNow.value);
+        const end = busyEndOf(props.statusChoice, now.getTime());
+        if (props.statusChoice.appear_offline) {
+            return ownStatusWords("hidden", null, now);
         }
-        if (choice.busy_until === "infinity") {
-            return ownStatusWords("busy", null, new Date());
+        if (end === null) {
+            return "Automatic";
         }
-        const end = choice.busy_until === null ? NaN : Date.parse(choice.busy_until);
-        return end > Date.now() ? ownStatusWords("busy", new Date(end), new Date()) : "Automatic";
+        return ownStatusWords("busy", end === Infinity ? null : new Date(end), now);
+    });
+
+    /**
+     * When the line's words next change by the clock alone: her Busy's end, or before it the
+     * viewer's next midnight while the end lies on a later day, since "tomorrow, 8:00 AM" reads
+     * "8:00 AM" from then. Null while nothing ahead changes them.
+     */
+    const statusChangesAt = computed((): number | null => {
+        const end = busyEndOf(props.statusChoice, statusNow.value);
+        if (end === null || end === Infinity) {
+            return null;
+        }
+        const today = startOfDay(new Date(statusNow.value));
+        // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
+        const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+        return Math.min(end, midnight);
     });
 
     /** The rows of blocked people, once the list is read and holds anyone. */
@@ -496,6 +522,37 @@
         next?.focus();
     }, { flush: "post" });
 
+    // The status line keeps time only while it is seen, waking once at its next change.
+    watch([() => props.isOpen, statusChangesAt], ([isOpen, changesAt]) => {
+        if (statusTimer !== null) {
+            clearTimeout(statusTimer);
+            statusTimer = null;
+        }
+        if (!isOpen) {
+            return;
+        }
+        // reopened after a while, the line reads the clock now before it waits
+        statusNow.value = Date.now();
+        if (changesAt === null) {
+            return;
+        }
+        statusTimer = setTimeout(() => {
+            statusTimer = null;
+            // never short of the change, so a timer that fires a touch early still moves the line on
+            statusNow.value = Math.max(Date.now(), changesAt);
+        }, Math.min(longestTimerMs, Math.max(0, changesAt - Date.now())));
+    }, { immediate: true });
+
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        if (statusTimer !== null) {
+            clearTimeout(statusTimer);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
 
 </script>

@@ -1044,8 +1044,8 @@ describe("a direct message from an older platform", () => {
 // With the online switch on, the foot is two buttons in one row: her face, carrying her own badge,
 // opens her status menu above it, and the rest of the row (name, campus, gear) opens Chat settings
 // as before. Each has its own hover, so lighting one never lights the other. With the switch off
-// the foot is the one button it always was. While the church is read only, the face stays, marked
-// disabled with the banner's words.
+// the foot is the one button it always was. While the church is read only, the face still opens its
+// menu, which says why nothing in it can be chosen.
 describe("the sidebar's foot with online status", () => {
     const self = "a0000001-0000-4000-8000-000000000000";
     const busy: FaceStatus = { state: "busy", label: ", busy, notifications paused", tip: "Busy, notifications paused", busyUntil: null, revision: 3 };
@@ -1125,6 +1125,17 @@ describe("the sidebar's foot with online status", () => {
         expect(ruleBody("../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs", ".chat-status-face:hover")).toMatch(/--chat-av-ring-over:\s*var\(--chat-hover\)/);
     });
 
+    test.each([
+        [".chat-status-face:active", /background:\s*var\(--chat-press\)/, /--chat-av-ring-over:\s*var\(--chat-press\)/],
+        [".chat-status-face[aria-expanded=\"true\"]", /background:\s*var\(--chat-brand-wash\)/, /--chat-av-ring-over:\s*var\(--chat-brand-wash\)/]
+    ])("rings her badge in the face button's own fill while %s, as the button fills it", (selector, fill, ring) => {
+        const statusMenu = "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs";
+        const iconButton = "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
+
+        expect(ruleBody(iconButton, selector.replace(".chat-status-face", ".chat-icon-btn"))).toMatch(fill);
+        expect(ruleBody(statusMenu, selector)).toMatch(ring);
+    });
+
     test("is the one button it always was with the online switch off", () => {
         const w = mountFoot({ isStatusShown: false });
 
@@ -1134,16 +1145,17 @@ describe("the sidebar's foot with online status", () => {
         expect(w.get(".chat-side-me").element.children).toHaveLength(1);
     });
 
-    test("while the church is read only, keeps her face, marked disabled with the banner's words, and opens nothing", async () => {
+    test("while the church is read only, keeps her face live, its menu saying why nothing in it can be chosen", async () => {
         const reason = "Chat is read-only while we do some maintenance. You can read messages but not send them.";
         const w = mountFoot({ statusClosedReason: reason });
 
         const face = w.get("[data-testid='status-face']").element as HTMLElement;
-        expect(face.getAttribute("aria-disabled")).toBe("true");
-        expect(document.getElementById(face.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(reason);
+        expect(face.hasAttribute("aria-disabled")).toBe(false);
         face.click();
         await nextTick();
-        expect(document.querySelector("[role='menu']")).toBeNull();
+        await nextTick();
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")?.textContent?.trim()).toBe(reason);
+        expect(Array.from(document.querySelectorAll("[role='menu'] [role='menuitemradio']")).every(item => item.getAttribute("aria-disabled") === "true")).toBe(true);
         // Chat settings still opens beside it
         await w.get("[data-testid='sidebar-me']").trigger("click");
         expect(w.emitted("settings")).toHaveLength(1);

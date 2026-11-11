@@ -429,8 +429,8 @@ describe("Blocked people", () => {
 // above it and is not one conversation's setting. One row says it as her own words say it, and its
 // Change opens the same menu the sidebar foot's face opens. The group stays with the online switch
 // off, every choice in it, since a Busy still pauses her notifications and Appear offline still
-// hides her typing. While the church is read only, Change stays, marked disabled with the banner's
-// words, since a choice could only be refused.
+// hides her typing. While the church is read only, Change still opens the menu, every item drawn but
+// never chosen and the banner's words as its note, since a choice could only be refused.
 describe("Status", () => {
     const reason = "Cedar Hill's chat is read only until 9.";
 
@@ -511,17 +511,59 @@ describe("Status", () => {
         expect(menuKeys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
     });
 
-    test("while the church is read only, Change stays, marked disabled with the banner's words, and opens nothing", async () => {
+    test("while the church is read only, Change still opens the menu, which says why nothing in it can be chosen", async () => {
         const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: false }, statusClosedReason: reason });
 
         const change = w.get("[data-testid='status-change']").element as HTMLElement;
-        expect(change.getAttribute("aria-disabled")).toBe("true");
-        expect(document.getElementById(change.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(reason);
+        expect(change.hasAttribute("aria-disabled")).toBe(false);
         await openChange(w);
-        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(plain(document.querySelector("[role='menu'] [data-testid='menu-note']")!.textContent!)).toBe(reason);
+        expect(Array.from(document.querySelectorAll("[role='menu'] [role='menuitemradio']")).every(item => item.getAttribute("aria-disabled") === "true")).toBe(true);
 
         await w.setProps({ statusClosedReason: null });
-        await openChange(w);
-        expect(document.querySelector("[role='menu']")).not.toBeNull();
+        await settle();
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")).toBeNull();
+    });
+
+    // The line keeps time while the dialog is open: a Busy reads Automatic at its end, and an end on
+    // the next day loses its "tomorrow" at midnight.
+    describe("as the clock moves", () => {
+        beforeEach(() => {
+            jest.useFakeTimers({ doNotFake: ["nextTick", "queueMicrotask", "setImmediate", "requestAnimationFrame", "cancelAnimationFrame"] });
+        });
+
+        test("reads Automatic once her Busy ends", async () => {
+            jest.setSystemTime(new Date(2026, 10, 10, 14, 59));
+            const w = mountSettings({ statusChoice: { busy_until: new Date(2026, 10, 10, 15, 0).toISOString(), appear_offline: false } });
+            expect(statusLine(w)).toBe("Busy, notifications paused until 3:00 PM");
+
+            jest.advanceTimersByTime(60_000 - 1);
+            await nextTick();
+            expect(statusLine(w)).toBe("Busy, notifications paused until 3:00 PM");
+            jest.advanceTimersByTime(1);
+            await nextTick();
+            expect(statusLine(w)).toBe("Automatic");
+        });
+
+        test("says an end on the next day as today's from midnight", async () => {
+            jest.setSystemTime(new Date(2026, 10, 10, 23, 59));
+            const w = mountSettings({ statusChoice: { busy_until: new Date(2026, 10, 11, 8, 0).toISOString(), appear_offline: false } });
+            expect(statusLine(w)).toBe("Busy, notifications paused until tomorrow, 8:00 AM");
+
+            jest.advanceTimersByTime(60_000);
+            await nextTick();
+            expect(statusLine(w)).toBe("Busy, notifications paused until 8:00 AM");
+        });
+
+        test("keeps no clock while the dialog is closed or for a choice with no end", async () => {
+            jest.setSystemTime(new Date(2026, 10, 10, 14, 0));
+            const w = mountSettings({ statusChoice: { busy_until: "infinity", appear_offline: false } });
+            expect(jest.getTimerCount()).toBe(0);
+
+            await w.setProps({ statusChoice: { busy_until: new Date(2026, 10, 10, 15, 0).toISOString(), appear_offline: false } });
+            expect(jest.getTimerCount()).toBe(1);
+            await w.setProps({ isOpen: false });
+            expect(jest.getTimerCount()).toBe(0);
+        });
     });
 });

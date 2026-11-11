@@ -50,7 +50,7 @@
                                 :personCampusName="personCampusName"
                                 :personAliasGuid="personAliasGuid"
                                 :isStatusShown="shell.state.isStatusShown"
-                                :statusChoice="shell.prefs.shownStatus()"
+                                :statusChoice="statusChoice"
                                 :statusClosedReason="statusClosedReason"
                                 @select="onSelect"
                                 @status="onStatusChoice"
@@ -511,7 +511,7 @@
                           :campusName="personCampusName"
                           :organizationName="organizationName"
                           :me="shell.prefs.state.me"
-                          :statusChoice="shell.prefs.shownStatus()"
+                          :statusChoice="statusChoice"
                           :statusClosedReason="statusClosedReason"
                           :notes="shell.prefs.state.meNotes"
                           :announcement="shell.prefs.state.announcement"
@@ -960,6 +960,13 @@
      * choice could only be refused; null under maintenance, where a choice waits and is sent again.
      */
     const statusClosedReason = computed((): string | null => lockedReason(null, shell.value.state.service));
+
+    /**
+     * Her status as her settings show it, held as one value that moves only when they do, since the
+     * sidebar and Chat settings take it as a prop and a new value on every render of the block
+     * would draw the whole sidebar again with each send, notice and thread change.
+     */
+    const statusChoice = computed((): StatusChoice => shell.value.prefs.shownStatus());
 
     /** The count on the app icon, from the sidebar, so reading what it counts clears it. */
     const appBadge = computed((): number => shell.value.appBadge());

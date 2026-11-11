@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <IconButton ref="anchor"
-                v-bind="anchorBindings"
+                v-bind="anchorAttrs"
                 :icon="icon"
                 :label="label"
                 aria-haspopup="menu"
@@ -10,7 +10,6 @@
                 @click="onAnchorClick">
         <slot name="anchor"></slot>
     </IconButton>
-    <span v-if="closedReason" :id="reasonId" class="chat-sr-only">{{ closedReason }}</span>
 
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving">
@@ -22,6 +21,7 @@
                  :class="isSheet ? 'chat-sheet' : 'chat-menu'"
                  role="menu"
                  :aria-label="label"
+                 :aria-describedby="note ? noteId : undefined"
                  :style="isSheet ? undefined : menuStyles"
                  @keydown="onKeydown">
                 <!--
@@ -54,10 +54,10 @@
                         <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
                     </button>
                 </template>
-                <!-- Why an action is missing, read in its place after the others. -->
+                <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
                 <template v-if="note">
                     <div class="chat-menu-sep" role="separator"></div>
-                    <div class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
+                    <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
                 </template>
             </div>
         </Transition>
@@ -286,7 +286,7 @@
             required: true
         },
 
-        /** A line drawn after the items, with a lock, saying why an action is not offered. */
+        /** A line drawn after the items, with a lock, saying why an action is not offered or cannot be taken now. */
         note: {
             type: String,
             default: ""
@@ -320,16 +320,6 @@
         focusKey: {
             type: String,
             default: ""
-        },
-
-        /**
-         * Why the menu cannot open now, or null while it can. Its button stays where it is, marked
-         * disabled with these words as its tooltip and its description, so it never looks like a
-         * button that does nothing; an open menu closes.
-         */
-        closedReason: {
-            type: String as PropType<string | null>,
-            default: null
         }
     });
 
@@ -345,8 +335,8 @@
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
 
-    /** The closed reason's own element, which the button is described by. */
-    const reasonId = `chat-menu-reason-${newGuid()}`;
+    /** The note's own element, which the open menu is described by. */
+    const noteId = `chat-menu-note-${newGuid()}`;
 
     /** The chat's root, which the open menu is drawn in; null where the menu is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(null);
@@ -365,11 +355,6 @@
     // #endregion Values
 
     // #region Computed Values
-
-    /** The button's attributes, and while the menu cannot open, its reason in place of the button's own tooltip and description. */
-    const anchorBindings = computed((): Record<string, unknown> => props.closedReason
-        ? { ...props.anchorAttrs, "aria-disabled": "true", "aria-describedby": reasonId, tooltip: props.closedReason }
-        : props.anchorAttrs);
 
     /**
      * The placement, with the pop motion grown from the button: from the button's middle along the
@@ -393,10 +378,6 @@
     // #region Event Handlers
 
     async function onAnchorClick(): Promise<void> {
-        if (props.closedReason) {
-            return;
-        }
-
         if (isOpen.value) {
             close(false);
             return;
@@ -407,13 +388,13 @@
 
     /** Down on the closed button opens the menu on its first item, Up on its last, as a menu button does. */
     function onAnchorKeydown(event: KeyboardEvent): void {
-        if (!isOpen.value && !props.closedReason && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+        if (!isOpen.value && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
             event.preventDefault();
             void open(event.key === "ArrowDown" ? "first" : "last");
         }
     }
 
-    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves. */
+    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves from the button. */
     function onKeydown(event: KeyboardEvent): void {
         const items = menuItems();
         const current = items.indexOf(document.activeElement as HTMLElement);
@@ -440,7 +421,10 @@
                 items[next]?.focus();
             }
             else {
-                close(false);
+                // The menu is drawn at the chat's root, away from its button, so Tab would go on from
+                // there, out of a dialog the button sits in. Focus goes back to the button first, and
+                // the browser's own Tab moves on from it, as from a menu button.
+                close(true);
             }
         }
         else if ((event.key === "Enter" || event.key === " ") && current >= 0) {
@@ -505,13 +489,6 @@
     // #endregion Functions
 
     // #region Watchers
-
-    // A menu that can no longer open closes; focus in it goes back to its button, which says why.
-    watch(() => props.closedReason, closedReason => {
-        if (closedReason && isOpen.value) {
-            close(menuElement.value?.contains(document.activeElement) ?? false);
-        }
-    });
 
     // The outside press is listened for only while open, so a closed menu costs the page nothing.
     watch(isOpen, open => {

@@ -314,10 +314,11 @@ describe("the menu's focused item", () => {
     });
 });
 
-// A menu that cannot open now keeps its button where it is, marked disabled and saying why in its
-// tooltip and its description, so it never looks like a button that does nothing; the reason takes
-// the place of the button's own tooltip and description only while it holds.
-describe("a menu that cannot open now", () => {
+// A menu whose actions cannot be taken now still opens, its items drawn but never chosen and its
+// note saying why, so the reason reaches a phone, which shows no tooltip, and a screen reader as the
+// menu opens. Tab out of a menu beside its button goes on from the button, so a menu drawn at the
+// chat's root never takes focus out of a dialog its button sits in.
+describe("a menu's note and its way out", () => {
     let wrapper: VueWrapper | null = null;
 
     afterEach(() => {
@@ -326,23 +327,35 @@ describe("a menu that cannot open now", () => {
         document.body.innerHTML = "";
     });
 
-    test("marks its button disabled with the reason, opens nothing, and gives the button its own description back after", async () => {
-        const anchorAttrs = { tooltip: "Not sent", "aria-describedby": "own-reason" };
-        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items, anchorAttrs, closedReason: "Chat is read only." }, attachTo: document.body });
-        const button = wrapper.get("button").element as HTMLElement;
-
-        expect(button.getAttribute("aria-disabled")).toBe("true");
-        expect(document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent).toBe("Chat is read only.");
-        button.click();
+    test("describes the open menu by its note, and by nothing once the note is gone", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items: items.map(item => ({ ...item, isDisabled: true })), note: "Chat is read only." }, attachTo: document.body });
+        (wrapper.get("button").element as HTMLElement).click();
         await settle();
+
+        const note = menu()!.querySelector("[data-testid='menu-note']");
+        expect(document.getElementById(menu()!.getAttribute("aria-describedby") ?? "")).toBe(note);
+        menuItems()[1].click();
+        await settle();
+        expect(wrapper.emitted("select")).toBeUndefined();
+
+        await wrapper.setProps({ note: "" });
+        expect(menu()!.hasAttribute("aria-describedby")).toBe(false);
+    });
+
+    test("Tab closes it with focus on its button, and lets the browser go on from there", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        anchor.focus();
+        anchor.click();
+        await settle();
+
+        const tab = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+        menuItems()[1].dispatchEvent(tab);
+        await settle();
+
         expect(menu()).toBeNull();
-
-        await wrapper.setProps({ closedReason: null });
-        expect(button.hasAttribute("aria-disabled")).toBe(false);
-        expect(button.getAttribute("aria-describedby")).toBe("own-reason");
-        button.click();
-        await settle();
-        expect(menu()).not.toBeNull();
+        expect(document.activeElement).toBe(anchor);
+        expect(tab.defaultPrevented).toBe(false);
     });
 
     test("opens on the item it is told to, and draws an item's heading for the eye alone", async () => {

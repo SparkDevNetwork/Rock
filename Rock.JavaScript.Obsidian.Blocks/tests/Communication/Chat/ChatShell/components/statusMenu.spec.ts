@@ -18,9 +18,12 @@
 // flat set of radio items opened from the sidebar foot's face or the Chat settings group's Change.
 // The check sits on what her settings say, never on the item pressed last, so another tab's choice
 // or a refused one shows as it stands. The ends are the viewer's own clock, worked out as the menu
-// opens and again at the choice. While the church is read only both buttons stay, marked disabled
-// with the banner's words, since a choice could only be refused.
+// opens and again at the choice. While the church is read only both buttons still open it, every
+// item drawn but never chosen and the banner's words as its note, since a choice could only be
+// refused and a phone shows no tooltip to say why.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import StatusMenu from "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs";
@@ -365,38 +368,55 @@ describe("the keyboard", () => {
 });
 
 describe("while the church is read only", () => {
-    test.each(["change", "face"])("the %s button stays, marked disabled, with the banner's words as its tooltip and description", async (kind) => {
+    test.each(["change", "face"])("the %s button opens the menu as ever, its items drawn but never chosen and the banner's words as its note", async (kind) => {
         const w = mountMenu({ trigger: kind, closedReason: reason });
 
         const button = trigger(w);
-        expect(button.getAttribute("aria-disabled")).toBe("true");
-        expect(document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(reason);
-        expect(w.findComponent(IconButton).props("tooltip")).toBe(reason);
-        // a press, and the arrows, open nothing
-        button.focus();
-        button.click();
+        // a live button, on a phone too, where no tooltip is ever shown
+        expect(button.hasAttribute("aria-disabled")).toBe(false);
+        expect(w.findComponent(IconButton).props("tooltip")).toBe(kind === "face" ? "Set status" : "Change your status");
+        await openMenu(w);
+
+        expect(items().map(item => item.getAttribute("aria-disabled"))).toEqual(Array(6).fill("true"));
+        expect(checked()).toEqual(["auto"]);
+        const note = menu()!.querySelector("[data-testid='menu-note']")!;
+        expect(plain(note.textContent!)).toBe(reason);
+        // said as the menu opens, not only seen at its foot
+        expect(document.getElementById(menu()!.getAttribute("aria-describedby") ?? "")).toBe(note);
+
+        itemOf("busy-1h").click();
         await settle();
-        expect(menu()).toBeNull();
-        button.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
-        await settle();
-        expect(menu()).toBeNull();
-        expect(button.getAttribute("aria-expanded")).toBe("false");
+        await press("Enter");
+        expect(w.emitted("choose")).toBeUndefined();
+        expect(menu()).not.toBeNull();
     });
 
-    test("an open menu closes as the church turns read only, and opens again after", async () => {
+    test("an open menu turns read only where it stands, and back", async () => {
         const w = mountMenu();
         await openMenu(w);
-        expect(menu()).not.toBeNull();
 
         await w.setProps({ closedReason: reason });
         await settle();
-        expect(menu()).toBeNull();
+        expect(menu()).not.toBeNull();
+        expect(items().every(item => item.getAttribute("aria-disabled") === "true")).toBe(true);
+        expect(plain(menu()!.querySelector("[data-testid='menu-note']")!.textContent!)).toBe(reason);
 
         await w.setProps({ closedReason: null });
-        await openMenu(w);
-        expect(menu()).not.toBeNull();
-        expect(trigger(w).hasAttribute("aria-disabled")).toBe(false);
-        expect(trigger(w).hasAttribute("aria-describedby")).toBe(false);
+        await settle();
+        expect(items().some(item => item.hasAttribute("aria-disabled"))).toBe(false);
+        expect(menu()!.querySelector("[data-testid='menu-note']")).toBeNull();
+        expect(menu()!.hasAttribute("aria-describedby")).toBe(false);
+        itemOf("busy-off").click();
+        await settle();
+        expect(chosen(w)).toEqual({ busy_until: "infinity", appear_offline: false });
+    });
+
+    test("leaves her face as it is, never faded", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).not.toMatch(/opacity/);
+        expect(style).not.toMatch(/aria-disabled/);
     });
 });
 
