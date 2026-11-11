@@ -2359,6 +2359,45 @@ describe("her own face", () => {
         expect(h.status.statusOf(me)?.state).toBe("away");
     });
 
+    test("an idle line shortened by a later exchange draws her answer at once when her input is already past the new line", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        const drawn = face(h.status, me);
+        jest.advanceTimersByTime(60_000);
+        expect(drawn.value?.state).toBe("online");
+
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30 } });
+
+        expect(drawn.value).toBeNull();
+    });
+
+    test("an idle line shortened while her input is fresh moves her deadline to the new line", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        const drawn = face(h.status, me);
+        jest.advanceTimersByTime(10_000);
+
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30 } });
+        expect(drawn.value?.state).toBe("online");
+
+        jest.advanceTimersByTime(21_000);
+        expect(drawn.value).toBeNull();
+    });
+
+    test("a Busy her settings say once they are read ends by the one timer, with nothing else written", () => {
+        const h = buildStatus(idleLine);
+        h.prefs.isMeRead = false;
+        const drawn = face(h.status, me);
+
+        h.me.busy_until = pgTime(60_000);
+        h.prefs.isMeRead = true;
+        expect(drawn.value?.state).toBe("busy");
+
+        // no answer of hers: Online, since she has the page open
+        jest.advanceTimersByTime(61_000);
+        expect(drawn.value?.state).toBe("online");
+    });
+
     test("draws nothing with the switch off, whatever her settings say", () => {
         const h = buildStatus({ flags: { typing: true, online: false }, ...idleLine });
         h.me.appear_offline = true;

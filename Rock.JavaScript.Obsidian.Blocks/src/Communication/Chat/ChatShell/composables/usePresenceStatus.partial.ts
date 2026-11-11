@@ -47,7 +47,7 @@ import type { ChatSession, ChatSettings, RefreshReason } from "./useSession.part
 
 /** What status reaches outside itself. */
 export type PresenceStatusDependencies = {
-    /** The settings, read at every use, since the switch moves with each token. */
+    /** The settings, watched, so it must be reactive: the switch and the idle line are kept as they change, since a face reads only its revision. */
     settings: () => ChatSettings;
 
     /** The person's primary alias, whose own carried copy is never written. */
