@@ -1231,6 +1231,21 @@ describe("the New divider and the unread strip", () => {
 });
 
 describe("Jump to latest", () => {
+    // In a two-person conversation the composer's Busy note may stand over the feed's bottom edge,
+    // so the pill stands clear of it there always: set by the kind of conversation alone, it never
+    // moves as her Busy starts or ends while the reader is scrolled up.
+    test("in a two-person conversation stands in the place clear of the composer's note, whatever her status, and nowhere else", () => {
+        const pair = draw({ timeline: timeline([message(1, anna, at(14, 0))]), isDirectMessage: true });
+        const group = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
+        const channel = draw({ timeline: timeline([message(1, anna, at(14, 0))]), isChannel: true });
+
+        expect(pair.classes()).toContain("is-pair");
+        expect(group.classes()).not.toContain("is-pair");
+        expect(channel.classes()).not.toContain("is-pair");
+        // the feed is told nothing of anyone's status, so nothing about it can move the pill
+        expect(Object.keys(pair.props()).filter(name => /busy|status|note/i.test(name))).toEqual([]);
+    });
+
     test("is hidden at the bottom and shows once the reader scrolls up", async () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
 
