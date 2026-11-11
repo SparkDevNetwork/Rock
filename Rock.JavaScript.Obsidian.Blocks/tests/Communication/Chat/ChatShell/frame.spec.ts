@@ -36,6 +36,8 @@ import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/
 import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
 import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
+import { online } from "./statusShapes";
+import { badgesIn, createStatusStore, StatusStore } from "./statusStore";
 
 // #region Stand-ins
 
@@ -104,6 +106,9 @@ let mockStarting = false;
 
 /** What the block built its last shell with, which carries the frame's views for a mention's jump. */
 let mockShellOptions: ShellOptions | null = null;
+
+/** The real status store the fake shell's presence holds, made with each shell. */
+let mockStatus: StatusStore | null = null;
 
 /** The device's storage the drafts keep to, kept across a test's mounts as a browser keeps it over a reload. */
 const mockStorage = new Map<string, string>();
@@ -280,7 +285,7 @@ function fakeShell(): Record<string, unknown> {
         prefs: fakePrefs(),
         blocks: fakeBlocks(),
         // no one else typing, and the person's own typing asked of nothing
-        presence: { state: reactive({ typists: {} }), typed: jest.fn(), typingIn: () => null },
+        presence: { state: reactive({ typists: {} }), typed: jest.fn(), typingIn: () => null, status: (mockStatus = createStatusStore(false)).store },
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -752,6 +757,8 @@ beforeAll(() => {
 afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
+    mockStatus?.store.stop();
+    mockStatus = null;
     mockShell = null;
     mockShellOptions = null;
     mockStarting = false;
@@ -5022,5 +5029,41 @@ describe("a start still signing in", () => {
         await settle();
 
         expect(w.get("[data-testid='new-message']").attributes("inert")).toBeUndefined();
+    });
+});
+
+// Every face that shows a status reads the shell's one store through the block, and the first
+// screen's faces paint with their badges in the frame the veil lifts: a status that lands while
+// the screen is still veiled is part of what the reveal shows, never a fade after it.
+describe("online status", () => {
+    const annaRow = (w: VueWrapper): Element => w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).element;
+
+    test("a two-person row in the block draws its person's badge from the shell's store", async () => {
+        const w = await mountBlock(1200, true);
+
+        mockStatus!.tell({ "anna-kim": online() });
+        await settle();
+
+        expect(badgesIn(annaRow(w)).map(badge => badge.state)).toEqual(["online"]);
+    });
+
+    test("moment 1: badges held under the veil draw as state at the reveal", async () => {
+        const w = await mountBlock(1200, true);
+        const reveal = (mockShell!.reveal as { state: Record<string, boolean> }).state;
+        reveal.isReleased = false;
+        reveal.isSidebarRevealed = false;
+        reveal.isMainRevealed = false;
+        await settle();
+
+        mockStatus!.tell({ "anna-kim": online() });
+        await nextTick();
+        expect(badgesIn(annaRow(w))).toEqual([{ state: "online", isMoving: false }]);
+
+        reveal.isReleased = true;
+        reveal.isSidebarRevealed = true;
+        reveal.isMainRevealed = true;
+        await nextTick();
+
+        expect(badgesIn(annaRow(w))).toEqual([{ state: "online", isMoving: false }]);
     });
 });

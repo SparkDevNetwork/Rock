@@ -506,4 +506,58 @@ describe("a face's status badge", () => {
 
         expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-leave-active");
     });
+
+    // Where status shows is a short list; every other face of a person (message rows, the @
+    // picker, reactions and who reacted, thread and mention faces, quotes, the typing bubble,
+    // face stacks, remove member, blocked people) draws none, so none of them asks the store.
+    test("only the places that show status read it: every other face is passed none", () => {
+        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "peoplePicker"];
+        const shell = join(__dirname, "../../../../../src/Communication/Chat/ChatShell");
+        const parts = ["components", "ui"].flatMap(folder => readdirSync(join(shell, folder)).filter(name => name.endsWith(".obs")).map(name => join(shell, folder, name)));
+        const others = parts.filter(path => !hosts.some(host => path.endsWith(`${host}.partial.obs`)) && !path.endsWith("avatar.partial.obs"));
+
+        expect(others.filter(path => /<Avatar\b/.test(readFileSync(path, "utf8"))).length).toBeGreaterThanOrEqual(12);
+        for (const path of others) {
+            const text = readFileSync(path, "utf8");
+            expect([path, /<Avatar\b[^>]*:status=/.test(text) || text.includes("useFaceStatus")]).toEqual([path, false]);
+        }
+    });
+
+    // The first screen is drawn under its veil and revealed in one crossfade: a status that comes
+    // or goes before then is part of what the reveal shows, so it draws as state, as photos wait
+    // for the same release.
+    describe("under the first screen's veil", () => {
+        const veiled = (isReleased: boolean): Record<symbol, unknown> => ({
+            [pageRevealKey as symbol]: { state: { kind: "channel", isSkeletonShown: false, isSidebarRevealed: isReleased, isMainRevealed: isReleased, isReleased }, holdFace: () => undefined }
+        });
+
+        function underVeil(status: Status | null, isReleased: boolean): VueWrapper {
+            return mount(Avatar, { props: { people: anna, size: 36, status }, attachTo: document.body, global: { ...global, provide: veiled(isReleased) } });
+        }
+
+        test("a status arriving before the reveal is released draws as state", async () => {
+            const wrapper = underVeil(null, false);
+
+            await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+            expect(badgeOf(wrapper)).not.toBeNull();
+            expect(transitionClasses(badgeOf(wrapper))).toEqual([]);
+        });
+
+        test("a status going before the reveal is released leaves at once", async () => {
+            const wrapper = underVeil(statuses.online, false);
+
+            await wrapper.setProps({ status: null });
+
+            expect(badgeOf(wrapper)).toBeNull();
+        });
+
+        test("once released, a status arriving fades in as anywhere", async () => {
+            const wrapper = underVeil(null, true);
+
+            await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+            expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-enter-active");
+        });
+    });
 });

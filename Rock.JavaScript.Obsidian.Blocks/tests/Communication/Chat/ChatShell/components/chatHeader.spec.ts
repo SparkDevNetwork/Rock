@@ -26,6 +26,9 @@ import { nextTick } from "vue";
 import ChatHeader from "../../../../../src/Communication/Chat/ChatShell/components/chatHeader.partial.obs";
 import { ChannelFacts, ChannelPerson, ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import { join } from "path";
+import { busy } from "../statusShapes";
+import { anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 const lostConnection: ChatError = { code: "rt.disconnected", severity: "degraded", text: null };
 
@@ -897,5 +900,59 @@ describe("facts from an older platform", () => {
         const pile = w.get("[data-testid='header-members']");
         expect(pile.findAll(".chat-av")).toHaveLength(0);
         expect(pile.text()).toContain("42");
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    /** A two-person room's header for one person, carrying a stale status of its own the face must not read. */
+    function personHeader(alias: string): Record<string, unknown> {
+        return { title: "Anna Reyes", kind: "person", people: [{ person_alias_guid: alias.toUpperCase(), nick_name: "Anna", last_name: "Reyes", avatar_url: null, status: busy(null, -60_000) }] };
+    }
+
+    test("a two-person header draws the person's badge from the store and its words in the title button's name", () => {
+        const w = mountHeader(personHeader(anna));
+
+        expect(badgesIn(w.element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(w.get("[data-testid='header-details']").attributes("aria-label")).toBe("Anna Reyes, online, conversation details");
+    });
+
+    test("a group's face and the members pile draw no badge", () => {
+        const w = mountHeader({
+            title: "Anna, Ben",
+            kind: "group",
+            isMembersOffered: true,
+            people: [anna, ben].map(alias => ({ person_alias_guid: alias, nick_name: "Anna", last_name: "Reyes", avatar_url: null }))
+        });
+
+        expect(w.findAll(".chat-av").length).toBeGreaterThan(0);
+        expect(badgesIn(w.element)).toEqual([]);
+    });
+
+    test("rings its badge in the title button's fill over the bar", () => {
+        expect(setsBothRings(join(shellFolder, "components/chatHeader.partial.obs"), /^(button)?\.chat-header-id(\[|:|$)/)).toBe(true);
+    });
+
+    test.each(swaps)("swapped in place to another person, %s, draws the new person's face as state", async (_case, from, to) => {
+        const w = mountHeader(personHeader(from));
+        const face = w.get(".chat-av").element;
+
+        await w.setProps(personHeader(to));
+        await nextTick();
+
+        expect(w.get(".chat-av").element).not.toBe(face);
+        expect(badgesIn(w.element).filter(badge => badge.isMoving)).toEqual([]);
+        expect(badgesIn(w.element)).toHaveLength(to === carl ? 0 : 1);
     });
 });

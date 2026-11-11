@@ -25,6 +25,8 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChatSettings from "../../../../../src/Communication/Chat/ChatShell/components/chatSettings.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import { join } from "path";
+import { badgesIn, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
 
 // #region Helpers
 
@@ -421,5 +423,43 @@ describe("Blocked people", () => {
         const failed = mountSettings({ blocked: list({ listState: "failed" }) });
         await failed.get("[data-testid='blocked-failed'] button").trigger("click");
         expect(failed.emitted("retryBlocked")).toHaveLength(1);
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    function identity(w: VueWrapper): Element {
+        return w.get(".chat-ms-id").element;
+    }
+
+    test("the identity draws her own face and its words after her name", () => {
+        const w = mountSettings({ personAliasGuid: viewer });
+
+        expect(badgesIn(identity(w))).toEqual([{ state: "online", isMoving: false }]);
+        expect(w.get("[data-testid='settings-name']").text()).toBe("Jordan Lee, online");
+    });
+
+    test("the identity draws her hollow ring under Appear offline, since it is her own face", async () => {
+        const w = mountSettings({ personAliasGuid: viewer });
+
+        status.mine.value = { busy_until: null, appear_offline: true };
+        await nextTick();
+
+        expect(badgesIn(identity(w)).map(badge => badge.state)).toEqual(["hidden"]);
+    });
+
+    test("rings its badge in the dialog's fill", () => {
+        expect(setsBothRings(join(shellFolder, "components/chatSettings.partial.obs"), /^\.chat-ms-id(\[|:|$)/)).toBe(true);
     });
 });

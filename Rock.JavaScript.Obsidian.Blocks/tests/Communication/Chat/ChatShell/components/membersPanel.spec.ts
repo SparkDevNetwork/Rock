@@ -71,6 +71,9 @@ const anna = member("Anna", "Reyes", { details: { badge_keys: [] } });
 const ben = member("Ben", "Okafor", { can_message: false });
 const self = member("Jordan", "Lee", { person_alias_guid: me });
 
+import { join } from "path";
+import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+
 let wrapper: VueWrapper | null = null;
 
 function draw(props: Record<string, unknown> = {}): VueWrapper {
@@ -702,5 +705,60 @@ describe("a row's actions follow the pointer as the message action bar does", ()
         await nextTick();
 
         expect(hotRows(w)).toEqual([]);
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    const annaOnline = member("Anna", "Reyes", { person_alias_guid: statusAnna.toUpperCase() });
+    const benBusy = member("Ben", "Okafor", { person_alias_guid: statusBen, is_leader: true });
+    const carlNone = member("Carl", "Ngata", { person_alias_guid: statusCarl });
+    const her = member("Ted", "Decker", { person_alias_guid: viewer });
+
+    function rowFor(w: VueWrapper, alias: string): ReturnType<VueWrapper["get"]> {
+        return w.findAll("[data-testid='member-row']").find(row => row.get("[data-testid='member-who']").attributes("data-person")?.toLowerCase() === alias)!;
+    }
+
+    test("each row draws its person's badge from the store and the words after the name, before you and leader", () => {
+        const w = draw({ members: [annaOnline, benBusy, carlNone, her], personAliasGuid: viewer });
+
+        expect(badgesIn(rowFor(w, statusAnna).element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(badgesIn(rowFor(w, statusBen).element).map(badge => badge.state)).toEqual(["busy"]);
+        expect(badgesIn(rowFor(w, statusCarl).element)).toEqual([]);
+        expect(rowFor(w, statusBen).get("[data-testid='member-who']").attributes("aria-label")).toBe("Ben Okafor, busy, leader. View profile");
+        expect(rowFor(w, viewer).get("[data-testid='member-who']").attributes("aria-label")).toBe("Ted Decker, online, you. View profile");
+    });
+
+    test("her own row draws her own face, and nothing under Appear offline, as everyone else sees her", async () => {
+        const w = draw({ members: [annaOnline, her], personAliasGuid: viewer });
+        expect(badgesIn(rowFor(w, viewer).element).map(badge => badge.state)).toEqual(["online"]);
+
+        status.mine.value = { busy_until: null, appear_offline: true };
+        await afterFades();
+
+        expect(badgesIn(rowFor(w, viewer).element)).toEqual([]);
+        expect(rowFor(w, viewer).get("[data-testid='member-who']").attributes("aria-label")).toBe("Ted Decker, you. View profile");
+    });
+
+    test("rings its badge in the panel's fill and a row's hover", () => {
+        expect(setsBothRings(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-row(\[|:|$)/)).toBe(true);
+    });
+
+    test("rings its badge in a row's hover as the row draws it", () => {
+        const states = fillsAndRings(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-row:(hover|focus-within)$/);
+
+        expect(states.length).toBeGreaterThan(0);
+        expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
     });
 });

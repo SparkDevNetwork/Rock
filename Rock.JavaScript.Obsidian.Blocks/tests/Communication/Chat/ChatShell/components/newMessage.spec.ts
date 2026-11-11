@@ -33,6 +33,8 @@ import NewMessage from "../../../../../src/Communication/Chat/ChatShell/componen
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import { join } from "path";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 // #region Fixtures
 
@@ -872,5 +874,63 @@ describe("the first message's own choices", () => {
         await nextTick();
         await w.findAll("[role='menuitem']")[1].trigger("click");
         expect(w.emitted("discard")).toHaveLength(1);
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    const byAlias = (alias: string): PersonRow => ({ ...anna, person_alias_guid: alias.toUpperCase() });
+
+    test("one person chosen: the start draws their badge and its words after their name in the sentence", () => {
+        const w = mountView({ chosen: [byAlias(statusAnna)], lookup: fresh });
+        const start = w.get("[data-testid='nd-start']");
+
+        expect(badgesIn(start.element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(start.get("p").text()).toBe("This is the start of your conversation with Anna, online. Only the two of you can see it.");
+    });
+
+    test("one person chosen whose conversation exists: the found strip draws their badge and its words after the title", () => {
+        const w = mountView({ chosen: [byAlias(statusBen)], lookup: found, foundTitle: "Anna Reyes" });
+        const strip = w.get("[data-testid='nd-found']");
+
+        expect(badgesIn(strip.element).map(badge => badge.state)).toEqual(["busy"]);
+        expect(strip.get(".chat-nd-found-t span").text()).toBe("Anna Reyes, busy. What you send goes there.");
+    });
+
+    test("a group chosen draws its mark with no badge", () => {
+        const w = mountView({ chosen: [byAlias(statusAnna), { ...andre, person_alias_guid: statusBen }], lookup: fresh });
+
+        expect(w.get("[data-testid='nd-start']").findAll(".chat-av").length).toBeGreaterThan(0);
+        expect(badgesIn(w.element)).toEqual([]);
+    });
+
+    test.each([
+        ["the found strip", /^\.chat-nd-found(\[|:|$)/],
+        ["the start", /^\.chat-nd-start(\[|:|$)/]
+    ])("rings its badge in %s's fill", (_place, selector) => {
+        expect(setsBothRings(join(shellFolder, "components/newMessage.partial.obs"), selector)).toBe(true);
+    });
+
+    test.each(swaps)("the start swapped in place to another person, %s, draws the new person's face as state", async (_case, from, to) => {
+        const w = mountView({ chosen: [byAlias(from)], lookup: fresh });
+        const face = w.get("[data-testid='nd-start'] .chat-av").element;
+
+        await w.setProps({ chosen: [byAlias(to)] });
+        await nextTick();
+
+        expect(w.get("[data-testid='nd-start'] .chat-av").element).not.toBe(face);
+        expect(badgesIn(w.element).filter(badge => badge.isMoving)).toEqual([]);
+        expect(badgesIn(w.element)).toHaveLength(to === statusCarl ? 0 : 1);
     });
 });

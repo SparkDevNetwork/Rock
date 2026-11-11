@@ -27,6 +27,8 @@ import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/comp
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { anna, badgesIn, ben, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { join } from "path";
 
 // #region Fixtures
 
@@ -1035,5 +1037,84 @@ describe("a direct message from an older platform", () => {
 
         const faces = rowOf(w, dmGroup.channel_id).findAll(".chat-av");
         expect(faces.map(face => face.text())).toEqual(["A", "M"]);
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    const dmOnline = row({
+        channel_id: "c0000011-0000-4000-8000-000000000000",
+        channel_type: "dm",
+        dm_people: [{ person_alias_guid: anna.toUpperCase(), nick_name: "Anna", last_name: "Reyes", avatar_url: null }],
+        dm_other_count: 1,
+        room_kind: "person",
+        title: "Anna Reyes",
+        is_unread: true
+    });
+
+    const dmPair = row({
+        channel_id: "c0000012-0000-4000-8000-000000000000",
+        channel_type: "dm",
+        dm_people: [anna, ben].map(alias => ({ person_alias_guid: alias, nick_name: "Anna", last_name: null, avatar_url: null })),
+        dm_other_count: 2,
+        room_kind: "group",
+        title: "Anna, Ben"
+    });
+
+    test("a two-person row draws the person's badge and says it first in the row's suffix", () => {
+        const w = mountSidebar({ rows: [dmOnline] });
+
+        expect(badgesIn(rowOf(w, dmOnline.channel_id).element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(rowOf(w, dmOnline.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", online, unread");
+    });
+
+    test("a group row draws no badge", () => {
+        const w = mountSidebar({ rows: [dmPair] });
+
+        expect(rowOf(w, dmPair.channel_id).findAll(".chat-av").length).toBeGreaterThan(0);
+        expect(badgesIn(rowOf(w, dmPair.channel_id).element)).toEqual([]);
+    });
+
+    test("the foot draws her own face, Online from her own page, with its words in the button's name", () => {
+        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer });
+        const foot = w.get("[data-testid='sidebar-me']");
+
+        expect(badgesIn(foot.element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(foot.attributes("aria-label")).toBe("Chat settings, Ted Decker, online");
+    });
+
+    test("the foot draws her hollow ring under Appear offline, since it is her own face", async () => {
+        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer });
+
+        status.mine.value = { busy_until: null, appear_offline: true };
+        await nextTick();
+
+        expect(badgesIn(w.get("[data-testid='sidebar-me']").element).map(badge => badge.state)).toEqual(["hidden"]);
+        expect(w.get("[data-testid='sidebar-me']").attributes("aria-label")).toBe("Chat settings, Ted Decker, appear offline");
+    });
+
+    test.each([
+        ["a row", /^\.chat-row(\[|:|$)/],
+        ["the foot", /^\.chat-(side-me|me-btn)(\[|:|$)/]
+    ])("rings its badge in %s's fill", (_place, selector) => {
+        expect(setsBothRings(join(shellFolder, "components/channelSidebar.partial.obs"), selector)).toBe(true);
+    });
+
+    test("rings the foot's badge in its button's hover and press as the button draws them", () => {
+        const states = fillsAndRings(join(shellFolder, "components/channelSidebar.partial.obs"), /^\.chat-me-btn:(hover|active)$/);
+
+        expect(states).toHaveLength(2);
+        expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
     });
 });
