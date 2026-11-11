@@ -414,7 +414,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             exchangeBody: reason => presence.status.exchangeBody(reason),
             exchanged: (asked, outcome) => presence.status.exchanged(asked, outcome),
             clockFrom: issuedAtSeconds => presence.status.clockFrom(issuedAtSeconds),
-            settled: (reason, ok) => presence.status.settled(reason, ok)
+            settled: (reason, ok) => {
+                presence.status.settled(reason, ok);
+                // the beat rides the exchange, so an ok one whose service takes writes is the platform
+                // taking her writes again; under maintenance it answers while every write is refused
+                if (ok && isComposerOpen(session.settings().service.state)) {
+                    prefs.statusWake();
+                }
+            }
         }
     });
     const session = signIn.session;

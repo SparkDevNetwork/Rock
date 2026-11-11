@@ -1817,6 +1817,55 @@ describe("her status across her tabs", () => {
         });
     });
 
+    describe("a wake", () => {
+        test.each([
+            ["the network returning", (tab: StatusTab) => tab.fire("online", {})],
+            ["the platform taking her writes again", (tab: StatusTab) => tab.prefs.statusWake()]
+        ])("%s asks a save waiting out a failure at once", async (_name, wake) => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(3000);
+
+            wake(a);
+            await after(0);
+
+            expect(b.calls.map(call => call.at)).toEqual([1000, 4000]);
+        });
+
+        test("during a try, the try's failure answered after it is asked again at once", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+
+            a.fire("online", {});
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(0);
+
+            expect(b.calls.map(call => call.at)).toEqual([1000, 1000]);
+        });
+
+        test("with no failure waiting asks nothing, and a choice still waits out its pause", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.statusWake();
+            await a.prefs.setStatus(hidden);
+            a.fire("online", {});
+            await after(999);
+            expect(b.calls).toHaveLength(0);
+            await after(1);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+
+            a.prefs.statusWake();
+            await after(60_000);
+            expect(b.calls).toHaveLength(1);
+        });
+    });
+
     test("a saved post older than what the tab has covered changes nothing", async () => {
         const b = statusBrowser();
         const t2 = b.open();

@@ -98,6 +98,12 @@ export type SaveRule = {
     /** Whether a save of a setting is out or waiting, so a load leaves what the person chose. */
     isOut: (key: string) => boolean;
 
+    /**
+     * Ends a setting's named wait now, as when the network or the platform is back: what waits is
+     * asked at once, its own pause still kept. With no named wait, nothing.
+     */
+    wake: (key: string) => void;
+
     /** Asks nothing more: what waits is dropped, each resolving false. */
     stop: () => void;
 };
@@ -242,6 +248,15 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
         isOut: (key: string): boolean => {
             const track = tracks.get(key);
             return !!track && (track.isFlying || track.waiting !== null);
+        },
+
+        wake: (key: string): void => {
+            const track = tracks.get(key);
+            if (!track || track.notBefore === -Infinity) {
+                return;
+            }
+            track.notBefore = -Infinity;
+            next(track);
         },
 
         stop: (): void => {

@@ -229,6 +229,12 @@ export type Prefs = {
     /** Her input on this page at a time, told to her other tabs at most every 30 seconds. */
     noteInput: (at: number) => void;
 
+    /**
+     * The platform takes her writes again, as an ok token exchange whose service is open says: a
+     * status save waiting out a failure is asked at once.
+     */
+    statusWake: () => void;
+
     stop: () => void;
 };
 
@@ -391,7 +397,7 @@ type StatusPost =
     | { kind: "input", at: number };
 
 /** Her status's half of the settings. */
-type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "noteInput" | "stop"> & {
+type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "noteInput" | "statusWake" | "stop"> & {
     /** A sidebar load has written her status into me. */
     sidebarRead: () => void;
 };
@@ -471,6 +477,9 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
     /** The save out, aborted when the tab leaves; and the lock requests still waiting. */
     let callOut: AbortController | null = null;
     const lockWaits = new Set<AbortController>();
+
+    /** How many wakes this tab has had, so a try out at one knows to ask again at once if it fails. */
+    let wakes = 0;
 
     let lastInputPostAt = -Infinity;
     let inputToPost = 0;
@@ -582,6 +591,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         // call that hangs, and aborts the call by its signal.
         const call = new AbortController();
         callOut = call;
+        const wakesAtSend = wakes;
         let deadline: ReturnType<typeof setTimeout> | undefined;
         let result: CallResult;
         try {
@@ -617,7 +627,8 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         }
         if (outcome.retryInMs !== undefined || result.ok) {
             failures++;
-            return outcome;
+            // the try left before the network or the platform came back, so it says nothing of now
+            return wakes !== wakesAtSend ? { ...outcome, retryInMs: 0 } : outcome;
         }
         settleEverywhere({ kind: "saved", choiceAt: record.at, page: record.page, refused: true, error: result.error });
         return outcome;
@@ -731,6 +742,15 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         }
     }
 
+    /** The network or the platform is back: a save waiting out a failure is asked now. */
+    function wake(): void {
+        if (isStopped()) {
+            return;
+        }
+        wakes++;
+        rule.wake("status");
+    }
+
     function postInput(): void {
         inputTimer = null;
         if (isStopped()) {
@@ -748,6 +768,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
     }
     reach?.targets?.addEventListener("pagehide", onPageHide);
     reach?.targets?.addEventListener("pageshow", onPageShow);
+    reach?.targets?.addEventListener("online", wake);
 
     return {
         setStatus: async (choice: StatusChoice): Promise<void> => {
@@ -788,6 +809,8 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
             }
         },
 
+        statusWake: wake,
+
         sidebarRead: (): void => {
             meStamp = tab.covered;
             tab.isMeKnown = true;
@@ -802,6 +825,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
             lockWaits.forEach(waiting => waiting.abort());
             reach?.targets?.removeEventListener("pagehide", onPageHide);
             reach?.targets?.removeEventListener("pageshow", onPageShow);
+            reach?.targets?.removeEventListener("online", wake);
             if (channel) {
                 channel.onmessage = null;
                 try {
@@ -1117,6 +1141,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         shownStatus: status.shownStatus,
         isChoicePending: status.isChoicePending,
         noteInput: status.noteInput,
+        statusWake: status.statusWake,
 
         stop: (): void => {
             isStopped = true;

@@ -442,6 +442,43 @@ describe("a named wait longer than a timer holds", () => {
     });
 });
 
+describe("a wake", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("ends a named wait at once, and the change waiting is asked", async () => {
+        const s = setup();
+
+        void s.rule.save("status", s.change("busy"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs: 10_000 });
+        await settle();
+        jest.advanceTimersByTime(3_000);
+        s.rule.wake("status");
+
+        expect(s.asks.map(a => a.value)).toEqual(["busy", "busy"]);
+    });
+
+    test("keeps a change's own pause, and with no named wait does nothing", async () => {
+        const s = setup();
+
+        void s.rule.save("status", s.change("busy", { settleMs: 1_000 }));
+        s.rule.wake("status");
+        s.rule.wake("another");
+        jest.advanceTimersByTime(999);
+        expect(s.asks).toHaveLength(0);
+
+        jest.advanceTimersByTime(1);
+        expect(s.asks).toHaveLength(1);
+        s.rule.wake("status");
+        expect(s.asks).toHaveLength(1);
+    });
+});
+
 describe("a failure that names no wait", () => {
     test("puts the control back and says why", async () => {
         const s = setup();
