@@ -275,8 +275,8 @@ export type SessionDependencies = {
     /** Asks Rock for a church token. Every ask re-runs the gates. */
     mintChurchToken: () => Promise<ChurchTokenResult>;
 
-    /** Exchanges a church token for a platform token. */
-    exchange: (churchToken: string) => Promise<ExchangeResult>;
+    /** Exchanges a church token for a platform token; the signal gives up a try that took too long. */
+    exchange: (churchToken: string, signal?: AbortSignal) => Promise<ExchangeResult>;
 
     /**
      * Hands the current token to the live connection that is already open. Called after every
@@ -301,6 +301,12 @@ export type SessionDependencies = {
      * token ran out before one succeeded. Whatever the token opened should be closed.
      */
     onEnded?: () => void;
+
+    /**
+     * Called when a try of the start failed in a way that may pass, with the time its next try is
+     * due, so the page can say it is still connecting.
+     */
+    onWaiting?: (untilMs: number) => void;
 };
 
 /** Why the session is not running, when it is not. */
@@ -311,7 +317,11 @@ export type SessionState = {
 
 /** The session a shell holds. */
 export type ChatSession = {
-    /** Mints, exchanges and schedules the first refresh. Resolves false when a gate refused. */
+    /**
+     * Mints, exchanges and schedules the first refresh, asking again on the session's own wait for
+     * as long as Rock or the platform cannot answer. Resolves true with a token, and false only when
+     * a gate or the platform refused, or the session was stopped.
+     */
     start: () => Promise<boolean>;
 
     /** The current platform token, for the client's token callback and a save on close. */
@@ -325,6 +335,12 @@ export type ChatSession = {
      * and runs it again.
      */
     withFreshToken: <T>(call: () => Promise<T>, isExpired: (result: T) => boolean) => Promise<T>;
+
+    /**
+     * The network came back or the page was shown: a wait after a failed try that the platform no
+     * longer holds the session to ends soon, once per wait. Nothing else is moved.
+     */
+    nudge: () => void;
 
     /** Stops the session for good: no refresh runs, is scheduled or is handed over after this. */
     stop: () => void;
@@ -349,6 +365,32 @@ export const refreshWindowStart = 0.5;
 /** The latest point in a token's life at which it is refreshed. */
 export const refreshWindowEnd = 0.9;
 
+/**
+ * The longest one try at a token may take, Rock's mint and the platform's exchange together,
+ * before it counts as no answer. An estimate: a socket a laptop's sleep or a change of network
+ * left dead can hold a request for minutes, and while one is out nothing else is asked.
+ */
+export const tryTimeoutMs = 10000;
+
+/**
+ * How long a church token Rock signed is exchanged again by a later try rather than minted anew.
+ * An estimate: Rock signs one for five minutes and the exchange grants from it until two are
+ * left, so it is good there for about three; this keeps half a minute in hand for Rock's clock
+ * running ahead of the platform's. It spares Rock a mint on every try of a long outage.
+ */
+export const churchTokenReuseMs = 150000;
+
+/** What a try that ran out of time, or was given up by a stop, answered. */
+const noAnswer = Symbol("no answer");
+
+/** One try at a token: its signal, and what settles once it is given up. */
+type TokenTry = {
+    signal: AbortSignal;
+    abandoned: Promise<typeof noAnswer>;
+    abandon: () => void;
+    timer: unknown;
+};
+
 
 /**
  * Creates the session.
@@ -366,78 +408,128 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     // refresh that changes a flag must reach a reader made before it.
     const settings = shallowRef(readSettings(undefined));
 
-    // Failed refreshes in a row, which sets how long the next wait is, and how long the platform
-    // asked to be left alone after the last one, when it said.
+    // Failed tries in a row, which sets how long the next wait is, and how long the platform asked
+    // to be left alone after the last one, when it said.
     let failures = 0;
     let retryAfterSeconds: number | null = null;
-    // Until when, after a failed refresh, nothing asks again: the timer that ends the wait is the one
-    // refresh allowed before it. A platform that answers 503 while it struggles is just when every
-    // call refused as expired would otherwise start an exchange of its own.
-    let retryNotBefore = 0;
+    // The wait after a failed try, while one is pending: when its try is due, before when the
+    // platform asked not to be asked, what runs when it ends, and whether a nudge has moved it.
+    // Nothing asks before it is due but its own timer; a platform that answers 503 while it
+    // struggles is just when every call refused as expired would otherwise start an exchange.
+    let waiting: { due: number, floor: number, run: () => void, isNudged: boolean } | null = null;
+    // The try out now, which a stop gives up, and the church token a failed try left, which the
+    // next exchanges again while it is young instead of asking Rock for another.
+    let current: TokenTry | null = null;
+    let held: { churchToken: string, mintedAt: number } | null = null;
     let refreshing: Promise<boolean> | null = null;
+    // The start is the one asker until it settles, so a call made with no token yet waits for it
+    // rather than starting a sign-in of its own.
+    let isStarting = false;
     let isStopped = false;
     const now = dependencies.now ?? ((): number => Date.now());
 
+    /** Starts a try, which is given up as no answer when it runs past its time or the session stops. */
+    function beginTry(): TokenTry {
+        const controller = new AbortController();
+        let abandon = (): void => undefined;
+        const abandoned = new Promise<typeof noAnswer>(resolve => {
+            abandon = (): void => {
+                controller.abort();
+                resolve(noAnswer);
+            };
+        });
+        const timer = dependencies.setTimer(() => abandon(), tryTimeoutMs);
+
+        return { signal: controller.signal, abandoned, abandon, timer };
+    }
+
     /**
-     * Mints and exchanges, reminting once when the platform calls the church token stale. A gate
-     * that refused, or a platform that refused the church token, is final; a Rock or a platform
-     * that could not answer this time is not, and says nothing about the token already held.
+     * Mints (or takes the church token a failed try left while it is young) and exchanges,
+     * reminting at once when the platform calls the church token stale. A gate that refused, a
+     * platform that refused the church token, or a stale answer twice in a row is final: asking
+     * again cannot mend Rock's clock or key. A Rock or a platform that could not answer this time,
+     * or a try that ran past its time, is not, and says nothing about the token already held.
      */
     async function acquire(): Promise<"ok" | "refused" | "unavailable"> {
-        // A Retry-After answers the one exchange that carried it, so each refresh starts without
-        // one: a refresh that fails at Rock's mint waits the backoff alone.
+        // A Retry-After answers the one exchange that carried it, so each try starts without one:
+        // a try that fails at Rock's mint waits the backoff alone.
         retryAfterSeconds = null;
-        for (let attempt = 0; attempt < 2; attempt++) {
-            const minted = await dependencies.mintChurchToken();
+        const attempt = current = beginTry();
+        // An answer that lands after the try was given up is never read: the race has settled.
+        const within = <T>(work: Promise<T>): Promise<T | typeof noAnswer> => Promise.race([work, attempt.abandoned]);
 
-            // Stopped while Rock answered: nothing more is asked, and nothing it said is kept.
-            if (isStopped) {
-                return "unavailable";
-            }
+        try {
+            let isStaleOnce = false;
+            for (;;) {
+                if (held === null || now() - held.mintedAt >= churchTokenReuseMs) {
+                    held = null;
+                    const minted = await within(dependencies.mintChurchToken());
 
-            if (minted.isUnreachable) {
-                // Only a session with nothing yet shows it; one that holds a token carries on.
-                if (token === null) {
+                    // Stopped while Rock answered: nothing more is asked, and nothing it said is kept.
+                    if (isStopped || minted === noAnswer) {
+                        return "unavailable";
+                    }
+
+                    if (minted.isUnreachable) {
+                        // Only a session with nothing yet shows it; one that holds a token carries on.
+                        if (token === null) {
+                            state.gate = minted.gate;
+                        }
+                        return "unavailable";
+                    }
+
                     state.gate = minted.gate;
+                    if (minted.gate !== "ok" || !minted.churchToken) {
+                        return "refused";
+                    }
+                    held = { churchToken: minted.churchToken, mintedAt: now() };
                 }
-                return "unavailable";
-            }
 
-            state.gate = minted.gate;
-            if (minted.gate !== "ok" || !minted.churchToken) {
+                const exchanged = await within(dependencies.exchange(held.churchToken, attempt.signal));
+                if (isStopped || exchanged === noAnswer) {
+                    return "unavailable";
+                }
+                if (exchanged.ok) {
+                    // Every scheduled refresh mints, so it passes Rock's gates again.
+                    held = null;
+                    token = exchanged.accessToken;
+                    expiresAt = now() + exchanged.expiresInSeconds * 1000;
+                    settings.value = readSettings(exchanged.settings);
+                    state.errorCode = null;
+                    failures = 0;
+                    schedule(exchanged.expiresInSeconds);
+                    return "ok";
+                }
+
+                state.errorCode = exchanged.code;
+                retryAfterSeconds = exchanged.retryAfterSeconds ?? null;
+
+                // A stale church token only means Rock signed it too long ago, so a fresh one is
+                // worth one more try at once; a second in a row means Rock signs them wrongly.
+                if (exchanged.code === "auth.stale_token") {
+                    held = null;
+                    if (isStaleOnce) {
+                        return "refused";
+                    }
+                    isStaleOnce = true;
+                    continue;
+                }
+
+                // No answer, a gateway that gave up, too many requests, or a server fault may pass;
+                // any other refusal is the platform saying no to this church token, and asking
+                // again would only repeat it.
+                const status = exchanged.status;
+                if (status === 0 || status === 408 || status === 429 || status >= 500) {
+                    return "unavailable";
+                }
+                held = null;
                 return "refused";
             }
-
-            const exchanged = await dependencies.exchange(minted.churchToken);
-            if (isStopped) {
-                return "unavailable";
-            }
-            if (exchanged.ok) {
-                token = exchanged.accessToken;
-                expiresAt = now() + exchanged.expiresInSeconds * 1000;
-                settings.value = readSettings(exchanged.settings);
-                state.errorCode = null;
-                failures = 0;
-                schedule(exchanged.expiresInSeconds);
-                return "ok";
-            }
-
-            state.errorCode = exchanged.code;
-            retryAfterSeconds = exchanged.retryAfterSeconds ?? null;
-
-            // A stale church token only means Rock signed it too long ago; a fresh one is
-            // worth one more try at once.
-            if (exchanged.code === "auth.stale_token") {
-                continue;
-            }
-
-            // No answer, too many requests, or a server fault may pass; any other refusal is
-            // the platform saying no to this church token, and asking again would only repeat it.
-            const isPassing = exchanged.status === 0 || exchanged.status === 429 || exchanged.status >= 500;
-            return isPassing ? "unavailable" : "refused";
         }
-
-        return "unavailable";
+        finally {
+            dependencies.clearTimer(attempt.timer);
+            current = null;
+        }
     }
 
     /**
@@ -461,6 +553,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         if (outcome === "refused" || token === null || now() >= expiresAt) {
             const wasHeld = token !== null;
             token = null;
+            held = null;
             clear();
             if (wasHeld) {
                 dependencies.onEnded?.();
@@ -468,8 +561,40 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return false;
         }
 
-        retryLater();
+        waitThen(() => void refresh());
         return false;
+    }
+
+    /**
+     * Signs in, and while Rock or the platform cannot answer, waits and asks again, for as long as
+     * it takes: a short outage of the platform is not a reason chat never opens. Each failed try
+     * is told, so the page can say it is still connecting.
+     */
+    async function start(): Promise<boolean> {
+        isStarting = true;
+        try {
+            for (;;) {
+                const outcome = await acquire();
+                if (isStopped) {
+                    return false;
+                }
+                if (outcome !== "unavailable") {
+                    return outcome === "ok";
+                }
+
+                // A stop lets the wait go at once, and the loop finds the session stopped.
+                await new Promise<void>(resolve => {
+                    waitThen(resolve);
+                    dependencies.onWaiting?.(waiting?.due ?? now());
+                });
+                if (isStopped) {
+                    return false;
+                }
+            }
+        }
+        finally {
+            isStarting = false;
+        }
     }
 
     /**
@@ -485,35 +610,44 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         timer = dependencies.setTimer(() => void refresh(), expiresInSeconds * 1000 * fraction);
     }
 
-    /**
-     * Schedules another refresh after a failed one, after the longer of when the platform said to
-     * come back and a random wait that grows with each failure in a row, so the clients of every
-     * church that failed together do not all ask again in the same second, and a short Retry-After
-     * cannot keep the wait from growing. The cap bounds a proxy's huge value; nothing asks before
-     * the wait ends but its own timer.
-     */
-    function retryLater(): void {
-        clear();
-        if (isStopped) {
-            return;
-        }
+    /** The settings' backoff for a number of failures in a row, at a random point of its range. */
+    function backoff(attempt: number): number {
         const { reconnect_base_ms: baseMs, reconnect_cap_ms: capMs } = settings.value.limits;
-        const backoff = computeBackoff(failures, baseMs, capMs, dependencies.random);
-        const wait = Math.min(capMs, Math.max((retryAfterSeconds ?? 0) * 1000, backoff));
-        failures++;
-        retryNotBefore = now() + wait;
-        timer = dependencies.setTimer(() => {
-            retryNotBefore = 0;
-            void refresh();
-        }, wait);
+        return computeBackoff(attempt, baseMs, capMs, dependencies.random);
     }
 
-    /** Stops the pending refresh, if there is one. */
+    /**
+     * Waits after a failed try, then runs what comes next: the longer of when the platform said to
+     * come back and a random wait that grows with each failure in a row, so the clients of every
+     * church that failed together do not all ask again in the same second, and a short Retry-After
+     * cannot keep the wait from growing. The cap bounds a proxy's huge value. A start and a
+     * refresh wait the same way; before a start the limits are the defaults, as nothing else is
+     * known yet.
+     */
+    function waitThen(run: () => void): void {
+        clear();
+        const capMs = settings.value.limits.reconnect_cap_ms;
+        const floorMs = Math.min(capMs, (retryAfterSeconds ?? 0) * 1000);
+        const wait = Math.min(capMs, Math.max(floorMs, backoff(failures)));
+        failures++;
+        waiting = { due: now() + wait, floor: now() + floorMs, run, isNudged: false };
+        timer = dependencies.setTimer(endWait, wait);
+    }
+
+    /** The wait is over: its try runs. */
+    function endWait(): void {
+        const run = waiting?.run;
+        waiting = null;
+        run?.();
+    }
+
+    /** Stops the pending refresh or wait, if there is one. */
     function clear(): void {
         if (timer !== null) {
             dependencies.clearTimer(timer);
             timer = null;
         }
+        waiting = null;
     }
 
     /**
@@ -523,9 +657,10 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      */
     function refresh(): Promise<boolean> {
         // A stopped session asks Rock for nothing more, whatever still calls it: an expired call
-        // in flight, or a timer that fired late. Inside the wait after a failure nothing is asked
-        // either, whoever asks; the wait's own timer asks when it ends.
-        if (isStopped || now() < retryNotBefore) {
+        // in flight, or a timer that fired late. Nothing is asked while the start is still
+        // signing in, or inside the wait after a failure, whoever asks; the start and the wait's
+        // own timer ask.
+        if (isStopped || isStarting || (waiting !== null && now() < waiting.due)) {
             return Promise.resolve(false);
         }
 
@@ -542,7 +677,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     }
 
     return {
-        start: renew,
+        start,
         currentToken: () => token,
         refresh,
         withFreshToken: async <T>(call: () => Promise<T>, isExpired: (result: T) => boolean): Promise<T> => {
@@ -553,9 +688,33 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
 
             return call();
         },
+        nudge: (): void => {
+            // A try out now, or a wait already moved, is left as it is: a person flicking between
+            // tabs moves one wait once, not once a flick.
+            if (isStopped || waiting === null || waiting.isNudged) {
+                return;
+            }
+            waiting.isNudged = true;
+
+            // Past the platform's own floor the next try comes within a second, at a random point
+            // so a church's devices coming back together do not all ask in one moment; inside it,
+            // the floor is kept. A nudge never moves a try later.
+            const at = now() >= waiting.floor ? now() + backoff(0) : waiting.floor;
+            if (at < waiting.due) {
+                waiting.due = at;
+                if (timer !== null) {
+                    dependencies.clearTimer(timer);
+                }
+                timer = dependencies.setTimer(endWait, at - now());
+            }
+        },
         stop: (): void => {
             isStopped = true;
+            // Whatever awaits the try or the wait is let go now, and finds the session stopped.
+            current?.abandon();
+            const run = waiting?.run;
             clear();
+            run?.();
         },
         settings: () => settings.value,
         applyServiceRefusal: (error: ChatError): void => {

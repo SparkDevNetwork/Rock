@@ -283,4 +283,16 @@ describe("exchangeChurchToken", () => {
 
         expect(answer).toMatchObject({ ok: false, retryAfterSeconds: null });
     });
+
+    test("an exchange given up by its signal aborts the request and answers as one that reached nothing", async () => {
+        const controller = new AbortController();
+        const fetch: PlatformCallOptions["fetch"] = (_to, init) => new Promise((_, reject) => {
+            init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+        });
+
+        const answering = exchangeChurchToken(fetch, url, "publishable", "church-token", 0, controller.signal);
+        controller.abort();
+
+        expect(await answering).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });
+    });
 });

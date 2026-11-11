@@ -21,13 +21,16 @@
 // re-check which channels the person may still hear.
 import {
     ChatSettings,
+    churchTokenReuseMs,
     ChurchTokenResult,
     createSession,
     ExchangeResult,
     readSettings,
     serviceBanner,
-    SessionDependencies
+    SessionDependencies,
+    tryTimeoutMs
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
+import { exchangeChurchToken } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 /** The session with the settings it holds. */
@@ -39,7 +42,7 @@ type SettingsSession = ReturnType<typeof createSession> & {
 type Timer = { callback: () => void, milliseconds: number, cleared: boolean };
 
 function fakes(overrides: Partial<SessionDependencies> = {}): { dependencies: SessionDependencies, timers: Timer[], mints: number, exchanges: string[], pushes: number } {
-    const record = { timers: [] as Timer[], mints: 0, exchanges: [] as string[], pushes: 0 };
+    const record = { timers: [] as Timer[], deadlines: [] as Timer[], mints: 0, exchanges: [] as string[], pushes: 0 };
 
     const dependencies: SessionDependencies = {
         mintChurchToken: async (): Promise<ChurchTokenResult> => {
@@ -54,9 +57,11 @@ function fakes(overrides: Partial<SessionDependencies> = {}): { dependencies: Se
             record.pushes++;
         },
         random: () => 0.5,
+        // Every try sets a deadline of its own and clears it when the try answers; those are kept
+        // apart, so the timers a test reads are the refreshes and waits the session schedules.
         setTimer: (callback: () => void, milliseconds: number): unknown => {
             const timer = { callback, milliseconds, cleared: false };
-            record.timers.push(timer);
+            (milliseconds === tryTimeoutMs ? record.deadlines : record.timers).push(timer);
             return timer;
         },
         clearTimer: (handle: unknown): void => {
@@ -194,7 +199,8 @@ describe("createSession", () => {
         retry.callback();
         await settle();
 
-        expect(session.currentToken()).toBe("platform-for-church-3");
+        // the retry exchanges the church token the failed try left, still young, rather than minting
+        expect(session.currentToken()).toBe("platform-for-church-2");
     });
 
     test("a refresh that cannot reach Rock keeps the token it has and tries again soon", async () => {
@@ -754,8 +760,8 @@ describe("retrying a refresh that could not complete", () => {
 // while it struggles is exactly when every refused call would otherwise start an exchange of its own.
 describe("waiting after a refresh the platform could not serve", () => {
     /** A session whose exchanges after the first all fail as given, with a clock the test moves. */
-    function failing(failure: ExchangeResult): { f: ReturnType<typeof fakes>, clock: { now: number }, ended: { count: number } } {
-        let exchanges = 0;
+    function failing(failure: ExchangeResult): { f: ReturnType<typeof fakes>, clock: { now: number }, ended: { count: number }, asked: { exchanges: number } } {
+        const asked = { exchanges: 0 };
         const clock = { now: 0 };
         const ended = { count: 0 };
         const f = fakes({
@@ -764,13 +770,13 @@ describe("waiting after a refresh the platform could not serve", () => {
                 ended.count++;
             },
             exchange: async (churchToken: string): Promise<ExchangeResult> => {
-                exchanges++;
-                return exchanges === 1
+                asked.exchanges++;
+                return asked.exchanges === 1
                     ? { ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 }
                     : failure;
             }
         });
-        return { f, clock, ended };
+        return { f, clock, ended, asked };
     }
 
     const unavailable = (retryAfterSeconds: number | null): ExchangeResult => ({ ok: false, status: 503, code: "rpc.unavailable", retryAfterSeconds });
@@ -839,7 +845,8 @@ describe("waiting after a refresh the platform could not serve", () => {
         await session.refresh();
         const first = f.timers[f.timers.length - 1];
         expect(first.milliseconds).toBe(8000);
-        clock.now += first.milliseconds;
+        // late enough that the church token the failed try left is too old to exchange, so the retry asks Rock
+        clock.now += churchTokenReuseMs;
         first.callback();
         await settle();
 
@@ -849,24 +856,24 @@ describe("waiting after a refresh the platform could not serve", () => {
     });
 
     test("a call refused as expired inside the wait does not mint or exchange", async () => {
-        const { f, clock } = failing(unavailable(8));
+        const { f, clock, asked } = failing(unavailable(8));
         const session = createSession(f.dependencies);
         await session.start();
         await session.refresh();
         const mints = f.mints;
-        const exchanges = f.exchanges.length;
+        const exchanges = asked.exchanges;
 
         clock.now += 7999;
         const result = await session.withFreshToken(async () => "expired", r => r === "expired");
         expect(await session.refresh()).toBe(false);
 
         expect(result).toBe("expired");
-        expect([f.mints, f.exchanges.length]).toEqual([mints, exchanges]);
+        expect([f.mints, asked.exchanges]).toEqual([mints, exchanges]);
 
-        // The wait's own timer asks again when it ends.
+        // The wait's own timer asks again when it ends, with the church token the failed try left.
         f.timers[f.timers.length - 1].callback();
         await settle();
-        expect(f.mints).toBe(mints + 1);
+        expect([f.mints, asked.exchanges]).toEqual([mints, exchanges + 1]);
     });
 
     test("a run of failures keeps the live token until it expires, then ends the session once", async () => {
@@ -887,5 +894,368 @@ describe("waiting after a refresh the platform could not serve", () => {
         expect(session.currentToken()).toBeNull();
         expect(ended.count).toBe(1);
         expect(f.timers.filter(t => !t.cleared)).toHaveLength(0);
+    });
+});
+
+// A start the platform cannot answer yet keeps trying on the same wait a refresh takes, rather
+// than giving up: a church opening chat during a short outage gets chat when it passes. Only a
+// refusal ends a start. The exchange here is the real one over a fake network, so what the
+// platform's 503, its Retry-After and a dead socket look like on the wire is what is read.
+describe("a start the platform cannot answer yet", () => {
+    /** What the network answers one exchange: a status, a request that never reaches anything, or one that never answers. */
+    type Answer = { status: number, retryAfter?: number, code?: string } | "unreachable" | "hang";
+
+    /** A mint that is Rock's answer, or one that never answers, or one the test answers itself. */
+    type Mint = ChurchTokenResult | "hang" | Promise<ChurchTokenResult>;
+
+    beforeEach(() => {
+        jest.useFakeTimers({ now: 0 });
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    function answer(reply: Answer, signal: AbortSignal | null | undefined): Promise<Response> {
+        if (reply === "unreachable") {
+            return Promise.reject(new TypeError("Failed to fetch"));
+        }
+        if (reply === "hang") {
+            // a socket that never answers gives up only when it is aborted, as fetch does
+            return new Promise((_, reject) => signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError"))));
+        }
+        const body = reply.status === 200
+            ? { access_token: "platform-token", expires_in: 300, settings: {} }
+            : { error: { code: reply.code ?? "rpc.unavailable" } };
+        const headers: Record<string, string> = reply.retryAfter !== undefined ? { "retry-after": String(reply.retryAfter) } : {};
+        return Promise.resolve({
+            ok: reply.status >= 200 && reply.status < 300,
+            status: reply.status,
+            headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+            json: async () => body
+        } as unknown as Response);
+    }
+
+    /** The platform answering each exchange with the next answer, then 200; Rock answering each mint with the next mint, then ok. */
+    function platform(answers: Answer[], options: { random?: number, mints?: Mint[], onEnded?: () => void } = {}): {
+        dependencies: SessionDependencies,
+        exchanges: Array<{ churchToken: string, at: number, signal: AbortSignal | null }>,
+        mints: number[],
+        waits: number[]
+    } {
+        const exchanges: Array<{ churchToken: string, at: number, signal: AbortSignal | null }> = [];
+        const mints: number[] = [];
+        const waits: number[] = [];
+        const dependencies: SessionDependencies = {
+            mintChurchToken: (): Promise<ChurchTokenResult> => {
+                mints.push(Date.now());
+                const next = options.mints?.shift();
+                if (next === "hang") {
+                    return new Promise(() => undefined);
+                }
+                return Promise.resolve(next ?? { gate: "ok", churchToken: `church-${mints.length}` });
+            },
+            exchange: (churchToken: string, signal?: AbortSignal): Promise<ExchangeResult> => {
+                exchanges.push({ churchToken, at: Date.now(), signal: signal ?? null });
+                const reply = answers.shift() ?? { status: 200 };
+                return exchangeChurchToken((_url, init) => answer(reply, init.signal), "http://platform", "k", churchToken, Date.now(), signal);
+            },
+            pushTokenToConnection: async () => undefined,
+            random: () => options.random ?? 0.5,
+            setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
+            clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
+            now: () => Date.now(),
+            onWaiting: until => waits.push(until),
+            onEnded: options.onEnded
+        };
+        return { dependencies, exchanges, mints, waits };
+    }
+
+    /** Starts, keeping how the start resolved, or null while it has not. */
+    function begin(session: ReturnType<typeof createSession>): { result: boolean | null } {
+        const outcome: { result: boolean | null } = { result: null };
+        void session.start().then(result => outcome.result = result);
+        return outcome;
+    }
+
+    const busy = (retryAfter?: number): Answer => ({ status: 503, retryAfter, code: "rpc.unavailable" });
+
+    test("a start the exchange answers 503 with a Retry-After waits exactly that long and signs in on the next answer", async () => {
+        const p = platform([busy(4)]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(3999);
+
+        // the backoff of a first failure (half to all of one second) is shorter, so the server's wait is the one
+        expect(started.result).toBeNull();
+        expect(p.exchanges).toHaveLength(1);
+
+        await jest.advanceTimersByTimeAsync(1);
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 4000]);
+        expect(started.result).toBe(true);
+        expect(session.currentToken()).toBe("platform-token");
+    });
+
+    test("each wait is the longer of the Retry-After and a backoff that grows, never past the cap", async () => {
+        const p = platform([busy(2), busy(2), busy(2), busy(2)]);
+        const session = createSession(p.dependencies);
+
+        begin(session);
+        await jest.advanceTimersByTimeAsync(20000);
+
+        // backoffs at the draw's middle are 0.75, 1.5, 3 and 6 s; a 2 s floor lifts the first two
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 2000, 4000, 7000, 13000]);
+
+        const capped = platform([busy(99)]);
+        begin(createSession(capped.dependencies));
+        await jest.advanceTimersByTimeAsync(30000);
+
+        expect(capped.exchanges.map(e => e.at - capped.exchanges[0].at)).toEqual([0, 30000]);
+    });
+
+    test("nothing asks for a token inside a start's wait, however often a refresh or a call refused as expired asks", async () => {
+        const p = platform([busy(8)]);
+        const session = createSession(p.dependencies);
+
+        begin(session);
+        await jest.advanceTimersByTimeAsync(1000);
+        const refreshes = await Promise.all([session.refresh(), session.refresh()]);
+        const call = await session.withFreshToken(async () => "expired", r => r === "expired");
+
+        expect(refreshes).toEqual([false, false]);
+        expect(call).toBe("expired");
+        expect(p.mints).toHaveLength(1);
+        expect(p.exchanges).toHaveLength(1);
+    });
+
+    test("a start the platform refuses resolves false after one exchange and leaves nothing scheduled", async () => {
+        const p = platform([{ status: 401, code: "auth.invalid_token" }]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(started.result).toBe(false);
+        expect(p.exchanges).toHaveLength(1);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("a refresh whose fresh church token is called stale twice in a row ends the session and schedules nothing", async () => {
+        let ended = 0;
+        const p = platform([{ status: 200 }, { status: 401, code: "auth.stale_token" }, { status: 401, code: "auth.stale_token" }], { onEnded: () => ended++ });
+        const session = createSession(p.dependencies);
+        begin(session);
+        await jest.advanceTimersByTimeAsync(0);
+
+        // asking a third time cannot mend a clock or a key Rock signs with wrongly
+        expect(await session.refresh()).toBe(false);
+
+        expect(ended).toBe(1);
+        expect(session.currentToken()).toBeNull();
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("a start that cannot reach Rock waits the backoff and asks Rock again", async () => {
+        const p = platform([], { mints: [{ gate: "gate_unavailable", churchToken: null, isUnreachable: true }] });
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(749);
+        expect(p.mints).toEqual([0]);
+        expect(started.result).toBeNull();
+
+        await jest.advanceTimersByTimeAsync(1);
+
+        expect(p.mints).toEqual([0, 750]);
+        expect(started.result).toBe(true);
+    });
+
+    test("a stop inside a start's wait resolves the start false, clears its timer and asks for nothing after", async () => {
+        const p = platform([busy(4)]);
+        const session = createSession(p.dependencies);
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(1000);
+
+        session.stop();
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(started.result).toBe(false);
+        expect(jest.getTimerCount()).toBe(0);
+        await jest.advanceTimersByTimeAsync(60000);
+        expect(p.mints).toHaveLength(1);
+        expect(p.exchanges).toHaveLength(1);
+    });
+
+    test("a stop while a try is out aborts its exchange and resolves the start false", async () => {
+        const p = platform(["hang"]);
+        const session = createSession(p.dependencies);
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(1000);
+
+        session.stop();
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(p.exchanges[0].signal?.aborted).toBe(true);
+        expect(started.result).toBe(false);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("a nudge past the platform's floor brings the next try to half a second to a second away", async () => {
+        const p = platform(["unreachable", "unreachable", "unreachable", "unreachable"]);
+        const session = createSession(p.dependencies);
+        begin(session);
+
+        // waits of 0.75, 1.5 and 3 s, then a fourth failure at 5.25 s waits 6 s, to 11.25 s
+        await jest.advanceTimersByTimeAsync(6250);
+        expect(p.exchanges).toHaveLength(4);
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(749);
+        expect(p.exchanges).toHaveLength(4);
+        await jest.advanceTimersByTimeAsync(1);
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 750, 2250, 5250, 7000]);
+    });
+
+    test("a nudge inside the platform's Retry-After waits for it to end, not past it", async () => {
+        const p = platform([busy(2), busy(2), busy(2), busy(2)]);
+        const session = createSession(p.dependencies);
+        begin(session);
+
+        // the fourth failure at 7 s waits the 6 s backoff, though the platform asked for only 2 s
+        await jest.advanceTimersByTimeAsync(7500);
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(1499);
+        expect(p.exchanges).toHaveLength(4);
+        await jest.advanceTimersByTimeAsync(1);
+
+        expect(p.exchanges[4].at).toBe(9000);
+    });
+
+    test("every failed try of a start is told with the time of the next", async () => {
+        const p = platform([busy(4), busy(4)]);
+        const session = createSession(p.dependencies);
+
+        begin(session);
+        await jest.advanceTimersByTimeAsync(10000);
+
+        expect(p.waits).toEqual([4000, 8000]);
+    });
+
+    test("an exchange that never answers is given up at ten seconds and tried again on the backoff", async () => {
+        const p = platform(["hang"]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(tryTimeoutMs - 1);
+        expect(p.exchanges[0].signal?.aborted).toBe(false);
+        await jest.advanceTimersByTimeAsync(1);
+        expect(p.exchanges[0].signal?.aborted).toBe(true);
+
+        await jest.advanceTimersByTimeAsync(750);
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, tryTimeoutMs + 750]);
+        expect(started.result).toBe(true);
+    });
+
+    test("a mint that never answers is given up the same way, and its late answer changes nothing", async () => {
+        let late!: (result: ChurchTokenResult) => void;
+        const p = platform([], { mints: [new Promise<ChurchTokenResult>(resolve => late = resolve)] });
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(tryTimeoutMs + 750);
+
+        expect(p.mints).toEqual([0, tryTimeoutMs + 750]);
+        expect(started.result).toBe(true);
+
+        late({ gate: "ok", churchToken: "church-late" });
+        await jest.advanceTimersByTimeAsync(0);
+
+        expect(p.exchanges.map(e => e.churchToken)).toEqual(["church-2"]);
+    });
+
+    test("a later try exchanges the church token Rock signed while it is young, and mints anew once it is not", async () => {
+        const p = platform([busy(30), busy(30), busy(30), busy(30), busy(30), busy(30)]);
+        const session = createSession(p.dependencies);
+
+        begin(session);
+        await jest.advanceTimersByTimeAsync(60000);
+
+        expect(p.mints).toEqual([0]);
+        expect(p.exchanges.map(e => e.churchToken)).toEqual(["church-1", "church-1", "church-1"]);
+
+        await jest.advanceTimersByTimeAsync(120000);
+
+        // at 150 s the first is too old to trust at the exchange, so the try mints
+        expect(p.mints).toEqual([0, churchTokenReuseMs]);
+        expect(p.exchanges.filter(e => e.at >= churchTokenReuseMs).map(e => e.churchToken)).toEqual(["church-2", "church-2"]);
+    });
+
+    test("a church token held over and called stale is minted again at once in the same try", async () => {
+        const p = platform([busy(4), { status: 401, code: "auth.stale_token" }]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(4000);
+
+        expect(p.mints).toEqual([0, 4000]);
+        expect(p.exchanges.map(e => [e.churchToken, e.at])).toEqual([["church-1", 0], ["church-1", 4000], ["church-2", 4000]]);
+        expect(started.result).toBe(true);
+    });
+
+    test("a fresh church token called stale straight after a held one was is a refusal", async () => {
+        const p = platform([busy(4), { status: 401, code: "auth.stale_token" }, { status: 401, code: "auth.stale_token" }]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(4000);
+
+        expect(started.result).toBe(false);
+        expect(p.exchanges).toHaveLength(3);
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("a nudge while a try is out starts no second try", async () => {
+        const p = platform(["hang"]);
+        const session = createSession(p.dependencies);
+        begin(session);
+        await jest.advanceTimersByTimeAsync(1000);
+
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(2000);
+
+        expect(p.exchanges).toHaveLength(1);
+    });
+
+    test("two nudges in one wait move it once", async () => {
+        const draws = [0.5, 0.5, 0.5, 0.5, 0.5, 0];
+        const p = platform(["unreachable", "unreachable", "unreachable", "unreachable"]);
+        p.dependencies.random = () => draws.shift() ?? 0;
+        const session = createSession(p.dependencies);
+        begin(session);
+        await jest.advanceTimersByTimeAsync(5300);
+
+        // the first nudge draws the middle, to 6.05 s; a second, drawing the least, would bring it to 5.9 s
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(100);
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(649);
+        expect(p.exchanges).toHaveLength(4);
+        await jest.advanceTimersByTimeAsync(1);
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 750, 2250, 5250, 6050]);
+    });
+
+    test("a gateway's 408 is no answer, which may pass, not a refusal", async () => {
+        const p = platform([{ status: 408, code: "rpc.timeout" }]);
+        const session = createSession(p.dependencies);
+
+        const started = begin(session);
+        await jest.advanceTimersByTimeAsync(750);
+
+        expect(p.exchanges).toHaveLength(2);
+        expect(started.result).toBe(true);
     });
 });

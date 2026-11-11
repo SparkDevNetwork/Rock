@@ -215,6 +215,7 @@ export type ExchangeAnswer =
  * @param publishableKey The platform's publishable key.
  * @param churchToken The token Rock signed.
  * @param now The time now in milliseconds.
+ * @param signal Gives the exchange up; a request given up answers as one that reached nothing.
  *
  * @returns The token and settings, or the refusal.
  */
@@ -223,12 +224,14 @@ export async function exchangeChurchToken(
     projectUrl: string,
     publishableKey: string,
     churchToken: string,
-    now: number = Date.now()
+    now: number = Date.now(),
+    signal?: AbortSignal
 ): Promise<ExchangeAnswer> {
     try {
         const response = await fetch(`${projectUrl.replace(/\/+$/, "")}/functions/v1/token-exchange`, {
             method: "POST",
-            headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey }
+            headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey },
+            ...(signal ? { signal } : {})
         });
         const body = await response.json().catch(() => null) as TokenExchangeResponse | null;
 
