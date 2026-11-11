@@ -548,11 +548,14 @@
  * The name gives way first, to a few letters, the header above naming her in full; then the time.
  * "is busy" and "and won't be notified." never do, since they say what sending does. Each space
  * is its part's own text, kept by pre; the one after the name ends the name's part, so an ellipsis
- * cutting the name cuts it too and a cut name leaves one gap, not two.
+ * cutting the name cuts it too and a cut name leaves one gap, not two. The few-letters floor is
+ * capped at the name's own width (calc-size, where the browser has it), so a short name is never
+ * padded past its space; a browser without calc-size has no floor and the name gives way alone.
  */
 .chat-composer-note-name {
     flex: 0 1 auto;
-    min-width: 2.4em;
+    min-width: 0;
+    min-width: calc-size(max-content, min(size, 2.4em));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: pre;

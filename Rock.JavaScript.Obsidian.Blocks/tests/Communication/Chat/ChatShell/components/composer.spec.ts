@@ -1656,7 +1656,9 @@ describe("the composer's Busy note", () => {
             const fixed = rule(".chat-composer-note-fixed");
 
             expect(name).toMatch(/flex: 0 1 auto;/);
-            expect(name).toMatch(/min-width: 2\.4em;/);
+            // the floor is capped at the name's own width, so a short name takes one space and no padding
+            expect(name).toMatch(/min-width: calc-size\(max-content, min\(size, 2\.4em\)\);/);
+            expect(name).not.toMatch(/min-width: 2\.4em;/);
             expect(name).toMatch(/text-overflow: ellipsis;/);
             expect(until).toMatch(/flex: 0 \.0001 auto;/);
             expect(until).toMatch(/min-width: 0;/);
