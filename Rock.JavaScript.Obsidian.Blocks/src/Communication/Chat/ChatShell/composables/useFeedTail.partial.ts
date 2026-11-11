@@ -18,16 +18,19 @@
 // and someone typing is drawn. One owner per view, so the stack moves as one: a message arriving
 // glides the rows above up by its height while it fades in riding with them, the typing bubble
 // comes in and slides out the same way, and her message grows out of the bubble it ends. It moves
-// only for what the record says happened while the view was open, never for what a page, a re-read
-// or a switch states, and nothing moves for a reader scrolled up.
+// for what the record says happened while the view was open, and for its open: what changes while
+// it enters or as its first read lands, however late, closes from where it stood. What a later
+// page, re-read or catch-up states is simply there, and nothing moves for a reader scrolled up.
 //
 // Before the render that draws a change it reads where the tail stands on screen, motion in flight
 // included. After it, it plans, then plays: it takes what is going out of the flow, lets go of the
 // motions this change moves again, reads where everything now lays out with nothing of its own
 // moving, and plays each part from where it stood on screen to there, so a change that lands
 // mid-motion continues from what is on screen and two motions never stack. The view's open is its
-// entrance and its first read: whatever that read lands at the tail rides the open's motion, laid into
-// the entrance while it plays and gliding on its own once it has ended, never stepping.
+// entrance and its first read: a change of state alone in it is planned part by part as any change
+// is, with nothing fading in since nothing was recorded, over a message's time on the state curve,
+// never faster however little of the entrance is left. What the record says happened while the view
+// enters is laid into the entrance instead, since the feed is still fading in.
 //
 // The motion is one transform on the box that holds everything, plus the parts that do not ride
 // their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
@@ -246,8 +249,11 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     let playedStart = since;
     let playedEnd = since;
 
+    /** Whether the view's open has drawn its first read; a view with no read of its own has. */
+    const isLanded = (): boolean => options.landed?.() ?? true;
+
     /** Whether the open's first read was drawn by a change this view has read. */
-    let wasLanded = options.landed?.() ?? true;
+    let wasLanded = isLanded();
 
     let isStopped = false;
 
@@ -393,10 +399,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const scroller = options.scroller();
         const entrance = entranceLeft(scroller);
         // A change of state alone is the open's while the entrance plays or as the open's first read
-        // lands, however late; any other is simply there.
+        // lands, however late; any other is simply there. A recorded change while the view enters
+        // is folded into the entrance.
         const isOpen = !isMotion && (entrance > 0 || was.isLanding);
+        const isFolded = isMotion && entrance > 0;
         if (!was.isFollowing || (!isMotion && !isOpen)) {
-            // Scrolled up, nothing moves.
+            // Scrolled up nothing moves, and a change of state outside the open is simply there.
             release();
             return;
         }
@@ -421,7 +429,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         for (const part of parting) {
             const at = was.elements.get(part.element);
             const keepsRoom = reduced && part === bubbleGoing && !handoff;
-            if (!at || entrance > 0 || isOpen) {
+            if (!at || isFolded) {
                 part.done();
                 continue;
             }
@@ -496,21 +504,23 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const handoffBox = handoffRow?.querySelector<HTMLElement>("[data-tail='box']") ?? null;
         const handoffAt = handoffBox?.getBoundingClientRect();
 
-        if (entrance > 0 || isOpen) {
-            // The open's one motion: what lands while the view enters rides the entrance to its end,
-            // closing the rest of the way evenly so a short remainder does not open with a jump; what
-            // its first read lands once the entrance has ended closes the same way over a message's time.
+        if (isFolded) {
+            // What the record says happened while the view enters rides the entrance, closing evenly
+            // over a message's time: what is left of the entrance can be a frame, which would step.
             if (Math.abs(offset) >= .5 && !reduced) {
-                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: entrance > 0 ? entrance : tokens.msg, easing: tokens.easeState, id: "chat-tail-open" });
+                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: tokens.msg, easing: tokens.easeState, id: "chat-tail-open" });
             }
             lifted.forEach(part => part.done());
             return;
         }
 
         // Plan step 5: every motion as data. Each geometric motion of one change shares one timing,
-        // so a part inside a moving box lands with it exactly.
+        // so a part inside a moving box lands with it exactly. The open closes evenly over a
+        // message's time, whatever is left of its entrance.
         const isLeaveOnly = goes && arrivals.length === 0;
-        const geometry: KeyframeAnimationOptions = { duration: isLeaveOnly ? tokens.base : tokens.msg, easing: isLeaveOnly ? tokens.easeState : tokens.easeIn };
+        const geometry: KeyframeAnimationOptions = isOpen
+            ? { duration: tokens.msg, easing: tokens.easeState }
+            : { duration: isLeaveOnly ? tokens.base : tokens.msg, easing: isLeaveOnly ? tokens.easeState : tokens.easeIn };
         const starts = new Map<Element, Offset>([[content, { x: 0, y: reduced ? 0 : offset }]]);
         const startOf = (element: Element): Offset => {
             const sum = { x: 0, y: 0 };
@@ -568,7 +578,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         // Plan step 6 and play. The stack first, then its parts in the document's order, so each
         // container's start is planned before what is in it.
         if (!reduced && Math.abs(offset) >= .5) {
-            play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...geometry, id: "chat-tail-glide" });
+            play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...geometry, id: isOpen ? "chat-tail-open" : "chat-tail-glide" });
         }
         // Only the foot clips: above and beside, a face gliding in from the row above is drawn whole.
         // Nothing moving in the content starts further from a row than the content is wide and tall
@@ -783,10 +793,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     watch([() => {
         const place = options.place();
         return place ? motion?.versionOf(place) : undefined;
-    }, options.drawn, () => options.landed?.() ?? true], () => {
-        const isLanded = options.landed?.() ?? true;
-        const isLanding = isLanded && !wasLanded;
-        wasLanded = isLanded;
+    }, options.drawn, isLanded], () => {
+        const landed = isLanded();
+        const isLanding = landed && !wasLanded;
+        wasLanded = landed;
         if (isStopped || before) {
             // a change already read for this render lands with the read
             if (before && isLanding) {

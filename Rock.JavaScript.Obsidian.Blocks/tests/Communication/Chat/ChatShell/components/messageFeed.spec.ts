@@ -2640,3 +2640,32 @@ describe("a failed send's own choices", () => {
         expect(wrapper.emitted("discard")).toEqual([["b"]]);
     });
 });
+
+// The feed mounts as its room opens, so the first page its timeline reads after that is its open's
+// first read, which its tail carries as the open's however late it lands; a page read before the
+// feed mounted is not.
+describe("the open's first read, as the feed hands it to its tail", () => {
+    test("the tail is told the open has landed once a page is read after the feed mounts, and not before", async () => {
+        const tails = jest.requireActual<typeof import("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial")>("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial");
+        const handed: { landed?: () => boolean }[] = [];
+        const real = tails.useFeedTail;
+        const spy = jest.spyOn(tails, "useFeedTail").mockImplementation(options => {
+            handed.push(options);
+            return real(options);
+        });
+        try {
+            const state = timeline([message(1, anna, at(14, 50))], { pagesRead: 3 });
+            draw({ timeline: state });
+            const tail = handed.find(options => options.landed);
+            expect(tail?.landed?.()).toBe(false);
+
+            state.pagesRead++;
+            await nextTick();
+
+            expect(tail?.landed?.()).toBe(true);
+        }
+        finally {
+            spy.mockRestore();
+        }
+    });
+});
