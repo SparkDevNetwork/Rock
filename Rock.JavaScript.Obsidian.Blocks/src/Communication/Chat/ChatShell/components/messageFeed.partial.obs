@@ -950,6 +950,14 @@
     /** How many pages the timeline had read as the feed mounted, which its open's first read moves past. */
     const pagesReadAtOpen = props.timeline.pagesRead;
 
+    /**
+     * How far the person had read as the feed mounted, saves since its page included. A first unread
+     * at or before it is one they read on an earlier visit, which the held page still names and the
+     * open's read no longer does: drawn, it would go as that read lands, the rows above stepping by
+     * its height. Read once, so a save made while reading leaves the visit's divider standing.
+     */
+    const readAtOpen = props.timeline.readCursor;
+
     /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
     let isEntrancePending = !props.timeline.isLoaded;
 
@@ -968,12 +976,14 @@
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
     /**
-     * The message the New divider stands above: the first unread the platform found, or the page's
-     * top when that message is older than the page loaded.
+     * The message the New divider stands above: the first unread the platform found, unless the
+     * person had read past it before this visit, or the page's top when that message is older than
+     * the page loaded.
      */
     const dividerBeforeId = computed((): number | null => {
         const firstUnreadId = props.timeline.firstUnreadId;
-        const id = firstUnreadId === null ? null : props.timeline.messages.find(m => m.id >= firstUnreadId)?.id ?? null;
+        const isReadBefore = firstUnreadId !== null && readAtOpen !== null && firstUnreadId <= readAtOpen;
+        const id = firstUnreadId === null || isReadBefore ? null : props.timeline.messages.find(m => m.id >= firstUnreadId)?.id ?? null;
         return id !== null && clearedThroughId.value !== null && id <= clearedThroughId.value ? null : id;
     });
 

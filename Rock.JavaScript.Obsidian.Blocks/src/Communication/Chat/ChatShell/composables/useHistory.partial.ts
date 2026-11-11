@@ -75,7 +75,11 @@ export type TimelineState = {
     /** Whether older messages exist than the oldest here. */
     hasMore: boolean;
 
-    /** The person's read position when the first page was read. */
+    /**
+     * The person's read position: as the last page read stated it, moved on by each save of it
+     * since, here or on another of their devices, so a conversation opened again from its held page
+     * knows how far they read.
+     */
     readCursor: number | null;
 
     /** How many messages past that position are news to the reader, as the platform counted them for the unread strip. */
@@ -225,6 +229,9 @@ export type Timelines = {
      * from its next open.
      */
     release: (aliases: readonly string[]) => void;
+
+    /** The person's read position was saved: a held timeline's moves on to it, never back. */
+    readSaved: (channelId: string, readCursor: number) => void;
 
     /** The channel is no longer open: its catch-up stops and any answer on its way is dropped. */
     leave: (channelId: string) => void;
@@ -1306,6 +1313,14 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             const at = ++seq;
             for (const alias of aliases) {
                 released.set(alias.toLowerCase(), at);
+            }
+        },
+
+        readSaved: (channelId: string, readCursor: number): void => {
+            // a room never read has no page to judge, and its first page states the position
+            const timeline = states.get(channelId);
+            if (timeline) {
+                timeline.readCursor = Math.max(timeline.readCursor ?? readCursor, readCursor);
             }
         },
 
