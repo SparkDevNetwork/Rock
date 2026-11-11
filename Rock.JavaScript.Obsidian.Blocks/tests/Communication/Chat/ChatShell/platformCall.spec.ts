@@ -295,4 +295,19 @@ describe("exchangeChurchToken", () => {
 
         expect(await answering).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });
     });
+
+    test("an exchange given up while its answer is read answers as one that reached nothing, never as a refusal", async () => {
+        const controller = new AbortController();
+        const fetch: PlatformCallOptions["fetch"] = async (_to, init) => ({
+            ...response(200, {}),
+            json: () => new Promise((_, reject) => {
+                init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                controller.abort();
+            })
+        } as unknown as Response);
+
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", { now: 0, signal: controller.signal });
+
+        expect(answer).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });
+    });
 });
