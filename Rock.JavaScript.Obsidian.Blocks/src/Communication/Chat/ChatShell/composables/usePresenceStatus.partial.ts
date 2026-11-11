@@ -321,7 +321,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
      * until the revision moves, so a host drawn again for its own reasons hands every badge the
      * status it already has, and neither the badge nor its words are made again.
      */
-    const faces = new Map<string, { at: number, face: FaceStatus | null }>();
+    const faces = new Map<string, { at: number, face: FaceStatus }>();
 
     /** The server's clock less the page's, from the newest token's mint time. */
     let offsetMs = 0;
@@ -873,7 +873,12 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 return held.face;
             }
             const drawn = drawnNow(key);
-            const face = drawn ? { ...drawn, revision: at } : null;
+            // only a drawn face is held, since null is always null, so the faces held are bounded by the entries and her own
+            if (!drawn) {
+                faces.delete(key);
+                return null;
+            }
+            const face = { ...drawn, revision: at };
             faces.set(key, { at, face });
             return face;
         },

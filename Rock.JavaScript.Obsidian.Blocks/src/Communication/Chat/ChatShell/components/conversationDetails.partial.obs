@@ -748,10 +748,12 @@
      */
     const otherAlias = computed((): string | null => props.kind === "person" ? props.facts.people[0]?.person_alias_guid.toLowerCase() ?? null : null);
 
-    // Kept mounted while closed, so it asks about the faces it draws only while it is open.
-    const statusOf = useFaceStatus(() => !props.isOpen ? []
-        : props.kind === "person" ? (otherAlias.value ? [otherAlias.value] : [])
-            : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
+    // Asked about while closed too: the dialog draws its people from the room's facts, read once at
+    // the room's open, with no read of its own, so only the exchanges keep their status current
+    // for the moment it opens; a group is at most nine people, one room at a time.
+    const statusOf = useFaceStatus(() => props.kind === "person"
+        ? (otherAlias.value ? [otherAlias.value] : [])
+        : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
 
     const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
 
