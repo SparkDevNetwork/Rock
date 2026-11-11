@@ -907,8 +907,8 @@
     /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());
 
-    // Every two-person row's other person, kept last, since the open conversation and any panel matter more.
-    const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 3);
+    // Every two-person row's other person, after the open conversation and any card, and before a panel's or a search's people, since these stay on screen.
+    const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 2);
 
     // #endregion Values
 

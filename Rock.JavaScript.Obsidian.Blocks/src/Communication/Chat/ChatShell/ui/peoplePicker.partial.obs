@@ -273,7 +273,7 @@
     // #region Values
 
     // The results drawn, from the search's own answer, which tells the store before they are drawn.
-    const statusOf = useFaceStatus(() => (props.results ?? []).map(person => person.person_alias_guid), 2);
+    const statusOf = useFaceStatus(() => (props.results ?? []).map(person => person.person_alias_guid), 3);
 
     const inputElement = ref<HTMLInputElement>();
 

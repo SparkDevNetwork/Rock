@@ -788,7 +788,7 @@
      */
     const onlyAlias = computed((): string | null => props.chosen.length === 1 ? props.chosen[0].person_alias_guid.toLowerCase() : null);
 
-    const statusOf = useFaceStatus(() => onlyAlias.value ? [onlyAlias.value] : [], 2);
+    const statusOf = useFaceStatus(() => onlyAlias.value ? [onlyAlias.value] : [], 3);
 
     const onlyStatus = computed(() => onlyAlias.value ? statusOf(onlyAlias.value) : null);
 

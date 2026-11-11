@@ -859,8 +859,8 @@
 
     const fullHintId = `chat-mb-full-${newGuid()}`;
 
-    // Every row drawn, after the open conversation and any card, before the sidebar's rows.
-    const faceStatusOf = useFaceStatus(() => props.members.map(member => member.person_alias_guid), 2);
+    // Every row loaded, after the open conversation, any card and the sidebar's rows, so a long roster takes only what is left of the watch.
+    const faceStatusOf = useFaceStatus(() => props.members.map(member => member.person_alias_guid), 3);
 
     // #endregion Values
 

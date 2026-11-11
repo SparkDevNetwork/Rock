@@ -95,8 +95,10 @@ export type ExchangeBody = {
 
 /**
  * How early a face's people are kept when the list of people watched is cut: 0 the person
- * themselves, 1 the open conversation's person and an open card or details, 2 the members, the
- * people pickers' results and New message's choice, 3 the sidebar's two-person rows.
+ * themselves, 1 the open conversation's person and an open card or details, 2 the sidebar's
+ * two-person rows, 3 the members, the people pickers' results and New message's choice. The
+ * sidebar's rows are few and drawn for as long as chat is open, so a long roster or a wide search
+ * beside them takes only what is left and never greys their badges.
  */
 export type WatchRank = 0 | 1 | 2 | 3;
 

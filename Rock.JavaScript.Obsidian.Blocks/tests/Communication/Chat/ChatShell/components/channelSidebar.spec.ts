@@ -26,6 +26,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
+import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -1072,6 +1073,43 @@ describe("online status", () => {
         dm_other_count: 2,
         room_kind: "group",
         title: "Anna, Ben"
+    });
+
+    // The platform asks about 200 people at most. The sidebar's people stay on the screen she
+    // watches most, so a long roster open beside them never pushes them out, which would grey
+    // their badges at their row's end and bring them back once the panel closed.
+    test("a members panel of 250 loaded leaves the sidebar's two-person rows in the watch", () => {
+        const dmBen = row({
+            channel_id: "c0000013-0000-4000-8000-000000000000",
+            channel_type: "dm",
+            dm_people: [{ person_alias_guid: ben, nick_name: "Ben", last_name: "Okafor", avatar_url: null }],
+            dm_other_count: 1,
+            room_kind: "person",
+            title: "Ben Okafor"
+        });
+        const roster = Array.from({ length: 250 }, (_, i) => ({
+            person_alias_guid: `b0000000-0000-4000-8000-${String(i).padStart(12, "0")}`,
+            nick_name: "Person",
+            last_name: `${i}`,
+            avatar_url: null,
+            is_leader: false,
+            details: null,
+            can_message: true
+        }));
+        const panel = mount(MembersPanel, {
+            props: { channelName: "young-adults", isChannel: true, members: roster, hasMore: false, isLoading: false, isLoadingMore: false, error: null, moreError: null, refusal: null, query: "", searchStatus: null, personAliasGuid: viewer, isPhone: false }
+        });
+        try {
+            mountSidebar({ rows: [dmOnline, dmBen] });
+
+            const watched = status.store.watched();
+            expect(watched).toHaveLength(200);
+            expect(watched.slice(0, 3)).toEqual([viewer, anna, ben]);
+            expect(watched[3]).toBe(roster[0].person_alias_guid);
+        }
+        finally {
+            panel.unmount();
+        }
     });
 
     test("a two-person row draws the person's badge and says it right after the name, before the time and the preview", () => {
