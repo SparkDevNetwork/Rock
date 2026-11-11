@@ -96,14 +96,22 @@ const statusRetryCapMs = 60_000;
  */
 const statusRetryAfterCapMs = 300_000;
 
+/** The longest wait the retry clock can name, the backoff's cap with its spread being shorter. */
+const statusLongestWaitMs = statusRetryAfterCapMs;
+
+/** A status save's outcome, a failure marked with whether its try reached the platform at all. */
+export type StatusSaveOutcome = SaveOutcome & { isUnreached?: boolean };
+
 /**
  * How a status save's answer leaves her choice. Only the server's answer about the choice itself
  * refuses it: one of our codes for a 4xx, or read only, which the writer check refuses while her
  * pages still beat, so a choice asked again would show on her own faces and never on anyone
  * else's. Everything that is about the path rather than the choice is asked again on a backoff
- * spread by a random draw, the choice kept: no network or the save's deadline (status 0), a token
- * the refresh could not renew (401), a proxy giving up (408), and the platform failing or down
- * for maintenance (5xx). A 429 is a pace whoever set it, a gateway's carrying no code of ours, so
+ * spread by a random draw, the choice kept: a try that reached nothing, which is no network or the
+ * save's deadline (status 0), a proxy giving up (408), or the platform failing or down for
+ * maintenance (5xx); and a token the refresh could not renew (401). Only a try that reached
+ * nothing is marked so, since only its failure says nothing once the network or the platform is
+ * back; the 401 already had its fresh token and second try inside its flight. A 429 is a pace whoever set it, a gateway's carrying no code of ours, so
  * it waits the longer of the backoff and its Retry-After. Any other answer is refused, since
  * asking the same again would meet the same answer.
  *
@@ -111,9 +119,9 @@ const statusRetryAfterCapMs = 300_000;
  * @param failures How many tries of this choice have failed, this one included, from one.
  * @param random A number from 0 up to 1 that spreads the wait; the browser's by default.
  *
- * @returns The outcome the save rule acts on.
+ * @returns The outcome the save rule acts on, marked when the try reached nothing.
  */
-export function statusSaveOutcome(result: CallResult, failures: number, random: () => number = Math.random): SaveOutcome {
+export function statusSaveOutcome(result: CallResult, failures: number, random: () => number = Math.random): StatusSaveOutcome {
     if (result.ok) {
         return { isSaved: true, data: result.data };
     }
@@ -131,8 +139,9 @@ export function statusSaveOutcome(result: CallResult, failures: number, random: 
         return { isSaved: false, failure, retryInMs: Math.max(backoffMs, Math.min(statusRetryAfterCapMs, (result.retryAfterSeconds ?? 0) * 1000)) };
     }
 
-    if (result.status === 0 || result.status === 401 || result.status === 408 || result.status >= 500) {
-        return { isSaved: false, failure, retryInMs: backoffMs };
+    const isUnreached = result.status === 0 || result.status === 408 || result.status >= 500;
+    if (isUnreached || result.status === 401) {
+        return { isSaved: false, failure, retryInMs: backoffMs, isUnreached };
     }
 
     return { isSaved: false, failure };
@@ -318,6 +327,13 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
     const clock: RetryClock = { ...noWait };
 
     /**
+     * When the clock's time comes in this tab, on performance.now()'s clock, read from the clock's
+     * time once as it is set or taken: a system clock moved back during the wait never holds her
+     * choice past it, and no time posted holds it longer than the clock's longest wait.
+     */
+    let clockDue = 0;
+
+    /**
      * The tab's visit: a stay in the back-forward cache ends one, and every timer, wait and answer
      * of the last one does nothing, since its records were forgotten.
      */
@@ -470,7 +486,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         // Granted before the clock's time, the lock is let go with nothing sent, no failure
         // counted and nothing posted: the tab that failed asks at it, and this one a hand-off
         // later, so it sends only if that tab has closed.
-        const dueIn = clock.retryAt + (clock.retryPage === tabId ? 0 : statusHandOffMs) - Date.now();
+        const dueIn = clockDue + (clock.retryPage === tabId ? 0 : statusHandOffMs) - performance.now();
         if (clock.retryAt > 0 && dueIn > 0) {
             return { isSaved: false, failure: saveFailed, retryInMs: dueIn };
         }
@@ -514,13 +530,11 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
             return { ...outcome, sent: record };
         }
         if (outcome.retryInMs !== undefined || result.ok) {
-            // A try that reached nothing left before the network or the platform came back, so it
-            // says nothing of now. A 401 already had its fresh token and second try inside this
-            // flight, and a 429 is a pace: neither is about reaching the platform.
-            const isUnreached = !result.ok && (result.status === 0 || result.status === 408 || result.status >= 500);
-            const retryInMs = wakes !== wakesAtSend && isUnreached ? 0 : outcome.retryInMs ?? 0;
+            // a try that reached nothing left before the network or the platform came back, so it says nothing of now
+            const retryInMs = wakes !== wakesAtSend && outcome.isUnreached === true ? 0 : outcome.retryInMs ?? 0;
             clock.failures++;
             clock.retryAt = Date.now() + retryInMs;
+            clockDue = performance.now() + retryInMs;
             clock.retryPage = tabId;
             // told before the lock is let go, so a copy that asks it next waits the same clock
             post({ kind: "failed", choiceAt: record.at, retryAt: clock.retryAt, failures: clock.failures, page: tabId });
@@ -581,6 +595,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
             return;
         }
         clock.retryAt = told.retryAt;
+        clockDue = performance.now() + Math.min(statusLongestWaitMs, Math.max(0, told.retryAt - Date.now()));
         clock.retryPage = told.retryPage;
         clock.failures = Math.max(clock.failures, told.failures);
     }
@@ -672,6 +687,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         }
         wakes++;
         clock.retryAt = Math.min(clock.retryAt, Date.now());
+        clockDue = Math.min(clockDue, performance.now());
         rule.wake("status");
     }
 

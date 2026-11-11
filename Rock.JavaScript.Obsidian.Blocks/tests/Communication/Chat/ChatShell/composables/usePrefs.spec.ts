@@ -930,6 +930,26 @@ describe("a status save's answer", () => {
         }
     });
 
+    // Whether a failure is about reaching the platform is the one list the at-once ask after a wake
+    // reads: a 401 had its fresh token and second try inside its flight and a 429 is a pace, so
+    // neither is, though the 401 is asked again on the backoff.
+    test.each([
+        ["no network", "network", true],
+        ["the deadline's abort", "deadline", true],
+        ["a proxy's 408", "proxyTimeout", true],
+        ["a 500", "serverError", true],
+        ["a 503 for maintenance", "maintenance", true],
+        ["a 401 for an expired token", "expired", false],
+        ["the status rule's own 429", "rateLimited", false],
+        ["a gateway's 429", "gatewayRateLimited", false],
+        ["a 503 for read only", "readOnlyBanner", false],
+        ["a proxy's 403", "proxyForbidden", false]
+    ] as const)("%s is about reaching the platform: %s", async (_name, shape, isUnreached) => {
+        const outcome = statusSaveOutcome(await statusCallResult(statusSaveFailures[shape]), 1, () => 0.5);
+
+        expect((outcome as { isUnreached?: boolean }).isUnreached === true).toBe(isUnreached);
+    });
+
     test("the backoff grows 10, 20, 40, then holds at 60 s, each inside 0.8 to 1.2 of its step", async () => {
         const result = await statusCallResult(statusSaveFailures.network);
         const waits = (random: number): number[] => [1, 2, 3, 4, 5].map(n => (statusSaveOutcome(result, n, () => random) as { retryInMs: number }).retryInMs);
@@ -2088,6 +2108,35 @@ describe("her status across her tabs", () => {
             await after(1);
 
             expect(b.calls.map(call => [call.tab, fromZero(zero + call.at)])).toEqual([[t2.n, 62_000]]);
+        });
+
+        // The clock her tabs share is the wall clock, but a wait in this tab runs on one a system
+        // clock moved back never moves, and no posted time holds a choice past the longest wait
+        // the clock can name.
+        test("a system clock moved back an hour during the wait: the tab that failed still asks at the wait's end", async () => {
+            const { b, a } = await failedOnce();
+            await after(4000);
+            jest.setSystemTime(Date.now() - 3_600_000);
+            await after(5999);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+
+            expect(b.calls.map(call => call.tab)).toEqual([a.n, a.n]);
+        });
+
+        test("a failed post naming a time a day ahead holds her next choice no longer than the longest wait", async () => {
+            zero = Date.now();
+            const b = statusBrowser();
+            const t2 = b.open();
+            const raw = b.raw();
+            const record = { choice: hidden, at: Date.now() + 1, page: "another tab" };
+            raw.postMessage({ kind: "choice", record });
+            raw.postMessage({ kind: "failed", choiceAt: record.at, retryAt: zero + 86_400_000, failures: 1, page: "another tab" });
+            await after(301_999);
+            expect(b.calls).toHaveLength(0);
+            await after(1);
+
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[t2.n, 302_000]]);
         });
 
         test("once stopped, a failed post, the retry's wait and the hand-off send nothing", async () => {
