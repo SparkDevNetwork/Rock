@@ -28,7 +28,7 @@
 // however late the answer carrying it lands, draws from it by the server's clock without ever
 // writing it again, moves a person's revision only when what is drawn changes, and answers
 // nothing for someone blocked, for the person's own carried copy, or with the switch off.
-import { computed, defineComponent, h as render, reactive, shallowRef } from "vue";
+import { computed, defineComponent, h as render, reactive, shallowRef, watchEffect } from "vue";
 import { mount } from "@vue/test-utils";
 import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { presenceStatusKey, useFaceStatus } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
@@ -37,7 +37,7 @@ import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/co
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatError, ChatPerson, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { asOf, away, busy, exchangeAnswer, nothing, online, personWithoutStatus, pgTime, readerPerson, rowLifeMs, serverNow, serverNowSeconds } from "../statusShapes";
+import { asOf, away, busy, exchangeAnswer, heldNothingMs, nothing, online, personWithoutStatus, pgTime, readerPerson, rowLifeMs, serverNow, serverNowSeconds } from "../statusShapes";
 
 const me = "a0000007-0000-4000-8000-000000000000";
 const anna = "a0000001-0000-4000-8000-000000000000";
@@ -108,8 +108,9 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const blocked = new Set<string>();
     const reports: string[] = [];
     const stopped = { value: false };
-    // Her own settings as the sidebar last read them: her Busy and her Appear offline.
-    const prefs = reactive({ state: { me: { busy_until: null as string | null, appear_offline: false } } });
+    // Her own settings as the sidebar last read them: her Busy and her Appear offline, read, as
+    // they are on a page once the sidebar has answered.
+    const prefs = reactive({ state: { me: { busy_until: null as string | null, appear_offline: false }, isMeRead: true } });
     // The newest message the person's client holds for each place, by place key.
     const newest: Record<string, number | null> = { [group]: 10 };
     // Places whose history may be behind the person, as a send still out leaves one.
@@ -223,7 +224,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me, prefs: prefs.state };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -2333,6 +2334,31 @@ describe("her own face", () => {
         expect(drawn.value).toEqual(expect.objectContaining({ state: "hidden", tip: "Appear offline" }));
     });
 
+    test("draws nothing until her settings have been read, then what they say, with no Online between", () => {
+        const h = buildStatus(idleLine);
+        h.prefs.isMeRead = false;
+        const states: Array<string | null> = [];
+        const stopRecording = watchEffect(() => states.push(h.status.statusOf(me)?.state ?? null), { flush: "sync" });
+        expect(h.status.statusOf(me)).toBeNull();
+
+        // as the sidebar's me lands: her settings, then that they are read
+        h.me.appear_offline = true;
+        h.prefs.isMeRead = true;
+        stopRecording();
+
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "hidden" }));
+        expect(states).toEqual([null, "hidden"]);
+    });
+
+    test("an answer of hers that says Busy with no automatic state, her settings not Busy and her input old, draws Away", () => {
+        const h = buildStatus(idleLine);
+        jest.advanceTimersByTime(31_000);
+
+        h.status.told([readerPerson(me, busy(600_000, 31_000))]);
+
+        expect(h.status.statusOf(me)?.state).toBe("away");
+    });
+
     test("draws nothing with the switch off, whatever her settings say", () => {
         const h = buildStatus({ flags: { typing: true, online: false }, ...idleLine });
         h.me.appear_offline = true;
@@ -2347,11 +2373,11 @@ describe("the status store's size", () => {
         const people = Array.from({ length: 300 }, (_, i) => `b${String(i).padStart(7, "0")}-0000-4000-8000-000000000000`);
         h.status.told(people.map(alias => readerPerson(alias, online(0))));
 
-        // past every row's end, and past the longest an older decision could hold to
-        jest.advanceTimersByTime(rowLifeMs + 1000);
-        h.status.told([readerPerson(anna, online(rowLifeMs, rowLifeMs * 2))]);
+        // past every row's end, and past how long the store keeps a decision that draws nothing
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(anna, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
         const parse = jest.spyOn(Date, "parse");
-        h.status.told([readerPerson(sam, online(rowLifeMs, rowLifeMs * 2))]);
+        h.status.told([readerPerson(sam, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
         const parsed = parse.mock.calls.length;
         parse.mockRestore();
 
@@ -2371,14 +2397,56 @@ describe("the status store's size", () => {
         expect(h.status.statusOf(anna)).toBeNull();
     });
 
+    test("keeps a decision that says nothing past the platform's longest row, whatever the viewer's own token's life, with room for that row to grow", () => {
+        const h = buildStatus();
+        // a token minted from a church token held, which the platform cuts to two minutes
+        h.session.life = 120;
+        h.status.told([readerPerson(anna, nothing(0))]);
+
+        jest.advanceTimersByTime(400_000);
+        h.status.told([readerPerson(sam, online(400_000))]);
+        // decided before the nothing, its row the platform's full token life and slack
+        h.status.carried(anna, online(-10_000, rowLifeMs - 10_000));
+        expect(h.status.statusOf(anna)).toBeNull();
+
+        // a platform whose rows last half again as long
+        jest.advanceTimersByTime(400_000);
+        h.status.told([readerPerson(sam, online(800_000))]);
+        h.status.carried(anna, online(-10_000, rowLifeMs * 1.5));
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
     test("never drops her own answer, so a null one still draws nothing once her input is old", () => {
         const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
         h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
 
-        jest.advanceTimersByTime(rowLifeMs * 2);
-        h.status.told([readerPerson(sam, online(rowLifeMs * 2))]);
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(sam, online(heldNothingMs + 1000))]);
 
         expect(h.status.statusOf(me)).toBeNull();
+    });
+});
+
+describe("what a face reads", () => {
+    test("a token exchange that answers the same switch and idle line draws no face again, hers included; a switch flipped draws each", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
+        h.status.told([readerPerson(anna, online(0))]);
+        const renders = { anna: 0, me: 0 };
+        const stops = [
+            watchEffect(() => void (renders.anna++, h.status.statusOf(anna)), { flush: "sync" }),
+            watchEffect(() => void (renders.me++, h.status.statusOf(me)), { flush: "sync" })
+        ];
+
+        // as each landed exchange does, the settings replaced whole, here with a new token's pace too
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30, typing_interval_ms: 9000 } });
+        h.settings.value = { ...h.settings.value };
+        expect(renders).toEqual({ anna: 1, me: 1 });
+
+        h.settings.value = readSettings({ flags: { typing: true, online: false }, limits: { presence_idle_seconds: 30 } });
+        stops.forEach(stop => stop());
+
+        expect(renders).toEqual({ anna: 2, me: 2 });
+        expect(h.status.statusOf(anna)).toBeNull();
     });
 });
 

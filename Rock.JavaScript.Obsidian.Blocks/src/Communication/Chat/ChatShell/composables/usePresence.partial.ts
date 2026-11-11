@@ -98,7 +98,7 @@ export type PresenceDependencies = {
     isStopped: () => boolean;
 
     /** Her own settings, read for her Busy and Appear offline. */
-    prefs: { state: { me: Pick<Prefs["state"]["me"], "busy_until" | "appear_offline"> } };
+    prefs: { state: { me: Pick<Prefs["state"]["me"], "busy_until" | "appear_offline">, isMeRead: boolean } };
 } & Pick<PresenceStatusDependencies, "targets" | "leave" | "session">;
 
 /** Typing, as the shell holds it. */
@@ -253,7 +253,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
     const state = reactive({ typists: {} as Record<string, string[]> });
 
-    const status = createPresenceStatus({ ...dependencies, me: () => dependencies.prefs.state.me });
+    const status = createPresenceStatus({ ...dependencies, me: () => dependencies.prefs.state.isMeRead ? dependencies.prefs.state.me : null });
 
     // #region Send
 

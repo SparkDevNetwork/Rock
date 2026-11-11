@@ -29,6 +29,7 @@
 // its refusals as the shell's one call path classifies them, and ChatPersonSettingResultBag's
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { watch } from "vue";
 import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -567,6 +568,21 @@ describe("the person's own switches", () => {
         s.prefs.setMe({ busy_until: "infinity" });
         s.prefs.setMe({ show_profile_details: true });
         expect(s.prefs.state.me).toEqual(expect.objectContaining({ busy_until: null, appear_offline: false }));
+    });
+
+    test("are read only once a me has been stated, and are already hers when that says so", () => {
+        const s = setup();
+        const seen: Array<boolean | string | null> = [];
+        const stop = watch(() => s.prefs.state.isMeRead, read => seen.push(read, s.prefs.state.me.appear_offline, s.prefs.state.me.busy_until), { flush: "sync" });
+        expect(s.prefs.state.isMeRead).toBe(false);
+
+        s.prefs.setMe(null);
+        expect(s.prefs.state.isMeRead).toBe(false);
+
+        s.prefs.setMe({ busy_until: "infinity", appear_offline: true });
+        stop();
+
+        expect(seen).toEqual([true, true, "infinity"]);
     });
 
     test("the reaction switch writes chat_set_prefs with no room", async () => {

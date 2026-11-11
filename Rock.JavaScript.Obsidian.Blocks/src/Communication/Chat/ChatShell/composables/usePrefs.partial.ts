@@ -74,6 +74,10 @@ export type MeKey = PersonSettingKey | "reaction_push";
 /** What the settings hold for the screen. */
 export type PrefsState = {
     me: MeSettings;
+
+    /** Whether a me has been read: until then me holds this page's defaults, not what she chose. */
+    isMeRead: boolean;
+
     meNotes: Partial<Record<MeKey, Note>>;
 
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
@@ -217,6 +221,7 @@ const leavesListSentence = "It leaves your list when you open another conversati
 export function createPrefs(dependencies: PrefsDependencies): Prefs {
     const state = reactive<PrefsState>({
         me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true, busy_until: null, appear_offline: false },
+        isMeRead: false,
         meNotes: {},
         rooms: {},
         announcement: null
@@ -309,6 +314,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             // nothing on this page saves them, so every load states them as the platform holds them
             state.me.busy_until = read.busy_until;
             state.me.appear_offline = read.appear_offline;
+            // last, so what reads her choice once it is read never sees the defaults as hers
+            state.isMeRead = true;
         },
 
         setRooms: (rows: SidebarRow[]): void => {

@@ -14,12 +14,12 @@
 // limitations under the License.
 // </copyright>
 //
-// Others' online status, the one store of it on the page: each person's newest decision, by
-// the platform's decision time, whichever answer, reader or carried signal brings it and in
-// whatever order they land, since an answer decided earlier can arrive later. What a face draws is
-// worked out from that decision and the server's clock, never written back over it, and a person's
-// revision moves only when what is drawn changes, so a face mounted at a revision draws as state
-// and fades only for a change after it.
+// Online status, the one store of it on the page, others' and her own face's: each person's
+// newest decision, by the platform's decision time, whichever answer, reader or carried signal
+// brings it and in whatever order they land, since an answer decided earlier can arrive later.
+// What a face draws is worked out from that decision and the server's clock, never written back
+// over it, and a person's revision moves only when what is drawn changes, so a face mounted at a
+// revision draws as state and fades only for a change after it.
 //
 // The page's side of the exchange lives here too, since it is what keeps this store current: the
 // page's client id, the body every token exchange carries (her heartbeat, and on a refresh the
@@ -27,11 +27,14 @@
 // closes. The session alone asks the platform; this only says what to ask and when it is worth
 // asking early.
 //
+// Her own face is drawn here too, from her own Busy and Appear offline as her settings hold them,
+// her input on this page and her own answer, so it moves by the same revisions as everyone else's.
+//
 // Presence creates it beside typing and stops it with typing, so it has one owner, but the two
 // share no state: this holds its own entries, revisions, timer, faces registered and page
-// listeners, and reads only the settings, the blocks, the session, the page, the stopped state and
-// the person's own id. It is a file of its own for that reason, so each half reads alone and
-// neither grows past what one file should hold.
+// listeners, and reads only the settings, her own Busy and Appear offline, the blocks, the
+// session, the page, the stopped state and the person's own id. It is a file of its own for that
+// reason, so each half reads alone and neither grows past what one file should hold.
 
 import { newGuid } from "@Obsidian/Utility/guid";
 import { inject, InjectionKey, onMounted, onUnmounted, shallowReactive, watch } from "vue";
@@ -50,8 +53,11 @@ export type PresenceStatusDependencies = {
     /** The person's primary alias, whose own carried copy is never written. */
     personAliasGuid: string;
 
-    /** Her own Busy and Appear offline as her settings hold them, which her own face draws before any answer. */
-    me: () => Pick<MeSettings, "busy_until" | "appear_offline">;
+    /**
+     * Her own Busy and Appear offline as her settings hold them, which her own face draws before
+     * any answer; null until her settings have been read, when the page knows neither.
+     */
+    me: () => Pick<MeSettings, "busy_until" | "appear_offline"> | null;
 
     isBlocked: (personAliasGuid: string) => boolean;
 
@@ -88,7 +94,7 @@ export type ExchangeBody = {
  */
 export type WatchRank = 0 | 1 | 2 | 3;
 
-/** Others' online status on this page: the only store of it, and the only thing that writes it. */
+/** Online status on this page, others' and her own face's: the only store of it, and the only thing that writes it. */
 export type PresenceStatus = {
     /**
      * A token exchange answered. Each person its body asked about that the answer's map names is
@@ -171,8 +177,16 @@ const inputWorkGapMs = 1000;
 /** The least time between two early asks for one cause, so a page in steady use costs at most one a minute. */
 const earlyAskGapMs = 60_000;
 
-/** How long a client's row outlives its token, the platform's slack for a page whose timers a browser holds back. */
-const rowSlackSeconds = 270;
+/**
+ * How long a decision that draws nothing is kept, which must outlast any status row: once it has
+ * passed, no decision older than the one kept can still be live, so none arriving late can draw.
+ * The platform does not send its row life, which is the token's life, five minutes at most, plus
+ * the slack it gives a page whose timers a browser holds back, under ten minutes in all today.
+ * Twenty minutes is about twice that, so the platform can lengthen either without a page here
+ * letting go of a nothing that still keeps an older status from drawing; holding longer costs
+ * only the people written in that time.
+ */
+const heldNothingSeconds = 1200;
 
 /** A person's newest decision: what it says of her, null for nothing, and when it was decided. */
 type StatusEntry = { status: PersonStatus | null, asOf: number };
@@ -253,7 +267,7 @@ function readStatus(raw: unknown): StatusEntry | null {
 }
 
 /**
- * Creates the store of others' online status.
+ * Creates the store of online status, others' and her own face's.
  *
  * @param dependencies What status reaches outside itself.
  *
@@ -282,9 +296,24 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
     const registrations = new Set<{ people: () => readonly string[], rank: WatchRank }>();
 
-    const isOn = (): boolean => settings().flags.online === true;
+    /**
+     * The switch, the idle line and her own Busy and Appear offline, each kept as a plain value
+     * that moves only when it changes, by the watches below, which redraw whoever that changes. A
+     * face reads only its revision: every token exchange replaces the settings whole, so a face
+     * that read them would draw again at each exchange with nothing changed.
+     */
+    const switchOf = (): boolean => settings().flags.online === true;
+    const idleLineOf = (): number => settings().limits.presence_idle_seconds * 1000;
+    const mineOf = (): Pick<MeSettings, "busy_until" | "appear_offline"> | null => {
+        const read = me();
+        return read ? { busy_until: read.busy_until, appear_offline: read.appear_offline } : null;
+    };
+    let isSwitchOn = switchOf();
+    let idleLine = idleLineOf();
+    let mine = mineOf();
+    const isOn = (): boolean => isSwitchOn;
+    const idleLineMs = (): number => idleLine;
     const serverNow = (): number => Date.now() + offsetMs;
-    const idleLineMs = (): number => settings().limits.presence_idle_seconds * 1000;
 
     /** When she last did something while the page was visible, its load counting, and when an input last did more than note it. */
     let inputAt = Date.now();
@@ -312,12 +341,12 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
      * answer could say it: Online while it is inside the idle line. Then the platform's answer for
      * her, her automatic state where it says Busy and her settings say it has ended, and nothing
      * once it says nothing; and Online before it has said anything, since she has the page open.
+     * Nothing before her settings are read, since they may say Appear offline or Busy.
      */
     function ownDrawnNow(): Omit<FaceStatus, "revision"> | null {
-        if (!isOn()) {
+        if (!isOn() || !mine) {
             return null;
         }
-        const mine = me();
         if (mine.appear_offline) {
             return own("hidden", null);
         }
@@ -394,9 +423,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
      * It walks every entry, so it also lets go of the people who can draw nothing again from what
      * is held: the roster, the searches and the readers write whoever they show, and a page left
      * open would otherwise walk them all on every write. An entry may go once it draws nothing and
-     * the server's clock is past its decision time plus the longest a row lasts, since any older
-     * decision's row ended before then and could not draw if it arrived late. Her own is kept: it
-     * says what her face draws once her input is old.
+     * the server's clock is past its decision time plus a bound longer than any row lasts, since
+     * any older decision's row ended before then and could not draw if it arrived late. Her own is
+     * kept: it says what her face draws once her input is old.
      */
     function arm(): void {
         if (deadline !== null) {
@@ -410,11 +439,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
         const now = serverNow();
         const today = startOfDay(new Date());
-        const longestRowMs = (session.tokenLifeSeconds() + rowSlackSeconds) * 1000;
         let soonest = Infinity;
         for (const [key, entry] of entries) {
-            // no token yet is no row life to measure by, so nothing is let go
-            if (key !== self && session.tokenLifeSeconds() > 0 && entry.asOf / 1000 + longestRowMs < now && !shown.has(key) && !drawnAt(entry, now)) {
+            if (key !== self && entry.asOf / 1000 + heldNothingSeconds * 1000 < now && !shown.has(key) && !drawnAt(entry, now)) {
                 entries.delete(key);
                 continue;
             }
@@ -435,8 +462,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 soonest = Math.min(soonest, midnight + offsetMs);
             }
         }
-        const mine = me();
-        if (isOn() && !mine.appear_offline) {
+        if (isOn() && mine && !mine.appear_offline) {
             const busyUntil = ownBusyEnd(mine.busy_until, now);
             if (busyUntil !== undefined) {
                 soonest = Math.min(soonest, busyUntil ?? Infinity);
@@ -504,20 +530,35 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
     // Status switched off empties the store, so nothing held comes back if it is switched on again;
     // either way her own face, which draws before any answer, is drawn again.
-    const stopWatchingSwitch = watch(isOn, on => {
+    const stopWatchingSwitch = watch(switchOf, on => {
+        isSwitchOn = on;
         if (!on) {
             entries.clear();
         }
         redrawAll();
     }, { flush: "sync" });
 
-    // Her own Busy or Appear offline changed in her settings: her face draws it at once.
-    const stopWatchingMe = watch(() => [me().busy_until, me().appear_offline], () => {
+    // The idle line moved: only her own face reads it, and her next deadline with it.
+    const stopWatchingIdleLine = watch(idleLineOf, line => {
+        idleLine = line;
         if (!isStopped()) {
             redraw(self);
             arm();
         }
     }, { flush: "sync" });
+
+    // Her own Busy or Appear offline changed in her settings, or they were read: her face draws it at once.
+    const stopWatchingMe = watch(() => [me() !== null, me()?.busy_until, me()?.appear_offline], () => {
+        mine = mineOf();
+        if (!isStopped()) {
+            redraw(self);
+            arm();
+        }
+    }, { flush: "sync" });
+
+    // What her face draws from the start is what it was last drawn as, so the first change from
+    // it, the switch turned off included, moves her revision.
+    redraw(self);
 
     // #region The page
 
@@ -868,6 +909,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 deadlineAt = null;
             }
             stopWatchingSwitch();
+            stopWatchingIdleLine();
             stopWatchingMe();
             registrations.clear();
             isAskHeld = false;

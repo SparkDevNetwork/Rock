@@ -54,6 +54,9 @@ export function pgTime(msAfter: number, micros = 123): string {
 /** How long a row counts after a heartbeat: the token's 300 s and the 270 s slack. */
 export const rowLifeMs = 570_000;
 
+/** How long the store keeps a decision that draws nothing, past any older decision's row: twenty minutes. */
+export const heldNothingMs = 1_200_000;
+
 /** Online, decided msAfter, holding to its row's end. */
 export function online(msAfter = 0, untilAfter = rowLifeMs, micros = 0): Record<string, unknown> {
     return { state: "online", until: pgTime(untilAfter), as_of: asOf(msAfter, micros) };
