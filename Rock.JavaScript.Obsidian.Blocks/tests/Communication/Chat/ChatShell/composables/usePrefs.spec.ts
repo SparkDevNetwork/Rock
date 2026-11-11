@@ -29,7 +29,7 @@
 // its refusals as the shell's one call path classifies them, and ChatPersonSettingResultBag's
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { watch } from "vue";
+import { computed, watch } from "vue";
 import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, StatusChoice } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { StatusChange, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/statusTabs.partial";
 import { readOnlySentence as readOnlyWordsOfOurs } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
@@ -1888,6 +1888,110 @@ describe("her status across her tabs", () => {
 
             expect([a, t2].map(shown)).toEqual([pending(hidden), pending(hidden)]);
             expect(a.toasts).toEqual([]);
+        });
+    });
+
+    // A choice whose save keeps failing is retried for as long as it takes, so the places she
+    // chose from say it is not saved yet, in every tab of hers, until it lands or is refused.
+    describe("a save that keeps failing", () => {
+        const retrying = (tab: StatusTab): boolean => tab.prefs.isStatusRetrying();
+
+        test.each([
+            ["maintenance", "maintenance"],
+            ["a 5xx from the function", "serverError"]
+        ] as const)("%s, again and again: not saved yet in every tab from the first failure until it lands", async (_name, shape) => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            t2.prefs.setMe(sidebarMe(automatic));
+            const said = computed(() => [a, t2].map(retrying));
+            // each wait at the middle of its range once the tabs' ids are drawn: asked again at 11 s, then 31 s
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            // pending through its pause and its first try is not yet failing
+            expect(said.value).toEqual([false, false]);
+
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures[shape]));
+            await after(0);
+            expect(said.value).toEqual([true, true]);
+
+            await after(10_000);
+            b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures[shape]));
+            await after(0);
+            expect(said.value).toEqual([true, true]);
+
+            await after(20_000);
+            expect(b.calls.map(call => call.at)).toEqual([1000, 11_000, 31_000]);
+            b.calls[2].answer.resolve(landed);
+            await after(0);
+            expect(said.value).toEqual([false, false]);
+            expect([a, t2].map(shown)).toEqual([settled(hidden), settled(hidden)]);
+        });
+
+        test("a refusal after failures clears it, with the toast saying why", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+            expect(retrying(a)).toBe(true);
+
+            await after(10_000);
+            b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(0);
+
+            expect(retrying(a)).toBe(false);
+            expect(a.toasts.map(t => t.text)).toEqual(["Chat could not understand that request."]);
+        });
+
+        test("a tab opened while it fails is told so by the others", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+
+            const c = b.open();
+            await delivered();
+            await delivered();
+
+            expect(retrying(c)).toBe(true);
+        });
+
+        test("without Web Locks, a tab that shows only its own saved status says nothing of another tab's failing choice", async () => {
+            const b = statusBrowser({ hasLocks: false });
+            const a = b.open();
+            const t2 = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+
+            expect([a, t2].map(shown)).toEqual([pending(hidden), settled(automatic)]);
+            expect([a, t2].map(retrying)).toEqual([true, false]);
+        });
+
+        test("waiting for a token counts no failure, so says nothing", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.person.value = null;
+
+            await a.prefs.setStatus(hidden);
+            await after(30_000);
+
+            expect(b.calls).toHaveLength(0);
+            expect(retrying(a)).toBe(false);
         });
     });
 

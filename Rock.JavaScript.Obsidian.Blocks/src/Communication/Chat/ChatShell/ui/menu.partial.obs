@@ -57,7 +57,7 @@
                 <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
                 <template v-if="note">
                     <div class="chat-menu-sep" role="separator"></div>
-                    <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
+                    <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon :name="noteIcon" size="xs" />{{ note }}</div>
                 </template>
             </div>
         </Transition>
@@ -284,6 +284,12 @@
         note: {
             type: String,
             default: ""
+        },
+
+        /** The note's icon: the lock for an action that cannot be taken, or another for a note that says how one is going. */
+        noteIcon: {
+            type: String,
+            default: "lock"
         },
 
         /** Attributes for the button, such as a toolbar's class and its roving tab stop. */

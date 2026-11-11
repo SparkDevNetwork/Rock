@@ -195,6 +195,12 @@ export type Prefs = {
     /** Whether a choice of hers is shown that is not yet saved, which is hers whether or not her settings have been read. */
     isChoicePending: () => boolean;
 
+    /**
+     * Whether that choice has failed to save and is being asked again on the retry clock, which
+     * the places she chose it from say, since her faces show it as though it were saved.
+     */
+    isStatusRetrying: () => boolean;
+
     /** Her input on this page at a time, told to her other tabs at most every 30 seconds. */
     noteInput: (at: number) => void;
 
@@ -567,6 +573,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         setStatus: status.setStatus,
         shownStatus: status.shownStatus,
         isChoicePending: status.isChoicePending,
+        isStatusRetrying: status.isStatusRetrying,
         noteInput: status.noteInput,
         statusWake: status.statusWake,
 

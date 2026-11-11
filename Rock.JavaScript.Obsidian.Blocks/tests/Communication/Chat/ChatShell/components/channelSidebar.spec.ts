@@ -1268,6 +1268,15 @@ describe("the sidebar's foot with online status", () => {
         expect(w.get(".chat-side-me").element.children).toHaveLength(1);
     });
 
+    test("while her choice keeps failing to save, her face's menu says it is not saved yet", async () => {
+        const w = mountFoot({ isStatusRetrying: true });
+
+        (w.get("[data-testid='status-face']").element as HTMLElement).click();
+        await nextTick();
+        await nextTick();
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")?.textContent?.trim()).toBe("Not saved yet. Trying again.");
+    });
+
     test("while the church is read only, keeps her face live, its menu saying why nothing in it can be chosen", async () => {
         const reason = "Chat is read-only while we do some maintenance. You can read messages but not send them.";
         const w = mountFoot({ statusClosedReason: reason });

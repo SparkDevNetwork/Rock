@@ -383,6 +383,45 @@ describe("the keyboard", () => {
     });
 });
 
+// A choice whose save keeps failing shows on her faces as though saved, so the menu she chose it
+// from says it is not, its items still open: a newer choice waits the same retry.
+describe("while her choice keeps failing to save", () => {
+    const retrying = "Not saved yet. Trying again.";
+
+    test.each(["change", "face"])("the %s button's menu says so as its note, every item still open", async (kind) => {
+        const w = mountMenu({ trigger: kind, isRetrying: true });
+        await openMenu(w);
+
+        expect(items().some(item => item.hasAttribute("aria-disabled"))).toBe(false);
+        const note = menu()!.querySelector("[data-testid='menu-note']")!;
+        expect(plain(note.textContent!)).toBe(retrying);
+        expect(document.getElementById(menu()!.getAttribute("aria-describedby") ?? "")).toBe(note);
+        // an alert, not the lock that says nothing can be chosen
+        expect(note.querySelector("svg circle")).not.toBeNull();
+        expect(note.querySelector("svg rect")).toBeNull();
+    });
+
+    test("an open menu says it where it stands and drops it once the save lands or is refused", async () => {
+        const w = mountMenu();
+        await openMenu(w);
+
+        await w.setProps({ isRetrying: true });
+        await settle();
+        expect(plain(menu()!.querySelector("[data-testid='menu-note']")!.textContent!)).toBe(retrying);
+
+        await w.setProps({ isRetrying: false });
+        await settle();
+        expect(menu()!.querySelector("[data-testid='menu-note']")).toBeNull();
+    });
+
+    test("read only's words win, since nothing in the menu can be chosen", async () => {
+        const w = mountMenu({ isRetrying: true, closedReason: "Cedar Hill's chat is read only until 9." });
+        await openMenu(w);
+
+        expect(plain(menu()!.querySelector("[data-testid='menu-note']")!.textContent!)).toBe("Cedar Hill's chat is read only until 9.");
+    });
+});
+
 describe("while the church is read only", () => {
     test.each(["change", "face"])("the %s button opens the menu as ever, its items drawn but never chosen and the banner's words as its note", async (kind) => {
         const w = mountMenu({ trigger: kind, closedReason: reason });

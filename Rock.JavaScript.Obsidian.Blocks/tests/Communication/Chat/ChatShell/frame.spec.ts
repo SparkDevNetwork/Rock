@@ -343,7 +343,8 @@ function fakePrefs(): Record<string, unknown> {
         me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true, busy_until: null as string | null, appear_offline: false },
         meNotes: {},
         rooms: {} as Record<string, unknown>,
-        announcement: null
+        announcement: null,
+        isStatusRetrying: false
     });
 
     return {
@@ -359,6 +360,7 @@ function fakePrefs(): Record<string, unknown> {
         setSwitch: jest.fn(async () => undefined),
         shownStatus: () => ({ busy_until: state.me.busy_until, appear_offline: state.me.appear_offline }),
         setStatus: jest.fn(async () => undefined),
+        isStatusRetrying: () => state.isStatusRetrying,
         stop: jest.fn()
     };
 }
@@ -5263,6 +5265,24 @@ describe("her own status", () => {
         finally {
             tabA.unmount();
         }
+    });
+
+    test("while her choice keeps failing to save, her face's menu and the Status group say so, until it lands", async () => {
+        const w = await mountBlock(1200);
+        shellState(mockShell!).isStatusShown = true;
+        const prefsState = (mockShell!.prefs as { state: { isStatusRetrying: boolean } }).state;
+        prefsState.isStatusRetrying = true;
+        await settle();
+
+        expect(await readMenu(face(w))).toEqual({ note: "Not saved yet. Trying again.", isClosed: false });
+        const change = await openSettingsChange(w);
+        expect(document.querySelector("[role='dialog'] [data-testid='status-row'] [data-testid='switch-note']")?.textContent?.trim()).toBe("Not saved yet. Trying again.");
+        expect(await readMenu(change)).toEqual({ note: "Not saved yet. Trying again.", isClosed: false });
+
+        prefsState.isStatusRetrying = false;
+        await settle();
+        expect(document.querySelector("[role='dialog'] [data-testid='status-row'] [data-testid='switch-note']")).toBeNull();
+        expect(await readMenu(change)).toEqual({ note: null, isClosed: false });
     });
 
     test("keeps focus in Chat settings: Tab out of Change's menu goes on from Change, and Escape closes the menu alone", async () => {

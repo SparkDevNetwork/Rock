@@ -171,6 +171,7 @@
                         trigger="face"
                         :choice="statusChoice"
                         :closedReason="statusClosedReason"
+                        :isRetrying="isStatusRetrying"
                         :personAliasGuid="personAliasGuid"
                         :personName="personName"
                         :personPhotoUrl="personPhotoUrl"
@@ -842,6 +843,12 @@
         statusClosedReason: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** Whether her status choice has failed to save and is being asked again, which her face's menu says. */
+        isStatusRetrying: {
+            type: Boolean,
+            default: false
         },
 
         /** Whether the block is drawn one pane at a time, as on a phone. */

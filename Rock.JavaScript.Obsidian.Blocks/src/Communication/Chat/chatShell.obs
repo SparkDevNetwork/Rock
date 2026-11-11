@@ -52,6 +52,7 @@
                                 :isStatusShown="shell.state.isStatusShown"
                                 :statusChoice="statusChoice"
                                 :statusClosedReason="statusClosedReason"
+                                :isStatusRetrying="isStatusRetrying"
                                 @select="onSelect"
                                 @status="onStatusChoice"
                                 @newMessage="openMainView('newdm')"
@@ -519,6 +520,7 @@
                           :me="shell.prefs.state.me"
                           :statusChoice="statusChoice"
                           :statusClosedReason="statusClosedReason"
+                          :isStatusRetrying="isStatusRetrying"
                           :notes="shell.prefs.state.meNotes"
                           :announcement="shell.prefs.state.announcement"
                           :push="shell.state.push"
@@ -983,6 +985,9 @@
      * would draw the whole sidebar again with each send, notice and thread change.
      */
     const statusChoice = computed((): StatusChoice => shell.value.prefs.shownStatus());
+
+    /** Whether her status choice keeps failing to save, which the menus she chooses it from and the Status line say. */
+    const isStatusRetrying = computed((): boolean => shell.value.prefs.isStatusRetrying());
 
     /** The count on the app icon, from the sidebar, so reading what it counts clears it. */
     const appBadge = computed((): number => shell.value.appBadge());

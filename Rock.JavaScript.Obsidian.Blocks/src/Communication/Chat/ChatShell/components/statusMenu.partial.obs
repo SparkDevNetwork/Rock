@@ -6,7 +6,8 @@
               :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
               :isSheet="isPhone"
               :focusKey="focusKey"
-              :note="closedReason ?? ''"
+              :note="note"
+              :noteIcon="closedReason ? 'lock' : 'alert'"
               :anchorAttrs="anchorAttrs"
               @openChange="onOpenChange"
               @select="onSelect">
@@ -73,6 +74,7 @@
     import { untilWords } from "../ui/face.partial";
     import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
     import { busyEndOf, StatusChoice } from "../composables/usePrefs.partial";
+    import { statusRetryingWords } from "../composables/statusTabs.partial";
 
     // #region Types
 
@@ -102,6 +104,16 @@
         closedReason: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /**
+         * Whether her choice has failed to save and is being asked again, which the menu says in
+         * its note, since her faces show the choice as though saved. Every item stays open: a newer
+         * choice waits the same retry.
+         */
+        isRetrying: {
+            type: Boolean,
+            default: false
         },
 
         /** Her primary alias, whose own status the face draws. */
@@ -152,6 +164,9 @@
 
     /** Her own face's status, which the foot's face draws and is named by. */
     const ownStatus = computed(() => props.trigger === "face" && props.personAliasGuid ? statusOf(props.personAliasGuid) : null);
+
+    /** The menu's note: read only's words, since then nothing in it can be chosen, or that her choice is not saved yet. */
+    const note = computed((): string => props.closedReason ?? (props.isRetrying ? statusRetryingWords : ""));
 
     const label = computed((): string => {
         if (props.trigger === "change") {

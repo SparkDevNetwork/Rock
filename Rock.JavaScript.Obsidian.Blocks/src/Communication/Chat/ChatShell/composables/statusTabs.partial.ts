@@ -163,6 +163,9 @@ const statusDeadlineMs = 15_000;
 /** The least time between two posts of her input to her other tabs, which only need it inside the idle line. */
 const inputPostGapMs = 30_000;
 
+/** What the places she chooses her status from say while a choice of hers keeps failing to save. */
+export const statusRetryingWords = "Not saved yet. Trying again.";
+
 /** A status save given up at its deadline, read as one that reached nothing. */
 const unreached: CallResult = { ok: false, status: 0, error: { code: "rpc.transport", severity: "failed", text: null }, retryAfterSeconds: null };
 
@@ -199,7 +202,7 @@ type StatusPost =
     | { kind: "input", at: number };
 
 /** Her status's half of the settings. */
-export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "noteInput" | "statusWake" | "stop"> & {
+export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "isStatusRetrying" | "noteInput" | "statusWake" | "stop"> & {
     /** A sidebar load has written her status into me. */
     sidebarRead: () => void;
 };
@@ -323,8 +326,11 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
     /** When the newest record's pause ends, on performance.now()'s clock: a second after this tab made or took it. */
     let pauseEnds = -Infinity;
 
-    /** The retry clock as this tab knows it; any saved post ends the run. */
-    const clock: RetryClock = { ...noWait };
+    /**
+     * The retry clock as this tab knows it; any saved post ends the run. Reactive, since its count
+     * of failures is what says her choice is not saved yet.
+     */
+    const clock: RetryClock = reactive({ ...noWait });
 
     /**
      * When the clock's time comes in this tab, on performance.now()'s clock, read from the clock's
@@ -731,6 +737,10 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
             : { busy_until: state.me.busy_until, appear_offline: state.me.appear_offline },
 
         isChoicePending: isPending,
+
+        // the clock's count is the browser's, so every tab of hers showing the choice says it; a tab
+        // without Web Locks hears the clock but shows only its own choices, so it says nothing of another's
+        isStatusRetrying: (): boolean => isPending() && clock.failures > 0,
 
         noteInput: (at: number): void => {
             if (isStopped() || !channel) {

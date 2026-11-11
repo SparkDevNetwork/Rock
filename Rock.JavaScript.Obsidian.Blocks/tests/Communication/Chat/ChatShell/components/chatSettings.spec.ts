@@ -592,6 +592,21 @@ describe("Status", () => {
         expect(document.querySelector("[role='menu'] [data-testid='menu-note']")).toBeNull();
     });
 
+    test("while her choice keeps failing to save, the Status line and its menu say it is not saved yet, until it lands", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: true }, isStatusRetrying: true });
+
+        // the line still says what she chose, and the note under it that it is not saved
+        expect(statusLine(w)).toBe("Appear offline");
+        expect(plain(w.get("[data-testid='status-row'] [data-testid='switch-note']").text())).toBe("Not saved yet. Trying again.");
+        await openChange(w);
+        expect(plain(document.querySelector("[role='menu'] [data-testid='menu-note']")!.textContent!)).toBe("Not saved yet. Trying again.");
+
+        await w.setProps({ isStatusRetrying: false });
+        await settle();
+        expect(w.find("[data-testid='status-row'] [data-testid='switch-note']").exists()).toBe(false);
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")).toBeNull();
+    });
+
     // The line keeps time while the dialog is open: a Busy reads Automatic at its end, and an end on
     // the next day loses its "tomorrow" at midnight.
     describe("as the clock moves", () => {
