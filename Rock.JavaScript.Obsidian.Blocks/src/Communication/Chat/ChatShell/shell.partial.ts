@@ -474,7 +474,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * refusal for read only or maintenance puts its banner on the page at once, since the state
      * changed after the last exchange.
      */
-    async function call(name: string, args: Record<string, unknown>, callOptions?: { keepalive?: boolean }): Promise<CallResult> {
+    async function call(name: string, args: Record<string, unknown>, callOptions?: { keepalive?: boolean, signal?: AbortSignal }): Promise<CallResult> {
         const result = await session.withFreshToken(
             () => platform.call(name, args, callOptions),
             answer => !answer.ok && answer.error.code === "auth.expired"

@@ -169,3 +169,66 @@ export function platformToken(claims: { iat: number, exp: number, sub: string, o
     const part = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString("base64url");
     return `${part({ alg: "HS256", typ: "JWT" })}.${part({ role: "authenticated", ...claims })}.c2lnbmF0dXJl`;
 }
+
+/**
+ * One answer a status save can meet, as the wire carries it: the HTTP status, the body (null for
+ * a page a proxy wrote, which is not JSON) and the headers; or a request that reached nothing,
+ * because the network failed, the save's deadline ended it, or the deadline ended it while its
+ * answer was being read.
+ */
+export type StatusSaveAnswer =
+    | { status: number, body: Record<string, unknown> | null, headers?: Record<string, string> }
+    | { unreached: "network" | "deadline" | "deadlineWhileReading" };
+
+/** The service refusing a change while the church is read only, the banner, or the code's own sentence, in hint. */
+function readOnly(hint: string | null): StatusSaveAnswer {
+    return { status: 503, body: { code: "PT503", message: "rpc.read_only", details: "this church's chat is in read_only", hint } };
+}
+
+/**
+ * Every answer a status save can meet that is not a landing, in the platform's, PostgREST's and a
+ * proxy's own shapes. Every refusal of ours carries its code in message and a sentence in hint,
+ * the code's own unless the church set a banner.
+ */
+export const statusSaveFailures = {
+    network: { unreached: "network" },
+    deadline: { unreached: "deadline" },
+    deadlineWhileReading: { unreached: "deadlineWhileReading" },
+
+    /** The gateway refusing a token that has expired, before our code runs. */
+    expired: { status: 401, body: { code: "PGRST303", message: "JWT expired", details: null, hint: null } },
+
+    /** A proxy that gave up waiting, about the path, not the choice. */
+    proxyTimeout: { status: 408, body: null },
+
+    serverError: { status: 500, body: { code: "57014", message: "canceling statement due to statement timeout", details: null, hint: null } },
+    maintenance: { status: 503, body: { code: "PT503", message: "rpc.maintenance", details: "this church's chat is in maintenance", hint: "Chat is down for maintenance. Try again soon." } },
+    readOnlyBanner: readOnly("Chat is read only tonight while Cedar Hill moves to its new server."),
+    readOnlyServerSentence: readOnly("Chat is read only right now. You can read messages but not send them."),
+    readOnlyNoHint: readOnly(null),
+
+    /** The status rule's own pace, which names no Retry-After. */
+    rateLimited: { status: 429, body: { code: "PT429", message: "rpc.rate_limited", details: "too many status changes in a minute", hint: "You're sending messages too quickly. Wait a moment and try again." } },
+
+    /** A gateway's pace, with none of our codes and a Retry-After of its own. */
+    gatewayRateLimited: { status: 429, body: { message: "API rate limit exceeded" }, headers: { "retry-after": "90" } },
+
+    /** A Busy end that has already passed. */
+    badRequest: { status: 400, body: { code: "PT400", message: "rpc.bad_request", details: "busy_until has already passed", hint: "Chat could not understand that request." } },
+
+    notLivePerson: { status: 403, body: { code: "42501", message: "authz.not_live_person", details: "only a live person may set their status", hint: "Chat isn't available for your account." } },
+
+    /** A deploy whose function PostgREST's schema cache has not loaded yet. */
+    notInSchemaCache: {
+        status: 404,
+        body: {
+            code: "PGRST202",
+            message: "Could not find the function public.chat_set_status(p_change, p_client) in the schema cache",
+            details: "Searched for the function public.chat_set_status with parameters p_change, p_client or with a single unnamed json/jsonb parameter, but no matches were found in the schema cache.",
+            hint: null
+        }
+    },
+
+    proxyForbidden: { status: 403, body: null },
+    proxyTooLarge: { status: 413, body: null }
+} satisfies Record<string, StatusSaveAnswer>;

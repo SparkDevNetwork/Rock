@@ -30,9 +30,12 @@
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { watch } from "vue";
-import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { readOnlySentence as readOnlyWordsOfOurs } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
+import { CallResult, createPlatformCall } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { setStatusAnswers, StatusSaveAnswer, statusSaveFailures } from "../statusShapes";
 
 // #region Fixtures
 
@@ -261,6 +264,7 @@ describe("a room's notify mode", () => {
 
         void s.prefs.setNotifyMode(team, "mentions", false);
         void s.prefs.setNotifyMode(team, "silent", false);
+        expect(s.prefCalls).toHaveLength(1);
         s.prefCalls[0].answer.resolve(refused());
         await settle();
 
@@ -274,19 +278,27 @@ describe("a room's notify mode", () => {
         expect(s.prefs.roomOf(team).notes.notify).toBeUndefined();
     });
 
-    test("the newest save refused while an older one is out goes back to the last value saved, then to the older one once it lands", async () => {
+    // One save of a setting is out at a time, so the newest is never answered before an older one:
+    // it waits, shown, and is asked once the older is answered.
+    test("a save made while an older one is out waits for it, the older's landing moves nothing on screen, and the newer's refusal goes back to what the older landed", async () => {
         const s = setup();
 
-        void s.prefs.setNotifyMode(team, "mentions", false);
+        const mentions = s.prefs.setNotifyMode(team, "mentions", false);
         void s.prefs.setNotifyMode(team, "silent", false);
-        s.prefCalls[1].answer.resolve(refused());
-        await settle();
 
-        // Nothing is known saved yet but where it started.
-        expect(rowOf(s, team)?.notify_mode).toBe("all");
-        expect(s.prefs.roomOf(team).notes.notify?.kind).toBe("error");
+        expect(rowOf(s, team)?.notify_mode).toBe("silent");
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ notify_mode: "mentions" }]);
 
         s.prefCalls[0].answer.resolve(written(team, { notify_mode: "mentions" }));
+        await mentions;
+        await settle();
+
+        // The older's answer is not the newest, so it neither draws its mode nor says anything.
+        expect(rowOf(s, team)?.notify_mode).toBe("silent");
+        expect(s.prefs.roomOf(team).notes.notify).toBeUndefined();
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ notify_mode: "mentions" }, { notify_mode: "silent" }]);
+
+        s.prefCalls[1].answer.resolve(refused());
         await settle();
 
         expect(rowOf(s, team)?.notify_mode).toBe("mentions");
@@ -298,6 +310,7 @@ describe("a room's notify mode", () => {
 
         void s.prefs.setNotifyMode(team, "mentions", false);
         void s.prefs.setNotifyMode(team, "silent", false);
+        expect(s.prefCalls).toHaveLength(1);
         s.prefCalls[0].answer.resolve(written(team, { notify_mode: "mentions" }));
         await settle();
         s.prefCalls[1].answer.resolve(refused());
@@ -312,9 +325,33 @@ describe("a room's notify mode", () => {
         void s.prefs.setNotifyMode(team, "mentions", false);
         void s.prefs.setNotifyMode(team, "silent", false);
         s.prefCalls[0].answer.resolve(refused());
+        await settle();
         s.prefCalls[1].answer.resolve(refused());
         await settle();
 
+        expect(rowOf(s, team)?.notify_mode).toBe("all");
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ notify_mode: "mentions" }, { notify_mode: "silent" }]);
+    });
+
+    test("quick changes send one flight, then only the newest, the skipped ones resolving false without a call", async () => {
+        const s = setup();
+
+        const first = s.prefs.setNotifyMode(team, "mentions", false);
+        let isSkippedDone = false;
+        void s.prefs.setNotifyMode(team, "silent", false).then(() => {
+            isSkippedDone = true;
+        });
+        const newest = s.prefs.setNotifyMode(team, "all", false);
+        await settle();
+
+        expect(isSkippedDone).toBe(true);
+        s.prefCalls[0].answer.resolve(written(team, { notify_mode: "mentions" }));
+        await first;
+        await settle();
+        s.prefCalls[1].answer.resolve(written(team, { notify_mode: "all" }));
+        await newest;
+
+        expect(s.prefCalls.map(c => c.changes)).toEqual([{ notify_mode: "mentions" }, { notify_mode: "all" }]);
         expect(rowOf(s, team)?.notify_mode).toBe("all");
     });
 
@@ -467,9 +504,10 @@ describe("star and hide", () => {
 
         void s.prefs.setStarred(team, true, false);
         void s.prefs.setHidden(team, true);
-        expect(s.prefCalls[1].changes).toEqual({ is_favorite: false, hidden: true });
+        expect(s.prefCalls).toHaveLength(1);
         s.prefCalls[0].answer.resolve(written(team, { is_favorite: true }));
         await settle();
+        expect(s.prefCalls[1].changes).toEqual({ is_favorite: false, hidden: true });
         s.prefCalls[1].answer.resolve(refused());
         await settle();
 
@@ -478,16 +516,20 @@ describe("star and hide", () => {
     });
 
     // The newest save is the whole value shown, so it lands what is shown whatever an older one
-    // still out does: here the unhide is refused, but the star after it carried the unhide too.
+    // does: here the unhide is refused, but the star after it carried the unhide too.
     test("an unhide still out and then a star: the star asks for the room shown, starred and not hidden", async () => {
         const s = setup([sidebarRow(team, { hidden: true }), sidebarRow(prayer, { name: "Prayer" })]);
 
         void s.prefs.setHidden(team, false);
         void s.prefs.setStarred(team, true, false);
+        expect(s.prefCalls).toHaveLength(1);
+        s.prefCalls[0].answer.resolve(refused());
+        await settle();
+
+        // The unhide's refusal is not the newest, so it puts nothing back while the star waits.
+        expect(rowOf(s, team)?.hidden).toBe(false);
         expect(s.prefCalls[1].changes).toEqual({ is_favorite: true, hidden: false });
         s.prefCalls[1].answer.resolve(written(team, { is_favorite: true }));
-        await settle();
-        s.prefCalls[0].answer.resolve(refused());
         await settle();
 
         expect(rowOf(s, team)?.is_favorite).toBe(true);
@@ -735,12 +777,15 @@ describe("a room's choice and Chat settings' switches", () => {
         expect(s.prefs.roomOf(prayer).notes).toEqual({});
     });
 
-    test("Star with no value turns the room's star over, and a value is kept as given", () => {
+    test("Star with no value turns the room's star over, and a value is kept as given", async () => {
         const s = setup([sidebarRow(team, { is_favorite: true }), sidebarRow(prayer)]);
 
         void s.prefs.choose(team, { kind: "star" });
         void s.prefs.choose(prayer, { kind: "star" });
         void s.prefs.choose(prayer, { kind: "star", isStarred: true, isFromMenu: false });
+        // the second change of one room's star waits for the first's answer
+        s.prefCalls[1].answer.resolve(written(prayer, { is_favorite: true }));
+        await settle();
 
         expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([
             [team, { is_favorite: false, hidden: false }],
@@ -791,4 +836,162 @@ describe("once stopped", () => {
         await s.prefs.setStarred(team, true, false);
         expect(s.prefCalls).toHaveLength(1);
     });
+
+    test("a change waiting behind a save still out is never asked, and resolves", async () => {
+        const s = setup();
+
+        void s.prefs.setNotifyMode(team, "silent", false);
+        const waiting = s.prefs.setNotifyMode(team, "mentions", false);
+        s.prefs.stop();
+        s.prefCalls[0].answer.resolve(written(team, { notify_mode: "silent" }));
+        await settle();
+
+        await waiting;
+        expect(s.prefCalls).toHaveLength(1);
+    });
 });
+
+// #region A status save's answer
+
+/** The answer as the shell's one call path reads it off the wire, through the real classification. */
+async function statusCallResult(answer: StatusSaveAnswer): Promise<CallResult> {
+    const controller = new AbortController();
+    const call = createPlatformCall({
+        fetch: async (_to, init) => {
+            if ("unreached" in answer) {
+                if (answer.unreached === "network") {
+                    throw new TypeError("Failed to fetch");
+                }
+                if (answer.unreached === "deadline") {
+                    return new Promise<Response>((_, reject) => {
+                        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                        controller.abort();
+                    });
+                }
+                return {
+                    ok: true,
+                    status: 200,
+                    headers: { get: () => null },
+                    json: () => new Promise((_, reject) => {
+                        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                        controller.abort();
+                    })
+                } as unknown as Response;
+            }
+
+            const headers = answer.headers ?? {};
+            return {
+                ok: answer.status >= 200 && answer.status < 300,
+                status: answer.status,
+                headers: { get: (name: string) => headers[name.toLowerCase()] ?? null },
+                json: async () => answer.body === null ? Promise.reject(new SyntaxError("Unexpected token <")) : answer.body
+            } as unknown as Response;
+        },
+        projectUrl: "http://platform",
+        publishableKey: "k",
+        currentToken: () => "platform-token",
+        routes: () => ({ send: "direct" })
+    });
+
+    return call.call("chat_set_status", { p_client: null, p_change: { status: "busy" } }, { signal: controller.signal });
+}
+
+/** The backoff's wait for a failure count and a random draw, to the millisecond: 10, 20, 40, then every 60 s, times 0.8 to 1.2. */
+function backoffMs(failures: number, random: number): number {
+    return Math.round(Math.min(60_000, 10_000 * 2 ** (failures - 1)) * (0.8 + 0.4 * random));
+}
+
+describe("a status save's answer", () => {
+    test("a landing is saved, with what the server read back", () => {
+        expect(statusSaveOutcome({ ok: true, data: setStatusAnswers.unchanged }, 0)).toEqual({ isSaved: true, data: setStatusAnswers.unchanged });
+    });
+
+    // None of these is the server's answer about the choice: the network, the deadline, the token,
+    // the path or the platform, so the choice stays pending and is asked again on the backoff.
+    test.each([
+        ["no network", "network"],
+        ["the deadline's abort", "deadline"],
+        ["the deadline's abort while the answer is read", "deadlineWhileReading"],
+        ["a 401 for an expired token", "expired"],
+        ["a proxy's 408", "proxyTimeout"],
+        ["a 500", "serverError"],
+        ["a 503 for maintenance", "maintenance"],
+        ["the status rule's own 429, which names no Retry-After", "rateLimited"]
+    ] as const)("%s is asked again after the backoff for the failure count, spread by its random draw", async (_name, shape) => {
+        const result = await statusCallResult(statusSaveFailures[shape]);
+
+        for (const failures of [1, 2, 3, 4, 7]) {
+            for (const random of [0, 0.5, 0.999]) {
+                const outcome = statusSaveOutcome(result, failures, () => random);
+                expect(outcome).toMatchObject({ isSaved: false });
+                expect((outcome as { retryInMs?: number }).retryInMs).toBe(backoffMs(failures, random));
+            }
+        }
+    });
+
+    test("the backoff grows 10, 20, 40, then holds at 60 s, each inside 0.8 to 1.2 of its step", async () => {
+        const result = await statusCallResult(statusSaveFailures.network);
+        const waits = (random: number): number[] => [1, 2, 3, 4, 5].map(n => (statusSaveOutcome(result, n, () => random) as { retryInMs: number }).retryInMs);
+
+        expect(waits(0)).toEqual([8_000, 16_000, 32_000, 48_000, 48_000]);
+        expect(waits(0.5)).toEqual([10_000, 20_000, 40_000, 60_000, 60_000]);
+        expect(waits(1)).toEqual([12_000, 24_000, 48_000, 72_000, 72_000]);
+    });
+
+    test("a gateway's 429 with no code of ours is asked again after the longer of the backoff and its Retry-After", async () => {
+        const result = await statusCallResult(statusSaveFailures.gatewayRateLimited);
+        expect(result).toMatchObject({ ok: false, status: 429, error: { code: "rpc.unknown" }, retryAfterSeconds: 90 });
+
+        expect(statusSaveOutcome(result, 1, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: 90_000 });
+        expect(statusSaveOutcome(result, 4, () => 1)).toMatchObject({ isSaved: false, retryInMs: 90_000 });
+
+        const shortWait = await statusCallResult({ ...statusSaveFailures.gatewayRateLimited, headers: { "retry-after": "5" } });
+        expect(statusSaveOutcome(shortWait, 2, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: 20_000 });
+    });
+
+    // Read only refuses the save through the writer check while her pages still beat, so asking
+    // again would leave her own faces on a choice viewers never see: it is refused, in the words
+    // the banner says.
+    test.each([
+        ["a church's banner", "readOnlyBanner", "Chat is read only tonight while Cedar Hill moves to its new server."],
+        ["the server's own sentence", "readOnlyServerSentence", "Chat is read only right now. You can read messages but not send them."],
+        ["no sentence at all", "readOnlyNoHint", readOnlyWordsOfOurs]
+    ] as const)("a 503 for read only with %s is refused in the banner's words and never asked again", async (_name, shape, words) => {
+        const result = await statusCallResult(statusSaveFailures[shape]);
+
+        const outcome = statusSaveOutcome(result, 1, () => 0.5);
+
+        expect(outcome).toEqual({ isSaved: false, failure: { alone: words, besideRetry: words, canRetry: false } });
+    });
+
+    test.each([
+        ["a Busy end that has passed", "badRequest", "Chat could not understand that request."],
+        ["a person who may not set a status", "notLivePerson", "Chat isn't available for your account."]
+    ] as const)("the platform's answer about the choice, %s, is refused with its own words", async (_name, shape, words) => {
+        const outcome = statusSaveOutcome(await statusCallResult(statusSaveFailures[shape]), 1, () => 0.5);
+
+        expect(outcome).toEqual({ isSaved: false, failure: { alone: words, besideRetry: words, canRetry: false } });
+    });
+
+    // Asking again would only meet the same answer: the same schema cache until a reload, the same
+    // proxy rule for the same request.
+    test.each([
+        ["a 404 from a schema cache that has not loaded the function", "notInSchemaCache"],
+        ["a proxy's 403", "proxyForbidden"],
+        ["a proxy's 413", "proxyTooLarge"]
+    ] as const)("%s, with no code of ours, is refused by name with the generic sentence", async (_name, shape) => {
+        const outcome = statusSaveOutcome(await statusCallResult(statusSaveFailures[shape]), 1, () => 0.5);
+
+        expect(outcome).toEqual({ isSaved: false, failure: expect.objectContaining({ alone: "Something went wrong in chat. Try again in a moment." }) });
+        expect("retryInMs" in outcome).toBe(false);
+    });
+
+    test("a refusal of a code this release does not know, carrying a sentence, is shown in that sentence", () => {
+        const outcome = statusSaveOutcome({ ok: false, status: 409, error: { code: "rpc.status_conflict", severity: "failed", text: "Your status changed somewhere else." }, retryAfterSeconds: null }, 1);
+
+        expect(outcome).toEqual({ isSaved: false, failure: expect.objectContaining({ alone: "Your status changed somewhere else." }) });
+        expect("retryInMs" in outcome).toBe(false);
+    });
+});
+
+// #endregion A status save's answer

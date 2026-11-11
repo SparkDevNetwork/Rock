@@ -331,8 +331,8 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // with it, and an ask after a reread, whose page that reread will drop, asks afresh.
     let olderLoad: { beforeId: number, open: number, read: number, done: Promise<void> } | null = null;
 
-    // Each root's follow saves. The bell can be pressed again before the first answer, and the
-    // answers can arrive in either order, so only the newest says how it went.
+    // Each root's follow saves. The bell can be pressed again before the first answer, which then
+    // waits for it, so one save of a root is out at a time and only the newest says how it went.
     const followRule = createSaveRule(() => isStopped);
 
     // The open thread's read position: the newest reply on screen, and what is stored or on its
@@ -1272,6 +1272,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             threadOpen++;
             threadRead++;
             whileLoading = [];
+            followRule.stop();
         }
     };
 }

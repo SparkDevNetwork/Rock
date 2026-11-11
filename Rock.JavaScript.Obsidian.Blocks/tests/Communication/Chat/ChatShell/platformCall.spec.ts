@@ -161,6 +161,59 @@ describe("createPlatformCall", () => {
 
         expect(result).toMatchObject({ ok: false, status: 401, error: { code: "auth.expired", severity: "session" } });
     });
+
+    test("a call's signal ends its request, which answers as one that reached nothing", async () => {
+        const controller = new AbortController();
+        const sent: RequestInit[] = [];
+        const call = createPlatformCall({
+            fetch: (_to, init) => new Promise((_, reject) => {
+                sent.push(init);
+                init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+            }),
+            projectUrl: url,
+            publishableKey: "k",
+            currentToken: () => "platform-token",
+            routes: () => ({ send: "direct" })
+        });
+
+        const answering = call.call("chat_set_status", { p_client: null, p_change: { status: "busy" } }, { signal: controller.signal });
+        controller.abort();
+
+        expect(sent[0].signal).toBe(controller.signal);
+        expect(await answering).toEqual({ ok: false, status: 0, error: { code: "rpc.transport", severity: "failed" }, retryAfterSeconds: null });
+    });
+
+    test("a call given up while its answer is read answers as one that reached nothing, never as saved or refused", async () => {
+        for (const status of [200, 503]) {
+            const controller = new AbortController();
+            const call = createPlatformCall({
+                fetch: async (_to, init) => ({
+                    ...response(status, {}),
+                    json: () => new Promise((_, reject) => {
+                        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                        controller.abort();
+                    })
+                } as unknown as Response),
+                projectUrl: url,
+                publishableKey: "k",
+                currentToken: () => "platform-token",
+                routes: () => ({ send: "direct" })
+            });
+
+            const answer = await call.call("chat_set_status", { p_client: null, p_change: { status: "busy" } }, { signal: controller.signal });
+
+            expect(answer).toEqual({ ok: false, status: 0, error: { code: "rpc.transport", severity: "failed" }, retryAfterSeconds: null });
+        }
+    });
+
+    test("an answer whose body cannot be read, with no signal ending it, is still the answer its status says", async () => {
+        const unreadable = { ...response(503, null), json: async () => Promise.reject(new SyntaxError("Unexpected token <")) } as unknown as Response;
+        const { call } = setup([unreadable]);
+
+        const result = await call.call("chat_set_status", { p_client: null, p_change: { status: "busy" } }, { signal: new AbortController().signal });
+
+        expect(result).toMatchObject({ ok: false, status: 503, error: { code: "rpc.unknown" } });
+    });
 });
 
 describe("parseRetryAfter", () => {

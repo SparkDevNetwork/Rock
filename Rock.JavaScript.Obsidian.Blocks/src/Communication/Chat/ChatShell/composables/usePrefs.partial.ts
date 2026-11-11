@@ -16,15 +16,17 @@
 //
 // The person's settings: each room's notify mode, star and hide, and their own three switches.
 //
-// Every change shows at once and writes at once, one save per change. A room's settings and the
-// reaction switch go to chat_set_prefs, the reaction switch with no room; the two privacy switches
-// go to Rock's SavePersonSetting door, one setting a call, since Rock owns them and pushes them on.
-// Star and hide pull against each other, so hiding unstars and starring unhides in the same patch.
-// The control is the feedback: a save that lands shows nothing more, so a change is seamless. A
-// save that fails puts the control back to the last value known saved and puts the server's
-// sentence under it, with Try again where another try can pass, said aloud at once. Each save has a
-// number; only the newest save of a setting says how it went, so quick changes never flicker
-// through older answers.
+// Every change shows at once and writes at once, one save of a setting out at a time: a change
+// made while one is out waits for its answer, and only the newest waiting is then asked. A room's
+// settings and the reaction switch go to chat_set_prefs, the reaction switch with no room; the two
+// privacy switches go to Rock's SavePersonSetting door, one setting a call, since Rock owns them
+// and pushes them on. Star and hide pull against each other, so hiding unstars and starring
+// unhides in the same patch. The control is the feedback: a save that lands shows nothing more, so
+// a change is seamless. A save that fails puts the control back to the last value known saved and
+// puts the server's sentence under it, with Try again where another try can pass, said aloud at
+// once. Only the newest save of a setting says how it went, so quick changes never flicker through
+// older answers. Her status is the one setting whose failed save is asked again rather than put
+// back, unless the server answered about the choice itself.
 // A sidebar load while a room's save is out leaves that setting as the person chose it, as the
 // person's own switches are left; its own answer settles it. Another device sees a change at its
 // next load. Once stopped, nothing more is asked and no answer
@@ -32,6 +34,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { reactive } from "vue";
 import { failureWords, finalWords, isOfflineFailure, offlineWords } from "../errors.partial";
+import { CallResult } from "../platformCall.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError, FailureWords, SidebarRow } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
@@ -210,6 +213,57 @@ const meFields: Record<MeKey, "show_profile_details" | "is_open_dm_allowed" | "r
 
 const noDoorSentence = "That setting can't be changed right now.";
 const leavesListSentence = "It leaves your list when you open another conversation.";
+
+/**
+ * The first wait before a status save that failed is asked again, doubling with each failure to
+ * the cap. An estimate: long enough that a browser of tabs failing together through an outage
+ * asks a few times a minute, short enough that a choice made offline goes soon after the network
+ * returns, which also brings the next ask forward.
+ */
+const statusRetryFirstMs = 10_000;
+
+/** The longest wait between asks of a status save that keeps failing. */
+const statusRetryCapMs = 60_000;
+
+/**
+ * How a status save's answer leaves her choice. Only the server's answer about the choice itself
+ * refuses it: one of our codes for a 4xx, or read only, which the writer check refuses while her
+ * pages still beat, so a choice asked again would show on her own faces and never on anyone
+ * else's. Everything that is about the path rather than the choice is asked again on a backoff
+ * spread by a random draw, the choice kept: no network or the save's deadline (status 0), a token
+ * the refresh could not renew (401), a proxy giving up (408), and the platform failing or down
+ * for maintenance (5xx). A 429 is a pace whoever set it, a gateway's carrying no code of ours, so
+ * it waits the longer of the backoff and its Retry-After. Any other answer is refused, since
+ * asking the same again would meet the same answer.
+ *
+ * @param result What the shell's call path answered.
+ * @param failures How many tries of this choice have failed, this one included, from one.
+ * @param random A number from 0 up to 1 that spreads the wait; the browser's by default.
+ *
+ * @returns The outcome the save rule acts on.
+ */
+export function statusSaveOutcome(result: CallResult, failures: number, random: () => number = Math.random): SaveOutcome {
+    if (result.ok) {
+        return { isSaved: true, data: result.data };
+    }
+
+    // read only's words are the banner's: the church's, or the server's own sentence, or ours
+    const failure = failureWords(result.error);
+    if (result.error.code === "rpc.read_only") {
+        return { isSaved: false, failure };
+    }
+
+    const backoffMs = Math.round(Math.min(statusRetryCapMs, statusRetryFirstMs * 2 ** (Math.max(1, failures) - 1)) * (0.8 + 0.4 * random()));
+    if (result.status === 429) {
+        return { isSaved: false, failure, retryInMs: Math.max(backoffMs, (result.retryAfterSeconds ?? 0) * 1000) };
+    }
+
+    if (result.status === 0 || result.status === 401 || result.status === 408 || result.status >= 500) {
+        return { isSaved: false, failure, retryInMs: backoffMs };
+    }
+
+    return { isSaved: false, failure };
+}
 
 /**
  * Creates the settings.
@@ -505,6 +559,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
         stop: (): void => {
             isStopped = true;
+            rule.stop();
         }
     };
 
