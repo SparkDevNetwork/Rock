@@ -1337,7 +1337,7 @@ describe("the open's first read", () => {
         await settle();
 
         expect(named((stage as Stage).played)).toEqual(["chat-tail-open tail-content"]);
-        expect((stage as Stage).played[0].options).toMatchObject({ duration: msg });
+        expect((stage as Stage).played[0].options).toMatchObject({ duration: msg, easing: "linear" });
         const tops = sample(() => seen(row(v, "k:1")).top);
         expect(near(tops[0], top)).toBe(true);
         for (let index = 1; index < tops.length; index++) {

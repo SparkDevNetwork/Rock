@@ -498,11 +498,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
         if (entrance > 0 || isOpen) {
             // The open's one motion: what lands while the view enters rides the entrance to its end,
-            // closing the rest of the way evenly so a short remainder does not open with a jump. What
-            // its first read lands once the entrance has ended glides in as an arrival does.
+            // closing the rest of the way evenly so a short remainder does not open with a jump; what
+            // its first read lands once the entrance has ended closes the same way over a message's time.
             if (Math.abs(offset) >= .5 && !reduced) {
-                const timing = entrance > 0 ? { duration: entrance, easing: tokens.easeState } : { duration: tokens.msg, easing: tokens.easeIn };
-                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...timing, id: "chat-tail-open" });
+                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: entrance > 0 ? entrance : tokens.msg, easing: tokens.easeState, id: "chat-tail-open" });
             }
             lifted.forEach(part => part.done());
             return;
