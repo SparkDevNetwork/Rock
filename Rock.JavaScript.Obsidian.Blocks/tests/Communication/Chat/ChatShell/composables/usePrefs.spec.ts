@@ -1027,7 +1027,8 @@ describe("a status save's answer", () => {
 const her = "A0000001-0000-4000-8000-00000000000A";
 const church = "C1000000-0000-4000-8000-000000000001";
 const lockName = `rock-chat:status:${church}:${her}`.toLowerCase();
-const channelName = `rock-chat:me:${church}:${her}`.toLowerCase();
+// the channel's name carries the version of its posts, so a release that changes them opens another
+const channelName = `rock-chat:me:v1:${church}:${her}`.toLowerCase();
 const someoneElse = "a0000099-0000-4000-8000-000000000000";
 
 const automatic: StatusChoice = { busy_until: null, appear_offline: false };
@@ -2097,6 +2098,33 @@ describe("her status across her tabs", () => {
 
             expect(b.calls).toHaveLength(1);
         });
+    });
+
+    test.each([
+        ["a saved with no choice time", { kind: "saved", me: busy }],
+        ["a saved whose choice time is not a number", { kind: "saved", choiceAt: "soon", me: busy }],
+        ["a saved whose value is not her status", { kind: "saved", choiceAt: 5, me: { status: "busy" } }],
+        ["a refusal with no error", { kind: "saved", choiceAt: 5, page: "another tab", refused: true }],
+        ["a choice with no record", { kind: "choice" }],
+        ["a choice whose record has no time", { kind: "choice", record: { choice: hidden, page: "another tab" } }],
+        ["a choice whose record's choice is not her status", { kind: "choice", record: { choice: "hidden", at: 5, page: "another tab" } }],
+        ["a held with no covered", { kind: "held", me: busy, meStamp: 0, retryAt: 0, failures: 0, retryPage: null }],
+        ["a failed whose time is not a number", { kind: "failed", choiceAt: 1e15, retryAt: null, failures: 1, page: "another tab" }],
+        ["an input with no time", { kind: "input" }],
+        ["a kind of a later release", { kind: "status2", choiceAt: 1e15 }]
+    ])("%s from another release changes nothing, and her next choice is sent", async (_name, post) => {
+        const b = statusBrowser();
+        const t2 = b.open();
+        t2.prefs.setMe(sidebarMe(automatic));
+
+        b.raw().postMessage(post);
+        await delivered();
+        expect(shown(t2)).toEqual(settled(automatic));
+        expect(t2.prefs.state.ownInputAt).toBe(0);
+        await t2.prefs.setStatus(hidden);
+        await after(1000);
+
+        expect(b.calls.map(call => call.change)).toEqual([{ status: "appear_offline" }]);
     });
 
     test("a saved post older than what the tab has covered changes nothing", async () => {

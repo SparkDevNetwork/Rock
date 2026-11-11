@@ -414,6 +414,63 @@ type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | 
     sidebarRead: () => void;
 };
 
+/** Whether a value is a number a post may carry: finite, so no comparison with it is ever false both ways. */
+function isTime(value: unknown): value is number {
+    return typeof value === "number" && Number.isFinite(value);
+}
+
+/** Whether a value is her status in her settings' two fields. */
+function isChoice(value: unknown): value is StatusChoice {
+    const choice = value as Partial<StatusChoice> | null;
+    return typeof choice === "object" && choice !== null
+        && (choice.busy_until === null || typeof choice.busy_until === "string")
+        && typeof choice.appear_offline === "boolean";
+}
+
+/**
+ * A post from another tab of hers as this release reads it, or null for one it cannot: a tab of
+ * another release may still be open after an upgrade, and a field it left out or shaped another
+ * way would otherwise stick in this tab for good, as a covered of NaN that no choice is above.
+ *
+ * @param data What the channel delivered.
+ *
+ * @returns The post, or null.
+ */
+function readPost(data: unknown): StatusPost | null {
+    const post = data as Record<string, unknown> | null;
+    if (typeof post !== "object" || post === null) {
+        return null;
+    }
+    const record = post.record as Record<string, unknown> | null | undefined;
+    const error = post.error as Record<string, unknown> | null | undefined;
+    switch (post.kind) {
+        case "choice":
+            return typeof record === "object" && record !== null && isTime(record.at) && typeof record.page === "string" && isChoice(record.choice)
+                ? post as StatusPost
+                : null;
+        case "saved":
+            if (!isTime(post.choiceAt)) {
+                return null;
+            }
+            return post.refused === true
+                ? typeof post.page === "string" && typeof error === "object" && error !== null && typeof error.code === "string" ? post as StatusPost : null
+                : isChoice(post.me) ? post as StatusPost : null;
+        case "failed":
+            return isTime(post.choiceAt) && isTime(post.retryAt) && isTime(post.failures) && typeof post.page === "string" ? post as StatusPost : null;
+        case "hello":
+            return post as StatusPost;
+        case "held":
+            return isTime(post.covered) && isTime(post.meStamp) && (post.me === null || isChoice(post.me))
+                && isTime(post.retryAt) && isTime(post.failures) && (post.retryPage === null || typeof post.retryPage === "string")
+                ? post as StatusPost
+                : null;
+        case "input":
+            return isTime(post.at) ? post as StatusPost : null;
+        default:
+            return null;
+    }
+}
+
 /**
  * A choice as chat_set_status takes it.
  *
@@ -499,7 +556,8 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
 
     let channel: StatusChannel | null = null;
     try {
-        channel = reach?.channel?.(`rock-chat:me:${names}`) ?? null;
+        // the version of its posts is in its name, so a release that changes them talks on another
+        channel = reach?.channel?.(`rock-chat:me:v1:${names}`) ?? null;
     }
     catch {
         // a browser that refuses the channel leaves this tab alone, as one without it
@@ -737,24 +795,22 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
      * A tab of hers failed, or a hello's answer tells the clock: the later time is the browser's,
      * with the tab that set it, and the larger count. Nothing without a later wait in it.
      */
-    function takeClock(told: Partial<RetryClock>): void {
-        if (typeof told.retryAt !== "number" || !(told.retryAt > clock.retryAt)) {
+    function takeClock(told: RetryClock): void {
+        if (told.retryAt <= clock.retryAt) {
             return;
         }
         clock.retryAt = told.retryAt;
-        clock.retryPage = typeof told.retryPage === "string" ? told.retryPage : null;
-        if (typeof told.failures === "number" && told.failures > clock.failures) {
-            clock.failures = told.failures;
-        }
+        clock.retryPage = told.retryPage;
+        clock.failures = Math.max(clock.failures, told.failures);
     }
 
     /** A post from another tab of hers. */
     function heard(data: unknown): void {
         // a page in the back-forward cache is no channel's destination
-        if (isStopped() || isAway || typeof data !== "object" || data === null) {
+        const message = readPost(data);
+        if (isStopped() || isAway || !message) {
             return;
         }
-        const message = data as StatusPost;
         if (message.kind === "choice") {
             hold(message.record, false);
         }
@@ -763,7 +819,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
         }
         else if (message.kind === "failed") {
             // a failure of a choice already saved here starts no wait
-            if (typeof message.choiceAt === "number" && message.choiceAt > tab.covered) {
+            if (message.choiceAt > tab.covered) {
                 takeClock({ retryAt: message.retryAt, failures: message.failures, retryPage: message.page });
             }
         }
@@ -786,7 +842,7 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
                 tab.isMeKnown = true;
             }
         }
-        else if (message.kind === "input" && typeof message.at === "number" && message.at > state.ownInputAt) {
+        else if (message.kind === "input" && message.at > state.ownInputAt) {
             state.ownInputAt = message.at;
         }
     }
