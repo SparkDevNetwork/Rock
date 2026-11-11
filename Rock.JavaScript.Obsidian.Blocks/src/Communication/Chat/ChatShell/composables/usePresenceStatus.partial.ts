@@ -97,10 +97,11 @@ export type WatchRank = 0 | 1 | 2 | 3;
 /** Online status on this page, others' and her own face's: the only store of it, and the only thing that writes it. */
 export type PresenceStatus = {
     /**
-     * A token exchange answered. Each person its body asked about that the answer's map names is
-     * written; a map left out, as when the read did not answer in time, or a failed exchange,
-     * writes nothing. A landed body is what the platform now holds of her input, and a landed map,
-     * or the start, makes the badges fresh; a failed exchange changes neither.
+     * A token exchange answered. Each person its body asked about is written as of the answer's
+     * one decision time: what its told says of her, or nothing when it leaves her out. A presence
+     * left out, as when the read did not answer in time, or a failed exchange, writes nothing. A
+     * landed body is what the platform now holds of her input, and a landed presence, or the
+     * start, makes the badges fresh; a failed exchange changes neither.
      *
      * @param asked The people the exchange's body watched.
      * @param outcome The exchange's answer, or null for one that failed.
@@ -233,6 +234,11 @@ function drawnAt(entry: StatusEntry | undefined, serverNow: number): Drawn | nul
     return end !== null && end <= serverNow ? { state: "away", busyUntil: null } : { state: "busy", busyUntil: end };
 }
 
+/** Whether a value is a JSON object, not null or an array. */
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
  * Reads a status as the platform sends it: the decision time as the number it was sent as, never
  * parsed from text, where two decisions inside one millisecond would lose their order; a decision
@@ -243,7 +249,7 @@ function drawnAt(entry: StatusEntry | undefined, serverNow: number): Drawn | nul
  * @returns The entry, or null for something unreadable, which writes nothing.
  */
 function readStatus(raw: unknown): StatusEntry | null {
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    if (!isRecord(raw)) {
         return null;
     }
     const sent = raw as Partial<PersonStatus>;
@@ -266,6 +272,26 @@ function readStatus(raw: unknown): StatusEntry | null {
             ...(sent.auto === "online" || sent.auto === "away" ? { auto: sent.auto } : {})
         },
         asOf: sent.as_of
+    };
+}
+
+/**
+ * Reads the token exchange's presence: one decision time for the whole answer, sent as the number
+ * it was decided as, and told, each watched person it tells something of by primary alias, in
+ * whatever case it arrived in.
+ *
+ * @param raw The presence as it arrived.
+ *
+ * @returns The answer, or null for something unreadable, which writes nothing for anyone.
+ */
+function readWatchAnswer(raw: unknown): { asOf: number, told: Map<string, unknown> } | null {
+    if (!isRecord(raw) || typeof raw.as_of !== "number" || !Number.isSafeInteger(raw.as_of) || !isRecord(raw.told)) {
+        return null;
+    }
+
+    return {
+        asOf: raw.as_of,
+        told: new Map(Object.entries(raw.told).map(([alias, sent]) => [alias.toLowerCase(), sent]))
     };
 }
 
@@ -751,14 +777,16 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             // The switch read here is the answer before this one's, since the session applies an
             // answer's settings only after this returns. The platform answers status only with the
             // switch on in the same answer, and a body names people only after an answer said on.
-            const map = outcome.presence;
-            if (!mayWrite() || typeof map !== "object" || map === null) {
+            const answer = readWatchAnswer(outcome.presence);
+            if (!mayWrite() || answer === null) {
                 return;
             }
-            const answered = new Map(Object.entries(map).map(([alias, sent]) => [alias.toLowerCase(), sent as unknown]));
+            // The answer's one decision time is every entry's, and a person asked about that its
+            // told leaves out is told nothing as of then, as a reader's time alone says.
             for (const alias of asked) {
                 const key = alias.toLowerCase();
-                const entry = answered.has(key) ? readStatus(answered.get(key)) : null;
+                const sent = answer.told.has(key) ? answer.told.get(key) : {};
+                const entry = isRecord(sent) ? readStatus({ ...sent, as_of: answer.asOf }) : null;
                 if (entry) {
                     write(key, entry);
                 }
