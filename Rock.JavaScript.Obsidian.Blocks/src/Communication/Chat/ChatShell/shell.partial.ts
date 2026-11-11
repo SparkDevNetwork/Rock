@@ -557,7 +557,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
         setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
         clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
         onEnded: () => void end(),
-        onWaiting: () => onStartWaiting()
+        onWaiting: () => onStartWaiting(),
+        // Away is the page hidden or the browser offline: what coming back, the one reason to try
+        // sooner, is coming back from.
+        isAway: () => options.pageTargets.document.visibilityState !== "visible" || globalThis.navigator?.onLine === false
     });
 
     /**
@@ -1325,8 +1328,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             // A start that had to wait is counted once, with how long and how many tries it took
             // and the words it reached, so a church's slow starts are seen without a report a try.
+            // In seconds, since the platform keeps a count up to a million and a start can wait
+            // past the quarter hour that many milliseconds would hold.
             if (state.startWait !== null) {
-                problems.report("start", `waited.${state.startWait}`, Date.now() - startWaited.at, `tries-${startWaited.tries + 1}`);
+                problems.report("start", `waited.${state.startWait}`, Math.round((Date.now() - startWaited.at) / 1000), `tries-${startWaited.tries + 1}`);
             }
 
             await opener.runPageLoad();

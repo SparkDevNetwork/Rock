@@ -170,12 +170,12 @@
     font-size: 12.5px;
     line-height: 17px;
     color: var(--chat-muted);
+    animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
 }
 
 .chat-veil-status.is-list {
     flex: none;
     padding: 8px;
-    animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
 }
 
 .chat-veil-status-words {

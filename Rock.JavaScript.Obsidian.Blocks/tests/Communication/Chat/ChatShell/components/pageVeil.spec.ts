@@ -97,5 +97,12 @@ describe("the page veil", () => {
 
         expect(reduced.some(block => /\.chat-live-dot\s*\{[^}]*animation:\s*none/.test(block))).toBe(true);
     });
+
+    test("the status line fades in on its way onto either veil, the column's header as the list's top", () => {
+        const source = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/pageVeil.partial.obs"), "utf8");
+        const rule = source.slice(source.indexOf("<style")).match(/\n\.chat-veil-status \{([^}]*)\}/);
+
+        expect(rule?.[1]).toMatch(/animation:\s*chat-reveal-in var\(--chat-t-base\)/);
+    });
 });
 

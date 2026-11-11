@@ -57,11 +57,17 @@ function fakes(overrides: Partial<SessionDependencies> = {}): { dependencies: Se
             record.pushes++;
         },
         random: () => 0.5,
-        // Every try sets a deadline of its own and clears it when the try answers; those are kept
-        // apart, so the timers a test reads are the refreshes and waits the session schedules.
         setTimer: (callback: () => void, milliseconds: number): unknown => {
             const timer = { callback, milliseconds, cleared: false };
-            (milliseconds === tryTimeoutMs ? record.deadlines : record.timers).push(timer);
+            record.timers.push(timer);
+            return timer;
+        },
+        // Every try sets a deadline of its own and clears it when the try answers; those are kept
+        // apart by who set them, so the timers a test reads are the refreshes and waits the
+        // session schedules, whatever their length.
+        setDeadline: (callback: () => void, milliseconds: number): unknown => {
+            const timer = { callback, milliseconds, cleared: false };
+            record.deadlines.push(timer);
             return timer;
         },
         clearTimer: (handle: unknown): void => {
@@ -941,8 +947,11 @@ describe("a start the platform cannot answer yet", () => {
         dependencies: SessionDependencies,
         exchanges: Array<{ churchToken: string, at: number, signal: AbortSignal | null }>,
         mints: number[],
-        waits: number[]
+        waits: number[],
+        away: { value: boolean }
     } {
+        // the person is away (hidden or offline) unless a test says they are watching
+        const away = { value: true };
         const exchanges: Array<{ churchToken: string, at: number, signal: AbortSignal | null }> = [];
         const mints: number[] = [];
         const waits: number[] = [];
@@ -966,9 +975,10 @@ describe("a start the platform cannot answer yet", () => {
             clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
             now: () => Date.now(),
             onWaiting: until => waits.push(until),
-            onEnded: options.onEnded
+            onEnded: options.onEnded,
+            isAway: () => away.value
         };
-        return { dependencies, exchanges, mints, waits };
+        return { dependencies, exchanges, mints, waits, away };
     }
 
     /** Starts, keeping how the start resolved, or null while it has not. */
@@ -1246,6 +1256,42 @@ describe("a start the platform cannot answer yet", () => {
         await jest.advanceTimersByTimeAsync(1);
 
         expect(p.exchanges.map(e => e.at)).toEqual([0, 750, 2250, 5250, 6050]);
+    });
+
+    test("a person flicking between tabs while every try fails in front of them moves none of the waits that began while they watched", async () => {
+        const p = platform(["unreachable", "unreachable", "unreachable", "unreachable"]);
+        p.away.value = false;
+        const session = createSession(p.dependencies);
+        begin(session);
+
+        // three waits, each nudged twice as the page is hidden and shown again
+        for (const at of [100, 1000, 2400]) {
+            await jest.advanceTimersByTimeAsync(at - Date.now());
+            session.nudge();
+            session.nudge();
+        }
+        await jest.advanceTimersByTimeAsync(5250 - Date.now());
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 750, 2250, 5250]);
+    });
+
+    test("a wait that began while the person was away is brought forward when they come back", async () => {
+        const p = platform(["unreachable", "unreachable", "unreachable", "unreachable"]);
+        p.away.value = false;
+        const session = createSession(p.dependencies);
+        begin(session);
+        await jest.advanceTimersByTimeAsync(2249);
+
+        // the third try fails while the page is hidden, so its 3 s wait may be cut short
+        p.away.value = true;
+        await jest.advanceTimersByTimeAsync(1);
+        expect(p.exchanges).toHaveLength(3);
+        await jest.advanceTimersByTimeAsync(250);
+        p.away.value = false;
+        session.nudge();
+        await jest.advanceTimersByTimeAsync(750);
+
+        expect(p.exchanges.map(e => e.at)).toEqual([0, 750, 2250, 3250]);
     });
 
     test("a gateway's 408 is no answer, which may pass, not a refusal", async () => {

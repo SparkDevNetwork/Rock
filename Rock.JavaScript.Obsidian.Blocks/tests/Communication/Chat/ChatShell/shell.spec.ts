@@ -5078,9 +5078,13 @@ describe("a start the platform cannot answer yet", () => {
             void h.shell.start();
             return h;
         };
+        const onLine = jest.spyOn(navigator, "onLine", "get");
 
+        // offline while the tries fail, so the waits began away, then back
+        onLine.mockReturnValue(false);
         const online = failing();
         await advance(6250);
+        onLine.mockReturnValue(true);
         online.fireOnline();
         await advance(749);
         expect(online.exchangeTimes).toHaveLength(4);
@@ -5088,9 +5092,12 @@ describe("a start the platform cannot answer yet", () => {
         expect(online.exchangeTimes.slice(-1)).toEqual([7000]);
         await online.shell.stop();
 
+        // hidden while the tries fail, then shown
         const shown = failing();
+        shown.pageDocument.visibilityState = "hidden";
         const start = Date.now();
         await advance(6250);
+        shown.pageDocument.visibilityState = "visible";
         shown.fireShown();
         shown.fireShown();
         await advance(750);
@@ -5107,6 +5114,22 @@ describe("a start the platform cannot answer yet", () => {
         await advance(1);
         expect(hidden.exchangeTimes.slice(-1)).toEqual([hiddenStart + 11250]);
         await hidden.shell.stop();
+    });
+
+    test("a page watched the whole time is not hurried by being shown again, so flicking tabs never shortens the backoff", async () => {
+        const h = build();
+        h.exchangeAnswers.value = ["unreachable", "unreachable", "unreachable", "unreachable"];
+        void h.shell.start();
+        await advance(6250);
+
+        h.fireShown();
+        h.fireOnline();
+        await advance(4999);
+
+        expect(h.exchangeTimes).toEqual([0, 750, 2250, 5250]);
+        await advance(1);
+        expect(h.exchangeTimes.slice(-1)).toEqual([11250]);
+        await h.shell.stop();
     });
 
     test("a stop removes the page's listeners, so nothing it hears afterwards asks for a token", async () => {
@@ -5152,7 +5175,8 @@ describe("a start the platform cannot answer yet", () => {
         await starting;
         await settle();
 
-        expect(h.reports.filter(r => r.p_kind === "start")).toEqual([{ p_kind: "start", p_code: "waited.connecting", p_count: 8000, p_detail: "tries-3" }]);
+        // in seconds, which a start of any length fits
+        expect(h.reports.filter(r => r.p_kind === "start")).toEqual([{ p_kind: "start", p_code: "waited.connecting", p_count: 8, p_detail: "tries-3" }]);
 
         const quick = build();
         const quickStart = quick.shell.start();

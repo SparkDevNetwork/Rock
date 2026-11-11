@@ -293,6 +293,19 @@ export type SessionDependencies = {
     /** Stops a timer. */
     clearTimer: (handle: unknown) => void;
 
+    /**
+     * Starts the deadline of one try at a token, which lives only as long as the try and is
+     * stopped by clearTimer; setTimer when not given.
+     */
+    setDeadline?: (callback: () => void, milliseconds: number) => unknown;
+
+    /**
+     * Whether the person is away from the page now: it is hidden, or the browser is offline. Only
+     * a wait that began while they were away is brought forward when they come back; never away
+     * when not given.
+     */
+    isAway?: () => boolean;
+
     /** The time now in milliseconds; the browser's clock unless a test stands in. */
     now?: () => number;
 
@@ -337,8 +350,10 @@ export type ChatSession = {
     withFreshToken: <T>(call: () => Promise<T>, isExpired: (result: T) => boolean) => Promise<T>;
 
     /**
-     * The network came back or the page was shown: a wait after a failed try that the platform no
-     * longer holds the session to ends soon, once per wait. Nothing else is moved.
+     * The network came back or the page was shown: a wait after a failed try that began while the
+     * person was away, and that the platform no longer holds the session to, ends soon, once per
+     * wait. A wait that began while they watched is left as computed, so flicking between tabs
+     * never shortens the backoff. Nothing else is moved.
      */
     nudge: () => void;
 
@@ -376,7 +391,8 @@ export const tryTimeoutMs = 10000;
  * How long a church token Rock signed is exchanged again by a later try rather than minted anew.
  * An estimate: Rock signs one for five minutes and the exchange grants from it until two are
  * left, so it is good there for about three; this keeps half a minute in hand for Rock's clock
- * running ahead of the platform's. It spares Rock a mint on every try of a long outage.
+ * running ahead of the platform's, and for a mint's answer up to a try's deadline late, since its
+ * age is counted from when the answer arrived. It spares Rock a mint on every try of a long outage.
  */
 export const churchTokenReuseMs = 150000;
 
@@ -413,10 +429,11 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     let failures = 0;
     let retryAfterSeconds: number | null = null;
     // The wait after a failed try, while one is pending: when its try is due, before when the
-    // platform asked not to be asked, what runs when it ends, and whether a nudge has moved it.
-    // Nothing asks before it is due but its own timer; a platform that answers 503 while it
-    // struggles is just when every call refused as expired would otherwise start an exchange.
-    let waiting: { due: number, floor: number, run: () => void, isNudged: boolean } | null = null;
+    // platform asked not to be asked, what runs when it ends, whether it began while the person
+    // was away, and whether a nudge has moved it. Nothing asks before it is due but its own
+    // timer; a platform that answers 503 while it struggles is just when every call refused as
+    // expired would otherwise start an exchange.
+    let waiting: { due: number, floor: number, run: () => void, isAway: boolean, isNudged: boolean } | null = null;
     // The try out now, which a stop gives up, and the church token a failed try left, which the
     // next exchanges again while it is young instead of asking Rock for another.
     let current: TokenTry | null = null;
@@ -438,7 +455,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
                 resolve(noAnswer);
             };
         });
-        const timer = dependencies.setTimer(() => abandon(), tryTimeoutMs);
+        const timer = (dependencies.setDeadline ?? dependencies.setTimer)(() => abandon(), tryTimeoutMs);
 
         return { signal: controller.signal, abandoned, abandon, timer };
     }
@@ -630,7 +647,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         const floorMs = Math.min(capMs, (retryAfterSeconds ?? 0) * 1000);
         const wait = Math.min(capMs, Math.max(floorMs, backoff(failures)));
         failures++;
-        waiting = { due: now() + wait, floor: now() + floorMs, run, isNudged: false };
+        waiting = { due: now() + wait, floor: now() + floorMs, run, isAway: dependencies.isAway?.() ?? false, isNudged: false };
         timer = dependencies.setTimer(endWait, wait);
     }
 
@@ -689,9 +706,10 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return call();
         },
         nudge: (): void => {
-            // A try out now, or a wait already moved, is left as it is: a person flicking between
-            // tabs moves one wait once, not once a flick.
-            if (isStopped || waiting === null || waiting.isNudged) {
+            // A try out now, a wait already moved, or one that began while the person watched is
+            // left as it is: coming back is the reason, so a person flicking between tabs while
+            // every try fails in front of them never turns the backoff into a try a second.
+            if (isStopped || waiting === null || !waiting.isAway || waiting.isNudged) {
                 return;
             }
             waiting.isNudged = true;
