@@ -2276,6 +2276,74 @@ describe("Appear offline and typing", () => {
         expect(on.calls).toEqual([]);
         expect(off.calls).toEqual([]);
     });
+
+    const hidden: StatusChoice = { busy_until: null, appear_offline: true };
+    const stopsOf = (calls: Call[]): unknown[] => calls.map(call => call.body.p_stopped ?? false);
+
+    test.each([
+        ["status on", { flags: { typing: true, online: true } }],
+        ["status off, which hides her typing all the same", { flags: { typing: true, online: false } }]
+    ])("Appear offline chosen while a turn is announced, %s: its one stop goes at once though typing is now refused, and nothing after", async (_name, settings) => {
+        const h = buildStatus(settings);
+        h.presence.typed(group, null, "on my");
+        await pass(700);
+        expect(stopsOf(h.calls)).toEqual([false]);
+
+        h.choice.pending = hidden;
+        await settle();
+        expect(stopsOf(h.calls)).toEqual([false, true]);
+        expect(h.calls[1].body).toEqual(expect.objectContaining({ p_channel_id: group, p_parent_id: null, p_stopped: true }));
+
+        h.presence.typed(group, null, "on my way");
+        await pass(10_000);
+        h.presence.typed(group, null, "");
+        await pass(10_000);
+        expect(stopsOf(h.calls)).toEqual([false, true]);
+    });
+
+    test("Appear offline chosen inside a turn's first wait sends nothing, then or at its due", async () => {
+        const h = buildStatus();
+        h.presence.typed(group, null, "on");
+        await pass(300);
+
+        h.choice.pending = hidden;
+        await pass(10_000);
+
+        expect(h.calls).toEqual([]);
+    });
+
+    test("Appear offline heard while the turn's start is out sends its stop once the start is answered, never before", async () => {
+        const h = buildStatus();
+        h.held.value = [];
+        h.presence.typed(group, null, "on my");
+        await pass(700);
+        expect(stopsOf(h.calls)).toEqual([false]);
+
+        h.choice.pending = hidden;
+        await settle();
+        expect(stopsOf(h.calls)).toEqual([false]);
+
+        h.held.value[0].resolve({ ok: true, data: { sent: true } });
+        await settle();
+        expect(stopsOf(h.calls)).toEqual([false, true]);
+        await pass(10_000);
+        expect(stopsOf(h.calls)).toEqual([false, true]);
+    });
+
+    test("a stop held behind a start that is out is dropped once typing stops", async () => {
+        const h = buildStatus();
+        h.held.value = [];
+        h.presence.typed(group, null, "on my");
+        await pass(700);
+        h.choice.pending = hidden;
+        await settle();
+
+        h.presence.stop();
+        h.held.value[0].resolve({ ok: true, data: { sent: true } });
+        await pass(10_000);
+
+        expect(stopsOf(h.calls)).toEqual([false]);
+    });
 });
 
 describe("her own face", () => {

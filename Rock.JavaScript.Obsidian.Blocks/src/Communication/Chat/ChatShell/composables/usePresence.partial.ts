@@ -273,6 +273,12 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     /** Whether a signal is out; the next waits for it, so a slow route never stacks calls. */
     let isCallOut = false;
 
+    /**
+     * Announced turns ended by Appear offline while a start was out, whose one stop waits for it:
+     * the two go on two connections and could land reversed, a late start showing her dots.
+     */
+    const heldStops = new Map<string, Turn>();
+
     /** The token typing was refused as off under; silent until the session holds another. */
     let offToken: string | null = null;
 
@@ -344,6 +350,14 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         turn.sentAt = Date.now();
         turn.isChanged = false;
         void signal(turn.channelId, turn.rootId, place, false);
+    }
+
+    /** Sends each stop Appear offline held behind a start, now that the start is answered. */
+    function sendHeldStops(): void {
+        for (const [place, turn] of [...heldStops]) {
+            heldStops.delete(place);
+            void signal(turn.channelId, turn.rootId, place, true);
+        }
     }
 
     /** Sends every signal that waited for the history or a call out, now that one may go. */
@@ -431,6 +445,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             // however the call ended the next may go, unless stop has already cleared everything
             if (!isStopped() && !isStop) {
                 isCallOut = false;
+                sendHeldStops();
                 sendDue();
             }
         }
@@ -470,6 +485,29 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
                 }
             }
             changed();
+        }
+    }, { flush: "sync" });
+
+    // Appear offline chosen, in this tab or another of hers, ends every turn, and each one announced
+    // sends its one stop now: inside the choice's pause, before the save lands and the platform
+    // drops every call of hers, so viewers' dots go at once rather than at their expiry. Typing
+    // refuses from the choice, so the stop never asks whether she may type; nor whether status is
+    // on, since Appear offline hides her typing either way.
+    const stopWatchingHidden = watch(() => prefs.shownStatus().appear_offline, isHidden => {
+        if (!isHidden || isStopped()) {
+            return;
+        }
+        for (const [place, turn] of [...turns]) {
+            forget(place);
+            if (turn.sentAt === null) {
+                continue;
+            }
+            if (isCallOut) {
+                heldStops.set(place, turn);
+            }
+            else {
+                void signal(turn.channelId, turn.rootId, place, true);
+            }
         }
     }, { flush: "sync" });
 
@@ -802,6 +840,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             status.stop();
             stopWatchingScreen();
             stopWatchingSwitch();
+            stopWatchingHidden();
+            heldStops.clear();
             for (const place of [...turns.keys()]) {
                 forget(place);
             }
