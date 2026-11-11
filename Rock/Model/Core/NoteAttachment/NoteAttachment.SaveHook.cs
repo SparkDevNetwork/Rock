@@ -51,8 +51,8 @@ namespace Rock.Model
 
                     if ( this.Entity.BinaryFileId != originalBinaryFileId )
                     {
-                        var currentPersonAlias = DbContext.GetCurrentPersonAlias();
-                        var currentPerson = currentPersonAlias != null ? new PersonAliasService( RockContext ).GetPerson( currentPersonAlias.Id ) : null;
+                        var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
+                        var currentPerson = currentPersonAliasId.HasValue ? new PersonAliasService( RockContext ).GetPerson( currentPersonAliasId.Value ) : null;
 
                         if ( currentPerson != null && !binaryFileService.IsUploadedBinaryFileAllowedForPerson( this.Entity.BinaryFileId, originalBinaryFileId, currentPerson ) )
                         {
