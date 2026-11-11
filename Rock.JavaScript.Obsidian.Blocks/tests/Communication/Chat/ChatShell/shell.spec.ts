@@ -3471,6 +3471,25 @@ describe("settings", () => {
         });
     });
 
+    test("online status shows on the page as each exchange says it, so the sidebar's foot sets it only while it is on", async () => {
+        const h = build();
+        h.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
+        h.bootstrap.value = { channels: [], me: { unread_mentions: [] } };
+        expect(h.shell.state.isStatusShown).toBe(false);
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        expect(h.shell.state.isStatusShown).toBe(true);
+
+        h.exchangeSettings.value = { limits: platformLimits, flags: { online: false } };
+        personal(h, "session.recheck", {});
+        await settle();
+        await settle();
+        expect(h.shell.state.isStatusShown).toBe(false);
+    });
+
     test("the bootstrap's me is where the person's own switches start", async () => {
         const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
 

@@ -49,7 +49,11 @@
                                 :personName="personName"
                                 :personPhotoUrl="personPhotoUrl"
                                 :personCampusName="personCampusName"
+                                :isStatusShown="shell.state.isStatusShown"
+                                :statusChoice="statusChoice"
+                                :statusClosedReason="statusClosedReason"
                                 @select="onSelect"
+                                @status="onStatusChoice"
                                 @newMessage="openMainView('newdm')"
                                 @browse="openMainView('directory')"
                                 @settings="isSettingsOpen = true"
@@ -513,6 +517,8 @@
                           :campusName="personCampusName"
                           :organizationName="organizationName"
                           :me="shell.prefs.state.me"
+                          :statusChoice="statusChoice"
+                          :statusClosedReason="statusClosedReason"
                           :notes="shell.prefs.state.meNotes"
                           :announcement="shell.prefs.state.announcement"
                           :push="shell.state.push"
@@ -522,6 +528,7 @@
                           @unblock="onSettingsUnblock"
                           @retryBlocked="shell.blocks.load"
                           @toggle="shell.prefs.setSwitch"
+                          @status="onStatusChoice"
                           @pushOn="onTurnOnPush"
                           @pushOff="shell.turnOffPush" />
         </div>
@@ -751,6 +758,7 @@
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
     import { useMembersPanel } from "./ChatShell/composables/useMembersPanel.partial";
+    import { StatusChoice } from "./ChatShell/composables/usePrefs.partial";
     import AddPeople from "./ChatShell/components/addPeople.partial.obs";
     import RemoveMember from "./ChatShell/components/removeMember.partial.obs";
     import ErrorToast, { ToastNotice } from "./ChatShell/components/errorToast.partial.obs";
@@ -962,6 +970,19 @@
         roomTitles, roomKinds, publicRooms, threadRow, threadKind, threadPair, foundTitle, foundRow, foundTimeline, isPreviewingRoom
     } = useRoomsView({ shell, activeChannelId, drawnThread });
 
+    /**
+     * Why her status cannot be set now, in the banner's words, while the church is read only and a
+     * choice could only be refused; null under maintenance, where a choice waits and is sent again.
+     */
+    const statusClosedReason = computed((): string | null => lockedReason(null, shell.value.state.service));
+
+    /**
+     * Her status as her settings show it, held as one value that moves only when they do, since the
+     * sidebar and Chat settings take it as a prop and a new value on every render of the block
+     * would draw the whole sidebar again with each send, notice and thread change.
+     */
+    const statusChoice = computed((): StatusChoice => shell.value.prefs.shownStatus());
+
     /** The count on the app icon, from the sidebar, so reading what it counts clears it. */
     const appBadge = computed((): number => shell.value.appBadge());
 
@@ -1109,6 +1130,11 @@
 
     function onTurnOnPush(): void {
         void shell.value.turnOnPush();
+    }
+
+    /** A choice in her status menu, from the sidebar's foot or the Chat settings group. */
+    function onStatusChoice(choice: StatusChoice): void {
+        void shell.value.prefs.setStatus(choice);
     }
 
     /** A send over the room's limit was held back: the toast names the limit. */

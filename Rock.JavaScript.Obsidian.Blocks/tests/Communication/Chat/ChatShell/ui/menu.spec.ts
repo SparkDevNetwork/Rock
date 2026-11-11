@@ -313,3 +313,64 @@ describe("the menu's focused item", () => {
         expect(tinted).toEqual([".chat-menu-item:hover"]);
     });
 });
+
+// A menu whose actions cannot be taken now still opens, its items drawn but never chosen and its
+// note saying why, so the reason reaches a phone, which shows no tooltip, and a screen reader as the
+// menu opens. Tab out of a menu beside its button goes on from the button, so a menu drawn at the
+// chat's root never takes focus out of a dialog its button sits in.
+describe("a menu's note and its way out", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    test("describes the open menu by its note, and by nothing once the note is gone", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items: items.map(item => ({ ...item, isDisabled: true })), note: "Chat is read only." }, attachTo: document.body });
+        (wrapper.get("button").element as HTMLElement).click();
+        await settle();
+
+        const note = menu()!.querySelector("[data-testid='menu-note']");
+        expect(document.getElementById(menu()!.getAttribute("aria-describedby") ?? "")).toBe(note);
+        menuItems()[1].click();
+        await settle();
+        expect(wrapper.emitted("select")).toBeUndefined();
+
+        await wrapper.setProps({ note: "" });
+        expect(menu()!.hasAttribute("aria-describedby")).toBe(false);
+    });
+
+    test("Tab closes it with focus on its button, and lets the browser go on from there", async () => {
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        anchor.focus();
+        anchor.click();
+        await settle();
+
+        const tab = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+        menuItems()[1].dispatchEvent(tab);
+        await settle();
+
+        expect(menu()).toBeNull();
+        expect(document.activeElement).toBe(anchor);
+        expect(tab.defaultPrevented).toBe(false);
+    });
+
+    test("opens on the item it is told to, and draws an item's heading for the eye alone", async () => {
+        const choices = [
+            { key: "a", label: "A", isChecked: false },
+            { key: "b", label: "B", isChecked: true, heading: "Later ones", ariaLabel: "Later B" }
+        ];
+        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices, focusKey: "b" }, attachTo: document.body });
+        (wrapper.get("button").element as HTMLElement).click();
+        await settle();
+
+        const radios = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+        expect(document.activeElement).toBe(radios[1]);
+        expect(radios[1].getAttribute("aria-label")).toBe("Later B");
+        expect(radios[0].hasAttribute("aria-label")).toBe(false);
+        expect(document.querySelector("[role='menu'] [role='presentation']")?.textContent).toBe("Later ones");
+    });
+});

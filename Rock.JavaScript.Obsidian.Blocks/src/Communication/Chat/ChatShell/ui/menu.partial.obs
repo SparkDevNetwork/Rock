@@ -21,6 +21,7 @@
                  :class="isSheet ? 'chat-sheet' : 'chat-menu'"
                  role="menu"
                  :aria-label="label"
+                 :aria-describedby="note ? noteId : undefined"
                  :style="isSheet ? undefined : menuStyles"
                  @keydown="onKeydown">
                 <!--
@@ -31,12 +32,14 @@
                 <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
+                    <div v-if="item.heading" class="chat-menu-head" role="presentation">{{ item.heading }}</div>
                     <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                     <button type="button"
                             :class="[isSheet ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
                             :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
                             :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
                             :data-key="item.key"
+                            :aria-label="item.ariaLabel"
                             tabindex="-1"
                             :aria-disabled="item.isDisabled || undefined"
                             @click="choose(item)">
@@ -51,10 +54,10 @@
                         <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
                     </button>
                 </template>
-                <!-- Why an action is missing, read in its place after the others. -->
+                <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
                 <template v-if="note">
                     <div class="chat-menu-sep" role="separator"></div>
-                    <div class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
+                    <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon name="lock" size="xs" />{{ note }}</div>
                 </template>
             </div>
         </Transition>
@@ -214,6 +217,7 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
     import { overlayHostOf } from "./tooltip.partial";
@@ -243,6 +247,15 @@
         isChecked?: boolean;
 
         /**
+         * A heading drawn over the item, after its separator, naming the items from it on. It is
+         * passed over by a screen reader, so those items carry its sense in their own names.
+         */
+        heading?: string;
+
+        /** The item's name for a screen reader where its words alone would not say it, as "Busy for 1 hour" under a Busy heading. */
+        ariaLabel?: string;
+
+        /**
          * Drawn but never chosen. Marked rather than disabled, so the arrows still reach it and a
          * screen reader still reads it out.
          */
@@ -252,10 +265,13 @@
     // #endregion Types
 
     const props = defineProps({
-        /** The icon on the button that opens the menu; the anchor slot adds words beside it, as a failed send's Not sent marker does. */
+        /**
+         * The icon on the button that opens the menu; the anchor slot adds words beside it, as a
+         * failed send's Not sent marker does, or draws the whole button where there is no icon.
+         */
         icon: {
             type: String as PropType<string>,
-            required: true
+            default: ""
         },
 
         /** What the button and the menu are called, for a screen reader and the button's tooltip. */
@@ -270,7 +286,7 @@
             required: true
         },
 
-        /** A line drawn after the items, with a lock, saying why an action is not offered. */
+        /** A line drawn after the items, with a lock, saying why an action is not offered or cannot be taken now. */
         note: {
             type: String,
             default: ""
@@ -298,6 +314,12 @@
         isSheet: {
             type: Boolean,
             default: false
+        },
+
+        /** The item a press or Down opens the menu on, such as the choice a set of choices stands at; the first by default. */
+        focusKey: {
+            type: String,
+            default: ""
         }
     });
 
@@ -312,6 +334,9 @@
     const anchorElement = ref<HTMLElement>();
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
+
+    /** The note's own element, which the open menu is described by. */
+    const noteId = `chat-menu-note-${newGuid()}`;
 
     /** The chat's root, which the open menu is drawn in; null where the menu is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(null);
@@ -369,7 +394,7 @@
         }
     }
 
-    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves. */
+    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves from the button. */
     function onKeydown(event: KeyboardEvent): void {
         const items = menuItems();
         const current = items.indexOf(document.activeElement as HTMLElement);
@@ -396,7 +421,10 @@
                 items[next]?.focus();
             }
             else {
-                close(false);
+                // The menu is drawn at the chat's root, away from its button, so Tab would go on from
+                // there, out of a dialog the button sits in. Focus goes back to the button first, and
+                // the browser's own Tab moves on from it, as from a menu button.
+                close(true);
             }
         }
         else if ((event.key === "Enter" || event.key === " ") && current >= 0) {
@@ -434,7 +462,8 @@
         isOpen.value = true;
         await nextTick();
         const items = menuItems();
-        items[at === "first" ? 0 : items.length - 1]?.focus();
+        const chosen = at === "first" && props.focusKey ? items.find(item => item.dataset.key === props.focusKey) : undefined;
+        (chosen ?? items[at === "first" ? 0 : items.length - 1])?.focus();
     }
 
     function menuItems(): HTMLElement[] {

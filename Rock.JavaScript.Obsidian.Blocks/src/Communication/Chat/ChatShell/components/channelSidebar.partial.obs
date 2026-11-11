@@ -165,15 +165,24 @@
             </template>
         </nav>
 
-        <!-- Who the person is, and their settings. -->
+        <!-- Who the person is, and their settings; with online status, their face sets their status. -->
         <div class="chat-side-me">
+            <StatusMenu v-if="isStatusShown"
+                        trigger="face"
+                        :choice="statusChoice"
+                        :closedReason="statusClosedReason"
+                        :personAliasGuid="personAliasGuid"
+                        :personName="personName"
+                        :personPhotoUrl="personPhotoUrl"
+                        :isPhone="isPhone"
+                        @choose="emit('status', $event)" />
             <button type="button"
                     class="chat-me-btn"
                     aria-haspopup="dialog"
-                    :aria-label="`Chat settings, ${personName}${ownStatus?.label ?? ''}`"
+                    :aria-label="`Chat settings, ${personName}`"
                     data-testid="sidebar-me"
                     @click="emit('settings')">
-                <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own />
+                <Avatar v-if="!isStatusShown" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
                 <span class="chat-me-who">
                     <b data-testid="sidebar-me-name">{{ personName }}</b>
                     <span v-if="personCampusName" data-testid="sidebar-me-campus">{{ personCampusName }}</span>
@@ -268,19 +277,25 @@
     scrollbar-width: thin;
 }
 
-/* The foot: one button for who the person is and their settings, its gear turning on hover. */
+/*
+    The foot: one button for who the person is and their settings, its gear turning on hover; with
+    online status, their face is a button of its own before it, whose badge is ringed in the
+    sidebar's fill, so the settings button's hover starts after the face.
+*/
 .chat-side-me {
-    /* her own face's badge, ringed in the foot button's fill over the sidebar */
     --chat-av-ring: var(--chat-sidebar);
-    --chat-av-ring-over: transparent;
 
+    display: flex;
     flex: none;
+    gap: 2px;
+    align-items: center;
     padding: 8px;
     border-top: 1px solid var(--chat-line);
 }
 
 .chat-me-btn {
     display: flex;
+    flex: 1;
     gap: 10px;
     align-items: center;
     width: 100%;
@@ -296,14 +311,10 @@
 }
 
 .chat-me-btn:hover {
-    --chat-av-ring-over: var(--chat-hover);
-
     background: var(--chat-hover);
 }
 
 .chat-me-btn:active {
-    --chat-av-ring-over: var(--chat-press);
-
     background: var(--chat-press);
 }
 
@@ -739,13 +750,14 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import StatusMenu from "./statusMenu.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace, rowPeople } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
-    import { notifyIconFor } from "../composables/usePrefs.partial";
+    import { notifyIconFor, StatusChoice } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
     import { FaceStatus, SidebarRow } from "../types.partial";
@@ -792,12 +804,6 @@
             default: false
         },
 
-        /** The person's primary alias, whose own face the foot draws. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
         /** The person's own name, photo and campus by its name, drawn in the foot. */
         personName: {
             type: String,
@@ -810,6 +816,30 @@
         },
 
         personCampusName: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** The person's primary alias, whose own status the foot's face draws. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        /** Whether online status is on, which splits the foot: the face sets the status, the rest opens Chat settings. */
+        isStatusShown: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Her status as her settings show it, which the status menu checks. */
+        statusChoice: {
+            type: Object as PropType<StatusChoice>,
+            default: () => ({ busy_until: null, appear_offline: false })
+        },
+
+        /** Why her status cannot be set now, the banner's words while the church is read only; null while it can. */
+        statusClosedReason: {
             type: String as PropType<string | null>,
             default: null
         },
@@ -857,6 +887,8 @@
         (e: "browse"): void,
         /** The foot was pressed: Chat settings. */
         (e: "settings"): void,
+        /** A choice in the foot's status menu, for the block to save. */
+        (e: "status", choice: StatusChoice): void,
         /** Try again on a first sidebar that failed. */
         (e: "retry"): void
     }>();
@@ -875,17 +907,12 @@
     /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());
 
-    // Her own face, kept first when the people asked about are cut.
-    const ownStatusOf = useFaceStatus(() => props.personAliasGuid ? [props.personAliasGuid] : [], 0);
-
     // Every two-person row's other person, kept last, since the open conversation and any panel matter more.
     const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 3);
 
     // #endregion Values
 
     // #region Computed Values
-
-    const ownStatus = computed(() => props.personAliasGuid ? ownStatusOf(props.personAliasGuid) : null);
 
     /**
      * The rooms by section, filtered by the search over the names they are drawn under. Starred

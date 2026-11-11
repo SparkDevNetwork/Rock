@@ -21,14 +21,16 @@
 // names them, a muted room's mention badge is the quiet one, and a screen reader hears the same
 // facts as a suffix on the row's name. A room's kind, its title and the line under it are the
 // platform's, drawn as sent: the platform's own tests hold how it works each of them out.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChannelSidebar from "../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
-import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { anna, badgesIn, ben, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
-import { join } from "path";
+import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
+import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
 
 // #region Fixtures
 
@@ -1092,35 +1094,155 @@ describe("online status", () => {
         expect(badgesIn(rowOf(w, dmPair.channel_id).element)).toEqual([]);
     });
 
-    test("the foot draws her own face, Online from her own page, with its words in the button's name", () => {
-        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer });
-        const foot = w.get("[data-testid='sidebar-me']");
+    test("the foot draws her own face once, Online from her own page, in its face button, and the settings button says no status", () => {
+        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer, isStatusShown: true });
+        const foot = w.get(".chat-side-me");
 
         expect(badgesIn(foot.element)).toEqual([{ state: "online", isMoving: false }]);
-        expect(foot.attributes("aria-label")).toBe("Chat settings, Ted Decker, online");
+        expect(badgesIn(w.get("[data-testid='status-face']").element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(w.get("[data-testid='sidebar-me']").attributes("aria-label")).toBe("Chat settings, Ted Decker");
     });
 
-    test("the foot draws her hollow ring under Appear offline, since it is her own face", async () => {
-        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer });
+    test("the foot's face draws her hollow ring under Appear offline, since it is her own face", async () => {
+        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer, isStatusShown: true });
 
         status.mine.value = { busy_until: null, appear_offline: true };
         await nextTick();
 
-        expect(badgesIn(w.get("[data-testid='sidebar-me']").element).map(badge => badge.state)).toEqual(["hidden"]);
-        expect(w.get("[data-testid='sidebar-me']").attributes("aria-label")).toBe("Chat settings, Ted Decker, appear offline");
+        expect(badgesIn(w.get(".chat-side-me").element).map(badge => badge.state)).toEqual(["hidden"]);
+        expect(badgesIn(w.get("[data-testid='status-face']").element).map(badge => badge.state)).toEqual(["hidden"]);
+        expect(w.get("[data-testid='sidebar-me']").attributes("aria-label")).toBe("Chat settings, Ted Decker");
+    });
+
+    test("the foot draws no status with the online switch off", () => {
+        const w = mountSidebar({ rows: [], personName: "Ted Decker", personAliasGuid: viewer, isStatusShown: false });
+
+        expect(badgesIn(w.get(".chat-side-me").element)).toEqual([]);
+        expect(w.get("[data-testid='sidebar-me']").attributes("aria-label")).toBe("Chat settings, Ted Decker");
+    });
+
+    test("rings a row's badge in its fill", () => {
+        expect(setsBothRings(join(shellFolder, "components/channelSidebar.partial.obs"), /^\.chat-row(\[|:|$)/)).toBe(true);
+    });
+});
+
+// With the online switch on, the foot is two buttons in one row: her face, carrying her own badge,
+// opens her status menu above it, and the rest of the row (name, campus, gear) opens Chat settings
+// as before. Each has its own hover, so lighting one never lights the other. With the switch off
+// the foot is the one button it always was. While the church is read only, the face still opens its
+// menu, which says why nothing in it can be chosen.
+describe("the sidebar's foot with online status", () => {
+    const self = "a0000001-0000-4000-8000-000000000000";
+    const busy: FaceStatus = { state: "busy", label: ", busy, notifications paused", tip: "Busy, notifications paused", busyUntil: null, revision: 3 };
+
+    beforeAll(() => {
+        // jsdom has no ResizeObserver, and floating placement keeps its menu beside the anchor with one.
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    function mountFoot(props: Record<string, unknown> = {}): VueWrapper {
+        wrapper = mount(ChannelSidebar, {
+            props: {
+                rows: allRows,
+                personName: "Jordan Lee",
+                personCampusName: "Downtown Campus",
+                personAliasGuid: self,
+                isStatusShown: true,
+                statusChoice: { busy_until: "infinity", appear_offline: false },
+                ...props
+            },
+            global: {
+                provide: {
+                    [presenceStatusKey as symbol]: { statusOf: (guid: string) => guid === self ? busy : null, register: () => () => undefined }
+                }
+            },
+            attachTo: document.body
+        });
+        return wrapper;
+    }
+
+    /** A rule's body in a component's own styles, by a selector one of its own holds. */
+    function ruleBody(relativePath: string, selector: string): string {
+        const source = readFileSync(join(__dirname, relativePath), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        const rule = Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).find(match => match[1].split(",").some(part => part.trim().includes(selector)));
+        return rule?.[2] ?? "";
+    }
+
+    test("is her face, opening her status menu, beside the button for Chat settings", async () => {
+        const w = mountFoot();
+
+        const foot = w.get(".chat-side-me");
+        const face = foot.get("[data-testid='status-face']");
+        const me = foot.get("[data-testid='sidebar-me']");
+        expect(face.element.closest(".chat-status-menu")?.nextElementSibling).toBe(me.element);
+        expect(face.attributes("aria-label")).toBe("Your status: Busy, notifications paused. Set status");
+        expect(face.attributes("aria-haspopup")).toBe("menu");
+        expect(face.get("[data-testid='status-badge']").attributes("data-state")).toBe("busy");
+        // her face is drawn once, in its own button; the settings button keeps her name and campus
+        expect(foot.findAllComponents(Avatar)).toHaveLength(1);
+        expect(me.findAllComponents(Avatar)).toHaveLength(0);
+        expect(me.attributes("aria-label")).toBe("Chat settings, Jordan Lee");
+        expect(me.get("[data-testid='sidebar-me-campus']").text()).toBe("Downtown Campus");
+
+        (face.element as HTMLElement).click();
+        await nextTick();
+        await nextTick();
+        expect(document.querySelector("[role='menu'] [aria-checked='true']")?.getAttribute("data-key")).toBe("busy-off");
+        expect(w.emitted("settings")).toBeUndefined();
+
+        (document.querySelector<HTMLElement>("[role='menu'] [data-key='auto']"))!.click();
+        await nextTick();
+        expect(w.emitted("status")).toEqual([[{ busy_until: null, appear_offline: false }]]);
+
+        await me.trigger("click");
+        expect(w.emitted("settings")).toHaveLength(1);
+    });
+
+    test("rings her badge in the sidebar's fill, and in the face button's own hover under the pointer", () => {
+        expect(ruleBody("../../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs", ".chat-side-me")).toMatch(/--chat-av-ring:\s*var\(--chat-sidebar\)/);
+        expect(ruleBody("../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs", ".chat-status-face:hover")).toMatch(/--chat-av-ring-over:\s*var\(--chat-hover\)/);
     });
 
     test.each([
-        ["a row", /^\.chat-row(\[|:|$)/],
-        ["the foot", /^\.chat-(side-me|me-btn)(\[|:|$)/]
-    ])("rings its badge in %s's fill", (_place, selector) => {
-        expect(setsBothRings(join(shellFolder, "components/channelSidebar.partial.obs"), selector)).toBe(true);
+        [".chat-status-face:active", /background:\s*var\(--chat-press\)/, /--chat-av-ring-over:\s*var\(--chat-press\)/],
+        [".chat-status-face[aria-expanded=\"true\"]", /background:\s*var\(--chat-brand-wash\)/, /--chat-av-ring-over:\s*var\(--chat-brand-wash\)/]
+    ])("rings her badge in the face button's own fill while %s, as the button fills it", (selector, fill, ring) => {
+        const statusMenu = "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs";
+        const iconButton = "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
+
+        expect(ruleBody(iconButton, selector.replace(".chat-status-face", ".chat-icon-btn"))).toMatch(fill);
+        expect(ruleBody(statusMenu, selector)).toMatch(ring);
     });
 
-    test("rings the foot's badge in its button's hover and press as the button draws them", () => {
-        const states = fillsAndRings(join(shellFolder, "components/channelSidebar.partial.obs"), /^\.chat-me-btn:(hover|active)$/);
+    test("is the one button it always was with the online switch off", () => {
+        const w = mountFoot({ isStatusShown: false });
 
-        expect(states).toHaveLength(2);
-        expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
+        expect(w.find("[data-testid='status-face']").exists()).toBe(false);
+        const me = w.get("[data-testid='sidebar-me']");
+        expect(me.findAllComponents(Avatar)).toHaveLength(1);
+        expect(w.get(".chat-side-me").element.children).toHaveLength(1);
+    });
+
+    test("while the church is read only, keeps her face live, its menu saying why nothing in it can be chosen", async () => {
+        const reason = "Chat is read-only while we do some maintenance. You can read messages but not send them.";
+        const w = mountFoot({ statusClosedReason: reason });
+
+        const face = w.get("[data-testid='status-face']").element as HTMLElement;
+        expect(face.hasAttribute("aria-disabled")).toBe(false);
+        face.click();
+        await nextTick();
+        await nextTick();
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")?.textContent?.trim()).toBe(reason);
+        expect(Array.from(document.querySelectorAll("[role='menu'] [role='menuitemradio']")).every(item => item.getAttribute("aria-disabled") === "true")).toBe(true);
+        // Chat settings still opens beside it
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        expect(w.emitted("settings")).toHaveLength(1);
     });
 });

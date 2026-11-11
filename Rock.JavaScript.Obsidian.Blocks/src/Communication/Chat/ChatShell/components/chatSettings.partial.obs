@@ -12,7 +12,7 @@
         <div class="chat-ms-id">
             <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="44" :status="ownStatus" own />
             <span class="chat-ms-main">
-                <b class="chat-ms-name" data-testid="settings-name">{{ personName }}<span v-if="ownStatus" class="chat-sr-only">{{ ownStatus.label }}</span></b>
+                <b class="chat-ms-name" data-testid="settings-name">{{ personName }}</b>
                 <span class="chat-ms-meta" data-testid="settings-meta">
                     <!-- The dot between the parts is drawn for the eye; a screen reader hears a comma. -->
                     <template v-for="(item, index) in metaItems" :key="item">
@@ -22,6 +22,16 @@
                 </span>
             </span>
         </div>
+
+        <SettingGroup label="Status" data-testid="settings-status">
+            <SettingRow icon="clock" title="Your status" :sub="statusLine" data-testid="status-row">
+                <StatusMenu trigger="change"
+                            :choice="statusChoice"
+                            :closedReason="statusClosedReason"
+                            :isPhone="isPhone"
+                            @choose="emit('status', $event)" />
+            </SettingRow>
+        </SettingGroup>
 
         <SettingGroup label="Privacy" data-testid="settings-privacy">
             <SettingSwitch name="profile_details"
@@ -245,12 +255,13 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
-    import { MeKey, MeSettings, meTitles, PrefsState } from "../composables/usePrefs.partial";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { busyEndOf, MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
+    import { startOfDay } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatPerson } from "../types.partial";
-    import { personFace, personName as nameOf } from "../ui/face.partial";
+    import { ownStatusWords, personFace, personName as nameOf } from "../ui/face.partial";
     import { PushState } from "../composables/usePush.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
@@ -259,6 +270,7 @@
     import { Note } from "../ui/settingNote.partial.obs";
     import SettingRow from "../ui/settingRow.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
+    import StatusMenu from "./statusMenu.partial.obs";
 
     const props = defineProps({
         /** Whether the dialog is shown; kept mounted and closed, it plays its exit and gives focus back. */
@@ -299,6 +311,18 @@
         me: {
             type: Object as PropType<MeSettings>,
             required: true
+        },
+
+        /** Her status as her settings show it, which the Status group says and its menu checks. */
+        statusChoice: {
+            type: Object as PropType<StatusChoice>,
+            default: () => ({ busy_until: null, appear_offline: false })
+        },
+
+        /** Why her status cannot be set now, the banner's words while the church is read only; null while it can. */
+        statusClosedReason: {
+            type: String as PropType<string | null>,
+            default: null
         },
 
         /** The note under each switch: only a failed save's, since one that lands shows nothing more. */
@@ -345,6 +369,9 @@
         /** Unblock on a blocked person's row, which needs no confirmation; and Try again on a list that failed to load. */
         (e: "unblock", person: ChatPerson): void;
         (e: "retryBlocked"): void;
+
+        /** A choice in the Status group's menu, for the block to save. */
+        (e: "status", choice: StatusChoice): void;
     }>();
 
     // #region Values
@@ -354,6 +381,15 @@
 
     /** The Blocked people group, whose rows focus moves along as one leaves. */
     const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
+
+    /** The viewer's clock as the status line last read it, moved on when the line's words would change. */
+    const statusNow = ref(Date.now());
+
+    /** The one timer that moves it, set while the dialog is open and the line has a change ahead. */
+    let statusTimer: ReturnType<typeof setTimeout> | null = null;
+
+    /** The longest a browser timer waits; a later change is waited for in steps. */
+    const longestTimerMs = 2_147_483_647;
 
     /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
     const unblocking = ref<Array<{ guid: string, name: string }>>([]);
@@ -396,6 +432,41 @@
             default:
                 return { status: "Not available", sub: `Not set up for ${props.organizationName} yet` };
         }
+    });
+
+    /**
+     * Her status in her own words, in a group of its own right under her face, whose badge it
+     * changes, and kept with online status off, since a Busy still pauses her notifications. It
+     * says what she chose rather than what her activity draws: Automatic,
+     * a Busy saying what it does to her, or Appear offline. A Busy whose end has passed is
+     * Automatic again, by the line's own clock, which moves it on at the end.
+     */
+    const statusLine = computed((): string => {
+        const now = new Date(statusNow.value);
+        const end = busyEndOf(props.statusChoice, now.getTime());
+        if (props.statusChoice.appear_offline) {
+            return ownStatusWords("hidden", null, now);
+        }
+        if (end === null) {
+            return "Automatic";
+        }
+        return ownStatusWords("busy", end === Infinity ? null : new Date(end), now);
+    });
+
+    /**
+     * When the line's words next change by the clock alone: her Busy's end, or before it the
+     * viewer's next midnight while the end lies on a later day, since "tomorrow, 8:00 AM" reads
+     * "8:00 AM" from then. Null while nothing ahead changes them.
+     */
+    const statusChangesAt = computed((): number | null => {
+        const end = busyEndOf(props.statusChoice, statusNow.value);
+        if (end === null || end === Infinity) {
+            return null;
+        }
+        const today = startOfDay(new Date(statusNow.value));
+        // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
+        const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+        return Math.min(end, midnight);
     });
 
     /** The rows of blocked people, once the list is read and holds anyone. */
@@ -466,6 +537,37 @@
         next?.focus();
     }, { flush: "post" });
 
+    // The status line keeps time only while it is seen, waking once at its next change.
+    watch([() => props.isOpen, statusChangesAt], ([isOpen, changesAt]) => {
+        if (statusTimer !== null) {
+            clearTimeout(statusTimer);
+            statusTimer = null;
+        }
+        if (!isOpen) {
+            return;
+        }
+        // reopened after a while, the line reads the clock now before it waits
+        statusNow.value = Date.now();
+        if (changesAt === null) {
+            return;
+        }
+        statusTimer = setTimeout(() => {
+            statusTimer = null;
+            // never short of the change, so a timer that fires a touch early still moves the line on
+            statusNow.value = Math.max(Date.now(), changesAt);
+        }, Math.min(longestTimerMs, Math.max(0, changesAt - Date.now())));
+    }, { immediate: true });
+
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        if (statusTimer !== null) {
+            clearTimeout(statusTimer);
+        }
+    });
+
+    // #endregion Lifecycle Hooks
 
 </script>

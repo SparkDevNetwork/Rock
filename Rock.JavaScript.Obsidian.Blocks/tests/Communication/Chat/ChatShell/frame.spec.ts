@@ -29,6 +29,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import ChannelSidebarComponent from "../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
@@ -339,7 +340,7 @@ function fakeBlocks(): Record<string, unknown> {
 
 function fakePrefs(): Record<string, unknown> {
     const state = reactive({
-        me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
+        me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true, busy_until: null as string | null, appear_offline: false },
         meNotes: {},
         rooms: {} as Record<string, unknown>,
         announcement: null
@@ -356,6 +357,8 @@ function fakePrefs(): Record<string, unknown> {
         setReactionPush: jest.fn(async () => undefined),
         choose: jest.fn(async () => undefined),
         setSwitch: jest.fn(async () => undefined),
+        shownStatus: () => ({ busy_until: state.me.busy_until, appear_offline: state.me.appear_offline }),
+        setStatus: jest.fn(async () => undefined),
         stop: jest.fn()
     };
 }
@@ -5134,5 +5137,182 @@ describe("the person a composer's Busy note is about", () => {
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
         expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toBeNull();
+    });
+});
+
+// Her own status is set from her face at the sidebar's foot and from Chat settings' Status group,
+// one menu in both places. Each tab closes its choices once that tab has learned the church is read
+// only, from its own exchange or its own refused call, as its composer closes: the menu still
+// opens, every item drawn but never chosen and the banner's words as its note. A tab that has not
+// yet learned keeps them open; under maintenance they stay open, a choice there waiting to be sent.
+describe("her own status", () => {
+    const banner = "Cedar Hill's chat is read only until 9.";
+
+    function face(w: VueWrapper): HTMLElement {
+        return w.get("[data-testid='status-face']").element as HTMLElement;
+    }
+
+    function shellState(shell: Record<string, unknown>): Record<string, unknown> {
+        return shell.state as Record<string, unknown>;
+    }
+
+    async function openSettingsChange(w: VueWrapper): Promise<HTMLElement> {
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        await settle();
+        return document.querySelector<HTMLElement>("[role='dialog'] [data-testid='status-change']")!;
+    }
+
+    test("is set from her face at the foot, and from Chat settings, by one save", async () => {
+        const w = await mountBlock(1200);
+        shellState(mockShell!).isStatusShown = true;
+        await settle();
+
+        face(w).click();
+        await settle();
+        document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']")!.click();
+        await settle();
+        const prefs = mockShell!.prefs as { setStatus: jest.Mock };
+        expect(prefs.setStatus).toHaveBeenLastCalledWith({ busy_until: null, appear_offline: true });
+
+        const change = await openSettingsChange(w);
+        change.click();
+        await settle();
+        document.querySelector<HTMLElement>("[role='menu'] [data-key='busy-off']")!.click();
+        await settle();
+        expect(prefs.setStatus).toHaveBeenLastCalledWith({ busy_until: "infinity", appear_offline: false });
+    });
+
+    test("checks what her settings show", async () => {
+        const w = await mountBlock(1200);
+        shellState(mockShell!).isStatusShown = true;
+        Object.assign((mockShell!.prefs as { state: { me: Record<string, unknown> } }).state.me, { busy_until: "infinity" });
+        await settle();
+
+        face(w).click();
+        await settle();
+
+        expect(document.querySelector("[role='menu'] [aria-checked='true']")?.getAttribute("data-key")).toBe("busy-off");
+    });
+
+    test("with online status off, the foot is the one settings button and Chat settings still holds the Status group", async () => {
+        const w = await mountBlock(1200);
+
+        expect(w.find("[data-testid='status-face']").exists()).toBe(false);
+        const change = await openSettingsChange(w);
+        expect(change).not.toBeNull();
+        expect(change.hasAttribute("aria-disabled")).toBe(false);
+    });
+
+    /** Opens the menu from a button and reads it, its note or null and whether every item is drawn but never chosen, then closes it. */
+    async function readMenu(button: HTMLElement): Promise<{ note: string | null, isClosed: boolean }> {
+        button.click();
+        await settle();
+        const menuElement = document.querySelector("[role='menu']")!;
+        const radios = Array.from(menuElement.querySelectorAll("[role='menuitemradio']"));
+        const read = {
+            note: menuElement.querySelector("[data-testid='menu-note']")?.textContent?.trim() ?? null,
+            isClosed: radios.length > 0 && radios.every(radio => radio.getAttribute("aria-disabled") === "true")
+        };
+        (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+        return read;
+    }
+
+    test("is closed in the tab that has learned the church is read only, the other tab's left open, and opens again after", async () => {
+        const block = (await import("../../../../src/Communication/Chat/chatShell.obs")).default;
+        const tabA = mount(block, { attachTo: document.body });
+        await settle();
+        const shellA = mockShell!;
+        const tabB = mount(block, { attachTo: document.body });
+        wrapper = tabB;
+        await settle();
+        const shellB = mockShell!;
+        try {
+            Object.assign(shellState(shellA), { isStatusShown: true, service: { state: "normal", banner: null } });
+            Object.assign(shellState(shellB), { isStatusShown: true, service: { state: "normal", banner: null } });
+            await settle();
+
+            // B's own exchange says read only; A has not exchanged since
+            Object.assign(shellState(shellB), { isComposerOpen: false, service: { state: "read_only", banner } });
+            await settle();
+
+            // the face still opens, on a phone too, and the menu says why nothing in it can be chosen
+            expect(face(tabB).hasAttribute("aria-disabled")).toBe(false);
+            expect(await readMenu(face(tabB))).toEqual({ note: banner, isClosed: true });
+            expect(await readMenu(face(tabA))).toEqual({ note: null, isClosed: false });
+
+            // B's settings group is closed the same way
+            const change = await openSettingsChange(tabB);
+            expect(await readMenu(change)).toEqual({ note: banner, isClosed: true });
+
+            // the church's banner gone, the sentence read only always has
+            Object.assign(shellState(shellB), { service: { state: "read_only", banner: null } });
+            await settle();
+            expect(await readMenu(face(tabB))).toEqual({ note: "Chat is read-only while we do some maintenance. You can read messages but not send them.", isClosed: true });
+
+            // maintenance leaves it open: a choice there is sent once the platform takes it
+            Object.assign(shellState(shellB), { service: { state: "maintenance", banner: null } });
+            await settle();
+            expect(await readMenu(face(tabB))).toEqual({ note: null, isClosed: false });
+            expect(await readMenu(change)).toEqual({ note: null, isClosed: false });
+
+            Object.assign(shellState(shellB), { isComposerOpen: true, service: { state: "normal", banner: null } });
+            await settle();
+            expect(await readMenu(face(tabB))).toEqual({ note: null, isClosed: false });
+        }
+        finally {
+            tabA.unmount();
+        }
+    });
+
+    test("keeps focus in Chat settings: Tab out of Change's menu goes on from Change, and Escape closes the menu alone", async () => {
+        const w = await mountBlock(1200);
+        const change = await openSettingsChange(w);
+        const dialog = document.querySelector("[role='dialog']")!;
+
+        change.click();
+        await settle();
+        const tab = new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true });
+        (document.activeElement as HTMLElement).dispatchEvent(tab);
+        await settle();
+        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(document.activeElement).toBe(change);
+        expect(dialog.contains(document.activeElement)).toBe(true);
+
+        change.click();
+        await settle();
+        (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        await settle();
+        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(document.querySelector("[role='dialog']")).toBe(dialog);
+        expect(document.activeElement).toBe(change);
+        expect(w.find("[data-testid='status-face']").exists()).toBe(false);
+    });
+
+    test("draws the sidebar again only when what it shows moves, not on every render of the block", async () => {
+        let sidebarUpdates = 0;
+        const counter = {
+            updated(this: { $: { type: unknown } }): void {
+                if (this.$.type === ChannelSidebarComponent) {
+                    sidebarUpdates++;
+                }
+            }
+        };
+        const block = (await import("../../../../src/Communication/Chat/chatShell.obs")).default;
+        wrapper = mount(block, { attachTo: document.body, global: { mixins: [counter] } });
+        await settle();
+        shellState(mockShell!).isStatusShown = true;
+        await settle();
+        sidebarUpdates = 0;
+
+        // the conversation's banner: the block draws again, the sidebar shows nothing of it
+        shellState(mockShell!).banner = "Chat is read-only while we do some maintenance.";
+        await settle();
+        expect(sidebarUpdates).toBe(0);
+
+        // her status moves, and the sidebar's face with it
+        Object.assign((mockShell!.prefs as { state: { me: Record<string, unknown> } }).state.me, { busy_until: "infinity" });
+        await settle();
+        expect(sidebarUpdates).toBeGreaterThan(0);
     });
 });

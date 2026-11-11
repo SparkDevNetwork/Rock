@@ -11,7 +11,7 @@
             @focus="onFocus"
             @blur="onBlur"
             @click="onClick">
-        <Icon :name="icon" :size="iconSize" />
+        <Icon v-if="icon" :name="icon" :size="iconSize" />
         <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it. -->
         <slot></slot>
     </button>
@@ -72,10 +72,10 @@
     defineOptions({ inheritAttrs: false });
 
     const props = defineProps({
-        /** The icon's name in the chat's icon set. */
+        /** The icon's name in the chat's icon set; none for a button whose slot draws it, as a face or a word. */
         icon: {
             type: String as PropType<string>,
-            required: true
+            default: ""
         },
 
         /** The icon's drawn size; a small button, such as a section's plus, takes the smaller icon. */
