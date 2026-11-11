@@ -1087,6 +1087,31 @@ describe("the New divider and the unread strip", () => {
         expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
     });
 
+    // A conversation read past its divider and left, its position saved, holds the page it was read
+    // from: opened again it draws no divider and keeps no strip room, so the open's read, which
+    // says the same, takes nothing away above the rows that stand.
+    test("opened again with its read position saved past the first unread, it draws no divider and keeps no strip room", () => {
+        const wrapper = draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 3, unreadCount: 2, firstUnreadId: 2 })
+        });
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+        expect(wrapper.get(".chat-feed-frame").classes()).not.toContain("has-strip-room");
+    });
+
+    // The divider marks where the visit's unread began: a save made while reading, as the page
+    // losing focus makes, moves the timeline's read position on, and the divider stands.
+    test("a save while the conversation is open leaves its divider and strip room standing", async () => {
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 });
+        const wrapper = draw({ timeline: state });
+
+        state.readCursor = 3;
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(true);
+        expect(wrapper.get(".chat-feed-frame").classes()).toContain("has-strip-room");
+    });
+
     test("the strip shows only while the divider is off screen", async () => {
         const wrapper = unread();
         const divider = wrapper.get("[data-testid='unread-divider']").element;

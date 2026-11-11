@@ -105,6 +105,28 @@ describe("createTimelines", () => {
         expect(state.hasMore).toBe(true);
     });
 
+    test("a save of the read position moves the held timeline's on, never back, and makes no timeline of a room not held", async () => {
+        const timelines = createTimelines({
+            motion: createMessageMotion(),
+            mask: platformMask,
+            limits,
+            fetchPage: async () => page([3, 1, 2], { read_cursor: 1, unread_count: 2, first_unread_id: 2 })
+        });
+        await timelines.loadNewest(channel);
+        const state = timelines.state(channel);
+
+        timelines.readSaved(channel, 3);
+        expect(state.readCursor).toBe(3);
+        // what the platform found unread stays as its page stated it, for a view to judge against
+        expect(state.firstUnreadId).toBe(2);
+
+        timelines.readSaved(channel, 2);
+        expect(state.readCursor).toBe(3);
+
+        timelines.readSaved("c-not-held", 9);
+        expect(timelines.state("c-not-held").readCursor).toBeNull();
+    });
+
     test("pages ask for the size the platform's limits set, read as each page is asked", async () => {
         const fetches: { limit: number, beforeId?: number }[] = [];
         let size = 7;
