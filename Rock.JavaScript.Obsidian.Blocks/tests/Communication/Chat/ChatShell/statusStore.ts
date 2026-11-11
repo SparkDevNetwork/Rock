@@ -16,8 +16,9 @@
 //
 // The real status store as every face that draws a status meets it, for the specs of those faces:
 // provided under the shell's key, written only as the platform writes it (readers, carried signals),
-// with the person's own Busy and Appear offline as her settings hold them. A host spec mounts its
-// face with this and asserts only what the face draws, never how the store decides it.
+// with the person's own Busy and Appear offline as her settings hold them, a page that fires nothing
+// and a session that never refreshes. A host spec mounts its face with this and asserts only what
+// the face draws, never how the store decides it, so no stand-in answers whatever the spec wishes.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { config } from "@vue/test-utils";
 import { readFileSync } from "fs";
@@ -38,34 +39,48 @@ export type StatusStore = {
 
     /** Tells the store each person's status, as a reader answers them. */
     tell: (people: Record<string, Record<string, unknown>>) => void;
+
+    /** The church's switch for online status, which the store watches. */
+    isOn: Ref<boolean>;
+
+    /** The people the viewer blocked, by lower-case alias. */
+    blocked: Set<string>;
+
+    /** What a mount provides, so a part's faces read this store. */
+    provide: Record<symbol, unknown>;
 };
 
 /**
- * A store with the switch on, her settings read as Automatic, and the server's clock at the
- * fixtures' now: Anna Online, Ben Busy with no end, in that order, and Carl told nothing; or,
- * where a spec tells it everyone itself, no one.
+ * A store with the switch on and her settings read as Automatic.
+ *
+ * @param options.isSeeded Whether it is told the fixtures' people, Anna Online and Ben Busy with no end in that order and Carl nothing, or, where a spec tells it everyone itself, no one.
+ * @param options.clock "fixtures" sets the server's clock at the fixtures' now, for the statuses of statusShapes; "page" keeps the page's clock, for statuses decided now by busyNow and onlineNow.
  */
-export function createStatusStore(isSeeded = true): StatusStore {
+export function createStatusStore({ isSeeded = true, clock = "fixtures" }: { isSeeded?: boolean, clock?: "fixtures" | "page" } = {}): StatusStore {
     const mine = ref<{ busy_until: string | null, appear_offline: boolean } | null>({ busy_until: null, appear_offline: false });
+    const isOn = ref(true);
+    const blocked = new Set<string>();
     const page = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
     const store = createPresenceStatus({
-        settings: () => readSettings({ flags: { online: true }, limits: { presence_idle_seconds: 600 } }),
+        settings: () => readSettings({ flags: { online: isOn.value }, limits: { presence_idle_seconds: 600 } }),
         personAliasGuid: viewer,
         me: () => mine.value,
-        isBlocked: () => false,
+        isBlocked: alias => blocked.has(alias.toLowerCase()),
         isStopped: () => false,
         targets: { document: page, window: page },
         leave: () => undefined,
         session: { refresh: async () => true, nextRefreshAt: () => null, tokenLifeSeconds: () => 300, inFlight: () => null }
     });
-    store.clockFrom(serverNowSeconds);
+    if (clock === "fixtures") {
+        store.clockFrom(serverNowSeconds);
+    }
     const tell = (people: Record<string, Record<string, unknown>>): void => store.told(Object.entries(people).map(([alias, status]) => readerPerson(alias, status)));
     if (isSeeded) {
         tell({ [anna]: online() });
         tell({ [ben]: busy(null) });
     }
 
-    return { store, mine, tell };
+    return { store, mine, tell, isOn, blocked, provide: { [presenceStatusKey as symbol]: store } };
 }
 
 /**
@@ -161,4 +176,32 @@ export function fillsAndRings(path: string, selector: RegExp): Array<{ fill: str
         const fill = /(?:^|[;\s])background(?:-color)?:\s*([^;]+);/.exec(body)?.[1].trim() ?? "";
         return { fill: fill === "none" ? "transparent" : fill, ring: /--chat-av-ring-over:\s*([^;]+);/.exec(body)?.[1].trim() ?? null };
     }).filter(state => state.fill !== "");
+}
+
+/**
+ * A status decided now by the page's clock, as a reader carries it: Busy until an end, or with no
+ * end when it is null, its row live for ten minutes.
+ *
+ * @param end When the Busy ends, on the viewer's clock, or null for none.
+ * @param msAfter How long after now it was decided, so a later one is newer.
+ */
+export function busyNow(end: Date | null, msAfter = 0): Record<string, unknown> {
+    const now = Date.now() + msAfter;
+    return {
+        state: "busy",
+        until: new Date(now + 600_000).toISOString(),
+        ...(end ? { busy_until: end.toISOString() } : {}),
+        as_of: now * 1000
+    };
+}
+
+/** Online, decided now by the page's clock, its row live for ten minutes. */
+export function onlineNow(msAfter = 0): Record<string, unknown> {
+    const now = Date.now() + msAfter;
+    return { state: "online", until: new Date(now + 600_000).toISOString(), as_of: now * 1000 };
+}
+
+/** A reader's person, carrying a status. */
+export function told(alias: string, status: Record<string, unknown>, nick = "Cindy"): Record<string, unknown> {
+    return readerPerson(alias, status, nick, "Ames");
 }

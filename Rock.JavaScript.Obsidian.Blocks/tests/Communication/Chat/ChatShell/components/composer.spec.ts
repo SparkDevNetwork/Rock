@@ -28,8 +28,10 @@ import Composer from "../../../../../src/Communication/Chat/ChatShell/components
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
-import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
+import { ChatPerson, FaceStatus, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
+import { busyNow, createStatusStore, onlineNow, StatusStore, told, viewer } from "../statusStore";
 
 /** The composer's own style block, for the rules jsdom cannot lay out. */
 function composerStyle(): string {
@@ -261,7 +263,6 @@ describe("the composer and someone else typing", () => {
 
     test("keeps its own padding in each kind of composer, with no inset shared with a band", () => {
         expect(rule(".chat-composer")).toMatch(/padding: 0 20px 14px;/);
-        expect(rule(".chat-composer")).not.toMatch(/position: relative;/);
         expect(rule(".chat-composer.is-thread")).toMatch(/padding: 0 14px 12px;/);
         expect(rule(".chat-composer.is-phone")).toMatch(/padding: 0 10px 10px;/);
         expect(style).not.toMatch(/--chat-composer-inset/);
@@ -1382,5 +1383,294 @@ describe("the composer's GIFs", () => {
         finally {
             window.matchMedia = original;
         }
+    });
+});
+
+// The line over the box while the other person of a direct message is Busy: it says what sending
+// does, names her, takes no space and fades only with her revision, so a room switch draws it as
+// state. It reads the status store's own answer, so it shows exactly while her faces draw Busy.
+describe("the composer's Busy note", () => {
+    const cindy = "c1d1c1d1-0000-4000-8000-000000000000";
+    const grace = "a9ace000-0000-4000-8000-000000000000";
+    const ben = "b0000000-0000-4000-8000-000000000000";
+    const person = (alias: string, nick: string): ChatPerson => ({ person_alias_guid: alias, nick_name: nick, last_name: "Ames", avatar_url: null });
+
+    /** Noon on the viewer's own clock, so the end's words read as a person reads them. */
+    const noon = new Date(2026, 10, 10, 12, 0);
+    const threePm = new Date(2026, 10, 10, 15, 0);
+
+    // Drawn with Vue's own transition, so an entering or leaving note carries its classes.
+    function mountWith(store: StatusStore, props: Record<string, unknown>): VueWrapper {
+        return mountComposer({ props: { title: "Cindy Ames", ...props }, attachTo: document.body, global: { provide: store.provide, stubs: { transition: false } } });
+    }
+
+    function noteOf(wrapper: VueWrapper): HTMLElement | null {
+        return wrapper.element.querySelector<HTMLElement>("[data-testid='composer-busy-note']");
+    }
+
+    /** What the line draws, part by part, as a person reads it. */
+    function partsOf(wrapper: VueWrapper): string[] {
+        return [...noteOf(wrapper)?.querySelectorAll<HTMLElement>("[data-part]") ?? []].map(part => `${part.dataset.part}:${(part.textContent ?? "").replace(/\s+/g, " ")}`);
+    }
+
+    /** The sentence the box is described by, or null for none. */
+    function describedBy(wrapper: VueWrapper): string | null {
+        const id = editorOf(wrapper).getAttribute("aria-describedby");
+        return id ? (document.getElementById(id)?.textContent ?? "").replace(/\s+/g, " ") : null;
+    }
+
+    /** Whether the note is gone or going: its sentence no longer describes the box, and it is fading or removed. */
+    function isGoing(wrapper: VueWrapper): boolean {
+        const note = noteOf(wrapper);
+        return describedBy(wrapper) === null && (note === null || note.classList.contains("chat-note-leave-active"));
+    }
+
+    function transitionClasses(wrapper: VueWrapper): string[] {
+        return [...wrapper.element.querySelectorAll("*")].flatMap(element => [...element.classList].filter(name => /^chat-note-(enter|leave|appear)-/.test(name)));
+    }
+
+    beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(noon);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+        document.body.replaceChildren();
+    });
+
+    test("names her, her end and that she won't be notified, in parts the line shortens one at a time", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm))]);
+
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+
+        expect(partsOf(wrapper)).toEqual(["name:Cindy ", "fixed:is busy", "until: until 3:00 PM", "fixed: and won't be notified."]);
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+    });
+
+    // Past the viewer's midnight her end is today: the store's midnight wake moves her revision,
+    // and the line reads its new words in place, with no fade.
+    test("at the viewer's midnight, until tomorrow, 8:00 AM reads until 8:00 AM in place", async () => {
+        jest.setSystemTime(new Date(2026, 10, 10, 23, 59, 30));
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(new Date(2026, 10, 11, 8, 0)))]);
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(describedBy(wrapper)).toBe("Cindy is busy until tomorrow, 8:00 AM and won't be notified.");
+
+        jest.advanceTimersByTime(31_000);
+        await nextTick();
+
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 8:00 AM and won't be notified.");
+        expect(partsOf(wrapper)).toContain("until: until 8:00 AM");
+        expect(transitionClasses(wrapper)).toEqual([]);
+    });
+
+    test("a long name until tomorrow, and a Busy with no end, in their own words", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        const alexandrina = "a1e1a1e1-0000-4000-8000-000000000000";
+        store.store.told([told(alexandrina, busyNow(new Date(2026, 10, 11, 8, 0)), "Alexandrina-Josephine"), told(grace, busyNow(null), "Grace")]);
+
+        const long = mountWith(store, { busyPerson: person(alexandrina, "Alexandrina-Josephine") });
+        const open = mountWith(store, { busyPerson: person(grace, "Grace") });
+
+        expect(describedBy(long)).toBe("Alexandrina-Josephine is busy until tomorrow, 8:00 AM and won't be notified.");
+        expect(partsOf(open)).toEqual(["name:Grace ", "fixed:is busy", "fixed: and won't be notified."]);
+        expect(describedBy(open)).toBe("Grace is busy and won't be notified.");
+    });
+
+    test("reads her end from what the store draws, never from the tip's words", () => {
+        const faceStatus: FaceStatus = { state: "busy", label: ", busy until noon", tip: "Busy until noon", busyUntil: threePm.getTime(), revision: 3 };
+        const provide = { [presenceStatusKey as symbol]: { statusOf: () => faceStatus, register: () => () => undefined } };
+
+        const wrapper = mountComposer({ props: { busyPerson: person(cindy, "Cindy") }, attachTo: document.body, global: { provide } });
+
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+    });
+
+    test("is not drawn for someone Online, someone the store says nothing of, a group or a channel", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, onlineNow())]);
+
+        for (const props of [{ busyPerson: person(cindy, "Cindy") }, { busyPerson: person(ben, "Ben") }, {}, { isChannel: true }]) {
+            const wrapper = mountWith(store, props);
+            expect(noteOf(wrapper)).toBeNull();
+            expect(editorOf(wrapper).hasAttribute("aria-describedby")).toBe(false);
+        }
+    });
+
+    // A block or the switch going off hides her from every face at once, and the note goes with
+    // them, fading as her badges do.
+    test("is not drawn for someone the viewer blocked, nor with online status switched off, and goes at once with her faces for each", async () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm))]);
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(noteOf(wrapper)).not.toBeNull();
+
+        // a block decided before her Busy, so the unblock draws her Busy again
+        const blockedAt = (Date.now() - 1000) * 1000;
+        store.blocked.add(cindy);
+        store.store.blockChanged([cindy], blockedAt);
+        await nextTick();
+        expect(isGoing(wrapper)).toBe(true);
+        expect(noteOf(mountWith(store, { busyPerson: person(cindy, "Cindy") }))).toBeNull();
+
+        store.blocked.clear();
+        store.store.blockChanged([cindy], blockedAt);
+        await nextTick();
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+
+        store.isOn.value = false;
+        await nextTick();
+        await nextTick();
+        expect(isGoing(wrapper)).toBe(true);
+        expect(noteOf(mountWith(store, { busyPerson: person(cindy, "Cindy") }))).toBeNull();
+    });
+
+    test("asks about her while it is mounted, as the open conversation's person", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(store.store.watched()).toEqual([viewer, cindy]);
+
+        wrapper.unmount();
+        expect(store.store.watched()).toEqual([viewer]);
+    });
+
+    test("a room switch to someone Busy draws the note as state, and a switch away takes it at once", async () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm)), told(grace, busyNow(null), "Grace"), told(ben, onlineNow(), "Ben")]);
+        const wrapper = mountWith(store, { busyPerson: person(ben, "Ben") });
+
+        await wrapper.setProps({ busyPerson: person(cindy, "Cindy") });
+        expect(noteOf(wrapper)).not.toBeNull();
+        expect(transitionClasses(wrapper)).toEqual([]);
+
+        await wrapper.setProps({ busyPerson: person(grace, "Grace") });
+        expect(wrapper.findAll("[data-testid='composer-busy-note']")).toHaveLength(1);
+        expect(describedBy(wrapper)).toBe("Grace is busy and won't be notified.");
+        expect(transitionClasses(wrapper)).toEqual([]);
+
+        await wrapper.setProps({ busyPerson: null });
+        expect(noteOf(wrapper)).toBeNull();
+    });
+
+    test("fades in when her revision makes her Busy, and out when it ends her Busy", async () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, onlineNow())]);
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(noteOf(wrapper)).toBeNull();
+
+        store.store.told([told(cindy, busyNow(threePm, 1000))]);
+        await nextTick();
+        expect(noteOf(wrapper)).not.toBeNull();
+        expect(transitionClasses(wrapper)).toContain("chat-note-enter-active");
+
+        store.store.told([told(cindy, onlineNow(2000))]);
+        await nextTick();
+        expect(transitionClasses(wrapper)).toContain("chat-note-leave-active");
+    });
+
+    test("her end passing turns her Away, and the note fades out with her faces", async () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(new Date(noon.getTime() + 60_000)))]);
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(noteOf(wrapper)).not.toBeNull();
+
+        jest.advanceTimersByTime(60_000);
+        await nextTick();
+
+        expect(store.store.statusOf(cindy)?.state).toBe("away");
+        expect(transitionClasses(wrapper)).toContain("chat-note-leave-active");
+    });
+
+    test("is the box's description, read where the person types, and never a live region", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm))]);
+
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        const note = noteOf(wrapper)!;
+        const live = "[aria-live], [role='status'], [role='alert'], [role='log']";
+
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+        // drawn for the eye alone: the sentence reaches a screen reader as the box's description only
+        expect(note.getAttribute("aria-hidden")).toBe("true");
+        expect(note.closest(live)).toBeNull();
+        expect(note.querySelector(live)).toBeNull();
+    });
+
+    test("with two composers on the page, each box is described by its own note", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm))]);
+
+        const conversation = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        const thread = mountWith(store, { busyPerson: person(cindy, "Cindy"), isThread: true });
+
+        expect(editorOf(conversation).getAttribute("aria-describedby")).not.toBe(editorOf(thread).getAttribute("aria-describedby"));
+        expect(describedBy(thread)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+    });
+
+    // Over a failure strip or a staged GIF the note stays on the composer's top edge: they open
+    // inside the composer, under that edge, so the note rides up on them and never moves itself.
+    test("stands on the composer's own top edge over a failure strip and a staged GIF, which open inside the composer", async () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(cindy, busyNow(threePm))]);
+        const tray = createAttachments(harness().dependencies).trayFor("c1", "c1");
+        const failure = { count: 1, reason: null, canRetry: true, localIds: ["k1"] };
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy"), sendFailure: failure, tray });
+        tray.stageGif({ token: "t", slug: "s", title: "T", url: "https://static.klipy.com/ii/md/s.mp4", still: "https://static.klipy.com/ii/md/s.jpg", preview: { url: "https://static.klipy.com/ii/sm/s.webp", width: 200, height: 112 }, blur: null, width: 498, height: 280 });
+        await nextTick();
+
+        const note = noteOf(wrapper)!;
+        // a child of the composer itself, so the composer's top edge is the one it stands on
+        expect(note.parentElement).toBe(wrapper.element);
+        for (const testId of ["composer-failed", "composer-gif"]) {
+            const part = wrapper.get(`[data-testid='${testId}']`).element;
+            expect(wrapper.element.contains(part)).toBe(true);
+            expect(note.contains(part) || part.contains(note)).toBe(false);
+        }
+    });
+
+    describe("its look", () => {
+        // read with one line ending, whichever the checkout writes, so a rule naming two selectors matches
+        const style = composerStyle().replace(/\r\n/g, "\n");
+        const rule = (selector: string): string => new RegExp(`(?:^|\\n)${selector.replace(/\./g, "\\.")}\\s*\\{([^}]*)\\}`).exec(style)?.[1] ?? "";
+
+        test("stands over the composer's top edge at 16px and takes no space, so the title and the box never move", () => {
+            expect(rule(".chat-composer")).toMatch(/position: relative;/);
+            const note = rule(".chat-composer-note");
+            expect(note).toMatch(/position: absolute;/);
+            expect(note).toMatch(/bottom: 100%;/);
+            expect(note).toMatch(/height: 16px;/);
+            expect(note).toMatch(/font-size: 11\.5px;/);
+            expect(note).toMatch(/color: var\(--chat-muted\);/);
+            expect(note).toMatch(/white-space: nowrap;/);
+            expect(note).toMatch(/overflow: hidden;/);
+            // over the feed for as long as she is Busy, so a wheel, a hover or a drag there reaches the rows under it
+            expect(note).toMatch(/pointer-events: none;/);
+        });
+
+        test("shortens the name first, then the time, and never 'is busy' or 'and won't be notified'", () => {
+            const name = rule(".chat-composer-note-name");
+            const until = rule(".chat-composer-note-until");
+            const fixed = rule(".chat-composer-note-fixed");
+
+            expect(name).toMatch(/flex: 0 1 auto;/);
+            expect(name).toMatch(/min-width: 2\.4em;/);
+            expect(name).toMatch(/text-overflow: ellipsis;/);
+            expect(until).toMatch(/flex: 0 \.0001 auto;/);
+            expect(until).toMatch(/min-width: 0;/);
+            expect(until).toMatch(/text-overflow: ellipsis;/);
+            expect(fixed).toMatch(/flex: none;/);
+            expect(fixed).not.toMatch(/overflow|ellipsis/);
+            // the space after the name is the name's own, so an ellipsis cutting the name cuts it too
+            expect(name).toMatch(/white-space: pre;/);
+        });
+
+        test("only fades, over the fast state time, and nothing moves it", () => {
+            expect(rule(".chat-note-enter-active,\n.chat-note-leave-active")).toMatch(/transition: opacity var\(--chat-t-fast\) var\(--chat-ease-state\);/);
+            expect(rule(".chat-note-enter-from,\n.chat-note-leave-to")).toMatch(/opacity: 0;/);
+            expect(rule(".chat-composer-note")).not.toMatch(/transform|animation|transition/);
+        });
     });
 });

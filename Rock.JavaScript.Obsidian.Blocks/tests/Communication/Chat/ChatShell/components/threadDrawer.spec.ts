@@ -61,6 +61,7 @@ import { createMessageMotion, messageMotionKey } from "../../../../../src/Commun
 import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 import { playAnimations } from "../tailStage";
+import { busyNow, createStatusStore, told } from "../statusStore";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -114,11 +115,11 @@ let wrapper: VueWrapper | null = null;
 /**
  * Mounts the drawer, its owner keeping the reply composer's text as the shell keeps each thread's.
  * A test about an entrance keeps Vue's real Transition, which marks an element entering as a
- * browser plays it.
+ * browser plays it; one about status provides the store its faces read.
  */
-function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion()): VueWrapper {
+function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion(), provide: Record<symbol, unknown> = {}): VueWrapper {
     const drawn: VueWrapper = mount(ThreadDrawer, {
-        global: { provide: { [messageMotionKey as symbol]: motion }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
+        global: { provide: { [messageMotionKey as symbol]: motion, ...provide }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
         props: {
             draft: { text: "", mentions: [] },
             onDraftText: (text: string) => drawn.setProps({ draft: { text, mentions: [] } }),
@@ -701,6 +702,32 @@ describe("the reply composer", () => {
         await w.get("[data-testid='composer-input']").trigger("keydown", { key: "Enter" });
 
         expect(w.emitted("send")).toEqual([["Count me in", true]]);
+    });
+
+    // A reply notifies the other person of a direct message no more than a message does, and on a
+    // phone the drawer covers the conversation's own composer, so the reply box says it too.
+    test("in a thread of a two-person direct message, says the other person is Busy over the reply box, as the conversation's composer does", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        const busyPerson = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null };
+        store.store.told([told(anna, busyNow(null), "Anna")]);
+
+        const w = draw({ conversationTitle: "Anna Reyes", isChannel: false, isDirectMessage: true, busyPerson }, false, createMessageMotion(), store.provide);
+
+        expect(w.findComponent(Composer).props("busyPerson")).toEqual(busyPerson);
+        const note = w.get("[data-testid='composer-busy-note']");
+        expect(note.element.closest(".chat-composer")).toBe(w.findComponent(Composer).element);
+        const id = w.get("[data-testid='composer-input']").attributes("aria-describedby");
+        expect(plain(document.getElementById(id ?? "")?.textContent)).toBe("Anna is busy and won't be notified.");
+    });
+
+    test("in a channel's thread, says nothing of anyone's status over the reply box", () => {
+        const store = createStatusStore({ isSeeded: false, clock: "page" });
+        store.store.told([told(anna, busyNow(null), "Anna")]);
+
+        const w = draw({}, false, createMessageMotion(), store.provide);
+
+        expect(w.findComponent(Composer).props("busyPerson")).toBeNull();
+        expect(w.find("[data-testid='composer-busy-note']").exists()).toBe(false);
     });
 });
 

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown }">
+    <div class="chat-feed-frame" :class="{ 'is-community': layout === 'community', 'is-phone': isPhone, 'has-strip': isStripShown, 'has-strip-room': isStripRoomKept, 'has-jump': isJumpShown, 'is-pair': isDirectMessage }">
         <!-- Always drawn, so it fades out the way it came in; out of reach while it is off. -->
         <div class="chat-unread-strip"
              :class="{ 'is-on': isStripShown }"
@@ -571,6 +571,19 @@
     /* From the motion tokens, so under reduced motion the lift and the scale fall away to a fade. */
     transform: translateY(var(--chat-rise)) scale(var(--chat-pop-scale));
     transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in), visibility var(--chat-t-base) linear;
+}
+
+/*
+    In a two-person conversation the composer's Busy note may stand 16px over the feed's bottom
+    edge, so the pill stands clear of it there always, whether or not it shows, and never moves as
+    her Busy starts or ends; the fade still starts 16px above the pill's top.
+*/
+.chat-feed-frame.is-pair .chat-jump {
+    bottom: 22px;
+}
+
+.chat-feed-frame.is-pair.has-jump {
+    --chat-feed-bottom-mask: 72px;
 }
 
 .chat-jump.is-on {

@@ -187,6 +187,7 @@
                       :sendFailure="replyFailure"
                       :lastFailure="lastFailure"
                       :tray="tray"
+                      :busyPerson="busyPerson"
                       @send="onSend"
                       @retryFailed="onRetryFailed"
                       @discardFailed="onDiscardFailed"
@@ -375,7 +376,7 @@
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
-    import { ChatError, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
+    import { ChatError, ChatPerson, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
 
@@ -438,6 +439,16 @@
         isDirectMessage: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * The other person of a two-person direct message, whose Busy the reply box says as the
+         * conversation's does: a reply notifies her no more than a message, and on a phone the
+         * drawer covers the conversation's own box. Null in a group or a channel.
+         */
+        busyPerson: {
+            type: Object as PropType<ChatPerson | null>,
+            default: null
         },
 
         /** A phone leaves by the back chevron, which takes focus on open, and never focuses the composer, whose keyboard would cover the thread. */

@@ -285,7 +285,7 @@ function fakeShell(): Record<string, unknown> {
         prefs: fakePrefs(),
         blocks: fakeBlocks(),
         // no one else typing, and the person's own typing asked of nothing
-        presence: { state: reactive({ typists: {} }), typed: jest.fn(), typingIn: () => null, status: (mockStatus = createStatusStore(false)).store },
+        presence: { state: reactive({ typists: {} }), typed: jest.fn(), typingIn: () => null, status: (mockStatus = createStatusStore({ isSeeded: false })).store },
         // the quotes the composers draw and the Up key's edit, as useMessageActions holds them
         messageActions: {
             state: reactive({ editing: null, confirmingDelete: null, quotes: {} }),
@@ -5082,5 +5082,57 @@ describe("online status", () => {
         await nextTick();
 
         expect(badgesIn(annaRow(w))).toEqual([{ state: "online", isMoving: false }]);
+    });
+});
+
+// The composers' Busy note names the other person of a two-person conversation only: the shell
+// hands each composer that person from the conversation's row, by its kind, and nobody in a group
+// or a channel, a group showing one person included.
+describe("the person a composer's Busy note is about", () => {
+    const anna = dmAnna.dm_people![0];
+
+    test("the conversation's composer is told the other person of a two-person conversation, and nobody in a channel", async () => {
+        const w = await mountBlock(1200);
+
+        await openRow(w, dmAnna.channel_id);
+        expect(w.findComponent(ComposerComponent).props("busyPerson")).toEqual(anna);
+
+        await openRow(w, team.channel_id);
+        expect(w.findComponent(ComposerComponent).props("busyPerson")).toBeNull();
+    });
+
+    test("a group showing a single person is not a two-person conversation, so its composer is told nobody", async () => {
+        const w = await mountBlock(1200);
+        const listedOut = sidebarRow({
+            channel_id: "c0000011-0000-4000-8000-000000000000",
+            channel_type: "dm",
+            dm_people: [anna],
+            dm_other_count: 1,
+            room_kind: "group",
+            title: "Anna and 1 more"
+        });
+        (mockShell!.channels as { rows: SidebarRow[] }).rows.push(listedOut);
+        await settle();
+
+        await openRow(w, listedOut.channel_id);
+
+        expect(w.findComponent(ComposerComponent).props("busyPerson")).toBeNull();
+    });
+
+    test("a thread's composer in a two-person conversation is told the same person, and in a channel's thread nobody", async () => {
+        const w = await mountBlock(1200);
+        const root = { reply_count: 1, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>;
+        timelineOf(dmAnna.channel_id).messages.push(storedMessage(40, root));
+        timelineOf(team.channel_id).messages.push(storedMessage(50, root));
+
+        await openRow(w, dmAnna.channel_id);
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toEqual(anna);
+
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await settle();
+        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toBeNull();
     });
 });
