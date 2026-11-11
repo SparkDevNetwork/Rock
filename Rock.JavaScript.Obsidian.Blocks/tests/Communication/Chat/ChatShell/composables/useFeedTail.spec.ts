@@ -18,8 +18,8 @@
 // message arriving glides the stack as it fades in, someone typing comes in and slides out with the
 // stack, and her message grows out of the bubble it ends, each from where things stand on screen,
 // each once, and only for what the record says happened while the view was open. Scrolled up
-// nothing moves; under reduced motion nothing slides or grows; what lands inside the view's own
-// entrance rides it.
+// nothing moves; under reduced motion nothing slides or grows; what the open's first read changes,
+// inside the view's entrance or after it, glides in over a message's time through the same plan.
 //
 // Drawn in a host of its own over the real typing bubble, on a stage that lays the view out and
 // moves its boxes as the browser does, so each cell reads what a person sees frame by frame: where
@@ -1534,10 +1534,11 @@ describe("the open's first read", () => {
         v.typing.value = tedTyping;
         await settle();
 
-        for (const [id, key, edge] of parts) {
-            const gaps = sample(() => Math.round(seen(row(v, key))[edge] - seen(part(v, id))[edge]));
-            expect(new Set(gaps).size).toBe(1);
-        }
+        // every part read in each frame of the one pass, so each is read while it moves
+        const frames = sample(() => parts.map(([id, key, edge]) => Math.round(seen(row(v, key))[edge] - seen(part(v, id))[edge])));
+        parts.forEach(([id], index) => {
+            expect([id, new Set(frames.map(frame => frame[index])).size]).toEqual([id, 1]);
+        });
     });
 
     // One plan for every change: a recorded change landing while the open's plan plays goes on from
