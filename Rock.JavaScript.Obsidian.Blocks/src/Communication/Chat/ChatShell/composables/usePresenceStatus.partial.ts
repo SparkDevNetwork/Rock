@@ -729,12 +729,13 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 return;
             }
 
-            // Against what landed. An input newer than its body asks though the minute runs: it
-            // waited for the session, and it cannot ask twice running, since each landing moves the
-            // input the platform holds up to its body's. A page still stale asks once the minute is
-            // over, and never after a body that asked about people, whose answer with no status is
-            // the platform's not now; otherwise a refused ask would ask again at every landing.
-            if (isInputDue(true)) {
+            // Against what landed, each cause on its own minute. An input newer than its body asks
+            // once her input's minute is over: whether one landing makes the next due rests on the
+            // platform's idle line and token life, and with a line shorter than the refresh window
+            // every landing would ask again. A page still stale asks once the minute is over, and
+            // never after a body that asked about people, whose answer with no status is the
+            // platform's not now; otherwise a refused ask would ask again at every landing.
+            if (isInputDue(true) && isMinuteOver(true)) {
                 askEarly(true);
             }
             else if (!hasLandedWatched && isMinuteOver(false) && isStale()) {

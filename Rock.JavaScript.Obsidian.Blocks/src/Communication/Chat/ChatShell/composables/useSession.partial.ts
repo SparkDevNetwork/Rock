@@ -636,6 +636,12 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
                     return false;
                 }
                 if (outcome !== "unavailable") {
+                    // A refusal is final until the page loads again: the session ends here, so no
+                    // later wake, restore or call can sign her in behind a page that says chat is
+                    // refused.
+                    if (outcome === "refused") {
+                        isStopped = true;
+                    }
                     // no longer starting before it is told, so what it asks is a refresh of its own
                     isStarting = false;
                     dependencies.settled?.("start", outcome === "ok");

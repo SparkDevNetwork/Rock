@@ -5514,6 +5514,25 @@ describe("online status on the token exchange", () => {
         expect(h.exchangeBodies[1]?.idle_seconds).toBe(210);
     });
 
+    test("after a start refused, a page restored from the back-forward cache signs nobody in: the refusal stands until the page loads again", async () => {
+        const h = build();
+        h.exchangeSettings.value = on;
+        h.mintGate.value = "banned";
+        await h.shell.start();
+        expect(h.shell.state.phase).toBe("refused");
+        const mints = h.counts.mints;
+
+        h.mintGate.value = "ok";
+        h.firePageHide(true);
+        h.firePageShow(true);
+        h.fireOnline();
+        h.fireShown();
+        await advance(0);
+        await advance(300_000);
+
+        expect([h.counts.mints, h.exchangeBodies.length, h.shell.state.phase]).toEqual([mints, 0, "refused"]);
+    });
+
     test("a shell stopped in place, its page still open, says goodbye for the id an exchange carried, and a page hide after says no more", async () => {
         const h = await begin();
 
@@ -5659,12 +5678,66 @@ describe("online status on the token exchange", () => {
             h.fireShown();
             h.pageDocument.visibilityState = "visible";
             h.fireShown();
-            for (let at = 0; at < 60_000; at += 250) {
+            // a move, and another half a second later while the last ask is out, every two seconds
+            for (let at = 0; at < 60_000; at += 2000) {
                 h.fireInput("pointermove");
-                await advance(250);
+                await advance(500);
+                h.fireInput("pointermove");
+                await advance(1500);
             }
 
             expect(watchedFrom(h, index)).toEqual([true]);
+        }, 30_000);
+
+        test("with an idle line shorter than the refresh window, steady input with each exchange a second out asks early once a minute", async () => {
+            const h = await begin({ ...on, limits: { ...on.limits, presence_idle_seconds: 120 } });
+            // every answer carries status, so the page is never stale; only her input can ask
+            h.exchangeDelayMs.value = 1200;
+            await advance(150_000);
+            const index = h.exchangeBodies.length;
+
+            // a move every second, as often as an input does more than note its time, so one lands
+            // while each ask is out
+            const moveFor = async (milliseconds: number): Promise<void> => {
+                for (let at = 0; at < milliseconds; at += 1000) {
+                    h.fireInput("pointermove");
+                    await advance(1000);
+                }
+            };
+            await moveFor(58_000);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            await moveFor(4000);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+        }, 30_000);
+
+        test("a stale page shown again and again asks early once a minute", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(400_000);
+            const index = h.exchangeBodies.length;
+            const show = (): void => {
+                h.pageDocument.visibilityState = "hidden";
+                h.fireShown();
+                h.pageDocument.visibilityState = "visible";
+                h.fireShown();
+            };
+
+            show();
+            await advance(0);
+            for (let at = 0; at < 55_000; at += 5000) {
+                await advance(5000);
+                show();
+            }
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            await advance(6000);
+            show();
+            await advance(0);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
         });
 
         test("a stale page asks again after a recheck only a minute after the last early ask", async () => {
