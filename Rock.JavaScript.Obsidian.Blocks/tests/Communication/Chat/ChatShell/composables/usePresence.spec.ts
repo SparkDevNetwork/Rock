@@ -2510,6 +2510,25 @@ describe("the status store's size", () => {
 
         expect(h.status.statusOf(me)).toBeNull();
     });
+
+    test("holds nothing for a face that draws nothing: reading people never told, or told and let go, keeps none of them", () => {
+        const h = buildStatus();
+        const people = Array.from({ length: 300 }, (_, i) => `b${String(i).padStart(7, "0")}-0000-4000-8000-000000000000`);
+        h.status.told(people.slice(0, 150).map(alias => readerPerson(alias, online(0))));
+        people.forEach(alias => h.status.statusOf(alias));
+
+        // past every row's end and the keeping of a decision that draws nothing, so the told are let go too
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(sam, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
+        const set = jest.spyOn(Map.prototype, "set");
+        const read = people.map(alias => h.status.statusOf(alias));
+        const kept = set.mock.calls.length;
+        set.mockRestore();
+
+        expect(read).toEqual(people.map(() => null));
+        // reading 300 faces that draw nothing adds nothing the store keeps
+        expect(kept).toBe(0);
+    });
 });
 
 describe("what a face reads", () => {

@@ -33,7 +33,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { busy } from "../statusShapes";
+import { busy, exchangeAnswer, online, toldEntry, watchAnswer } from "../statusShapes";
 import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
 // #region Fixtures
@@ -1074,13 +1074,18 @@ describe("online status", () => {
         expect(badgesIn(w.get("[data-testid='details-identity']").element)).toEqual([]);
     });
 
-    test("closed, it asks about nobody, and open, about the people it draws", async () => {
-        const w = mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
-        expect(status.store.watched()).toEqual([viewer]);
+    test("kept mounted closed, it keeps its people asked about, since it draws them from the room's facts read at open and has no read of its own", async () => {
+        const w = mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(carl, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        const asked = status.store.watched();
+        expect(asked).toEqual([viewer, anna, carl]);
 
+        // an exchange while closed tells the quiet person's status, so opening draws it at once
+        status.store.exchanged(asked, exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(online(1000)), [carl]: toldEntry(online(1000)) })));
         await w.setProps({ isOpen: true });
+        await nextTick();
 
-        expect(status.store.watched()).toEqual([viewer, anna, ben]);
+        const rows = w.findAll("[data-testid='details-person']");
+        expect(rows.map(row => badgesIn(row.element))).toEqual([[{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }]]);
     });
 
     test("a group's People rows keep the group's one row height with their 32px faces", () => {
