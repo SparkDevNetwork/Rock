@@ -683,13 +683,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         retryFirstLoad: () => state.activeChannelId === null ? void opener.runPageLoad() : void live.loadSidebar().catch(() => undefined)
     });
 
-    /** A save of the read position, applied to the row, the unread mentions and the conversation's held page. */
+    /** A save of the read position, applied to the row and the unread mentions. */
     function applySave(channelId: string, result: MarkReadResult, sentAt: number | undefined): void {
         channels.applyMarkRead(channelId, result, sentAt);
         // a mention at or below the saved cursor has been read where it lives
         if (result.read_cursor !== null) {
             mentions.channelRead(channelId, result.read_cursor);
-            timelines.readSaved(channelId, result.read_cursor);
         }
     }
 

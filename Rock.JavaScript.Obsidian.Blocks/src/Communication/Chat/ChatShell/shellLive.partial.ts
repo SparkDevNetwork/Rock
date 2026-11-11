@@ -26,7 +26,7 @@ import { isTimelineMessage } from "./heldMessage.partial";
 import type { RealtimeHubDependencies } from "./composables/useRealtimeHub.partial";
 import type { MeSettings } from "./composables/usePrefs.partial";
 import type { ChatShell, ShellState } from "./shell.partial";
-import { ChannelReadEvent, ChannelUnreadEvent, ChatBadge, ChatError, MarkReadResult, MessageCreatedEvent, ReactionFavorite, SidebarRow, UnreadMention } from "./types.partial";
+import { ChannelUnreadEvent, ChatBadge, ChatError, MarkReadResult, MessageCreatedEvent, ReactionFavorite, SidebarRow, UnreadMention } from "./types.partial";
 
 /**
  * The longest a viewer waits before fetching a new token when the channel on screen changed, or
@@ -404,11 +404,6 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             }
             channels.applyPersonalEvent(event, payload);
             mentions.applyPersonalEvent(event, payload);
-            // how far they read on another device reaches the conversation's held page too
-            const read = payload as Partial<Record<keyof ChannelReadEvent, unknown>> | null;
-            if (event === "channel.read" && typeof read?.channel_id === "string" && typeof read.read_cursor === "number") {
-                timelines.readSaved(read.channel_id, read.read_cursor);
-            }
             if (replayedEvents.has(event)) {
                 sidebarJournal?.push({ event, payload });
             }

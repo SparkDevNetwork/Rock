@@ -2774,23 +2774,6 @@ describe("the live sidebar", () => {
             expect(rowOf(h, channelB)?.mention_count).toBe(1);
         });
 
-        // The conversation's held page goes on being drawn when it is opened again, so how far the
-        // person read has to reach it however it was saved, or it draws a New line they have read.
-        test("a save of the read position, here or on another device, moves the held conversation's on", async () => {
-            const h = await startedLive();
-            expect(h.shell.timelines.state(channelA).readCursor).toBe(9);
-
-            h.shell.markRead(10);
-            await settle();
-            h.saves.filter(s => s.channelId === channelA && s.messageId === 10).pop()?.answer.resolve(fakeResponse(200, { read_cursor: 10, last_message_id: 10 }));
-            await settle();
-            expect(h.shell.timelines.state(channelA).readCursor).toBe(10);
-
-            personal(h, "channel.read", { channel_id: channelA, read_cursor: 12, last_message_id: 12, id: "5e0000f1-0000-4000-8000-000000000000" });
-            await settle();
-            expect(h.shell.timelines.state(channelA).readCursor).toBe(12);
-        });
-
         test.each(["before", "after"])("keeps a save of the read position answered %s the sidebar", async order => {
             const h = await startedLive();
             h.shell.markRead(10);
