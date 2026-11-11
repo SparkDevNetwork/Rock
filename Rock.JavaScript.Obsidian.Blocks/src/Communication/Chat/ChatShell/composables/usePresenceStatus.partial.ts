@@ -525,13 +525,13 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     let pageId: string | null = null;
     let carriedId: string | null = null;
 
-    /** The body out, so its answer knows the reason it went for, the input it reported and whether it asked about people. */
-    let out: { reason: RefreshReason, inputAt: number, isSent: boolean, isWatched: boolean } | null = null;
+    /** The body out, so its answer knows the reason it went for, the id and input it reported and whether it asked about people. */
+    let out: { reason: RefreshReason, inputAt: number, isSent: boolean, isWatched: boolean, id: string | null } | null = null;
 
     /**
      * Whether any exchange has landed, the input the latest landed body reported (what the
-     * platform holds of her), and when the badges were last made fresh: the start's landing, or an
-     * answer that carried status.
+     * platform holds of her; -Infinity for nothing held), and when the badges were last made
+     * fresh: the start's landing, or an answer that carried status.
      */
     let hasLanded = false;
     let heldInputAt: number | null = null;
@@ -694,8 +694,11 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
             hasLanded = true;
             hasLandedWatched = body?.isWatched ?? false;
+            // A body that named an id a goodbye has spent since it left beat a row already left,
+            // which counts for nothing: the platform holds nothing of her, so her next ask is due
+            // at once, under the page's new id.
             if (body?.isSent) {
-                heldInputAt = body.inputAt;
+                heldInputAt = body.id === pageId ? body.inputAt : -Infinity;
             }
             if (body?.reason === "start" || "presence" in outcome) {
                 freshAt = Date.now();
@@ -800,13 +803,14 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             if (isStopped()) {
                 return null;
             }
-            out = { reason, inputAt, isSent: false, isWatched: false };
+            out = { reason, inputAt, isSent: false, isWatched: false, id: null };
             if (!isBodySent()) {
                 return null;
             }
             const id = ownId();
             carriedId = id;
             out.isSent = true;
+            out.id = id;
             // A refresh names the people to ask about once an answer said status is on; the start,
             // a recheck, a call refused as expired and a retry only beat, and are answered at once.
             const watched = hasLanded && (reason === "scheduled" || reason === "early") ? watchedNow() : [];

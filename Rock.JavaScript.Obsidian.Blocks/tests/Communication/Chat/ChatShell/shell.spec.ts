@@ -6173,4 +6173,64 @@ describe("online status into the store", () => {
         expect(h.blockCalls.slice(lists).map(c => c.name)).toEqual(["chat_list_blocks"]);
         expect(stateOf(h, ada)).toBe("online");
     });
+    test("a page restored while a refresh is out, which lands for the id its goodbye spent, holds nothing of her, so her restore asks early at once with the new id", async () => {
+        // ids made of real randomness, so a new one differs from the one spent
+        (Math.random as unknown as jest.SpyInstance).mockRestore();
+        const h = await begin();
+        h.heldExchange.value = deferred<void>();
+        const held = h.heldExchange.value;
+        // the scheduled refresh falls inside the token's last third, wherever randomness puts it
+        while (h.exchangeBodies.length < 2) {
+            await advance(1000);
+        }
+        const spent = h.exchangeBodies[1]?.client_id;
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        await advance(2000);
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        h.heldExchange.value = null;
+        held.resolve();
+        await advance(0);
+
+        expect(h.exchangeBodies).toHaveLength(3);
+        expect(h.exchangeBodies[2]).toEqual(expect.objectContaining({ idle_seconds: 0, watched: expect.arrayContaining([person]) }));
+        expect(h.exchangeBodies[2]?.client_id).not.toBe(spent);
+    });
+
+    test("a restore whose recheck goes on the church token still held reports her input from the restore, since the status hears the restore first", async () => {
+        const h = await begin();
+        // the scheduled refresh's exchange fails after its mint, so the session waits holding that church token
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 120, code: "rpc.unavailable" }];
+        await advance(210_000);
+        const mints = h.counts.mints;
+        const exchanges = h.exchangeBodies.length;
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        // a page in the back-forward cache runs no timer: the clock passes the wait's end and its
+        // retry has not run, so the church token is still held when the page comes back
+        jest.setSystemTime(Date.now() + 40_000);
+
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        await advance(0);
+
+        expect({ mints: h.counts.mints, bodies: h.exchangeBodies.slice(exchanges) }).toEqual({ mints, bodies: [expect.objectContaining({ idle_seconds: 0 })] });
+    });
+
+    test("a restore with status off still asks the sign-in's recheck, with no body", async () => {
+        const h = await begin(undefined, off);
+        const exchanges = h.exchangeBodies.length;
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        await advance(30_000);
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        await advance(0);
+
+        expect(h.exchangeBodies.slice(exchanges)).toEqual([null]);
+        expect(h.statusCalls).toEqual([]);
+    });
 });

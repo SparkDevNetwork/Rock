@@ -2197,6 +2197,17 @@ describe("status carried on typing", () => {
     });
 });
 
+describe("nothing but status writes", () => {
+    test("a reader's person whose status cannot be read writes nothing, whatever else it carries", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.told([{ ...readerPerson(anna, { as_of: "soon" }), state: "away", until: pgTime(1000), as_of: asOf(5000) }]);
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+});
+
 describe("the typing call's client", () => {
     test("every signal names the page's id, the one the exchange's body carries", async () => {
         const h = buildStatus();
@@ -2252,6 +2263,11 @@ describe("her own face", () => {
 
         h.status.exchanged([me], exchangeAnswer({ [me]: away(0) }));
         expect(h.status.statusOf(me)?.state).toBe("online");
+
+        // with her input past the idle line and no answer of hers yet, she has the page open
+        const fresh = buildStatus(idleLine);
+        jest.advanceTimersByTime(31_000);
+        expect(fresh.status.statusOf(me)?.state).toBe("online");
     });
 
     test("draws her answer once her input is older than the idle line, nothing for a null one, and Online again at her next input, each by revision", () => {
@@ -2275,9 +2291,12 @@ describe("her own face", () => {
         const h = buildStatus(idleLine);
         const drawn = face(h.status, me);
         expect(drawn.value?.state).toBe("online");
+        const at = drawn.value?.revision ?? 0;
 
         h.me.busy_until = pgTime(3_600_000);
         expect(drawn.value).toEqual(expect.objectContaining({ state: "busy", busyUntil: serverNow + 3_600_000 }));
+        // her revision moves, so her face fades to it rather than drawing it as state
+        expect(drawn.value?.revision).toBeGreaterThan(at);
         expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until /);
 
         h.me.busy_until = "infinity";
@@ -2290,7 +2309,8 @@ describe("her own face", () => {
     test("turns from Busy to her automatic state at its end, with no request", () => {
         const h = buildStatus(idleLine);
         h.me.busy_until = pgTime(60_000);
-        h.status.exchanged([me], exchangeAnswer({ [me]: { ...busy(60_000, 0), auto: "online" } }));
+        // her answer was decided while a longer Busy was on, so only her settings' end can turn her
+        h.status.exchanged([me], exchangeAnswer({ [me]: { ...busy(120_000, 0), auto: "online" } }));
         const drawn = face(h.status, me);
         expect(drawn.value?.state).toBe("busy");
         const at = drawn.value?.revision ?? 0;
