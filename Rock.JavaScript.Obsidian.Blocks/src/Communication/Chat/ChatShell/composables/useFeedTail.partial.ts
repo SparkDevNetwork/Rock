@@ -25,8 +25,9 @@
 // included. After it, it plans, then plays: it takes what is going out of the flow, lets go of the
 // motions this change moves again, reads where everything now lays out with nothing of its own
 // moving, and plays each part from where it stood on screen to there, so a change that lands
-// mid-motion continues from what is on screen and two motions never stack. While the view's own
-// entrance plays, whatever lands at its tail is laid into the entrance rather than stepping after it.
+// mid-motion continues from what is on screen and two motions never stack. The view's open is its
+// entrance and its first read: whatever that read lands at the tail rides the open's motion, laid into
+// the entrance while it plays and gliding on its own once it has ended, never stepping.
 //
 // The motion is one transform on the box that holds everything, plus the parts that do not ride
 // their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
@@ -61,6 +62,13 @@ export type FeedTailOptions = {
 
     /** What the tail draws as state, so what lands inside the entrance without an event is laid into it too. */
     drawn: () => unknown;
+
+    /**
+     * Whether the view's open has drawn its first read, which says what the place holds now. What
+     * that read changes at the tail is the open's, however late it lands. A view with no read of its
+     * own to wait for leaves it out.
+     */
+    landed?: () => boolean;
 };
 
 /** What the parts a view draws hand its tail: a part going, so it has no motion of its own. */
@@ -78,6 +86,9 @@ type Part = { id: string, element: HTMLElement, box: DOMRect };
 /** Where the tail stood on screen before a change. */
 type Before = {
     isFollowing: boolean;
+
+    /** Whether the change is the open's first read landing. */
+    isLanding: boolean;
 
     /** Every row key drawn. */
     keys: Set<string>;
@@ -235,6 +246,9 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     let playedStart = since;
     let playedEnd = since;
 
+    /** Whether the open's first read was drawn by a change this view has read. */
+    let wasLanded = options.landed?.() ?? true;
+
     let isStopped = false;
 
     /**
@@ -242,7 +256,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
      * the first one above the scroller's top, so a wakeup reads about the rows a person sees, and
      * the parts in them and in the typing bubble.
      */
-    function read(): Before | null {
+    function read(isLanding: boolean): Before | null {
         const content = options.content.value;
         if (!content) {
             return null;
@@ -276,6 +290,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         }
         return {
             isFollowing: options.isFollowing(),
+            isLanding,
             keys: new Set(rows.map(row => row.dataset.rowKey ?? "")),
             rows: onScreen,
             parts,
@@ -377,8 +392,11 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const isMotion = arrivals.length > 0 || typing.isStart || goes || !!handoff;
         const scroller = options.scroller();
         const entrance = entranceLeft(scroller);
-        if (!was.isFollowing || (!isMotion && entrance === 0)) {
-            // Scrolled up, nothing moves; a change of state alone after the entrance is simply there.
+        // A change of state alone is the open's while the entrance plays or as the open's first read
+        // lands, however late; any other is simply there.
+        const isOpen = !isMotion && (entrance > 0 || was.isLanding);
+        if (!was.isFollowing || (!isMotion && !isOpen)) {
+            // Scrolled up, nothing moves.
             release();
             return;
         }
@@ -403,7 +421,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         for (const part of parting) {
             const at = was.elements.get(part.element);
             const keepsRoom = reduced && part === bubbleGoing && !handoff;
-            if (!at || entrance > 0) {
+            if (!at || entrance > 0 || isOpen) {
                 part.done();
                 continue;
             }
@@ -478,11 +496,13 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const handoffBox = handoffRow?.querySelector<HTMLElement>("[data-tail='box']") ?? null;
         const handoffAt = handoffBox?.getBoundingClientRect();
 
-        if (entrance > 0) {
+        if (entrance > 0 || isOpen) {
             // The open's one motion: what lands while the view enters rides the entrance to its end,
-            // closing the rest of the way evenly so a short remainder does not open with a jump.
+            // closing the rest of the way evenly so a short remainder does not open with a jump. What
+            // its first read lands once the entrance has ended glides in as an arrival does.
             if (Math.abs(offset) >= .5 && !reduced) {
-                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: entrance, easing: tokens.easeState, id: "chat-tail-open" });
+                const timing = entrance > 0 ? { duration: entrance, easing: tokens.easeState } : { duration: tokens.msg, easing: tokens.easeIn };
+                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { ...timing, id: "chat-tail-open" });
             }
             lifted.forEach(part => part.done());
             return;
@@ -760,14 +780,22 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
 
     // Before the render, so where the tail stands is read before anything in it moves. Every
     // writer records in the same pass as its change of state, so the count and the state move together.
+    // The open's first read wakes the tail even where it changes nothing, so a later read is never taken for it.
     watch([() => {
         const place = options.place();
         return place ? motion?.versionOf(place) : undefined;
-    }, options.drawn], () => {
+    }, options.drawn, () => options.landed?.() ?? true], () => {
+        const isLanded = options.landed?.() ?? true;
+        const isLanding = isLanded && !wasLanded;
+        wasLanded = isLanded;
         if (isStopped || before) {
+            // a change already read for this render lands with the read
+            if (before && isLanding) {
+                before.isLanding = true;
+            }
             return;
         }
-        before = read();
+        before = read(isLanding);
         // after the whole render, every part's coming and going included
         void nextTick(() => {
             const was = before;

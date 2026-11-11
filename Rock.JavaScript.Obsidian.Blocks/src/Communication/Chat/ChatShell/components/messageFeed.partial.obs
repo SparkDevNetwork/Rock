@@ -947,6 +947,9 @@
      */
     const isEnteringDrawn = ref(props.isEntering && props.timeline.isLoaded);
 
+    /** How many pages the timeline had read as the feed mounted, which its open's first read moves past. */
+    const pagesReadAtOpen = props.timeline.pagesRead;
+
     /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
     let isEntrancePending = !props.timeline.isLoaded;
 
@@ -1025,7 +1028,9 @@
         },
         follow: reader.toNewest,
         arrives,
-        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
+        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun],
+        // the feed mounts as its room opens, so the first page read after that is its open's
+        landed: () => props.timeline.pagesRead > pagesReadAtOpen
     });
 
     /**

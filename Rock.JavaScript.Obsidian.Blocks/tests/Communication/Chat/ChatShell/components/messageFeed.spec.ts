@@ -162,6 +162,7 @@ function timeline(messages: TimelineMessage[], extra: Partial<TimelineState> = {
     return reactive({
         messages,
         isLoaded: true,
+        pagesRead: 0,
         hasMore: false,
         readCursor: null,
         unreadCount: 0,
