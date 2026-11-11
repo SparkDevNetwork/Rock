@@ -1477,19 +1477,26 @@ describe("others' status drawn over time", () => {
         const h = buildStatus();
         const lateEvening = new Date(2026, 10, 10, 23, 59).getTime();
         jest.setSystemTime(lateEvening);
-        h.status.clockFrom(lateEvening / 1000);
-        const at = lateEvening - serverNow;
+        // the server 30 s ahead of the page: the words turn at the viewer's midnight, by the page's clock
+        h.status.clockFrom(lateEvening / 1000 + 30);
+        const at = lateEvening + 30_000 - serverNow;
+        const timers = jest.spyOn(global, "setTimeout");
         h.status.told([readerPerson(anna, busy(new Date(2026, 10, 11, 8, 0).getTime() - serverNow, at, at + rowLifeMs))]);
         const drawn = face(h.status, anna);
         const first = drawn.value!.revision;
         expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
 
-        jest.advanceTimersByTime(60_000);
+        jest.advanceTimersByTime(59_999);
+        expect(drawn.value!.revision).toBe(first);
+        jest.advanceTimersByTime(1);
 
         expect(drawn.value?.tip).toMatch(/^Busy until 8:00\sAM$/u);
         expect(drawn.value?.label).toMatch(/^, busy until 8:00\sAM$/u);
         expect(drawn.value!.revision).toBeGreaterThan(first);
         expect(h.calls).toEqual([]);
+        // one timer at the write, one when the midnight wake sets the next: a wake that came early would set one again and again
+        expect(timers).toHaveBeenCalledTimes(2);
+        timers.mockRestore();
     });
 
     test("an end two days on reads its day, then tomorrow, then the time alone, waking at each of the viewer's midnights", () => {

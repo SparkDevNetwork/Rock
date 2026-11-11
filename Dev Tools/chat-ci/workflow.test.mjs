@@ -113,6 +113,16 @@ test('the provider the chat card shares keeps its tripwire', () => {
   );
 });
 
+test('the client cells that need daylight saving run in their own zone', () => {
+  // jest cannot change the zone inside a run, so the main run alone would never reach them
+  const steps = (unlabelled().steps ?? []).filter((step) => String(step['working-directory'] ?? '').replace(/^\.\//, '') === 'Rock.JavaScript.Obsidian.Blocks');
+
+  assert.ok(
+    steps.some((step) => /\bjest\b/.test(String(step.run ?? '')) && /--config tests\/Communication\/Chat\/jest\.zone\.config\.js/.test(String(step.run ?? ''))),
+    'no step runs the chat client cells in a time zone with daylight saving',
+  );
+});
+
 test('the integration suite runs only when the label asks for it', () => {
   const job = labelled();
   const condition = String(job.if);

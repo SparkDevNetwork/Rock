@@ -157,6 +157,13 @@ const gates = [
     cwd: clientProject,
     shell: true,
   },
+  {
+    name: 'client tests in a time zone with daylight saving',
+    cmd: 'npx',
+    args: ['jest', '--config', 'tests/Communication/Chat/jest.zone.config.js'],
+    cwd: clientProject,
+    shell: true,
+  },
 ];
 
 let total = 0;

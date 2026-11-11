@@ -17,6 +17,7 @@
 
 import { readFileSync } from "fs";
 import { resolve } from "path";
+import { defaultLimits } from "../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 
 /*
     9/16/26 - CLAUDE
@@ -88,5 +89,16 @@ describe("chat wire contract", () => {
             expect(contract.error_codes.codes).toContain(code);
         }
         expect(contract.limits).toMatchObject({ typing_interval_ms: 5000, typing_expiry_ms: 7500 });
+    });
+
+    // The client's fallback for a limit a platform leaves out is the contract's own value, read
+    // from the contract, so the two cannot be moved apart with every pin still green.
+    it("holds the client's fallback for every limit the client defaults and the contract names at the contract's value", () => {
+        const contract = readContract();
+        const shared = Object.keys(defaultLimits).filter(key => key in contract.limits);
+
+        expect(shared).toEqual(expect.arrayContaining(["typing_interval_ms", "typing_expiry_ms"]));
+        expect(Object.fromEntries(shared.map(key => [key, defaultLimits[key as keyof typeof defaultLimits]])))
+            .toEqual(Object.fromEntries(shared.map(key => [key, contract.limits[key]])));
     });
 });

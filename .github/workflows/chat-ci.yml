@@ -105,6 +105,13 @@ jobs:
         run: npx jest tests/Communication/Chat tests/Administration/sparkConnectedServices
         working-directory: ./Rock.JavaScript.Obsidian.Blocks
 
+      # A day's start is the viewer's calendar, which a daylight saving change makes 23 or 25 hours
+      # long, and jest cannot change the zone inside a run, so those cells run on their own in a
+      # zone that has one; the runner's own zone is UTC, which has none.
+      - name: Client tests in a time zone with daylight saving
+        run: npx jest --config tests/Communication/Chat/jest.zone.config.js
+        working-directory: ./Rock.JavaScript.Obsidian.Blocks
+
   integration:
     name: integration tests, on the run-integration label
     runs-on: windows-2022
