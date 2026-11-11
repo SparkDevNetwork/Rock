@@ -85,8 +85,12 @@ export type FeedTail = {
 /** How a view hands its tail to the parts it draws. */
 export const feedTailKey: InjectionKey<FeedTail> = Symbol("chat-feed-tail");
 
-/** A part of the tail, where it stood on screen, and the key of the row it is drawn in, if any. */
-type Part = { id: string, element: HTMLElement, box: DOMRect, row?: string };
+/**
+ * A part of the tail, where it stood on screen, the key of the row it is drawn in, if any, and
+ * where the box it hangs in stood then: its line for a face, its row for a name line, its time
+ * line for Edited.
+ */
+type Part = { id: string, element: HTMLElement, box: DOMRect, row?: string, holder?: DOMRect };
 
 /** Where the tail stood on screen before a change. */
 type Before = {
@@ -281,7 +285,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
                 const id = idOf(element);
                 if (id && !element.hidden && !going.has(element) && !isInGoing(element)) {
-                    const part = { id, element, box: element.getBoundingClientRect(), row: rowKeyOf(element) };
+                    const part = partOf(id, element);
                     parts.set(id, part);
                     elements.set(element, part);
                 }
@@ -345,6 +349,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     /** Places a part out of the flow in its container, laid out at `holder`: at a box on screen less what its container plays from. */
     function placeAt(element: HTMLElement, holder: DOMRect, screen: { left: number, top: number }, from: Offset): void {
         Object.assign(element.style, { top: `${screen.top - holder.top - from.y}px`, left: `${screen.left - holder.left - from.x}px` });
+    }
+
+    /** A part where it stands on screen; in a row, with the box it hangs in, which carries it when its row steps. */
+    function partOf(id: string, element: HTMLElement): Part {
+        const row = rowKeyOf(element);
+        return { id, element, box: element.getBoundingClientRect(), row, holder: row === undefined ? undefined : element.parentElement?.getBoundingClientRect() };
     }
 
     /** The laid-out box of the container a part out of the flow is placed in. */
@@ -509,12 +519,6 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             }
         }
 
-        // where each row read standing now lays out, so a part can ride its row
-        const rowsNow = new Map(was.rows.flatMap(stood => {
-            const now = drawnRows.get(stood.key);
-            return now ? [[stood.key, now.getBoundingClientRect()] as const] : [];
-        }));
-
         // where each part going is placed from, and her box, laid out before anything plays
         const holders = new Map(lifted.map(part => [part.element, holderBox(part.element)]));
         const handoffRow = handoff?.row;
@@ -562,7 +566,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
                 const id = idOf(element);
                 if (id && !isLifted(element) && !going.has(element)) {
-                    now.push({ id, element, box: element.getBoundingClientRect(), row: rowKeyOf(element) });
+                    now.push(partOf(id, element));
                 }
             }
         }
@@ -635,13 +639,12 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 continue;
             }
             const start = startOf(part.element);
-            // A part rides its row: a row that steps rather than riding the stack takes its parts
-            // with it, so a part drawn in the same row moves only by how its place in the row changed.
-            const stood = part.row !== undefined && part.row === from.row ? was.rows.find(each => each.key === part.row) : undefined;
-            const rowAt = stood ? rowsNow.get(stood.key) : undefined;
-            // A face hangs from its foot, and a row's face column is as tall as its line, so a face
-            // moves from foot to foot, its row's foot carrying it; anything else moves from its top.
-            const step = stood && rowAt ? (kind === "face" ? stood.bottom - rowAt.bottom : stood.top - rowAt.top) - offset : 0;
+            // A part rides the box it hangs in: a row that steps rather than riding the stack takes
+            // its parts with it, each carried by its own box, not by the row's edge, since a reaction
+            // under a face's line moves the row's foot and not the face's. A face hangs from its
+            // line's foot, at its bubble's, so it moves from foot to foot; anything else from its top.
+            const holder = part.row !== undefined && part.row === from.row && part.holder && from.holder ? { was: from.holder, now: part.holder } : undefined;
+            const step = holder ? (kind === "face" ? holder.was.bottom - holder.now.bottom : holder.was.top - holder.now.top) - offset : 0;
             const y = (kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y)) - step;
             const by = { x: from.box.left - (part.box.left + start.x), y };
             if (kind === "edited" && Math.abs(by.x) >= .5) {
