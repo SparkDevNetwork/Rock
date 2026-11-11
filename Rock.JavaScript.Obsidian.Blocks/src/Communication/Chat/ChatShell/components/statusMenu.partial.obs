@@ -71,7 +71,7 @@
     import Avatar from "../ui/avatar.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { untilWords } from "../ui/face.partial";
-    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
     import { busyEndOf, StatusChoice } from "../composables/usePrefs.partial";
 
     // #region Types
@@ -135,8 +135,14 @@
 
     const statusOf = useFaceStatus(() => props.trigger === "face" && props.personAliasGuid ? [props.personAliasGuid] : [], 0);
 
-    /** The viewer's clock as the menu last opened, which its ends are named from. */
-    const openedAt = ref(new Date());
+    /** The server's time, which her Busy's end and its lengths are read by, as her face reads them. */
+    const serverNow = useStatusClock();
+
+    /**
+     * When the menu last opened, which its ends are named from: the server's time, and the viewer's
+     * own clock for the calendar, as every status word names its day.
+     */
+    const openedAt = ref({ server: serverNow(), day: new Date() });
 
     const oneHour = 3_600_000;
 
@@ -166,8 +172,8 @@
      * since an end cannot be read back as the length that set it.
      */
     const items = computed((): MenuItem[] => {
-        const now = openedAt.value;
-        const end = busyEndOf(props.choice, now.getTime());
+        const now = openedAt.value.day;
+        const end = busyEndOf(props.choice, openedAt.value.server);
         const morning = nextMorning(now);
         const isAuto = !props.choice.appear_offline && end === null;
         const ends: MenuItem[] = [];
@@ -200,7 +206,7 @@
 
     function onOpenChange(isOpen: boolean): void {
         if (isOpen) {
-            openedAt.value = new Date();
+            openedAt.value = { server: serverNow(), day: new Date() };
         }
     }
 
@@ -222,7 +228,7 @@
 
             case "busy-1h":
             case "busy-2h":
-                emit("choose", { busy_until: new Date(now.getTime() + (key === "busy-1h" ? 1 : 2) * oneHour).toISOString(), appear_offline: false });
+                emit("choose", { busy_until: new Date(serverNow() + (key === "busy-1h" ? 1 : 2) * oneHour).toISOString(), appear_offline: false });
                 break;
 
             case "busy-off":

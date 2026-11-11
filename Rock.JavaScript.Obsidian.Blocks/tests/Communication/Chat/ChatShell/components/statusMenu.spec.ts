@@ -43,7 +43,7 @@ const reason = "Cedar Hill's chat is read only until 9.";
 
 let wrapper: VueWrapper | null = null;
 
-function mountMenu(props: Record<string, unknown> = {}, statusOf: (guid: string) => FaceStatus | null = () => null): VueWrapper {
+function mountMenu(props: Record<string, unknown> = {}, statusOf: (guid: string) => FaceStatus | null = () => null, now: () => number = Date.now): VueWrapper {
     wrapper = mount(StatusMenu, {
         props: {
             choice: automatic,
@@ -54,7 +54,7 @@ function mountMenu(props: Record<string, unknown> = {}, statusOf: (guid: string)
         },
         global: {
             provide: {
-                [presenceStatusKey as symbol]: { statusOf, register: () => () => undefined }
+                [presenceStatusKey as symbol]: { statusOf, register: () => () => undefined, now }
             }
         },
         attachTo: document.body
@@ -312,6 +312,22 @@ describe("a choice", () => {
         await settle();
 
         expect(chosen(w)).toEqual({ busy_until: new Date(2026, 10, 10, 22, 10).toISOString(), appear_offline: false });
+    });
+
+    // Her Busy's end is an instant the server holds her to, and her face is drawn by the server's
+    // clock, so the menu reads that clock too: a page clock ten minutes slow names no end the
+    // server has passed, and a length is counted from the server's now, never refused as passed.
+    test("reads her Busy and counts its lengths by the server's clock the status store reads, not the page's", async () => {
+        const serverAhead = 600_000;
+        const w = mountMenu({ choice: { busy_until: new Date(evening.getTime() + 300_000).toISOString(), appear_offline: false } }, () => null, () => Date.now() + serverAhead);
+        await openMenu(w);
+
+        expect(checked()).toEqual(["auto"]);
+        expect(keys()).not.toContain("busy-current");
+
+        itemOf("busy-1h").click();
+        await settle();
+        expect(chosen(w)).toEqual({ busy_until: new Date(evening.getTime() + serverAhead + 3_600_000).toISOString(), appear_offline: false });
     });
 
     test("of Busy while Busy takes the new end", async () => {

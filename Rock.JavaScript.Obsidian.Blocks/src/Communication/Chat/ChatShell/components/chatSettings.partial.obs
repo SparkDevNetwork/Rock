@@ -259,7 +259,7 @@
     import { busyEndOf, MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
     import { startOfDay } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
-    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
     import { ChatPerson } from "../types.partial";
     import { ownStatusWords, personFace, personName as nameOf } from "../ui/face.partial";
     import { PushState } from "../composables/usePush.partial";
@@ -399,6 +399,12 @@
 
     const statusOf = useFaceStatus(() => props.personAliasGuid ? [props.personAliasGuid] : [], 0);
 
+    /** The server's time, which her Busy's end is read by, as her face reads it. */
+    const serverNow = useStatusClock();
+
+    /** How far the server's clock is ahead of the page's, which the line's clock and timer are kept by. */
+    const clockOffset = (): number => serverNow() - Date.now();
+
     // #endregion Values
 
     // #region Computed Values
@@ -443,7 +449,7 @@
      */
     const statusLine = computed((): string => {
         const now = new Date(statusNow.value);
-        const end = busyEndOf(props.statusChoice, now.getTime());
+        const end = busyEndOf(props.statusChoice, statusNow.value + clockOffset());
         if (props.statusChoice.appear_offline) {
             return ownStatusWords("hidden", null, now);
         }
@@ -459,14 +465,15 @@
      * "8:00 AM" from then. Null while nothing ahead changes them.
      */
     const statusChangesAt = computed((): number | null => {
-        const end = busyEndOf(props.statusChoice, statusNow.value);
+        const end = busyEndOf(props.statusChoice, statusNow.value + clockOffset());
         if (end === null || end === Infinity) {
             return null;
         }
         const today = startOfDay(new Date(statusNow.value));
         // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
         const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
-        return Math.min(end, midnight);
+        // the end on the page's clock, which the line's timer waits by
+        return Math.min(end - clockOffset(), midnight);
     });
 
     /** The rows of blocked people, once the list is read and holds anyone. */

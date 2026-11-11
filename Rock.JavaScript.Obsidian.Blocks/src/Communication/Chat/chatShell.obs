@@ -887,7 +887,8 @@
     // shell, so no face outlives the store it registered with. Read only: presence alone writes it.
     provide(presenceStatusKey, {
         statusOf: guid => shell.value.presence.status.statusOf(guid),
-        register: (people, rank) => shell.value.presence.status.register(people, rank)
+        register: (people, rank) => shell.value.presence.status.register(people, rank),
+        now: () => shell.value.presence.status.now()
     });
 
     // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.

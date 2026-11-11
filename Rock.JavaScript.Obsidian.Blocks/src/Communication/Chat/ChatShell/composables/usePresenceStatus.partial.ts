@@ -145,6 +145,9 @@ export type PresenceStatus = {
     /** A token was minted at a server time, in seconds, which sets the server's clock as this page reads it. */
     clockFrom: (issuedAtSeconds: number) => void;
 
+    /** The server's time now, in milliseconds, as this page reads it: the clock every status is drawn by. */
+    now: () => number;
+
     /** What a face draws for a person, or null for nothing; reading it draws again when that person's revision moves. */
     statusOf: (guid: string) => FaceStatus | null;
 
@@ -157,8 +160,8 @@ export type PresenceStatus = {
     stop: () => void;
 };
 
-/** What a face reads of the status store: what to draw, and who it draws so they are asked about. */
-export type FaceStatusSource = Pick<PresenceStatus, "statusOf" | "register">;
+/** What a face reads of the status store: what to draw, who it draws so they are asked about, and the clock it draws by. */
+export type FaceStatusSource = Pick<PresenceStatus, "statusOf" | "register" | "now">;
 
 /** The shell's status store, provided to every face that draws one, read only. */
 export const presenceStatusKey: InjectionKey<FaceStatusSource> = Symbol("chat-presence-status");
@@ -880,6 +883,8 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             redrawAll();
         },
 
+        now: serverNow,
+
         statusOf: guid => {
             const key = guid.toLowerCase();
             // read first and always, so a face reading it draws again whenever it moves
@@ -1025,6 +1030,17 @@ export function useFaceStatus(people: () => readonly string[], rank: WatchRank):
     });
 
     return status.statusOf;
+}
+
+/**
+ * The clock her own status is read by: the store's, the server's as this page reads it, so the
+ * status menu and Chat settings' line read her Busy at the moment her face does, and a length
+ * counted from it is never one the server has already passed. The page's clock where no store is
+ * provided, as for a part drawn alone.
+ */
+export function useStatusClock(): () => number {
+    const status = inject(presenceStatusKey, null);
+    return status ? () => status.now() : () => Date.now();
 }
 
 // #endregion Status

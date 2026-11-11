@@ -460,6 +460,33 @@ describe("online status", () => {
         expect(badgesIn(identity(w)).map(badge => badge.state)).toEqual(["hidden"]);
     });
 
+    // The line reads her Busy by the store's clock, the server's, as her face does: with the page's
+    // clock ten minutes slow an end five minutes ahead of it has passed, and with it ten minutes
+    // fast the line moves on at the server's end, ten minutes after the page's.
+    test("the Status line reads her Busy by the server's clock the store reads, as her face does", async () => {
+        jest.useFakeTimers({ now: new Date(2026, 10, 10, 14, 0) });
+        try {
+            const end = new Date(2026, 10, 10, 14, 5).toISOString();
+            status.store.clockFrom(Date.now() / 1000 + 600);
+            const ahead = mountSettings({ personAliasGuid: viewer, statusChoice: { busy_until: end, appear_offline: false } });
+            expect(plain(ahead.get("[data-testid='status-row'] .chat-sg-sub").text())).toBe("Automatic");
+            ahead.unmount();
+
+            status.store.clockFrom(Date.now() / 1000 - 600);
+            const behind = mountSettings({ personAliasGuid: viewer, statusChoice: { busy_until: end, appear_offline: false } });
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toMatch(/^Busy, notifications paused until 2:05\sPM$/u);
+            jest.advanceTimersByTime(5 * 60_000 + 1000);
+            await nextTick();
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toMatch(/^Busy/u);
+            jest.advanceTimersByTime(10 * 60_000);
+            await nextTick();
+            expect(plain(behind.get("[data-testid='status-row'] .chat-sg-sub").text())).toBe("Automatic");
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("rings its badge in the dialog's fill", () => {
         expect(setsBothRings(join(shellFolder, "components/chatSettings.partial.obs"), /^\.chat-ms-id(\[|:|$)/)).toBe(true);
     });

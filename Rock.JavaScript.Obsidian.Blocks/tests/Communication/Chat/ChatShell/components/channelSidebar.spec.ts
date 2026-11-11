@@ -1159,7 +1159,7 @@ describe("the sidebar's foot with online status", () => {
             },
             global: {
                 provide: {
-                    [presenceStatusKey as symbol]: { statusOf: (guid: string) => guid === self ? busy : null, register: () => () => undefined }
+                    [presenceStatusKey as symbol]: { statusOf: (guid: string) => guid === self ? busy : null, register: () => () => undefined, now: () => Date.now() }
                 }
             },
             attachTo: document.body

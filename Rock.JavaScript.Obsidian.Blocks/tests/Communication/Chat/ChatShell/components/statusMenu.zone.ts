@@ -39,7 +39,7 @@ async function openMenu(choice: StatusChoice): Promise<void> {
     wrapper?.unmount();
     wrapper = mount(StatusMenu, {
         props: { choice, trigger: "change" },
-        global: { provide: { [presenceStatusKey as symbol]: { statusOf: () => null, register: () => () => undefined } } },
+        global: { provide: { [presenceStatusKey as symbol]: { statusOf: () => null, register: () => () => undefined, now: () => Date.now() } } },
         attachTo: document.body
     });
     (wrapper.get("[data-testid='status-change']").element as HTMLElement).click();
