@@ -22,13 +22,14 @@ import { createChatShell, PlatformClientLike, ShellOptions } from "../../../../s
 import { churchTokenFromAction, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shellSession.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
-import { toRaw, watchEffect } from "vue";
+import { computed, toRaw, watch, watchEffect } from "vue";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { FakeRequest, limits as attachmentLimits, nextUpload } from "./attachmentFakes";
+import { asOf, away, busy, dmPreview, nothing, online, pgTime, readerPerson, serverNow, typingRow } from "./statusShapes";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -3472,7 +3473,7 @@ describe("settings", () => {
     test("the bootstrap's me is where the person's own switches start", async () => {
         const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
 
-        expect(h.shell.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+        expect(h.shell.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, busy_until: null, appear_offline: false });
     });
 
     test("a room's notify mode is one chat_set_prefs call with the room and the patch", async () => {
@@ -4858,7 +4859,7 @@ describe("typing", () => {
         h.shell.presence.typed(channelA, null, "H");
         await firstWait();
 
-        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10 }]);
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10, p_client: h.exchangeBodies[0]?.client_id }]);
         expect(h.typingCalls[0].headers["x-region"]).toBe("us-east-1");
     });
 
@@ -4902,8 +4903,8 @@ describe("typing", () => {
         empty.shell.presence.typed(channelA, 40, "H");
         await firstWait();
 
-        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44 }]);
-        expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40 }]);
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44, p_client: h.exchangeBodies[0]?.client_id }]);
+        expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40, p_client: empty.exchangeBodies[0]?.client_id }]);
     });
 
     // Until the thread's first page lands its replies are not held, so a signal would name the
@@ -5887,5 +5888,289 @@ describe("online status on the token exchange", () => {
 
             expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, true, false]);
         });
+    });
+});
+
+// Online status reaches the store from everything that carries it: the people of a room's facts, a
+// profile card, the people searches and the roster, the sidebar's map, a typing row and a
+// dm.preview. Each is written before what carries it is drawn, so a face never fades in once; an
+// answer that names nobody, or is refused, leaves everyone as they were, and nothing but a status
+// writes. Her own face reads her own settings, and a block clears a person at its decision time.
+describe("online status into the store", () => {
+    const ada = "a0000001-0000-4000-8000-000000000000";
+    const sam = "a0000002-0000-4000-8000-000000000000";
+    const adaPerson = { person_alias_guid: ada, nick_name: "Ada", last_name: "Member", avatar_url: null };
+    const on = { limits: { ...platformLimits, presence_idle_seconds: 600, typing_first_after_ms: 1 }, flags: { online: true, typing: true }, routes: { region: "us-east-1" } };
+    const off = { ...on, flags: { online: false, typing: true } };
+    const groupRow = { channel_id: channelA, room_kind: "group", title: "Room", is_member: true, can_post: true, last_message_id: 10, last_message_preview: "m10", is_unread: false, rev: 5 } as unknown as SidebarRow;
+    const adaRow = { channel_id: channelB, room_kind: "person", title: "Ada Member", is_member: true, can_post: true, last_message_id: 5, last_message_preview: "m5", is_unread: false, rev: 1 } as unknown as SidebarRow;
+
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: serverNow });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    /** A shell signed in with status on, room A open and both topics joined; prepare runs before the start. */
+    async function begin(prepare: (h: ReturnType<typeof build>) => void = () => undefined, settings: Record<string, unknown> = on): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.tokenPerson.value = person;
+        h.exchangeSettings.value = settings;
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        prepare(h);
+        const starting = h.shell.start();
+        await advance(0);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+        return h;
+    }
+
+    const stateOf = (h: ReturnType<typeof build>, alias: string): string | null => h.shell.presence.status.statusOf(alias)?.state ?? null;
+
+    function roomEvent(h: ReturnType<typeof build>, event: string, payload: Record<string, unknown>): void {
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event, payload });
+    }
+
+    /** The New message search answers these people. */
+    async function searched(h: ReturnType<typeof build>, people: unknown[]): Promise<void> {
+        h.listAnswers.chat_search_people = { people };
+        await h.shell.directMessages.search("a");
+        await settle();
+    }
+
+    test("a room's facts tell each listed person's status before the facts are held, and a read that leaves someone out leaves her as she was", async () => {
+        const seen: Array<string | null> = [];
+        const h = await begin(b => {
+            b.channelFacts[channelA] = memberFacts(channelA, { people: [readerPerson(ada, online(0))] });
+            watch(() => b.shell.rooms.factsOf(channelA), facts => {
+                if (facts) {
+                    seen.push(b.shell.presence.status.statusOf(ada)?.state ?? null);
+                }
+            }, { flush: "sync" });
+        });
+        expect(seen[0]).toBe("online");
+
+        h.channelFacts[channelA] = memberFacts(channelA, { people: [readerPerson(sam, away(1000))] });
+        personal(h, "membership.changed", { channel_id: channelA, id: "5e0000c1-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.channelReads.filter(id => id === channelA).length).toBeGreaterThan(1);
+        expect(stateOf(h, sam)).toBe("away");
+        expect(stateOf(h, ada)).toBe("online");
+    });
+
+    test("a card's person tells her status, and a card refused leaves it", async () => {
+        const h = await begin();
+        h.personAnswer.value = { status: 200, body: { ...readerPerson(ada, busy(null, 0)), campus_id: null, is_self: false, is_leader: false } };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+        expect(stateOf(h, ada)).toBe("busy");
+
+        h.shell.rooms.closeCard();
+        h.personAnswer.value = { status: 500, body: { message: "rpc.unavailable" } };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+
+        expect(h.personCalls.length).toBe(2);
+        expect(stateOf(h, ada)).toBe("busy");
+    });
+
+    test("the New message search tells each person's status; a person with every key but status changed tells nothing", async () => {
+        const h = await begin();
+
+        await searched(h, [readerPerson(sam, online(0))]);
+        expect(stateOf(h, sam)).toBe("online");
+        const at = h.shell.presence.status.statusOf(sam)?.revision;
+
+        await searched(h, [{ person_alias_guid: sam, nick_name: "Sam", last_name: "Other", avatar_url: "x", state: "away", until: pgTime(1000), as_of: asOf(5000) }]);
+        expect(h.shell.presence.status.statusOf(sam)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("the sidebar's map writes only the people it says something of, before its rows are held", async () => {
+        const seen: Array<string | null> = [];
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] }, status: { [ada]: online(0) } };
+            watch(() => b.shell.channels.rows.length, () => seen.push(b.shell.presence.status.statusOf(ada)?.state ?? null), { flush: "sync" });
+        });
+        expect(seen[0]).toBe("online");
+        await searched(h, [readerPerson(sam, online(-1000))]);
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] }, status: { [sam]: nothing(0), [ada.toUpperCase()]: away(1000) } };
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c2-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.counts.bootstraps).toBe(2);
+        expect(stateOf(h, sam)).toBe("online");
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("a typing row's status is written as the dots are drawn, and the signal names the page's own id as its client", async () => {
+        const h = await begin();
+        const seen: Array<string | null> = [];
+        watch(() => h.shell.presence.state.typists[channelA], () => seen.push(stateOf(h, ada)), { flush: "sync" });
+
+        roomEvent(h, "typing", typingRow(channelA, ada, busy(null, 0)));
+        expect(seen).toEqual(["busy"]);
+        expect(stateOf(h, ada)).toBe("busy");
+
+        h.shell.presence.typed(channelA, null, "hello");
+        await advance(5);
+        expect(h.typingCalls[0]?.body.p_client).toBe(h.exchangeBodies[0]?.client_id);
+    });
+
+    test("a dm.preview's status is written with the row's move, its sender read in lower case, on a page whose conversation is another", async () => {
+        const h = await begin();
+        const seen: Array<string | null> = [];
+        watch(() => h.shell.channels.rows.find(row => row.channel_id === channelB)?.last_message_id, () => seen.push(stateOf(h, ada)), { flush: "sync" });
+
+        personal(h, "dm.preview", dmPreview(channelB, ada, away(0)));
+
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(seen).toEqual(["away"]);
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("a dm.preview with every key but status changed writes nothing", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+        const at = h.shell.presence.status.statusOf(ada)?.revision;
+
+        personal(h, "dm.preview", { ...dmPreview(channelB, ada), state: "away", until: pgTime(1000), as_of: asOf(5000), message_id: 42 });
+
+        expect(h.shell.presence.status.statusOf(ada)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("a dm.preview kept for a sidebar read's replay is written once, as it arrives, and not again by the replay", async () => {
+        const h = await begin();
+        h.heldBootstraps.value = [];
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c3-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        personal(h, "dm.preview", dmPreview(channelB, ada, online(1000)));
+        // the same decision instant, written later: the page's later word on it
+        roomEvent(h, "typing", typingRow(channelA, ada, away(1000)));
+        expect(stateOf(h, ada)).toBe("away");
+
+        h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [groupRow, adaRow], me: { blocked_aliases: [] } }));
+        await advance(0);
+
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("with status off neither a typing row nor a dm.preview writes, so nothing of them draws once it is on", async () => {
+        const h = await begin(undefined, off);
+
+        roomEvent(h, "typing", typingRow(channelA, ada, online(0)));
+        personal(h, "dm.preview", dmPreview(channelB, sam, online(0)));
+        h.exchangeSettings.value = on;
+        await advance(210_000);
+
+        // her own face draws once the switch is on
+        expect(stateOf(h, person)).toBe("online");
+        expect(stateOf(h, ada)).toBeNull();
+        expect(stateOf(h, sam)).toBeNull();
+    });
+
+    test("her own face reads Busy from the sidebar's me at once", async () => {
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [], busy_until: pgTime(3_600_000), appear_offline: false } };
+        });
+
+        expect(h.shell.presence.status.statusOf(person)).toEqual(expect.objectContaining({ state: "busy", busyUntil: serverNow + 3_600_000 }));
+    });
+
+    test("a block's answer clears her from its decision time, so a status decided before it never draws after the unblock", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+
+        // the sidebar a change reads again names the set as the platform now holds it
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        h.blocksAnswer.value = { people: [adaPerson], blocked_aliases: [ada], as_of: asOf(1000) };
+        h.shell.blocks.ask(adaPerson);
+        await h.shell.blocks.confirm();
+        await advance(0);
+        expect(stateOf(h, ada)).toBeNull();
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        h.blocksAnswer.value = { people: [], blocked_aliases: [], as_of: asOf(2000) };
+        await h.shell.blocks.unblock(adaPerson, true);
+        await advance(0);
+        await searched(h, [readerPerson(ada, online(1500))]);
+        expect(stateOf(h, ada)).toBeNull();
+
+        await searched(h, [readerPerson(ada, online(2500))]);
+        expect(stateOf(h, ada)).toBe("online");
+    });
+
+    test("a face holding her redraws at the block and again at the unblock", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(5000))]);
+        const drawn = computed(() => h.shell.presence.status.statusOf(ada)?.state ?? null);
+        expect(drawn.value).toBe("online");
+
+        // the sidebar a change reads again names the set as the platform now holds it
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        h.blocksAnswer.value = { people: [adaPerson], blocked_aliases: [ada], as_of: asOf(1000) };
+        h.shell.blocks.ask(adaPerson);
+        await h.shell.blocks.confirm();
+        await advance(0);
+        expect(drawn.value).toBeNull();
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        h.blocksAnswer.value = { people: [], blocked_aliases: [], as_of: asOf(2000) };
+        await h.shell.blocks.unblock(adaPerson, true);
+        await advance(0);
+        expect(drawn.value).toBe("online");
+    });
+
+    test("the sidebar's first set redraws a face holding her, clearing her at her own decision time", async () => {
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: {} };
+        });
+        await searched(h, [readerPerson(ada, online(0))]);
+        const drawn = computed(() => h.shell.presence.status.statusOf(ada)?.state ?? null);
+        expect(drawn.value).toBe("online");
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c4-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.shell.blocks.isBlocked(ada)).toBe(true);
+        expect(drawn.value).toBeNull();
+    });
+
+    test("a copy withheld for someone the set does not name heals without clearing her status", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+        const lists = h.blockCalls.length;
+
+        roomEvent(h, "message.created", { id: 11, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: ada, message_type: "text", body: null, pieces: null, sender_nick_name: null, sender_last_name: null, created_at: "2026-11-10T15:00:00Z", blocked: true });
+        await advance(0);
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 11);
+            await settle();
+        }
+
+        expect(h.blockCalls.slice(lists).map(c => c.name)).toEqual(["chat_list_blocks"]);
+        expect(stateOf(h, ada)).toBe("online");
     });
 });

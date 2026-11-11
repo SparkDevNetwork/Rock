@@ -46,6 +46,7 @@ test("a Busy ending two days on, told just after midnight on the day daylight sa
     const status = createPresenceStatus({
         settings: () => readSettings({ flags: { online: true } }),
         personAliasGuid: me,
+        me: () => ({ busy_until: null, appear_offline: false }),
         isBlocked: () => false,
         isStopped: () => false,
         targets: { document: page, window: page },

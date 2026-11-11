@@ -20,7 +20,7 @@
 // change asks the shell to read again what is on screen. Blocking asks one sentence first;
 // unblocking asks nothing, and a refusal is told where it was asked.
 /* eslint-disable @typescript-eslint/naming-convention */
-import { blockSentence, createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
+import { blockSentence, BlocksChange, createBlocks } from "../../../../../src/Communication/Chat/ChatShell/composables/useBlocks.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatPerson, MessageCreatedEvent, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -75,7 +75,9 @@ function build(answers: CallResult[] = []): {
     changes: { count: number },
     notices: string[],
     order: string[],
-    removed: string[][]
+    removed: string[][],
+    remasks: Array<{ added: string[], asOf: number | null }>,
+    changeArgs: Array<{ removed: string[], change: BlocksChange }>
 } {
     const calls: Array<{ name: string, args: Record<string, unknown> }> = [];
     const changes = { count: 0 };
@@ -83,20 +85,27 @@ function build(answers: CallResult[] = []): {
     // what the blocks asked of the shell, in order: what is held masked again, or read again
     const order: string[] = [];
     const removed: string[][] = [];
+    // what each remask and each read again was told of the change: its decision time, or that it is the heal
+    const remasks: Array<{ added: string[], asOf: number | null }> = [];
+    const changeArgs: Array<{ removed: string[], change: BlocksChange }> = [];
     const blocks = createBlocks({
         call: async (name, args) => {
             calls.push({ name, args });
             return answers.shift() ?? { ok: true, data: { people: [], blocked_aliases: [] } };
         },
-        onChanged: (_isInSidebarAnswer, aliases) => {
+        onChanged: (_isInSidebarAnswer, aliases, change) => {
             changes.count++;
             order.push("onChanged");
             removed.push([...(aliases ?? [])]);
+            changeArgs.push({ removed: [...aliases], change });
         },
-        remask: () => order.push("remask"),
+        remask: (added, asOf) => {
+            order.push("remask");
+            remasks.push({ added: [...added], asOf });
+        },
         notify: notice => notices.push(notice.text)
     });
-    return { blocks, calls, changes, notices, order, removed };
+    return { blocks, calls, changes, notices, order, removed, remasks, changeArgs };
 }
 
 const refusal: CallResult = { ok: false, status: 400, error: { code: "rpc.block_limit", severity: "failed", text: "You've blocked as many people as chat allows. Unblock someone to block another." }, retryAfterSeconds: null };
@@ -445,6 +454,45 @@ describe("a copy withheld for someone the set does not name", () => {
         expect(unnamed.calls.map(c => c.name)).toEqual(["chat_list_blocks"]);
         expect(unnamed.removed).toEqual([[sam]]);
         expect(named.calls).toEqual([]);
+    });
+});
+
+describe("when a change of the set was decided", () => {
+    test("a block's and an unblock's answer pass their decision time to what masks and what is read again; the sidebar's set, which carries none, passes none", async () => {
+        const { blocks, remasks, changeArgs } = build([
+            { ok: true, data: { people: [samPerson], blocked_aliases: [sam], as_of: 1_700_000_000_000_100 } },
+            { ok: true, data: { people: [], blocked_aliases: [], as_of: 1_700_000_000_000_200 } }
+        ]);
+        blocks.setAliases([ada]);
+        blocks.ask(samPerson);
+        await blocks.confirm();
+        await blocks.unblock(samPerson, true);
+        blocks.setAliases([]);
+
+        expect(remasks).toEqual([{ added: [ada], asOf: null }, { added: [sam], asOf: 1_700_000_000_000_100 }]);
+        expect(changeArgs).toEqual([
+            { removed: [ada], change: { asOf: 1_700_000_000_000_100 } },
+            { removed: [sam], change: { asOf: 1_700_000_000_000_200 } }
+        ]);
+    });
+
+    test("a list read whose decision time is not a whole number passes none", async () => {
+        const { blocks, remasks } = build([{ ok: true, data: { people: [], blocked_aliases: [sam], as_of: "1700000000000100" } }]);
+        blocks.setAliases([]);
+
+        await blocks.changed();
+
+        expect(remasks).toEqual([{ added: [sam], asOf: null }]);
+    });
+
+    test("the heal says it is one, since it changes no block", async () => {
+        const { blocks, changeArgs } = build([{ ok: true, data: { people: [], blocked_aliases: [], as_of: 1_700_000_000_000_100 } }]);
+        blocks.setAliases([]);
+
+        blocks.mask({ id: 9, person_alias_guid: sam, message_type: "text", body: null, created_at: "t", blocked: true } as TimelineMessage);
+        await settle();
+
+        expect(changeArgs).toEqual([{ removed: [sam], change: { heal: true } }]);
     });
 });
 

@@ -43,6 +43,7 @@ import { ChatError, ChatPerson, MessageCreatedEvent, SidebarRow, TypingEvent, Ty
 import { personName } from "../ui/face.partial";
 import { quoteKey } from "./useMessageActions.partial";
 import { createPresenceStatus, PresenceStatus, PresenceStatusDependencies } from "./usePresenceStatus.partial";
+import type { Prefs } from "./usePrefs.partial";
 import type { ChatSettings } from "./useSession.partial";
 
 /** What typing reaches outside itself. */
@@ -95,6 +96,9 @@ export type PresenceDependencies = {
 
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
     isStopped: () => boolean;
+
+    /** Her own settings, read for her Busy and Appear offline. */
+    prefs: { state: { me: Pick<Prefs["state"]["me"], "busy_until" | "appear_offline"> } };
 } & Pick<PresenceStatusDependencies, "targets" | "leave" | "session">;
 
 /** Typing, as the shell holds it. */
@@ -249,7 +253,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
     const state = reactive({ typists: {} as Record<string, string[]> });
 
-    const status = createPresenceStatus(dependencies);
+    const status = createPresenceStatus({ ...dependencies, me: () => dependencies.prefs.state.me });
 
     // #region Send
 
@@ -270,6 +274,10 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         const row = dependencies.rowOf(channelId);
         // a channel never carries typing: only a direct message or a group does
         if (row?.room_kind !== "person" && row?.room_kind !== "group") {
+            return false;
+        }
+        // Appear offline hides her typing too, whether or not status is on: the platform drops it anyway
+        if (dependencies.prefs.state.me.appear_offline) {
             return false;
         }
         if (!settings().flags.typing || (offToken !== null && offToken === dependencies.currentToken())) {
@@ -390,6 +398,8 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         const region = settings().routes.region;
         // the token the call goes with, so a refresh while it is out is never what gets silenced
         const token = dependencies.currentToken();
+        // the page whose row her typing marks active; a page with none sends no key, since the route refuses a null
+        const client = status.clientId();
 
         // a stop is one call a turn, so it never waits behind a start
         if (!isStop) {
@@ -399,7 +409,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         try {
             result = await dependencies.callFunction(
                 "chat-typing",
-                { p_channel_id: channelId, p_parent_id: rootId, ...(after !== null ? { p_after: after } : {}), ...(isStop ? { p_stopped: true } : {}) },
+                { p_channel_id: channelId, p_parent_id: rootId, ...(after !== null ? { p_after: after } : {}), ...(isStop ? { p_stopped: true } : {}), ...(client !== null ? { p_client: client } : {}) },
                 region ? { headers: { "x-region": region } } : undefined
             );
         }
@@ -600,7 +610,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
     }
 
     function heard(event: string, payload: unknown, topicChannelId?: string): void {
-        if (isStopped() || event !== "typing" || !settings().flags.typing) {
+        if (isStopped() || event !== "typing") {
             return;
         }
 
@@ -609,6 +619,16 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
         const alias = typeof typing?.person_alias_guid === "string" ? typing.person_alias_guid.toLowerCase() : null;
         // a conversation topic carries its own room only, and the person's own echo is not someone else typing
         if (typeof channelId !== "string" || !alias || (topicChannelId !== undefined && channelId !== topicChannelId) || !isOther(alias)) {
+            return;
+        }
+
+        // Her status rides the row whatever becomes of its dots: a stop, a signal older than her
+        // message, or typing switched off still say where she is, decided when the row was. It is
+        // written before the dots are drawn, so both show in one pass.
+        if (typing !== null && "status" in typing) {
+            status.carried(alias, typing.status);
+        }
+        if (!settings().flags.typing) {
             return;
         }
 

@@ -52,6 +52,12 @@ export type MeSettings = {
     show_profile_details: boolean;
     is_open_dm_allowed: boolean;
     reaction_push: boolean;
+
+    /** When her Busy ends, a server time; "infinity" for a Busy with no end; null when she is not Busy. */
+    busy_until: string | null;
+
+    /** Whether she chose Appear offline, on any of her aliases. */
+    appear_offline: boolean;
 };
 
 /** A room's notify mode, as the platform names them. */
@@ -192,7 +198,7 @@ export const meTitles: Record<MeKey, string> = {
 };
 
 /** The field of me each switch writes. */
-const meFields: Record<MeKey, keyof MeSettings> = {
+const meFields: Record<MeKey, "show_profile_details" | "is_open_dm_allowed" | "reaction_push"> = {
     profile_details: "show_profile_details",
     open_dm: "is_open_dm_allowed",
     reaction_push: "reaction_push"
@@ -210,7 +216,7 @@ const leavesListSentence = "It leaves your list when you open another conversati
  */
 export function createPrefs(dependencies: PrefsDependencies): Prefs {
     const state = reactive<PrefsState>({
-        me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true },
+        me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true, busy_until: null, appear_offline: false },
         meNotes: {},
         rooms: {},
         announcement: null
@@ -288,7 +294,10 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             const read: MeSettings = {
                 show_profile_details: me.show_profile_details === true,
                 is_open_dm_allowed: me.is_open_dm_allowed === true,
-                reaction_push: me.reaction_push !== false
+                reaction_push: me.reaction_push !== false,
+                // a Busy with no end arrives as infinity, which her face reads as one
+                busy_until: typeof me.busy_until === "string" ? me.busy_until : null,
+                appear_offline: me.appear_offline === true
             };
 
             // A switch whose save is out keeps what the person chose; its own answer settles it.
@@ -297,6 +306,9 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                     state.me[meFields[key]] = read[meFields[key]];
                 }
             }
+            // nothing on this page saves them, so every load states them as the platform holds them
+            state.me.busy_until = read.busy_until;
+            state.me.appear_offline = read.appear_offline;
         },
 
         setRooms: (rows: SidebarRow[]): void => {

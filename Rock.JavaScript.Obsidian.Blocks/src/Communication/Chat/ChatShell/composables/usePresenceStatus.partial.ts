@@ -37,8 +37,9 @@ import { newGuid } from "@Obsidian/Utility/guid";
 import { inject, InjectionKey, onMounted, onUnmounted, shallowReactive, watch } from "vue";
 import { startOfDay } from "../feedLayout.partial";
 import { FaceStatus, PersonStatus, RosterMember } from "../types.partial";
-import { statusWords } from "../ui/face.partial";
+import { ownStatusWords, statusWords } from "../ui/face.partial";
 import type { PageEventTargets } from "./useMarkRead.partial";
+import type { MeSettings } from "./usePrefs.partial";
 import type { ChatSession, ChatSettings, RefreshReason } from "./useSession.partial";
 
 /** What status reaches outside itself. */
@@ -48,6 +49,9 @@ export type PresenceStatusDependencies = {
 
     /** The person's primary alias, whose own carried copy is never written. */
     personAliasGuid: string;
+
+    /** Her own Busy and Appear offline as her settings hold them, which her own face draws before any answer. */
+    me: () => Pick<MeSettings, "busy_until" | "appear_offline">;
 
     isBlocked: (personAliasGuid: string) => boolean;
 
@@ -97,8 +101,8 @@ export type PresenceStatus = {
      */
     exchanged: (asked: readonly string[], outcome: { presence?: unknown } | null) => void;
 
-    /** The page's client id, which every body names: one a page, and a new one once a goodbye has spent it. */
-    clientId: () => string;
+    /** The page's client id, which every body names: one a page, and a new one once a goodbye has spent it; none once stopped. */
+    clientId: () => string | null;
 
     /**
      * The body an exchange asked for a reason carries, built as its request goes so it reports her
@@ -167,6 +171,9 @@ const inputWorkGapMs = 1000;
 /** The least time between two early asks for one cause, so a page in steady use costs at most one a minute. */
 const earlyAskGapMs = 60_000;
 
+/** How long a client's row outlives its token, the platform's slack for a page whose timers a browser holds back. */
+const rowSlackSeconds = 270;
+
 /** A person's newest decision: what it says of her, null for nothing, and when it was decided. */
 type StatusEntry = { status: PersonStatus | null, asOf: number };
 
@@ -179,6 +186,18 @@ const states: ReadonlyArray<string> = ["online", "away", "busy"];
 function busyEnd(status: PersonStatus): number | null {
     const end = typeof status.busy_until === "string" ? Date.parse(status.busy_until) : NaN;
     return Number.isFinite(end) ? end : null;
+}
+
+/**
+ * Her own Busy as her settings hold it, at a server time: its end in server milliseconds, null
+ * for no end (infinity), or undefined when she is not Busy, its end passed included.
+ */
+function ownBusyEnd(busyUntil: string | null, serverNow: number): number | null | undefined {
+    if (busyUntil === "infinity") {
+        return null;
+    }
+    const end = busyUntil === null ? NaN : Date.parse(busyUntil);
+    return end > serverNow ? end : undefined;
 }
 
 /** What a decision draws at a server time: nothing past her row's end, and Away once a Busy has ended under a live row. */
@@ -241,7 +260,7 @@ function readStatus(raw: unknown): StatusEntry | null {
  * @returns The store.
  */
 export function createPresenceStatus(dependencies: PresenceStatusDependencies): PresenceStatus {
-    const { settings, isBlocked, isStopped, targets, leave, session } = dependencies;
+    const { settings, isBlocked, isStopped, targets, leave, session, me } = dependencies;
     const self = dependencies.personAliasGuid.toLowerCase();
 
     /** Each person's newest decision, by lower-case primary alias; kept when it says nothing, for its time. */
@@ -265,9 +284,17 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
     const isOn = (): boolean => settings().flags.online === true;
     const serverNow = (): number => Date.now() + offsetMs;
+    const idleLineMs = (): number => settings().limits.presence_idle_seconds * 1000;
+
+    /** When she last did something while the page was visible, its load counting, and when an input last did more than note it. */
+    let inputAt = Date.now();
+    let inputWorkedAt = -Infinity;
 
     /** What a person draws now, words and all, or null for nothing: what a face reads, and what a change is measured against. */
     function drawnNow(key: string): Omit<FaceStatus, "revision"> | null {
+        if (key === self) {
+            return ownDrawnNow();
+        }
         if (!isOn() || isBlocked(key)) {
             return null;
         }
@@ -277,6 +304,52 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         }
         const words = statusWords(drawn.state, drawn.busyUntil !== null ? new Date(drawn.busyUntil) : null, new Date());
         return { state: drawn.state, ...words, busyUntil: drawn.busyUntil };
+    }
+
+    /**
+     * Her own face. What she chose comes first, from her settings, so it shows the moment she
+     * chooses it: Appear offline, then Busy. Then her input, which this page sees before any
+     * answer could say it: Online while it is inside the idle line. Then the platform's answer for
+     * her, her automatic state where it says Busy and her settings say it has ended, and nothing
+     * once it says nothing; and Online before it has said anything, since she has the page open.
+     */
+    function ownDrawnNow(): Omit<FaceStatus, "revision"> | null {
+        if (!isOn()) {
+            return null;
+        }
+        const mine = me();
+        if (mine.appear_offline) {
+            return own("hidden", null);
+        }
+        const busyUntil = ownBusyEnd(mine.busy_until, serverNow());
+        if (busyUntil !== undefined) {
+            return own("busy", busyUntil);
+        }
+        if (isInputFresh()) {
+            return own("online", null);
+        }
+        const entry = entries.get(self);
+        if (!entry) {
+            return own("online", null);
+        }
+        const drawn = drawnAt(entry, serverNow());
+        if (!drawn) {
+            return null;
+        }
+        // Busy by an answer decided before her own settings ended it: what she is underneath
+        return own(entry.status?.state === "busy" ? entry.status.auto ?? "away" : drawn.state, null);
+    }
+
+    /** Her own face in her own words, which say what a Busy does to her. */
+    function own(state: FaceStatus["state"], busyUntil: number | null): Omit<FaceStatus, "revision"> {
+        const tip = ownStatusWords(state, busyUntil !== null ? new Date(busyUntil) : null, new Date());
+        // the label continues her name, as others' does
+        return { state, label: `, ${tip.charAt(0).toLowerCase()}${tip.slice(1)}`, tip, busyUntil };
+    }
+
+    /** Whether her newest input on this page is inside the idle line, past which the platform counts her Away. */
+    function isInputFresh(): boolean {
+        return idleLineMs() > 0 && Date.now() - inputAt < idleLineMs();
     }
 
     /**
@@ -304,9 +377,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         revisions.set(key, ++revision);
     }
 
-    /** Redraws everyone held or drawn, after the clock moved under them, and sets the timer again. */
+    /** Redraws everyone held or drawn, her own face always, after the clock moved under them, and sets the timer again. */
     function redrawAll(): void {
-        for (const key of new Set([...entries.keys(), ...shown.keys()])) {
+        for (const key of new Set([self, ...entries.keys(), ...shown.keys()])) {
             redraw(key);
         }
         arm();
@@ -315,7 +388,15 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     /**
      * Sets the one timer for the soonest moment what is drawn can change with no write: a row's
      * end, a Busy's end, or the viewer's next midnight while a Busy drawn ends on a later day, since
-     * its words count days from the viewer's today.
+     * its words count days from the viewer's today; and for her own face, her Busy's end and her
+     * input passing the idle line.
+     *
+     * It walks every entry, so it also lets go of the people who can draw nothing again from what
+     * is held: the roster, the searches and the readers write whoever they show, and a page left
+     * open would otherwise walk them all on every write. An entry may go once it draws nothing and
+     * the server's clock is past its decision time plus the longest a row lasts, since any older
+     * decision's row ended before then and could not draw if it arrived late. Her own is kept: it
+     * says what her face draws once her input is old.
      */
     function arm(): void {
         if (deadline !== null) {
@@ -329,8 +410,14 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
         const now = serverNow();
         const today = startOfDay(new Date());
+        const longestRowMs = (session.tokenLifeSeconds() + rowSlackSeconds) * 1000;
         let soonest = Infinity;
-        for (const entry of entries.values()) {
+        for (const [key, entry] of entries) {
+            // no token yet is no row life to measure by, so nothing is let go
+            if (key !== self && session.tokenLifeSeconds() > 0 && entry.asOf / 1000 + longestRowMs < now && !shown.has(key) && !drawnAt(entry, now)) {
+                entries.delete(key);
+                continue;
+            }
             const status = entry.status;
             if (!status) {
                 continue;
@@ -346,6 +433,16 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
                 const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
                 soonest = Math.min(soonest, midnight + offsetMs);
+            }
+        }
+        const mine = me();
+        if (isOn() && !mine.appear_offline) {
+            const busyUntil = ownBusyEnd(mine.busy_until, now);
+            if (busyUntil !== undefined) {
+                soonest = Math.min(soonest, busyUntil ?? Infinity);
+            }
+            else if (isInputFresh()) {
+                soonest = Math.min(soonest, inputAt + idleLineMs() + offsetMs);
             }
         }
         if (soonest !== Infinity) {
@@ -405,11 +502,20 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         return !isStopped() && isOn();
     }
 
-    // Status switched off empties the store, so nothing held comes back if it is switched on again.
+    // Status switched off empties the store, so nothing held comes back if it is switched on again;
+    // either way her own face, which draws before any answer, is drawn again.
     const stopWatchingSwitch = watch(isOn, on => {
         if (!on) {
             entries.clear();
-            redrawAll();
+        }
+        redrawAll();
+    }, { flush: "sync" });
+
+    // Her own Busy or Appear offline changed in her settings: her face draws it at once.
+    const stopWatchingMe = watch(() => [me().busy_until, me().appear_offline], () => {
+        if (!isStopped()) {
+            redraw(self);
+            arm();
         }
     }, { flush: "sync" });
 
@@ -418,10 +524,6 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     /** The page's client id, null once a goodbye has spent it, and the id a body last carried, the only one a goodbye names. */
     let pageId: string | null = null;
     let carriedId: string | null = null;
-
-    /** When she last did something while the page was visible, its load counting, and when an input last did more than note it. */
-    let inputAt = Date.now();
-    let inputWorkedAt = -Infinity;
 
     /** The body out, so its answer knows the reason it went for, the input it reported and whether it asked about people. */
     let out: { reason: RefreshReason, inputAt: number, isSent: boolean, isWatched: boolean } | null = null;
@@ -446,8 +548,6 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     let isAskHeld = false;
     let earlyAskedAt = -Infinity;
     let inputAskedAt = -Infinity;
-
-    const idleLineMs = (): number => settings().limits.presence_idle_seconds * 1000;
 
     /** Whether a body goes: before any answer, which the start's first try is, and while the latest answer says status is on. */
     const isBodySent = (): boolean => !hasLanded || isOn();
@@ -527,9 +627,14 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         inputWorkedAt = at;
 
         // A timer due before now has not fired: the machine slept with the page visible, which
-        // fires none of the page's own events.
+        // fires none of the page's own events. Otherwise only her own face can have moved, back
+        // to Online from past the idle line.
         if (deadlineAt !== null && at >= deadlineAt) {
             rearm();
+        }
+        else if (shownAs(self) !== (shown.get(self) ?? "")) {
+            redraw(self);
+            arm();
         }
         trigger(() => isInputDue(false), true);
     }
@@ -689,7 +794,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
 
         watched: watchedNow,
 
-        clientId: ownId,
+        clientId: () => isStopped() ? null : ownId(),
 
         exchangeBody: reason => {
             if (isStopped()) {
@@ -759,6 +864,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 deadlineAt = null;
             }
             stopWatchingSwitch();
+            stopWatchingMe();
             registrations.clear();
             isAskHeld = false;
             for (const type of inputEvents) {

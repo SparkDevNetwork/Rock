@@ -696,10 +696,19 @@ export function createChatShell(options: ShellOptions): ChatShell {
         mask: message => blocks.mask(message)
     });
 
-    /** One room's facts, read when it opens and again on its membership change. */
+    /**
+     * One room's facts, read when it opens and again on its membership change. Each reader's
+     * people are told to the status store as their answer lands, before anything holds them, so a
+     * face never draws before its status and fades it in.
+     */
     async function getChannel(channelId: string): Promise<ChannelFactsResult> {
         const result = await call("chat_get_channel", { p_channel_id: channelId });
-        return result.ok ? { ok: true, facts: result.data as ChannelFacts } : { ok: false, error: result.error };
+        if (!result.ok) {
+            return { ok: false, error: result.error };
+        }
+        const facts = result.data as ChannelFacts;
+        presence.status.told(Array.isArray(facts?.people) ? facts.people : []);
+        return { ok: true, facts };
     }
 
     /**
@@ -727,7 +736,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     /** One person for the profile card, as the room the card was opened from shows them. */
     async function getPerson(personAliasGuid: string, channelId: string): Promise<PersonProfileResult> {
         const result = await call("chat_get_person", { p_person_alias_guid: personAliasGuid, p_channel_id: channelId });
-        return result.ok ? { ok: true, person: result.data as PersonProfile } : { ok: false, error: result.error };
+        if (!result.ok) {
+            return { ok: false, error: result.error };
+        }
+        presence.status.told([result.data]);
+        return { ok: true, person: result.data as PersonProfile };
     }
 
     const rooms = createRooms({
@@ -764,7 +777,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         titleOf: channelId => channels.rows.find(r => r.channel_id === channelId)?.title ?? "",
         isChatAdministrator: options.session.isChatAdministrator ?? false,
         campusOnly: options.areSharedChannelsFilteredByCampus ?? false,
-        limits: () => session.settings().limits
+        limits: () => session.settings().limits,
+        told: people => presence.status.told(people)
     });
 
     const prefs = createPrefs({
@@ -782,8 +796,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // client cannot mask itself, and what an unblock gives back, is read again.
     const blocks = createBlocks({
         call,
-        onChanged: (isInSidebarAnswer, removed) => live.onBlocksChanged(isInSidebarAnswer, removed),
-        remask: added => live.remask(added),
+        onChanged: (isInSidebarAnswer, removed, change) => live.onBlocksChanged(isInSidebarAnswer, removed, change),
+        remask: (added, asOf) => live.remask(added, asOf),
         notify: notice => options.notify?.(notice)
     });
 
@@ -920,9 +934,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
     const directMessages = createDirectMessages({
         search: async query => {
             const result = await call("chat_search_people", { p_query: query, p_limit: session.settings().limits.people_search_size, p_campus_only: options.areSharedChannelsFilteredByCampus ?? false });
-            return result.ok
-                ? { ok: true, people: (result.data as Partial<PeopleSearchAnswer> | null)?.people ?? [] }
-                : { ok: false, error: result.error };
+            if (!result.ok) {
+                return { ok: false, error: result.error };
+            }
+            const people = (result.data as Partial<PeopleSearchAnswer> | null)?.people ?? [];
+            presence.status.told(people);
+            return { ok: true, people };
         },
         findConversation: async personAliasGuids => {
             const result = await call("chat_find_dm", { p_person_alias_guids: personAliasGuids });
@@ -970,6 +987,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const presence = createPresence({
         callFunction,
+        prefs,
         settings: session.settings,
         currentToken: session.currentToken,
         session,

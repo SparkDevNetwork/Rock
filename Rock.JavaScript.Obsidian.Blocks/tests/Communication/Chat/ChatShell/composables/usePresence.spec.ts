@@ -108,6 +108,8 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const blocked = new Set<string>();
     const reports: string[] = [];
     const stopped = { value: false };
+    // Her own settings as the sidebar last read them: her Busy and her Appear offline.
+    const prefs = reactive({ state: { me: { busy_until: null as string | null, appear_offline: false } } });
     // The newest message the person's client holds for each place, by place key.
     const newest: Record<string, number | null> = { [group]: 10 };
     // Places whose history may be behind the person, as a send still out leaves one.
@@ -186,6 +188,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         },
         report: code => reports.push(code),
         isStopped: () => stopped.value,
+        prefs,
         targets,
         leave: clientId => leaves.push(clientId),
         session: {
@@ -220,7 +223,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -252,7 +255,7 @@ describe("the person's own signals", () => {
 
         expect(h.calls).toEqual([{
             path: "chat-typing",
-            body: { p_channel_id: group, p_parent_id: null, p_after: 10 },
+            body: { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: h.presence.status.clientId() },
             options: { headers: { "x-region": "us-east-1" } }
         }]);
     });
@@ -266,7 +269,7 @@ describe("the person's own signals", () => {
 
         expect(h.calls).toHaveLength(1);
         expect(h.calls[0].options?.headers?.["x-region"]).toBeUndefined();
-        expect(h.calls[0].body).toEqual({ p_channel_id: group, p_parent_id: null });
+        expect(h.calls[0].body).toEqual({ p_channel_id: group, p_parent_id: null, p_client: h.presence.status.clientId() });
     });
 
     test("the first wait is the platform's, read as the turn starts", async () => {
@@ -379,7 +382,7 @@ describe("the person's own signals", () => {
         h.presence.typed(group, null, "");
         await pass(5000);
 
-        expect(h.calls.map(c => c.body)).toEqual([{ p_channel_id: group, p_parent_id: null, p_after: 10 }]);
+        expect(h.calls.map(c => c.body)).toEqual([{ p_channel_id: group, p_parent_id: null, p_after: 10, p_client: h.presence.status.clientId() }]);
     });
 
     test("clearing an announced box sends one stop; a box never announced, or cleared again, sends none", async () => {
@@ -394,9 +397,10 @@ describe("the person's own signals", () => {
         h.presence.typed(group, 40, "");
         await pass(5000);
 
+        const client = h.presence.status.clientId();
         expect(h.calls.map(c => c.body)).toEqual([
-            { p_channel_id: group, p_parent_id: null, p_after: 10 },
-            { p_channel_id: group, p_parent_id: null, p_after: 10, p_stopped: true }
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: client },
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_stopped: true, p_client: client }
         ]);
         expect(jest.getTimerCount()).toBe(0);
     });
@@ -503,9 +507,10 @@ describe("the person's own signals", () => {
         h.presence.typed(group, 40, "bc");
         await settle();
 
+        const client = h.presence.status.clientId();
         expect(h.calls.map(c => c.body)).toEqual([
-            { p_channel_id: group, p_parent_id: null, p_after: 10 },
-            { p_channel_id: group, p_parent_id: 40, p_after: 44 }
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: client },
+            { p_channel_id: group, p_parent_id: 40, p_after: 44, p_client: client }
         ]);
     });
 
@@ -1404,12 +1409,14 @@ describe("others' status, the newest decision", () => {
 
     test("a status carried for the person's own id writes nothing, in any case, though her own answer does", () => {
         const h = buildStatus();
+        // her own answer says nothing of her, and with no idle line her input draws nothing, so only a write could draw her
+        h.status.told([readerPerson(me, nothing(0))]);
 
-        h.status.carried(me, online(0));
-        h.status.carried(me.toUpperCase(), online(0));
+        h.status.carried(me, online(1000));
+        h.status.carried(me.toUpperCase(), online(1000));
         expect(h.status.statusOf(me)).toBeNull();
 
-        h.status.told([readerPerson(me, online(0))]);
+        h.status.told([readerPerson(me, online(2000))]);
         expect(h.status.statusOf(me)?.state).toBe("online");
     });
 
@@ -2116,6 +2123,242 @@ describe("asking early", () => {
         h.fire("keydown");
 
         expect(h.session.asked).toEqual(["early"]);
+    });
+});
+
+describe("status carried on typing", () => {
+    test("a start with status writes it as the dots are drawn, and so do a stop's and a stale row's", () => {
+        const h = buildStatus();
+
+        h.presence.heard("typing", signal(anna, { status: online(0) }), group);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+
+        h.presence.heard("typing", signal(anna, { stopped: true, status: away(1000) }), group);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+
+        // a signal naming a message older than one of hers held was sent before it and draws no dots, but its status is newer
+        h.hold(12, sam);
+        h.presence.heard("typing", signal(sam, { after: 11, status: busy(null, 1000) }), group);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.status.statusOf(sam)?.state).toBe("busy");
+    });
+
+    test("a stop with no status key, and a start with none, write nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        const at = h.status.statusOf(anna)?.revision;
+
+        h.presence.heard("typing", signal(anna, { stopped: true }), group);
+        h.presence.heard("typing", signal(anna), group);
+
+        expect(h.status.statusOf(anna)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("one for a blocked typist, or her own room row, writes nothing", () => {
+        const h = buildStatus();
+        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.blocked.add(anna);
+
+        h.presence.heard("typing", signal(anna, { status: online(1000) }), group);
+        h.presence.heard("typing", signal(me, { status: online(1000) }), group);
+        h.blocked.delete(anna);
+
+        expect(h.status.statusOf(anna)).toBeNull();
+        expect(h.status.statusOf(me)).toBeNull();
+    });
+
+    test("with typing off and status on a row still carries its status, though it draws no dots", () => {
+        const h = buildStatus({ flags: { typing: false, online: true } });
+
+        h.presence.heard("typing", signal(anna, { status: busy(null, 0) }), group);
+
+        expect(h.presence.state.typists).toEqual({});
+        expect(h.status.statusOf(anna)?.state).toBe("busy");
+    });
+
+    test("with status off a row writes nothing", () => {
+        const h = buildStatus({ flags: { typing: true, online: false } });
+
+        h.presence.heard("typing", signal(anna, { status: online(0) }), group);
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: true } });
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("a row with every key but status changed, and no status, writes nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        const at = h.status.statusOf(anna)?.revision;
+
+        h.presence.heard("typing", { ...signal(anna), after: 11, interval_ms: 9000, id: "sig-other", state: "away", until: pgTime(1000), as_of: asOf(5000) }, group);
+
+        expect(h.status.statusOf(anna)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+});
+
+describe("the typing call's client", () => {
+    test("every signal names the page's id, the one the exchange's body carries", async () => {
+        const h = buildStatus();
+        const id = h.status.exchangeBody("start")?.client_id;
+
+        h.presence.typed(group, null, "a");
+        await pass(700);
+        h.presence.typed(group, null, "");
+        await settle();
+
+        expect(id).toEqual(expect.any(String));
+        expect(h.calls.map(c => c.body.p_client)).toEqual([id, id]);
+    });
+
+    test("a page whose goodbye spent its id names a new one, minted for the signal, and never a client as null", async () => {
+        const h = buildStatus();
+        const id = h.status.exchangeBody("start")?.client_id;
+        h.status.exchanged([], exchangeAnswer());
+        h.fire("pagehide", { persisted: true });
+
+        h.presence.typed(group, null, "a");
+        await pass(700);
+
+        expect(h.calls[0].body.p_client).toEqual(expect.any(String));
+        expect(h.calls[0].body.p_client).not.toBe(id);
+        expect(h.status.exchangeBody("recheck")?.client_id).toBe(h.calls[0].body.p_client);
+    });
+});
+
+describe("Appear offline and typing", () => {
+    test("Appear offline in her settings stops the next signal, and the switch being off changes nothing of it", async () => {
+        const on = buildStatus();
+        on.me.appear_offline = true;
+        on.presence.typed(group, null, "a");
+        await pass(700);
+
+        const off = buildStatus({ flags: { typing: true, online: false } });
+        off.me.appear_offline = true;
+        off.presence.typed(group, null, "a");
+        await pass(700);
+
+        expect(on.calls).toEqual([]);
+        expect(off.calls).toEqual([]);
+    });
+});
+
+describe("her own face", () => {
+    const idleLine = { limits: { presence_idle_seconds: 30 } };
+
+    test("draws Online before any answer of hers, and from her input while it is fresh, whatever an answer says", () => {
+        const h = buildStatus(idleLine);
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "online", tip: "Online", label: ", online" }));
+
+        h.status.exchanged([me], exchangeAnswer({ [me]: away(0) }));
+        expect(h.status.statusOf(me)?.state).toBe("online");
+    });
+
+    test("draws her answer once her input is older than the idle line, nothing for a null one, and Online again at her next input, each by revision", () => {
+        const h = buildStatus(idleLine);
+        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.advanceTimersByTime(30_000);
+        expect(drawn.value).toBeNull();
+
+        h.fire("keydown");
+        expect(drawn.value?.state).toBe("online");
+
+        h.status.exchanged([me], exchangeAnswer({ [me]: away(31_000) }));
+        jest.advanceTimersByTime(30_000);
+        expect(drawn.value?.state).toBe("away");
+    });
+
+    test("draws Busy from her settings at once, with her own words, and Busy with no end for infinity", () => {
+        const h = buildStatus(idleLine);
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("online");
+
+        h.me.busy_until = pgTime(3_600_000);
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "busy", busyUntil: serverNow + 3_600_000 }));
+        expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until /);
+
+        h.me.busy_until = "infinity";
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "busy", tip: "Busy, notifications paused", busyUntil: null }));
+
+        h.me.busy_until = pgTime(-1000);
+        expect(drawn.value?.state).toBe("online");
+    });
+
+    test("turns from Busy to her automatic state at its end, with no request", () => {
+        const h = buildStatus(idleLine);
+        h.me.busy_until = pgTime(60_000);
+        h.status.exchanged([me], exchangeAnswer({ [me]: { ...busy(60_000, 0), auto: "online" } }));
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("busy");
+        const at = drawn.value?.revision ?? 0;
+
+        // her input is older than the idle line by then, so what draws is her answer's automatic state
+        jest.advanceTimersByTime(60_000);
+
+        expect(drawn.value?.state).toBe("online");
+        expect(drawn.value?.revision).toBeGreaterThan(at);
+        expect(h.session.asked).toEqual([]);
+    });
+
+    test("draws Appear offline from her settings as hidden, before Busy and her input", () => {
+        const h = buildStatus(idleLine);
+        h.me.busy_until = "infinity";
+        const drawn = face(h.status, me);
+
+        h.me.appear_offline = true;
+
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "hidden", tip: "Appear offline" }));
+    });
+
+    test("draws nothing with the switch off, whatever her settings say", () => {
+        const h = buildStatus({ flags: { typing: true, online: false }, ...idleLine });
+        h.me.appear_offline = true;
+
+        expect(h.status.statusOf(me)).toBeNull();
+    });
+});
+
+describe("the status store's size", () => {
+    test("drops a person who has drawn nothing for longer than any older decision of theirs could, so a write walks only who can still draw", () => {
+        const h = buildStatus();
+        const people = Array.from({ length: 300 }, (_, i) => `b${String(i).padStart(7, "0")}-0000-4000-8000-000000000000`);
+        h.status.told(people.map(alias => readerPerson(alias, online(0))));
+
+        // past every row's end, and past the longest an older decision could hold to
+        jest.advanceTimersByTime(rowLifeMs + 1000);
+        h.status.told([readerPerson(anna, online(rowLifeMs, rowLifeMs * 2))]);
+        const parse = jest.spyOn(Date, "parse");
+        h.status.told([readerPerson(sam, online(rowLifeMs, rowLifeMs * 2))]);
+        const parsed = parse.mock.calls.length;
+        parse.mockRestore();
+
+        expect(parsed).toBeLessThan(20);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(people[0])).toBeNull();
+    });
+
+    test("keeps a decision that says nothing for as long as an older one could still draw", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, nothing(0))]);
+
+        jest.advanceTimersByTime(rowLifeMs - 10_000);
+        h.status.told([readerPerson(sam, online(rowLifeMs - 10_000))]);
+        h.status.carried(anna, online(-1000));
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("never drops her own answer, so a null one still draws nothing once her input is old", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
+        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+
+        jest.advanceTimersByTime(rowLifeMs * 2);
+        h.status.told([readerPerson(sam, online(rowLifeMs * 2))]);
+
+        expect(h.status.statusOf(me)).toBeNull();
     });
 });
 

@@ -47,6 +47,7 @@
 //   shownMembers(state): RosterMember[]      what the panel lists for the query typed
 //   searchStatus(state): "searching" | "answered" | "failed" | null
 //   memberSearchPause: 250; the page and search sizes are the platform's limits
+import { watch } from "vue";
 import { createMembers, MemberRights, memberSearchPause, rightsReadAheadFor, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -478,8 +479,10 @@ function doorHarness(options: {
     answers?: Array<Answer | Deferred<Answer> | Error>,
     isOffline?: boolean,
     isChatAdministrator?: boolean
-}): { members: ReturnType<typeof createMembers>, calls: Call[], doorCalls: DoorCall[], notices: Array<{ code: string, text: string, icon: string }>, offline: { value: boolean } } {
+}): { members: ReturnType<typeof createMembers>, calls: Call[], doorCalls: DoorCall[], notices: Array<{ code: string, text: string, icon: string }>, offline: { value: boolean }, told: { people: unknown[][], onTold: (() => void) | null } } {
     const calls: Call[] = [];
+    // every answer's people the status store was told, and what a test runs as each is told
+    const told: { people: unknown[][], onTold: (() => void) | null } = { people: [], onTold: null };
     const doorCalls: DoorCall[] = [];
     const notices: Array<{ code: string, text: string, icon: string }> = [];
     const callQueue = [...(options.calls ?? [])];
@@ -522,10 +525,14 @@ function doorHarness(options: {
         titleOf: id => id === channel ? "young-adults" : "Hike planning",
         isChatAdministrator: options.isChatAdministrator ?? false,
         campusOnly: false,
-        limits
+        limits,
+        told: people => {
+            told.people.push([...people]);
+            told.onTold?.();
+        }
     });
 
-    return { members, calls, doorCalls, notices, offline };
+    return { members, calls, doorCalls, notices, offline, told };
 }
 
 /** The door's answers, as ChatMembershipResultBag carries them. */
@@ -543,6 +550,47 @@ function found(n: number, nickName: string, lastName: string, inRoom: boolean): 
 const aaron = found(20, "Aaron", "Park", false);
 const luis = found(21, "Luis", "Romero", false);
 const annaFound = found(2, "Anna", "Reyes", true);
+
+describe("the status the roster's people carry", () => {
+    const withStatus = (row: Record<string, unknown>, state: string): Record<string, unknown> => ({ ...row, status: { state, until: "2026-11-10T15:09:30.000000+00:00", as_of: 1 } });
+
+    test("each page is told to the status store before its rows are stored, so a row never draws before its status", async () => {
+        const { members, told } = doorHarness({ calls: [page([withStatus(tom, "online"), withStatus(anna, "away")]), page([withStatus(ben, "busy")])] });
+        const order: string[] = [];
+        told.onTold = () => order.push(`told ${members.state.rows.length}`);
+        watch(() => members.state.rows, rows => order.push(`rows ${rows.length}`), { flush: "sync" });
+
+        await members.open(channel);
+        await settle();
+        members.state.hasMore = true;
+        await members.loadMore();
+
+        expect(told.people.map(people => names(people as Parameters<typeof names>[0]))).toEqual([["Tom", "Anna"], ["Ben"]]);
+        // the first page is told while no row is held, then its two rows are stored
+        expect(order.filter(entry => entry.startsWith("told") || entry === "rows 2").slice(0, 2)).toEqual(["told 0", "rows 2"]);
+    });
+
+    test("Add people's search is told, and a refused page or search tells nothing", async () => {
+        jest.useFakeTimers();
+        try {
+            const { members, told } = doorHarness({ calls: [notMember, page([tom]), { ok: true, data: { people: [aaron] } }, offline] });
+            await members.open(channel);
+            await members.retry();
+            members.openAdd();
+            members.setAddQuery("a");
+            jest.advanceTimersByTime(memberSearchPause);
+            await settle();
+            members.setAddQuery("ab");
+            jest.advanceTimersByTime(memberSearchPause);
+            await settle();
+
+            expect(told.people.map(people => names(people as Parameters<typeof names>[0]))).toEqual([["Tom"], ["Aaron"]]);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+});
 
 describe("the reader's rights in the room", () => {
     test("opening asks Rock beside the roster, and draws Add and Remove only where it says so", async () => {

@@ -45,7 +45,16 @@ import { failureNote } from "./saveRule.partial";
 export type BlocksAnswer = {
     people: ChatPerson[];
     blocked_aliases: string[];
+
+    /** When the platform read the set, epoch microseconds: a status decided before it is not drawn after an unblock. */
+    as_of?: number;
 };
+
+/**
+ * Where a change of the set came from: a set read with its decision time, or none, as the sidebar
+ * sends it; or the heal, which reads again copies withheld before an unblock and changes no block.
+ */
+export type BlocksChange = { asOf: number | null } | { heal: true };
 
 /** The sentence the block's confirmation says, wherever it was asked. */
 export const blockSentence = "They won't be told. You won't see their messages, and they can't message you.";
@@ -85,10 +94,10 @@ export type BlocksDependencies = {
      * sidebar, which that answer is. The aliases no longer blocked are named, since only a read
      * gives back what was withheld for them.
      */
-    onChanged: (isInSidebarAnswer: boolean, removed: readonly string[]) => void;
+    onChanged: (isInSidebarAnswer: boolean, removed: readonly string[], change: BlocksChange) => void;
 
-    /** The set gained these aliases: every holder masks again, in place, what it holds. */
-    remask: (added: readonly string[]) => void;
+    /** The set gained these aliases, read at a decision time or none: every holder masks again, in place, what it holds. */
+    remask: (added: readonly string[], asOf: number | null) => void;
 
     /** Shows a toast, for a block or unblock asked from a card or a message. */
     notify: (notice: ActionNotice) => void;
@@ -244,9 +253,10 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
      * Takes a set. Someone added is masked at once, in place, before anything else runs, so their
      * words go with no read; any change then asks the shell to read again what it cannot mask,
      * saying where the set came from and who was let go. The first set masks what was let through
-     * before it, and reads nothing, since every page was already read through it.
+     * before it, and reads nothing, since every page was already read through it. The set's
+     * decision time goes with both, so a status decided before it is not drawn after an unblock.
      */
-    function takeSet(aliases: unknown, isInSidebarAnswer: boolean): void {
+    function takeSet(aliases: unknown, isInSidebarAnswer: boolean, asOf: number | null): void {
         if (isStopped || !Array.isArray(aliases)) {
             return;
         }
@@ -267,7 +277,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         if (added.length > 0) {
             isRemasking = true;
             try {
-                dependencies.remask(added);
+                dependencies.remask(added, asOf);
             }
             finally {
                 isRemasking = false;
@@ -286,7 +296,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         }
         // this change reads again what is on screen, so whatever was waiting to heal is in it
         stale.clear();
-        dependencies.onChanged(isInSidebarAnswer, removed);
+        dependencies.onChanged(isInSidebarAnswer, removed, { asOf });
     }
 
     /** A copy withheld for an alias the set does not name: noted, and healed once the write is done. */
@@ -328,7 +338,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
         const aliases = [...stale].filter(alias => !set.has(alias));
         stale.clear();
         if (aliases.length > 0) {
-            dependencies.onChanged(false, aliases);
+            dependencies.onChanged(false, aliases, { heal: true });
         }
     }
 
@@ -448,7 +458,7 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
             state.people = answer.people;
             state.listState = "loaded";
         }
-        takeSet(answer?.blocked_aliases, false);
+        takeSet(answer?.blocked_aliases, false, typeof answer?.as_of === "number" && Number.isSafeInteger(answer.as_of) ? answer.as_of : null);
     }
 
     function key(person: ChatPerson): string {
@@ -514,7 +524,8 @@ export function createBlocks(dependencies: BlocksDependencies): Blocks {
 
     return {
         state,
-        setAliases: aliases => takeSet(aliases, true),
+        // the sidebar's set carries no decision time
+        setAliases: aliases => takeSet(aliases, true, null),
         isBlocked,
         mask,
 
