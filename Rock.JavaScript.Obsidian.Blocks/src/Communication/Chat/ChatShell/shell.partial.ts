@@ -31,7 +31,7 @@ import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
 import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
-import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
+import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs, StatusChannel, StatusLocks } from "./composables/usePrefs.partial";
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSettings, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
@@ -49,7 +49,7 @@ import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rem
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
-import { createShellSession, MintActionResult } from "./shellSession.partial";
+import { createShellSession, MintActionResult, tokenPerson } from "./shellSession.partial";
 import { createProblemReport, ProblemReporter } from "./problemReport.partial";
 
 /**
@@ -124,6 +124,12 @@ export type ShellOptions = {
     fetch: (url: string, init: RequestInit) => Promise<Response>;
     storage: DraftStorage | null;
     pageTargets: PageEventTargets;
+
+    /** The browser's Web Locks, which let one of her tabs save her status at a time; a site without them has none. */
+    locks?: StatusLocks;
+
+    /** Opens a BroadcastChannel to her other tabs of chat; without it this tab is alone. */
+    channel?: (name: string) => StatusChannel;
 
     /**
      * The mark Rock's sign-out takes away, which tells the drafts the last person signed out;
@@ -789,7 +795,22 @@ export function createChatShell(options: ShellOptions): ChatShell {
         savePersonSetting: options.savePersonSetting,
         channels,
         isOffline: () => state.connection !== null,
-        notify: notice => options.notify?.(notice)
+        notify: notice => options.notify?.(notice),
+        status: {
+            tenantId,
+            personAliasGuid,
+            currentPerson: () => tokenPerson(session.currentToken()),
+            // the status branch reads no client, and PostgREST needs it named
+            saveStatus: (change, signal) => call("chat_set_status", { p_client: null, p_change: change }, { signal }),
+            // a read only refusal of this tab's own choice, sent by another tab, closes what this tab's own call would
+            applyRefusal: error => {
+                session.applyServiceRefusal(error);
+                showSettings();
+            },
+            locks: options.locks,
+            channel: options.channel,
+            targets: options.pageTargets.window
+        }
     });
 
     // A change to whom the person blocked is masked in place by every holder at once; what the

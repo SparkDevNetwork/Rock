@@ -215,6 +215,9 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         storage: safeLocalStorage(),
         signInMark: browserSignInMark(options.isSignInPersisted),
         pageTargets: { document, window },
+        // Web Locks only on a secure site; BroadcastChannel wherever the browser has it
+        locks: typeof navigator !== "undefined" && navigator.locks ? navigator.locks : undefined,
+        channel: typeof BroadcastChannel === "function" ? name => new BroadcastChannel(name) : undefined,
         push: browserPush(),
         mark: name => {
             try {

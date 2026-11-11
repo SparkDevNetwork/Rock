@@ -30,12 +30,12 @@
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { watch } from "vue";
-import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, StatusChange, StatusChoice, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { readOnlySentence as readOnlyWordsOfOurs } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult, createPlatformCall } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
-import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { setStatusAnswers, StatusSaveAnswer, statusSaveFailures } from "../statusShapes";
+import { ChatError, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { createChannelFake, createLockFake, setStatusAnswers, StatusSaveAnswer, statusSaveFailures } from "../statusShapes";
 
 // #region Fixtures
 
@@ -995,3 +995,945 @@ describe("a status save's answer", () => {
 });
 
 // #endregion A status save's answer
+
+// #region Her status across her tabs
+
+const her = "A0000001-0000-4000-8000-00000000000A";
+const church = "C1000000-0000-4000-8000-000000000001";
+const lockName = `rock-chat:status:${church}:${her}`.toLowerCase();
+const channelName = `rock-chat:me:${church}:${her}`.toLowerCase();
+
+const automatic: StatusChoice = { busy_until: null, appear_offline: false };
+const hidden: StatusChoice = { busy_until: null, appear_offline: true };
+const busy: StatusChoice = { busy_until: "infinity", appear_offline: false };
+
+/** chat_set_status's landing for a Busy with no end, and for a choice the server already held. */
+const landed: CallResult = { ok: true, data: { status: "busy" } };
+const alreadyHeld: CallResult = { ok: true, data: { status: "appear_offline", changed: false } };
+
+type StatusCall = { change: StatusChange, signal: AbortSignal, answer: Deferred<CallResult>, tab: number, at: number };
+
+type StatusTab = {
+    n: number;
+    prefs: ReturnType<typeof createPrefs>;
+    toasts: Array<{ code: string, text: string, icon: string }>;
+    refusals: ChatError[];
+    person: { value: string | null };
+    fire: (type: string, event: unknown) => void;
+
+    /** The tab closes: its locks go as the browser lets them go, and the page runs nothing more. */
+    close: () => void;
+};
+
+type StatusBrowser = {
+    open: () => StatusTab;
+    calls: StatusCall[];
+    posts: Array<{ name: string, data: unknown }>;
+    raw: () => ReturnType<ReturnType<typeof createChannelFake>["open"]>;
+    locks: ReturnType<typeof createLockFake>;
+    openChannels: () => number;
+};
+
+/** One browser of hers: tabs of chat sharing one origin's Web Locks and BroadcastChannel, and every status call any of them asks. */
+function statusBrowser(options: { hasLocks?: boolean } = {}): StatusBrowser {
+    const locks = createLockFake();
+    const channels = createChannelFake();
+    const calls: StatusCall[] = [];
+    const start = Date.now();
+    let tabs = 0;
+
+    function open(): StatusTab {
+        const n = ++tabs;
+        const tabLocks = locks.tab();
+        const listeners = new Map<string, Set<(event: unknown) => void>>();
+        const person = { value: her.toLowerCase() as string | null };
+        const toasts: StatusTab["toasts"] = [];
+        const refusals: ChatError[] = [];
+        const store = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
+        store.setSidebar([]);
+        const prefs = createPrefs({
+            setPrefs: () => new Promise(() => undefined),
+            channels: store,
+            isOffline: () => false,
+            notify: notice => toasts.push(notice),
+            status: {
+                tenantId: church,
+                personAliasGuid: her,
+                currentPerson: () => person.value,
+                saveStatus: (change, signal) => {
+                    const answer = deferred<CallResult>();
+                    calls.push({ change, signal, answer, tab: n, at: Date.now() - start });
+                    return answer.promise;
+                },
+                applyRefusal: error => refusals.push(error),
+                locks: options.hasLocks === false ? undefined : tabLocks,
+                channel: name => channels.open(name),
+                targets: {
+                    addEventListener: (type, listener) => {
+                        const set = listeners.get(type) ?? new Set();
+                        set.add(listener);
+                        listeners.set(type, set);
+                    },
+                    removeEventListener: (type, listener) => {
+                        listeners.get(type)?.delete(listener);
+                    }
+                }
+            }
+        });
+        return {
+            n,
+            prefs,
+            toasts,
+            refusals,
+            person,
+            fire: (type, event) => listeners.get(type)?.forEach(listener => listener(event)),
+            close: () => {
+                tabLocks.close();
+                prefs.stop();
+            }
+        };
+    }
+
+    return { open, calls, posts: channels.posts, raw: () => channels.open(channelName), locks, openChannels: channels.openCount };
+}
+
+/** Moves the page's clocks on, running every timer and what each resolves on the way. */
+async function after(ms: number): Promise<void> {
+    await jest.advanceTimersByTimeAsync(ms);
+}
+
+/**
+ * Lets a post and the post it is answered with arrive, each on a later task: the fake clock runs a
+ * task made during a tick a millisecond on, so this moves the clock one millisecond.
+ */
+async function delivered(): Promise<void> {
+    await after(1);
+}
+
+/** Her settings as a sidebar load reads them, with her status as given. */
+function sidebarMe(choice: StatusChoice): Record<string, unknown> {
+    return { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true, ...choice };
+}
+
+type Shown = { status: StatusChoice, isPending: boolean };
+
+/** What a tab shows of her status and whether it is a choice not yet saved. */
+function shown(tab: StatusTab): Shown {
+    return { status: tab.prefs.shownStatus(), isPending: tab.prefs.isChoicePending() };
+}
+
+const settled = (status: StatusChoice): Shown => ({ status, isPending: false });
+const pending = (status: StatusChoice): Shown => ({ status, isPending: true });
+
+/** The kinds of every post on her channel, in order. */
+function kinds(b: StatusBrowser): string[] {
+    return b.posts.map(p => (p.data as { kind: string }).kind);
+}
+
+describe("her status across her tabs", () => {
+    beforeEach(() => {
+        // The backoff is left its own draws, which also mint each tab's id: no cell waits on a
+        // retry's exact time, the first being 8 to 12 s after the failure.
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("a choice is sent once its pause has passed, and shows as chosen through it", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        a.prefs.setMe(sidebarMe(automatic));
+
+        await a.prefs.setStatus(hidden);
+        expect(shown(a)).toEqual(pending(hidden));
+        await after(999);
+        expect(b.calls).toHaveLength(0);
+        await after(1);
+
+        expect(b.calls.map(c => c.change)).toEqual([{ status: "appear_offline" }]);
+        b.calls[0].answer.resolve(alreadyHeld);
+        await after(0);
+        expect(shown(a)).toEqual(settled(hidden));
+    });
+
+    test.each([
+        ["Automatic", automatic, { status: "auto" }],
+        ["Busy with no end", busy, { status: "busy" }],
+        ["Busy to an end", { busy_until: "2026-11-11T17:00:00.000Z", appear_offline: false }, { status: "busy", busy_until: "2026-11-11T17:00:00.000Z" }],
+        ["Appear offline", hidden, { status: "appear_offline" }]
+    ] as const)("%s is sent as chat_set_status names it", async (_name, choice, change) => {
+        const b = statusBrowser();
+        const a = b.open();
+
+        await a.prefs.setStatus(choice);
+        await after(1000);
+
+        expect(b.calls.map(c => c.change)).toEqual([change]);
+    });
+
+    test("a sidebar me landing inside the pause keeps the choice shown, and so does one while it is out", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        a.prefs.setMe(sidebarMe(automatic));
+
+        await a.prefs.setStatus(hidden);
+        await after(500);
+        a.prefs.setMe(sidebarMe(automatic));
+        expect(shown(a)).toEqual(pending(hidden));
+
+        await after(500);
+        a.prefs.setMe(sidebarMe(automatic));
+        expect(shown(a)).toEqual(pending(hidden));
+        b.calls[0].answer.resolve(landed);
+        await after(0);
+        expect(shown(a)).toEqual(settled(hidden));
+    });
+
+    test("the holder waits out the newest record's pause inside the lock, so a choice made in another tab meanwhile is the one call", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        // a slow holder before them, as a hung save of another tab would be
+        let free!: () => void;
+        void b.locks.tab().request(lockName, {}, () => new Promise<void>(resolve => free = resolve));
+
+        await a.prefs.setStatus(busy);
+        await after(1100);
+        await t2.prefs.setStatus(automatic);
+        await after(100);
+        free();
+        await after(0);
+        expect(b.calls).toHaveLength(0);
+
+        await after(900);
+        expect(b.calls.map(c => [c.tab, c.change, c.at])).toEqual([[a.n, { status: "auto" }, 2100]]);
+    });
+
+    test("a record heard during the holder's wait waits its own pause, and the newest is what goes", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        let free!: () => void;
+        void b.locks.tab().request(lockName, {}, () => new Promise<void>(resolve => free = resolve));
+
+        await a.prefs.setStatus(busy);
+        await after(1100);
+        await t2.prefs.setStatus(automatic);
+        await after(100);
+        free();
+        await after(300);
+        await t2.prefs.setStatus(hidden);
+        await after(999);
+        expect(b.calls).toHaveLength(0);
+        await after(1);
+
+        expect(b.calls.map(c => [c.tab, c.change, c.at])).toEqual([[a.n, { status: "appear_offline" }, 2500]]);
+    });
+
+    test("a record taken from a hello is due 3 s after it was taken, not at once", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        await a.prefs.setStatus(hidden);
+        await after(1000);
+        b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+        await after(1000);
+
+        const c = b.open();
+        await delivered();
+        expect(shown(c)).toEqual(pending(hidden));
+        await after(2999);
+        expect(b.calls).toHaveLength(1);
+        await after(1);
+
+        // taken a millisecond after the open, as the answer to its hello arrived
+        expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [c.n, 5001]]);
+    });
+
+    test("the lock's holder sending another tab's record posts what it sent, and the chooser settles on it", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        // the chooser's session is between tokens at its grant, so it sends nothing and the other tab's copy goes
+        t2.person.value = null;
+        await t2.prefs.setStatus(busy);
+        await after(1000);
+        t2.person.value = her.toLowerCase();
+        await after(2000);
+
+        expect(b.calls.map(c => c.tab)).toEqual([a.n]);
+        b.calls[0].answer.resolve({ ok: true, data: { status: "busy", changed: false } });
+        await after(0);
+
+        const saved = b.posts.map(p => p.data as Record<string, unknown>).filter(d => d.kind === "saved");
+        expect(saved).toEqual([{ kind: "saved", choiceAt: expect.any(Number), me: busy }]);
+        expect(shown(t2)).toEqual(settled(busy));
+        expect(shown(a)).toEqual(settled(busy));
+    });
+
+    test("the saved post goes before the lock is released", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        await a.prefs.setStatus(busy);
+        await after(1000);
+
+        let postsAtGrant: string[] | null = null;
+        void b.locks.tab().request(lockName, {}, async () => {
+            postsAtGrant = kinds(b);
+        });
+        b.calls[0].answer.resolve(landed);
+        await after(0);
+
+        expect(postsAtGrant).toEqual(["hello", "choice", "saved"]);
+    });
+
+    test("a holder whose session now names another person sends nothing", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        a.person.value = "b0000009-0000-4000-8000-000000000009";
+
+        await a.prefs.setStatus(busy);
+        await after(60_000);
+
+        expect(b.calls).toHaveLength(0);
+    });
+
+    test("A chooses then closes inside the pause: B sends it once after its hand-off and settles, and C settles from B's saved", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        const c = b.open();
+        for (const tab of [a, t2, c]) {
+            tab.prefs.setMe(sidebarMe(automatic));
+        }
+
+        await a.prefs.setStatus(hidden);
+        await after(500);
+        a.close();
+        expect(shown(t2)).toEqual(pending(hidden));
+        await after(2499);
+        expect(b.calls).toHaveLength(0);
+        await after(1);
+
+        expect(b.calls.map(call => call.tab)).toEqual([t2.n]);
+        b.calls[0].answer.resolve(landed);
+        await after(0);
+        // the lock may reach C before B's post does, and C then sends what the server already holds
+        b.calls[1]?.answer.resolve(alreadyHeld);
+        await after(0);
+
+        expect(b.calls.filter(call => call.tab === t2.n)).toHaveLength(1);
+        expect(shown(t2)).toEqual(settled(hidden));
+        expect(shown(c)).toEqual(settled(hidden));
+    });
+
+    test("A closes holding the lock with its call out and no saved ever comes: B sends it", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+
+        await a.prefs.setStatus(hidden);
+        await after(1000);
+        expect(b.calls.map(c => c.tab)).toEqual([a.n]);
+        await after(500);
+        a.close();
+        await after(1500);
+
+        expect(b.calls.map(c => [c.tab, c.change])).toEqual([[a.n, { status: "appear_offline" }], [t2.n, { status: "appear_offline" }]]);
+    });
+
+    test("three live tabs, one choice: one call, the two others' copies dropped by the saved post before they ask", async () => {
+        const b = statusBrowser();
+        const tabs = [b.open(), b.open(), b.open()];
+
+        await tabs[0].prefs.setStatus(busy);
+        await after(1000);
+        b.calls[0].answer.resolve(landed);
+        await after(60_000);
+
+        expect(b.calls).toHaveLength(1);
+        expect(tabs.map(shown)).toEqual([settled(busy), settled(busy), settled(busy)]);
+    });
+
+    test("a tab that heard a choice shows it pending until a covering saved, and a sidebar me meanwhile does not settle it", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        t2.prefs.setMe(sidebarMe(automatic));
+
+        await a.prefs.setStatus(busy);
+        await after(0);
+        expect(shown(t2)).toEqual(pending(busy));
+        t2.prefs.setMe(sidebarMe(automatic));
+        expect(shown(t2)).toEqual(pending(busy));
+
+        await after(1000);
+        b.calls[0].answer.resolve(landed);
+        await after(0);
+        expect(shown(t2)).toEqual(settled(busy));
+    });
+
+    test("a tab holding a saved before its record does not queue it", async () => {
+        const b = statusBrowser();
+        const t2 = b.open();
+        const raw = b.raw();
+        const at = Date.now();
+
+        raw.postMessage({ kind: "saved", choiceAt: at, me: hidden });
+        raw.postMessage({ kind: "choice", record: { choice: hidden, at, page: "another tab" } });
+        await after(60_000);
+
+        expect(b.calls).toHaveLength(0);
+        expect(shown(t2)).toEqual(settled(hidden));
+    });
+
+    describe("without Web Locks", () => {
+        test("A chooses Appear offline and closes inside its pause: B never shows it, and nothing is sent", async () => {
+            const b = statusBrowser({ hasLocks: false });
+            const a = b.open();
+            const t2 = b.open();
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(hidden);
+            await after(0);
+            expect(shown(t2)).toEqual(settled(automatic));
+            await after(500);
+            a.close();
+            await after(60_000);
+
+            expect(b.calls).toHaveLength(0);
+            expect(shown(t2)).toEqual(settled(automatic));
+        });
+
+        test("with A's save landed, B settles on it; no hello is posted", async () => {
+            const b = statusBrowser({ hasLocks: false });
+            const a = b.open();
+            const t2 = b.open();
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+
+            expect(shown(t2)).toEqual(settled(hidden));
+            expect(kinds(b)).not.toContain("hello");
+        });
+
+        test("each page sends its own record in its own flight", async () => {
+            const b = statusBrowser({ hasLocks: false });
+            const a = b.open();
+            const t2 = b.open();
+
+            await a.prefs.setStatus(busy);
+            await after(200);
+            await t2.prefs.setStatus(hidden);
+            await after(1000);
+
+            expect(b.calls.map(c => [c.tab, c.change, c.at])).toEqual([[a.n, { status: "busy" }, 1000], [t2.n, { status: "appear_offline" }, 1200]]);
+        });
+    });
+
+    describe("a save the server already held", () => {
+        test("A's Appear offline reaches the server and A closes before its answer: B's resend answered changed false settles B and C on it", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            const c = b.open();
+            for (const tab of [a, t2, c]) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await a.prefs.setStatus(hidden);
+            await after(1500);
+            a.close();
+            await after(1500);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n, t2.n]);
+            b.calls[1].answer.resolve(alreadyHeld);
+            await after(0);
+            b.calls[2]?.answer.resolve(alreadyHeld);
+            await after(0);
+
+            expect(shown(t2)).toEqual(settled(hidden));
+            expect(shown(c)).toEqual(settled(hidden));
+        });
+
+        test("Appear offline chosen on her phone first, then here, answered changed false: it stays", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(hidden));
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(alreadyHeld);
+            await after(0);
+
+            expect(shown(a)).toEqual(settled(hidden));
+        });
+
+        test("a save its deadline ended that had landed, sent again and answered changed false, settles every tab on the choice", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            for (const tab of [a, t2]) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            await after(15_000);
+            expect(b.calls[0].signal.aborted).toBe(true);
+            expect(shown(t2)).toEqual(pending(hidden));
+            // the other tab's copy was waiting on the lock, and goes as the deadline lets it go
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [t2.n, 16_000]]);
+            b.calls[1].answer.resolve(alreadyHeld);
+            await after(0);
+
+            expect(shown(a)).toEqual(settled(hidden));
+            expect(shown(t2)).toEqual(settled(hidden));
+        });
+    });
+
+    describe("her settings' status has one owner", () => {
+        test("her phone's choice loaded by a sidebar read, then another tab's refusal of an older record: the tab keeps the phone's value", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            for (const tab of [a, t2]) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            t2.prefs.setMe(sidebarMe(hidden));
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(0);
+
+            expect(shown(t2)).toEqual(settled(hidden));
+            expect(shown(a)).toEqual(settled(automatic));
+        });
+
+        test("C takes a pending Busy from a hello, its sidebar loads Appear offline, the Busy is refused: C shows Appear offline", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+
+            const c = b.open();
+            await delivered();
+            expect(shown(c)).toEqual(pending(busy));
+            c.prefs.setMe(sidebarMe(hidden));
+            await after(3000);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n, c.n]);
+            b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(0);
+
+            expect(shown(c)).toEqual(settled(hidden));
+        });
+    });
+
+    describe("the hello", () => {
+        test("C opens while A's Appear offline is pending, its save failing 503: C shows it and settles on the saved", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(1000);
+
+            const c = b.open();
+            c.prefs.setMe(sidebarMe(automatic));
+            await delivered();
+            expect(shown(c)).toEqual(pending(hidden));
+
+            await after(3000);
+            b.calls[1].answer.resolve(landed);
+            await after(0);
+            expect(shown(c)).toEqual(settled(hidden));
+            expect(shown(a)).toEqual(settled(hidden));
+        });
+
+        test("with nothing pending a hello is answered with what is covered and her saved status only", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(busy));
+
+            const c = b.open();
+            await delivered();
+
+            const answers = b.posts.map(p => p.data as Record<string, unknown>).filter(d => d.kind !== "hello");
+            expect(answers).toEqual([{ kind: "held", covered: 0, me: busy, meStamp: 0 }]);
+            expect(shown(c)).toEqual(settled(busy));
+        });
+
+        test("a hello after stop is answered with nothing", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(busy));
+            a.prefs.stop();
+
+            b.open();
+            await after(0);
+
+            expect(kinds(b)).toEqual(["hello", "hello"]);
+        });
+    });
+
+    test("Appear offline answered read only: no tab shows it, every tab shows its own, the choosing tab alone says why in the banner's words, and nothing is asked again", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const t2 = b.open();
+        a.prefs.setMe(sidebarMe(automatic));
+        t2.prefs.setMe(sidebarMe(busy));
+
+        await a.prefs.setStatus(hidden);
+        await after(1000);
+        b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.readOnlyBanner));
+        await after(60_000);
+
+        expect(shown(a)).toEqual(settled(automatic));
+        expect(shown(t2)).toEqual(settled(busy));
+        expect(a.toasts.map(t => t.text)).toEqual(["Chat is read only tonight while Cedar Hill moves to its new server."]);
+        expect(t2.toasts).toEqual([]);
+        expect(b.calls).toHaveLength(1);
+    });
+
+    describe("a refusal another tab sent", () => {
+        /** B's choice, sent by A: B's session is between tokens when the lock reaches it. */
+        async function sentByA(choice: StatusChoice): Promise<{ b: StatusBrowser, a: StatusTab, t2: StatusTab, c: StatusTab }> {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            const c = b.open();
+            t2.person.value = null;
+            await t2.prefs.setStatus(choice);
+            await after(1000);
+            t2.person.value = her.toLowerCase();
+            await after(2000);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n]);
+            return { b, a, t2, c };
+        }
+
+        test("read only with a church banner: B says it and A does not, and B alone takes read only", async () => {
+            const { b, a, t2, c } = await sentByA(hidden);
+            const refusal = await statusCallResult(statusSaveFailures.readOnlyBanner);
+            b.calls[0].answer.resolve(refusal);
+            await after(0);
+            // C's copy may reach the lock before A's post reaches C, and meets the same answer
+            b.calls[1]?.answer.resolve(refusal);
+            await after(0);
+
+            expect(t2.toasts.map(t => t.text)).toEqual(["Chat is read only tonight while Cedar Hill moves to its new server."]);
+            expect(a.toasts).toEqual([]);
+            expect(c.toasts).toEqual([]);
+            expect(t2.refusals).toEqual([(refusal as { error: ChatError }).error]);
+            expect(a.refusals).toEqual([]);
+            expect(c.refusals).toEqual([]);
+        });
+
+        test("a bad request with the server's sentence: B says the sentence and no tab takes read only", async () => {
+            const { b, a, t2, c } = await sentByA(busy);
+            const refusal = await statusCallResult(statusSaveFailures.badRequest);
+            b.calls[0].answer.resolve(refusal);
+            await after(0);
+            b.calls[1]?.answer.resolve(refusal);
+            await after(0);
+
+            expect(t2.toasts.map(t => t.text)).toEqual(["Chat could not understand that request."]);
+            expect(a.toasts).toEqual([]);
+            expect([a, t2, c].flatMap(tab => tab.refusals)).toEqual([]);
+        });
+
+        test("B makes r1, A sends it, B makes r2 during A's flight, r1 refused read only: B takes read only once and says nothing for r1; r2's refusal is said once", async () => {
+            const { b, t2 } = await sentByA(busy);
+            await after(100);
+            await t2.prefs.setStatus(hidden);
+            const r1Refused = await statusCallResult(statusSaveFailures.readOnlyBanner);
+            b.calls[0].answer.resolve(r1Refused);
+            await delivered();
+            // C's copy of r1 may reach the lock before A's post reaches C, and meets the same answer
+            b.calls[1]?.answer.resolve(r1Refused);
+            await delivered();
+
+            expect(t2.refusals).toHaveLength(1);
+            expect(t2.toasts).toEqual([]);
+            await after(999);
+            const r2 = b.calls.filter(call => call.change.status === "appear_offline");
+            expect(r2).toHaveLength(1);
+            r2[0].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(60_000);
+
+            expect(t2.refusals).toHaveLength(1);
+            expect(t2.toasts.map(t => t.text)).toEqual(["Chat could not understand that request."]);
+        });
+    });
+
+    describe("the record's time", () => {
+        test("Busy at 0 sent at 1.0, Automatic chosen in B at 1.2, Busy lands at 1.4, Automatic lands at 2.6: every tab shows Automatic throughout", async () => {
+            const b = statusBrowser();
+            const tabs = [b.open(), b.open(), b.open()];
+            for (const tab of tabs) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await tabs[0].prefs.setStatus(busy);
+            await after(1200);
+            await tabs[1].prefs.setStatus(automatic);
+            await after(0);
+            expect(tabs.map(t => shown(t).status)).toEqual([automatic, automatic, automatic]);
+            await after(200);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            expect(tabs.map(shown)).toEqual([pending(automatic), pending(automatic), pending(automatic)]);
+
+            await after(800);
+            expect(b.calls.map(call => [call.tab, call.change])).toEqual([[tabs[0].n, { status: "busy" }], [tabs[1].n, { status: "auto" }]]);
+            await after(400);
+            b.calls[1].answer.resolve({ ok: true, data: { status: "auto" } });
+            await after(0);
+            expect(tabs.map(shown)).toEqual([settled(automatic), settled(automatic), settled(automatic)]);
+        });
+
+        test("Busy saved here, Automatic set on her phone and loaded, Busy chosen here again: it is sent", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(busy);
+            await after(1000);
+
+            expect(b.calls.map(call => call.change)).toEqual([{ status: "busy" }, { status: "busy" }]);
+        });
+    });
+
+    describe("failures across tabs", () => {
+        test.each([
+            ["no answer", "network"],
+            ["a token the refresh could not renew", "expired"],
+            ["a proxy giving up", "proxyTimeout"],
+            ["maintenance", "maintenance"]
+        ] as const)("%s leaves the choice shown and pending in every tab, with no toast", async (_name, shape) => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            for (const tab of [a, t2]) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures[shape]));
+            await after(0);
+
+            expect([a, t2].map(shown)).toEqual([pending(busy), pending(busy)]);
+            expect([...a.toasts, ...t2.toasts]).toEqual([]);
+        });
+
+        test("a hung save ends at its deadline, pending with no toast, and the next tab's copy goes", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            await after(14_999);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+
+            expect(b.calls[0].signal.aborted).toBe(true);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [t2.n, 16_000]]);
+            expect([a, t2].map(shown)).toEqual([pending(busy), pending(busy)]);
+            expect([...a.toasts, ...t2.toasts]).toEqual([]);
+        });
+
+        test("a refusal the server answered returns every tab to its own, with no request, and the choosing tab alone says why", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(60_000);
+
+            expect([a, t2].map(shown)).toEqual([settled(automatic), settled(automatic)]);
+            expect(a.toasts.map(t => t.text)).toEqual(["Chat could not understand that request."]);
+            expect(t2.toasts).toEqual([]);
+            expect(b.calls).toHaveLength(1);
+        });
+
+        test("a refusal of an older record leaves a newer one pending, and says nothing", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(busy);
+            await after(1200);
+            await a.prefs.setStatus(hidden);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(0);
+
+            expect([a, t2].map(shown)).toEqual([pending(hidden), pending(hidden)]);
+            expect(a.toasts).toEqual([]);
+        });
+    });
+
+    test("a saved post older than what the tab has covered changes nothing", async () => {
+        const b = statusBrowser();
+        const t2 = b.open();
+        const raw = b.raw();
+
+        raw.postMessage({ kind: "saved", choiceAt: 200, me: busy });
+        raw.postMessage({ kind: "saved", choiceAt: 100, me: hidden });
+        await after(0);
+
+        expect(shown(t2)).toEqual(settled(busy));
+    });
+
+    test("her input in another tab is kept, and an input post older than the newest is ignored", async () => {
+        const b = statusBrowser();
+        const t2 = b.open();
+        const raw = b.raw();
+
+        raw.postMessage({ kind: "input", at: 500 });
+        raw.postMessage({ kind: "input", at: 400 });
+        await after(0);
+
+        expect(t2.prefs.state.ownInputAt).toBe(500);
+    });
+
+    test("her input is posted at once, then at most every 30 s with the newest", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        const inputs = (): unknown[] => b.posts.map(p => p.data as Record<string, unknown>).filter(d => d.kind === "input").map(d => d.at);
+
+        a.prefs.noteInput(1000);
+        a.prefs.noteInput(2000);
+        await after(10_000);
+        a.prefs.noteInput(3000);
+        expect(inputs()).toEqual([1000]);
+        await after(20_000);
+
+        expect(inputs()).toEqual([1000, 3000]);
+    });
+
+    test("once stopped, a channel message, a queued save, a lock granted and an input send nothing", async () => {
+        const b = statusBrowser();
+        const a = b.open();
+        let free!: () => void;
+        void b.locks.tab().request(lockName, {}, () => new Promise<void>(resolve => free = resolve));
+        await a.prefs.setStatus(busy);
+        await after(1000);
+        a.prefs.stop();
+        free();
+        const raw = b.raw();
+        raw.postMessage({ kind: "choice", record: { choice: hidden, at: Date.now() + 1, page: "another tab" } });
+        raw.postMessage({ kind: "input", at: 9000 });
+        const posts = b.posts.length;
+        a.prefs.noteInput(10_000);
+        await after(60_000);
+
+        expect(b.calls).toHaveLength(0);
+        expect(a.prefs.state.ownInputAt).toBe(0);
+        expect(b.posts).toHaveLength(posts);
+    });
+
+    test("stop closes the tab's channel", () => {
+        const b = statusBrowser();
+        const a = b.open();
+        b.open();
+        expect(b.openChannels()).toBe(2);
+
+        a.prefs.stop();
+
+        expect(b.openChannels()).toBe(1);
+    });
+
+    describe("the back-forward cache", () => {
+        test("Appear offline failing 503, then the tab leaves and comes back: it shows her saved status and sends nothing more", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+
+            a.fire("pagehide", { persisted: true });
+            expect(shown(a)).toEqual(settled(automatic));
+            await after(5000);
+            a.fire("pageshow", { persisted: true });
+            await after(120_000);
+
+            expect(shown(a)).toEqual(settled(automatic));
+            expect(b.calls).toHaveLength(1);
+        });
+
+        test("the call out as the tab leaves is aborted, and its status 0 asks nothing again", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+
+            a.fire("pagehide", { persisted: true });
+            await after(0);
+            expect(b.calls[0].signal.aborted).toBe(true);
+            await after(120_000);
+
+            expect(b.calls).toHaveLength(1);
+        });
+
+        test("a page closed for good is no visit to the cache: a pagehide that does not persist leaves the choice to be sent", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+
+            a.fire("pagehide", { persisted: false });
+            await after(1000);
+
+            expect(b.calls).toHaveLength(1);
+        });
+
+        test("A chooses and leaves inside the pause, B sends it, she chooses again in B, A comes back: nothing sent, and A shows B's choice", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            for (const tab of [a, t2]) {
+                tab.prefs.setMe(sidebarMe(automatic));
+            }
+
+            await a.prefs.setStatus(busy);
+            await after(500);
+            a.fire("pagehide", { persisted: true });
+            await after(2500);
+            expect(b.calls.map(call => [call.tab, call.change])).toEqual([[t2.n, { status: "busy" }]]);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            await t2.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[1].answer.resolve(landed);
+            await after(0);
+
+            a.fire("pageshow", { persisted: true });
+            await after(60_000);
+
+            expect(b.calls).toHaveLength(2);
+            expect(shown(a)).toEqual(settled(hidden));
+        });
+    });
+});
+
+// #endregion Her status across her tabs

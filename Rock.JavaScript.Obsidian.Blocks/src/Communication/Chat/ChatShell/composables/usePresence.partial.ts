@@ -97,8 +97,11 @@ export type PresenceDependencies = {
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
     isStopped: () => boolean;
 
-    /** Her own settings, read for her Busy and Appear offline. */
-    prefs: { state: { me: Pick<Prefs["state"]["me"], "busy_until" | "appear_offline">, isMeRead: boolean } };
+    /**
+     * Her own settings: her status as her tabs show it, her choice pending, whether her settings
+     * have been read, and her input in her other tabs, which this page tells them its own.
+     */
+    prefs: Pick<Prefs, "shownStatus" | "isChoicePending" | "noteInput"> & { state: Pick<Prefs["state"], "isMeRead" | "ownInputAt"> };
 } & Pick<PresenceStatusDependencies, "targets" | "leave" | "session">;
 
 /** Typing, as the shell holds it. */
@@ -253,7 +256,14 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
 
     const state = reactive({ typists: {} as Record<string, string[]> });
 
-    const status = createPresenceStatus({ ...dependencies, me: () => dependencies.prefs.state.isMeRead ? dependencies.prefs.state.me : null });
+    const { prefs } = dependencies;
+    const status = createPresenceStatus({
+        ...dependencies,
+        // a choice she made is hers before her settings are read
+        me: () => prefs.state.isMeRead || prefs.isChoicePending() ? prefs.shownStatus() : null,
+        ownInputAt: () => prefs.state.ownInputAt,
+        noteInput: at => prefs.noteInput(at)
+    });
 
     // #region Send
 
@@ -277,7 +287,7 @@ export function createPresence(dependencies: PresenceDependencies): Presence {
             return false;
         }
         // Appear offline hides her typing too, whether or not status is on: the platform drops it anyway
-        if (dependencies.prefs.state.me.appear_offline) {
+        if (prefs.shownStatus().appear_offline) {
             return false;
         }
         if (!settings().flags.typing || (offToken !== null && offToken === dependencies.currentToken())) {

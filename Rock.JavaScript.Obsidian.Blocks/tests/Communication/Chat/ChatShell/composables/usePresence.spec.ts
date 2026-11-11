@@ -33,6 +33,7 @@ import { mount } from "@vue/test-utils";
 import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import { presenceStatusKey, useFaceStatus } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
+import type { StatusChoice } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
@@ -110,7 +111,20 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const stopped = { value: false };
     // Her own settings as the sidebar last read them: her Busy and her Appear offline, read, as
     // they are on a page once the sidebar has answered.
-    const prefs = reactive({ state: { me: { busy_until: null as string | null, appear_offline: false }, isMeRead: true } });
+    // Her status as her tabs show it is her settings' here, nothing pending; her input in her
+    // other tabs is what they told this one, and what this page tells them is kept.
+    const prefs = reactive({
+        state: { me: { busy_until: null as string | null, appear_offline: false }, isMeRead: true, ownInputAt: 0 },
+        // a choice of hers not yet saved, which her tabs show over her settings
+        pending: null as StatusChoice | null
+    });
+    const toldInputs: number[] = [];
+    const prefsReach = {
+        state: prefs.state,
+        shownStatus: () => prefs.pending ?? { busy_until: prefs.state.me.busy_until, appear_offline: prefs.state.me.appear_offline },
+        isChoicePending: () => prefs.pending !== null,
+        noteInput: (at: number) => toldInputs.push(at)
+    };
     // The newest message the person's client holds for each place, by place key.
     const newest: Record<string, number | null> = { [group]: 10 };
     // Places whose history may be behind the person, as a send still out leaves one.
@@ -189,7 +203,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         },
         report: code => reports.push(code),
         isStopped: () => stopped.value,
-        prefs,
+        prefs: prefsReach,
         targets,
         leave: clientId => leaves.push(clientId),
         session: {
@@ -224,7 +238,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me, prefs: prefs.state };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me, prefs: prefs.state, toldInputs, choice: prefs };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -2239,6 +2253,15 @@ describe("the typing call's client", () => {
 });
 
 describe("Appear offline and typing", () => {
+    test("a pending Appear offline her tabs show refuses typing before her settings say it", async () => {
+        const h = buildStatus();
+        h.choice.pending = { busy_until: null, appear_offline: true };
+        h.presence.typed(group, null, "a");
+        await pass(700);
+
+        expect(h.calls).toEqual([]);
+    });
+
     test("Appear offline in her settings stops the next signal, and the switch being off changes nothing of it", async () => {
         const on = buildStatus();
         on.me.appear_offline = true;
@@ -2332,6 +2355,46 @@ describe("her own face", () => {
         h.me.appear_offline = true;
 
         expect(drawn.value).toEqual(expect.objectContaining({ state: "hidden", tip: "Appear offline" }));
+    });
+
+    test("draws her choice her tabs show while it is pending, before her settings are read and over what they say", () => {
+        const h = buildStatus(idleLine);
+        h.prefs.isMeRead = false;
+        h.choice.pending = { busy_until: null, appear_offline: true };
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "hidden" }));
+
+        h.prefs.isMeRead = true;
+        h.choice.pending = { busy_until: "infinity", appear_offline: false };
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "busy" }));
+        h.choice.pending = null;
+        expect(h.status.statusOf(me)?.state).toBe("online");
+    });
+
+    test("draws Online while her input in another tab is fresh, and her answer once it is past the idle line, with no request", () => {
+        const h = buildStatus(idleLine);
+        h.status.exchanged([me], exchangeAnswer({ [me]: away(0) }));
+        const drawn = face(h.status, me);
+        jest.advanceTimersByTime(30_000);
+        expect(drawn.value?.state).toBe("away");
+
+        h.prefs.ownInputAt = Date.now();
+        expect(drawn.value?.state).toBe("online");
+        jest.advanceTimersByTime(29_999);
+        expect(drawn.value?.state).toBe("online");
+        jest.advanceTimersByTime(1);
+
+        expect(drawn.value?.state).toBe("away");
+        expect(h.session.asked).toEqual([]);
+    });
+
+    test("tells her other tabs of her input, at most once a second as it does any work", () => {
+        const h = buildStatus(idleLine);
+        h.fire("keydown");
+        h.fire("pointermove");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+
+        expect(h.toldInputs).toEqual([serverNow, serverNow + 1000]);
     });
 
     test("draws nothing until her settings have been read, then what they say, with no Online between", () => {
