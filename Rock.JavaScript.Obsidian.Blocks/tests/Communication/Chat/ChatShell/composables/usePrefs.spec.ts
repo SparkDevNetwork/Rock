@@ -1084,7 +1084,7 @@ type StatusBrowser = {
 };
 
 /** One browser of hers: tabs of chat sharing one origin's Web Locks and BroadcastChannel, and every status call any of them asks. */
-function statusBrowser(options: { hasLocks?: boolean, locksRefuse?: boolean } = {}): StatusBrowser {
+function statusBrowser(options: { hasLocks?: boolean, locksRefuse?: boolean, postThrows?: { kind: string, name: string } } = {}): StatusBrowser {
     const locks = createLockFake();
     const channels = createChannelFake();
     const calls: StatusCall[] = [];
@@ -1121,7 +1121,21 @@ function statusBrowser(options: { hasLocks?: boolean, locksRefuse?: boolean } = 
                     ? undefined
                     // a browser that refuses Web Locks to the page, as on an opaque origin
                     : options.locksRefuse ? { request: () => Promise.reject(new DOMException("The request was denied.", "SecurityError")) } : tabLocks,
-                channel: name => channels.open(name),
+                channel: name => {
+                    const opened = channels.open(name);
+                    const throws = options.postThrows;
+                    if (throws) {
+                        // the browser throwing as it posts one kind of post, as a closed channel or an uncloneable post does
+                        const postMessage = opened.postMessage;
+                        opened.postMessage = message => {
+                            if ((message as { kind?: unknown }).kind === throws.kind) {
+                                throw new DOMException("The browser refused the post.", throws.name);
+                            }
+                            postMessage(message);
+                        };
+                    }
+                    return opened;
+                },
                 targets: {
                     addEventListener: (type, listener) => {
                         const set = listeners.get(type) ?? new Set();
@@ -1680,6 +1694,126 @@ describe("her status across her tabs", () => {
             await after(0);
 
             expect(kinds(b)).toEqual(["hello", "hello"]);
+        });
+    });
+
+    describe("what crosses her channel", () => {
+        test("two tabs, one choice: one call, and the other tab settles the moment the saved post arrives, long before its own copy is due", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            t2.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            await delivered();
+            expect(shown(t2)).toEqual(settled(busy));
+
+            await after(60_000);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n]);
+        });
+
+        test("a save landing after a failure clears not saved yet in the other tab as its saved post arrives", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+            await delivered();
+            expect([a, t2].map(tab => tab.prefs.isStatusRetrying())).toEqual([true, true]);
+
+            await after(9999);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [a.n, 11_000]]);
+            b.calls[1].answer.resolve(landed);
+            await after(0);
+            await delivered();
+
+            expect([a, t2].map(tab => tab.prefs.isStatusRetrying())).toEqual([false, false]);
+            expect([a, t2].map(shown)).toEqual([settled(hidden), settled(hidden)]);
+            await after(60_000);
+            expect(b.calls).toHaveLength(2);
+        });
+
+        test("a new tab hears a choice still in its pause through its hello, shows it pending and settles on its saved", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            await a.prefs.setStatus(hidden);
+            await after(300);
+
+            const c = b.open();
+            c.prefs.setMe(sidebarMe(automatic));
+            await delivered();
+            expect(shown(c)).toEqual(pending(hidden));
+
+            await after(699);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            await delivered();
+            expect(shown(c)).toEqual(settled(hidden));
+            await after(60_000);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n]);
+        });
+
+        test("tab 1 fails twice, the network returns and its save lands, then it chooses Appear offline and closes inside the pause: tab 2 sends it at its hand-off, not at the old retry clock", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            // the second failure's wait at the middle of its range is 20 s, so tab 2's old clock would come due at 33 s
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(10_000);
+            b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(300);
+
+            // only tab 1 hears its network return, as when its own connection was the one cut
+            a.fire("online", {});
+            await after(0);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 1000], [a.n, 11_000], [a.n, 11_300]]);
+            b.calls[2].answer.resolve(landed);
+            await after(0);
+            await delivered();
+            expect(shown(t2)).toEqual(settled(busy));
+
+            await a.prefs.setStatus(hidden);
+            await after(300);
+            a.close();
+            await after(2699);
+            expect(b.calls).toHaveLength(3);
+            await after(1);
+
+            // chosen at 11_301 and taken by tab 2 then, so due a pause and a hand-off later
+            expect(b.calls.map(call => [call.tab, call.at, call.change])).toEqual([
+                [a.n, 1000, { status: "busy" }],
+                [a.n, 11_000, { status: "busy" }],
+                [a.n, 11_300, { status: "busy" }],
+                [t2.n, 14_301, { status: "appear_offline" }]
+            ]);
+        });
+
+        test("a post the browser cannot clone throws where it is posted, rather than vanishing", async () => {
+            const b = statusBrowser({ postThrows: { kind: "choice", name: "DataCloneError" } });
+            const a = b.open();
+
+            await expect(a.prefs.setStatus(busy)).rejects.toMatchObject({ name: "DataCloneError" });
+        });
+
+        test("a channel the browser has closed reaches no tab and stops nothing: the choice is still saved", async () => {
+            const b = statusBrowser({ postThrows: { kind: "choice", name: "InvalidStateError" } });
+            const a = b.open();
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+
+            expect(b.calls.map(call => [call.tab, call.change])).toEqual([[a.n, { status: "busy" }]]);
         });
     });
 

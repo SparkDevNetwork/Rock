@@ -24,6 +24,8 @@
 // such a person out.
 // Her automatic state rides only on her own entry, and only while she is Busy.
 
+import { deserialize, serialize } from "v8";
+
 /** The server's clock in these fixtures: 3:00 PM UTC on the day. */
 export const serverNow = Date.parse("2026-11-10T15:00:00.000Z");
 
@@ -352,6 +354,24 @@ export function createLockFake(): { tab: () => TabLocks, holder: (name: string) 
 }
 
 /**
+ * A message as the browser's structured clone takes it, which Node's serializer runs: a Proxy, a
+ * function or anything else it cannot clone throws, as the browser's DataCloneError, rather than
+ * passing as JSON would.
+ *
+ * @param message What a tab posts.
+ *
+ * @returns The serialized copy, read back once per tab it reaches.
+ */
+function structuredCopy(message: unknown): Buffer {
+    try {
+        return serialize(message);
+    }
+    catch (error) {
+        throw new DOMException(error instanceof Error ? error.message : String(error), "DataCloneError");
+    }
+}
+
+/**
  * The browser's BroadcastChannel for every tab of one origin: a post reaches every other open
  * channel of its name, never its own, on a later task and as a structured clone; posting on a
  * closed channel throws, as the browser's does. Every post is kept, for a spec to read.
@@ -368,13 +388,13 @@ export function createChannelFake(): { open: (name: string) => TabChannel, posts
                     if (isClosed) {
                         throw new DOMException("The channel is closed.", "InvalidStateError");
                     }
-                    const data = JSON.stringify(message);
-                    posts.push({ name, data: JSON.parse(data) });
+                    const data = structuredCopy(message);
+                    posts.push({ name, data: deserialize(data) });
                     for (const other of open) {
                         if (other.name === name && other.channel !== channel) {
                             setTimeout(() => {
                                 if (open.has(other)) {
-                                    other.channel.onmessage?.({ data: JSON.parse(data) });
+                                    other.channel.onmessage?.({ data: deserialize(data) });
                                 }
                             }, 0);
                         }

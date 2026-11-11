@@ -21,7 +21,7 @@
 // create and stop it, and own what it shows.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { newGuid } from "@Obsidian/Utility/guid";
-import { reactive } from "vue";
+import { reactive, shallowReactive } from "vue";
 import { failureWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
@@ -316,9 +316,12 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
 
     /**
      * The newest record this tab made or heard, the newest choice any saved post covered, and
-     * whether her saved status is known here. Reactive, since what her faces show reads them.
+     * whether her saved status is known here. Reactive, since what her faces show reads them, but
+     * only shallowly: a record is a value, replaced whole and never changed, so the assignment is
+     * the one change to react to, and a record read back is the plain object, which the channel's
+     * structured clone takes where a reactive proxy of it throws.
      */
-    const tab = reactive({ newest: null as StatusRecord | null, covered: 0, isMeKnown: false });
+    const tab = shallowReactive({ newest: null as StatusRecord | null, covered: 0, isMeKnown: false });
 
     /** The choice time of what last wrote me: a saved post's, or what this tab had covered at a sidebar load. */
     let meStamp = 0;
@@ -374,8 +377,12 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         try {
             channel.postMessage(message);
         }
-        catch {
-            // Intentionally ignored: a channel the browser has closed reaches no tab.
+        catch (error) {
+            // a channel the browser has closed reaches no tab; anything else, such as a post it
+            // cannot clone, is a fault in what was posted and is left to surface
+            if ((error as { name?: unknown } | null)?.name !== "InvalidStateError") {
+                throw error;
+            }
         }
     }
 
