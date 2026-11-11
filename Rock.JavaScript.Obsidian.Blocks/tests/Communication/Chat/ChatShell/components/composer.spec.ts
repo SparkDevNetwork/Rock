@@ -1445,8 +1445,25 @@ describe("the composer's Busy note", () => {
 
         const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
 
-        expect(partsOf(wrapper)).toEqual(["name:Cindy", "fixed: is busy", "until: until 3:00 PM", "fixed: and won't be notified."]);
+        expect(partsOf(wrapper)).toEqual(["name:Cindy ", "fixed:is busy", "until: until 3:00 PM", "fixed: and won't be notified."]);
         expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
+    });
+
+    // Past the viewer's midnight her end is today: the store's midnight wake moves her revision,
+    // and the line reads its new words in place, with no fade.
+    test("at the viewer's midnight, until tomorrow, 8:00 AM reads until 8:00 AM in place", async () => {
+        jest.setSystemTime(new Date(2026, 10, 10, 23, 59, 30));
+        const store = statusStore();
+        store.status.told([told(cindy, busyNow(new Date(2026, 10, 11, 8, 0)))]);
+        const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
+        expect(describedBy(wrapper)).toBe("Cindy is busy until tomorrow, 8:00 AM and won't be notified.");
+
+        jest.advanceTimersByTime(31_000);
+        await nextTick();
+
+        expect(describedBy(wrapper)).toBe("Cindy is busy until 8:00 AM and won't be notified.");
+        expect(partsOf(wrapper)).toContain("until: until 8:00 AM");
+        expect(transitionClasses(wrapper)).toEqual([]);
     });
 
     test("a long name until tomorrow, and a Busy with no end, in their own words", () => {
@@ -1458,7 +1475,7 @@ describe("the composer's Busy note", () => {
         const open = mountWith(store, { busyPerson: person(grace, "Grace") });
 
         expect(describedBy(long)).toBe("Alexandrina-Josephine is busy until tomorrow, 8:00 AM and won't be notified.");
-        expect(partsOf(open)).toEqual(["name:Grace", "fixed: is busy", "fixed: and won't be notified."]);
+        expect(partsOf(open)).toEqual(["name:Grace ", "fixed:is busy", "fixed: and won't be notified."]);
         expect(describedBy(open)).toBe("Grace is busy and won't be notified.");
     });
 
@@ -1629,6 +1646,8 @@ describe("the composer's Busy note", () => {
             expect(note).toMatch(/color: var\(--chat-muted\);/);
             expect(note).toMatch(/white-space: nowrap;/);
             expect(note).toMatch(/overflow: hidden;/);
+            // over the feed for as long as she is Busy, so a wheel, a hover or a drag there reaches the rows under it
+            expect(note).toMatch(/pointer-events: none;/);
         });
 
         test("shortens the name first, then the time, and never 'is busy' or 'and won't be notified'", () => {
@@ -1644,6 +1663,8 @@ describe("the composer's Busy note", () => {
             expect(until).toMatch(/text-overflow: ellipsis;/);
             expect(fixed).toMatch(/flex: none;/);
             expect(fixed).not.toMatch(/overflow|ellipsis/);
+            // the space after the name is the name's own, so an ellipsis cutting the name cuts it too
+            expect(name).toMatch(/white-space: pre;/);
         });
 
         test("only fades, over the fast state time, and nothing moves it", () => {
