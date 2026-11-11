@@ -42,6 +42,42 @@ export type ChatPerson = {
     avatar_url: string | null;
 };
 
+/**
+ * A person's online status as the platform decides it for one reader, at one instant: when it was
+ * decided, as epoch microseconds in a JSON integer, so two decisions inside one millisecond still
+ * order; and, where the platform tells the reader anything, her state and the server time it holds
+ * to. A decision time alone says the reader is shown nothing of her from then, whether she is
+ * offline, hidden from this reader, blocked or unrelated.
+ */
+export type PersonStatus = {
+    as_of: number;
+    state?: "online" | "away" | "busy";
+
+    /** Her freshest page's end, a server time; nothing is drawn of her past it. */
+    until?: string;
+
+    /** When her Busy ends, a server time; left out when it has no end. */
+    busy_until?: string;
+
+    /** Her automatic state under Busy, sent only on the reader's own entry and only while Busy. */
+    auto?: "online" | "away";
+};
+
+/** What a face draws of a person's status: the state, the words a label and a tip read, and the store's revision for it. */
+export type FaceStatus = {
+    /** Hidden is the person's own face alone, under Appear offline. */
+    state: "online" | "away" | "busy" | "hidden";
+
+    /** What a screen reader hears after the name, such as ", busy until 3:00 PM". */
+    label: string;
+
+    /** What the tooltip and the profile card read, such as "Busy until 3:00 PM". */
+    tip: string;
+
+    /** Moves only when what is drawn changes, so a face mounted at a revision draws as state and fades only for a later one. */
+    revision: number;
+};
+
 /** One row of the sidebar, as chat_get_bootstrap returns it. */
 export type SidebarRow = {
     channel_id: string;
@@ -141,6 +177,9 @@ export type ChannelLeader = ChatPerson;
 export type ChannelPerson = ChannelLeader & {
     /** Their badges, only when they show their details; null otherwise. */
     details: PersonDetails | null;
+
+    /** Their online status for the reader, sent for every person where status is on. */
+    status?: PersonStatus;
 };
 
 /** What chat_get_channel answers about one room, read when it opens. */
@@ -650,6 +689,9 @@ export type PersonRow = {
 
     /** Whether they are in the room the search was asked for; sent only when one was named. */
     in_room?: boolean;
+
+    /** Their online status for the reader, sent for every person where status is on. */
+    status?: PersonStatus;
 };
 
 /** One person as chat_get_person answers for the profile card, in the room the card was opened from. */
@@ -709,6 +751,9 @@ export type RosterMember = {
 
     /** Whether the reader may message them from here. */
     can_message: boolean;
+
+    /** Their online status for the reader, sent for every person where status is on. */
+    status?: PersonStatus;
 };
 
 /** What chat_list_members returns: one page, leaders first, then by name. */
@@ -803,6 +848,9 @@ export type TypingEvent = {
 
     /** The typist cleared their box: they stopped, and are not typing on. Left out of a signal that they are typing. */
     stopped?: boolean;
+
+    /** The typist's online status, only where the platform proved every reader may be told it; never on her own row. */
+    status?: PersonStatus;
 };
 
 /**
@@ -927,6 +975,9 @@ export type DmPreviewEvent = {
 
     /** The whole line this reader's row draws, by the rule the sidebar reads. */
     preview_line: string;
+
+    /** The sender's online status, only for a message the send just wrote; never on the sender's own row. */
+    status?: PersonStatus;
 };
 
 /**
@@ -944,6 +995,9 @@ export type TokenExchangeResponse = {
 
     /** The settings beside the token; any key may be missing, and the client has a default. */
     settings?: unknown;
+
+    /** The people the body asked about, by primary alias; left out when the read did not answer in time, which is no failure. */
+    presence?: Record<string, PersonStatus>;
     error?: { code?: string, message?: string };
 };
 

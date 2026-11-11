@@ -483,7 +483,14 @@ function setPositions(rows: FeedRow[]): void {
     });
 }
 
-function startOfDay(at: Date): Date {
+/**
+ * The start of the reader's calendar day a moment falls in, by their own clock.
+ *
+ * @param at The moment.
+ *
+ * @returns Midnight that began its day.
+ */
+export function startOfDay(at: Date): Date {
     return new Date(at.getFullYear(), at.getMonth(), at.getDate());
 }
 

@@ -11,12 +11,17 @@
             <template v-else-if="initialsOf(person.name, index)">{{ initialsOf(person.name, index) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
+        <Transition name="chat-status">
+            <StatusBadge v-if="shownStatus" :status="shownStatus" :faceSize="size" />
+        </Transition>
     </span>
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
     import Icon from "./icon.partial.obs";
+    import StatusBadge from "./statusBadge.partial.obs";
+    import { FaceStatus } from "../types.partial";
     import { avatarHue } from "./brand.partial";
     import { useImageReveal, vReveal } from "./imageReveal.partial";
 
@@ -53,6 +58,18 @@
         isOneLetter: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** The person's online status, from the status store, or null for none. */
+        status: {
+            type: Object as PropType<FaceStatus | null>,
+            default: null
+        },
+
+        /** Whether this is the person's own face, the only one that draws their Appear offline. */
+        own: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 
@@ -63,6 +80,22 @@
 
     /** At this size and below two letters do not fit, so one is drawn. */
     const largestOneInitialSize = 22;
+
+    /** Below this a status badge would cover too much of the face to read either. */
+    const smallestStatusSize = 32;
+
+    /**
+     * The status drawn: one face of 32px or more, never a pile, and Appear offline only on the
+     * person's own face, since everyone else sees nothing of her. Decided here, so a host's slip
+     * cannot draw one where none belongs.
+     */
+    const shownStatus = computed(() => {
+        const status = props.status;
+        if (!status || props.people.length !== 1 || props.size < smallestStatusSize) {
+            return null;
+        }
+        return status.state !== "hidden" || props.own ? status : null;
+    });
 
     // #endregion Values
 
