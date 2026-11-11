@@ -85,8 +85,10 @@ function groupsOf(rows: Row[]): Group[] {
  * time line as its row's, the time line kept and hidden when its row does not show it; the face
  * also carries the person mark the feed drew before.
  */
-function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after", isScrollerless?: boolean } = {}) {
+function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after", isScrollerless?: boolean, isLanded?: boolean } = {}) {
     const rows = reactive<Row[]>([...(options.rows ?? [])]);
+    // whether the view's open has drawn its first read: a view drawn here has, unless a cell opens it
+    const landed = ref(options.isLanded ?? true);
     const typing = ref<Typing | null>(options.typing ?? null);
     const isInRun = ref(options.isInRun ?? false);
     const following = ref(options.isFollowing ?? true);
@@ -113,7 +115,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
             if (options.ownFollow === "before") {
                 ownFollow();
             }
-            useFeedTail({
+            const tail = {
                 content,
                 // the thread's drawer hands its tail no scroller
                 scroller: () => options.isScrollerless ? null : scroller.value,
@@ -124,8 +126,10 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                 },
                 follow,
                 arrives,
-                drawn: () => [typing.value, rows.length, isInRun.value, rows.map(row => row.h).join()]
-            });
+                drawn: () => [typing.value, rows.length, isInRun.value, rows.map(row => row.h).join()],
+                landed: () => landed.value
+            };
+            useFeedTail(tail);
             if (options.ownFollow === "after") {
                 ownFollow();
             }
@@ -177,7 +181,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
     const wrapper = mount(View, { attachTo: document.body, global: { stubs: { transition: false }, provide: { [messageMotionKey as symbol]: motion } } });
     follow();
     follows.count = 0;
-    return { wrapper, rows, typing, isInRun, following, follows, reads, stage, scroller, content, endOf };
+    return { wrapper, rows, typing, isInRun, following, landed, follows, reads, stage, scroller, content, endOf };
 }
 
 type View = ReturnType<typeof draw>;
@@ -1315,5 +1319,81 @@ describe("the view's own entrance", () => {
         expect(named((stage as Stage).played)).toEqual(["chat-tail-open tail-content"]);
         expect((stage as Stage).played[0].options).toMatchObject({ duration: 120, easing: "linear" });
         expect(near(seen(row(v, "k:1")).top, top)).toBe(true);
+    });
+});
+
+// A switch back draws the room as it was held at once, and the open's first read says what it holds
+// now, who is typing included, a moment later. On a slow link that read can land after the feed's
+// entrance has ended: what it brings is still the open's, so it rides the open's own motion rather
+// than stepping. Only that first read: what a later read states is simply there.
+describe("the open's first read", () => {
+    test("landing after the entrance ended, the typist it names glides in with the stack: the rows above never step", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }], isLanded: false });
+        const top = seen(row(v, "k:1")).top;
+
+        v.landed.value = true;
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect(named((stage as Stage).played)).toEqual(["chat-tail-open tail-content"]);
+        expect((stage as Stage).played[0].options).toMatchObject({ duration: msg });
+        const tops = sample(() => seen(row(v, "k:1")).top);
+        expect(near(tops[0], top)).toBe(true);
+        for (let index = 1; index < tops.length; index++) {
+            expect(Math.abs(tops[index] - tops[index - 1])).toBeLessThan(16);
+        }
+        (stage as Stage).advance(msg);
+        expect(near(seen(row(v, "k:1")).top, top - 46)).toBe(true);
+    });
+
+    test("landing inside the entrance, it rides the entrance to its end, as it always has", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }], isLanded: false });
+        const scroller = v.scroller.value as HTMLElement;
+        const entrance = { animationName: "chat-feed-enter", playState: "running", currentTime: 80, effect: { getComputedTiming: () => ({ endTime: 220 }) } };
+        scroller.getAnimations = (() => [entrance]) as never;
+
+        v.landed.value = true;
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect(named((stage as Stage).played)).toEqual(["chat-tail-open tail-content"]);
+        expect((stage as Stage).played[0].options).toMatchObject({ duration: 140, easing: "linear" });
+    });
+
+    test("once it has landed naming no one, a typist a later read names is simply there", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], isLanded: false });
+
+        v.landed.value = true;
+        await settle();
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect((stage as Stage).played).toEqual([]);
+    });
+
+    test("scrolled up, it moves nothing", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], isLanded: false, isFollowing: false });
+
+        v.landed.value = true;
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect((stage as Stage).played).toEqual([]);
+    });
+
+    test("under reduced motion, the typist it names is simply there", async () => {
+        setReducedMotion(true);
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], isLanded: false });
+
+        v.landed.value = true;
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect((stage as Stage).played).toEqual([]);
     });
 });

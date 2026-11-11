@@ -152,6 +152,29 @@ describe("createTimelines", () => {
         expect(told).toEqual([1_000]);
     });
 
+    // A view counts from where this stood as it mounted, so it knows its open's first read when it
+    // lands: the count moves in the same pass that tells typing who the page names, so the typist
+    // and the read are drawn in one change.
+    test("every page laid in is counted, before typing is told who it names", async () => {
+        const answers = [page([1, 2], { typing: [] } as Partial<HistoryPage>), page([3], { typing: [] } as Partial<HistoryPage>), page([0], { has_more: false })];
+        const countAtTyping: number[] = [];
+        const timelines = createTimelines({
+            motion: createMessageMotion(),
+            mask: platformMask,
+            limits,
+            fetchPage: async () => answers.shift() as HistoryPage,
+            typing: { heldThrough: () => undefined, stated: () => void countAtTyping.push(timelines.state(channel).pagesRead) }
+        });
+        expect(timelines.state(channel).pagesRead).toBe(0);
+
+        await timelines.loadNewest(channel);
+        await timelines.onJoined(channel);
+        await timelines.loadOlder(channel);
+
+        expect(countAtTyping).toEqual([1, 2]);
+        expect(timelines.state(channel).pagesRead).toBe(3);
+    });
+
     test("a live message before the first page is held, then applied after it, once", async () => {
         const first = deferred<HistoryPage>();
         const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits, fetchPage: () => first.promise });
