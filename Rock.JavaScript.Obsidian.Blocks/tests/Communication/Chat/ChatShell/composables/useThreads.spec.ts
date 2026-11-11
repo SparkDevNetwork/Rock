@@ -1560,9 +1560,10 @@ describe("following", () => {
         expect(threads.state.list.rows[0].following).toBe(false);
     });
 
-    // The drawer's toggle does not wait for the answer, so it can be pressed twice in quick succession.
-    test("two quick changes of one thread end where the person last left it, whichever answer lands first", async () => {
-        const { threads, answers } = await setup();
+    // The drawer's toggle does not wait for the answer, so it can be pressed twice in quick
+    // succession; the second change waits for the first's answer, so the two never land crossed.
+    test("two quick changes of one thread end where the person last left it, the second asked once the first is answered", async () => {
+        const { threads, answers, callsTo } = await setup();
         answers.chat_get_thread_history = [threadAnswer(root(40), [reply(41, 40)], { following: false })];
         await threads.openThread(channel, 40);
         const first = deferred<CallResult>();
@@ -1571,11 +1572,22 @@ describe("following", () => {
 
         const following = threads.follow(40, true);
         const unfollowing = threads.follow(40, false);
-        second.resolve({ ok: true, data: { following: false, read_cursor: null } });
-        expect(await unfollowing).toBe(true);
-        first.resolve({ ok: true, data: { following: true, read_cursor: 41 } });
+        await settle();
 
+        expect(callsTo("chat_follow_thread").map(c => c.args)).toEqual([{ p_root_id: 40, p_follow: true }]);
+        expect(threads.state.thread?.following).toBe(false);
+
+        first.resolve({ ok: true, data: { following: true, read_cursor: 41 } });
         expect(await following).toBe(false);
+        await settle();
+
+        // The first's answer is not the newest, so the bell stays where the person left it.
+        expect(threads.state.thread?.following).toBe(false);
+        expect(callsTo("chat_follow_thread").map(c => c.args)).toEqual([{ p_root_id: 40, p_follow: true }, { p_root_id: 40, p_follow: false }]);
+
+        second.resolve({ ok: true, data: { following: false, read_cursor: null } });
+
+        expect(await unfollowing).toBe(true);
         expect(threads.state.thread?.following).toBe(false);
         expect(threads.state.followError).toBeNull();
     });

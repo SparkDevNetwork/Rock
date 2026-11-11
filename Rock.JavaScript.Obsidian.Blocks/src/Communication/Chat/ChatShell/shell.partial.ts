@@ -32,6 +32,7 @@ import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker }
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
+import { StatusChannel, StatusLocks } from "./composables/statusTabs.partial";
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
 import { AttachmentTypes, ChatSettings, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
@@ -49,7 +50,7 @@ import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rem
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
-import { createShellSession, MintActionResult } from "./shellSession.partial";
+import { createShellSession, MintActionResult, tokenPerson } from "./shellSession.partial";
 import { createProblemReport, ProblemReporter } from "./problemReport.partial";
 
 /**
@@ -124,6 +125,12 @@ export type ShellOptions = {
     fetch: (url: string, init: RequestInit) => Promise<Response>;
     storage: DraftStorage | null;
     pageTargets: PageEventTargets;
+
+    /** The browser's Web Locks, which let one of her tabs save her status at a time; a site without them has none. */
+    locks?: StatusLocks;
+
+    /** Opens a BroadcastChannel to her other tabs of chat; without it this tab is alone. */
+    channel?: (name: string) => StatusChannel;
 
     /**
      * The mark Rock's sign-out takes away, which tells the drafts the last person signed out;
@@ -412,7 +419,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             exchangeBody: reason => presence.status.exchangeBody(reason),
             exchanged: (asked, outcome) => presence.status.exchanged(asked, outcome),
             clockFrom: issuedAtSeconds => presence.status.clockFrom(issuedAtSeconds),
-            settled: (reason, ok) => presence.status.settled(reason, ok)
+            settled: (reason, ok) => {
+                presence.status.settled(reason, ok);
+                // the beat rides the exchange, so an ok one whose service takes writes is the platform
+                // taking her writes again; under maintenance it answers while every write is refused
+                if (ok && isComposerOpen(session.settings().service.state)) {
+                    prefs.statusWake();
+                }
+            }
         }
     });
     const session = signIn.session;
@@ -479,7 +493,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * refusal for read only or maintenance puts its banner on the page at once, since the state
      * changed after the last exchange.
      */
-    async function call(name: string, args: Record<string, unknown>, callOptions?: { keepalive?: boolean }): Promise<CallResult> {
+    async function call(name: string, args: Record<string, unknown>, callOptions?: { keepalive?: boolean, signal?: AbortSignal }): Promise<CallResult> {
         const result = await session.withFreshToken(
             () => platform.call(name, args, callOptions),
             answer => !answer.ok && answer.error.code === "auth.expired"
@@ -794,7 +808,22 @@ export function createChatShell(options: ShellOptions): ChatShell {
         savePersonSetting: options.savePersonSetting,
         channels,
         isOffline: () => state.connection !== null,
-        notify: notice => options.notify?.(notice)
+        notify: notice => options.notify?.(notice),
+        status: {
+            tenantId,
+            personAliasGuid,
+            currentPerson: () => tokenPerson(session.currentToken()),
+            // the status branch reads no client, and PostgREST needs it named
+            saveStatus: (change, signal) => call("chat_set_status", { p_client: null, p_change: change }, { signal }),
+            // a read only refusal of this tab's own choice, sent by another tab, closes what this tab's own call would
+            applyRefusal: error => {
+                session.applyServiceRefusal(error);
+                showSettings();
+            },
+            locks: options.locks,
+            channel: options.channel,
+            targets: options.pageTargets.window
+        }
     });
 
     // A change to whom the person blocked is masked in place by every holder at once; what the

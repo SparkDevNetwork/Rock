@@ -65,6 +65,8 @@ export function createStatusStore({ isSeeded = true, clock = "fixtures" }: { isS
         settings: () => readSettings({ flags: { online: isOn.value }, limits: { presence_idle_seconds: 600 } }),
         personAliasGuid: viewer,
         me: () => mine.value,
+        ownInputAt: () => 0,
+        noteInput: () => undefined,
         isBlocked: alias => blocked.has(alias.toLowerCase()),
         isStopped: () => false,
         targets: { document: page, window: page },

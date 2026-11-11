@@ -53,9 +53,10 @@ export type PlatformCall = {
      *
      * @param name The function, as the database names it.
      * @param args Its arguments, with their p_ names.
-     * @param options keepalive for a call that must survive the page closing.
+     * @param options keepalive for a call that must survive the page closing; signal, which ends
+     * a call no longer wanted, the call then answering as one that reached nothing.
      */
-    call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean }) => Promise<CallResult>;
+    call: (name: string, args: Record<string, unknown>, options?: { keepalive?: boolean, signal?: AbortSignal }) => Promise<CallResult>;
 
     /**
      * Calls one of the platform's own functions, which reads its body as it chooses.
@@ -173,7 +174,17 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
             return { ok: false, status: 0, error: classifyPlatformError(error instanceof TypeError ? error : new TypeError(String(error))), retryAfterSeconds: null };
         }
 
-        const answer = await response.json().catch(() => null) as unknown;
+        // An unreadable body is the answer its status says, unless the signal ended the read:
+        // then the call was given up before it was answered, as one that reached nothing.
+        let isGivenUp = false;
+        const answer = await response.json().catch(() => {
+            isGivenUp = init.signal?.aborted === true;
+            return null;
+        }) as unknown;
+        if (isGivenUp) {
+            return { ok: false, status: 0, error: classifyPlatformError(new TypeError("given up while its answer was read")), retryAfterSeconds: null };
+        }
+
         if (response.ok) {
             return { ok: true, data: answer };
         }
@@ -193,7 +204,7 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
                 ? `${projectUrl}${routed.gatePath}`
                 : `${projectUrl}/rest/v1/rpc/${name}`;
 
-            return post(url, args, { keepalive: callOptions?.keepalive === true });
+            return post(url, args, { keepalive: callOptions?.keepalive === true, ...(callOptions?.signal ? { signal: callOptions.signal } : {}) });
         },
 
         callFunction: (path, body, callOptions): Promise<CallResult> => {

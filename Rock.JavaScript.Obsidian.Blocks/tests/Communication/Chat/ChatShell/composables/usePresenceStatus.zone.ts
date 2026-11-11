@@ -47,6 +47,8 @@ test("a Busy ending two days on, told just after midnight on the day daylight sa
         settings: () => readSettings({ flags: { online: true } }),
         personAliasGuid: me,
         me: () => ({ busy_until: null, appear_offline: false }),
+        ownInputAt: () => 0,
+        noteInput: () => undefined,
         isBlocked: () => false,
         isStopped: () => false,
         targets: { document: page, window: page },
@@ -75,6 +77,53 @@ test("a Busy ending two days on, told just after midnight on the day daylight sa
     expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
     // one at the write and one at the wake: a midnight counted as 24 hours would wake an hour early and again and again
     expect(timers).toHaveBeenCalledTimes(2);
+    timers.mockRestore();
+    status.stop();
+});
+
+test("her own Busy ending two days on, chosen just after midnight on the day daylight saving ends, reads tomorrow from the next midnight with no request", () => {
+    const start = new Date(2026, 10, 1, 0, 30).getTime();
+    const midnight = new Date(2026, 10, 2).getTime();
+    jest.setSystemTime(start);
+    const page = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
+    const refreshes: string[] = [];
+    const status = createPresenceStatus({
+        settings: () => readSettings({ flags: { online: true } }),
+        personAliasGuid: me,
+        me: () => ({ busy_until: new Date(2026, 10, 3, 8, 0).toISOString(), appear_offline: false }),
+        ownInputAt: () => 0,
+        noteInput: () => undefined,
+        isBlocked: () => false,
+        isStopped: () => false,
+        targets: { document: page, window: page },
+        leave: () => undefined,
+        session: {
+            refresh: async reason => {
+                refreshes.push(reason);
+                return true;
+            },
+            nextRefreshAt: () => null,
+            tokenLifeSeconds: () => 300,
+            inFlight: () => null
+        }
+    });
+    status.clockFrom(start / 1000);
+    const setTimer = global.setTimeout;
+    const timers = jest.spyOn(global, "setTimeout").mockImplementation(((handler: () => void, ms?: number) => {
+        if (timers.mock.calls.length > 10) {
+            throw new Error("the status timer was set again and again");
+        }
+        return setTimer(handler, ms);
+    }) as typeof setTimeout);
+    const drawn = computed(() => status.statusOf(me));
+    expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until Nov 3, 8:00\sAM$/u);
+
+    jest.advanceTimersByTime(midnight - start - 1);
+    expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until Nov 3, 8:00\sAM$/u);
+    jest.advanceTimersByTime(1);
+
+    expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until tomorrow, 8:00\sAM$/u);
+    expect(refreshes).toEqual([]);
     timers.mockRestore();
     status.stop();
 });

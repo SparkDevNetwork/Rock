@@ -16,15 +16,19 @@
 //
 // The person's settings: each room's notify mode, star and hide, and their own three switches.
 //
-// Every change shows at once and writes at once, one save per change. A room's settings and the
-// reaction switch go to chat_set_prefs, the reaction switch with no room; the two privacy switches
-// go to Rock's SavePersonSetting door, one setting a call, since Rock owns them and pushes them on.
-// Star and hide pull against each other, so hiding unstars and starring unhides in the same patch.
-// The control is the feedback: a save that lands shows nothing more, so a change is seamless. A
-// save that fails puts the control back to the last value known saved and puts the server's
-// sentence under it, with Try again where another try can pass, said aloud at once. Each save has a
-// number; only the newest save of a setting says how it went, so quick changes never flicker
-// through older answers.
+// Every change shows at once and writes at once, one save of a setting out at a time: a change
+// made while one is out waits for its answer, and only the newest waiting is then asked. A room's
+// settings and the reaction switch go to chat_set_prefs, the reaction switch with no room; the two
+// privacy switches go to Rock's SavePersonSetting door, one setting a call, since Rock owns them
+// and pushes them on. Star and hide pull against each other, so hiding unstars and starring
+// unhides in the same patch. The control is the feedback: a save that lands shows nothing more, so
+// a change is seamless. A save that fails puts the control back to the last value known saved and
+// puts the server's sentence under it, with Try again where another try can pass, said aloud at
+// once. Only the newest save of a setting says how it went, so quick changes never flicker through
+// older answers. Her status is the one setting whose failed save is asked again rather than put
+// back, unless the server answered about the choice itself, and the one her other tabs of chat in
+// this browser share: a choice shows at once in every one of them and is saved by whichever still
+// lives, one at a time under a Web Lock.
 // A sidebar load while a room's save is out leaves that setting as the person chose it, as the
 // person's own switches are left; its own answer settles it. Another device sees a change at its
 // next load. Once stopped, nothing more is asked and no answer
@@ -37,6 +41,7 @@ import { ChatError, FailureWords, SidebarRow } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
 import { ActionNotice } from "./useMessageActions.partial";
 import { createSaveRule, failureNote, SaveChange, saveFailed, SaveOutcome } from "./saveRule.partial";
+import { createStatusTabs, StatusDependencies } from "./statusTabs.partial";
 
 /** What chat_set_prefs answered, through the shell's one call path. */
 export type PrefsCallResult = { ok: true, data: unknown } | { ok: false, error: ChatError };
@@ -60,7 +65,7 @@ export type MeSettings = {
     appear_offline: boolean;
 };
 
-/** Her status as she chose it, in the two fields her settings carry it in. */
+/** Her status as she chose it, in the two fields her settings carry it in: Automatic, Busy to an end or "infinity", or Appear offline. */
 export type StatusChoice = Pick<MeSettings, "busy_until" | "appear_offline">;
 
 /**
@@ -104,6 +109,9 @@ export type PrefsState = {
 
     meNotes: Partial<Record<MeKey, Note>>;
 
+    /** Her newest input in her other tabs of chat in this browser, as they post it; 0 before any. */
+    ownInputAt: number;
+
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
     rooms: Record<string, RoomPrefs>;
 
@@ -136,6 +144,9 @@ export type PrefsDependencies = {
 
     /** Shows a toast for a change made from the header: what a notify mode means, or why a change failed. */
     notify: (notice: ActionNotice) => void;
+
+    /** Her status's own reach; without it a status choice is not saved. */
+    status?: StatusDependencies;
 };
 
 /** The settings a shell holds. */
@@ -172,11 +183,26 @@ export type Prefs = {
     /** A Chat settings switch: the reaction switch is the platform's, the other two Rock's. */
     setSwitch: (key: MeKey, value: boolean) => Promise<void>;
 
-    /** Her status as her own faces and the status menu show it. */
+    /**
+     * Chooses her status: shown at once in every tab of hers, and saved by whichever tab still
+     * lives, so it answers at once; a refusal is said in a toast.
+     */
+    setStatus: (choice: StatusChoice) => Promise<void>;
+
+    /** Her status as her faces, her typing and her menu read it: her newest choice while it is not yet saved, else the last saved. */
     shownStatus: () => StatusChoice;
 
-    /** Saves her status from the status menu. */
-    setStatus: (choice: StatusChoice) => Promise<void>;
+    /** Whether a choice of hers is shown that is not yet saved, which is hers whether or not her settings have been read. */
+    isChoicePending: () => boolean;
+
+    /** Her input on this page at a time, told to her other tabs at most every 30 seconds. */
+    noteInput: (at: number) => void;
+
+    /**
+     * The platform takes her writes again, as an ok token exchange whose service is open says: a
+     * status save waiting out a failure is asked at once.
+     */
+    statusWake: () => void;
 
     stop: () => void;
 };
@@ -253,6 +279,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         me: { show_profile_details: false, is_open_dm_allowed: false, reaction_push: true, busy_until: null, appear_offline: false },
         isMeRead: false,
         meNotes: {},
+        ownInputAt: 0,
         rooms: {},
         announcement: null
     }) as PrefsState;
@@ -264,6 +291,8 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
     function announce(text: string, isAssertive = false): void {
         state.announcement = { text, isAssertive, count: ++announcementCount };
     }
+
+    const status = createStatusTabs(state, rule, dependencies, () => isStopped, announce);
 
     function room(channelId: string): RoomPrefs {
         return state.rooms[channelId] ??= { notes: {} };
@@ -341,9 +370,11 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                     state.me[meFields[key]] = read[meFields[key]];
                 }
             }
-            // nothing on this page saves them, so every load states them as the platform holds them
+            // Every load states her status as the platform holds it, a choice pending or not, since
+            // what her faces show is the pending choice until it settles; a save landing later replaces it.
             state.me.busy_until = read.busy_until;
             state.me.appear_offline = read.appear_offline;
+            status.sidebarRead();
             // last, so what reads her choice once it is read never sees the defaults as hers
             state.isMeRead = true;
         },
@@ -533,14 +564,16 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
 
         setSwitch: (key: MeKey, value: boolean): Promise<void> => key === "reaction_push" ? prefs.setReactionPush(value) : prefs.setPersonSetting(key, value),
 
-        shownStatus: (): StatusChoice => ({ busy_until: state.me.busy_until, appear_offline: state.me.appear_offline }),
-
-        // The save and the tabs it reaches are their own work, built on this entry; until then a
-        // choice saves nothing, and her settings keep showing what the platform holds.
-        setStatus: async (): Promise<void> => undefined,
+        setStatus: status.setStatus,
+        shownStatus: status.shownStatus,
+        isChoicePending: status.isChoicePending,
+        noteInput: status.noteInput,
+        statusWake: status.statusWake,
 
         stop: (): void => {
             isStopped = true;
+            rule.stop();
+            status.stop();
         }
     };
 

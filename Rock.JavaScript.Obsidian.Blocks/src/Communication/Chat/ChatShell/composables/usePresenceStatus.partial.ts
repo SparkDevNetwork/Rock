@@ -59,6 +59,12 @@ export type PresenceStatusDependencies = {
      */
     me: () => Pick<MeSettings, "busy_until" | "appear_offline"> | null;
 
+    /** Her newest input in her other tabs of chat in this browser, watched, so it must be reactive. */
+    ownInputAt: () => number;
+
+    /** Tells her other tabs of an input of hers on this page. */
+    noteInput: (at: number) => void;
+
     isBlocked: (personAliasGuid: string) => boolean;
 
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
@@ -291,7 +297,7 @@ function readWatchAnswer(raw: unknown): { asOf: number, told: Map<string, unknow
  * @returns The store.
  */
 export function createPresenceStatus(dependencies: PresenceStatusDependencies): PresenceStatus {
-    const { settings, isBlocked, isStopped, targets, leave, session, me } = dependencies;
+    const { settings, isBlocked, isStopped, targets, leave, session, me, ownInputAt, noteInput } = dependencies;
     const self = dependencies.personAliasGuid.toLowerCase();
 
     /** Each person's newest decision, by lower-case primary alias; kept when it says nothing, for its time. */
@@ -400,9 +406,14 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         return { state, label: `, ${tip.charAt(0).toLowerCase()}${tip.slice(1)}`, tip, busyUntil };
     }
 
-    /** Whether her newest input on this page is inside the idle line, past which the platform counts her Away. */
+    /** Her newest input in any of her tabs of chat in this browser: this page's, or another's as it told this one. */
+    function newestInputAt(): number {
+        return Math.max(inputAt, ownInputAt());
+    }
+
+    /** Whether her newest input in any of her tabs is inside the idle line, past which the platform counts her Away. */
     function isInputFresh(): boolean {
-        return idleLineMs() > 0 && Date.now() - inputAt < idleLineMs();
+        return idleLineMs() > 0 && Date.now() - newestInputAt() < idleLineMs();
     }
 
     /**
@@ -464,6 +475,15 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         const now = serverNow();
         const today = startOfDay(new Date());
         let soonest = Infinity;
+        // A Busy's end words count days from the viewer's today, so one drawn ending on a later
+        // day changes at the next day's start by the calendar, not 24 hours on, so a daylight
+        // saving change holds.
+        const midnightFor = (busyUntil: number): void => {
+            if (startOfDay(new Date(busyUntil)) > today) {
+                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+                soonest = Math.min(soonest, midnight + offsetMs);
+            }
+        };
         for (const [key, entry] of entries) {
             if (key !== self && entry.asOf / 1000 + heldNothingSeconds * 1000 < now && !shown.has(key) && !drawnAt(entry, now)) {
                 entries.delete(key);
@@ -481,19 +501,21 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
 
             const drawn = drawnAt(entry, now);
-            if (drawn?.busyUntil != null && startOfDay(new Date(drawn.busyUntil)) > today) {
-                // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
-                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
-                soonest = Math.min(soonest, midnight + offsetMs);
+            if (drawn?.busyUntil != null) {
+                midnightFor(drawn.busyUntil);
             }
         }
         if (isOn() && mine && !mine.appear_offline) {
             const busyUntil = busyEndOf(mine, now);
             if (busyUntil !== null) {
                 soonest = Math.min(soonest, busyUntil);
+                // her own words read the same days
+                if (busyUntil !== Infinity) {
+                    midnightFor(busyUntil);
+                }
             }
             else if (isInputFresh()) {
-                soonest = Math.min(soonest, inputAt + idleLineMs() + offsetMs);
+                soonest = Math.min(soonest, newestInputAt() + idleLineMs() + offsetMs);
             }
         }
         if (soonest !== Infinity) {
@@ -576,6 +598,14 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     // Her own Busy or Appear offline changed in her settings, or they were read: her face draws it at once.
     const stopWatchingMe = watch(() => [me() !== null, me()?.busy_until, me()?.appear_offline], () => {
         mine = mineOf();
+        if (!isStopped()) {
+            redraw(self);
+            arm();
+        }
+    }, { flush: "sync" });
+
+    // Her input in another tab: her own face may be Online again, and its idle deadline moves.
+    const stopWatchingOwnInput = watch(ownInputAt, () => {
         if (!isStopped()) {
             redraw(self);
             arm();
@@ -692,6 +722,8 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             return;
         }
         inputWorkedAt = at;
+        // her other tabs draw her own face Online from it too; the settings pace what they are told
+        noteInput(at);
 
         // A timer due before now has not fired: the machine slept with the page visible, which
         // fires none of the page's own events. Otherwise only her own face can have moved, back
@@ -954,6 +986,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             stopWatchingSwitch();
             stopWatchingIdleLine();
             stopWatchingMe();
+            stopWatchingOwnInput();
             registrations.clear();
             isAskHeld = false;
             for (const type of inputEvents) {
