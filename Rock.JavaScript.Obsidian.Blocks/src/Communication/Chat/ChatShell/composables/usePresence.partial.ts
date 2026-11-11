@@ -43,6 +43,7 @@ import type { CallResult, PlatformCall } from "../platformCall.partial";
 import { isReportedRefusal } from "../errors.partial";
 import type { MessageMotion, TypingEnd } from "../messageMotion.partial";
 import type { ShellState } from "../shell.partial";
+import { startOfDay } from "../feedLayout.partial";
 import { ChatError, ChatPerson, FaceStatus, MessageCreatedEvent, PersonStatus, RosterMember, SidebarRow, TypingEvent, TypingSnapshot } from "../types.partial";
 import { personName, statusWords } from "../ui/face.partial";
 import { quoteKey } from "./useMessageActions.partial";
@@ -942,10 +943,27 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
     const isOn = (): boolean => settings().flags.online === true;
     const serverNow = (): number => Date.now() + offsetMs;
 
-    /** What a person draws, as a key that changes when the badge or its words would: Busy's end is in its words. */
-    function shownAs(key: string): string {
+    /** What a person draws now, words and all, or null for nothing: what a face reads, and what a change is measured against. */
+    function drawnNow(key: string): Omit<FaceStatus, "revision"> | null {
+        if (!isOn() || isBlocked(key)) {
+            return null;
+        }
         const drawn = drawnAt(entries.get(key), serverNow());
-        return drawn ? `${drawn.state}|${drawn.busyUntil ?? ""}` : "";
+        if (!drawn) {
+            return null;
+        }
+        const words = statusWords(drawn.state, drawn.busyUntil !== null ? new Date(drawn.busyUntil) : null, new Date());
+        return { state: drawn.state, ...words, busyUntil: drawn.busyUntil };
+    }
+
+    /**
+     * What a person draws, as a key that changes exactly when the badge or its words would: the
+     * words are the viewer's day's, so the same end reads "tomorrow" before midnight and not after,
+     * and an end moved inside one shown minute changes nothing.
+     */
+    function shownAs(key: string): string {
+        const drawn = drawnNow(key);
+        return drawn ? `${drawn.state}|${drawn.tip}` : "";
     }
 
     /** Moves a person's revision if what they draw changed; the entry is never touched. */
@@ -971,7 +989,11 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
         arm();
     }
 
-    /** Sets the one timer for the soonest end still ahead: a row's, or a Busy's. */
+    /**
+     * Sets the one timer for the soonest moment what is drawn can change with no write: a row's
+     * end, a Busy's end, or the viewer's next midnight while a Busy drawn ends on a later day, since
+     * its words count days from the viewer's today.
+     */
     function arm(): void {
         if (deadline !== null) {
             clearTimeout(deadline);
@@ -982,8 +1004,10 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
         }
 
         const now = serverNow();
+        const today = startOfDay(new Date());
         let soonest = Infinity;
-        for (const { status } of entries.values()) {
+        for (const entry of entries.values()) {
+            const status = entry.status;
             if (!status) {
                 continue;
             }
@@ -991,6 +1015,13 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
                 if (end !== null && end > now) {
                     soonest = Math.min(soonest, end);
                 }
+            }
+
+            const drawn = drawnAt(entry, now);
+            if (drawn?.busyUntil != null && startOfDay(new Date(drawn.busyUntil)) > today) {
+                // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
+                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+                soonest = Math.min(soonest, midnight + offsetMs);
             }
         }
         if (soonest !== Infinity) {
@@ -1088,6 +1119,9 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
                 if (at !== undefined) {
                     write(key, { status: null, asOf: at });
                 }
+                // A block is part of what is drawn whatever the write kept: a newer status than the
+                // block's time is held, and draws nothing until the unblock, which draws it again.
+                redraw(key);
             }
             arm();
         },
@@ -1104,15 +1138,8 @@ function createPresenceStatus(dependencies: PresenceDependencies): PresenceStatu
             const key = guid.toLowerCase();
             // read first and always, so a face reading it draws again whenever it moves
             const at = revisions.get(key) ?? 0;
-            if (!isOn() || isBlocked(key)) {
-                return null;
-            }
-            const drawn = drawnAt(entries.get(key), serverNow());
-            if (!drawn) {
-                return null;
-            }
-            const words = statusWords(drawn.state, drawn.busyUntil !== null ? new Date(drawn.busyUntil) : null, new Date());
-            return { state: drawn.state, ...words, revision: at };
+            const drawn = drawnNow(key);
+            return drawn ? { ...drawn, revision: at } : null;
         },
 
         register: (people, rank) => {

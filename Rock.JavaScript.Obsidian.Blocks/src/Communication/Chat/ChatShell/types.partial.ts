@@ -74,6 +74,9 @@ export type FaceStatus = {
     /** What the tooltip and the profile card read, such as "Busy until 3:00 PM". */
     tip: string;
 
+    /** When a Busy drawn ends, in server epoch milliseconds; null for no end and for any other state. */
+    busyUntil: number | null;
+
     /** Moves only when what is drawn changes, so a face mounted at a revision draws as state and fades only for a later one. */
     revision: number;
 };

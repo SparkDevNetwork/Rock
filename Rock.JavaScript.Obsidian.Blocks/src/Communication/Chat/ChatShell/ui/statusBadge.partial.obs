@@ -81,9 +81,15 @@
     opacity: 1;
 }
 
-/* Only a change the store made after this badge was drawn fades; a badge drawn is state. */
+/*
+    Only a change the store made after this badge was drawn fades; a badge drawn is state. Its
+    opacity is listed too, though only arriving and leaving move it: this rule outranks the leave
+    fade's, so without it a badge that changed once would snap out at its row's end.
+*/
 .chat-status.is-changing {
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+    transition:
+        background-color var(--chat-t-fast) var(--chat-ease-state),
+        opacity var(--chat-t-fast) var(--chat-ease-state);
 }
 
 .chat-status.is-changing .chat-status-glyph {

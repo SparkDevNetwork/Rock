@@ -1369,8 +1369,17 @@ describe("others' status, the newest decision", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0)), readerPerson(sam, busy(null, 0))]);
 
-        expect(h.status.statusOf(anna)).toEqual({ state: "online", label: ", online", tip: "Online", revision: expect.any(Number) });
-        expect(h.status.statusOf(sam)).toEqual({ state: "busy", label: ", busy", tip: "Busy", revision: expect.any(Number) });
+        expect(h.status.statusOf(anna)).toEqual({ state: "online", label: ", online", tip: "Online", busyUntil: null, revision: expect.any(Number) });
+        expect(h.status.statusOf(sam)).toEqual({ state: "busy", label: ", busy", tip: "Busy", busyUntil: null, revision: expect.any(Number) });
+    });
+
+    test("carries Busy's end as a server time, so the note above the box words it from the store and nothing else", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(3_600_000, 0)), readerPerson(sam, busy(60_000, 0))]);
+
+        expect(h.status.statusOf(anna)?.busyUntil).toBe(serverNow + 3_600_000);
+        jest.advanceTimersByTime(60_000);
+        expect(h.status.statusOf(sam)).toEqual(expect.objectContaining({ state: "away", busyUntil: null }));
     });
 });
 
@@ -1460,6 +1469,48 @@ describe("others' status drawn over time", () => {
         expect(reads).toBe(2);
     });
 
+    test("Busy's end words follow the viewer's day: told as tomorrow at 11:59 PM, a face held across midnight reads the time alone", () => {
+        const h = buildStatus();
+        const lateEvening = new Date(2026, 10, 10, 23, 59).getTime();
+        jest.setSystemTime(lateEvening);
+        h.status.clockFrom(lateEvening / 1000);
+        const at = lateEvening - serverNow;
+        h.status.told([readerPerson(anna, busy(new Date(2026, 10, 11, 8, 0).getTime() - serverNow, at, at + rowLifeMs))]);
+        const drawn = face(h.status, anna);
+        const first = drawn.value!.revision;
+        expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
+
+        jest.advanceTimersByTime(60_000);
+
+        expect(drawn.value?.tip).toMatch(/^Busy until 8:00\sAM$/u);
+        expect(drawn.value?.label).toMatch(/^, busy until 8:00\sAM$/u);
+        expect(drawn.value!.revision).toBeGreaterThan(first);
+        expect(h.calls).toEqual([]);
+    });
+
+    test("an end two days on reads its day, then tomorrow, then the time alone, waking at each of the viewer's midnights", () => {
+        const h = buildStatus();
+        const evening = new Date(2026, 10, 10, 22, 0).getTime();
+        jest.setSystemTime(evening);
+        h.status.clockFrom(evening / 1000);
+        const at = evening - serverNow;
+        const end = new Date(2026, 10, 12, 8, 0).getTime() - serverNow;
+        // a row that lasts past both midnights, so only the words can change
+        h.status.told([readerPerson(anna, busy(end, at, end))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.tip).toMatch(/^Busy until Nov 12, 8:00\sAM$/u);
+        const first = drawn.value!.revision;
+
+        jest.advanceTimersByTime(7_200_000 - 1);
+        expect(drawn.value!.revision).toBe(first);
+        jest.advanceTimersByTime(1);
+        expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
+
+        jest.advanceTimersByTime(86_400_000);
+        expect(drawn.value?.tip).toMatch(/^Busy until 8:00\sAM$/u);
+        expect(drawn.value!.revision).toBeGreaterThan(first);
+    });
+
     test("Busy's end moving is a change of what is drawn, since its words change", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, busy(3_600_000, 0))]);
@@ -1475,17 +1526,45 @@ describe("others' status and blocks", () => {
     test("someone blocked draws nothing at once, and a decision older than the block's never draws after the unblock", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
 
         h.blocked.add(anna);
         expect(h.status.statusOf(anna)).toBeNull();
 
         h.status.blockChanged([anna], asOf(1000));
+        expect(drawn.value).toBeNull();
         h.status.carried(anna, online(500));
         h.blocked.delete(anna);
         expect(h.status.statusOf(anna)).toBeNull();
 
         h.status.told([readerPerson(anna, online(2000))]);
         expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("a face stops drawing someone blocked though the block was decided before the status it holds, and draws that status again after the unblock", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(2000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        h.blocked.add(anna);
+        h.status.blockChanged([anna], asOf(1000));
+        expect(drawn.value).toBeNull();
+
+        h.blocked.delete(anna);
+        h.status.blockChanged([anna], asOf(1500));
+        expect(drawn.value?.state).toBe("online");
+    });
+
+    test("a status carried for someone blocked is never written, so nothing of it draws after the unblock", () => {
+        const h = buildStatus();
+        h.blocked.add(anna);
+
+        h.status.carried(anna, online(5000));
+        h.blocked.delete(anna);
+
+        expect(h.status.statusOf(anna)).toBeNull();
     });
 
     test("a block learned with no decision time clears her at her entry's own", () => {

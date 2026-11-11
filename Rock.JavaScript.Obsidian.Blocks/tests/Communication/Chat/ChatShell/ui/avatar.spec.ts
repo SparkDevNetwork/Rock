@@ -366,14 +366,14 @@ describe("a photo avatar on the first load", () => {
 // alone draws the hollow ring of Appear offline. It draws as state when it mounts and fades only
 // for a change the store made after that.
 describe("a face's status badge", () => {
-    type Status = { state: "online" | "away" | "busy" | "hidden", label: string, tip: string, revision: number };
+    type Status = { state: "online" | "away" | "busy" | "hidden", label: string, tip: string, busyUntil: number | null, revision: number };
 
     const statuses: Record<"online" | "away" | "busy", Status> = {
-        online: { state: "online", label: ", online", tip: "Online", revision: 4 },
-        away: { state: "away", label: ", away", tip: "Away", revision: 4 },
-        busy: { state: "busy", label: ", busy until 3:00 PM", tip: "Busy until 3:00 PM", revision: 4 }
+        online: { state: "online", label: ", online", tip: "Online", busyUntil: null, revision: 4 },
+        away: { state: "away", label: ", away", tip: "Away", busyUntil: null, revision: 4 },
+        busy: { state: "busy", label: ", busy until 3:00 PM", tip: "Busy until 3:00 PM", busyUntil: Date.parse("2026-11-10T21:00:00Z"), revision: 4 }
     };
-    const hidden: Status = { state: "hidden", label: "", tip: "Appear offline", revision: 4 };
+    const hidden: Status = { state: "hidden", label: "", tip: "Appear offline", busyUntil: null, revision: 4 };
     const anna = [{ name: "Anna Lee", photoUrl: null }];
 
     // Drawn with Vue's own transition, so the badge sits in the root as the page has it.
@@ -477,5 +477,33 @@ describe("a face's status badge", () => {
         await wrapper.setProps({ status: { ...statuses.away, revision: 5 } });
         expect(badgeOf(wrapper)!.dataset.state).toBe("away");
         expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(true);
+    });
+
+    /** The classes of Vue's transition a badge carries now, entering or leaving. */
+    function transitionClasses(badge: HTMLElement | null): string[] {
+        return [...badge?.classList ?? []].filter(name => /^chat-status-(enter|leave|appear)-/.test(name));
+    }
+
+    test("a face mounted with a status draws it at once, with no fade in", async () => {
+        const wrapper = withStatus(statuses.online);
+        await nextTick();
+
+        expect(transitionClasses(badgeOf(wrapper))).toEqual([]);
+    });
+
+    test("a status arriving on a face drawn with none fades in", async () => {
+        const wrapper = withStatus(null);
+
+        await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+        expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-enter-active");
+    });
+
+    test("a status going to nothing fades out, the badge kept until its fade is over", async () => {
+        const wrapper = withStatus(statuses.online);
+
+        await wrapper.setProps({ status: null });
+
+        expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-leave-active");
     });
 });

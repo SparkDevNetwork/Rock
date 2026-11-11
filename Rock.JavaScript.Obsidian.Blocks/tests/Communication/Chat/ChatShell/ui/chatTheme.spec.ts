@@ -28,6 +28,7 @@ import { brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/
 // A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
 const sheetPath = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
 const blockPath = resolve(__dirname, "../../../../../../Rock.Blocks/Communication/Chat/ChatShell.cs");
+const badgePath = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs");
 
 // #region The sheet, parsed
 
@@ -608,6 +609,18 @@ describe("the online status colours", () => {
             expect(failing).toEqual([]);
         }
     });
+
+    test.each([["light", isLight], ["dark", isDarkExplicit]] as const)("the glyph reads 3 to 1 on each disc in %s, in the colour the badge draws it", (_label, where) => {
+        // the token the badge itself names, so a change of the badge's colour is checked as well as of the token
+        const badge = readSheet(badgePath).rules.find(rule => rule.selector.trim() === ".chat-status")!;
+        const glyph = /var\(--chat-([\w-]+)\)/.exec(badge.declarations.get("color") ?? "")![1];
+        // a token the dark theme does not set again keeps its light value there
+        const glyphRgb = (valuesOf(sheet, `--chat-${glyph}`, where).length ? tokenColor(glyph, where) : tokenColor(glyph, isLight)).rgb;
+
+        const failing = presence.filter(name => contrast(glyphRgb, tokenColor(name, where).rgb) < 3);
+
+        expect(failing).toEqual([]);
+    });
 });
 
 // The components' own style blocks, read as text: what jsdom cannot lay out or animate is checked
@@ -649,6 +662,16 @@ describe("the components' own styles", () => {
     function selectorsOf(sheet: Sheet): { selector: string, rule: Rule }[] {
         return sheet.rules.flatMap(rule => splitTopLevel(rule.selector, ",").map(selector => ({ selector: selector.replace(/\s+/g, " "), rule })));
     }
+
+    // A badge that crossfaded once still fades out at its row's end: a scoped rule with more classes
+    // wins the transition outright, so every one set on the badge itself must carry the fade.
+    test("every transition on the status badge itself carries its opacity, so a badge that has changed still fades in and out", () => {
+        const onBadge = selectorsOf(readSheet(badgePath))
+            .filter(({ selector, rule }) => rule.declarations.has("transition") && /\.chat-status(?![\w-])[^\s>+~]*$/.test(selector));
+
+        expect(onBadge.length).toBeGreaterThan(0);
+        expect(onBadge.filter(({ rule }) => !/(^|,)\s*opacity\s/.test(rule.declarations.get("transition")!)).map(({ selector }) => selector)).toEqual([]);
+    });
 
     // A message arriving, the person's own or anyone's, rides the stack's glide as it fades in, so
     // no row grows from a corner of its own: nothing a look sets can slide its text sideways.
