@@ -964,10 +964,10 @@ describe("a start the platform cannot answer yet", () => {
                 }
                 return Promise.resolve(next ?? { gate: "ok", churchToken: `church-${mints.length}` });
             },
-            exchange: (churchToken: string, signal?: AbortSignal): Promise<ExchangeResult> => {
-                exchanges.push({ churchToken, at: Date.now(), signal: signal ?? null });
+            exchange: (churchToken: string, options: { signal: AbortSignal }): Promise<ExchangeResult> => {
+                exchanges.push({ churchToken, at: Date.now(), signal: options.signal });
                 const reply = answers.shift() ?? { status: 200 };
-                return exchangeChurchToken((_url, init) => answer(reply, init.signal), "http://platform", "k", churchToken, Date.now(), signal);
+                return exchangeChurchToken((_url, init) => answer(reply, init.signal), "http://platform", "k", churchToken, { signal: options.signal, now: Date.now() });
             },
             pushTokenToConnection: async () => undefined,
             random: () => options.random ?? 0.5,

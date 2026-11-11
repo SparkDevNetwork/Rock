@@ -271,7 +271,7 @@ describe("exchangeChurchToken", () => {
     test("a refused exchange carries the wait the platform asked for, read from its Retry-After", async () => {
         const fetch: PlatformCallOptions["fetch"] = async () => response(503, { error: { code: "rpc.unavailable" } }, { "retry-after": "8" });
 
-        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", 0);
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", { now: 0 });
 
         expect(answer).toEqual({ ok: false, status: 503, code: "rpc.unavailable", retryAfterSeconds: 8 });
     });
@@ -279,7 +279,7 @@ describe("exchangeChurchToken", () => {
     test("a refused exchange without a Retry-After carries no wait", async () => {
         const fetch: PlatformCallOptions["fetch"] = async () => response(503, { error: { code: "rpc.unavailable" } });
 
-        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", 0);
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", { now: 0 });
 
         expect(answer).toMatchObject({ ok: false, retryAfterSeconds: null });
     });
@@ -290,7 +290,7 @@ describe("exchangeChurchToken", () => {
             init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
         });
 
-        const answering = exchangeChurchToken(fetch, url, "publishable", "church-token", 0, controller.signal);
+        const answering = exchangeChurchToken(fetch, url, "publishable", "church-token", { now: 0, signal: controller.signal });
         controller.abort();
 
         expect(await answering).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });

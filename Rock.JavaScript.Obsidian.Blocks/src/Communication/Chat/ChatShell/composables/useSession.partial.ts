@@ -276,7 +276,7 @@ export type SessionDependencies = {
     mintChurchToken: () => Promise<ChurchTokenResult>;
 
     /** Exchanges a church token for a platform token; the signal gives up a try that took too long. */
-    exchange: (churchToken: string, signal?: AbortSignal) => Promise<ExchangeResult>;
+    exchange: (churchToken: string, options: { signal: AbortSignal }) => Promise<ExchangeResult>;
 
     /**
      * Hands the current token to the live connection that is already open. Called after every
@@ -502,7 +502,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
                     held = { churchToken: minted.churchToken, mintedAt: now() };
                 }
 
-                const exchanged = await within(dependencies.exchange(held.churchToken, attempt.signal));
+                const exchanged = await within(dependencies.exchange(held.churchToken, { signal: attempt.signal }));
                 if (isStopped || exchanged === noAnswer) {
                     return "unavailable";
                 }

@@ -152,6 +152,7 @@ function build(options: {
     heldExchange: { value: Deferred<void> | null },
     exchangeAnswers: { value: ExchangeAnswer[] },
     exchangeTimes: number[],
+    exchangeSignals: Array<AbortSignal | null>,
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
     uploads: FakeRequest[],
@@ -217,6 +218,8 @@ function build(options: {
     // What the token exchanges answer before they pass, in order, and when each was asked.
     const exchangeAnswers: { value: ExchangeAnswer[] } = { value: [] };
     const exchangeTimes: number[] = [];
+    // The signal each exchange's request was handed, which a try given up aborts.
+    const exchangeSignals: Array<AbortSignal | null> = [];
     // Every roster page asked; each answers with nobody.
     const memberCalls: Array<Record<string, unknown>> = [];
     const windowListeners: Record<string, Array<() => void>> = {};
@@ -273,6 +276,7 @@ function build(options: {
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
                 exchangeTimes.push(Date.now());
+                exchangeSignals.push(init.signal ?? null);
                 await heldExchange.value?.promise;
                 const failure = exchangeAnswers.value.shift();
                 if (failure === "unreachable") {
@@ -440,7 +444,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
@@ -5129,6 +5133,33 @@ describe("a start the platform cannot answer yet", () => {
         expect(h.exchangeTimes).toEqual([0, 750, 2250, 5250]);
         await advance(1);
         expect(h.exchangeTimes.slice(-1)).toEqual([11250]);
+        await h.shell.stop();
+    });
+
+    test("a try that runs past its deadline aborts the exchange's request, at the start and on a refresh", async () => {
+        const starting = build();
+        starting.heldExchange.value = deferred<void>();
+        void starting.shell.start();
+        await advance(9999);
+        expect(starting.exchangeSignals[0]?.aborted).toBe(false);
+        await advance(1);
+        expect(starting.exchangeSignals[0]?.aborted).toBe(true);
+        await starting.shell.stop();
+
+        const h = build();
+        const signedIn = h.shell.start();
+        await advance(0);
+        answerHistory(h, channelA, 10);
+        await signedIn;
+        await settle();
+        h.heldExchange.value = deferred<void>();
+        personal(h, "session.recheck", {});
+        await settle();
+        expect(h.exchangeSignals).toHaveLength(2);
+        await advance(9999);
+        expect(h.exchangeSignals[1]?.aborted).toBe(false);
+        await advance(1);
+        expect(h.exchangeSignals[1]?.aborted).toBe(true);
         await h.shell.stop();
     });
 

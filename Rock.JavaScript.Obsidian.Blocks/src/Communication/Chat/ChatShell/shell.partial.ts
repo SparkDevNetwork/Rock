@@ -538,7 +538,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
             return churchTokenFromAction(result);
         },
-        exchange: (churchToken: string) => exchange(churchToken),
+        exchange,
         pushTokenToConnection: async (): Promise<void> => {
             showSettings();
 
@@ -643,9 +643,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
         await hub?.stop();
     }
 
-    /** Exchanges a church token for a platform token and the settings beside it. */
-    async function exchange(churchToken: string): Promise<ExchangeResult> {
-        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken);
+    /**
+     * Exchanges a church token for a platform token and the settings beside it. The session's
+     * signal reaches the request, so a try given up at its deadline ends the request with it.
+     */
+    async function exchange(churchToken: string, exchangeOptions: { signal: AbortSignal }): Promise<ExchangeResult> {
+        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken, { signal: exchangeOptions.signal });
         options.mark("chat:exchange");
 
         return answer;
