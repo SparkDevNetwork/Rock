@@ -451,6 +451,15 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         const now = serverNow();
         const today = startOfDay(new Date());
         let soonest = Infinity;
+        // A Busy's end words count days from the viewer's today, so one drawn ending on a later
+        // day changes at the next day's start by the calendar, not 24 hours on, so a daylight
+        // saving change holds.
+        const midnightFor = (busyUntil: number): void => {
+            if (startOfDay(new Date(busyUntil)) > today) {
+                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
+                soonest = Math.min(soonest, midnight + offsetMs);
+            }
+        };
         for (const [key, entry] of entries) {
             if (key !== self && entry.asOf / 1000 + heldNothingSeconds * 1000 < now && !shown.has(key) && !drawnAt(entry, now)) {
                 entries.delete(key);
@@ -467,16 +476,18 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
 
             const drawn = drawnAt(entry, now);
-            if (drawn?.busyUntil != null && startOfDay(new Date(drawn.busyUntil)) > today) {
-                // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
-                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
-                soonest = Math.min(soonest, midnight + offsetMs);
+            if (drawn?.busyUntil != null) {
+                midnightFor(drawn.busyUntil);
             }
         }
         if (isOn() && mine && !mine.appear_offline) {
             const busyUntil = ownBusyEnd(mine.busy_until, now);
             if (busyUntil !== undefined) {
                 soonest = Math.min(soonest, busyUntil ?? Infinity);
+                // her own words read the same days
+                if (busyUntil !== null) {
+                    midnightFor(busyUntil);
+                }
             }
             else if (isInputFresh()) {
                 soonest = Math.min(soonest, newestInputAt() + idleLineMs() + offsetMs);
