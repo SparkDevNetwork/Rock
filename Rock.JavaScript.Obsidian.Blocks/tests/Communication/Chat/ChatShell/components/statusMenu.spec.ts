@@ -516,6 +516,17 @@ describe("the sidebar foot's face", () => {
         expect(trigger(w).getAttribute("aria-label")).toBe("Your status: Appear offline. Set status");
     });
 
+    test("carries the menu's not saved words in her face's name while a save keeps failing", async () => {
+        const hidden: FaceStatus = { state: "hidden", label: ", appear offline", tip: "Appear offline", busyUntil: null, revision: 2 };
+        const w = mountMenu({ trigger: "face", isRetrying: true }, () => hidden);
+
+        expect(trigger(w).getAttribute("aria-label")).toBe("Your status: Appear offline, not saved yet. Trying again. Set status");
+
+        await w.setProps({ isRetrying: false });
+
+        expect(trigger(w).getAttribute("aria-label")).toBe("Your status: Appear offline. Set status");
+    });
+
     test("is named Set status alone while her status is not yet known", () => {
         const w = mountMenu({ trigger: "face" });
 

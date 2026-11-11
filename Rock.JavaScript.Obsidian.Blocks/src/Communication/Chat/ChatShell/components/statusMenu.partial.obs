@@ -173,7 +173,16 @@
             return "Change your status";
         }
 
-        return ownStatus.value ? `Your status: ${ownStatus.value.tip}. Set status` : "Set status";
+        if (!ownStatus.value) {
+            return "Set status";
+        }
+
+        // The menu's note says the choice is not saved yet; a screen reader on the face hears it too.
+        const words = props.isRetrying
+            ? `, ${statusRetryingWords.charAt(0).toLowerCase()}${statusRetryingWords.slice(1)}`
+            : ".";
+
+        return `Your status: ${ownStatus.value.tip}${words} Set status`;
     });
 
     const anchorAttrs = computed((): Record<string, unknown> => props.trigger === "face"
