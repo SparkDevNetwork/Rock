@@ -143,7 +143,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     /**
      * Whether a sidebar read that asked for the two-person rows' online status has been applied.
      * Until one has, every read asks; after it, the status changes reach the page live and by the
-     * exchange, so a reload asks for none.
+     * exchange, so a later read, as a rejoin's, asks for none.
      */
     let isStatusRead = false;
 

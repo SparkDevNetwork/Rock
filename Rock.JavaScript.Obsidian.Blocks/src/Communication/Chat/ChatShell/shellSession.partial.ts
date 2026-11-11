@@ -296,6 +296,17 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
     };
 
     /**
+     * A page restored from the back-forward cache kept its token and its topics while it ran
+     * nothing, so it asks again what the person may read; Realtime closes whatever she has lost
+     * once the new token reaches it.
+     */
+    const onPageRestored = (event: unknown): void => {
+        if ((event as { persisted?: unknown } | null)?.persisted === true) {
+            void session.refresh("recheck");
+        }
+    };
+
+    /**
      * Exchanges a church token for a platform token and the settings beside it, carrying online
      * status's body for the reason it was asked. The session's signal reaches the request, so a try
      * given up at its deadline ends the request with it.
@@ -321,7 +332,8 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
         if (typeof issuedAt === "number") {
             status.clockFrom(issuedAt);
         }
-        status.exchanged(body?.watched ?? [], answer.ok ? answer : null);
+        // only whether the answer carried status, and what it said, reaches the store; never the token
+        status.exchanged(body?.watched ?? [], answer.ok ? ("presence" in answer ? { presence: answer.presence } : {}) : null);
 
         return answer;
     }
@@ -333,6 +345,7 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
         start: async (): Promise<boolean> => {
             options.pageTargets.window.addEventListener("online", onPageBack);
             options.pageTargets.document.addEventListener("visibilitychange", onPageBack);
+            options.pageTargets.window.addEventListener("pageshow", onPageRestored);
 
             // The start's words: quiet for its first second, so a start that only needs a second
             // try says nothing; then connecting, once a try has failed, or once the first has gone
@@ -359,6 +372,7 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
         detach: (): void => {
             options.pageTargets.window.removeEventListener("online", onPageBack);
             options.pageTargets.document.removeEventListener("visibilitychange", onPageBack);
+            options.pageTargets.window.removeEventListener("pageshow", onPageRestored);
         }
     };
 }

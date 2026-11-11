@@ -22,7 +22,7 @@ import { createChatShell, PlatformClientLike, ShellOptions } from "../../../../s
 import { churchTokenFromAction, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shellSession.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
-import { toRaw } from "vue";
+import { toRaw, watchEffect } from "vue";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -163,6 +163,8 @@ function build(options: {
     bootstrapCalls: Array<Record<string, unknown>>,
     marks: string[],
     heldMint: { value: Deferred<void> | null },
+    serverAheadSeconds: { value: number },
+    exchangeDelayMs: { value: number },
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
     uploads: FakeRequest[],
@@ -247,6 +249,11 @@ function build(options: {
     const marks: string[] = [];
     // Set, the next mint waits for the test to let it answer.
     const heldMint: { value: Deferred<void> | null } = { value: null };
+    // How far the platform's clock runs ahead of the page's as it mints a token, in seconds, which
+    // the token's mint time carries.
+    const serverAheadSeconds = { value: 0 };
+    // Set, each exchange's request takes this long to answer, so the person's input can land while one is out.
+    const exchangeDelayMs = { value: 0 };
     // Every roster page asked; each answers with nobody.
     const memberCalls: Array<Record<string, unknown>> = [];
     const windowListeners: Record<string, Array<(event?: unknown) => void>> = {};
@@ -308,6 +315,9 @@ function build(options: {
                 const sentBody = typeof init.body === "string" ? JSON.parse(init.body) as Record<string, unknown> : null;
                 exchangeBodies.push(sentBody);
                 exchangeHeaders.push({ ...init.headers as Record<string, string> });
+                if (exchangeDelayMs.value > 0) {
+                    await new Promise(resolve => setTimeout(resolve, exchangeDelayMs.value));
+                }
                 const held = heldExchange.value;
                 if (held) {
                     // a request waiting on the network gives up when it is aborted, as fetch does
@@ -330,7 +340,7 @@ function build(options: {
                 }
                 const watched = Array.isArray(sentBody?.watched) ? sentBody.watched as string[] : null;
                 const presence = watched && exchangePresence.value ? { presence: exchangePresence.value(watched) } : {};
-                const answer = { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value, ...presence };
+                const answer = { access_token: tokenFor(tokenPerson.value, serverAheadSeconds.value), expires_in: 300, settings: exchangeSettings.value, ...presence };
                 return {
                     ...fakeResponse(200, answer),
                     json: async () => {
@@ -496,7 +506,7 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, bootstrapCalls, marks, heldMint, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, bootstrapCalls, marks, heldMint, serverAheadSeconds, exchangeDelayMs, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
@@ -531,13 +541,13 @@ function memberFacts(channelId: string, extra: Record<string, unknown> = {}): Re
     };
 }
 
-/** A platform token naming a person in its subject, as the token exchange signs one; unsigned here. */
-function tokenFor(personAliasGuid: string | null): string {
+/** A platform token naming a person in its subject and minted now by a clock some seconds ahead of the page's, as the token exchange signs one; unsigned here. */
+function tokenFor(personAliasGuid: string | null, aheadSeconds = 0): string {
     if (personAliasGuid === null) {
         return "platform";
     }
     const part = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString("base64url");
-    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant, iat: Math.floor(Date.now() / 1000) })}.signature`;
+    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant, iat: Math.floor(Date.now() / 1000) + aheadSeconds })}.signature`;
 }
 
 /** Answers the oldest pending history call for a channel. */
@@ -5467,6 +5477,53 @@ describe("online status on the token exchange", () => {
         expect(h.shell.presence.status.statusOf(ada)?.state).toBe("online");
     });
 
+    test("with the server's clock a minute behind the page's, a row the page's clock calls ended still runs by the server's, and draws Online", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.serverAheadSeconds.value = -60;
+        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() - 30_000).toISOString(), as_of: Date.now() * 1000 } });
+
+        await advance(210_000);
+
+        expect(h.shell.presence.status.statusOf(ada)?.state).toBe("online");
+    });
+
+    test("the server's clock is taken from the token before its answer is drawn: a row its clock calls ended never draws, not even for a moment under the clock before", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.serverAheadSeconds.value = 60;
+        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 30_000).toISOString(), as_of: Date.now() * 1000 } });
+        const drawn: Array<string | null> = [];
+        const stopWatching = watchEffect(() => {
+            drawn.push(h.shell.presence.status.statusOf(ada)?.state ?? null);
+        }, { flush: "sync" });
+
+        await advance(210_000);
+        stopWatching();
+
+        expect(h.exchangeBodies[1]?.watched).toEqual([person, ada]);
+        expect(drawn).not.toContain("online");
+    });
+
+    test("a scroll alone is not her input, as the feed's own pin to the newest message makes one: the next body's idle time runs on", async () => {
+        const h = await begin();
+        await advance(100_000);
+        h.fireInput("scroll");
+        await advance(110_000);
+
+        expect(h.exchangeBodies[1]?.idle_seconds).toBe(210);
+    });
+
+    test("a shell stopped in place, its page still open, says goodbye for the id an exchange carried, and a page hide after says no more", async () => {
+        const h = await begin();
+
+        await h.shell.stop();
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.statusCalls).toEqual([{ body: { p_client: h.exchangeBodies[0]?.client_id, p_change: { client: "leave" } }, keepalive: true }]);
+    });
+
     describe("asking early", () => {
         test("an input while a scheduled refresh mints asks nothing more: the body, built after the mint, carries it", async () => {
             const h = await begin();
@@ -5572,7 +5629,7 @@ describe("online status on the token exchange", () => {
             expect(watchedFrom(h, index)).toEqual([true, false, true]);
         });
 
-        test("a page shown while a refresh is out that lands with no presence asks once more", async () => {
+        test("a page shown while a refresh that asked about people is out asks nothing more when it lands with no presence, the platform's not now", async () => {
             const h = await begin();
             h.exchangePresence.value = null;
             await advance(210_000);
@@ -5586,6 +5643,110 @@ describe("online status on the token exchange", () => {
             h.heldExchange.value = null;
             await advance(0);
             await advance(60_000);
+
+            expect(watchedFrom(h, index)).toEqual([true]);
+        });
+
+        test("a stale page whose answers carry no status, in steady use for a minute with each exchange a second out, asks early once", async () => {
+            const h = await begin();
+            // the watch never answers in time, and each exchange takes over a second, so her input lands while one is out
+            h.exchangePresence.value = null;
+            h.exchangeDelayMs.value = 1200;
+            await advance(400_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            for (let at = 0; at < 60_000; at += 250) {
+                h.fireInput("pointermove");
+                await advance(250);
+            }
+
+            expect(watchedFrom(h, index)).toEqual([true]);
+        });
+
+        test("a stale page asks again after a recheck only a minute after the last early ask", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(425_000);
+            const index = h.exchangeBodies.length;
+
+            // back after seven minutes with nothing done: her first move asks early, and its answer carries no status
+            h.fireInput();
+            await advance(0);
+            await advance(20_000);
+            // put away and restored inside the minute: the recheck lands, and the stale page waits
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, false]);
+        });
+
+        test("a page restored after twelve minutes counts as her input, and asks once more for the stale page with no show to follow", async () => {
+            const h = await begin();
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            jest.setSystemTime(Date.now() + 720_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([false, true]);
+            expect(h.exchangeBodies.slice(index).map(body => body?.idle_seconds)).toEqual([0, 0]);
+        });
+
+        test("a stale page's ask never spends her input's minute: her first move after it, the platform holding her idle past the line, asks at once", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            await advance(190_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
+            await advance(2000);
+            h.fireInput();
+            await advance(0);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+            expect(h.exchangeBodies[index]?.idle_seconds).toBe(400);
+            expect(h.exchangeBodies[index + 1]?.idle_seconds).toBe(0);
+        });
+
+        test("a page shown while a refresh mints holds one ask and starts no minute: shown again after a settle that asked nothing, the stale page asks at once", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.heldMint.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length;
+
+            // shown while the scheduled refresh mints, then put away before it lands
+            h.fireShown();
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.heldMint.value.resolve();
+            h.heldMint.value = null;
+            await advance(0);
+            await advance(17_000);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
 
             expect(watchedFrom(h, index)).toEqual([true, true]);
         });

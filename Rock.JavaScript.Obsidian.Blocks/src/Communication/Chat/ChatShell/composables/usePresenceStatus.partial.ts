@@ -154,13 +154,17 @@ const longestTimerMs = 2_147_483_647;
 /** An id the platform takes: one id not shaped as one would make it refuse the whole body, beat included. */
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** What counts as the person doing something on the page. */
-const inputEvents = ["keydown", "pointerdown", "pointermove", "wheel", "touchstart", "scroll"];
+/**
+ * What counts as the person doing something on the page. Never a scroll: the feed scrolls itself
+ * to keep her at the newest message as others post and type, and a scroll set by script arrives as
+ * trusted as hers, while every scroll she makes starts with a wheel, a touch, a key or a pointer.
+ */
+const inputEvents = ["keydown", "pointerdown", "pointermove", "wheel", "touchstart"];
 
 /** How often an input does more than note its time, since a moving pointer fires many a second. */
 const inputWorkGapMs = 1000;
 
-/** The least time between two early asks, so a page in steady use costs at most one a minute. */
+/** The least time between two early asks for one cause, so a page in steady use costs at most one a minute. */
 const earlyAskGapMs = 60_000;
 
 /** A person's newest decision: what it says of her, null for nothing, and when it was decided. */
@@ -419,8 +423,8 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     let inputAt = Date.now();
     let inputWorkedAt = -Infinity;
 
-    /** The body out, so its answer knows the reason it went for and the input it reported. */
-    let out: { reason: RefreshReason, inputAt: number, isSent: boolean } | null = null;
+    /** The body out, so its answer knows the reason it went for, the input it reported and whether it asked about people. */
+    let out: { reason: RefreshReason, inputAt: number, isSent: boolean, isWatched: boolean } | null = null;
 
     /**
      * Whether any exchange has landed, the input the latest landed body reported (what the
@@ -431,9 +435,17 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     let heldInputAt: number | null = null;
     let freshAt: number | null = null;
 
-    /** One early ask held while a refresh was out, and when the last early ask went. */
+    /**
+     * Whether the latest landed body asked about people. An answer to one with no status is the
+     * platform saying not now (its watch ran past its wait, its breaker is open, or it answered her
+     * row within its pace), so asking again at once would be refused the same way.
+     */
+    let hasLandedWatched = false;
+
+    /** One early ask held while a refresh was out, when the last early ask went, and when the last her input made went. */
     let isAskHeld = false;
     let earlyAskedAt = -Infinity;
+    let inputAskedAt = -Infinity;
 
     const idleLineMs = (): number => settings().limits.presence_idle_seconds * 1000;
 
@@ -466,8 +478,21 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         return hasLanded && isOn() && idleLineMs() > 0;
     }
 
-    function askEarly(): void {
+    /**
+     * Whether a cause may ask early now: her input a minute after the last ask her input made, a
+     * stale page a minute after any early ask. A stale page's ask never spends her input's
+     * minute, which would refuse the first move she makes on her return and leave the platform
+     * holding the idle time she came back from.
+     */
+    function isMinuteOver(isHerInput: boolean): boolean {
+        return Date.now() - (isHerInput ? inputAskedAt : earlyAskedAt) >= earlyAskGapMs;
+    }
+
+    function askEarly(isHerInput: boolean): void {
         earlyAskedAt = Date.now();
+        if (isHerInput) {
+            inputAskedAt = earlyAskedAt;
+        }
         void session.refresh("early");
     }
 
@@ -476,7 +501,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
      * session waits after a failure, nothing is asked: one ask is held for the session's settle,
      * which knows what that refresh carried. Otherwise the ask goes if it is due, once a minute.
      */
-    function trigger(isDue: () => boolean): void {
+    function trigger(isDue: () => boolean, isHerInput: boolean): void {
         if (isStopped()) {
             return;
         }
@@ -484,8 +509,8 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             isAskHeld = true;
             return;
         }
-        if (mayAskEarly() && isDue() && Date.now() - earlyAskedAt >= earlyAskGapMs) {
-            askEarly();
+        if (mayAskEarly() && isMinuteOver(isHerInput) && isDue()) {
+            askEarly(isHerInput);
         }
     }
 
@@ -506,13 +531,13 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         if (deadlineAt !== null && at >= deadlineAt) {
             rearm();
         }
-        trigger(() => isInputDue(false));
+        trigger(() => isInputDue(false), true);
     }
 
     function onVisibility(): void {
         if (targets.document.visibilityState === "visible") {
             rearm();
-            trigger(isStale);
+            trigger(isStale, false);
         }
     }
 
@@ -528,10 +553,16 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         pageId = null;
     }
 
-    /** A page restored from the back-forward cache asks again what it may read and draws again against the clock. */
+    /**
+     * A page restored from the back-forward cache is a page she asked for with Back, so it counts
+     * as her input as a load does, and holds one ask for the sign-in's recheck to settle, which
+     * decides it against what landed whether or not a show follows. It draws again against the
+     * clock, which moved while the page ran no timer.
+     */
     function onPageShow(event: unknown): void {
         if ((event as { persisted?: unknown } | null)?.persisted === true && !isStopped()) {
-            void session.refresh("recheck");
+            inputAt = Date.now();
+            isAskHeld = true;
             rearm();
         }
     }
@@ -557,6 +588,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 return;
             }
             hasLanded = true;
+            hasLandedWatched = body?.isWatched ?? false;
             if (body?.isSent) {
                 heldInputAt = body.inputAt;
             }
@@ -564,6 +596,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
                 freshAt = Date.now();
             }
 
+            // The switch read here is the answer before this one's, since the session applies an
+            // answer's settings only after this returns. The platform answers status only with the
+            // switch on in the same answer, and a body names people only after an answer said on.
             const map = outcome.presence;
             if (!mayWrite() || typeof map !== "object" || map === null) {
                 return;
@@ -660,7 +695,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             if (isStopped()) {
                 return null;
             }
-            out = { reason, inputAt, isSent: false };
+            out = { reason, inputAt, isSent: false, isWatched: false };
             if (!isBodySent()) {
                 return null;
             }
@@ -670,6 +705,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             // A refresh names the people to ask about once an answer said status is on; the start,
             // a recheck, a call refused as expired and a retry only beat, and are answered at once.
             const watched = hasLanded && (reason === "scheduled" || reason === "early") ? watchedNow() : [];
+            out.isWatched = watched.length > 0;
             return {
                 client_id: id,
                 kind: "web",
@@ -689,17 +725,33 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
             isAskHeld = false;
 
-            // Against what landed: an input newer than its body, or a page still stale because the
-            // answer carried no status. Held, it waited for the session, so the minute is not
-            // applied.
-            if (mayAskEarly() && session.inFlight() === null && session.nextRefreshAt() !== null && (isInputDue(true) || isStale())) {
-                askEarly();
+            if (!mayAskEarly() || session.inFlight() !== null || session.nextRefreshAt() === null) {
+                return;
+            }
+
+            // Against what landed. An input newer than its body asks though the minute runs: it
+            // waited for the session, and it cannot ask twice running, since each landing moves the
+            // input the platform holds up to its body's. A page still stale asks once the minute is
+            // over, and never after a body that asked about people, whose answer with no status is
+            // the platform's not now; otherwise a refused ask would ask again at every landing.
+            if (isInputDue(true)) {
+                askEarly(true);
+            }
+            else if (!hasLandedWatched && isMinuteOver(false) && isStale()) {
+                askEarly(false);
             }
         },
 
         rearm,
 
         stop: () => {
+            // A page stopped in place, as a block torn down without the page closing, says goodbye
+            // too, so her row ends now rather than running on beside the next page's; the session
+            // still holds its token here, and a goodbye never mints.
+            if (pageId !== null && pageId === carriedId && isBodySent()) {
+                leave(pageId);
+            }
+            pageId = null;
             if (deadline !== null) {
                 clearTimeout(deadline);
                 deadline = null;

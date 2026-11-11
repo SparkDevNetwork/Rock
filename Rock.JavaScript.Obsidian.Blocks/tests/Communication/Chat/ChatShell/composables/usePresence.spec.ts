@@ -119,8 +119,11 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const sent: Record<string, Record<string, number>> = {};
     // What the presence told the record, in order.
     const records: string[] = [];
-    // The page the status watches: each listener by event, with the options it was added with.
+    // The page the status watches: each listener by event, with the options it was added with. As
+    // a browser does, a removal finds a listener only by its capture, so one removed without the
+    // capture it was added with stays.
     const listeners: Array<{ on: "window" | "document", type: string, listener: (event: unknown) => void, options: unknown }> = [];
+    const isCapture = (options: unknown): boolean => typeof options === "boolean" ? options : (options as { capture?: unknown } | undefined)?.capture === true;
     const page = { visibilityState: "visible" };
     const targets = {
         document: {
@@ -134,8 +137,11 @@ function build(rawSettings: Record<string, unknown> = {}) {
         },
         window: {
             addEventListener: (type: string, listener: (event: unknown) => void, options?: unknown) => listeners.push({ on: "window", type, listener, options }),
-            removeEventListener: (type: string, listener: (event: unknown) => void) => {
-                listeners.splice(listeners.findIndex(l => l.on === "window" && l.type === type && l.listener === listener) >>> 0, 1);
+            removeEventListener: (type: string, listener: (event: unknown) => void, options?: unknown) => {
+                const index = listeners.findIndex(l => l.on === "window" && l.type === type && l.listener === listener && isCapture(l.options) === isCapture(options));
+                if (index >= 0) {
+                    listeners.splice(index, 1);
+                }
             }
         }
     };
@@ -1722,7 +1728,7 @@ describe("a stopped status", () => {
         expect(jest.getTimerCount()).toBe(0);
     });
 
-    test("an exchange's answer writes nothing, a settle asks nothing, and the page's events send nothing", () => {
+    test("an exchange's answer writes nothing, a settle asks nothing, and the page's events send nothing more than the stop's one goodbye", () => {
         const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
         const body = h.status.exchangeBody("start");
         h.status.exchanged([], exchangeAnswer());
@@ -1738,8 +1744,23 @@ describe("a stopped status", () => {
         expect(body).not.toBeNull();
         expect(h.status.statusOf(anna)).toBeNull();
         expect(h.session.asked).toEqual([]);
-        expect(h.leaves).toEqual([]);
+        expect(h.leaves).toEqual([body?.client_id]);
         expect(h.listeners).toEqual([]);
+    });
+
+    test("a stop says goodbye only for an id a body carried, and never once the latest answer said status is off", () => {
+        const never = buildStatus();
+        never.stopped.value = true;
+        never.presence.stop();
+
+        const off = buildStatus();
+        off.status.exchangeBody("start");
+        off.status.exchanged([], exchangeAnswer());
+        off.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+        off.stopped.value = true;
+        off.presence.stop();
+
+        expect([never.leaves, off.leaves]).toEqual([[], []]);
     });
 });
 
@@ -1800,11 +1821,20 @@ describe("the page's id and each exchange's body", () => {
         expect(h.status.exchangeBody("start")?.idle_seconds).toBe(13);
     });
 
+    test("a scroll is not her input: the feed scrolls itself to the newest message as others post and type, and that scroll arrives as hers would", () => {
+        const h = buildStatus();
+
+        jest.advanceTimersByTime(5000);
+        h.fire("scroll");
+
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(5);
+    });
+
     test("one set of input listeners on the window, capturing and passive, every one gone at stop", () => {
         const h = buildStatus();
 
         const input = h.listeners.filter(l => !["visibilitychange", "pagehide", "pageshow"].includes(l.type));
-        expect(input.map(l => `${l.on} ${l.type}`).sort()).toEqual(["keydown", "pointerdown", "pointermove", "scroll", "touchstart", "wheel"].map(type => `window ${type}`));
+        expect(input.map(l => `${l.on} ${l.type}`).sort()).toEqual(["keydown", "pointerdown", "pointermove", "touchstart", "wheel"].map(type => `window ${type}`));
         expect(input.every(l => (l.options as AddEventListenerOptions)?.capture === true && (l.options as AddEventListenerOptions)?.passive === true)).toBe(true);
 
         h.stopped.value = true;
@@ -1843,14 +1873,25 @@ describe("the page's id and each exchange's body", () => {
         expect(h.leaves).toEqual([]);
     });
 
-    test("a page restored from the back-forward cache asks for a recheck; a fresh load's pageshow asks nothing", () => {
-        const h = buildStatus();
+    test("a page restored from the back-forward cache counts as her input and holds one ask for the recheck's settle, asking nothing itself; a fresh load's pageshow does neither", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        jest.advanceTimersByTime(400_000);
 
         h.fire("pageshow", { persisted: false });
+        expect(h.status.exchangeBody("recheck")?.idle_seconds).toBe(400);
+        h.status.exchanged([], exchangeAnswer());
+        h.status.settled("recheck", true);
         expect(h.session.asked).toEqual([]);
-        h.fire("pageshow", { persisted: true });
 
-        expect(h.session.asked).toEqual(["recheck"]);
+        h.fire("pageshow", { persisted: true });
+        expect(h.session.asked).toEqual([]);
+        expect(h.status.exchangeBody("recheck")?.idle_seconds).toBe(0);
+        h.status.exchanged([], exchangeAnswer());
+        h.status.settled("recheck", true);
+
+        expect(h.session.asked).toEqual(["early"]);
     });
 });
 
@@ -2059,6 +2100,9 @@ describe("asking early", () => {
         expect(h.session.asked).toEqual(["early"]);
     });
 
+    // The real session never reaches this state: after a failed exchange it either waits, with no
+    // next refresh, or mints again inside the same try. The cell guards the rule for a later reader
+    // of the held input between a failure and the next landing.
     test("a failed exchange leaves the input the server holds as it was, so the next input still asks", () => {
         const h = buildStatus(idle);
         land(h, "start", 210_000);
