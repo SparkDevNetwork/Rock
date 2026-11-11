@@ -568,12 +568,20 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
 
         const waiting = new AbortController();
         lockWaits.add(waiting);
+        let isGranted = false;
         try {
-            return await locks.request(lockName, { signal: waiting.signal }, ask) as SaveOutcome;
+            return await locks.request(lockName, { signal: waiting.signal }, () => {
+                isGranted = true;
+                return ask();
+            }) as SaveOutcome;
         }
-        catch {
-            // the request was given up as the tab left
-            return nothingSent;
+        catch (error) {
+            // the holder's own failure is the rule's to read
+            if (isGranted) {
+                throw error;
+            }
+            // given up as the tab left; a lock the browser refuses the page leaves it alone, as without Web Locks
+            return waiting.signal.aborted ? nothingSent : ask();
         }
         finally {
             lockWaits.delete(waiting);
@@ -583,7 +591,17 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
     /** The lock's holder: sends the newest record once its pause has passed, unless a saved post covers it. */
     async function send(ofVisit: number): Promise<SaveOutcome> {
         const isGone = (): boolean => isStopped() || ofVisit !== visit;
-        if (!reach || isGone() || reach.currentPerson() !== person) {
+        if (!reach || isGone()) {
+            return nothingSent;
+        }
+        // No token yet reaches nothing, as a request with no network does: the copy waits here,
+        // counting no failure, and the session's first ok exchange asks it at once. A token of
+        // another person sends nothing of hers, and the page reloads for them.
+        const holder = reach.currentPerson();
+        if (holder === null) {
+            return { isSaved: false, failure: saveFailed, retryInMs: statusRetryFirstMs };
+        }
+        if (holder !== person) {
             return nothingSent;
         }
 

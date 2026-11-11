@@ -1028,6 +1028,7 @@ const her = "A0000001-0000-4000-8000-00000000000A";
 const church = "C1000000-0000-4000-8000-000000000001";
 const lockName = `rock-chat:status:${church}:${her}`.toLowerCase();
 const channelName = `rock-chat:me:${church}:${her}`.toLowerCase();
+const someoneElse = "a0000099-0000-4000-8000-000000000000";
 
 const automatic: StatusChoice = { busy_until: null, appear_offline: false };
 const hidden: StatusChoice = { busy_until: null, appear_offline: true };
@@ -1061,7 +1062,7 @@ type StatusBrowser = {
 };
 
 /** One browser of hers: tabs of chat sharing one origin's Web Locks and BroadcastChannel, and every status call any of them asks. */
-function statusBrowser(options: { hasLocks?: boolean } = {}): StatusBrowser {
+function statusBrowser(options: { hasLocks?: boolean, locksRefuse?: boolean } = {}): StatusBrowser {
     const locks = createLockFake();
     const channels = createChannelFake();
     const calls: StatusCall[] = [];
@@ -1094,7 +1095,10 @@ function statusBrowser(options: { hasLocks?: boolean } = {}): StatusBrowser {
                     return answer.promise;
                 },
                 applyRefusal: error => refusals.push(error),
-                locks: options.hasLocks === false ? undefined : tabLocks,
+                locks: options.hasLocks === false
+                    ? undefined
+                    // a browser that refuses Web Locks to the page, as on an opaque origin
+                    : options.locksRefuse ? { request: () => Promise.reject(new DOMException("The request was denied.", "SecurityError")) } : tabLocks,
                 channel: name => channels.open(name),
                 targets: {
                     addEventListener: (type, listener) => {
@@ -1284,8 +1288,8 @@ describe("her status across her tabs", () => {
         const b = statusBrowser();
         const a = b.open();
         const t2 = b.open();
-        // the chooser's session is between tokens at its grant, so it sends nothing and the other tab's copy goes
-        t2.person.value = null;
+        // the chooser's session names another person at its grant, so it sends nothing and the other tab's copy goes
+        t2.person.value = someoneElse;
         await t2.prefs.setStatus(busy);
         await after(1000);
         t2.person.value = her.toLowerCase();
@@ -1464,6 +1468,44 @@ describe("her status across her tabs", () => {
         });
     });
 
+    describe("a tab with no token yet", () => {
+        test("Appear offline chosen offline, a new tab opened with no token, the first tab closed: sent once the new tab's token arrives", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(0);
+
+            const c = b.open();
+            c.person.value = null;
+            await delivered();
+            a.close();
+            await after(30_000);
+            expect(b.calls).toHaveLength(1);
+            expect(shown(c)).toEqual(pending(hidden));
+
+            c.person.value = her.toLowerCase();
+            c.prefs.statusWake();
+            await after(0);
+            expect(b.calls.map(call => [call.tab, call.change])).toEqual([[a.n, { status: "appear_offline" }], [c.n, { status: "appear_offline" }]]);
+            b.calls[1].answer.resolve(landed);
+            await after(60_000);
+
+            expect(b.calls).toHaveLength(2);
+            expect(shown(c)).toEqual(settled(hidden));
+        });
+
+        test("a browser that refuses the lock to the page: the choice is sent all the same", async () => {
+            const b = statusBrowser({ locksRefuse: true });
+            const a = b.open();
+            await a.prefs.setStatus(busy);
+            await after(1000);
+
+            expect(b.calls.map(call => call.change)).toEqual([{ status: "busy" }]);
+        });
+    });
+
     describe("a save the server already held", () => {
         test("A's Appear offline reaches the server and A closes before its answer: B's resend answered changed false settles B and C on it", async () => {
             const b = statusBrowser();
@@ -1639,13 +1681,13 @@ describe("her status across her tabs", () => {
     });
 
     describe("a refusal another tab sent", () => {
-        /** B's choice, sent by A: B's session is between tokens when the lock reaches it. */
+        /** B's choice, sent by A: B's session names another person when the lock reaches it. */
         async function sentByA(choice: StatusChoice): Promise<{ b: StatusBrowser, a: StatusTab, t2: StatusTab, c: StatusTab }> {
             const b = statusBrowser();
             const a = b.open();
             const t2 = b.open();
             const c = b.open();
-            t2.person.value = null;
+            t2.person.value = someoneElse;
             await t2.prefs.setStatus(choice);
             await after(1000);
             t2.person.value = her.toLowerCase();
