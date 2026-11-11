@@ -124,7 +124,8 @@ describe("the dialog", () => {
         const w = mountSettings({ push: "blocked" });
         const words = (text: string): number => plain(text).split(" ").filter(word => word !== "").length;
 
-        const help = w.findAll(".chat-sg-sub, [data-testid='settings-foot']").map(line => line.text());
+        // the Status group's line is her status as it stands, not help, so it is not counted
+        const help = w.findAll(".chat-sg-sub, [data-testid='settings-foot']").filter(line => !line.element.closest("[data-testid='status-row']")).map(line => line.text());
         expect(help.length).toBeGreaterThan(0);
         // 32 words, and the ten of the line under "Show public profile details", which says what it now shares
         expect(help.reduce((sum, line) => sum + words(line), 0)).toBeLessThanOrEqual(42);
@@ -421,5 +422,106 @@ describe("Blocked people", () => {
         const failed = mountSettings({ blocked: list({ listState: "failed" }) });
         await failed.get("[data-testid='blocked-failed'] button").trigger("click");
         expect(failed.emitted("retryBlocked")).toHaveLength(1);
+    });
+});
+
+// Her status is a group of its own, first under who she is, since it changes the badge on the face
+// above it and is not one conversation's setting. One row says it as her own words say it, and its
+// Change opens the same menu the sidebar foot's face opens. The group stays with the online switch
+// off, every choice in it, since a Busy still pauses her notifications and Appear offline still
+// hides her typing. While the church is read only, Change stays, marked disabled with the banner's
+// words, since a choice could only be refused.
+describe("Status", () => {
+    const reason = "Cedar Hill's chat is read only until 9.";
+
+    beforeAll(() => {
+        // jsdom has no ResizeObserver, and floating placement keeps its menu beside the anchor with one.
+        if (typeof window.ResizeObserver === "undefined") {
+            window.ResizeObserver = class {
+                observe(): void { /* jsdom lays nothing out, so there is nothing to watch. */ }
+                unobserve(): void { /* As above. */ }
+                disconnect(): void { /* As above. */ }
+            } as unknown as typeof ResizeObserver;
+        }
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    function groups(w: VueWrapper): string[] {
+        return w.findAll("[data-testid^='settings-']").map(group => group.attributes("data-testid") ?? "").filter(id => ["settings-status", "settings-privacy", "settings-notifications", "settings-blocked"].includes(id));
+    }
+
+    function statusLine(w: VueWrapper): string {
+        return plain(w.get("[data-testid='status-row'] .chat-sg-sub").text());
+    }
+
+    async function openChange(w: VueWrapper): Promise<void> {
+        (w.get("[data-testid='status-change']").element as HTMLElement).click();
+        await settle();
+    }
+
+    function menuKeys(): string[] {
+        return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']")).map(item => item.dataset.key ?? "");
+    }
+
+    test("is the first group, right under who she is", () => {
+        const w = mountSettings();
+
+        expect(groups(w)).toEqual(["settings-status", "settings-privacy", "settings-notifications", "settings-blocked"]);
+        const id = w.get(".chat-ms-id").element;
+        expect(id.nextElementSibling).toBe(w.get("[data-testid='settings-status']").element);
+    });
+
+    test.each([
+        ["Automatic", { busy_until: null, appear_offline: false }],
+        ["Busy, notifications paused until 3:00 PM", { busy_until: new Date(2026, 10, 10, 15, 0).toISOString(), appear_offline: false }],
+        ["Busy, notifications paused", { busy_until: "infinity", appear_offline: false }],
+        ["Appear offline", { busy_until: null, appear_offline: true }],
+        ["Automatic", { busy_until: new Date(2026, 10, 10, 11, 0).toISOString(), appear_offline: false }]
+    ])("says %s as her own words say it", (words, statusChoice) => {
+        jest.useFakeTimers({ now: new Date(2026, 10, 10, 12, 0), doNotFake: ["nextTick", "queueMicrotask", "setImmediate", "setTimeout", "clearTimeout", "setInterval", "clearInterval", "requestAnimationFrame", "cancelAnimationFrame"] });
+        const w = mountSettings({ statusChoice });
+
+        expect(statusLine(w)).toBe(words);
+    });
+
+    test("Change opens the status menu, and a choice is told to the block", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: false } });
+
+        const change = w.get("[data-testid='status-change']");
+        expect(plain(change.text())).toBe("Change");
+        expect(change.attributes("aria-haspopup")).toBe("menu");
+        await openChange(w);
+        expect(menuKeys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+
+        (document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']"))!.click();
+        await settle();
+        expect(w.emitted("status")).toEqual([[{ busy_until: null, appear_offline: true }]]);
+    });
+
+    test("reads no online switch, so with it off the group stays with every choice in it", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: false } });
+
+        expect(Object.keys(w.props())).not.toContain("isStatusShown");
+
+        expect(w.find("[data-testid='settings-status']").exists()).toBe(true);
+        await openChange(w);
+        expect(menuKeys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+    });
+
+    test("while the church is read only, Change stays, marked disabled with the banner's words, and opens nothing", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: false }, statusClosedReason: reason });
+
+        const change = w.get("[data-testid='status-change']").element as HTMLElement;
+        expect(change.getAttribute("aria-disabled")).toBe("true");
+        expect(document.getElementById(change.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(reason);
+        await openChange(w);
+        expect(document.querySelector("[role='menu']")).toBeNull();
+
+        await w.setProps({ statusClosedReason: null });
+        await openChange(w);
+        expect(document.querySelector("[role='menu']")).not.toBeNull();
     });
 });

@@ -334,7 +334,7 @@ function fakeBlocks(): Record<string, unknown> {
 
 function fakePrefs(): Record<string, unknown> {
     const state = reactive({
-        me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true },
+        me: { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true, busy_until: null as string | null, appear_offline: false },
         meNotes: {},
         rooms: {} as Record<string, unknown>,
         announcement: null
@@ -351,6 +351,8 @@ function fakePrefs(): Record<string, unknown> {
         setReactionPush: jest.fn(async () => undefined),
         choose: jest.fn(async () => undefined),
         setSwitch: jest.fn(async () => undefined),
+        shownStatus: () => ({ busy_until: state.me.busy_until, appear_offline: state.me.appear_offline }),
+        setStatus: jest.fn(async () => undefined),
         stop: jest.fn()
     };
 }
@@ -5022,5 +5024,124 @@ describe("a start still signing in", () => {
         await settle();
 
         expect(w.get("[data-testid='new-message']").attributes("inert")).toBeUndefined();
+    });
+});
+
+// Her own status is set from her face at the sidebar's foot and from Chat settings' Status group,
+// one menu in both places. Each tab closes it once that tab has learned the church is read only,
+// from its own exchange or its own refused call, as its composer closes, while a tab that has not
+// yet learned keeps it open; under maintenance it stays open, a choice there waiting to be sent.
+describe("her own status", () => {
+    const banner = "Cedar Hill's chat is read only until 9.";
+
+    function face(w: VueWrapper): HTMLElement {
+        return w.get("[data-testid='status-face']").element as HTMLElement;
+    }
+
+    function shellState(shell: Record<string, unknown>): Record<string, unknown> {
+        return shell.state as Record<string, unknown>;
+    }
+
+    async function openSettingsChange(w: VueWrapper): Promise<HTMLElement> {
+        await w.get("[data-testid='sidebar-me']").trigger("click");
+        await settle();
+        return document.querySelector<HTMLElement>("[role='dialog'] [data-testid='status-change']")!;
+    }
+
+    test("is set from her face at the foot, and from Chat settings, by one save", async () => {
+        const w = await mountBlock(1200);
+        shellState(mockShell!).isStatusShown = true;
+        await settle();
+
+        face(w).click();
+        await settle();
+        document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']")!.click();
+        await settle();
+        const prefs = mockShell!.prefs as { setStatus: jest.Mock };
+        expect(prefs.setStatus).toHaveBeenLastCalledWith({ busy_until: null, appear_offline: true });
+
+        const change = await openSettingsChange(w);
+        change.click();
+        await settle();
+        document.querySelector<HTMLElement>("[role='menu'] [data-key='busy-off']")!.click();
+        await settle();
+        expect(prefs.setStatus).toHaveBeenLastCalledWith({ busy_until: "infinity", appear_offline: false });
+    });
+
+    test("checks what her settings show", async () => {
+        const w = await mountBlock(1200);
+        shellState(mockShell!).isStatusShown = true;
+        Object.assign((mockShell!.prefs as { state: { me: Record<string, unknown> } }).state.me, { busy_until: "infinity" });
+        await settle();
+
+        face(w).click();
+        await settle();
+
+        expect(document.querySelector("[role='menu'] [aria-checked='true']")?.getAttribute("data-key")).toBe("busy-off");
+    });
+
+    test("with online status off, the foot is the one settings button and Chat settings still holds the Status group", async () => {
+        const w = await mountBlock(1200);
+
+        expect(w.find("[data-testid='status-face']").exists()).toBe(false);
+        const change = await openSettingsChange(w);
+        expect(change).not.toBeNull();
+        expect(change.hasAttribute("aria-disabled")).toBe(false);
+    });
+
+    test("is closed in the tab that has learned the church is read only, the other tab's left open, and opens again after", async () => {
+        const block = (await import("../../../../src/Communication/Chat/chatShell.obs")).default;
+        const tabA = mount(block, { attachTo: document.body });
+        await settle();
+        const shellA = mockShell!;
+        const tabB = mount(block, { attachTo: document.body });
+        wrapper = tabB;
+        await settle();
+        const shellB = mockShell!;
+        try {
+            Object.assign(shellState(shellA), { isStatusShown: true, service: { state: "normal", banner: null } });
+            Object.assign(shellState(shellB), { isStatusShown: true, service: { state: "normal", banner: null } });
+            await settle();
+
+            // B's own exchange says read only; A has not exchanged since
+            Object.assign(shellState(shellB), { isComposerOpen: false, service: { state: "read_only", banner } });
+            await settle();
+
+            expect(face(tabB).getAttribute("aria-disabled")).toBe("true");
+            expect(document.getElementById(face(tabB).getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(banner);
+            face(tabB).click();
+            await settle();
+            expect(document.querySelector("[role='menu']")).toBeNull();
+
+            expect(face(tabA).hasAttribute("aria-disabled")).toBe(false);
+            face(tabA).click();
+            await settle();
+            expect(document.querySelector("[role='menu']")).not.toBeNull();
+            (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+            await settle();
+
+            // B's settings group is closed the same way
+            const change = await openSettingsChange(tabB);
+            expect(change.getAttribute("aria-disabled")).toBe("true");
+            expect(document.getElementById(change.getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe(banner);
+
+            // the church's banner gone, the sentence read only always has
+            Object.assign(shellState(shellB), { service: { state: "read_only", banner: null } });
+            await settle();
+            expect(document.getElementById(face(tabB).getAttribute("aria-describedby") ?? "")?.textContent?.trim()).toBe("Chat is read-only while we do some maintenance. You can read messages but not send them.");
+
+            // maintenance leaves it open: a choice there is sent once the platform takes it
+            Object.assign(shellState(shellB), { service: { state: "maintenance", banner: null } });
+            await settle();
+            expect(face(tabB).hasAttribute("aria-disabled")).toBe(false);
+            expect(change.hasAttribute("aria-disabled")).toBe(false);
+
+            Object.assign(shellState(shellB), { isComposerOpen: true, service: { state: "normal", banner: null } });
+            await settle();
+            expect(face(tabB).hasAttribute("aria-disabled")).toBe(false);
+        }
+        finally {
+            tabA.unmount();
+        }
     });
 });

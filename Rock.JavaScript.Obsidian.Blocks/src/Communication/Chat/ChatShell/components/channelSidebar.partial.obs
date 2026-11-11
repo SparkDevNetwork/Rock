@@ -163,15 +163,24 @@
             </template>
         </nav>
 
-        <!-- Who the person is, and their settings. -->
+        <!-- Who the person is, and their settings; with online status, their face sets their status. -->
         <div class="chat-side-me">
+            <StatusMenu v-if="isStatusShown"
+                        trigger="face"
+                        :choice="statusChoice"
+                        :closedReason="statusClosedReason"
+                        :personAliasGuid="personAliasGuid"
+                        :personName="personName"
+                        :personPhotoUrl="personPhotoUrl"
+                        :isPhone="isPhone"
+                        @choose="emit('status', $event)" />
             <button type="button"
                     class="chat-me-btn"
                     aria-haspopup="dialog"
                     :aria-label="`Chat settings, ${personName}`"
                     data-testid="sidebar-me"
                     @click="emit('settings')">
-                <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
+                <Avatar v-if="!isStatusShown" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
                 <span class="chat-me-who">
                     <b data-testid="sidebar-me-name">{{ personName }}</b>
                     <span v-if="personCampusName" data-testid="sidebar-me-campus">{{ personCampusName }}</span>
@@ -266,15 +275,25 @@
     scrollbar-width: thin;
 }
 
-/* The foot: one button for who the person is and their settings, its gear turning on hover. */
+/*
+    The foot: one button for who the person is and their settings, its gear turning on hover; with
+    online status, their face is a button of its own before it, whose badge is ringed in the
+    sidebar's fill, so the settings button's hover starts after the face.
+*/
 .chat-side-me {
+    --chat-av-ring: var(--chat-sidebar);
+
+    display: flex;
     flex: none;
+    gap: 2px;
+    align-items: center;
     padding: 8px;
     border-top: 1px solid var(--chat-line);
 }
 
 .chat-me-btn {
     display: flex;
+    flex: 1;
     gap: 10px;
     align-items: center;
     width: 100%;
@@ -729,13 +748,14 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import StatusMenu from "./statusMenu.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace, rowPeople } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
-    import { notifyIconFor } from "../composables/usePrefs.partial";
+    import { notifyIconFor, StatusChoice } from "../composables/usePrefs.partial";
     import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
     import { SidebarRow } from "../types.partial";
 
@@ -797,6 +817,30 @@
             default: null
         },
 
+        /** The person's primary alias, whose own status the foot's face draws. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        /** Whether online status is on, which splits the foot: the face sets the status, the rest opens Chat settings. */
+        isStatusShown: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Her status as her settings show it, which the status menu checks. */
+        statusChoice: {
+            type: Object as PropType<StatusChoice>,
+            default: () => ({ busy_until: null, appear_offline: false })
+        },
+
+        /** Why her status cannot be set now, the banner's words while the church is read only; null while it can. */
+        statusClosedReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         /** Whether the block is drawn one pane at a time, as on a phone. */
         isPhone: {
             type: Boolean,
@@ -840,6 +884,8 @@
         (e: "browse"): void,
         /** The foot was pressed: Chat settings. */
         (e: "settings"): void,
+        /** A choice in the foot's status menu, for the block to save. */
+        (e: "status", choice: StatusChoice): void,
         /** Try again on a first sidebar that failed. */
         (e: "retry"): void
     }>();

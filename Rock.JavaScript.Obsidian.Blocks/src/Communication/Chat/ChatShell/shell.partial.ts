@@ -195,6 +195,9 @@ export type ShellState = {
     /** Whether the composer takes a message in the service state the platform last named. */
     isComposerOpen: boolean;
 
+    /** Whether online status is on, as the latest token exchange said, which splits the sidebar's foot to set it. */
+    isStatusShown: boolean;
+
     /** The platform's limits as the latest token exchange answered them, which the screens draw. */
     limits: PlatformLimits & AttachmentTypes;
 
@@ -347,6 +350,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         service: { state: "normal", banner: null },
         isUpdateRequired: false,
         isComposerOpen: true,
+        isStatusShown: false,
         // the platform's, from the first exchange; nothing is drawn from them before it answers
         limits: readSettings(undefined).limits,
         isPushOffered: false,
@@ -420,6 +424,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.service = { ...settings.service };
         state.isUpdateRequired = settings.client.update_required;
         state.isComposerOpen = isComposerOpen(settings.service.state);
+        state.isStatusShown = settings.flags.online;
         state.limits = settings.limits;
     }
 

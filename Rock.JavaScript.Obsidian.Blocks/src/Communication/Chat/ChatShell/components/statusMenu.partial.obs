@@ -1,0 +1,279 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-status-menu" :class="`is-${trigger}`">
+        <Menu :label="label"
+              :items="items"
+              :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
+              :isSheet="isPhone"
+              :focusKey="focusKey"
+              :closedReason="closedReason"
+              :anchorAttrs="anchorAttrs"
+              @openChange="onOpenChange"
+              @select="onSelect">
+            <template #anchor>
+                <Avatar v-if="trigger === 'face'" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own />
+                <template v-else>Change</template>
+            </template>
+        </Menu>
+    </span>
+</template>
+
+<style scoped>
+.chat-status-menu {
+    display: inline-flex;
+    flex: none;
+}
+
+/*
+    The foot's face: its own round button, a hover disc a touch wider than the face, so lighting it
+    never lights the settings button beside it. The badge is ringed in the sidebar's fill, which the
+    foot sets, and in the disc's under the pointer.
+*/
+.chat-status-menu :deep(.chat-status-face) {
+    width: 40px;
+    height: 40px;
+}
+
+.chat-status-menu :deep(.chat-status-face:hover:not([aria-disabled="true"])) {
+    --chat-av-ring-over: var(--chat-hover);
+}
+
+/* Change, outlined as the dialog's other small buttons are. */
+.chat-status-menu :deep(.chat-status-change) {
+    width: auto;
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-status-menu :deep(.chat-status-change:hover:not([aria-disabled="true"])) {
+    background: var(--chat-surface);
+    border-color: var(--chat-icon);
+}
+
+/* A button that cannot open its menu now is faded and gives no press; its tooltip says why. */
+.chat-status-menu :deep([aria-disabled="true"]) {
+    cursor: default;
+    opacity: .55;
+}
+
+.chat-status-menu :deep([aria-disabled="true"]:hover),
+.chat-status-menu :deep([aria-disabled="true"]:active) {
+    background: transparent;
+}
+
+.chat-status-menu :deep(.chat-status-change[aria-disabled="true"]:hover),
+.chat-status-menu :deep(.chat-status-change[aria-disabled="true"]:active) {
+    background: var(--chat-surface);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
+    import { untilWords } from "../ui/face.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { StatusChoice } from "../composables/usePrefs.partial";
+
+    // #region Types
+
+    /** An item's key: Automatic, each of Busy's ends, Appear offline. */
+    type ItemKey = "auto" | "busy-current" | "busy-morning" | "busy-1h" | "busy-2h" | "busy-off" | "appear_offline";
+
+    // #endregion Types
+
+    const props = defineProps({
+        /** Her status as her settings show it, which the check sits on. */
+        choice: {
+            type: Object as PropType<StatusChoice>,
+            required: true
+        },
+
+        /** What opens the menu: the sidebar foot's face, or the Chat settings group's Change. */
+        trigger: {
+            type: String as PropType<"face" | "change">,
+            required: true
+        },
+
+        /** Why a choice cannot be saved now, the banner's words while the church is read only; null while it can. */
+        closedReason: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Her primary alias, whose own status the face draws. */
+        personAliasGuid: {
+            type: String,
+            default: ""
+        },
+
+        personName: {
+            type: String,
+            default: ""
+        },
+
+        personPhotoUrl: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        isPhone: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** A choice, with any end as a server time, for the host to save. */
+        (e: "choose", choice: StatusChoice): void;
+    }>();
+
+    // #region Values
+
+    const statusOf = useFaceStatus(() => props.trigger === "face" && props.personAliasGuid ? [props.personAliasGuid] : [], 0);
+
+    /** The viewer's clock as the menu last opened, which its ends are named from. */
+    const openedAt = ref(new Date());
+
+    const oneHour = 3_600_000;
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** Her own face's status, which the foot's face draws and is named by. */
+    const ownStatus = computed(() => props.trigger === "face" && props.personAliasGuid ? statusOf(props.personAliasGuid) : null);
+
+    const label = computed((): string => {
+        if (props.trigger === "change") {
+            return "Change your status";
+        }
+
+        return ownStatus.value ? `Your status: ${ownStatus.value.tip}. Set status` : "Set status";
+    });
+
+    const anchorAttrs = computed((): Record<string, unknown> => props.trigger === "face"
+        ? { class: "chat-status-face", "data-testid": "status-face", tooltip: "Set status" }
+        : { class: "chat-status-change", "data-testid": "status-change", tooltip: "Change your status" });
+
+    /**
+     * The items, named from the clock as the menu opened. The check sits by her settings' value,
+     * never by the item pressed last: a Busy with no end on Until I turn it off, an end at the
+     * next 8:00 on the morning item, and any other end on a row of its own first among the ends,
+     * since an end cannot be read back as the length that set it.
+     */
+    const items = computed((): MenuItem[] => {
+        const now = openedAt.value;
+        const end = busyEndOf(props.choice, now.getTime());
+        const morning = nextMorning(now);
+        const isAuto = !props.choice.appear_offline && end === null;
+        const ends: MenuItem[] = [];
+
+        if (end !== null && end !== Infinity && end !== morning.getTime()) {
+            ends.push(busyItem("busy-current", untilLabel(new Date(end), now), true));
+        }
+        ends.push(
+            busyItem("busy-morning", untilLabel(morning, now), end === morning.getTime()),
+            busyItem("busy-1h", "For 1 hour", false),
+            busyItem("busy-2h", "For 2 hours", false),
+            busyItem("busy-off", "Until I turn it off", end === Infinity)
+        );
+        ends[0] = { ...ends[0], isSeparatorBefore: true, heading: "Busy · notifications paused" };
+
+        return [
+            { key: "auto", label: "Automatic", description: "Online or away, from your activity", isChecked: isAuto },
+            ...ends,
+            { key: "appear_offline", label: "Appear offline", description: "You'll look offline. Messages still arrive.", isChecked: props.choice.appear_offline, isSeparatorBefore: true }
+        ];
+    });
+
+    /** The Busy chosen, which the keyboard opens on; the morning end while none is, the end a person most often takes. */
+    const focusKey = computed((): string => items.value.find(item => item.isChecked && item.key.startsWith("busy-"))?.key ?? "busy-morning");
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onOpenChange(isOpen: boolean): void {
+        if (isOpen) {
+            openedAt.value = new Date();
+        }
+    }
+
+    /** A choice, its end worked out again from the clock now, so a menu left open names no end already passed. */
+    function onSelect(key: string): void {
+        const now = new Date();
+        switch (key as ItemKey) {
+            case "auto":
+                emit("choose", { busy_until: null, appear_offline: false });
+                break;
+
+            case "busy-current":
+                emit("choose", { busy_until: props.choice.busy_until, appear_offline: false });
+                break;
+
+            case "busy-morning":
+                emit("choose", { busy_until: nextMorning(now).toISOString(), appear_offline: false });
+                break;
+
+            case "busy-1h":
+            case "busy-2h":
+                emit("choose", { busy_until: new Date(now.getTime() + (key === "busy-1h" ? 1 : 2) * oneHour).toISOString(), appear_offline: false });
+                break;
+
+            case "busy-off":
+                emit("choose", { busy_until: "infinity", appear_offline: false });
+                break;
+
+            case "appear_offline":
+                emit("choose", { busy_until: null, appear_offline: true });
+                break;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** A Busy end's item, its name for a screen reader carrying the heading's sense: "Busy for 1 hour". */
+    function busyItem(key: ItemKey, words: string, isChecked: boolean): MenuItem {
+        return { key, label: words, ariaLabel: `Busy ${words.charAt(0).toLowerCase()}${words.slice(1)}`, isChecked };
+    }
+
+    /** "Until 3:00 PM", "Until tomorrow, 8:00 AM", as every status word names an end. */
+    function untilLabel(at: Date, now: Date): string {
+        return `Until ${untilWords(at, now)}`;
+    }
+
+    /** The next 8:00 by the viewer's clock: today's before it comes, else tomorrow's. */
+    function nextMorning(now: Date): Date {
+        const at = new Date(now);
+        at.setHours(8, 0, 0, 0);
+        if (at.getTime() <= now.getTime()) {
+            // the day first, then the hour, so a daylight saving change cannot move it off 8:00
+            at.setDate(at.getDate() + 1);
+            at.setHours(8, 0, 0, 0);
+        }
+        return at;
+    }
+
+    /** When her Busy ends, Infinity for no end, or null while she is not Busy, an ended Busy included. */
+    function busyEndOf(choice: StatusChoice, now: number): number | null {
+        if (choice.appear_offline || choice.busy_until === null) {
+            return null;
+        }
+        if (choice.busy_until === "infinity") {
+            return Infinity;
+        }
+        const end = Date.parse(choice.busy_until);
+        return end > now ? end : null;
+    }
+
+    // #endregion Functions
+</script>

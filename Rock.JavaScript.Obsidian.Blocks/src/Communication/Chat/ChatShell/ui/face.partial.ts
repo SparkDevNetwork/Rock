@@ -104,8 +104,15 @@ type OthersState = Exclude<FaceStatus["state"], "hidden">;
 /**
  * When a Busy ends, on the viewer's own clock: a time the same day, "tomorrow" and a time the next,
  * and a later day by its month and day, so the end reads at a glance without a date for today.
+ * Every status word and the status menu's ends read it, so an end never reads two ways.
+ *
+ * @param at When the Busy ends.
+ * @param now The viewer's now.
+ * @param locale The viewer's locale, or the browser's when not given.
+ *
+ * @returns The end, such as "3:00 PM" or "tomorrow, 8:00 AM".
  */
-function untilWords(at: Date, now: Date, locale?: string): string {
+export function untilWords(at: Date, now: Date, locale?: string): string {
     // calendar days rather than elapsed hours, rounded so a daylight saving change is not a day
     const days = Math.round((startOfDay(at).getTime() - startOfDay(now).getTime()) / 86_400_000);
     const time = timeLabel(at, locale);

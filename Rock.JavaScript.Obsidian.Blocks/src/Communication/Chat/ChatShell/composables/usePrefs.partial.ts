@@ -60,6 +60,9 @@ export type MeSettings = {
     appear_offline: boolean;
 };
 
+/** Her status as she chose it, in the two fields her settings carry it in. */
+export type StatusChoice = Pick<MeSettings, "busy_until" | "appear_offline">;
+
 /** A room's notify mode, as the platform names them. */
 export type NotifyMode = "all" | "mentions" | "silent";
 
@@ -147,6 +150,12 @@ export type Prefs = {
 
     /** A Chat settings switch: the reaction switch is the platform's, the other two Rock's. */
     setSwitch: (key: MeKey, value: boolean) => Promise<void>;
+
+    /** Her status as her own faces and the status menu show it. */
+    shownStatus: () => StatusChoice;
+
+    /** Saves her status from the status menu. */
+    setStatus: (choice: StatusChoice) => Promise<void>;
 
     stop: () => void;
 };
@@ -502,6 +511,12 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         },
 
         setSwitch: (key: MeKey, value: boolean): Promise<void> => key === "reaction_push" ? prefs.setReactionPush(value) : prefs.setPersonSetting(key, value),
+
+        shownStatus: (): StatusChoice => ({ busy_until: state.me.busy_until, appear_offline: state.me.appear_offline }),
+
+        // The save and the tabs it reaches are their own work, built on this entry; until then a
+        // choice saves nothing, and her settings keep showing what the platform holds.
+        setStatus: async (): Promise<void> => undefined,
 
         stop: (): void => {
             isStopped = true;

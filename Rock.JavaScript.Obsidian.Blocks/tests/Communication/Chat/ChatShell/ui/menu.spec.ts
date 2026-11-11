@@ -313,3 +313,51 @@ describe("the menu's focused item", () => {
         expect(tinted).toEqual([".chat-menu-item:hover"]);
     });
 });
+
+// A menu that cannot open now keeps its button where it is, marked disabled and saying why in its
+// tooltip and its description, so it never looks like a button that does nothing; the reason takes
+// the place of the button's own tooltip and description only while it holds.
+describe("a menu that cannot open now", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    test("marks its button disabled with the reason, opens nothing, and gives the button its own description back after", async () => {
+        const anchorAttrs = { tooltip: "Not sent", "aria-describedby": "own-reason" };
+        wrapper = mount(Menu, { props: { icon: "dots", label: "More", items, anchorAttrs, closedReason: "Chat is read only." }, attachTo: document.body });
+        const button = wrapper.get("button").element as HTMLElement;
+
+        expect(button.getAttribute("aria-disabled")).toBe("true");
+        expect(document.getElementById(button.getAttribute("aria-describedby") ?? "")?.textContent).toBe("Chat is read only.");
+        button.click();
+        await settle();
+        expect(menu()).toBeNull();
+
+        await wrapper.setProps({ closedReason: null });
+        expect(button.hasAttribute("aria-disabled")).toBe(false);
+        expect(button.getAttribute("aria-describedby")).toBe("own-reason");
+        button.click();
+        await settle();
+        expect(menu()).not.toBeNull();
+    });
+
+    test("opens on the item it is told to, and draws an item's heading for the eye alone", async () => {
+        const choices = [
+            { key: "a", label: "A", isChecked: false },
+            { key: "b", label: "B", isChecked: true, heading: "Later ones", ariaLabel: "Later B" }
+        ];
+        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices, focusKey: "b" }, attachTo: document.body });
+        (wrapper.get("button").element as HTMLElement).click();
+        await settle();
+
+        const radios = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+        expect(document.activeElement).toBe(radios[1]);
+        expect(radios[1].getAttribute("aria-label")).toBe("Later B");
+        expect(radios[0].hasAttribute("aria-label")).toBe(false);
+        expect(document.querySelector("[role='menu'] [role='presentation']")?.textContent).toBe("Later ones");
+    });
+});

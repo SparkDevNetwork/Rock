@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <IconButton ref="anchor"
-                v-bind="anchorAttrs"
+                v-bind="anchorBindings"
                 :icon="icon"
                 :label="label"
                 aria-haspopup="menu"
@@ -10,6 +10,7 @@
                 @click="onAnchorClick">
         <slot name="anchor"></slot>
     </IconButton>
+    <span v-if="closedReason" :id="reasonId" class="chat-sr-only">{{ closedReason }}</span>
 
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving">
@@ -31,12 +32,14 @@
                 <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
                 <template v-for="item in items" :key="item.key">
                     <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
+                    <div v-if="item.heading" class="chat-menu-head" role="presentation">{{ item.heading }}</div>
                     <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                     <button type="button"
                             :class="[isSheet ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
                             :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
                             :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
                             :data-key="item.key"
+                            :aria-label="item.ariaLabel"
                             tabindex="-1"
                             :aria-disabled="item.isDisabled || undefined"
                             @click="choose(item)">
@@ -214,6 +217,7 @@
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
     import { overlayHostOf } from "./tooltip.partial";
@@ -243,6 +247,15 @@
         isChecked?: boolean;
 
         /**
+         * A heading drawn over the item, after its separator, naming the items from it on. It is
+         * passed over by a screen reader, so those items carry its sense in their own names.
+         */
+        heading?: string;
+
+        /** The item's name for a screen reader where its words alone would not say it, as "Busy for 1 hour" under a Busy heading. */
+        ariaLabel?: string;
+
+        /**
          * Drawn but never chosen. Marked rather than disabled, so the arrows still reach it and a
          * screen reader still reads it out.
          */
@@ -252,10 +265,13 @@
     // #endregion Types
 
     const props = defineProps({
-        /** The icon on the button that opens the menu; the anchor slot adds words beside it, as a failed send's Not sent marker does. */
+        /**
+         * The icon on the button that opens the menu; the anchor slot adds words beside it, as a
+         * failed send's Not sent marker does, or draws the whole button where there is no icon.
+         */
         icon: {
             type: String as PropType<string>,
-            required: true
+            default: ""
         },
 
         /** What the button and the menu are called, for a screen reader and the button's tooltip. */
@@ -298,6 +314,22 @@
         isSheet: {
             type: Boolean,
             default: false
+        },
+
+        /** The item a press or Down opens the menu on, such as the choice a set of choices stands at; the first by default. */
+        focusKey: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * Why the menu cannot open now, or null while it can. Its button stays where it is, marked
+         * disabled with these words as its tooltip and its description, so it never looks like a
+         * button that does nothing; an open menu closes.
+         */
+        closedReason: {
+            type: String as PropType<string | null>,
+            default: null
         }
     });
 
@@ -312,6 +344,9 @@
     const anchorElement = ref<HTMLElement>();
     const menuElement = ref<HTMLElement>();
     const isOpen = ref(false);
+
+    /** The closed reason's own element, which the button is described by. */
+    const reasonId = `chat-menu-reason-${newGuid()}`;
 
     /** The chat's root, which the open menu is drawn in; null where the menu is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(null);
@@ -330,6 +365,11 @@
     // #endregion Values
 
     // #region Computed Values
+
+    /** The button's attributes, and while the menu cannot open, its reason in place of the button's own tooltip and description. */
+    const anchorBindings = computed((): Record<string, unknown> => props.closedReason
+        ? { ...props.anchorAttrs, "aria-disabled": "true", "aria-describedby": reasonId, tooltip: props.closedReason }
+        : props.anchorAttrs);
 
     /**
      * The placement, with the pop motion grown from the button: from the button's middle along the
@@ -353,6 +393,10 @@
     // #region Event Handlers
 
     async function onAnchorClick(): Promise<void> {
+        if (props.closedReason) {
+            return;
+        }
+
         if (isOpen.value) {
             close(false);
             return;
@@ -363,7 +407,7 @@
 
     /** Down on the closed button opens the menu on its first item, Up on its last, as a menu button does. */
     function onAnchorKeydown(event: KeyboardEvent): void {
-        if (!isOpen.value && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
+        if (!isOpen.value && !props.closedReason && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
             event.preventDefault();
             void open(event.key === "ArrowDown" ? "first" : "last");
         }
@@ -434,7 +478,8 @@
         isOpen.value = true;
         await nextTick();
         const items = menuItems();
-        items[at === "first" ? 0 : items.length - 1]?.focus();
+        const chosen = at === "first" && props.focusKey ? items.find(item => item.dataset.key === props.focusKey) : undefined;
+        (chosen ?? items[at === "first" ? 0 : items.length - 1])?.focus();
     }
 
     function menuItems(): HTMLElement[] {
@@ -460,6 +505,13 @@
     // #endregion Functions
 
     // #region Watchers
+
+    // A menu that can no longer open closes; focus in it goes back to its button, which says why.
+    watch(() => props.closedReason, closedReason => {
+        if (closedReason && isOpen.value) {
+            close(menuElement.value?.contains(document.activeElement) ?? false);
+        }
+    });
 
     // The outside press is listened for only while open, so a closed menu costs the page nothing.
     watch(isOpen, open => {
