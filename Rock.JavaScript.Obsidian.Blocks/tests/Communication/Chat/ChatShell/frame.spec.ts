@@ -811,6 +811,23 @@ describe("a conversation switch", () => {
         await openRow(w, dmAnna.channel_id);
         expect(isFeedEntering(w)).toBe(true);
     });
+
+    // The row is the one owner of how far the person read: a sidebar read after a reconnect
+    // restates it with a read made on another device while this page was offline, which no live
+    // event told the held page. Opened, the held page's old first unread draws no New line.
+    test("a conversation whose row says it was read past its held first unread opens with no New line", async () => {
+        const held = timelineOf(team.channel_id) as { messages: TimelineMessage[], readCursor: number | null, unreadCount: number, firstUnreadId: number | null };
+        held.messages.push(storedMessage(1), storedMessage(2), storedMessage(3));
+        Object.assign(held, { readCursor: 1, unreadCount: 2, firstUnreadId: 2 });
+        const w = await mountBlock(1200);
+        const channels = mockShell!.channels as { rows: SidebarRow[] };
+        channels.rows = channels.rows.map(row => row.channel_id === team.channel_id ? { ...row, read_cursor: 3 } : row);
+
+        await openRow(w, team.channel_id);
+
+        expect(w.find("[data-testid='message-row']").exists()).toBe(true);
+        expect(w.find("[data-testid='unread-divider']").exists()).toBe(false);
+    });
 });
 
 describe("drafts", () => {

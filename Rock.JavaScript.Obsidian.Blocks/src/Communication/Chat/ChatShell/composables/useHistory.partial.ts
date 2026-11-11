@@ -66,6 +66,12 @@ export type TimelineState = {
     /** Whether the first page has arrived. */
     isLoaded: boolean;
 
+    /**
+     * How many pages the platform answered have been laid in. A view counts from where this stood
+     * as it mounted, so it knows its open's first read when it is drawn, who is typing included.
+     */
+    pagesRead: number;
+
     /** Whether older messages exist than the oldest here. */
     hasMore: boolean;
 
@@ -392,7 +398,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
         let timeline = states.get(channelId);
 
         if (!timeline) {
-            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null, rev: null }) as TimelineState;
+            timeline = reactive<TimelineState>({ messages: [], isLoaded: false, pagesRead: 0, hasMore: false, readCursor: null, unreadCount: 0, firstUnreadId: null, isBehind: false, verifiedThrough: null, rev: null }) as TimelineState;
             states.set(channelId, timeline);
         }
 
@@ -445,6 +451,8 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
      */
     function mergePage(channelId: string, page: HistoryPage, readAt: number, askedAt: number): void {
         const rev = revOf(page);
+        // in the same pass as the typists it names, so a view draws the read and its typist as one change
+        state(channelId).pagesRead++;
         for (const message of page.messages) {
             if ((pageReadAt.get(message.id) ?? 0) > readAt && find(channelId, message.id)) {
                 continue;

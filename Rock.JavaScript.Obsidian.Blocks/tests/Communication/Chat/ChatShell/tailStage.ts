@@ -24,7 +24,8 @@
 // - boxes are laid out from a few rules (blocks stack, a line lays its children side by side on
 //   their bottom edge, a fill takes a short conversation's spare height, an absolute box stands at
 //   its top and left in its nearest positioned ancestor), with `offsetTop` and `offsetParent` as the
-//   real tree has them;
+//   real tree has them; as in a browser, the layout is kept until the document changes, so reading
+//   many boxes in a row lays the view out once;
 // - what a person sees of an element is its seen opacity, the product over its ancestors, and its
 //   box clipped by its clip;
 // - the scroller's `scrollHeight` grows by the part of the content's downward transform past its
@@ -315,7 +316,9 @@ export function createStage(options?: StageOptions): Stage {
     // #region Layout
 
     const sizes = options?.sizes ?? [];
-    const sizeCache = new WeakMap<Element, Size>();
+    // an element's size and height for the layout kept, both dropped with it
+    let sizeCache = new WeakMap<Element, Size>();
+    let heightCache = new WeakMap<Element, Map<number, number>>();
 
     function sizeOf(element: Element): Size {
         const cached = sizeCache.get(element);
@@ -331,6 +334,7 @@ export function createStage(options?: StageOptions): Stage {
         if (html.dataset?.h !== undefined) {
             size.h = Number(html.dataset.h);
         }
+        sizeCache.set(element, size);
         return size;
     }
 
@@ -366,6 +370,18 @@ export function createStage(options?: StageOptions): Stage {
 
     /** An element's height laid out at a width. */
     function heightOf(element: Element, width: number): number {
+        const known = heightCache.get(element)?.get(width);
+        if (known !== undefined) {
+            return known;
+        }
+        const measured = measure(element, width);
+        const byWidth = heightCache.get(element) ?? new Map<number, number>();
+        byWidth.set(width, measured);
+        heightCache.set(element, byWidth);
+        return measured;
+    }
+
+    function measure(element: Element, width: number): number {
         const size = sizeOf(element);
         if (size.h !== undefined) {
             return size.h;
@@ -441,14 +457,32 @@ export function createStage(options?: StageOptions): Stage {
     const padTop = options?.padTop ?? 0;
     const padBottom = options?.padBottom ?? 0;
 
+    // Any change to the document drops the layout kept: its records are taken synchronously, so a
+    // box read right after a write sees the write, as a browser's forced layout does, and records
+    // delivered to the observer before the next read drop it too.
+    let kept: { scroller: Element, content: Element, boxes: Map<Element, Box> } | null = null;
+    const changes = new MutationObserver(() => {
+        kept = null;
+    });
+    changes.observe(document, { subtree: true, childList: true, attributes: true, characterData: true });
+
     /** The view laid out: the scroller at its place, the content in it from its top padding, a fill taking a short conversation's room. */
     function layout(): Map<Element, Box> {
-        const boxes = new Map<Element, Box>();
         const scroller = options?.scroller();
         const content = options?.content();
+        if (changes.takeRecords().length > 0 || kept?.scroller !== scroller || kept?.content !== content) {
+            kept = null;
+        }
+        if (kept) {
+            return kept.boxes;
+        }
+        sizeCache = new WeakMap();
+        heightCache = new WeakMap();
+        const boxes = new Map<Element, Box>();
         if (!scroller || !content) {
             return boxes;
         }
+        kept = { scroller, content, boxes };
         boxes.set(scroller, { x: 0, y: top, w: width, h: height });
         const room = height - padTop - padBottom;
         const spare = Math.max(0, room - heightOf(content, width));
@@ -589,6 +623,7 @@ export function createStage(options?: StageOptions): Stage {
         seenBox,
         seenOpacity,
         restore: () => {
+            changes.disconnect();
             for (const [target, name, descriptor] of saved.reverse()) {
                 if (descriptor) {
                     Object.defineProperty(target, name, descriptor);

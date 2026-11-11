@@ -24,7 +24,7 @@
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
         <div class="chat-msg-line">
-            <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. -->
+            <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. It hangs straight in its line, which carries it when its row steps: a wrapper here would change what carries it. -->
             <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">
                 <template v-if="isLastOfGroup">
                     <button v-if="view.authorGuid"

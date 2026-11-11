@@ -747,6 +747,12 @@
             default: false
         },
 
+        /** How far the person has read the conversation, as its sidebar row holds it; null where it has none. */
+        readCursor: {
+            type: Number as PropType<number | null>,
+            default: null
+        },
+
         /** The church's name, the sender of a block post nobody signed. */
         organizationName: {
             type: String as PropType<string>,
@@ -900,12 +906,16 @@
     const isMarkedRead = ref(false);
 
     /**
-     * The newest message when the person last sent here, or null before any send. Sending means
-     * they have caught up to that point, so a divider at or before it goes, with its strip, as
-     * reading would take them; one for others' messages after it, as a catch-up after a reconnect
-     * can bring, still shows. The read position is still saved only from what is seen.
+     * The newest message the person is past on this visit: a divider at or before it goes, with its
+     * strip; one for others' messages after it, as a catch-up after a reconnect can bring, still
+     * shows. It starts at how far they had read as the feed mounted, so a line they read on an
+     * earlier visit, which the held page still names and the open's read no longer does, is never
+     * drawn to go as that read lands, the rows above stepping by its height. It is read once, so a
+     * save made while reading leaves the visit's divider standing, and a send raises it to the
+     * newest message, since sending means they have caught up to that point; the read position is
+     * still saved only from what is seen.
      */
-    const clearedThroughId = ref<number | null>(null);
+    const pastId = ref<number | null>(props.readCursor);
 
     /**
      * Whether the reader is at the newest message, kept there through the feed's own box and the
@@ -947,6 +957,9 @@
      */
     const isEnteringDrawn = ref(props.isEntering && props.timeline.isLoaded);
 
+    /** How many pages the timeline had read as the feed mounted, which its open's first read moves past. */
+    const pagesReadAtOpen = props.timeline.pagesRead;
+
     /** Whether the feed mounted before its first page, so its entrance waits for that page; played once. */
     let isEntrancePending = !props.timeline.isLoaded;
 
@@ -965,13 +978,14 @@
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
 
     /**
-     * The message the New divider stands above: the first unread the platform found, or the page's
-     * top when that message is older than the page loaded.
+     * The message the New divider stands above: the first unread the platform found, unless the
+     * person had read past it before this visit, or the page's top when that message is older than
+     * the page loaded.
      */
     const dividerBeforeId = computed((): number | null => {
         const firstUnreadId = props.timeline.firstUnreadId;
         const id = firstUnreadId === null ? null : props.timeline.messages.find(m => m.id >= firstUnreadId)?.id ?? null;
-        return id !== null && clearedThroughId.value !== null && id <= clearedThroughId.value ? null : id;
+        return id !== null && pastId.value !== null && id <= pastId.value ? null : id;
     });
 
     /**
@@ -1025,7 +1039,9 @@
         },
         follow: reader.toNewest,
         arrives,
-        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun]
+        drawn: () => [drawnTyping.value, newestId(), channelPending.value.length, laidOut.value.typing?.isInRun],
+        // the feed mounts as its room opens, so the first page read after that is its open's
+        landed: () => props.timeline.pagesRead > pagesReadAtOpen
     });
 
     /**
@@ -1287,7 +1303,7 @@
         if (length > previous) {
             const newest = newestId();
             if (newest !== null) {
-                clearedThroughId.value = Math.max(clearedThroughId.value ?? newest, newest);
+                pastId.value = Math.max(pastId.value ?? newest, newest);
             }
         }
 

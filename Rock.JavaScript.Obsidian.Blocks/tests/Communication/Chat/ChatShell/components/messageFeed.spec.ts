@@ -162,6 +162,7 @@ function timeline(messages: TimelineMessage[], extra: Partial<TimelineState> = {
     return reactive({
         messages,
         isLoaded: true,
+        pagesRead: 0,
         hasMore: false,
         readCursor: null,
         unreadCount: 0,
@@ -184,6 +185,7 @@ type FeedProps = {
     isEntering?: boolean;
     isCovered?: boolean;
     typing?: Typing | null;
+    readCursor?: number | null;
 };
 
 /** Anna typing, as the presence gives it. */
@@ -1079,11 +1081,69 @@ describe("the New divider and the unread strip", () => {
         expect(isBefore(divider.element, wrapper.get("[data-message-id='40']").element)).toBe(true);
     });
 
+    // How far the person read is weighed against the message the divider stands above, not the
+    // first unread: read past the first unread but not to the page's top, the divider still stands
+    // there, as the open's read counted from that position places it, so nothing appears as it lands.
+    test("opened again with its row's read position between the first unread and the page's top, the divider stands at the page's top", () => {
+        const wrapper = draw({
+            timeline: timeline([message(40, anna, at(11, 0)), message(41, anna, at(11, 30))], { readCursor: 3, unreadCount: 99, firstUnreadId: 4 }),
+            readCursor: 20
+        });
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='40']").element)).toBe(true);
+    });
+
     test("no divider and no strip with nothing unread", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0, firstUnreadId: null }) });
 
         expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
         expect(isShown(wrapper, "[data-testid='unread-strip']")).toBe(false);
+    });
+
+    // A conversation read past its divider and left holds the page it was read from. Its sidebar
+    // row says how far the person read, however that was saved (here, on another device, or
+    // restated by a sidebar read after a reconnect): opened again it draws no divider and keeps no
+    // strip room, so the open's read, which says the same, takes nothing away above the rows.
+    test("opened again with its row's read position past the first unread, it draws no divider and keeps no strip room", () => {
+        const wrapper = draw({
+            timeline: timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 }),
+            readCursor: 3
+        });
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+        expect(wrapper.get(".chat-feed-frame").classes()).not.toContain("has-strip-room");
+    });
+
+    // The divider marks where the visit's unread began: a save made while reading, as the page
+    // losing focus makes, moves the row's read position on, and the divider stands.
+    test("a save while the conversation is open leaves its divider and strip room standing", async () => {
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 });
+        const wrapper = draw({ timeline: state, readCursor: 1 });
+
+        await wrapper.setProps({ readCursor: 3 });
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(true);
+        expect(wrapper.get(".chat-feed-frame").classes()).toContain("has-strip-room");
+    });
+
+    // A held divider hidden as the feed mounted is only the one read before: news that came after
+    // it, as a catch-up page brings, still gets its divider.
+    test("a held divider hidden at the open still lets a later page's newer first unread draw one", async () => {
+        const state = timeline([message(1, anna, at(11, 0)), message(2, anna, at(11, 30)), message(3, anna, at(11, 31))], { readCursor: 1, unreadCount: 2, firstUnreadId: 2 });
+        const wrapper = draw({ timeline: state, readCursor: 3 });
+        expect(wrapper.find("[data-testid='unread-divider']").exists()).toBe(false);
+
+        state.messages.push(message(4, anna, at(11, 40)), message(5, anna, at(11, 45)));
+        state.readCursor = 3;
+        state.unreadCount = 2;
+        state.firstUnreadId = 4;
+        await nextTick();
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(wrapper.get("[data-message-id='3']").element, divider.element)).toBe(true);
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='4']").element)).toBe(true);
     });
 
     test("the strip shows only while the divider is off screen", async () => {
@@ -2637,5 +2697,34 @@ describe("a failed send's own choices", () => {
         await nextTick();
         await wrapper.findAll("[role='menuitem']")[1].trigger("click");
         expect(wrapper.emitted("discard")).toEqual([["b"]]);
+    });
+});
+
+// The feed mounts as its room opens, so the first page its timeline reads after that is its open's
+// first read, which its tail carries as the open's however late it lands; a page read before the
+// feed mounted is not.
+describe("the open's first read, as the feed hands it to its tail", () => {
+    test("the tail is told the open has landed once a page is read after the feed mounts, and not before", async () => {
+        const tails = jest.requireActual<typeof import("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial")>("../../../../../src/Communication/Chat/ChatShell/composables/useFeedTail.partial");
+        const handed: { landed?: () => boolean }[] = [];
+        const real = tails.useFeedTail;
+        const spy = jest.spyOn(tails, "useFeedTail").mockImplementation(options => {
+            handed.push(options);
+            return real(options);
+        });
+        try {
+            const state = timeline([message(1, anna, at(14, 50))], { pagesRead: 3 });
+            draw({ timeline: state });
+            const tail = handed.find(options => options.landed);
+            expect(tail?.landed?.()).toBe(false);
+
+            state.pagesRead++;
+            await nextTick();
+
+            expect(tail?.landed?.()).toBe(true);
+        }
+        finally {
+            spy.mockRestore();
+        }
     });
 });
