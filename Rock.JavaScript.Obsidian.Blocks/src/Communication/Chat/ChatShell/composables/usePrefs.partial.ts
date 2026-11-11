@@ -675,8 +675,11 @@ function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies: Prefs
             return { ...outcome, sent: record };
         }
         if (outcome.retryInMs !== undefined || result.ok) {
-            // the try left before the network or the platform came back, so it says nothing of now
-            const retryInMs = wakes !== wakesAtSend ? 0 : outcome.retryInMs ?? 0;
+            // A try that reached nothing left before the network or the platform came back, so it
+            // says nothing of now. A 401 already had its fresh token and second try inside this
+            // flight, and a 429 is a pace: neither is about reaching the platform.
+            const isUnreached = !result.ok && (result.status === 0 || result.status === 408 || result.status >= 500);
+            const retryInMs = wakes !== wakesAtSend && isUnreached ? 0 : outcome.retryInMs ?? 0;
             clock.failures++;
             clock.retryAt = Date.now() + retryInMs;
             clock.retryPage = tabId;

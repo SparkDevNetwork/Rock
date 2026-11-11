@@ -1900,6 +1900,26 @@ describe("her status across her tabs", () => {
             expect(b.calls.map(call => call.at)).toEqual([1000, 1000]);
         });
 
+        test.each([
+            ["a 401 after the refresh inside the call, which had a fresh token already", "expired"],
+            ["a 429, which is a pace", "rateLimited"]
+        ] as const)("during a try, %s is asked again on the backoff, not at once", async (_name, shape) => {
+            const b = statusBrowser();
+            const a = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+
+            // the refresh inside the call landed ok, which wakes her waiting save
+            a.prefs.statusWake();
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures[shape]));
+            await after(9999);
+            expect(b.calls).toHaveLength(1);
+            await after(1);
+
+            expect(b.calls.map(call => call.at)).toEqual([1000, 11_000]);
+        });
+
         test("with no failure waiting asks nothing, and a choice still waits out its pause", async () => {
             const b = statusBrowser();
             const a = b.open();
