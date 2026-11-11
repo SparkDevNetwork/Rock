@@ -1081,6 +1081,19 @@ describe("the New divider and the unread strip", () => {
         expect(isBefore(divider.element, wrapper.get("[data-message-id='40']").element)).toBe(true);
     });
 
+    // How far the person read is weighed against the message the divider stands above, not the
+    // first unread: read past the first unread but not to the page's top, the divider still stands
+    // there, as the open's read counted from that position places it, so nothing appears as it lands.
+    test("opened again with its row's read position between the first unread and the page's top, the divider stands at the page's top", () => {
+        const wrapper = draw({
+            timeline: timeline([message(40, anna, at(11, 0)), message(41, anna, at(11, 30))], { readCursor: 3, unreadCount: 99, firstUnreadId: 4 }),
+            readCursor: 20
+        });
+
+        const divider = wrapper.get("[data-testid='unread-divider']");
+        expect(isBefore(divider.element, wrapper.get("[data-message-id='40']").element)).toBe(true);
+    });
+
     test("no divider and no strip with nothing unread", () => {
         const wrapper = draw({ timeline: timeline([message(1, anna, at(11, 0))], { readCursor: 1, unreadCount: 0, firstUnreadId: null }) });
 
