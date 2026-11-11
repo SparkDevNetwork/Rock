@@ -34,6 +34,7 @@ import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { join } from "path";
+import { away } from "../statusShapes";
 import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 // #region Fixtures
@@ -482,7 +483,7 @@ describe("the body", () => {
         const w = mountView({ chosen: [anna], lookup: found, foundTitle: "Anna Reyes" });
 
         const strip = w.get("[data-testid='nd-found']");
-        expect(strip.attributes("role")).toBe("status");
+        expect(strip.attributes("role")).toBeUndefined();
         expect(strip.get("b").text()).toBe("You already have this conversation");
         expect(plain(strip.text())).toContain("Anna Reyes. What you send goes there.");
         expect(plain(w.get("[data-testid='nd-hint']").text())).toBe("Enter sends to your conversation with Anna Reyes");
@@ -906,6 +907,24 @@ describe("online status", () => {
 
         expect(badgesIn(strip.element).map(badge => badge.state)).toEqual(["busy"]);
         expect(strip.get(".chat-nd-found-t span").text()).toBe("Anna Reyes, busy. What you send goes there.");
+    });
+
+    test("the found strip is no live region: the find is said once as it lands, and a status changing after says nothing", async () => {
+        const w = mountView({ chosen: [byAlias(statusAnna)], lookup: waiting, foundTitle: "Anna Reyes" });
+        await w.setProps({ lookup: found });
+        const said = w.get("[data-testid='nd-announcement']");
+        const words = said.element.firstElementChild;
+
+        expect(plain(said.text())).toBe("You already have this conversation. Anna Reyes. What you send goes there.");
+        const strip = w.get("[data-testid='nd-found']").element;
+        expect(strip.closest("[role='status'], [role='alert'], [role='log'], [aria-live]:not([aria-live='off'])")).toBeNull();
+        expect(strip.querySelector("[role='status'], [role='alert'], [role='log'], [aria-live]:not([aria-live='off'])")).toBeNull();
+
+        status.tell({ [statusAnna]: away(1000) });
+        await nextTick();
+
+        expect(plain(w.get("[data-testid='nd-found'] .chat-nd-found-t span").text())).toBe("Anna Reyes, away. What you send goes there.");
+        expect(said.element.firstElementChild).toBe(words);
     });
 
     test("a group chosen draws its mark with no badge", () => {

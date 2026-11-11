@@ -2533,6 +2533,26 @@ describe("what a face reads", () => {
         expect(renders).toEqual({ anna: 2, me: 2 });
         expect(h.status.statusOf(anna)).toBeNull();
     });
+
+    test("two reads at one revision are the same status, hers included, and a change is a new one", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(3_600_000))]);
+        const annaBusy = h.status.statusOf(anna);
+        const mine = h.status.statusOf(me);
+
+        expect(annaBusy?.state).toBe("busy");
+        expect(h.status.statusOf(anna)).toBe(annaBusy);
+        expect(h.status.statusOf(anna.toUpperCase())).toBe(annaBusy);
+        expect(h.status.statusOf(me)).toBe(mine);
+
+        h.status.told([readerPerson(anna, away(1000))]);
+        h.me.appear_offline = true;
+
+        expect(h.status.statusOf(anna)).not.toBe(annaBusy);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        expect(h.status.statusOf(me)).not.toBe(mine);
+        expect(h.status.statusOf(me)?.state).toBe("hidden");
+    });
 });
 
 // #endregion Others' status

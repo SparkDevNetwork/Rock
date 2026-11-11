@@ -34,7 +34,7 @@ import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partia
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { busy } from "../statusShapes";
-import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps, viewer } from "../statusStore";
+import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
 // #region Fixtures
 
@@ -1072,6 +1072,28 @@ describe("online status", () => {
         expect(rows.map(row => badgesIn(row.element).map(badge => badge.state))).toEqual([["online"], ["online"], ["busy"], []]);
         expect(rows.map(row => spoken(row))).toEqual(["Ted Decker (you), online", "Anna Reyes, online", "Anna Reyes, busy", "Anna Reyes"]);
         expect(badgesIn(w.get("[data-testid='details-identity']").element)).toEqual([]);
+    });
+
+    test("closed, it asks about nobody, and open, about the people it draws", async () => {
+        const w = mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        expect(status.store.watched()).toEqual([viewer]);
+
+        await w.setProps({ isOpen: true });
+
+        expect(status.store.watched()).toEqual([viewer, anna, ben]);
+    });
+
+    test("a group's People rows keep the group's one row height with their 32px faces", () => {
+        const w = mountGroup({ facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        const rows = w.findAll("[data-testid='details-person']");
+        const rules = styleRules(join(shellFolder, "components/conversationDetails.partial.obs"), /^\.chat-sg-row\.chat-rd-prow$/);
+        const padding = rules.map(body => /padding-block:\s*(\d+)px/.exec(body)?.[1]).find(value => value !== undefined);
+
+        expect(rows.length).toBeGreaterThan(1);
+        expect(rows.every(row => row.classes("chat-rd-prow"))).toBe(true);
+        // the group's least row height is 44px, and every row after the first draws a 1px rule
+        expect(padding).toBeDefined();
+        expect(1 + Number(padding) * 2 + 32).toBeLessThanOrEqual(44);
     });
 
     test("her own People row draws nothing under Appear offline, as everyone else sees her", async () => {

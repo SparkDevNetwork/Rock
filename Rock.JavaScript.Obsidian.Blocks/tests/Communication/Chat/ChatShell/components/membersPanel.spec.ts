@@ -43,6 +43,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import StatusBadge from "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs";
 
 // #region Fixtures
 
@@ -72,6 +73,7 @@ const ben = member("Ben", "Okafor", { can_message: false });
 const self = member("Jordan", "Lee", { person_alias_guid: me });
 
 import { join } from "path";
+import { away, online } from "../statusShapes";
 import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
 
 let wrapper: VueWrapper | null = null;
@@ -749,6 +751,32 @@ describe("online status", () => {
 
         expect(badgesIn(rowFor(w, viewer).element)).toEqual([]);
         expect(rowFor(w, viewer).get("[data-testid='member-who']").attributes("aria-label")).toBe("Ted Decker, you. View profile");
+    });
+
+    test("a panel of 150 drawn again with no status changed draws none of its badges again", async () => {
+        const people = Array.from({ length: 150 }, (_, i) => member("Person", `${i}`, { person_alias_guid: `b0000000-0000-4000-8000-${String(i).padStart(12, "0")}` }));
+        status.tell(Object.fromEntries(people.map(person => [person.person_alias_guid, online()])));
+        const w = draw({ members: people, personAliasGuid: viewer });
+        const badges = w.findAllComponents(StatusBadge);
+        expect(badges).toHaveLength(150);
+        let renders = 0;
+        for (const badge of badges) {
+            const instance = badge.vm.$ as unknown as { render: (...args: unknown[]) => unknown };
+            const render = instance.render;
+            instance.render = function (this: unknown, ...args: unknown[]) {
+                renders++;
+                return render.apply(this, args);
+            };
+        }
+
+        w.vm.$forceUpdate();
+        await nextTick();
+
+        expect(renders).toBe(0);
+        // and a status that changes draws its own badge again
+        status.tell({ [people[0].person_alias_guid]: away(1000) });
+        await nextTick();
+        expect(renders).toBe(1);
     });
 
     test("rings its badge in the panel's fill and a row's hover", () => {

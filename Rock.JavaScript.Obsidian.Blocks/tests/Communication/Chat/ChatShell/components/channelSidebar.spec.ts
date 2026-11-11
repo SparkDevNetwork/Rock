@@ -1072,11 +1072,17 @@ describe("online status", () => {
         title: "Anna, Ben"
     });
 
-    test("a two-person row draws the person's badge and says it first in the row's suffix", () => {
-        const w = mountSidebar({ rows: [dmOnline] });
+    test("a two-person row draws the person's badge and says it right after the name, before the time and the preview", () => {
+        const w = mountSidebar({ rows: [{ ...dmOnline, preview_line: "You: are you online" }] });
+        // what a screen reader walks: the row's text in order, its hidden face left out
+        const copy = rowOf(w, dmOnline.channel_id).element.cloneNode(true) as Element;
+        copy.querySelectorAll("[aria-hidden='true']").forEach(hidden => hidden.remove());
+        const spoken = (copy.textContent ?? "").replace(/\s+/g, " ").trim();
 
         expect(badgesIn(rowOf(w, dmOnline.channel_id).element)).toEqual([{ state: "online", isMoving: false }]);
-        expect(rowOf(w, dmOnline.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", online, unread");
+        expect(spoken).toMatch(/^Anna Reyes, online(?![a-z])/);
+        expect(spoken.indexOf(", online")).toBeLessThan(spoken.indexOf("You: are you online"));
+        expect(rowOf(w, dmOnline.channel_id).get("[data-testid='row-label-suffix']").text()).toBe(", unread");
     });
 
     test("a group row draws no badge", () => {

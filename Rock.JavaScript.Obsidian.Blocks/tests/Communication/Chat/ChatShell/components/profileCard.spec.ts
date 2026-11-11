@@ -30,7 +30,7 @@ import ProfileCard from "../../../../../src/Communication/Chat/ChatShell/compone
 import { ChatBadge, PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { join } from "path";
-import { anna, badgesIn, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps, viewer } from "../statusStore";
+import { anna, badgesIn, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
 // #region Fixtures
 
@@ -670,6 +670,26 @@ describe("online status", () => {
 
         expect(badgesIn(identity(w)).map(badge => badge.state)).toEqual(["hidden"]);
         expect(line(w)).toBe("Appear offline");
+    });
+
+    test("the words line is one line that never splits into columns: the words keep their width up to the line's, the campus gives way first with an ellipsis", () => {
+        const sheet = join(shellFolder, "components/profileCard.partial.obs");
+        const rule = (selector: RegExp): string => styleRules(sheet, selector).join(";");
+        const w = mountCard(profile({ person_alias_guid: anna }));
+
+        // the line never wraps, and holds what does not fit inside itself
+        expect(rule(/^\.chat-pc-line$/)).toMatch(/white-space:\s*nowrap/);
+        expect(rule(/^\.chat-pc-line$/)).toMatch(/overflow:\s*hidden/);
+        expect(rule(/^\.chat-pc-line$/)).not.toMatch(/flex-wrap:\s*wrap/);
+        // the words never shrink for the campus, and cut with an ellipsis only past the whole line
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/flex:\s*none/);
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/max-width:\s*100%/);
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/text-overflow:\s*ellipsis/);
+        // the campus shrinks, its name cut with an ellipsis, its pin kept
+        expect(rule(/^\.chat-pc-campus$/)).toMatch(/min-width:\s*0/);
+        expect(rule(/^\.chat-pc-place$/)).toMatch(/text-overflow:\s*ellipsis/);
+        expect(rule(/^\.chat-pc-place$/)).toMatch(/overflow:\s*hidden/);
+        expect(w.get("[data-testid='profile-campus'] .chat-pc-place").text()).toBe("Downtown Campus");
     });
 
     test("rings its badge in the card's fill", () => {
