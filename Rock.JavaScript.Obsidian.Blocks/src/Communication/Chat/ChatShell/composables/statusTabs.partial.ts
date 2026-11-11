@@ -21,7 +21,7 @@
 // create and stop it, and own what it shows.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { newGuid } from "@Obsidian/Utility/guid";
-import { reactive, shallowReactive } from "vue";
+import { reactive, shallowReactive, watch } from "vue";
 import { failureWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { ChatError } from "../types.partial";
@@ -160,6 +160,13 @@ const statusHandOffMs = 2000;
 /** How long a status save is waited for before it is given up as reaching nothing, and asked again. */
 const statusDeadlineMs = 15_000;
 
+/**
+ * The longest a message she sends waits for a choice of hers still being saved: the pause and the
+ * hand-off a copy may wait before it is sent, and two seconds for the call. An estimate; at it the
+ * message goes, carrying what the server holds, and the save goes on to land on its own.
+ */
+const statusSendWaitMs = statusPauseMs + statusHandOffMs + 2000;
+
 /** The least time between two posts of her input to her other tabs, which only need it inside the idle line. */
 const inputPostGapMs = 30_000;
 
@@ -202,7 +209,7 @@ type StatusPost =
     | { kind: "input", at: number };
 
 /** Her status's half of the settings. */
-export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "isStatusRetrying" | "noteInput" | "statusWake" | "stop"> & {
+export type StatusTabs = Pick<Prefs, "setStatus" | "shownStatus" | "isChoicePending" | "isStatusRetrying" | "statusSaving" | "noteInput" | "statusWake" | "stop"> & {
     /** A sidebar load has written her status into me. */
     sidebarRead: () => void;
 };
@@ -360,6 +367,9 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
     let inputToPost = 0;
     let inputTimer: ReturnType<typeof setTimeout> | null = null;
 
+    /** The messages waiting for her pending choice's save, each let go by its own call. */
+    const sendWaits = new Set<() => void>();
+
     let channel: StatusChannel | null = null;
     try {
         // the version of its posts is in its name, so a release that changes them talks on another
@@ -388,6 +398,15 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
 
     function isPending(): boolean {
         return tab.newest !== null && tab.newest.at > tab.covered;
+    }
+
+    /**
+     * Whether a message she sends now waits: a choice of hers is pending and its save has not yet
+     * failed. A save already failing is asked again on its clock, up to a minute out, so a message
+     * waiting for it would wait on the outage rather than the choice.
+     */
+    function isSaveAwaited(): boolean {
+        return !isStopped() && !isAway && isPending() && clock.failures === 0;
     }
 
     function isNewer(record: StatusRecord, than: StatusRecord): boolean {
@@ -749,6 +768,28 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         // without Web Locks hears the clock but shows only its own choices, so it says nothing of another's
         isStatusRetrying: (): boolean => isPending() && clock.failures > 0,
 
+        statusSaving: (): Promise<void> | null => {
+            if (!isSaveAwaited()) {
+                return null;
+            }
+            return new Promise<void>(resolve => {
+                // the choice covered, here or by another tab's post, its try failed, or the tab left
+                const stopWatching = watch(isSaveAwaited, isAwaited => {
+                    if (!isAwaited) {
+                        letGo();
+                    }
+                }, { flush: "sync" });
+                const timer = setTimeout(letGo, statusSendWaitMs);
+                function letGo(): void {
+                    stopWatching();
+                    clearTimeout(timer);
+                    sendWaits.delete(letGo);
+                    resolve();
+                }
+                sendWaits.add(letGo);
+            });
+        },
+
         noteInput: (at: number): void => {
             if (isStopped() || !channel) {
                 return;
@@ -774,6 +815,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         },
 
         stop: (): void => {
+            sendWaits.forEach(letGo => letGo());
             if (inputTimer !== null) {
                 clearTimeout(inputTimer);
                 inputTimer = null;

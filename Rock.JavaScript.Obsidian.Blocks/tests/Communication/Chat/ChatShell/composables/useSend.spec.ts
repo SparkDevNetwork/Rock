@@ -1739,6 +1739,64 @@ describe("a stopped sender", () => {
     });
 });
 
+// The platform reads her status as her message arrives, so a message sent while a status choice
+// of hers is still being saved goes once that save is answered, and carries the status she chose.
+describe("a send while her status choice is being saved", () => {
+    test("shows at once as sending, and goes once the save is answered", async () => {
+        const saving = deferred<void>();
+        const { sender, sent } = await setup([{ ok: true, id: 71, createdAt: "2026-11-11T10:00:00Z" }], undefined, { statusSaving: () => saving.promise });
+
+        const sending = sender.send(channel, "hello");
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(sent).toEqual([]);
+        expect(sender.pending(channel).map(row => row.status)).toEqual(["sending"]);
+
+        saving.resolve();
+        expect(await sending).toBe(true);
+        expect(sent).toEqual(["hello"]);
+    });
+
+    test("with nothing pending goes as it always did, in the same turn", async () => {
+        const { sender, sent } = await setup([{ ok: true, id: 72, createdAt: "2026-11-11T10:00:00Z" }], undefined, { statusSaving: () => null });
+
+        const sending = sender.send(channel, "hello");
+        expect(sent).toEqual(["hello"]);
+        expect(await sending).toBe(true);
+    });
+
+    test("a try again waits for a choice made since, as the first try would", async () => {
+        const saving: { value: Deferred<void> | null } = { value: null };
+        const { sender, sent } = await setup([
+            { ok: false, error: { code: "rpc.transport", severity: "failed" } },
+            { ok: true, id: 73, createdAt: "2026-11-11T10:00:00Z" }
+        ], undefined, { statusSaving: () => saving.value?.promise ?? null });
+        await sender.send(channel, "again");
+
+        saving.value = deferred<void>();
+        const retrying = sender.retryAll([sender.pending(channel)[0].localId]);
+        await Promise.resolve();
+        await Promise.resolve();
+        expect(sent).toEqual(["again"]);
+
+        saving.value.resolve();
+        expect(await retrying).toBe(true);
+        expect(sent).toEqual(["again", "again"]);
+    });
+
+    test("a sender stopped during the wait sends nothing", async () => {
+        const saving = deferred<void>();
+        const { sender, sent } = await setup([{ ok: true, id: 74, createdAt: "2026-11-11T10:00:00Z" }], undefined, { statusSaving: () => saving.promise });
+
+        const sending = sender.send(channel, "hello");
+        sender.stop();
+        saving.resolve();
+
+        expect(await sending).toBe(false);
+        expect(sent).toEqual([]);
+    });
+});
+
 // A GIF goes as the token the platform's search signed it with; the row draws KLIPY's media at
 // once, keeps the token through a failure so Try again sends the same GIF, and becomes the message
 // the platform stored, which never carries the token.

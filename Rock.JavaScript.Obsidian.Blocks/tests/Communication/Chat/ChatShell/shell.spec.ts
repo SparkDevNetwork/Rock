@@ -6318,6 +6318,30 @@ describe("her status through the shell", () => {
         await advance(0);
     }
 
+    test("a message sent inside her choice's pause goes once its save is answered, so it never carries the status she left", async () => {
+        const h = await browser().open();
+        void h.shell.prefs.setStatus(hidden);
+        const sending = h.shell.send("now hidden");
+
+        await advance(999);
+        expect([saves(h), h.sent]).toEqual([[], []]);
+        await advance(1);
+        await settle();
+
+        expect(saves(h)).toEqual([{ status: "appear_offline" }]);
+        expect(h.sent.map(s => s.body)).toEqual(["now hidden"]);
+        await sending;
+    });
+
+    test("with no choice pending a message goes at once", async () => {
+        const h = await browser().open();
+
+        void h.shell.send("as ever");
+        await advance(0);
+
+        expect(h.sent.map(s => s.body)).toEqual(["as ever"]);
+    });
+
     test("a save refused for maintenance waits through an ok exchange still answering maintenance, and goes at once at the first answering normal", async () => {
         const h = await browser().open();
         jest.spyOn(Math, "random").mockReturnValue(0.5);

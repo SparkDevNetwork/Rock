@@ -201,6 +201,14 @@ export type Prefs = {
      */
     isStatusRetrying: () => boolean;
 
+    /**
+     * The save of a choice of hers still being saved, which a message she sends waits for so it
+     * carries the status she chose: null when no choice is pending or its save is already
+     * failing; else it resolves once the choice is saved or refused, its try fails, the settings
+     * stop, or a few seconds have passed, whichever comes first.
+     */
+    statusSaving: () => Promise<void> | null;
+
     /** Her input on this page at a time, told to her other tabs at most every 30 seconds. */
     noteInput: (at: number) => void;
 
@@ -574,6 +582,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         shownStatus: status.shownStatus,
         isChoicePending: status.isChoicePending,
         isStatusRetrying: status.isStatusRetrying,
+        statusSaving: status.statusSaving,
         noteInput: status.noteInput,
         statusWake: status.statusWake,
 

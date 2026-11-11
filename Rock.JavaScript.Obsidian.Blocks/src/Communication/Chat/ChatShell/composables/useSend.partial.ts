@@ -378,6 +378,13 @@ export type SenderDependencies = {
     personAliasGuid: string;
 
     /**
+     * The save of a status choice of hers still being saved, or null with none: a message waits
+     * for it, so it never carries the status she just left. The status settings bound the wait.
+     * Without it a send waits for nothing.
+     */
+    statusSaving?: () => Promise<void> | null;
+
+    /**
      * What kind of room a channel is, where the shell knows, so a refusal is worded for a person,
      * a group or a channel. Without it, or for a room it does not know, the server's words stand.
      */
@@ -486,10 +493,22 @@ export function createSender(dependencies: SenderDependencies): Sender {
 
     let isStopped = false;
 
-    /** Sends a row's text once, under its key; a stopped sender sends nothing. */
+    /**
+     * Sends a row's text once, under its key, after a status choice of hers still being saved;
+     * a stopped sender sends nothing.
+     */
     async function sendOnce(row: PendingMessage): Promise<SendResult> {
         if (isStopped) {
             return notSent;
+        }
+
+        // the platform reads her status as the message arrives, so a choice she just made goes first
+        const statusSaving = dependencies.statusSaving?.();
+        if (statusSaving) {
+            await statusSaving;
+            if (isStopped) {
+                return notSent;
+            }
         }
 
         // A send that rejects is a failure like any other, so its row ends failed with a Retry

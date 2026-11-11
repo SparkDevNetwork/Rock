@@ -1817,6 +1817,124 @@ describe("her status across her tabs", () => {
         });
     });
 
+    describe("a message she sends while her choice is being saved", () => {
+        /** Whether the wait a message would take now has let it go. */
+        function waitFor(tab: StatusTab): { isLetGo: () => boolean } | null {
+            const saving = tab.prefs.statusSaving();
+            if (!saving) {
+                return null;
+            }
+            let isLetGo = false;
+            void saving.then(() => isLetGo = true);
+            return { isLetGo: () => isLetGo };
+        }
+
+        test("with no choice pending there is nothing to wait for", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+            expect(waitFor(a)).toBeNull();
+
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            expect(waitFor(a)).toBeNull();
+        });
+
+        test("waits through the pause and the call, and is let go as the save lands", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            const wait = waitFor(a);
+
+            await after(1000);
+            expect(b.calls).toHaveLength(1);
+            await after(500);
+            expect(wait?.isLetGo()).toBe(false);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
+        });
+
+        test("in a tab that did not choose it, is let go as the chooser's saved post arrives", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            await a.prefs.setStatus(hidden);
+            await delivered();
+            const wait = waitFor(t2);
+
+            await after(1000);
+            expect(wait?.isLetGo()).toBe(false);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            await delivered();
+
+            expect(wait?.isLetGo()).toBe(true);
+        });
+
+        test("a refusal lets it go, the choice being settled", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            const wait = waitFor(a);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.badRequest));
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
+        });
+
+        test("a failed try lets it go, and a save already failing holds nothing, since its next try waits on the outage", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            await a.prefs.setStatus(hidden);
+            await delivered();
+            const waits = [waitFor(a), waitFor(t2)];
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+            await delivered();
+
+            expect(waits.map(wait => wait?.isLetGo())).toEqual([true, true]);
+            expect([waitFor(a), waitFor(t2)]).toEqual([null, null]);
+        });
+
+        test("a save that cannot go is waited for 5 s at most, and the choice still goes after", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            // no token yet, so the save waits for one without counting a failure
+            a.person.value = null;
+            await a.prefs.setStatus(hidden);
+            const wait = waitFor(a);
+
+            await after(4999);
+            expect(wait?.isLetGo()).toBe(false);
+            await after(1);
+            expect(wait?.isLetGo()).toBe(true);
+
+            a.person.value = her.toLowerCase();
+            a.prefs.statusWake();
+            await after(0);
+            expect(b.calls.map(call => call.change)).toEqual([{ status: "appear_offline" }]);
+        });
+
+        test("the settings stopping let it go", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            const wait = waitFor(a);
+
+            a.prefs.stop();
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
+        });
+    });
+
     test("Appear offline answered read only: no tab shows it, every tab shows its own, the choosing tab alone says why in the banner's words, and nothing is asked again", async () => {
         const b = statusBrowser();
         const a = b.open();

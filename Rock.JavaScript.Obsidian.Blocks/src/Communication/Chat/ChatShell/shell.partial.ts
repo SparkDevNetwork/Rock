@@ -896,6 +896,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         waitBeforeResend: attempt => new Promise(resolve => setTimeout(resolve,
             computeBackoff(attempt, session.settings().limits.reconnect_base_ms, session.settings().limits.reconnect_cap_ms, Math.random))),
         personAliasGuid,
+        statusSaving: prefs.statusSaving,
         newLocalId,
         motion,
         isOffline: () => state.connection !== null,
