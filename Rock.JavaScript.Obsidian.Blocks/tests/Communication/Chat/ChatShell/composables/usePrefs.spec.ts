@@ -1006,6 +1006,12 @@ describe("a status save's answer", () => {
         expect(statusSaveOutcome(result, 2.7, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: backoffMs(2, 0.5) });
     });
 
+    test("a 429's Retry-After is held to five minutes, however long a proxy names", () => {
+        const result: CallResult = { ok: false, status: 429, error: { code: "rpc.unknown", severity: "failed", text: null }, retryAfterSeconds: 3_000_000 };
+
+        expect(statusSaveOutcome(result, 1, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: 300_000 });
+    });
+
     test("a refusal of a code this release does not know, carrying a sentence, is shown in that sentence", () => {
         const outcome = statusSaveOutcome({ ok: false, status: 409, error: { code: "rpc.status_conflict", severity: "failed", text: "Your status changed somewhere else." }, retryAfterSeconds: null }, 1);
 

@@ -118,6 +118,9 @@ type SaveTrack = {
     timer: ReturnType<typeof setTimeout> | null;
 };
 
+/** The longest timer a browser holds, past which it fires at once; a longer wait is kept by timers no longer than it. */
+const longestTimerMs = 2 ** 31 - 1;
+
 /**
  * Whether an owner's named wait is one the rule can keep: a finite number of milliseconds from
  * zero up. Anything else is read as no wait, so the failure is final; a wait of NaN would
@@ -155,7 +158,7 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
 
         const dueIn = Math.max(waiting.madeAt + (waiting.change.settleMs ?? 0), track.notBefore) - performance.now();
         if (dueIn > 0) {
-            track.timer = setTimeout(() => next(track), dueIn);
+            track.timer = setTimeout(() => next(track), Math.min(dueIn, longestTimerMs));
             return;
         }
 

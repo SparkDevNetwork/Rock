@@ -304,6 +304,12 @@ const statusRetryFirstMs = 10_000;
 const statusRetryCapMs = 60_000;
 
 /**
+ * The longest a 429's Retry-After holds a status save, whatever a proxy names: a day's value would
+ * park her choice a day. An estimate; her network or the platform coming back asks sooner.
+ */
+const statusRetryAfterCapMs = 300_000;
+
+/**
  * How a status save's answer leaves her choice. Only the server's answer about the choice itself
  * refuses it: one of our codes for a 4xx, or read only, which the writer check refuses while her
  * pages still beat, so a choice asked again would show on her own faces and never on anyone
@@ -335,7 +341,7 @@ export function statusSaveOutcome(result: CallResult, failures: number, random: 
     const count = Number.isFinite(failures) && failures >= 1 ? Math.floor(failures) : 1;
     const backoffMs = Math.round(Math.min(statusRetryCapMs, statusRetryFirstMs * 2 ** (count - 1)) * (0.8 + 0.4 * random()));
     if (result.status === 429) {
-        return { isSaved: false, failure, retryInMs: Math.max(backoffMs, (result.retryAfterSeconds ?? 0) * 1000) };
+        return { isSaved: false, failure, retryInMs: Math.max(backoffMs, Math.min(statusRetryAfterCapMs, (result.retryAfterSeconds ?? 0) * 1000)) };
     }
 
     if (result.status === 0 || result.status === 401 || result.status === 408 || result.status >= 500) {

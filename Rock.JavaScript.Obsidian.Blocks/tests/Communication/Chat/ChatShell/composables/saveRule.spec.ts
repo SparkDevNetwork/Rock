@@ -394,6 +394,33 @@ describe("a named wait that is no wait", () => {
     });
 });
 
+describe("a named wait longer than a timer holds", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+        jest.restoreAllMocks();
+    });
+
+    // A browser fires a timer longer than 2^31 - 1 ms at once; the rule would find the wait still
+    // due and set it again, a timer spinning for the page's life.
+    test("is kept by timers no longer than a browser holds, so none is set again and again", async () => {
+        const s = setup();
+
+        void s.rule.save("status", s.change("busy"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs: 3_000_000_000 });
+        await settle();
+        const timers = jest.spyOn(global, "setTimeout");
+        jest.advanceTimersByTime(60_000);
+
+        expect(timers).not.toHaveBeenCalled();
+        expect(s.asks).toHaveLength(1);
+        expect(s.shown.value).toBe("busy");
+    });
+});
+
 describe("a failure that names no wait", () => {
     test("puts the control back and says why", async () => {
         const s = setup();
