@@ -6330,6 +6330,47 @@ describe("her status through the shell", () => {
         expect(saves(h)).toHaveLength(2);
     });
 
+    test.each([
+        ["an ok exchange answering read only", (h: ReturnType<typeof build>) => exchange(h, "read_only")],
+        ["an exchange that fails", async (h: ReturnType<typeof build>) => {
+            h.exchangeAnswers.value = [{ status: 503, retryAfter: 60, code: "rpc.unavailable" }];
+            await exchange(h, "normal");
+        }]
+    ])("a save waiting out a 503 is not woken by %s", async (_name, settles) => {
+        const h = await browser().open();
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        h.statusAnswers.value = [statusSaveFailures.serverError as { status: number, body: unknown }];
+        void h.shell.prefs.setStatus(hidden);
+        await advance(1000);
+
+        await advance(3000);
+        await settles(h);
+        await advance(6999);
+        expect(saves(h)).toHaveLength(1);
+        // asked at the end of its 10 s wait
+        await advance(1);
+
+        expect(saves(h)).toHaveLength(2);
+    });
+
+    test("a 401 again after the refresh inside the call, which wakes her save, is asked again on the backoff, not at once", async () => {
+        const h = await browser().open();
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const expired = statusSaveFailures.expired as { status: number, body: unknown };
+        h.statusAnswers.value = [expired, expired, expired, expired];
+        void h.shell.prefs.setStatus(hidden);
+        await advance(1000);
+        const exchanges = h.exchangeBodies.length;
+        expect(saves(h)).toHaveLength(2);
+
+        await advance(9999);
+        expect(saves(h)).toHaveLength(2);
+        expect(h.exchangeBodies.length).toBe(exchanges);
+        await advance(1);
+
+        expect(saves(h)).toHaveLength(4);
+    });
+
     test("read only begun since either tab's last exchange: B's choice makes one call, refused; no tab shows it, B alone says why and closes, A follows its own settings", async () => {
         const b = browser();
         const a = await b.open();
