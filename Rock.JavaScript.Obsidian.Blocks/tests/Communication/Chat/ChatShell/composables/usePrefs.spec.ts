@@ -30,7 +30,8 @@
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { watch } from "vue";
-import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult, StatusChange, StatusChoice, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
+import { StatusChange, StatusChoice, statusSaveOutcome } from "../../../../../src/Communication/Chat/ChatShell/composables/statusTabs.partial";
 import { readOnlySentence as readOnlyWordsOfOurs } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult, createPlatformCall } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
