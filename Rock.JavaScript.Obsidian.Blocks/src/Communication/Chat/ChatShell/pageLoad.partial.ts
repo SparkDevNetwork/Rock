@@ -763,7 +763,6 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         runPageLoad,
         relink: (channelId: string): void => {
             // Read once the session has signed in; a tap after that opens the room itself. The
-            // frame asks only while starting too, and this holds the opener's own word either way. The
             // frame asks only while starting too, and this holds the opener's own word either way.
             if (state.phase === "starting") {
                 linkedChannelId = channelId;
