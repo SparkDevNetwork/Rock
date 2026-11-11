@@ -142,6 +142,18 @@ export function statusWords(state: OthersState, busyUntil: Date | null, now: Dat
 }
 
 /**
+ * What one face of a person shows of a status: all of it on a face the host marks as her own, and
+ * on any other face what everyone else sees, so her Appear offline draws and says nothing there.
+ * The one rule for the badge and the words a face's host puts beside it.
+ *
+ * @param status What the store answered for the person.
+ * @param isOwn Whether the host marks this face as the person's own: her foot, her settings, her card.
+ */
+export function shownStatus(status: FaceStatus | null, isOwn: boolean): FaceStatus | null {
+    return status && (status.state !== "hidden" || isOwn) ? status : null;
+}
+
+/**
  * The person's own status in words, for their own face's label, their own card and the Status
  * group: a Busy says what it does to them, since only they act on it.
  *

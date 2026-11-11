@@ -10,9 +10,9 @@
         </template>
 
         <div class="chat-ms-id">
-            <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="44" />
+            <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="44" :status="ownStatus" own />
             <span class="chat-ms-main">
-                <b class="chat-ms-name" data-testid="settings-name">{{ personName }}</b>
+                <b class="chat-ms-name" data-testid="settings-name">{{ personName }}<span v-if="ownStatus" class="chat-sr-only">{{ ownStatus.label }}</span></b>
                 <span class="chat-ms-meta" data-testid="settings-meta">
                     <!-- The dot between the parts is drawn for the eye; a screen reader hears a comma. -->
                     <template v-for="(item, index) in metaItems" :key="item">
@@ -110,7 +110,11 @@
 </template>
 
 <style scoped>
+/* Her own face's badge, ringed in the dialog's fill. */
 .chat-ms-id {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
     display: flex;
     gap: 12px;
     align-items: center;
@@ -244,6 +248,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { MeKey, MeSettings, meTitles, PrefsState } from "../composables/usePrefs.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatPerson } from "../types.partial";
     import { personFace, personName as nameOf } from "../ui/face.partial";
     import { PushState } from "../composables/usePush.partial";
@@ -260,6 +265,12 @@
         isOpen: {
             type: Boolean,
             default: false
+        },
+
+        /** The person's primary alias, whose own face the identity draws. */
+        personAliasGuid: {
+            type: String,
+            default: ""
         },
 
         personName: {
@@ -350,9 +361,13 @@
     /** The last unblock that landed, said in the dialog's own words, keyed so the same words are read twice. */
     const unblockedSaid = ref<{ text: string, count: number } | null>(null);
 
+    const statusOf = useFaceStatus(() => props.personAliasGuid ? [props.personAliasGuid] : [], 0);
+
     // #endregion Values
 
     // #region Computed Values
+
+    const ownStatus = computed(() => props.personAliasGuid ? statusOf(props.personAliasGuid) : null);
 
     /** The campus, then where the person's name and photo come from. */
     const metaItems = computed((): string[] => [

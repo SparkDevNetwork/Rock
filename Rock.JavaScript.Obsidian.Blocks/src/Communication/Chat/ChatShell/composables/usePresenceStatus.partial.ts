@@ -150,8 +150,11 @@ export type PresenceStatus = {
     stop: () => void;
 };
 
-/** The shell's status store, provided to every face that draws one. */
-export const presenceStatusKey: InjectionKey<PresenceStatus> = Symbol("chat-presence-status");
+/** What a face reads of the status store: what to draw, and who it draws so they are asked about. */
+export type FaceStatusSource = Pick<PresenceStatus, "statusOf" | "register">;
+
+/** The shell's status store, provided to every face that draws one, read only. */
+export const presenceStatusKey: InjectionKey<FaceStatusSource> = Symbol("chat-presence-status");
 
 // #region Status
 

@@ -96,9 +96,9 @@
                                     class="chat-mb-who"
                                     data-testid="member-who"
                                     :data-person="row.guid"
-                                    :aria-label="row.label"
+                                    :aria-label="labelOf(row)"
                                     @click="emit('person', row.guid)">
-                                <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" />
+                                <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" :status="statusOf(row.guid)" />
                                 <span class="chat-mb-txt">
                                     <span class="chat-mb-name">
                                         <b>{{ row.name }}</b>
@@ -247,7 +247,11 @@
     list-style: none;
 }
 
+/* A badge rings in the panel's fill, under the row's hover as the row draws it. */
 .chat-mb-row {
+    --chat-av-ring: var(--chat-surface);
+    --chat-av-ring-over: transparent;
+
     position: relative;
     display: flex;
     flex-wrap: wrap;
@@ -258,6 +262,8 @@
 
 .chat-mb-row:hover,
 .chat-mb-row:focus-within {
+    --chat-av-ring-over: var(--chat-hover);
+
     background: var(--chat-hover);
 }
 
@@ -669,7 +675,9 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import { MemberRemoval } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
-    import { ChatError, RosterMember } from "../types.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { ChatError, FaceStatus, RosterMember } from "../types.partial";
+    import { shownStatus } from "../ui/face.partial";
 
     // #region Types
 
@@ -681,7 +689,9 @@
         isSelf: boolean;
         isLeader: boolean;
         canMessage: boolean;
-        label: string;
+
+        /** What the row's name says after the name and its status, such as ", you" or ", leader". */
+        roles: string;
 
         /** The row's More menu, for someone who may manage the room, or null. */
         menu: { items: MenuItem[], note: string } | null;
@@ -849,6 +859,9 @@
 
     const fullHintId = `chat-mb-full-${newGuid()}`;
 
+    // Every row drawn, after the open conversation and any card, before the sidebar's rows.
+    const faceStatusOf = useFaceStatus(() => props.members.map(member => member.person_alias_guid), 2);
+
     // #endregion Values
 
     // #region Computed Values
@@ -997,11 +1010,21 @@
 
     // #region Functions
 
+    /** What a row's face shows: her own row is a face others see too, so it shows nothing of her Appear offline. */
+    function statusOf(guid: string): FaceStatus | null {
+        return shownStatus(faceStatusOf(guid), false);
+    }
+
+    /** The row's name as a screen reader hears it: the name, the person's status, then who they are here. */
+    function labelOf(row: DrawnMember): string {
+        return `${row.name}${statusOf(row.guid)?.label ?? ""}${row.roles}. View profile`;
+    }
+
     function drawMember(member: RosterMember): DrawnMember {
         const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
         const isSelf = member.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
         const isLeader = props.isChannel && member.is_leader;
-        const parts = [name, isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p);
+        const roles = [isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p).map(p => `, ${p}`).join("");
 
         const canMessage = member.can_message && !isSelf;
         const removal = props.removals[member.person_alias_guid];
@@ -1013,7 +1036,7 @@
             isSelf,
             isLeader,
             canMessage,
-            label: `${parts.join(", ")}. View profile`,
+            roles,
             menu: isSelf || !props.canManageMembers ? null : menuOf(isLeader, canMessage),
             isRemoving: removal?.kind === "removing",
             refusal: removal?.kind === "refused" ? removal.text : null

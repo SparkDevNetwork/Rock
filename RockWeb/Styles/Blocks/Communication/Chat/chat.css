@@ -1547,7 +1547,11 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     height: 13px;
 }
 
+/* A result's badge rings in the list's fill, under the result's own as it changes. */
 .chat-shell .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
@@ -1581,10 +1585,14 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 }
 
 .chat-shell .chat-pk-opt:hover {
+    --chat-av-ring-over: var(--chat-hover);
+
     background: var(--chat-hover);
 }
 
 .chat-shell .chat-pk-opt.is-active {
+    --chat-av-ring-over: var(--chat-brand-tint);
+
     background: var(--chat-brand-tint);
 }
 
@@ -1663,8 +1671,11 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     display: none;
 }
 
-/* Inline, as Add people draws it: the results listed under the field rather than over the view. */
+/* Inline, as Add people draws it: the results listed under the field rather than over the view, on the dialog's fill. */
 .chat-shell .chat-pk.is-inline .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
     position: static;
     max-height: 248px;
     padding: 0;
@@ -1677,6 +1688,8 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 /* Someone the room cannot take, such as a person already in it, is listed dimmed with the reason. */
 .chat-shell .chat-pk-opt[aria-disabled="true"] {
+    --chat-av-ring-over: transparent;
+
     cursor: default;
     background: none;
 }

@@ -45,6 +45,7 @@
                                 :isBrowseOpen="mainView === 'directory'"
                                 :isNewMessageOpen="mainView === 'newdm'"
                                 :isVeiled="!shell.reveal.state.isSidebarRevealed"
+                                :personAliasGuid="personAliasGuid"
                                 :personName="personName"
                                 :personPhotoUrl="personPhotoUrl"
                                 :personCampusName="personCampusName"
@@ -479,6 +480,7 @@
                                  :nameMaxLength="shell.state.limits.dm_name_max_length"
                                  :campuses="campuses"
                                  :organizationName="organizationName"
+                                 :personAliasGuid="personAliasGuid"
                                  :personName="personName"
                                  :personPhotoUrl="personPhotoUrl"
                                  :leave="shell.rooms.leaveOf(activeChannelId)"
@@ -501,6 +503,7 @@
 
             <!-- The person's own settings, kept mounted so closing plays the dialog's exit. -->
             <ChatSettings :isOpen="isSettingsOpen"
+                          :personAliasGuid="personAliasGuid"
                           :personName="personName"
                           :personPhotoUrl="personPhotoUrl"
                           :campusName="personCampusName"
@@ -756,6 +759,7 @@
     import ThreadsPanel from "./ChatShell/components/threadsPanel.partial.obs";
     import { attachmentViewsKey } from "./ChatShell/composables/useAttachments.partial";
     import { gifsKey } from "./ChatShell/composables/useGifs.partial";
+    import { presenceStatusKey } from "./ChatShell/composables/usePresenceStatus.partial";
     import { problemReportKey } from "./ChatShell/problemReport.partial";
     import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
@@ -864,6 +868,14 @@
         typingOf: place => shell.value.motion.typingOf(place),
         versionOf: place => shell.value.motion.versionOf(place),
         scope: () => shell.value.motion.scope()
+    });
+
+    // Every face that draws a status reads it here, from whichever shell is current. A face
+    // registers its people with the shell it mounted under; the frame is drawn again for a new
+    // shell, so no face outlives the store it registered with. Read only: presence alone writes it.
+    provide(presenceStatusKey, {
+        statusOf: guid => shell.value.presence.status.statusOf(guid),
+        register: (people, rank) => shell.value.presence.status.register(people, rank)
     });
 
     // A message type or block drawn by its fallback is told to the platform, through whichever shell is current.

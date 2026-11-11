@@ -74,11 +74,11 @@
 
             <template v-else>
                 <div v-if="isFound" class="chat-nd-found" role="status" data-testid="nd-found">
-                    <Avatar v-if="chosen.length === 1" :people="faces.slice(0, 1)" :size="36" />
+                    <Avatar v-if="chosen.length === 1" :key="onlyAlias ?? undefined" :people="faces.slice(0, 1)" :size="36" :status="onlyStatus" />
                     <GroupFace v-else :people="faces" :size="36" />
                     <span class="chat-nd-found-t">
                         <b>You already have this conversation</b>
-                        <span>{{ foundTitle }}. What you send goes there.</span>
+                        <span>{{ foundTitle }}<span v-if="onlyStatus" class="chat-sr-only">{{ onlyStatus.label }}</span>. What you send goes there.</span>
                     </span>
                     <button type="button" class="chat-nd-btn" data-testid="nd-open" @click="emit('open', lookup.channelId as string)">Open</button>
                 </div>
@@ -95,10 +95,10 @@
                     <p v-if="isFound && recent && recent.length === 0" class="chat-nd-none" data-testid="nd-history-empty">No messages yet.</p>
 
                     <div v-if="!isFound" class="chat-nd-start" data-testid="nd-start">
-                        <Avatar v-if="chosen.length === 1" :people="faces.slice(0, 1)" :size="56" />
+                        <Avatar v-if="chosen.length === 1" :key="onlyAlias ?? undefined" :people="faces.slice(0, 1)" :size="56" :status="onlyStatus" />
                         <GroupFace v-else :people="faces" :size="56" />
                         <b data-testid="nd-start-title">{{ startTitle }}</b>
-                        <p v-if="chosen.length === 1">This is the start of your conversation with <strong>{{ chosen[0].nick_name }}</strong>. Only the two of you can see it.</p>
+                        <p v-if="chosen.length === 1">This is the start of your conversation with <strong>{{ chosen[0].nick_name }}</strong><span v-if="onlyStatus" class="chat-sr-only">{{ onlyStatus.label }}</span>. Only the two of you can see it.</p>
                         <p v-else>This is the start of a group conversation. Only the {{ chosen.length + 1 }} people here can see it.</p>
                     </div>
 
@@ -286,7 +286,11 @@
     text-align: center;
 }
 
+/* The start's face, its badge ringed in the view's fill. */
 .chat-nd-start {
+    --chat-av-ring: var(--chat-surface);
+    --chat-av-ring-over: transparent;
+
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -347,9 +351,10 @@
     height: 13px;
 }
 
-/* Centred on the 780px column with a 24px gutter, as the To field above it; a group's mark is ringed in its color. */
+/* Centred on the 780px column with a 24px gutter, as the To field above it; a face's badge and a group's mark ring in its color. */
 .chat-nd-found {
     --chat-av-ring: var(--chat-sidebar);
+    --chat-av-ring-over: transparent;
 
     display: flex;
     flex: none;
@@ -561,6 +566,7 @@
     import { failedWords } from "../errors.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -774,6 +780,16 @@
 
     /** The people chosen, the one face or the group's mark the found strip and the start draw. */
     const faces = computed((): AvatarPerson[] => props.chosen.map(faceOf));
+
+    /**
+     * The one person chosen, by primary alias, which keys their face: choosing someone else in
+     * their place draws another face, so the new person's badge and photo are drawn as state.
+     */
+    const onlyAlias = computed((): string | null => props.chosen.length === 1 ? props.chosen[0].person_alias_guid.toLowerCase() : null);
+
+    const statusOf = useFaceStatus(() => onlyAlias.value ? [onlyAlias.value] : [], 2);
+
+    const onlyStatus = computed(() => onlyAlias.value ? statusOf(onlyAlias.value) : null);
 
     /** The church's campus names by guid in lower case, which name the campus under each person found. */
     const campusNames = computed((): Record<string, string> => Object.fromEntries(props.campuses

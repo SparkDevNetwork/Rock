@@ -11,19 +11,21 @@
             <template v-else-if="initialsOf(person.name, index)">{{ initialsOf(person.name, index) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
-        <Transition name="chat-status">
-            <StatusBadge v-if="shownStatus" :status="shownStatus" :faceSize="size" />
+        <Transition name="chat-status" :css="!isHeld">
+            <StatusBadge v-if="drawnStatus" :status="drawnStatus" :faceSize="size" />
         </Transition>
     </span>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { computed, inject, PropType } from "vue";
     import Icon from "./icon.partial.obs";
     import StatusBadge from "./statusBadge.partial.obs";
     import { FaceStatus } from "../types.partial";
     import { avatarHue } from "./brand.partial";
+    import { shownStatus } from "./face.partial";
     import { useImageReveal, vReveal } from "./imageReveal.partial";
+    import { pageRevealKey } from "../pageLoad.partial";
 
     // #region Types
 
@@ -78,6 +80,15 @@
     // Faces drawn in the same frame fade in together once decoded, over a neutral disc.
     const reveal = useImageReveal({ isShared: true });
 
+    // Read through its getter, so a rebuilt shell is followed.
+    const page = inject(pageRevealKey, null);
+
+    /**
+     * Whether the first screen is still under its veil, which reveals it in one crossfade: a
+     * status that comes or goes before then is part of what it shows, so it draws as state.
+     */
+    const isHeld = computed((): boolean => !!page && !page.state.isReleased);
+
     /** At this size and below two letters do not fit, so one is drawn. */
     const largestOneInitialSize = 22;
 
@@ -89,12 +100,12 @@
      * person's own face, since everyone else sees nothing of her. Decided here, so a host's slip
      * cannot draw one where none belongs.
      */
-    const shownStatus = computed(() => {
+    const drawnStatus = computed(() => {
         const status = props.status;
         if (!status || props.people.length !== 1 || props.size < smallestStatusSize) {
             return null;
         }
-        return status.state !== "hidden" || props.own ? status : null;
+        return shownStatus(status, props.own);
     });
 
     // #endregion Values
