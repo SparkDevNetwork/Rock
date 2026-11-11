@@ -20,17 +20,19 @@
 // comes in and slides out the same way, and her message grows out of the bubble it ends. It moves
 // for what the record says happened while the view was open, and for its open: what changes while
 // it enters or as its first read lands, however late, closes from where it stood. What a later
-// page, re-read or catch-up states is simply there, and nothing moves for a reader scrolled up.
+// page, the catch-up's reread of the held run or a reconnect states is simply there, and nothing
+// moves for a reader scrolled up.
 //
 // Before the render that draws a change it reads where the tail stands on screen, motion in flight
 // included. After it, it plans, then plays: it takes what is going out of the flow, lets go of the
 // motions this change moves again, reads where everything now lays out with nothing of its own
 // moving, and plays each part from where it stood on screen to there, so a change that lands
-// mid-motion continues from what is on screen and two motions never stack. The view's open is its
-// entrance and its first read: a change of state alone in it is planned part by part as any change
-// is, with nothing fading in since nothing was recorded, over a message's time on the state curve,
-// never faster however little of the entrance is left. What the record says happened while the view
-// enters is laid into the entrance instead, since the feed is still fading in.
+// mid-motion continues from what is on screen and two motions never stack. A row that steps, as the
+// rows above one changing height do, steps whole, its parts with it. The view's open is its entrance
+// and its first read: a change of state alone in it is planned as any change is, with no arrival or
+// start fading in since none was recorded, over a message's time on the state curve, never faster
+// however little of the entrance is left. What the record says happens while the view enters plays
+// as it would at rest: one plan for every change.
 //
 // The motion is one transform on the box that holds everything, plus the parts that do not ride
 // their row, each marked `data-tail`: a group's face and name line by the group's key, `face:<key>`
@@ -83,8 +85,8 @@ export type FeedTail = {
 /** How a view hands its tail to the parts it draws. */
 export const feedTailKey: InjectionKey<FeedTail> = Symbol("chat-feed-tail");
 
-/** A part of the tail and where it stood on screen. */
-type Part = { id: string, element: HTMLElement, box: DOMRect };
+/** A part of the tail, where it stood on screen, and the key of the row it is drawn in, if any. */
+type Part = { id: string, element: HTMLElement, box: DOMRect, row?: string };
 
 /** Where the tail stood on screen before a change. */
 type Before = {
@@ -96,8 +98,8 @@ type Before = {
     /** Every row key drawn. */
     keys: Set<string>;
 
-    /** The rows on screen at the tail, newest first, with their tops. */
-    rows: { key: string, top: number }[];
+    /** The rows on screen at the tail, newest first, with their tops and bottoms. */
+    rows: { key: string, top: number, bottom: number }[];
 
     /** The parts on screen at the tail, by mark and by element. */
     parts: Map<string, Part>;
@@ -186,6 +188,9 @@ function rowsOf(content: HTMLElement): HTMLElement[] {
 
 const kindOf = (id: string): string => id.split(":")[0];
 
+/** The key of the row an element is drawn in; none for the typing bubble's parts. */
+const rowKeyOf = (element: Element): string | undefined => element.closest<HTMLElement>("[data-row-key]")?.dataset.rowKey;
+
 /** The marks a row keys by its own key, since what draws them does not know it. */
 const rowMarks = ["meta", "box", "stamp", "edited"];
 
@@ -269,22 +274,22 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         }
         const rows = rowsOf(content);
         const edge = options.scroller()?.getBoundingClientRect().top ?? Number.NEGATIVE_INFINITY;
-        const onScreen: { key: string, top: number }[] = [];
+        const onScreen: { key: string, top: number, bottom: number }[] = [];
         const parts = new Map<string, Part>();
         const elements = new Map<Element, Part>();
         const take = (holder: Element): void => {
             for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
                 const id = idOf(element);
                 if (id && !element.hidden && !going.has(element) && !isInGoing(element)) {
-                    const part = { id, element, box: element.getBoundingClientRect() };
+                    const part = { id, element, box: element.getBoundingClientRect(), row: rowKeyOf(element) };
                     parts.set(id, part);
                     elements.set(element, part);
                 }
             }
         };
         for (let index = rows.length - 1; index >= 0; index--) {
-            const top = rows[index].getBoundingClientRect().top;
-            onScreen.push({ key: rows[index].dataset.rowKey ?? "", top });
+            const { top, bottom } = rows[index].getBoundingClientRect();
+            onScreen.push({ key: rows[index].dataset.rowKey ?? "", top, bottom });
             take(rows[index]);
             if (top < edge) {
                 break;
@@ -399,10 +404,8 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         const scroller = options.scroller();
         const entrance = entranceLeft(scroller);
         // A change of state alone is the open's while the entrance plays or as the open's first read
-        // lands, however late; any other is simply there. A recorded change while the view enters
-        // is folded into the entrance.
+        // lands, however late; any other is simply there.
         const isOpen = !isMotion && (entrance > 0 || was.isLanding);
-        const isFolded = isMotion && entrance > 0;
         if (!was.isFollowing || (!isMotion && !isOpen)) {
             // Scrolled up nothing moves, and a change of state outside the open is simply there.
             release();
@@ -429,7 +432,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         for (const part of parting) {
             const at = was.elements.get(part.element);
             const keepsRoom = reduced && part === bubbleGoing && !handoff;
-            if (!at || isFolded) {
+            if (!at) {
                 part.done();
                 continue;
             }
@@ -451,12 +454,20 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 done();
             }
         }
-        // a foot in flight is let go with the moves, so what it shows now is read first: it opens from there
+        // A foot in flight is let go with the moves, so what it shows now is read first: it opens
+        // from there, and a row still under the bubble goes on showing down to where it showed,
+        // its bottom on screen as read before the render less its clip, never past the bubble.
         const feetWere = new Map<Element, number>();
+        const shownWere = new Map<Element, number>();
         for (const animation of motionsOf(content, true)) {
-            const holder = (animation.effect as KeyframeEffect | null)?.target;
+            const holder = (animation.effect as KeyframeEffect | null)?.target as HTMLElement | null | undefined;
             if (animation.id === "chat-tail-foot" && holder) {
-                feetWere.set(holder, footOf(holder));
+                const by = footOf(holder);
+                feetWere.set(holder, by);
+                const stood = was.rows.find(each => each.key === holder.dataset.rowKey);
+                if (stood) {
+                    shownWere.set(holder, stood.bottom - by);
+                }
             }
         }
         motionsOf(content, true).filter(animation => glideIds.includes(animation.id) || moveIds.includes(animation.id)).forEach(animation => animation.cancel());
@@ -498,21 +509,17 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             }
         }
 
+        // where each row read standing now lays out, so a part can ride its row
+        const rowsNow = new Map(was.rows.flatMap(stood => {
+            const now = drawnRows.get(stood.key);
+            return now ? [[stood.key, now.getBoundingClientRect()] as const] : [];
+        }));
+
         // where each part going is placed from, and her box, laid out before anything plays
         const holders = new Map(lifted.map(part => [part.element, holderBox(part.element)]));
         const handoffRow = handoff?.row;
         const handoffBox = handoffRow?.querySelector<HTMLElement>("[data-tail='box']") ?? null;
         const handoffAt = handoffBox?.getBoundingClientRect();
-
-        if (isFolded) {
-            // What the record says happened while the view enters rides the entrance, closing evenly
-            // over a message's time: what is left of the entrance can be a frame, which would step.
-            if (Math.abs(offset) >= .5 && !reduced) {
-                play(content, [{ transform: `translateY(${offset}px)` }, { transform: "none" }], { duration: tokens.msg, easing: tokens.easeState, id: "chat-tail-open" });
-            }
-            lifted.forEach(part => part.done());
-            return;
-        }
 
         // Plan step 5: every motion as data. Each geometric motion of one change shares one timing,
         // so a part inside a moving box lands with it exactly. The open closes evenly over a
@@ -555,7 +562,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             for (const element of [holder, ...holder.querySelectorAll<HTMLElement>("[data-tail]")] as HTMLElement[]) {
                 const id = idOf(element);
                 if (id && !isLifted(element) && !going.has(element)) {
-                    now.push({ id, element, box: element.getBoundingClientRect() });
+                    now.push({ id, element, box: element.getBoundingClientRect(), row: rowKeyOf(element) });
                 }
             }
         }
@@ -572,7 +579,11 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
         // starts to where it lands it never shows past the bubble's top.
         const foot = bubbleNow && !typing.isStart && !reduced && Math.abs(offset) >= .5 ? was.parts.get("typing:typing") : undefined;
         const under = foot
-            ? [...tailNow].filter(holder => holder !== bubbleNow).map(holder => ({ holder, by: holder.getBoundingClientRect().bottom + offset - foot.box.top })).filter(clip => clip.by >= .5)
+            ? [...tailNow].filter(holder => holder !== bubbleNow).map(holder => {
+                const bottom = holder.getBoundingClientRect().bottom + offset;
+                const shown = shownWere.get(holder);
+                return { holder, by: Math.max(bottom - foot.box.top, shown === undefined ? 0 : bottom - shown) };
+            }).filter(clip => clip.by >= .5)
             : [];
 
         // Plan step 6 and play. The stack first, then its parts in the document's order, so each
@@ -624,9 +635,14 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 continue;
             }
             const start = startOf(part.element);
+            // A part rides its row: a row that steps rather than riding the stack takes its parts
+            // with it, so a part drawn in the same row moves only by how its place in the row changed.
+            const stood = part.row !== undefined && part.row === from.row ? was.rows.find(each => each.key === part.row) : undefined;
+            const rowAt = stood ? rowsNow.get(stood.key) : undefined;
             // A face hangs from its foot, and a row's face column is as tall as its line, so a face
-            // moves from foot to foot; anything else moves from its top.
-            const y = kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y);
+            // moves from foot to foot, its row's foot carrying it; anything else moves from its top.
+            const step = stood && rowAt ? (kind === "face" ? stood.bottom - rowAt.bottom : stood.top - rowAt.top) - offset : 0;
+            const y = (kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y)) - step;
             const by = { x: from.box.left - (part.box.left + start.x), y };
             if (kind === "edited" && Math.abs(by.x) >= .5) {
                 // Edited moving along its line crosses the time going beside it, so it does not
