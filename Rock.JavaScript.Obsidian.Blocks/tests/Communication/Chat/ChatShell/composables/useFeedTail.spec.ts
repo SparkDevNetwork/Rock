@@ -441,6 +441,21 @@ describe("a message arriving", () => {
         expect(seen(row(v, "k:3")).top).toBeCloseTo(top, 0);
     });
 
+    // A row that steps, as the rows above one changing height do, steps whole: its face hangs from
+    // its foot in every frame, never gliding in behind it.
+    test("a row stepping as one above it changes height takes its face with it in every frame", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }, { key: "k:3", sender: ted }] });
+
+        motion.arrived(message(4), place);
+        v.rows[1].h = 80;
+        v.rows.push({ key: "k:4", sender: me });
+        await settle();
+
+        const gaps = sample(() => Math.round(seen(row(v, "k:1")).bottom - seen(part(v, "face:k:1")).bottom));
+        expect(new Set(gaps).size).toBe(1);
+    });
+
     test.each(["before", "after"] as const)("the view's own follow running %s the tail's lands on the laid-out end, and every frame is the same", async order => {
         const run = async (ownFollow: "before" | "after" | undefined): Promise<{ scroll: number[], tops: number[] }> => {
             const motion = createMessageMotion();
@@ -1305,7 +1320,7 @@ describe("the view's own entrance", () => {
         expect(tops[tops.length - 1]).toBeLessThan(top - 20);
     });
 
-    // The open's re-read lands about a tenth of a second in: what it brings closes over a message's
+    // The open's first read lands about a tenth of a second in: what it brings closes over a message's
     // time from where it stood, never faster, however little of the entrance is left.
     test("what lands at the tail while the view enters, a page's rows or a typist it names, glides in over a message's time", async () => {
         const motion = createMessageMotion();
@@ -1480,5 +1495,75 @@ describe("the open's first read", () => {
         await settle();
 
         expect((stage as Stage).played).toEqual([]);
+    });
+
+    // The read can bring a row's new size: a reaction or an edit made while the view was away. The
+    // rows above it step, each whole, its face and its name line with it in every frame.
+    test.each([
+        ["a direct message", false, [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }, { key: "k:3", sender: ted }], 1, [["face:k:1", "k:1", "bottom"]]],
+        ["a group", true, [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }, { key: "k:3", sender: me }], 1, [["face:k:1", "k:1", "bottom"], ["name:k:1", "k:1", "top"], ["name:k:2", "k:2", "top"]]]
+    ] as [string, boolean, Row[], number, [string, string, "top" | "bottom"][]][])("landing with a row it grows, in %s, the rows above step whole: faces and name lines ride their rows", async (_, isGroup, rows, grown, parts) => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows, isGroup, isLanded: false });
+
+        v.landed.value = true;
+        v.rows[grown].h = 80;
+        v.typing.value = tedTyping;
+        await settle();
+
+        for (const [id, key, edge] of parts) {
+            const gaps = sample(() => Math.round(seen(row(v, key))[edge] - seen(part(v, id))[edge]));
+            expect(new Set(gaps).size).toBe(1);
+        }
+    });
+
+    // One plan for every change: a recorded change landing while the open's plan plays goes on from
+    // where everything is on screen, inside the entrance as after it.
+    test("a stop recorded while the open's plan moves her face into the bubble inside the entrance moves it back from where it is", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: anna }], isLanded: false });
+        entering(v, 200);
+
+        v.landed.value = true;
+        v.typing.value = annaTyping;
+        v.isInRun.value = true;
+        await settle();
+        sample(() => 0, [60]);
+        const was = seen(bubbleFace(v));
+
+        motion.typingEnded(place, "stopped");
+        v.typing.value = null;
+        v.isInRun.value = false;
+        await settle();
+
+        const going = sample(() => seen(part(v, "face:k:2")).bottom, [0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160, 176]);
+        expect(Math.abs(going[0] - was.bottom)).toBeLessThanOrEqual(1);
+        for (let index = 1; index < going.length; index++) {
+            expect(Math.abs(going[index] - going[index - 1])).toBeLessThan(16);
+        }
+    });
+
+    test("an arrival recorded while the open's plan brings a row out from under a standing bubble inside the entrance lets its foot open from where it stood", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], typing: tedTyping, isLanded: false });
+        entering(v, 200);
+        /** How far down the screen a person sees the row: its box inside its row's clip. */
+        const footOf = (): number => Math.min(seen(part(v, "box:k:2")).bottom, seen(row(v, "k:2")).bottom);
+
+        v.landed.value = true;
+        v.rows.push({ key: "k:2", sender: me, w: 320 });
+        await settle();
+        const was = sample(footOf, [0, 30, 60]);
+        expect(was[2]).toBeLessThan(seen(part(v, "box:k:2")).bottom - 5);
+
+        motion.arrived(message(3), place);
+        v.rows.push({ key: "k:3", sender: me });
+        await settle();
+
+        const after = sample(footOf, [0, 16, 32, 48, 64, 80, 96]);
+        expect(Math.abs(after[0] - was[2])).toBeLessThanOrEqual(1);
+        for (let index = 1; index < after.length; index++) {
+            expect(Math.abs(after[index] - after[index - 1])).toBeLessThan(16);
+        }
     });
 });
