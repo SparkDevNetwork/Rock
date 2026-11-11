@@ -263,7 +263,6 @@ describe("the composer and someone else typing", () => {
 
     test("keeps its own padding in each kind of composer, with no inset shared with a band", () => {
         expect(rule(".chat-composer")).toMatch(/padding: 0 20px 14px;/);
-        expect(rule(".chat-composer")).not.toMatch(/position: relative;/);
         expect(rule(".chat-composer.is-thread")).toMatch(/padding: 0 14px 12px;/);
         expect(rule(".chat-composer.is-phone")).toMatch(/padding: 0 10px 10px;/);
         expect(style).not.toMatch(/--chat-composer-inset/);

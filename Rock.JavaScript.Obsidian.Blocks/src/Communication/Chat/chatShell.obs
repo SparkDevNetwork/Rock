@@ -194,6 +194,7 @@
                               :sendFailure="conversationFailure"
                               :lastFailure="shell.sender.lastFailure()"
                               :tray="conversationTray"
+                              :busyPerson="activePair"
                               @retryFailed="onRetryFailed(conversationSends)"
                               @discardFailed="onDiscardFailed(conversationSends)"
                               @mentionQuery="onMentionQuery(activeRow, $event)"
@@ -354,6 +355,7 @@
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
                                   :isChannel="threadKind === 'channel'"
                                   :isDirectMessage="threadKind === 'person'"
+                                  :busyPerson="threadPair"
                                   :isPhone="isPhone"
                                   :isFromList="threadOrigin !== null"
                                   :listTitle="threadOrigin === 'mentions' ? 'Mentions' : 'Threads'"
@@ -942,8 +944,8 @@
 
     // One computed per fact of the open room, handed to every composable below that reads it.
     const {
-        activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activeTitle, look, activeSubtitle, isActiveBehind,
-        roomTitles, roomKinds, publicRooms, threadRow, threadKind, foundTitle, foundRow, foundTimeline, isPreviewingRoom
+        activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activePair, activeTitle, look, activeSubtitle, isActiveBehind,
+        roomTitles, roomKinds, publicRooms, threadRow, threadKind, threadPair, foundTitle, foundRow, foundTimeline, isPreviewingRoom
     } = useRoomsView({ shell, activeChannelId, drawnThread });
 
     /** The count on the app icon, from the sidebar, so reading what it counts clears it. */

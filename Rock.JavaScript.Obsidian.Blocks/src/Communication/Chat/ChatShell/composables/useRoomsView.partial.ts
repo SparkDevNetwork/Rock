@@ -72,6 +72,9 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     /** The other people of the open direct message, with their photos, as the sidebar sent them. */
     const activePeople = computed((): ChatPerson[] => activeRow.value ? rowPeople(activeRow.value) : []);
 
+    /** The other person of the open two-person conversation, whose Busy its composer says; null in a group or a channel. */
+    const activePair = computed((): ChatPerson | null => pairOf(activeRow.value));
+
     const activeTitle = computed((): string => activeRow.value?.title ?? "");
 
     /** A channel in Community's flat rows, a direct message in Conversational's bubbles, by kind alone. */
@@ -153,6 +156,9 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
 
+    /** The other person of the open thread's two-person conversation, whose Busy the reply box says too. */
+    const threadPair = computed((): ChatPerson | null => pairOf(threadRow.value));
+
     /** New message's found conversation by the sidebar's title, or by the people chosen when it is not listed. */
     const foundTitle = computed((): string | null => {
         const { lookup, chosen } = shell.value.directMessages;
@@ -186,7 +192,19 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     }
 
     return {
-        activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activeTitle, look, activeSubtitle, isActiveBehind,
-        roomTitles, roomKinds, publicRooms, threadRow, threadKind, foundTitle, foundRow, foundTimeline, isPreviewingRoom
+        activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activePair, activeTitle, look, activeSubtitle, isActiveBehind,
+        roomTitles, roomKinds, publicRooms, threadRow, threadKind, threadPair, foundTitle, foundRow, foundTimeline, isPreviewingRoom
     };
+}
+
+/**
+ * The other person of a two-person conversation, by the kind the platform sent: a group showing a
+ * single person, someone else in it unlisted, is still a group.
+ *
+ * @param row The conversation's sidebar row, or null for none.
+ *
+ * @returns That person, or null for a group, a channel or no row.
+ */
+function pairOf(row: SidebarRow | null): ChatPerson | null {
+    return row?.room_kind === "person" ? row.dm_people?.[0] ?? null : null;
 }

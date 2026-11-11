@@ -41,6 +41,22 @@
         </div>
 
         <template v-else>
+            <!--
+                While the other person of a direct message is Busy, a line on the composer's top
+                edge says what sending does. Keyed by her, so a switch to another conversation
+                draws it as state and takes the last one at once; only her own change fades it.
+                Drawn for the eye; the box is described by its sentence, never announced.
+            -->
+            <Transition name="chat-note" :key="busyPerson?.person_alias_guid ?? ''">
+                <span v-if="busyNote" class="chat-composer-note" aria-hidden="true" data-testid="composer-busy-note">
+                    <span class="chat-composer-note-name" data-part="name">{{ busyNote.name }}</span>
+                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " is busy" }}</span>
+                    <span v-if="busyNote.until" class="chat-composer-note-until" data-part="until">{{ busyNote.until }}</span>
+                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " and won't be notified." }}</span>
+                    <span :id="busyNoteId" class="chat-sr-only">{{ busyNote.sentence }}</span>
+                </span>
+            </Transition>
+
             <!-- The files waiting to go with the next send, each uploading as it was picked. -->
             <Attachments v-if="tray" :tray="tray" />
 
@@ -126,6 +142,7 @@
                             :isConversation="!isChannel"
                             :people="mentionSource?.people ?? []"
                             :conversationKey="conversationKey"
+                            :aria-describedby="busyNote ? busyNoteId : undefined"
                             data-testid="composer-input"
                             @update:text="emit('update:text', $event)"
                             @mention="emit('mention', $event)"
@@ -185,7 +202,9 @@
 </template>
 
 <style scoped>
+/* Positioned, so the Busy note stands on its top edge. */
 .chat-composer {
+    position: relative;
     display: flex;
     flex: none;
     flex-direction: column;
@@ -489,6 +508,77 @@
     color: var(--chat-text);
 }
 
+/*
+ * The Busy note stands on the composer's top edge over the feed's bottom padding: it takes no
+ * space, so neither the composer nor the feed moves as it comes and goes, and a failure strip, a
+ * quote or a staged GIF opening inside the composer only carries it up. Its text starts where the
+ * foot's does, the composer's side padding plus the foot's own 14px, and it stops at that padding
+ * on the right, short of the scrollbar above. The surface behind it, feathered at its top, hides
+ * rows scrolled under it.
+ */
+.chat-composer-note {
+    position: absolute;
+    right: 20px;
+    bottom: 100%;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    height: 16px;
+    padding: 0 14px 0 34px;
+    overflow: hidden;
+    font-size: 11.5px;
+    line-height: 16px;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    background: linear-gradient(to bottom, transparent, var(--chat-surface) 4px);
+}
+
+.chat-composer.is-thread .chat-composer-note {
+    right: 14px;
+    padding-left: 28px;
+}
+
+.chat-composer.is-phone .chat-composer-note {
+    right: 10px;
+    padding-left: 24px;
+}
+
+/*
+ * The name gives way first, to a few letters, the header above naming her in full; then the time.
+ * "is busy" and "and won't be notified." never do, since they say what sending does. Each part's
+ * space before it is its own text, kept by pre.
+ */
+.chat-composer-note-name {
+    flex: 0 1 auto;
+    min-width: 2.4em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-composer-note-until {
+    flex: 0 .0001 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre;
+}
+
+.chat-composer-note-fixed {
+    flex: none;
+    white-space: pre;
+}
+
+/* It comes and goes with her status only, so it fades on her revision, the same under reduced motion. */
+.chat-note-enter-active,
+.chat-note-leave-active {
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-note-enter-from,
+.chat-note-leave-to {
+    opacity: 0;
+}
+
 /* The countdown in the last 500 characters of the limit, at the foot's end. */
 .chat-composer-count {
     flex: none;
@@ -553,6 +643,7 @@
 </style>
 
 <script setup lang="ts">
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { computed, inject, nextTick, PropType, ref, watch } from "vue";
     import Attachments from "./attachments.partial.obs";
     import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
@@ -560,9 +651,11 @@
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { gifsKey } from "../composables/useGifs.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
-    import { DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
+    import { ChatPerson, DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import { useIsMotionReduced } from "../ui/brand.partial";
+    import { busyNoteWords } from "../ui/face.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -712,6 +805,15 @@
         tray: {
             type: Object as PropType<AttachmentTray | null>,
             default: null
+        },
+
+        /**
+         * The other person of a two-person direct message, whom the line over the box names while
+         * she is Busy, since a message then does not notify her; null in a group or a channel.
+         */
+        busyPerson: {
+            type: Object as PropType<ChatPerson | null>,
+            default: null
         }
     });
 
@@ -780,9 +882,31 @@
     /** The last failure said aloud, counted so the same words are read again for the next one. */
     const failedAnnouncement = ref<{ text: string, count: number } | null>(null);
 
+    /** What the store draws for the other person of a direct message, asked about as the open conversation's. */
+    const statusOf = useFaceStatus(() => props.busyPerson?.person_alias_guid ? [props.busyPerson.person_alias_guid] : [], 1);
+
+    /** The Busy note's sentence, which describes the box; its own per composer, as a thread's can show beside the conversation's. */
+    const busyNoteId = `chat-busy-note-${newGuid()}`;
+
     // #endregion Values
 
     // #region Computed Values
+
+    /**
+     * The Busy note's words while the store draws her Busy, or null. Read from what her faces
+     * draw, so the note shows exactly while they say Busy, goes when a block or the church's
+     * switch hides her, and its end words move with the store's own revision, past midnight too.
+     */
+    const busyNote = computed((): ReturnType<typeof busyNoteWords> | null => {
+        const person = props.busyPerson;
+        const status = person?.person_alias_guid ? statusOf(person.person_alias_guid) : null;
+        if (!person || status?.state !== "busy") {
+            return null;
+        }
+
+        const name = person.nick_name || person.last_name || "";
+        return busyNoteWords(name, status.busyUntil !== null ? new Date(status.busyUntil) : null, new Date());
+    });
 
     const placeholder = computed((): string => {
         if (props.isThread) {
