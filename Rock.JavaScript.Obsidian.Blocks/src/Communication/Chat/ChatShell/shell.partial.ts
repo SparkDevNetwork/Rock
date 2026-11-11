@@ -14,17 +14,17 @@
 // limitations under the License.
 // </copyright>
 //
-// The shell's wiring: one place that builds the session and its call path, the timelines, the
-// sender, the read tracker, the threads, the mentions, the rooms and the person's settings, and
-// joins them to the part that keeps them current (shellLive) and the one that puts rooms on
-// screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
+// The shell's wiring: one place that builds the call path, the timelines, the sender, the read
+// tracker, the threads, the mentions, the rooms and the person's settings, and joins them to the
+// sign-in (shellSession), the part that keeps them current (shellLive) and the one that puts rooms
+// on screen (pageLoad's opener). Each is its own tested module; what is here decides which hears what.
 //
 // Each step marks the page's performance timeline (chat:mint, chat:exchange, chat:history,
 // chat:join, chat:sidebar, chat:first-message), so the time from opening the page to the first
 // message on screen can be split into the steps that make it up.
 import { reactive } from "vue";
-import { classifyActionFailure, classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
-import { CallResult, computeBackoff, createPlatformCall, exchangeChurchToken, PlatformCall } from "./platformCall.partial";
+import { classifyPlatformError, errorKey, isReportedRefusal, messageForError } from "./errors.partial";
+import { CallResult, computeBackoff, createPlatformCall, PlatformCall } from "./platformCall.partial";
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, TimelineDependencies, Timelines } from "./composables/useHistory.partial";
 import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
@@ -34,7 +34,7 @@ import { createPushRegistration, PushDependencies, PushRegistration, PushState }
 import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
 import { Blocks, createBlocks } from "./composables/useBlocks.partial";
 import { canMakeSendKey, createSender, isComposerOpen, JoinResult, mediaArgs, newLocalId, noKeySentence, Sender } from "./composables/useSend.partial";
-import { AttachmentTypes, ChatSession, ChatSettings, ChurchTokenResult, createSession, ExchangeResult, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
+import { AttachmentTypes, ChatSettings, PlatformLimits, readSettings, serviceBanner } from "./composables/useSession.partial";
 import { createThreads, Threads, ThreadsDependencies } from "./composables/useThreads.partial";
 import { createDrafts, DraftStorage, Drafts, DraftsDependencies } from "./composables/useDrafts.partial";
 import { ActionNotice, createMessageActions, MessageActions, quoteKey } from "./composables/useMessageActions.partial";
@@ -49,6 +49,7 @@ import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rem
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import { createShellLive } from "./shellLive.partial";
+import { createShellSession, MintActionResult } from "./shellSession.partial";
 import { createProblemReport, ProblemReporter } from "./problemReport.partial";
 
 /**
@@ -65,37 +66,6 @@ const foundHistoryLimit = 16;
 
 /** What the tray says where a GIF waited so long its token ran out and the send was handed back. */
 const expiredGifNotice = "That GIF expired. Pick it again to send it.";
-
-/**
- * How long a start that has met a failure stays quiet before it says it is connecting, so a start
- * that only needs a second try says nothing. An estimate.
- */
-export const startQuietMs = 1000;
-
-/** How long a start whose first try has not answered at all stays quiet. An estimate. */
-export const startSilentMs = 2500;
-
-/**
- * When a start still waiting says so more gently: past the longest Retry-After the platform asks
- * for and about two backoffs after it. An estimate.
- */
-export const startSlowMs = 20000;
-
-/**
- * When a start still waiting points the person at their church: no outage of the platform's own
- * should run this long, and one that does is likely one that will not pass by itself. An estimate.
- */
-export const startLongMs = 120000;
-
-/** The words of a start that is still waiting, in the order it reaches them. */
-const startWaitStages: Array<NonNullable<ShellState["startWait"]>> = ["connecting", "slow", "long"];
-
-/** What the Rock token action answered. */
-export type MintActionResult = {
-    isSuccess: boolean;
-    statusCode: number;
-    data?: { gate?: string | null, churchToken?: string | null } | null;
-};
 
 /** Everything the shell reaches outside itself. */
 export type ShellOptions = {
@@ -180,26 +150,6 @@ export type ShellOptions = {
     /** A fresh request for one upload to Storage; the browser's own when not given. */
     newUploadRequest?: () => XMLHttpRequest;
 };
-
-/**
- * The person a platform token names, or null where it names none this client can read. The
- * token's signature is the platform's to check; this only reads whom it is for.
- */
-export function tokenPerson(token: string | null): string | null {
-    const payload = token?.split(".")[1];
-    if (!payload) {
-        return null;
-    }
-
-    try {
-        const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-        return typeof claims?.sub === "string" ? claims.sub.toLowerCase() : null;
-    }
-    catch {
-        // Not a token this client can read, so it says nothing about whom it is for.
-        return null;
-    }
-}
 
 /** What the page shows. */
 export type ShellState = {
@@ -378,92 +328,6 @@ export type ChatShell = {
 };
 
 /**
- * The sentence shown for a gate that refused. The reason a person is refused is not always
- * theirs to know, so the sentences that could reveal a ban say no more than that chat is not
- * available to them.
- *
- * @param gate The gate code.
- *
- * @returns The sentence.
- */
-export function gateMessage(gate: string | null): string {
-    switch (gate) {
-        case "sign_in_required":
-            return "Sign in to use chat.";
-        case "not_configured":
-            return "Chat is not set up for this organization yet.";
-        case "age_verification_required":
-            return "Chat needs your birthdate before it can open.";
-        case "age_restricted":
-            return "Chat is not available at your age.";
-        case "invalid_key":
-        case "gate_unavailable":
-            return "Chat could not start. Try again later, and let your church know if this keeps happening.";
-        default:
-            return "Chat is not available for your account. If you think this is wrong, let your church know.";
-    }
-}
-
-/**
- * The sentence shown when chat does not open.
- *
- * @param phase Where the shell stopped.
- * @param gate The gate that refused, when one did.
- *
- * @returns The sentence.
- */
-export function refusalMessage(phase: ShellState["phase"], gate: string | null): string {
-    // Failed means Rock's gates passed and the platform did not finish signing in, so the
-    // sentence is about chat not starting rather than about the person.
-    return gateMessage(phase === "failed" ? "gate_unavailable" : gate);
-}
-
-/**
- * What a start still waiting says, on the first load's veil and once to a screen reader. No words
- * offer to try again: the session's wait is what honours the platform's Retry-After, and reload is
- * always the person's own.
- *
- * @param stage How long the start has waited.
- *
- * @returns The sentence.
- */
-export function startWaitMessage(stage: NonNullable<ShellState["startWait"]>): string {
-    switch (stage) {
-        case "connecting":
-            return "Connecting to chat…";
-        case "slow":
-            return "Still connecting. Chat will open as soon as it can.";
-        default:
-            return "Chat is still trying to connect. If this keeps happening, let your church know.";
-    }
-}
-
-/**
- * What the Rock token action's answer means to the session.
- *
- * @param result What the action answered.
- *
- * @returns The church token, or the reason there is none.
- */
-export function churchTokenFromAction(result: MintActionResult): ChurchTokenResult {
-    if (result.isSuccess && result.data) {
-        return { gate: result.data.gate ?? "gate_unavailable", churchToken: result.data.churchToken ?? null };
-    }
-
-    // Rock answers 401 when the person's Rock sign-in has ended.
-    if (result.statusCode === 401) {
-        return { gate: "sign_in_required", churchToken: null };
-    }
-
-    // No answer, too many requests, or a server fault may pass; anything else is Rock refusing.
-    const isPassing = result.statusCode === 0 || result.statusCode === 429 || result.statusCode >= 500;
-
-    return isPassing
-        ? { gate: "gate_unavailable", churchToken: null, isUnreachable: true }
-        : { gate: "gate_unavailable", churchToken: null };
-}
-
-/**
  * Creates the shell.
  *
  * @param options Everything the shell reaches outside itself.
@@ -527,73 +391,20 @@ export function createChatShell(options: ShellOptions): ChatShell {
         }
     }
 
-    const session: ChatSession = createSession({
-        mintChurchToken: async (): Promise<ChurchTokenResult> => {
-            const result = await options.mintChurchToken();
-            options.mark("chat:mint");
-
-            if (!result.isSuccess && !churchTokenFromAction(result).isUnreachable) {
-                report(classifyActionFailure(result.statusCode));
-            }
-
-            return churchTokenFromAction(result);
-        },
-        exchange,
-        pushTokenToConnection: async (): Promise<void> => {
-            showSettings();
-
-            // A token for someone other than the person the page loaded for means a merge made
-            // them part of another person. The page listens on a personal topic that is no longer
-            // theirs, so it loads again rather than move every topic under a live connection.
-            const person = tokenPerson(session.currentToken());
-            if (person !== null && personAliasGuid !== "" && person !== personAliasGuid.toLowerCase()) {
-                (options.reloadPage ?? (() => globalThis.location?.reload()))();
-                return;
-            }
-
+    const signIn = createShellSession({
+        state,
+        options,
+        projectUrl,
+        publishableKey,
+        personAliasGuid,
+        report,
+        showSettings,
+        setAuth: async () => {
             await client?.realtime.setAuth();
         },
-        random: Math.random,
-        setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
-        clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
-        onEnded: () => void end(),
-        onWaiting: () => onStartWaiting(),
-        // Away is the page hidden or the browser offline: what coming back, the one reason to try
-        // sooner, is coming back from.
-        isAway: () => options.pageTargets.document.visibilityState !== "visible" || globalThis.navigator?.onLine === false
+        end: () => void end()
     });
-
-    /**
-     * The start's wait as the page tells it: when it began, how many of its tries failed, and
-     * whether the first quiet second is over.
-     */
-    const startWaited = { at: 0, tries: 0, isQuietOver: false };
-
-    /** A try of the start failed in a way that may pass: past the quiet second, the page says it is connecting. */
-    function onStartWaiting(): void {
-        startWaited.tries++;
-        if (startWaited.isQuietOver) {
-            showStartWait("connecting");
-        }
-    }
-
-    /** Moves the start's words on to a stage, never back, and only while it is still starting. */
-    function showStartWait(stage: NonNullable<ShellState["startWait"]>): void {
-        const reached = state.startWait === null ? -1 : startWaitStages.indexOf(state.startWait);
-        if (state.phase === "starting" && startWaitStages.indexOf(stage) > reached) {
-            state.startWait = stage;
-        }
-    }
-
-    /**
-     * The network coming back or the page shown is a reason to try again soon, whoever is waiting:
-     * a start, or a refresh after one that failed. The session decides what that moves.
-     */
-    const onPageBack = (): void => {
-        if (options.pageTargets.document.visibilityState === "visible") {
-            session.nudge();
-        }
-    };
+    const session = signIn.session;
 
     /** Puts the session's latest settings on the page: the banner and whether the composer is open. */
     function showSettings(): void {
@@ -641,17 +452,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.gate = session.state.gate;
         state.phase = session.state.gate === "ok" ? "failed" : "refused";
         await hub?.stop();
-    }
-
-    /**
-     * Exchanges a church token for a platform token and the settings beside it. The session's
-     * signal reaches the request, so a try given up at its deadline ends the request with it.
-     */
-    async function exchange(churchToken: string, exchangeOptions: { signal: AbortSignal }): Promise<ExchangeResult> {
-        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken, { signal: exchangeOptions.signal });
-        options.mark("chat:exchange");
-
-        return answer;
     }
 
     const platform = createPlatformCall({
@@ -1278,27 +1078,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            options.pageTargets.window.addEventListener("online", onPageBack);
-            options.pageTargets.document.addEventListener("visibilitychange", onPageBack);
-
-            // The start's words: quiet for its first second, so a start that only needs a second
-            // try says nothing; then connecting, once a try has failed, or once the first has gone
-            // unanswered for longer; then gentler words the longer it waits.
-            startWaited.at = Date.now();
-            const stageTimers = [
-                setTimeout(() => {
-                    startWaited.isQuietOver = true;
-                    if (startWaited.tries > 0) {
-                        showStartWait("connecting");
-                    }
-                }, startQuietMs),
-                setTimeout(() => showStartWait("connecting"), startSilentMs),
-                setTimeout(() => showStartWait("slow"), startSlowMs),
-                setTimeout(() => showStartWait("long"), startLongMs)
-            ];
-
-            const isSignedIn = await session.start();
-            stageTimers.forEach(timer => clearTimeout(timer));
+            const isSignedIn = await signIn.start();
 
             // Stopped while signing in, or ended by then: nothing is joined, and nothing is shown.
             if (isStopped) {
@@ -1334,7 +1114,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // In seconds, since the platform keeps a count up to a million and a start can wait
             // past the quarter hour that many milliseconds would hold.
             if (state.startWait !== null) {
-                problems.report("start", `waited.${state.startWait}`, Math.round((Date.now() - startWaited.at) / 1000), `tries-${startWaited.tries + 1}`);
+                problems.report("start", `waited.${state.startWait}`, Math.round((Date.now() - signIn.waited.at) / 1000), `tries-${signIn.waited.tries + 1}`);
             }
 
             await opener.runPageLoad();
@@ -1511,8 +1291,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // kept, and the save still carries it.
             session.stop();
             await Promise.all([tracker.leave(), threadSaved]);
-            options.pageTargets.window.removeEventListener("online", onPageBack);
-            options.pageTargets.document.removeEventListener("visibilitychange", onPageBack);
+            signIn.detach();
             detachPage?.();
             detachThreads?.();
             detachProblems?.();

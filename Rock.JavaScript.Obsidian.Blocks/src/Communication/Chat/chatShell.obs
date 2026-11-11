@@ -768,7 +768,7 @@
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { useDialogs } from "./ChatShell/composables/useDialogs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
-    import { refusalMessage, startWaitMessage } from "./ChatShell/shell.partial";
+    import { refusalMessage, startWaitMessage } from "./ChatShell/shellSession.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";

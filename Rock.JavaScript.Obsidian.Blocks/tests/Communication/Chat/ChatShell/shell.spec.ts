@@ -18,7 +18,8 @@
 // channels faster than the platform answers: the channel chosen last is the one on screen, its
 // topic is the one joined, it is the one remembered, and what is seen in it is saved against it,
 // however the earlier opens and saves settle.
-import { churchTokenFromAction, createChatShell, PlatformClientLike, refusalMessage, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { createChatShell, PlatformClientLike, ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+import { churchTokenFromAction, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shellSession.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { toRaw } from "vue";
