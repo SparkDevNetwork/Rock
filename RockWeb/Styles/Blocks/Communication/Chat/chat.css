@@ -881,6 +881,22 @@
     color: var(--chat-danger-ink);
 }
 
+/*
+    A menu's item that cannot be chosen now, in a popover or a sheet: faded as a block post's button
+    that cannot run is, with no press and no hover tint to give. Under the chat's root, so it
+    outranks either row's own hover; a sheet's focused row keeps its tint, the keyboard's mark.
+*/
+.chat-shell .chat-menu-item[aria-disabled="true"],
+.chat-shell .chat-sheet-item[aria-disabled="true"] {
+    cursor: default;
+    opacity: .5;
+}
+
+.chat-shell .chat-menu-item[aria-disabled="true"]:hover,
+.chat-shell .chat-sheet-item[aria-disabled="true"]:hover {
+    background: transparent;
+}
+
 .chat-sheet-label {
     flex: 1;
     min-width: 0;

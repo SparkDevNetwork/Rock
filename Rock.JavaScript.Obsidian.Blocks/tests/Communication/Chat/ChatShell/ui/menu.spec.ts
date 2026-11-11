@@ -23,6 +23,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import Menu from "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs";
+import { chatSheet, shellFolder, styleRules } from "../statusStore";
 
 const items = [
     { key: "notifications", label: "Turn on notifications", icon: "bell" },
@@ -206,6 +207,38 @@ describe("the menu", () => {
 
 // A menu asked to be a sheet is the phone's form of the same list: a scrim and a bottom sheet with
 // a grab bar and full width rows, not a popover beside its button.
+// An item that cannot be chosen now looks it wherever the menu is drawn: a popover's row or, on a
+// phone, a sheet's, where read only would otherwise open six full-strength rows that do nothing.
+// One rule in the block's sheet holds both, faded, with no press and no hover tint, and it is
+// written under the chat's root so it outranks either row's own hover.
+describe("an item that cannot be chosen", () => {
+    test.each(["chat-menu-item", "chat-sheet-item"])("is faded with no press and no hover tint as a .%s", item => {
+        const disabled = `\\.${item}\\[aria-disabled="true"\\]`;
+        const sheet = readFileSync(chatSheet, "utf8");
+
+        expect(styleRules(chatSheet, new RegExp(`^${disabled}$`)).join(";")).toMatch(/cursor:\s*default;[\s\S]*opacity:\s*\.5;/);
+        expect(styleRules(chatSheet, new RegExp(`^${disabled}:hover$`)).join(";")).toMatch(/background:\s*transparent;/);
+        expect(sheet).toMatch(new RegExp(`\\.chat-shell ${disabled}:hover`));
+    });
+
+    test("is drawn by that one rule, the menu's own styles holding none", () => {
+        expect(styleRules(join(shellFolder, "ui/menu.partial.obs"), /aria-disabled/)).toEqual([]);
+    });
+
+    test("is marked disabled on a sheet's row as on a popover's", async () => {
+        const wrapper = mount(Menu, { props: { icon: "plus", label: "Add", items: items.map(item => ({ ...item, isDisabled: true })), isSheet: true }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        anchor.click();
+        await settle();
+
+        const rows = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] .chat-sheet-item"));
+        expect(rows).toHaveLength(items.length);
+        expect(rows.every(row => row.getAttribute("aria-disabled") === "true")).toBe(true);
+        wrapper.unmount();
+        document.body.innerHTML = "";
+    });
+});
+
 describe("the menu as a sheet", () => {
     let wrapper: VueWrapper | null = null;
 

@@ -185,12 +185,6 @@
     color: var(--chat-danger-ink);
 }
 
-/* Faded as a block post's button that cannot run is, and with no press to give. */
-.chat-menu-item[aria-disabled="true"] {
-    cursor: default;
-    opacity: .5;
-}
-
 /*
     Enters from just toward its button and a touch small, and leaves the same way, half as far and
     faster; toward the button is up when the menu opens below it and down when it flips above.
