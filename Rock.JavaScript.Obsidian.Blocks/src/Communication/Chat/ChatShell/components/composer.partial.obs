@@ -49,8 +49,8 @@
             -->
             <Transition name="chat-note" :key="busyPerson?.person_alias_guid ?? ''">
                 <span v-if="busyNote" class="chat-composer-note" aria-hidden="true" data-testid="composer-busy-note">
-                    <span class="chat-composer-note-name" data-part="name">{{ busyNote.name }}</span>
-                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " is busy" }}</span>
+                    <span class="chat-composer-note-name" data-part="name">{{ `${busyNote.name} ` }}</span>
+                    <span class="chat-composer-note-fixed" data-part="fixed">is busy</span>
                     <span v-if="busyNote.until" class="chat-composer-note-until" data-part="until">{{ busyNote.until }}</span>
                     <span class="chat-composer-note-fixed" data-part="fixed">{{ " and won't be notified." }}</span>
                     <span :id="busyNoteId" class="chat-sr-only">{{ busyNote.sentence }}</span>
@@ -514,7 +514,7 @@
  * quote or a staged GIF opening inside the composer only carries it up. Its text starts where the
  * foot's does, the composer's side padding plus the foot's own 14px, and it stops at that padding
  * on the right, short of the scrollbar above. The surface behind it, feathered at its top, hides
- * rows scrolled under it.
+ * rows scrolled under it; a wheel, a hover or a drag passes through it to them.
  */
 .chat-composer-note {
     position: absolute;
@@ -530,6 +530,7 @@
     line-height: 16px;
     color: var(--chat-muted);
     white-space: nowrap;
+    pointer-events: none;
     background: linear-gradient(to bottom, transparent, var(--chat-surface) 4px);
 }
 
@@ -545,14 +546,16 @@
 
 /*
  * The name gives way first, to a few letters, the header above naming her in full; then the time.
- * "is busy" and "and won't be notified." never do, since they say what sending does. Each part's
- * space before it is its own text, kept by pre.
+ * "is busy" and "and won't be notified." never do, since they say what sending does. Each space
+ * is its part's own text, kept by pre; the one after the name ends the name's part, so an ellipsis
+ * cutting the name cuts it too and a cut name leaves one gap, not two.
  */
 .chat-composer-note-name {
     flex: 0 1 auto;
     min-width: 2.4em;
     overflow: hidden;
     text-overflow: ellipsis;
+    white-space: pre;
 }
 
 .chat-composer-note-until {
