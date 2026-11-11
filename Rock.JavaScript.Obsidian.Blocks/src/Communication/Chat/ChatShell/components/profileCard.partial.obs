@@ -27,7 +27,7 @@
                     <div v-if="campusName || cardStatus" class="chat-pc-line" data-testid="profile-line">
                         <span v-if="cardStatus" class="chat-pc-status" data-testid="profile-status">{{ cardStatus.tip }}</span>
                         <span v-if="cardStatus && campusName" class="chat-sr-only">, </span>
-                        <span v-if="campusName" class="chat-pc-campus" data-testid="profile-campus"><Icon name="pin" size="xs" />{{ campusName }}</span>
+                        <span v-if="campusName" class="chat-pc-campus" data-testid="profile-campus"><Icon name="pin" size="xs" /><span class="chat-pc-place">{{ campusName }}</span></span>
                     </div>
                 </div>
             </div>
@@ -191,17 +191,32 @@
     border-radius: var(--chat-r-full);
 }
 
+/*
+    One line, never two columns: the words are what a phone reads the end of a Busy from, so they
+    keep their width and the campus gives way first; past the whole line the words are cut too, the
+    badge's tooltip and a screen reader still having them whole.
+*/
 .chat-pc-line {
     display: flex;
     gap: 6px;
     align-items: center;
     margin-top: 4px;
+    overflow: hidden;
     font-size: 13px;
     color: var(--chat-text-2);
+    white-space: nowrap;
 }
 
 .chat-pc-line :deep(.chat-ic) {
+    flex: none;
     color: var(--chat-icon);
+}
+
+.chat-pc-status {
+    flex: none;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .chat-pc-campus {
@@ -211,9 +226,16 @@
     min-width: 0;
 }
 
+.chat-pc-place {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* The status and the campus joined by a dot, as the details' facts are. */
 .chat-pc-status + .chat-sr-only + .chat-pc-campus::before {
     display: inline-block;
+    flex: none;
     width: 3px;
     height: 3px;
     content: "";

@@ -121,6 +121,8 @@
                             <span class="chat-row-main">
                                 <span class="chat-row-top">
                                     <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
+                                    <!-- The person's status is heard as part of their name, before the time and the preview. -->
+                                    <span v-if="row.room_kind === 'person' && rowStatus(row)" class="chat-sr-only" data-testid="row-status-words">{{ rowStatus(row)?.label }}</span>
                                     <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
                                     <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
                                 </span>
@@ -1018,8 +1020,7 @@
             isMuted(row) ? "muted" : ""
         ].filter(part => part !== "");
 
-        // the other person's status first, as the name it follows
-        return (row.room_kind === "person" ? rowStatus(row)?.label ?? "" : "") + parts.map(part => `, ${part}`).join("");
+        return parts.map(part => `, ${part}`).join("");
     }
 
     // #endregion Functions

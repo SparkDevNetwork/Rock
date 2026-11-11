@@ -316,6 +316,13 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     const revisions = shallowReactive(new Map<string, number>());
     let revision = 0;
 
+    /**
+     * What each person's faces were last given, at the revision it was drawn for: the same status
+     * until the revision moves, so a host drawn again for its own reasons hands every badge the
+     * status it already has, and neither the badge nor its words are made again.
+     */
+    const faces = new Map<string, { at: number, face: FaceStatus | null }>();
+
     /** The server's clock less the page's, from the newest token's mint time. */
     let offsetMs = 0;
 
@@ -472,6 +479,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         for (const [key, entry] of entries) {
             if (key !== self && entry.asOf / 1000 + heldNothingSeconds * 1000 < now && !shown.has(key) && !drawnAt(entry, now)) {
                 entries.delete(key);
+                faces.delete(key);
                 continue;
             }
             const status = entry.status;
@@ -563,6 +571,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         isSwitchOn = on;
         if (!on) {
             entries.clear();
+            faces.clear();
         }
         redrawAll();
     }, { flush: "sync" });
@@ -855,8 +864,18 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             const key = guid.toLowerCase();
             // read first and always, so a face reading it draws again whenever it moves
             const at = revisions.get(key) ?? 0;
+            // a block is read as it stands, as drawnNow reads it, so it draws nothing before its decision reaches the store
+            if (key !== self && isBlocked(key)) {
+                return null;
+            }
+            const held = faces.get(key);
+            if (held && held.at === at) {
+                return held.face;
+            }
             const drawn = drawnNow(key);
-            return drawn ? { ...drawn, revision: at } : null;
+            const face = drawn ? { ...drawn, revision: at } : null;
+            faces.set(key, { at, face });
+            return face;
         },
 
         register: (people, rank) => {

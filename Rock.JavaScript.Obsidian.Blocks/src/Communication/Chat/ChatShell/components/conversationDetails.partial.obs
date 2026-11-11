@@ -52,7 +52,7 @@
                       ariaLabel="People in this conversation"
                       isList
                       data-testid="details-people">
-            <SettingRow v-for="chip in groupChips" :key="chip.key" role="listitem" data-testid="details-person">
+            <SettingRow v-for="chip in groupChips" :key="chip.key" class="chat-rd-prow" role="listitem" data-testid="details-person">
                 <template #text>
                     <span class="chat-rd-person">
                         <Avatar :people="[chip]" :size="32" :status="chipStatus(chip.alias)" />
@@ -298,6 +298,11 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+}
+
+/* A People row centres its 32px face inside the group's least row height, so it keeps the one measure every row in a group has. */
+.chat-sg-row.chat-rd-prow {
+    padding-block: 4px;
 }
 
 /* A person in a group's People, whose badge rings in the group's fill. */
@@ -743,9 +748,10 @@
      */
     const otherAlias = computed((): string | null => props.kind === "person" ? props.facts.people[0]?.person_alias_guid.toLowerCase() ?? null : null);
 
-    const statusOf = useFaceStatus(() => props.kind === "person"
-        ? (otherAlias.value ? [otherAlias.value] : [])
-        : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
+    // Kept mounted while closed, so it asks about the faces it draws only while it is open.
+    const statusOf = useFaceStatus(() => !props.isOpen ? []
+        : props.kind === "person" ? (otherAlias.value ? [otherAlias.value] : [])
+            : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
 
     const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
 

@@ -1,0 +1,47 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Transition name="chat-status" :css="!isHeld">
+        <StatusBadge v-if="status" :status="status" :faceSize="faceSize" />
+    </Transition>
+</template>
+
+<script setup lang="ts">
+    /*
+        A face's badge coming and going. Its own part because Vue draws a transition's child again
+        at every render of whatever holds the transition: held by the face, every badge would draw
+        again whenever its face did, as a row's hover draws a panel's every face; held here, it draws
+        again only when the status it is handed changes, which the store keeps as one object a
+        revision.
+    */
+    import { computed, inject, PropType } from "vue";
+    import StatusBadge from "./statusBadge.partial.obs";
+    import { FaceStatus } from "../types.partial";
+    import { pageRevealKey } from "../pageLoad.partial";
+
+    defineProps({
+        /** What the face draws, or null for no badge. */
+        status: {
+            type: Object as PropType<FaceStatus | null>,
+            default: null
+        },
+
+        /** The face's size in pixels, which places the badge on its rim. */
+        faceSize: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    // Read through its getter, so a rebuilt shell is followed.
+    const page = inject(pageRevealKey, null);
+
+    /**
+     * Whether the first screen is still under its veil, which reveals it in one crossfade: a
+     * status that comes or goes before then is part of what it shows, so it draws as state.
+     */
+    const isHeld = computed((): boolean => !!page && !page.state.isReleased);
+
+    // #endregion Values
+</script>

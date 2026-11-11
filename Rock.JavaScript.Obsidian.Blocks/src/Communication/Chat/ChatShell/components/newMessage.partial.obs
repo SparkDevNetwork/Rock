@@ -73,7 +73,8 @@
             </div>
 
             <template v-else>
-                <div v-if="isFound" class="chat-nd-found" role="status" data-testid="nd-found">
+                <!-- Content, not a live region: the find is said once as it lands, and a status changing beside the name is never said aloud. -->
+                <div v-if="isFound" class="chat-nd-found" data-testid="nd-found">
                     <Avatar v-if="chosen.length === 1" :key="onlyAlias ?? undefined" :people="faces.slice(0, 1)" :size="36" :status="onlyStatus" />
                     <GroupFace v-else :people="faces" :size="36" />
                     <span class="chat-nd-found-t">
@@ -1011,6 +1012,14 @@
     watch(() => isPhaseShown.value && pendingPhase.value !== "failed" ? pendingPhase.value : null, phase => {
         if (phase) {
             announce(phaseWords[phase]);
+        }
+    });
+
+    // A conversation found is said once, as it lands, in the strip's own words; the strip itself is
+    // no live region, so its person's status changing later says nothing.
+    watch(() => isFound.value ? props.lookup.channelId : null, channelId => {
+        if (channelId) {
+            announce(`You already have this conversation. ${props.foundTitle ? `${props.foundTitle}. ` : ""}What you send goes there.`);
         }
     });
 
