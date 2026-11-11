@@ -141,10 +141,10 @@ describe("the church switch through a real session", () => {
         const isOffered = computed(() => gifs.isOn());
         expect(isOffered.value).toBe(false);
 
-        await session.refresh();
+        await session.refresh("scheduled");
         expect(isOffered.value).toBe(true);
 
-        await session.refresh();
+        await session.refresh("scheduled");
         expect(isOffered.value).toBe(false);
     });
 });

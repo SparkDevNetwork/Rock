@@ -119,6 +119,35 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const sent: Record<string, Record<string, number>> = {};
     // What the presence told the record, in order.
     const records: string[] = [];
+    // The page the status watches: each listener by event, with the options it was added with.
+    const listeners: Array<{ on: "window" | "document", type: string, listener: (event: unknown) => void, options: unknown }> = [];
+    const page = { visibilityState: "visible" };
+    const targets = {
+        document: {
+            get visibilityState(): string {
+                return page.visibilityState;
+            },
+            addEventListener: (type: string, listener: () => void) => listeners.push({ on: "document", type, listener, options: undefined }),
+            removeEventListener: (type: string, listener: () => void) => {
+                listeners.splice(listeners.findIndex(l => l.on === "document" && l.type === type && l.listener === listener) >>> 0, 1);
+            }
+        },
+        window: {
+            addEventListener: (type: string, listener: (event: unknown) => void, options?: unknown) => listeners.push({ on: "window", type, listener, options }),
+            removeEventListener: (type: string, listener: (event: unknown) => void) => {
+                listeners.splice(listeners.findIndex(l => l.on === "window" && l.type === type && l.listener === listener) >>> 0, 1);
+            }
+        }
+    };
+    // Every goodbye sent, by the id it named.
+    const leaves: string[] = [];
+    // The session as the status reads it: when the next refresh is due, whether one is out, and every refresh asked.
+    const session = {
+        next: Date.now() + 210_000 as number | null,
+        out: null as string | null,
+        life: 300,
+        asked: [] as string[]
+    };
 
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
@@ -150,10 +179,28 @@ function build(rawSettings: Record<string, unknown> = {}) {
             typingEnded: (place, cause, message) => records.push(`ended ${place} ${cause}${message ? ` ${message.id}` : ""}`)
         },
         report: code => reports.push(code),
-        isStopped: () => stopped.value
+        isStopped: () => stopped.value,
+        targets,
+        leave: clientId => leaves.push(clientId),
+        session: {
+            refresh: async reason => {
+                session.asked.push(reason);
+                return true;
+            },
+            nextRefreshAt: () => session.next,
+            tokenLifeSeconds: () => session.life,
+            inFlight: () => session.out as ReturnType<PresenceDependencies["session"]["inFlight"]>
+        }
     };
 
     const presence: Presence = createPresence(dependencies);
+
+    /** Fires a page event on whichever of the window or the document listens for it. */
+    function fire(type: string, event: unknown = {}): void {
+        for (const listener of listeners.filter(l => l.type === type)) {
+            listener.listener(event);
+        }
+    }
 
     /** A page or a live copy brings someone's message into the client's history. */
     function hold(id: number, alias: string, parentId: number | null = null): void {
@@ -167,7 +214,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -1673,6 +1720,358 @@ describe("a stopped status", () => {
         expect(h.status.statusOf(sam)).toBeNull();
         expect(h.status.statusOf(lee)).toBeNull();
         expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("an exchange's answer writes nothing, a settle asks nothing, and the page's events send nothing", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        const body = h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.session.next = Date.now() + 700_000;
+        h.page.visibilityState = "hidden";
+
+        h.stopped.value = true;
+        h.presence.stop();
+        h.status.exchanged([anna], exchangeAnswer({ [anna]: online(0) }));
+        h.status.settled("scheduled", true);
+        h.fire("pagehide");
+
+        expect(body).not.toBeNull();
+        expect(h.status.statusOf(anna)).toBeNull();
+        expect(h.session.asked).toEqual([]);
+        expect(h.leaves).toEqual([]);
+        expect(h.listeners).toEqual([]);
+    });
+});
+
+// The page's side of each exchange: one client id a page until a goodbye spends it, a body on
+// every exchange unless the latest answer said status is off, the people watched named only by a
+// refresh that asks about them, and the person's idle time from what she last did on a visible page.
+describe("the page's id and each exchange's body", () => {
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+    test("before any answer a body goes, even with the switch read as off, naming nobody; one id a page", () => {
+        const h = buildStatus({ flags: { typing: true } });
+
+        const first = h.status.exchangeBody("start");
+        const second = h.status.exchangeBody("start");
+
+        expect(first).toEqual({ client_id: expect.stringMatching(uuid), kind: "web", idle_seconds: 0 });
+        expect(second?.client_id).toBe(first?.client_id);
+        expect(h.status.clientId()).toBe(first?.client_id);
+    });
+
+    test("a latest answer saying status is off sends no body, and one saying on brings them back at the next exchange", () => {
+        const h = buildStatus();
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+
+        expect(h.status.exchangeBody("scheduled")).toBeNull();
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: true } });
+
+        expect(h.status.exchangeBody("scheduled")).toMatchObject({ kind: "web", watched: [me] });
+    });
+
+    test("only a scheduled or early refresh names the people watched, and only their ids shaped as one, so one malformed id costs nobody else", () => {
+        const h = buildStatus();
+        h.status.register(() => ["", "not-a-guid", anna, `${sam}x`], 1);
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+
+        for (const reason of ["start", "recheck", "expired", "retry"] as const) {
+            expect(h.status.exchangeBody(reason)).not.toHaveProperty("watched");
+        }
+        expect(h.status.exchangeBody("scheduled")?.watched).toEqual([me, anna]);
+        expect(h.status.exchangeBody("early")?.watched).toEqual([me, anna]);
+    });
+
+    test("idle is whole seconds since the last input on a visible page, the clock running while it is hidden", () => {
+        const h = buildStatus();
+
+        jest.advanceTimersByTime(5000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(3500);
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(3);
+
+        h.page.visibilityState = "hidden";
+        h.fire("pointerdown");
+        jest.advanceTimersByTime(10_000);
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(13);
+    });
+
+    test("one set of input listeners on the window, capturing and passive, every one gone at stop", () => {
+        const h = buildStatus();
+
+        const input = h.listeners.filter(l => !["visibilitychange", "pagehide", "pageshow"].includes(l.type));
+        expect(input.map(l => `${l.on} ${l.type}`).sort()).toEqual(["keydown", "pointerdown", "pointermove", "scroll", "touchstart", "wheel"].map(type => `window ${type}`));
+        expect(input.every(l => (l.options as AddEventListenerOptions)?.capture === true && (l.options as AddEventListenerOptions)?.passive === true)).toBe(true);
+
+        h.stopped.value = true;
+        h.presence.stop();
+
+        expect(h.listeners).toEqual([]);
+    });
+
+    test("closing the page says goodbye for an id a body carried and spends it, so the next body carries a new one; a hidden page says nothing", () => {
+        const h = buildStatus();
+        h.fire("pagehide");
+        expect(h.leaves).toEqual([]);
+
+        const first = h.status.exchangeBody("start")?.client_id;
+        h.page.visibilityState = "hidden";
+        h.fire("visibilitychange");
+        expect(h.leaves).toEqual([]);
+
+        h.fire("pagehide");
+        h.fire("pagehide");
+        const next = h.status.exchangeBody("start")?.client_id;
+
+        expect(h.leaves).toEqual([first]);
+        expect(next).toMatch(uuid);
+        expect(next).not.toBe(first);
+    });
+
+    test("no goodbye once the latest answer said status is off, though a body carried the id", () => {
+        const h = buildStatus();
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+
+        h.fire("pagehide");
+
+        expect(h.leaves).toEqual([]);
+    });
+
+    test("a page restored from the back-forward cache asks for a recheck; a fresh load's pageshow asks nothing", () => {
+        const h = buildStatus();
+
+        h.fire("pageshow", { persisted: false });
+        expect(h.session.asked).toEqual([]);
+        h.fire("pageshow", { persisted: true });
+
+        expect(h.session.asked).toEqual(["recheck"]);
+    });
+});
+
+// A sleeping machine fires no timer, and a page left visible across it hears neither of its own
+// show events, so what is drawn is read again against the clock whenever the page comes back.
+describe("others' status drawn again against the clock", () => {
+    test("a clock that jumped past a row's end with no timer fired draws nothing once redrawn", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0, 10_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.setSystemTime(serverNow + 20_000);
+        expect(drawn.value?.state).toBe("online");
+        h.status.rearm();
+
+        expect(drawn.value).toBeNull();
+    });
+
+    test.each([
+        ["shown again", (h: ReturnType<typeof buildStatus>) => h.fire("visibilitychange")],
+        ["restored from the back-forward cache", (h: ReturnType<typeof buildStatus>) => h.fire("pageshow", { persisted: true })],
+        ["the first input after a sleep", (h: ReturnType<typeof buildStatus>) => h.fire("keydown")]
+    ])("%s, the page draws again against the clock", (_name, wake) => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0, 10_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.setSystemTime(serverNow + 20_000);
+        wake(h);
+
+        expect(drawn.value).toBeNull();
+    });
+});
+
+// Asking early, as the model does: an input asks when what the server holds of her runs out before
+// the next refresh, and a page shown asks when its badges are older than a token's life; never
+// while a refresh is out, which flags one ask again for the session to settle first; at most once
+// a minute, and never before the first answer, with status off or with no idle line.
+describe("asking early", () => {
+    const idle = { limits: { presence_idle_seconds: 600 } };
+
+    /** One exchange of a reason lands and settles, its next refresh due a time after now. */
+    function land(h: ReturnType<typeof buildStatus>, reason: Parameters<Presence["status"]["exchangeBody"]>[0], nextAfterMs: number, presence?: Record<string, Record<string, unknown>>): void {
+        const body = h.status.exchangeBody(reason);
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(presence));
+        h.session.next = Date.now() + nextAfterMs;
+        h.session.out = null;
+        h.status.settled(reason, true);
+    }
+
+    test("an input asks only when what the server holds of her runs out before the next refresh, and at most once a minute", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual([]);
+
+        h.session.next = serverNow + 700_000;
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(2000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual(["early"]);
+
+        jest.advanceTimersByTime(59_000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual(["early", "early"]);
+    });
+
+    test("nothing asks before the first answer, with status off, or with no idle line", () => {
+        const before = buildStatus(idle);
+        before.session.next = serverNow + 700_000;
+        jest.advanceTimersByTime(1000);
+        before.fire("keydown");
+
+        const noLine = buildStatus();
+        land(noLine, "start", 700_000);
+        jest.advanceTimersByTime(1000);
+        noLine.fire("keydown");
+
+        const off = buildStatus(idle);
+        land(off, "start", 700_000);
+        off.settings.value = readSettings({ flags: { typing: true, online: false }, ...idle });
+        jest.advanceTimersByTime(1000);
+        off.fire("keydown");
+
+        expect([before.session.asked, noLine.session.asked, off.session.asked]).toEqual([[], [], []]);
+    });
+
+    test("an input while a refresh is out flags one ask, which its settle makes once the body that landed is older than the input", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(5000);
+
+        h.session.out = "scheduled";
+        const body = h.status.exchangeBody("scheduled");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer({ [me]: online(0) }));
+        expect(h.session.asked).toEqual([]);
+
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", true);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown while a refresh is out, with no input since its body, asks nothing once that refresh lands with presence", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        h.session.out = "scheduled";
+        const body = h.status.exchangeBody("scheduled");
+        h.fire("visibilitychange");
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer({ [me]: online(0) }));
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", true);
+
+        expect(h.session.asked).toEqual([]);
+    });
+
+    test("a flag survives a failed settle, and the next landing asks once for a page still stale", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(301_000);
+
+        h.session.out = "recheck";
+        h.status.exchangeBody("recheck");
+        h.fire("visibilitychange");
+        h.status.exchanged([], null);
+        h.session.out = null;
+        h.session.next = null;
+        h.status.settled("recheck", false);
+        expect(h.session.asked).toEqual([]);
+
+        land(h, "retry", 210_000);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown inside the wait after a failed refresh flags, and the retry's settle asks once", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(301_000);
+        h.session.next = null;
+
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual([]);
+        land(h, "retry", 210_000);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown asks only once its badges are older than a token's life, the start's landing counting, and asks at once with no refresh out", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        jest.advanceTimersByTime(120_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual([]);
+
+        jest.advanceTimersByTime(181_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("an answer with no presence map leaves the page as stale as it was; one with a map makes it fresh", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(250_000);
+        land(h, "recheck", 210_000);
+        jest.advanceTimersByTime(51_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+
+        land(h, "early", 210_000, { [me]: online(0) });
+        jest.advanceTimersByTime(61_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a flag set while a refresh was out starts no minute, so an input once it has settled asks at once", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        h.session.out = "scheduled";
+        h.status.exchangeBody("scheduled");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        h.status.exchanged([], null);
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", false);
+        expect(h.session.asked).toEqual([]);
+
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a failed exchange leaves the input the server holds as it was, so the next input still asks", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(70_000);
+        h.fire("keydown");
+
+        h.status.exchangeBody("scheduled");
+        h.status.exchanged([], null);
+        h.session.next = serverNow + 650_000;
+        jest.advanceTimersByTime(2000);
+        h.fire("keydown");
+
+        expect(h.session.asked).toEqual(["early"]);
     });
 });
 

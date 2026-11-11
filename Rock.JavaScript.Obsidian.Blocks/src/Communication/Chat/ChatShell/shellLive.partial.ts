@@ -140,6 +140,13 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     /** The wait before a rejoin's sidebar read, pending; null when none is. */
     let sidebarWait: ReturnType<typeof setTimeout> | null = null;
 
+    /**
+     * Whether a sidebar read that asked for the two-person rows' online status has been applied.
+     * Until one has, every read asks; after it, the status changes reach the page live and by the
+     * exchange, so a reload asks for none.
+     */
+    let isStatusRead = false;
+
     /** Cancels a recheck still waiting. */
     function cancelRecheck(): void {
         if (recheckTimer !== null) {
@@ -201,7 +208,8 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         // what each timeline held as the read was asked, so a row that live events have since
         // passed is not taken for a room whose history went backwards
         const heldAtAsk = timelines.revsHeld();
-        const result = await call("chat_get_bootstrap", { p_campus_only: dependencies.isCampusLimited });
+        const asksStatus = !isStatusRead;
+        const result = await call("chat_get_bootstrap", { p_campus_only: dependencies.isCampusLimited, p_status: asksStatus });
         if (isStopped()) {
             return channels.rows;
         }
@@ -225,6 +233,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             channels.setLoadFailed();
             throw thrown(result);
         }
+        isStatusRead ||= asksStatus;
 
         // the bootstrap's own key names
         /* eslint-disable-next-line @typescript-eslint/naming-convention */

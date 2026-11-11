@@ -42,7 +42,7 @@ import type { ShellState } from "../shell.partial";
 import { ChatError, ChatPerson, MessageCreatedEvent, SidebarRow, TypingEvent, TypingSnapshot } from "../types.partial";
 import { personName } from "../ui/face.partial";
 import { quoteKey } from "./useMessageActions.partial";
-import { createPresenceStatus, PresenceStatus } from "./usePresenceStatus.partial";
+import { createPresenceStatus, PresenceStatus, PresenceStatusDependencies } from "./usePresenceStatus.partial";
 import type { ChatSettings } from "./useSession.partial";
 
 /** What typing reaches outside itself. */
@@ -95,7 +95,7 @@ export type PresenceDependencies = {
 
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
     isStopped: () => boolean;
-};
+} & Pick<PresenceStatusDependencies, "targets" | "leave" | "session">;
 
 /** Typing, as the shell holds it. */
 export type Presence = {

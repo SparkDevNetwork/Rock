@@ -42,9 +42,11 @@ export type PageEventTargets = {
         removeEventListener: (type: string, listener: () => void) => void;
     };
     // The window hands each listener its event; the drafts read a storage event's key from it.
+    // Online status listens for input on it in the capture phase, passively, so it hears every
+    // input on the page, scrolls inside it included, without slowing any.
     window: {
-        addEventListener: (type: string, listener: (event: unknown) => void) => void;
-        removeEventListener: (type: string, listener: (event: unknown) => void) => void;
+        addEventListener: (type: string, listener: (event: unknown) => void, options?: { capture?: boolean, passive?: boolean }) => void;
+        removeEventListener: (type: string, listener: (event: unknown) => void, options?: { capture?: boolean }) => void;
     };
 };
 

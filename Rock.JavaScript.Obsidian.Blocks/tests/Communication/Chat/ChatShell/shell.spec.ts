@@ -154,6 +154,14 @@ function build(options: {
     exchangeAnswers: { value: ExchangeAnswer[] },
     exchangeTimes: number[],
     exchangeSignals: Array<AbortSignal | null>,
+    exchangeBodies: Array<Record<string, unknown> | null>,
+    exchangeHeaders: Array<Record<string, string>>,
+    exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null },
+    exchangeRead: { value: (() => void) | null },
+    statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }>,
+    bootstrapCalls: Array<Record<string, unknown>>,
+    marks: string[],
+    heldMint: { value: Deferred<void> | null },
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
     uploads: FakeRequest[],
@@ -221,9 +229,25 @@ function build(options: {
     const exchangeTimes: number[] = [];
     // The signal each exchange's request was handed, which a try given up aborts.
     const exchangeSignals: Array<AbortSignal | null> = [];
+    // The body each exchange carried, null for none, and its headers.
+    const exchangeBodies: Array<Record<string, unknown> | null> = [];
+    const exchangeHeaders: Array<Record<string, string>> = [];
+    // What an exchange that named people answers for them, as the status read does in time; null
+    // answers with no presence map, as when the read did not answer in time.
+    const exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null } = {
+        value: watched => Object.fromEntries(watched.map(alias => [alias, { as_of: Date.now() * 1000 }]))
+    };
+    // Run as an exchange's answer is read, after its request has answered.
+    const exchangeRead: { value: (() => void) | null } = { value: null };
+    // Every chat_set_status asked, and whether it was to survive the page closing.
+    const statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }> = [];
+    const bootstrapCalls: Array<Record<string, unknown>> = [];
+    const marks: string[] = [];
+    // Set, the next mint waits for the test to let it answer.
+    const heldMint: { value: Deferred<void> | null } = { value: null };
     // Every roster page asked; each answers with nobody.
     const memberCalls: Array<Record<string, unknown>> = [];
-    const windowListeners: Record<string, Array<() => void>> = {};
+    const windowListeners: Record<string, Array<(event?: unknown) => void>> = {};
     const documentListeners: Record<string, Array<() => void>> = {};
     const pageDocument = {
         visibilityState: "visible",
@@ -266,6 +290,7 @@ function build(options: {
         session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: options.linkedChannelId === undefined ? channelA : options.linkedChannelId,
         mintChurchToken: async () => {
+            await heldMint.value?.promise;
             counts.mints++;
             const isOk = mintGate.value === "ok";
             return { isSuccess: true, statusCode: 200, data: { gate: mintGate.value, churchToken: isOk ? `church-${counts.mints}` : null } };
@@ -278,7 +303,17 @@ function build(options: {
             if (url.endsWith("/functions/v1/token-exchange")) {
                 exchangeTimes.push(Date.now());
                 exchangeSignals.push(init.signal ?? null);
-                await heldExchange.value?.promise;
+                const sentBody = typeof init.body === "string" ? JSON.parse(init.body) as Record<string, unknown> : null;
+                exchangeBodies.push(sentBody);
+                exchangeHeaders.push({ ...init.headers as Record<string, string> });
+                const held = heldExchange.value;
+                if (held) {
+                    // a request waiting on the network gives up when it is aborted, as fetch does
+                    await new Promise<void>((resolve, reject) => {
+                        void held.promise.then(resolve);
+                        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                    });
+                }
                 const failure = exchangeAnswers.value.shift();
                 if (failure === "unreachable") {
                     throw new TypeError("Failed to fetch");
@@ -291,7 +326,16 @@ function build(options: {
                         json: async () => ({ error: { code: failure.code ?? "rpc.unavailable" } })
                     } as unknown as Response;
                 }
-                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
+                const watched = Array.isArray(sentBody?.watched) ? sentBody.watched as string[] : null;
+                const presence = watched && exchangePresence.value ? { presence: exchangePresence.value(watched) } : {};
+                const answer = { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value, ...presence };
+                return {
+                    ...fakeResponse(200, answer),
+                    json: async () => {
+                        exchangeRead.value?.();
+                        return answer;
+                    }
+                } as unknown as Response;
             }
             const body = JSON.parse(init.body as string);
             if (url.endsWith("/rest/v1/rpc/chat_report_problem")) {
@@ -327,8 +371,13 @@ function build(options: {
                 return fakeResponse(deviceAnswer.value.status, deviceAnswer.value.body);
             }
             // Every platform call is a POST through the shell's one call path.
+            if (url.endsWith("/rest/v1/rpc/chat_set_status")) {
+                statusCalls.push({ body, keepalive: init.keepalive === true });
+                return fakeResponse(200, { client: "leave" });
+            }
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
+                bootstrapCalls.push(body);
                 // an error here is a fetch that never reached the platform, as when offline
                 if (bootstrap.value instanceof Error) {
                     throw bootstrap.value;
@@ -421,7 +470,7 @@ function build(options: {
                 }
             }
         },
-        mark: () => undefined,
+        mark: name => marks.push(name),
         startDirectMessage: options.startDirectMessage,
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
@@ -445,11 +494,13 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, bootstrapCalls, marks, heldMint, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
-        firePageHide: () => (windowListeners["pagehide"] ?? []).forEach(l => l())
+        firePageHide: (persisted = false) => (windowListeners["pagehide"] ?? []).forEach(l => l({ persisted })),
+        firePageShow: (persisted: boolean) => (windowListeners["pageshow"] ?? []).forEach(l => l({ persisted })),
+        fireInput: (type = "keydown") => (windowListeners[type] ?? []).forEach(l => l({}))
     };
 }
 
@@ -484,7 +535,7 @@ function tokenFor(personAliasGuid: string | null): string {
         return "platform";
     }
     const part = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString("base64url");
-    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant })}.signature`;
+    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant, iat: Math.floor(Date.now() / 1000) })}.signature`;
 }
 
 /** Answers the oldest pending history call for a channel. */
@@ -5137,7 +5188,7 @@ describe("a start the platform cannot answer yet", () => {
         await h.shell.stop();
     });
 
-    test("a try that runs past its deadline aborts the exchange's request, at the start and on a refresh", async () => {
+    test("a try that runs past its deadline aborts the exchange's request, at the start and on a refresh, each carrying its reason's body", async () => {
         const starting = build();
         starting.heldExchange.value = deferred<void>();
         void starting.shell.start();
@@ -5145,9 +5196,12 @@ describe("a start the platform cannot answer yet", () => {
         expect(starting.exchangeSignals[0]?.aborted).toBe(false);
         await advance(1);
         expect(starting.exchangeSignals[0]?.aborted).toBe(true);
+        // the start's body, which names nobody
+        expect(Object.keys(starting.exchangeBodies[0] ?? {}).sort()).toEqual(["client_id", "idle_seconds", "kind"]);
         await starting.shell.stop();
 
         const h = build();
+        h.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
         const signedIn = h.shell.start();
         await advance(0);
         answerHistory(h, channelA, 10);
@@ -5161,6 +5215,8 @@ describe("a start the platform cannot answer yet", () => {
         expect(h.exchangeSignals[1]?.aborted).toBe(false);
         await advance(1);
         expect(h.exchangeSignals[1]?.aborted).toBe(true);
+        // a recheck's body, the page's one id, naming nobody
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 0 });
         await h.shell.stop();
     });
 
@@ -5218,5 +5274,381 @@ describe("a start the platform cannot answer yet", () => {
         await settle();
 
         expect(quick.reports.filter(r => r.p_kind === "start")).toEqual([]);
+    });
+});
+
+// Online status rides the token exchange the page already makes: every exchange beats with the
+// page's one client id, a refresh that asks about people names them, the page says goodbye as it
+// closes, and the page asks early only between the session's own refreshes. These run the real
+// session, sign-in and exchange over a fake network, so the body read here is the body sent.
+describe("online status on the token exchange", () => {
+    const realRandom = Math.random;
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    const ada = "a0000001-0000-4000-8000-000000000000";
+    const on = { limits: { ...platformLimits, presence_idle_seconds: 600 }, flags: { online: true } };
+    const off = { limits: { ...platformLimits, presence_idle_seconds: 600 }, flags: { online: false } };
+
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: 0 });
+        // every wait at the middle of its range: a token of 300 s is refreshed at 210 s
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    /** A shell for a church whose settings are given, signed in with channel A open; its tokens name the person and their mint time. */
+    async function begin(settings: Record<string, unknown> = on): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.tokenPerson.value = person;
+        h.exchangeSettings.value = settings;
+        const starting = h.shell.start();
+        await advance(0);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        return h;
+    }
+
+    /** The bodies of the exchanges from an index on, as which named people. */
+    function watchedFrom(h: ReturnType<typeof build>, index: number): boolean[] {
+        return h.exchangeBodies.slice(index).map(body => Array.isArray(body?.watched));
+    }
+
+    test("the start's first try, before any answer, beats with the page's id and names nobody, and every try of a waited start does the same", async () => {
+        const h = build();
+        h.exchangeSettings.value = on;
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 4, code: "rpc.unavailable" }];
+        const starting = h.shell.start();
+        await advance(0);
+
+        expect(h.exchangeBodies[0]).toEqual({ client_id: expect.stringMatching(uuid), kind: "web", idle_seconds: 0 });
+        expect(h.exchangeHeaders[0]["Content-Type"]).toBe("application/json");
+
+        await advance(4000);
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 4 });
+    });
+
+    test("an answer with status off stops the bodies, and a later answer with it on brings them back at the next exchange", async () => {
+        const h = await begin(off);
+
+        await advance(210_000);
+        h.exchangeSettings.value = on;
+        await advance(210_000);
+        await advance(210_000);
+
+        expect(h.exchangeBodies.map(body => body === null ? "none" : Array.isArray(body.watched) ? "watched" : "beat")).toEqual(["beat", "none", "none", "watched"]);
+        expect(h.exchangeHeaders[1]).not.toHaveProperty("Content-Type");
+    });
+
+    test("only the scheduled refresh names the people watched; the start, a recheck, a call refused as expired and the retry after a failure name nobody", async () => {
+        const h = await begin();
+        personal(h, "session.recheck", {});
+        await advance(0);
+        h.personAnswer.value = { status: 401, body: {} };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 2, code: "rpc.unavailable" }];
+        await advance(210_000);
+        await advance(2000);
+        await advance(210_000);
+
+        expect(watchedFrom(h, 0)).toEqual([false, false, false, true, false, true]);
+        expect(h.exchangeBodies[5]?.watched).toEqual([person]);
+    });
+
+    test("one id a page; once the page is put away and restored from the back-forward cache, the first body carries a new one", async () => {
+        (Math.random as unknown as jest.SpyInstance).mockImplementation(realRandom);
+        const h = await begin();
+        personal(h, "session.recheck", {});
+        await advance(0);
+        const first = h.exchangeBodies[0]?.client_id;
+        expect(h.exchangeBodies[1]?.client_id).toBe(first);
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        h.pageDocument.visibilityState = "visible";
+        h.fireShown();
+        h.firePageShow(true);
+        await advance(0);
+
+        expect(h.exchangeBodies).toHaveLength(3);
+        expect(h.exchangeBodies[2]?.client_id).toMatch(uuid);
+        expect(h.exchangeBodies[2]?.client_id).not.toBe(first);
+    });
+
+    test("closing the page says goodbye for the id an exchange carried, through the call that survives the page and without minting; hiding it says nothing", async () => {
+        const h = await begin();
+        const mints = h.counts.mints;
+
+        h.pageDocument.visibilityState = "hidden";
+        h.fireShown();
+        await advance(0);
+        expect(h.statusCalls).toEqual([]);
+        expect(h.exchangeBodies).toHaveLength(1);
+
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.statusCalls).toEqual([{ body: { p_client: h.exchangeBodies[0]?.client_id, p_change: { client: "leave" } }, keepalive: true }]);
+        expect(h.counts.mints).toBe(mints);
+    });
+
+    test("no goodbye once the latest answer said status is off, though the start's body carried the id", async () => {
+        const h = await begin(off);
+
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.exchangeBodies[0]).not.toBeNull();
+        expect(h.statusCalls).toEqual([]);
+    });
+
+    test("a church token the platform calls stale is minted again in the same try, and the second exchange carries the same id and people", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangeAnswers.value = [{ status: 401, code: "auth.stale_token" }];
+
+        await advance(210_000);
+
+        expect(h.exchangeBodies.slice(1)).toHaveLength(2);
+        expect(h.exchangeBodies[2]).toEqual({ ...h.exchangeBodies[1], idle_seconds: expect.any(Number) });
+        expect(h.exchangeBodies[2]?.watched).toEqual([person, ada]);
+    });
+
+    test("a face registered with a malformed id still beats and asks about everyone else, that id left out", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => ["", "not-a-guid", ada], 1);
+
+        await advance(210_000);
+
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 210, watched: [person, ada] });
+    });
+
+    test("an answer read in full as its try is given up reaches nothing: no status written and no exchange marked", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString(), as_of: Date.now() * 1000 } });
+        h.exchangeRead.value = () => {
+            h.exchangeRead.value = null;
+            // the try's deadline passes while the answer's body is read
+            jest.advanceTimersByTime(10_000);
+        };
+        const marked = h.marks.filter(mark => mark === "chat:exchange").length;
+
+        jest.advanceTimersByTime(210_000);
+        await settle();
+
+        expect(h.exchangeSignals[1]?.aborted).toBe(true);
+        expect(h.shell.presence.status.statusOf(ada)).toBeNull();
+        expect(h.marks.filter(mark => mark === "chat:exchange").length).toBe(marked);
+    });
+
+    test("a landed answer naming people writes their status, by the clock of the token it minted", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString(), as_of: Date.now() * 1000 } });
+
+        await advance(210_000);
+
+        expect(h.shell.presence.status.statusOf(ada)?.state).toBe("online");
+    });
+
+    describe("asking early", () => {
+        test("an input while a scheduled refresh mints asks nothing more: the body, built after the mint, carries it", async () => {
+            const h = await begin();
+            await advance(210_000);
+            h.heldMint.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length;
+
+            await advance(1000);
+            h.fireInput();
+            h.heldMint.value.resolve();
+            h.heldMint.value = null;
+            await advance(0);
+            await advance(60_000);
+
+            expect(h.exchangeBodies.slice(index)).toEqual([expect.objectContaining({ idle_seconds: 0, watched: [person] })]);
+        });
+
+        test("inputs while the exchange's request is out ask exactly one early exchange once it lands, naming the people watched", async () => {
+            const h = await begin();
+            await advance(210_000);
+            h.heldExchange.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(1000);
+            h.fireInput();
+            await advance(1000);
+            h.fireInput("pointerdown");
+            h.heldExchange.value.resolve();
+            h.heldExchange.value = null;
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+            expect(h.exchangeBodies[index + 1]?.idle_seconds).toBe(0);
+        });
+
+        test.each([
+            ["the restore first", ["pageshow", "visible"]],
+            ["the page shown first", ["visible", "pageshow"]]
+        ])("a page restored from the back-forward cache after longer than a token's life asks exactly one early exchange naming the people watched, %s", async (_order, events) => {
+            const h = await begin();
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            // a page in the back-forward cache runs no timer: its clock moves, its timers do not
+            jest.setSystemTime(Date.now() + 400_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            for (const event of events) {
+                event === "pageshow" ? h.firePageShow(true) : h.fireShown();
+            }
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual(events[0] === "pageshow" ? [false, true] : [true]);
+        });
+
+        test("a restore whose recheck fails keeps the one ask, and the retry's landing makes it", async () => {
+            const h = await begin();
+            // No answer carries status, so the badges are stale while the token still lives, which
+            // a failed refresh keeps rather than ending the session.
+            h.exchangePresence.value = null;
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            jest.setSystemTime(Date.now() + 100_000);
+            const index = h.exchangeBodies.length;
+            h.exchangeAnswers.value = [{ status: 503, retryAfter: 2, code: "rpc.unavailable" }];
+
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            h.fireShown();
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([false]);
+            await advance(2000);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([false, false, true]);
+        });
+
+        test("a stale page shown inside the wait after a failed refresh asks once, when the retry lands", async () => {
+            const h = await begin();
+            // the watch never answers in time, so no answer freshens the badges
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.exchangeAnswers.value = [{ status: 503, retryAfter: 30, code: "rpc.unavailable" }];
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(10_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([true]);
+            await advance(20_000);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, false, true]);
+        });
+
+        test("a page shown while a refresh is out that lands with no presence asks once more", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.heldExchange.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(1000);
+            h.fireShown();
+            h.heldExchange.value.resolve();
+            h.heldExchange.value = null;
+            await advance(0);
+            await advance(60_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+        });
+
+        test("a stale page shown with no refresh out asks at once; shown two minutes after the start it asks nothing", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(120_000);
+            h.fireShown();
+            await advance(0);
+            expect(h.exchangeBodies).toHaveLength(1);
+
+            await advance(181_000);
+            h.fireShown();
+            await advance(0);
+
+            expect(watchedFrom(h, 0)).toEqual([false, true, true]);
+        });
+    });
+
+    describe("the sidebar's status", () => {
+        test("the sidebar asks for status until a read with it is applied, then no more", async () => {
+            jest.useRealTimers();
+            const h = build();
+            const starting = h.shell.start();
+            await settle();
+            answerHistory(h, channelA, 10);
+            await starting;
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, false]);
+        });
+
+        test("a Try again after a failed first read still asks for status", async () => {
+            jest.useRealTimers();
+            const h = build({ linkedChannelId: null });
+            h.bootstrap.value = new Error("offline");
+            await h.shell.start();
+
+            h.bootstrap.value = { channels: [] };
+            h.shell.channels.retryLoad();
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, true]);
+        });
+
+        test("a read overtaken by a newer one is never applied, so the newer one still asks for status", async () => {
+            jest.useRealTimers();
+            const h = build({ linkedChannelId: null });
+            h.heldBootstraps.value = [];
+            const starting = h.shell.start();
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [] }));
+            await settle();
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, { channels: [] }));
+            await starting;
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, true, false]);
+        });
     });
 });

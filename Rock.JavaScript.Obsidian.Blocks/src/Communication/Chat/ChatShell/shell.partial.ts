@@ -402,7 +402,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
         setAuth: async () => {
             await client?.realtime.setAuth();
         },
-        end: () => void end()
+        end: () => void end(),
+        // presence is made below, and these run only once the session asks
+        status: {
+            exchangeBody: reason => presence.status.exchangeBody(reason),
+            exchanged: (asked, outcome) => presence.status.exchanged(asked, outcome),
+            clockFrom: issuedAtSeconds => presence.status.clockFrom(issuedAtSeconds),
+            settled: (reason, ok) => presence.status.settled(reason, ok)
+        }
     });
     const session = signIn.session;
 
@@ -425,7 +432,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * Realtime then closes whatever the person has lost. Refreshes already running are shared.
      */
     function recheck(): void {
-        void session.refresh();
+        void session.refresh("recheck");
     }
 
     /**
@@ -965,6 +972,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
         callFunction,
         settings: session.settings,
         currentToken: session.currentToken,
+        session,
+        targets: options.pageTargets,
+        // Straight through the call path, never the shell's call: a page closing has no time to
+        // ask for a token, and a goodbye refused as expired only costs her the seconds it saves.
+        leave: clientId => void platform.call("chat_set_status", { p_client: clientId, p_change: { client: "leave" } }, { keepalive: true }),
         state,
         rowOf: channelId => channels.rows.find(row => row.channel_id === channelId) ?? null,
         peopleOf: channelId => rooms.factsOf(channelId)?.people ?? [],

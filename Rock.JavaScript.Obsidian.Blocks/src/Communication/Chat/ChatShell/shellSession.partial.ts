@@ -21,7 +21,8 @@
 // modules, so it lives beside the shell rather than inside it.
 import { classifyActionFailure } from "./errors.partial";
 import { exchangeChurchToken } from "./platformCall.partial";
-import { ChatSession, ChurchTokenResult, createSession, ExchangeResult } from "./composables/useSession.partial";
+import type { PresenceStatus } from "./composables/usePresenceStatus.partial";
+import { ChatSession, ChurchTokenResult, createSession, ExchangeResult, RefreshReason } from "./composables/useSession.partial";
 import type { ShellOptions, ShellState } from "./shell.partial";
 import { ChatError } from "./types.partial";
 
@@ -77,6 +78,13 @@ export type ShellSessionDependencies = {
 
     /** The session has ended: the shell leaves every topic and says why. */
     end: () => void;
+
+    /**
+     * Online status's side of each exchange: the body it carries, its answer, the server's clock
+     * from the token it minted, and each refresh settling. Reached through closures, since the
+     * status is made after signing in.
+     */
+    status: Pick<PresenceStatus, "exchangeBody" | "exchanged" | "clockFrom" | "settled">;
 };
 
 /** Signing in, as the shell holds it. */
@@ -97,23 +105,29 @@ export type ShellSession = {
 };
 
 /**
- * The person a platform token names, or null where it names none this client can read. The
- * token's signature is the platform's to check; this only reads whom it is for.
+ * A platform token's claims, or null where it holds none this client can read. The token's
+ * signature is the platform's to check; this only reads what it says.
  */
-export function tokenPerson(token: string | null): string | null {
+export function tokenClaims(token: string | null): Record<string, unknown> | null {
     const payload = token?.split(".")[1];
     if (!payload) {
         return null;
     }
 
     try {
-        const claims = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
-        return typeof claims?.sub === "string" ? claims.sub.toLowerCase() : null;
+        const claims: unknown = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")));
+        return claims !== null && typeof claims === "object" && !Array.isArray(claims) ? claims as Record<string, unknown> : null;
     }
     catch {
-        // Not a token this client can read, so it says nothing about whom it is for.
+        // Not a token this client can read, so it says nothing.
         return null;
     }
+}
+
+/** The person a platform token names, or null where it names none this client can read. */
+export function tokenPerson(token: string | null): string | null {
+    const sub = tokenClaims(token)?.sub;
+    return typeof sub === "string" ? sub.toLowerCase() : null;
 }
 
 /**
@@ -210,7 +224,7 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
  * @returns The session and the start's wait.
  */
 export function createShellSession(dependencies: ShellSessionDependencies): ShellSession {
-    const { state, options, projectUrl, publishableKey, personAliasGuid, report, showSettings, setAuth, end } = dependencies;
+    const { state, options, projectUrl, publishableKey, personAliasGuid, report, showSettings, setAuth, end, status } = dependencies;
 
     const session: ChatSession = createSession({
         mintChurchToken: async (): Promise<ChurchTokenResult> => {
@@ -243,6 +257,7 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
         clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
         onEnded: () => end(),
         onWaiting: () => onStartWaiting(),
+        settled: (reason, ok) => status.settled(reason, ok),
         // Away is the page hidden or the browser offline: what coming back, the one reason to try
         // sooner, is coming back from.
         isAway: () => options.pageTargets.document.visibilityState !== "visible" || globalThis.navigator?.onLine === false
@@ -281,12 +296,32 @@ export function createShellSession(dependencies: ShellSessionDependencies): Shel
     };
 
     /**
-     * Exchanges a church token for a platform token and the settings beside it. The session's
-     * signal reaches the request, so a try given up at its deadline ends the request with it.
+     * Exchanges a church token for a platform token and the settings beside it, carrying online
+     * status's body for the reason it was asked. The session's signal reaches the request, so a try
+     * given up at its deadline ends the request with it.
      */
-    async function exchange(churchToken: string, exchangeOptions: { signal: AbortSignal }): Promise<ExchangeResult> {
-        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken, { signal: exchangeOptions.signal });
+    async function exchange(churchToken: string, exchangeOptions: { signal: AbortSignal, reason: RefreshReason }): Promise<ExchangeResult> {
+        const { signal, reason } = exchangeOptions;
+        const body = status.exchangeBody(reason);
+        const answer = await exchangeChurchToken(options.fetch, projectUrl, publishableKey, churchToken, {
+            signal,
+            region: session.settings().routes.region,
+            ...(body ? { body } : {})
+        });
+
+        // A try given up is over, whatever it answered, even a body read in full just before the
+        // abort: the session has moved on, so nothing it said is kept or counted.
+        if (signal.aborted) {
+            return answer;
+        }
         options.mark("chat:exchange");
+
+        // the server's clock from the token this answer minted, before its status is drawn by it
+        const issuedAt = answer.ok ? tokenClaims(answer.accessToken)?.iat : undefined;
+        if (typeof issuedAt === "number") {
+            status.clockFrom(issuedAt);
+        }
+        status.exchanged(body?.watched ?? [], answer.ok ? answer : null);
 
         return answer;
     }

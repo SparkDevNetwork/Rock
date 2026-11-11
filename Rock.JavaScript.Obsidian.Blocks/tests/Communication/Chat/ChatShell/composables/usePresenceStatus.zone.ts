@@ -42,7 +42,16 @@ test("a Busy ending two days on, told just after midnight on the day daylight sa
     expect(midnight - start).toBe(24.5 * 3_600_000);
 
     jest.setSystemTime(start);
-    const status = createPresenceStatus({ settings: () => readSettings({ flags: { online: true } }), personAliasGuid: me, isBlocked: () => false, isStopped: () => false });
+    const page = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
+    const status = createPresenceStatus({
+        settings: () => readSettings({ flags: { online: true } }),
+        personAliasGuid: me,
+        isBlocked: () => false,
+        isStopped: () => false,
+        targets: { document: page, window: page },
+        leave: () => undefined,
+        session: { refresh: async () => true, nextRefreshAt: () => null, tokenLifeSeconds: () => 300, inFlight: () => null }
+    });
     status.clockFrom(start / 1000);
     const end = new Date(2026, 10, 3, 8, 0).getTime() - serverNow;
     // a wake that finds its midnight still ahead sets itself again at once, so a storm is stopped here rather than hanging the run

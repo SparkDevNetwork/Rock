@@ -52,6 +52,9 @@ export type PlatformLimits = {
 
     /** The most files one message carries. */
     attachment_max_files: number;
+
+    /** How long, in seconds, a person may do nothing before online status reads her Away. */
+    presence_idle_seconds: number;
 };
 
 /** The file types a message may carry, bare, as the platform lists them; empty takes no files. */
@@ -71,10 +74,11 @@ export type ChatSettings = {
         typing_interval_ms: number, typing_expiry_ms: number, typing_first_after_ms: number, typing_min_show_ms: number
     } & PlatformLimits & AttachmentTypes;
     /**
-     * Switches by name; gifs is whether the church may search for and send GIFs, and typing
-     * whether its conversations show who is typing, each off unless true.
+     * Switches by name; gifs is whether the church may search for and send GIFs, typing whether
+     * its conversations show who is typing, and online whether people's online status is shared,
+     * each off unless true.
      */
-    flags: Record<string, unknown> & { gifs: boolean, typing: boolean };
+    flags: Record<string, unknown> & { gifs: boolean, typing: boolean, online: boolean };
     push: { web: Record<string, unknown> | null, vapid_key: string | null, prompt: string };
 };
 /* eslint-enable @typescript-eslint/naming-convention */
@@ -138,7 +142,8 @@ const platformLimitKeys: Array<keyof PlatformLimits> = [
     "directory_page_size",
     "people_search_size",
     "attachment_max_bytes",
-    "attachment_max_files"
+    "attachment_max_files",
+    "presence_idle_seconds"
 ];
 
 /** An object's own value for a key, or undefined when the value is not an object. */
@@ -213,7 +218,7 @@ export function readSettings(raw: unknown): ChatSettings {
                 : []
         },
         // only the JSON true turns a switch on, so a value this client cannot read leaves it off
-        flags: { ...flags, gifs: flags.gifs === true, typing: flags.typing === true },
+        flags: { ...flags, gifs: flags.gifs === true, typing: flags.typing === true, online: flags.online === true },
         push: {
             web: hasPush ? web : null,
             vapid_key: hasPush ? push.vapid_key as string : null,
@@ -265,6 +270,13 @@ export type ChurchTokenResult = {
     isUnreachable?: boolean;
 };
 
+/**
+ * Why a token is being asked for: the start's tries, the timer's refresh, a recheck of what the
+ * person may still read, a call refused as expired, the try after a wait, or online status asking
+ * before the timer would. The exchange's body follows from it.
+ */
+export type RefreshReason = "start" | "scheduled" | "recheck" | "expired" | "retry" | "early";
+
 /** What the platform's token exchange answers. */
 export type ExchangeResult =
     | { ok: true, accessToken: string, expiresInSeconds: number, settings?: unknown }
@@ -275,8 +287,11 @@ export type SessionDependencies = {
     /** Asks Rock for a church token. Every ask re-runs the gates. */
     mintChurchToken: () => Promise<ChurchTokenResult>;
 
-    /** Exchanges a church token for a platform token; the signal gives up a try that took too long. */
-    exchange: (churchToken: string, options: { signal: AbortSignal }) => Promise<ExchangeResult>;
+    /**
+     * Exchanges a church token for a platform token; the signal gives up a try that took too long,
+     * and the reason is why the token was asked for.
+     */
+    exchange: (churchToken: string, options: { signal: AbortSignal, reason: RefreshReason }) => Promise<ExchangeResult>;
 
     /**
      * Hands the current token to the live connection that is already open. Called after every
@@ -320,6 +335,13 @@ export type SessionDependencies = {
      * due, so the page can say it is still connecting.
      */
     onWaiting?: (untilMs: number) => void;
+
+    /**
+     * Called once a refresh has settled, and once after each try of the start: after the next
+     * refresh is scheduled and the refresh is no longer out, so a refresh asked from here starts an
+     * exchange of its own rather than joining the one that just ended.
+     */
+    settled?: (reason: RefreshReason, ok: boolean) => void;
 };
 
 /** Why the session is not running, when it is not. */
@@ -340,8 +362,20 @@ export type ChatSession = {
     /** The current platform token, for the client's token callback and a save on close. */
     currentToken: () => string | null;
 
-    /** Mints and exchanges again and hands the new token to the open connection. */
-    refresh: () => Promise<boolean>;
+    /**
+     * Mints and exchanges again and hands the new token to the open connection. A refresh asked
+     * while one is out joins it, and keeps its reason.
+     */
+    refresh: (reason: RefreshReason) => Promise<boolean>;
+
+    /** When the next refresh is due, by the session's clock; null while starting, waiting after a failure, or stopped. */
+    nextRefreshAt: () => number | null;
+
+    /** How long, in seconds, the latest token the exchange answered lives; 0 before the first. */
+    tokenLifeSeconds: () => number;
+
+    /** Why the token being asked for now is asked, from a refresh's mint to its settle and through the whole start; null when none is out. */
+    inFlight: () => RefreshReason | null;
 
     /**
      * Runs a platform call, and if the platform refuses the token as expired, refreshes once
@@ -420,6 +454,11 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
     let token: string | null = null;
     let timer: unknown = null;
     let expiresAt = 0;
+    let lifeSeconds = 0;
+    // When the scheduled refresh is due, while one is scheduled, and why the refresh out now was
+    // asked, from its mint to its settle.
+    let refreshAt: number | null = null;
+    let refreshReason: RefreshReason | null = null;
     // Read by components (a flag in it decides what the message box offers), so it is a ref: a
     // refresh that changes a flag must reach a reader made before it.
     const settings = shallowRef(readSettings(undefined));
@@ -467,7 +506,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      * again cannot mend Rock's clock or key. A Rock or a platform that could not answer this time,
      * or a try that ran past its time, is not, and says nothing about the token already held.
      */
-    async function acquire(): Promise<"ok" | "refused" | "unavailable"> {
+    async function acquire(reason: RefreshReason): Promise<"ok" | "refused" | "unavailable"> {
         // A Retry-After answers the one exchange that carried it, so each try starts without one:
         // a try that fails at Rock's mint waits the backoff alone.
         retryAfterSeconds = null;
@@ -502,7 +541,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
                     held = { churchToken: minted.churchToken, mintedAt: now() };
                 }
 
-                const exchanged = await within(dependencies.exchange(held.churchToken, { signal: attempt.signal }));
+                const exchanged = await within(dependencies.exchange(held.churchToken, { signal: attempt.signal, reason }));
                 if (isStopped || exchanged === noAnswer) {
                     return "unavailable";
                 }
@@ -511,6 +550,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
                     held = null;
                     token = exchanged.accessToken;
                     expiresAt = now() + exchanged.expiresInSeconds * 1000;
+                    lifeSeconds = exchanged.expiresInSeconds;
                     settings.value = readSettings(exchanged.settings);
                     state.errorCode = null;
                     failures = 0;
@@ -555,8 +595,8 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      * since the token has at least a tenth of its life left when a refresh runs. Once the token
      * has expired there is nothing left to keep.
      */
-    async function renew(): Promise<boolean> {
-        const outcome = await acquire();
+    async function renew(reason: RefreshReason): Promise<boolean> {
+        const outcome = await acquire(reason);
 
         // A stopped session has already been closed by whoever stopped it; it is not ended again.
         if (isStopped) {
@@ -578,7 +618,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return false;
         }
 
-        waitThen(() => void refresh());
+        waitThen(() => void refresh("retry"));
         return false;
     }
 
@@ -591,13 +631,17 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         isStarting = true;
         try {
             for (;;) {
-                const outcome = await acquire();
+                const outcome = await acquire("start");
                 if (isStopped) {
                     return false;
                 }
                 if (outcome !== "unavailable") {
+                    // no longer starting before it is told, so what it asks is a refresh of its own
+                    isStarting = false;
+                    dependencies.settled?.("start", outcome === "ok");
                     return outcome === "ok";
                 }
+                dependencies.settled?.("start", false);
 
                 // A stop lets the wait go at once, and the loop finds the session stopped.
                 await new Promise<void>(resolve => {
@@ -624,7 +668,9 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return;
         }
         const fraction = refreshWindowStart + (refreshWindowEnd - refreshWindowStart) * dependencies.random();
-        timer = dependencies.setTimer(() => void refresh(), expiresInSeconds * 1000 * fraction);
+        const wait = expiresInSeconds * 1000 * fraction;
+        refreshAt = now() + wait;
+        timer = dependencies.setTimer(() => void refresh("scheduled"), wait);
     }
 
     /** The settings' backoff for a number of failures in a row, at a random point of its range. */
@@ -664,6 +710,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             dependencies.clearTimer(timer);
             timer = null;
         }
+        refreshAt = null;
         waiting = null;
     }
 
@@ -672,7 +719,7 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
      * for while one is running shares it, so the timer and an expired call never race each other
      * to decide what the session holds.
      */
-    function refresh(): Promise<boolean> {
+    function refresh(reason: RefreshReason): Promise<boolean> {
         // A stopped session asks Rock for nothing more, whatever still calls it: an expired call
         // in flight, or a timer that fired late. Nothing is asked while the start is still
         // signing in, or inside the wait after a failure, whoever asks; the start and the wait's
@@ -681,14 +728,25 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
             return Promise.resolve(false);
         }
 
-        refreshing ??= (async (): Promise<boolean> => {
-            if (!await renew() || isStopped) {
-                return false;
-            }
-
-            await dependencies.pushTokenToConnection();
-            return true;
-        })().finally(() => refreshing = null);
+        if (refreshing === null) {
+            refreshReason = reason;
+            refreshing = (async (): Promise<boolean> => {
+                let isOk = false;
+                try {
+                    isOk = await renew(reason) && !isStopped;
+                    if (isOk) {
+                        await dependencies.pushTokenToConnection();
+                    }
+                    return isOk;
+                }
+                finally {
+                    // No longer out before it is told, so a refresh asked from there is a new one.
+                    refreshing = null;
+                    refreshReason = null;
+                    dependencies.settled?.(reason, isOk);
+                }
+            })();
+        }
 
         return refreshing;
     }
@@ -697,9 +755,12 @@ export function createSession(dependencies: SessionDependencies): ChatSession {
         start,
         currentToken: () => token,
         refresh,
+        nextRefreshAt: () => isStopped || isStarting || waiting !== null ? null : refreshAt,
+        tokenLifeSeconds: () => lifeSeconds,
+        inFlight: () => isStarting ? "start" : refreshReason,
         withFreshToken: async <T>(call: () => Promise<T>, isExpired: (result: T) => boolean): Promise<T> => {
             const result = await call();
-            if (!isExpired(result) || !await refresh()) {
+            if (!isExpired(result) || !await refresh("expired")) {
                 return result;
             }
 

@@ -21,16 +21,25 @@
 // revision moves only when what is drawn changes, so a face mounted at a revision draws as state
 // and fades only for a change after it.
 //
+// The page's side of the exchange lives here too, since it is what keeps this store current: the
+// page's client id, the body every token exchange carries (her heartbeat, and on a refresh the
+// people to ask about), her input, when to ask before the next refresh, and the goodbye as the page
+// closes. The session alone asks the platform; this only says what to ask and when it is worth
+// asking early.
+//
 // Presence creates it beside typing and stops it with typing, so it has one owner, but the two
-// share no state: this holds its own entries, revisions, timer and the faces registered, and reads
-// only the settings, the blocks, the stopped state and the person's own id. It is a file of its own
-// for that reason, so each half reads alone and neither grows past what one file should hold.
+// share no state: this holds its own entries, revisions, timer, faces registered and page
+// listeners, and reads only the settings, the blocks, the session, the page, the stopped state and
+// the person's own id. It is a file of its own for that reason, so each half reads alone and
+// neither grows past what one file should hold.
 
+import { newGuid } from "@Obsidian/Utility/guid";
 import { inject, InjectionKey, onMounted, onUnmounted, shallowReactive, watch } from "vue";
 import { startOfDay } from "../feedLayout.partial";
 import { FaceStatus, PersonStatus, RosterMember } from "../types.partial";
 import { statusWords } from "../ui/face.partial";
-import type { ChatSettings } from "./useSession.partial";
+import type { PageEventTargets } from "./useMarkRead.partial";
+import type { ChatSession, ChatSettings, RefreshReason } from "./useSession.partial";
 
 /** What status reaches outside itself. */
 export type PresenceStatusDependencies = {
@@ -44,7 +53,29 @@ export type PresenceStatusDependencies = {
 
     /** Whether the shell has stopped or its session ended, read at each resumed step. */
     isStopped: () => boolean;
+
+    /** The page, whose input, hiding, closing and showing the status watches. */
+    targets: PageEventTargets;
+
+    /** Says goodbye for a client id as the page closes, by a call that outlives the page and never asks for a token. */
+    leave: (clientId: string) => void;
+
+    /** The session, which alone asks the platform: status reads when it refreshes next and asks it to refresh early. */
+    session: Pick<ChatSession, "refresh" | "nextRefreshAt" | "tokenLifeSeconds" | "inFlight">;
 };
+
+/**
+ * What a page tells and asks the platform with each token exchange: its client and how long the
+ * person has done nothing, which beat her online, and on a refresh the people to ask about.
+ */
+/* eslint-disable @typescript-eslint/naming-convention */
+export type ExchangeBody = {
+    client_id: string;
+    kind: "web";
+    idle_seconds: number;
+    watched?: string[];
+};
+/* eslint-enable @typescript-eslint/naming-convention */
 
 /**
  * How early a face's people are kept when the list of people watched is cut: 0 the person
@@ -58,12 +89,29 @@ export type PresenceStatus = {
     /**
      * A token exchange answered. Each person its body asked about that the answer's map names is
      * written; a map left out, as when the read did not answer in time, or a failed exchange,
-     * writes nothing.
+     * writes nothing. A landed body is what the platform now holds of her input, and a landed map,
+     * or the start, makes the badges fresh; a failed exchange changes neither.
      *
      * @param asked The people the exchange's body watched.
      * @param outcome The exchange's answer, or null for one that failed.
      */
     exchanged: (asked: readonly string[], outcome: { presence?: unknown } | null) => void;
+
+    /** The page's client id, which every body names: one a page, and a new one once a goodbye has spent it. */
+    clientId: () => string;
+
+    /**
+     * The body an exchange asked for a reason carries, built as its request goes so it reports her
+     * newest input: the people watched only on a refresh that asks about them, and no body at all
+     * once the latest answer said status is off.
+     */
+    exchangeBody: (reason: RefreshReason) => ExchangeBody | null;
+
+    /** A refresh, or a try of the start, has settled: an early ask held while it was out is made now if it is still due. */
+    settled: (reason: RefreshReason, ok: boolean) => void;
+
+    /** Draws everyone again against the clock now and sets the timer again, for a clock that moved with no timer firing. */
+    rearm: () => void;
 
     /** A reader answered people, each with its status where it carries one; a person with no status key tells nothing. */
     told: (people: readonly unknown[]) => void;
@@ -102,6 +150,18 @@ const watchedMax = 200;
 
 /** The longest a timer waits, past which a browser fires it at once. */
 const longestTimerMs = 2_147_483_647;
+
+/** An id the platform takes: one id not shaped as one would make it refuse the whole body, beat included. */
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** What counts as the person doing something on the page. */
+const inputEvents = ["keydown", "pointerdown", "pointermove", "wheel", "touchstart", "scroll"];
+
+/** How often an input does more than note its time, since a moving pointer fires many a second. */
+const inputWorkGapMs = 1000;
+
+/** The least time between two early asks, so a page in steady use costs at most one a minute. */
+const earlyAskGapMs = 60_000;
 
 /** A person's newest decision: what it says of her, null for nothing, and when it was decided. */
 type StatusEntry = { status: PersonStatus | null, asOf: number };
@@ -177,7 +237,7 @@ function readStatus(raw: unknown): StatusEntry | null {
  * @returns The store.
  */
 export function createPresenceStatus(dependencies: PresenceStatusDependencies): PresenceStatus {
-    const { settings, isBlocked, isStopped } = dependencies;
+    const { settings, isBlocked, isStopped, targets, leave, session } = dependencies;
     const self = dependencies.personAliasGuid.toLowerCase();
 
     /** Each person's newest decision, by lower-case primary alias; kept when it says nothing, for its time. */
@@ -193,8 +253,9 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
     /** The server's clock less the page's, from the newest token's mint time. */
     let offsetMs = 0;
 
-    /** The one timer, for the soonest row's end or Busy's end. */
+    /** The one timer, for the soonest row's end or Busy's end, and when it is due by the page's clock. */
     let deadline: ReturnType<typeof setTimeout> | null = null;
+    let deadlineAt: number | null = null;
 
     const registrations = new Set<{ people: () => readonly string[], rank: WatchRank }>();
 
@@ -256,6 +317,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         if (deadline !== null) {
             clearTimeout(deadline);
             deadline = null;
+            deadlineAt = null;
         }
         if (isStopped()) {
             return;
@@ -283,13 +345,42 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             }
         }
         if (soonest !== Infinity) {
+            const wait = Math.min(longestTimerMs, soonest - now);
+            deadlineAt = Date.now() + wait;
             deadline = setTimeout(() => {
                 deadline = null;
+                deadlineAt = null;
                 if (!isStopped()) {
                     redrawAll();
                 }
-            }, Math.min(longestTimerMs, soonest - now));
+            }, wait);
         }
+    }
+
+    /** Draws everyone again against the clock now, unless the page has stopped. */
+    function rearm(): void {
+        if (!isStopped()) {
+            redrawAll();
+        }
+    }
+
+    /** The people the next exchange asks about: the person, then every face's by rank, each once, only ids shaped as one, cut at the platform's cap. */
+    function watchedNow(): string[] {
+        const watched: string[] = [];
+        const seen = new Set<string>();
+        const add = (alias: string): void => {
+            const key = alias.toLowerCase();
+            if (!seen.has(key) && uuidPattern.test(key)) {
+                seen.add(key);
+                watched.push(key);
+            }
+        };
+        add(self);
+        // a sort keeps each rank's faces in the order they registered, and each face's people in its own order
+        for (const { people } of [...registrations].sort((a, b) => a.rank - b.rank)) {
+            people().forEach(add);
+        }
+        return watched.slice(0, watchedMax);
     }
 
     /**
@@ -318,9 +409,162 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         }
     }, { flush: "sync" });
 
+    // #region The page
+
+    /** The page's client id, null once a goodbye has spent it, and the id a body last carried, the only one a goodbye names. */
+    let pageId: string | null = null;
+    let carriedId: string | null = null;
+
+    /** When she last did something while the page was visible, its load counting, and when an input last did more than note it. */
+    let inputAt = Date.now();
+    let inputWorkedAt = -Infinity;
+
+    /** The body out, so its answer knows the reason it went for and the input it reported. */
+    let out: { reason: RefreshReason, inputAt: number, isSent: boolean } | null = null;
+
+    /**
+     * Whether any exchange has landed, the input the latest landed body reported (what the
+     * platform holds of her), and when the badges were last made fresh: the start's landing, or an
+     * answer that carried status.
+     */
+    let hasLanded = false;
+    let heldInputAt: number | null = null;
+    let freshAt: number | null = null;
+
+    /** One early ask held while a refresh was out, and when the last early ask went. */
+    let isAskHeld = false;
+    let earlyAskedAt = -Infinity;
+
+    const idleLineMs = (): number => settings().limits.presence_idle_seconds * 1000;
+
+    /** Whether a body goes: before any answer, which the start's first try is, and while the latest answer says status is on. */
+    const isBodySent = (): boolean => !hasLanded || isOn();
+
+    /** The page's client id, minted afresh after a goodbye spent the last. */
+    function ownId(): string {
+        pageId ??= newGuid().toLowerCase();
+        return pageId;
+    }
+
+    /**
+     * Whether what the platform holds of her runs out before the next refresh would tell it
+     * more: her held input plus the idle line falls before it. Asked again once a refresh lands,
+     * only an input newer than the body that landed is news.
+     */
+    function isInputDue(isNewerNeeded: boolean): boolean {
+        const next = session.nextRefreshAt();
+        return heldInputAt !== null && next !== null && heldInputAt + idleLineMs() < next && (!isNewerNeeded || inputAt > heldInputAt);
+    }
+
+    /** Whether the page is visible with badges older than a token's life. */
+    function isStale(): boolean {
+        return targets.document.visibilityState === "visible" && freshAt !== null && Date.now() - freshAt > session.tokenLifeSeconds() * 1000;
+    }
+
+    /** Whether asking early can mean anything: after an answer, with status on and an idle line to measure against. */
+    function mayAskEarly(): boolean {
+        return hasLanded && isOn() && idleLineMs() > 0;
+    }
+
+    function askEarly(): void {
+        earlyAskedAt = Date.now();
+        void session.refresh("early");
+    }
+
+    /**
+     * Something happened that may be worth an early refresh. While a refresh is out, or the
+     * session waits after a failure, nothing is asked: one ask is held for the session's settle,
+     * which knows what that refresh carried. Otherwise the ask goes if it is due, once a minute.
+     */
+    function trigger(isDue: () => boolean): void {
+        if (isStopped()) {
+            return;
+        }
+        if (session.inFlight() !== null || session.nextRefreshAt() === null) {
+            isAskHeld = true;
+            return;
+        }
+        if (mayAskEarly() && isDue() && Date.now() - earlyAskedAt >= earlyAskGapMs) {
+            askEarly();
+        }
+    }
+
+    /** An input on a visible page: its time is kept every time, and once a second it may ask early. */
+    function onInput(): void {
+        if (targets.document.visibilityState !== "visible") {
+            return;
+        }
+        const at = Date.now();
+        inputAt = at;
+        if (at - inputWorkedAt < inputWorkGapMs) {
+            return;
+        }
+        inputWorkedAt = at;
+
+        // A timer due before now has not fired: the machine slept with the page visible, which
+        // fires none of the page's own events.
+        if (deadlineAt !== null && at >= deadlineAt) {
+            rearm();
+        }
+        trigger(() => isInputDue(false));
+    }
+
+    function onVisibility(): void {
+        if (targets.document.visibilityState === "visible") {
+            rearm();
+            trigger(isStale);
+        }
+    }
+
+    /**
+     * The page is put away or closed: a goodbye for the id a body carried, so she leaves the
+     * others' faces in seconds rather than at her row's end, and never with status off, when the
+     * platform keeps no row. The id is spent either way; a page restored goes on under a new one.
+     */
+    function onPageHide(): void {
+        if (pageId !== null && pageId === carriedId && isBodySent() && !isStopped()) {
+            leave(pageId);
+        }
+        pageId = null;
+    }
+
+    /** A page restored from the back-forward cache asks again what it may read and draws again against the clock. */
+    function onPageShow(event: unknown): void {
+        if ((event as { persisted?: unknown } | null)?.persisted === true && !isStopped()) {
+            void session.refresh("recheck");
+            rearm();
+        }
+    }
+
+    for (const type of inputEvents) {
+        targets.window.addEventListener(type, onInput, { capture: true, passive: true });
+    }
+    targets.document.addEventListener("visibilitychange", onVisibility);
+    targets.window.addEventListener("pagehide", onPageHide);
+    targets.window.addEventListener("pageshow", onPageShow);
+
+    // #endregion The page
+
     return {
         exchanged: (asked, outcome) => {
-            const map = outcome?.presence;
+            if (isStopped()) {
+                return;
+            }
+            const body = out;
+            out = null;
+            // a failed exchange reported nothing, so what the platform holds of her is as it was
+            if (outcome === null) {
+                return;
+            }
+            hasLanded = true;
+            if (body?.isSent) {
+                heldInputAt = body.inputAt;
+            }
+            if (body?.reason === "start" || "presence" in outcome) {
+                freshAt = Date.now();
+            }
+
+            const map = outcome.presence;
             if (!mayWrite() || typeof map !== "object" || map === null) {
                 return;
             }
@@ -408,29 +652,68 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
             };
         },
 
-        watched: () => {
-            const watched = [self];
-            const seen = new Set(watched);
-            // a sort keeps each rank's faces in the order they registered, and each face's people in its own order
-            for (const { people } of [...registrations].sort((a, b) => a.rank - b.rank)) {
-                for (const alias of people()) {
-                    const key = alias.toLowerCase();
-                    if (!seen.has(key)) {
-                        seen.add(key);
-                        watched.push(key);
-                    }
-                }
+        watched: watchedNow,
+
+        clientId: ownId,
+
+        exchangeBody: reason => {
+            if (isStopped()) {
+                return null;
             }
-            return watched.slice(0, watchedMax);
+            out = { reason, inputAt, isSent: false };
+            if (!isBodySent()) {
+                return null;
+            }
+            const id = ownId();
+            carriedId = id;
+            out.isSent = true;
+            // A refresh names the people to ask about once an answer said status is on; the start,
+            // a recheck, a call refused as expired and a retry only beat, and are answered at once.
+            const watched = hasLanded && (reason === "scheduled" || reason === "early") ? watchedNow() : [];
+            return {
+                client_id: id,
+                kind: "web",
+                idle_seconds: Math.max(0, Math.floor((Date.now() - inputAt) / 1000)),
+                ...(watched.length > 0 ? { watched } : {})
+            };
         },
+
+        settled: (_reason, ok) => {
+            if (isStopped()) {
+                isAskHeld = false;
+                return;
+            }
+            // a failed one keeps the ask held for the next landing, whose body and answer decide it
+            if (!ok || !isAskHeld) {
+                return;
+            }
+            isAskHeld = false;
+
+            // Against what landed: an input newer than its body, or a page still stale because the
+            // answer carried no status. Held, it waited for the session, so the minute is not
+            // applied.
+            if (mayAskEarly() && session.inFlight() === null && session.nextRefreshAt() !== null && (isInputDue(true) || isStale())) {
+                askEarly();
+            }
+        },
+
+        rearm,
 
         stop: () => {
             if (deadline !== null) {
                 clearTimeout(deadline);
                 deadline = null;
+                deadlineAt = null;
             }
             stopWatchingSwitch();
             registrations.clear();
+            isAskHeld = false;
+            for (const type of inputEvents) {
+                targets.window.removeEventListener(type, onInput, { capture: true });
+            }
+            targets.document.removeEventListener("visibilitychange", onVisibility);
+            targets.window.removeEventListener("pagehide", onPageHide);
+            targets.window.removeEventListener("pageshow", onPageShow);
         }
     };
 }
