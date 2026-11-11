@@ -296,6 +296,35 @@ describe("exchangeChurchToken", () => {
         expect(await answering).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });
     });
 
+    test("a body goes as JSON with its content type, and the region as x-region, each only when given; the answer's presence comes back beside the token", async () => {
+        const presence = { as_of: 1_789_052_400_000_000, told: { "a0000001-0000-4000-8000-000000000000": { state: "online", until: "2026-11-10T15:09:30.000123+00:00" } } };
+        const sent: RequestInit[] = [];
+        const fetch: PlatformCallOptions["fetch"] = async (_to, init) => {
+            sent.push(init);
+            return response(200, { access_token: "platform-token", expires_in: 300, settings: { flags: {} }, presence });
+        };
+        const body = { client_id: "4f9c1a2e-0000-4000-8000-000000000009", kind: "web", idle_seconds: 12 };
+
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", { body, region: "us-east-1" });
+
+        expect(sent[0].headers).toEqual({ "Authorization": "Bearer church-token", "apikey": "publishable", "Content-Type": "application/json", "x-region": "us-east-1" });
+        expect(JSON.parse(sent[0].body as string)).toEqual(body);
+        expect(answer).toEqual({ ok: true, accessToken: "platform-token", expiresInSeconds: 300, settings: { flags: {} }, presence });
+
+        await exchangeChurchToken(fetch, url, "publishable", "church-token", { region: null });
+
+        expect(sent[1].headers).toEqual({ "Authorization": "Bearer church-token", "apikey": "publishable" });
+        expect(sent[1].body).toBeUndefined();
+    });
+
+    test("an answer with no presence map is a success, since a read that did not answer in time is no failure", async () => {
+        const fetch: PlatformCallOptions["fetch"] = async () => response(200, { access_token: "platform-token", expires_in: 300, settings: {} });
+
+        const answer = await exchangeChurchToken(fetch, url, "publishable", "church-token", { body: { client_id: "c", kind: "web", idle_seconds: 0 } });
+
+        expect(answer).toEqual({ ok: true, accessToken: "platform-token", expiresInSeconds: 300, settings: {} });
+    });
+
     test("an exchange given up while its answer is read answers as one that reached nothing, never as a refusal", async () => {
         const controller = new AbortController();
         const fetch: PlatformCallOptions["fetch"] = async (_to, init) => ({

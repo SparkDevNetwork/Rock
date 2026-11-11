@@ -29,6 +29,7 @@
 // its refusals as the shell's one call path classifies them, and ChatPersonSettingResultBag's
 // {code, isPending, message}.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { watch } from "vue";
 import { createPrefs, PersonSettingKey, PersonSettingResult, PrefsCallResult } from "../../../../../src/Communication/Chat/ChatShell/composables/usePrefs.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
 import { SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -549,7 +550,39 @@ describe("the person's own switches", () => {
 
         s.prefs.setMe({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } as never);
 
-        expect(s.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+        expect(s.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, busy_until: null, appear_offline: false });
+    });
+
+    test("her Busy and Appear offline come from the bootstrap's me at every load, a Busy with no end as infinity, and anything else as none", () => {
+        const s = setup();
+
+        s.prefs.setMe({ busy_until: "2026-11-10T16:00:00.000000+00:00", appear_offline: true });
+        expect(s.prefs.state.me).toEqual(expect.objectContaining({ busy_until: "2026-11-10T16:00:00.000000+00:00", appear_offline: true }));
+
+        s.prefs.setMe({ busy_until: "infinity", appear_offline: false });
+        expect(s.prefs.state.me).toEqual(expect.objectContaining({ busy_until: "infinity", appear_offline: false }));
+
+        s.prefs.setMe({ busy_until: 5, appear_offline: "yes" } as never);
+        expect(s.prefs.state.me).toEqual(expect.objectContaining({ busy_until: null, appear_offline: false }));
+
+        s.prefs.setMe({ busy_until: "infinity" });
+        s.prefs.setMe({ show_profile_details: true });
+        expect(s.prefs.state.me).toEqual(expect.objectContaining({ busy_until: null, appear_offline: false }));
+    });
+
+    test("are read only once a me has been stated, and are already hers when that says so", () => {
+        const s = setup();
+        const seen: Array<boolean | string | null> = [];
+        const stop = watch(() => s.prefs.state.isMeRead, read => seen.push(read, s.prefs.state.me.appear_offline, s.prefs.state.me.busy_until), { flush: "sync" });
+        expect(s.prefs.state.isMeRead).toBe(false);
+
+        s.prefs.setMe(null);
+        expect(s.prefs.state.isMeRead).toBe(false);
+
+        s.prefs.setMe({ busy_until: "infinity", appear_offline: true });
+        stop();
+
+        expect(seen).toEqual([true, true, "infinity"]);
     });
 
     test("the reaction switch writes chat_set_prefs with no room", async () => {
@@ -579,7 +612,7 @@ describe("the person's own switches", () => {
         s.prefCalls[0].answer.resolve(refused());
         await settle();
 
-        expect(s.prefs.state.me).toEqual({ show_profile_details: true, is_open_dm_allowed: true, reaction_push: true });
+        expect(s.prefs.state.me).toEqual({ show_profile_details: true, is_open_dm_allowed: true, reaction_push: true, busy_until: null, appear_offline: false });
         expect(Object.keys(s.prefs.state.meNotes)).toEqual(["reaction_push"]);
     });
 
@@ -606,7 +639,7 @@ describe("the person's own switches", () => {
         void s.prefs.setPersonSetting("open_dm", true);
         s.prefs.setMe({ show_profile_details: false, is_open_dm_allowed: false, reaction_push: false });
 
-        expect(s.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+        expect(s.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, busy_until: null, appear_offline: false });
     });
 
     test("a privacy switch goes through Rock's door, one setting a call", async () => {

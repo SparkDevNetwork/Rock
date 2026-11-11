@@ -18,7 +18,8 @@
 // A person as the platform sends one, made into the face the avatar draws. Here rather than in the
 // avatar component because a component's setup script exports no functions, and the sidebar, the
 // header and the @ picker all draw the platform's people.
-import { ChatPerson, SidebarRow } from "../types.partial";
+import { startOfDay, timeLabel } from "../feedLayout.partial";
+import { ChatPerson, FaceStatus, SidebarRow } from "../types.partial";
 import type { AvatarPerson } from "./avatar.partial.obs";
 
 /**
@@ -94,3 +95,99 @@ export function preloadPhotos(urls: Array<string | null | undefined>): void {
         image.decode?.().catch(() => undefined);
     }
 }
+
+// #region Status words
+
+/** A state another person can be drawn in. */
+type OthersState = Exclude<FaceStatus["state"], "hidden">;
+
+/**
+ * When a Busy ends, on the viewer's own clock: a time the same day, "tomorrow" and a time the next,
+ * and a later day by its month and day, so the end reads at a glance without a date for today.
+ */
+function untilWords(at: Date, now: Date, locale?: string): string {
+    // calendar days rather than elapsed hours, rounded so a daylight saving change is not a day
+    const days = Math.round((startOfDay(at).getTime() - startOfDay(now).getTime()) / 86_400_000);
+    const time = timeLabel(at, locale);
+
+    if (days <= 0) {
+        return time;
+    }
+
+    if (days === 1) {
+        return `tomorrow, ${time}`;
+    }
+
+    return `${at.toLocaleDateString(locale, { month: "short", day: "numeric" })}, ${time}`;
+}
+
+/**
+ * Someone else's status in words: what a screen reader hears after their name, and what the
+ * tooltip and the profile card read. One function writes both, so they never disagree.
+ *
+ * @param state What is drawn.
+ * @param busyUntil When a Busy ends, or null for no end and for any other state.
+ * @param now The viewer's now.
+ * @param locale The viewer's locale, or the browser's when not given.
+ *
+ * @returns The label, such as ", busy until 3:00 PM", and the tip, such as "Busy until 3:00 PM".
+ */
+export function statusWords(state: OthersState, busyUntil: Date | null, now: Date, locale?: string): Pick<FaceStatus, "label" | "tip"> {
+    const tip = state === "online" ? "Online"
+        : state === "away" ? "Away"
+            : busyUntil ? `Busy until ${untilWords(busyUntil, now, locale)}` : "Busy";
+
+    // the label continues the name it follows, so its first word is not capitalised
+    return { label: `, ${tip.charAt(0).toLowerCase()}${tip.slice(1)}`, tip };
+}
+
+/**
+ * What one face of a person shows of a status: all of it on a face the host marks as her own, and
+ * on any other face what everyone else sees, so her Appear offline draws and says nothing there.
+ * The one rule for the badge and the words a face's host puts beside it.
+ *
+ * @param status What the store answered for the person.
+ * @param isOwn Whether the host marks this face as the person's own: her foot, her settings, her card.
+ */
+export function shownStatus(status: FaceStatus | null, isOwn: boolean): FaceStatus | null {
+    return status && (status.state !== "hidden" || isOwn) ? status : null;
+}
+
+/**
+ * The person's own status in words, for their own face's label, their own card and the Status
+ * group: a Busy says what it does to them, since only they act on it.
+ *
+ * @param state Their state, hidden for Appear offline.
+ * @param busyUntil When their Busy ends, or null for no end and for any other state.
+ * @param now The viewer's now.
+ * @param locale The viewer's locale, or the browser's when not given.
+ *
+ * @returns The words, such as "Busy, notifications paused until 3:00 PM".
+ */
+export function ownStatusWords(state: FaceStatus["state"], busyUntil: Date | null, now: Date, locale?: string): string {
+    if (state === "busy") {
+        return busyUntil ? `Busy, notifications paused until ${untilWords(busyUntil, now, locale)}` : "Busy, notifications paused";
+    }
+
+    return state === "online" ? "Online" : state === "away" ? "Away" : "Appear offline";
+}
+
+/**
+ * The line above the box while the other person in a direct message is Busy. Its name and its end
+ * are parts of their own, so a narrow line shortens the name first and then the time, and never
+ * "is busy" or "won't be notified", which say what sending does.
+ *
+ * @param name The name the line opens with.
+ * @param busyUntil When her Busy ends, or null for no end.
+ * @param now The viewer's now.
+ * @param locale The viewer's locale, or the browser's when not given.
+ *
+ * @returns The name, the end as " until 3:00 PM" or null for none, and the whole sentence.
+ */
+export function busyNoteWords(name: string, busyUntil: Date | null, now: Date, locale?: string): { until: string | null, name: string, sentence: string } {
+    const until = busyUntil ? ` until ${untilWords(busyUntil, now, locale)}` : null;
+
+    return { until, name, sentence: name + ` is busy${until ?? ""} and won't be notified.` };
+}
+
+// #endregion Status words

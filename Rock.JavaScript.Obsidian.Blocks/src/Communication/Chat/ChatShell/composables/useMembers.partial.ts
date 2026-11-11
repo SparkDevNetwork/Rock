@@ -196,6 +196,9 @@ export type MembersDependencies = {
 
     /** The platform's limits, from the latest token exchange. */
     limits: () => Pick<PlatformLimits, "member_page_size" | "people_search_size">;
+
+    /** Tells the status store the people an answer carried, each with the status it carries; without it nothing is told. */
+    told?: (people: readonly unknown[]) => void;
 };
 
 /** The roster a shell holds. */
@@ -411,14 +414,22 @@ export function createMembers(dependencies: MembersDependencies): Members {
         return dependencies.limits().member_page_size;
     }
 
-    /** One page of the room's people after a person given, for a query or none. */
-    function fetchPage(channelId: string, after: RosterMember | undefined, query: string | null): Promise<CallResult> {
-        return dependencies.call("chat_list_members", {
+    /**
+     * One page of the room's people after a person given, for a query or none. Its people are told
+     * to the status store as it lands, before any caller holds the rows, so none draws before its
+     * status; a page a newer read overtakes is told too, since the store keeps each person's newest.
+     */
+    async function fetchPage(channelId: string, after: RosterMember | undefined, query: string | null): Promise<CallResult> {
+        const result = await dependencies.call("chat_list_members", {
             p_channel_id: channelId,
             p_after: after?.person_alias_guid ?? null,
             p_limit: pageSize(),
             p_query: query
         });
+        if (result.ok) {
+            dependencies.told?.(membersOf(result));
+        }
+        return result;
     }
 
     /** The people a successful answer holds. */
@@ -678,7 +689,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
             return;
         }
 
-        state.adding.people = (result.data as { people?: PersonRow[] } | null)?.people ?? [];
+        const people = (result.data as { people?: PersonRow[] } | null)?.people ?? [];
+        dependencies.told?.(people);
+        state.adding.people = people;
     }
 
     /**

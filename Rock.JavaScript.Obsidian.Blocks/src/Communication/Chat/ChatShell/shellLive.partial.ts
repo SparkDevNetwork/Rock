@@ -24,6 +24,7 @@ import { classifyPlatformError, inRoomKind } from "./errors.partial";
 import type { CallResult } from "./platformCall.partial";
 import { isTimelineMessage } from "./heldMessage.partial";
 import type { RealtimeHubDependencies } from "./composables/useRealtimeHub.partial";
+import type { BlocksChange } from "./composables/useBlocks.partial";
 import type { MeSettings } from "./composables/usePrefs.partial";
 import type { ChatShell, ShellState } from "./shell.partial";
 import { ChannelUnreadEvent, ChatBadge, ChatError, MarkReadResult, MessageCreatedEvent, ReactionFavorite, SidebarRow, UnreadMention } from "./types.partial";
@@ -94,10 +95,10 @@ export type ShellLive = {
     noteSave: (channelId: string, result: MarkReadResult, sentAt: number | undefined) => void;
 
     /** The people blocked changed: what was released is let go and what is on screen read again. */
-    onBlocksChanged: (isInSidebarAnswer: boolean, removed: readonly string[]) => void;
+    onBlocksChanged: (isInSidebarAnswer: boolean, removed: readonly string[], change: BlocksChange) => void;
 
-    /** The people blocked gained these aliases: every holder masks again what it holds. */
-    remask: (added: readonly string[]) => void;
+    /** The people blocked gained these aliases, read at a decision time or none: every holder masks again what it holds. */
+    remask: (added: readonly string[], asOf: number | null) => void;
 
     /** What the live connection's hub calls as each word arrives. */
     handlers: Pick<RealtimeHubDependencies, "onChannelEvent" | "onPersonalEvent" | "onPersonalRejoined" | "onJoined" | "onUnknownError" | "onStatus">;
@@ -139,6 +140,13 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
 
     /** The wait before a rejoin's sidebar read, pending; null when none is. */
     let sidebarWait: ReturnType<typeof setTimeout> | null = null;
+
+    /**
+     * Whether a sidebar read that asked for the two-person rows' online status has been applied.
+     * Until one has, every read asks; after it, the status changes reach the page live and by the
+     * exchange, so a later read, as a rejoin's, asks for none.
+     */
+    let isStatusRead = false;
 
     /** Cancels a recheck still waiting. */
     function cancelRecheck(): void {
@@ -201,7 +209,8 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         // what each timeline held as the read was asked, so a row that live events have since
         // passed is not taken for a room whose history went backwards
         const heldAtAsk = timelines.revsHeld();
-        const result = await call("chat_get_bootstrap", { p_campus_only: dependencies.isCampusLimited });
+        const asksStatus = !isStatusRead;
+        const result = await call("chat_get_bootstrap", { p_campus_only: dependencies.isCampusLimited, p_status: asksStatus });
         if (isStopped()) {
             return channels.rows;
         }
@@ -225,11 +234,20 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             channels.setLoadFailed();
             throw thrown(result);
         }
+        isStatusRead ||= asksStatus;
 
         // the bootstrap's own key names
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
-        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[], blocked_aliases?: string[] } } | null;
+        const answer = result.data as { channels?: SidebarRow[], reactions?: ReactionFavorite[], badges?: ChatBadge[], me?: Partial<MeSettings> & { unread_mentions?: UnreadMention[], blocked_aliases?: string[] }, status?: Record<string, unknown> } | null;
         const rows = answer?.channels ?? [];
+        // The two-person rows' people, told before the rows are held so none draws before its
+        // status. Only those it says something of: the map answers whom the rows show, and a time
+        // alone there tells less than an exchange or a reader that asked about her.
+        if (typeof answer?.status === "object" && answer.status !== null) {
+            presence.status.told(Object.entries(answer.status)
+                .filter(([, status]) => typeof (status as { state?: unknown } | null)?.state === "string")
+                .map(([alias, status]) => ({ person_alias_guid: alias, status })));
+        }
         // through the settings, which keep any room setting whose save is still out
         prefs.setRooms(rows);
         // every load restates the unread mentions, so one read elsewhere stops lighting the dot
@@ -332,13 +350,15 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
      * quote waiting in a composer are snapshots resync does not read, so after an unblock they stay
      * withheld, the safe side, until the person looks again.
      */
-    function remask(added: readonly string[]): void {
+    function remask(added: readonly string[], asOf: number | null): void {
         timelines.remask(added);
         threads.remask();
         mentions.remask();
         directMessages.remask();
         messageActions.remask();
         presence.remask();
+        // a face holding someone now blocked draws nothing from the block's decision time
+        presence.status.blockChanged(added, asOf);
     }
 
     const handlers: ShellLive["handlers"] = {
@@ -401,6 +421,14 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             if (event === "blocks.changed") {
                 void blocks.changed();
                 return;
+            }
+            // A preview's sender's status, written before the row moves so both draw in one pass;
+            // the replay over a sidebar read goes to the rows alone, its status already written.
+            // the event's own key names
+            /* eslint-disable-next-line @typescript-eslint/naming-convention */
+            const preview = payload as { sender?: { person_alias_guid?: unknown }, status?: unknown } | null;
+            if (event === "dm.preview" && preview !== null && typeof preview === "object" && "status" in preview) {
+                presence.status.carried(preview.sender?.person_alias_guid, preview.status);
             }
             channels.applyPersonalEvent(event, payload);
             mentions.applyPersonalEvent(event, payload);
@@ -472,9 +500,14 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
         },
         // A change named by a sidebar answer comes in the newest sidebar there is, so that read is
         // the resync's sidebar step rather than another.
-        onBlocksChanged: (isInSidebarAnswer, removed) => {
+        onBlocksChanged: (isInSidebarAnswer, removed, change) => {
             if (removed.length > 0) {
                 timelines.release(removed);
+            }
+            // The heal reads again copies withheld before an unblock and changes no block, so the
+            // people it names keep what they draw; a change redraws who was let go.
+            if (!("heal" in change)) {
+                presence.status.blockChanged(removed, change.asOf);
             }
             resync(isInSidebarAnswer ? sidebarRead : null);
         },

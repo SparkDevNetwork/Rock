@@ -1,0 +1,171 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span ref="badgeElement"
+          class="chat-status"
+          :class="{ 'is-changing': isChanging }"
+          :data-state="status.state"
+          data-testid="status-badge"
+          :style="place"
+          @mouseenter="onPointerEnter"
+          @mouseleave="hideTip">
+        <template v-if="status.state !== 'hidden'">
+            <svg class="chat-status-glyph" :class="{ 'is-shown': status.state === 'online' }" viewBox="0 0 12 12">
+                <polyline points="3.4,6.3 5.2,8 8.6,4.3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg class="chat-status-glyph" :class="{ 'is-shown': status.state === 'away' }" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="3.25" fill="none" stroke="currentColor" stroke-width="1.25" />
+                <path d="M6 4.3V6h1.5" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <svg class="chat-status-glyph" :class="{ 'is-shown': status.state === 'busy' }" viewBox="0 0 12 12">
+                <rect x="3" y="5.125" width="6" height="1.75" rx=".875" fill="currentColor" />
+            </svg>
+        </template>
+
+        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+            <div v-if="isTipShown"
+                 ref="tipElement"
+                 class="chat-tip"
+                 role="tooltip"
+                 :style="floatingStyles">
+                {{ status.tip }}
+            </div>
+        </Teleport>
+    </span>
+</template>
+
+<style scoped>
+/*
+    A disc on the face's rim, ringed in what the face sits on: the host's hover, current or press
+    layer over its fill, the variables every host of a face sets. Its own file, so the faces that
+    never show a status, every message row among them, hold no tooltip of their own.
+*/
+.chat-status {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    color: var(--chat-media-fg);
+    background: var(--chat-presence-online);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 2px var(--chat-av-ring-over, transparent),
+        0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+}
+
+.chat-status[data-state="away"] {
+    background: var(--chat-presence-away);
+}
+
+.chat-status[data-state="busy"] {
+    background: var(--chat-presence-busy);
+}
+
+/* The person's own face under Appear offline: a hollow ring in the icon's grey, no glyph. */
+.chat-status[data-state="hidden"] {
+    background: linear-gradient(var(--chat-av-ring-over, transparent), var(--chat-av-ring-over, transparent)), var(--chat-av-ring, var(--chat-surface));
+    box-shadow:
+        inset 0 0 0 1.5px var(--chat-icon),
+        0 0 0 2px var(--chat-av-ring-over, transparent),
+        0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+}
+
+/* All three glyphs are drawn, so a change of state crossfades one into the next. */
+.chat-status-glyph {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+
+.chat-status-glyph.is-shown {
+    opacity: 1;
+}
+
+/*
+    Only a change the store made after this badge was drawn fades; a badge drawn is state. Its
+    opacity is listed too, though only arriving and leaving move it: this rule outranks the leave
+    fade's, so without it a badge that changed once would snap out at its row's end.
+*/
+.chat-status.is-changing {
+    transition:
+        background-color var(--chat-t-fast) var(--chat-ease-state),
+        opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-status.is-changing .chat-status-glyph {
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* A badge arriving on a face drawn without one, or leaving at its row's end, fades. */
+.chat-status-enter-active,
+.chat-status-leave-active {
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-status-enter-from,
+.chat-status-leave-to {
+    opacity: 0;
+}
+
+/* Where colors are forced the disc keeps its outline and its glyph, so the shape still says the state. */
+@media (forced-colors: active) {
+    .chat-status {
+        border: 1px solid CanvasText;
+    }
+
+    .chat-status-glyph {
+        color: CanvasText;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref } from "vue";
+    import { FaceStatus } from "../types.partial";
+    import { overlayHostOf, useTooltip } from "./tooltip.partial";
+
+    const props = defineProps({
+        /** What the face draws, from the status store. */
+        status: {
+            type: Object as PropType<FaceStatus>,
+            required: true
+        },
+
+        /** The face's size in pixels, which places the badge on its rim. */
+        faceSize: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const badgeElement = ref<HTMLElement>();
+
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter } = useTooltip(badgeElement);
+
+    /** The chat's root, which the tip is drawn in; null where the face is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
+
+    // The revision the badge was first drawn at: anything at it or before is what was already true
+    // when the face appeared, so only a later one is a change to show.
+    const mountedRevision = props.status.revision;
+
+    /** Whether the store changed this person since the badge was drawn, which is when a change fades. */
+    const isChanging = computed(() => props.status.revision > mountedRevision);
+
+    /**
+     * Centred on the rim at 45 degrees: the circle's edge sits 0.146 of the face in from its
+     * corner, less half the badge.
+     */
+    const place = computed(() => {
+        const offset = `${Math.round((props.faceSize * 0.146 - 6) * 10) / 10}px`;
+        return { right: offset, bottom: offset };
+    });
+
+    // #endregion Values
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(badgeElement.value);
+    });
+</script>

@@ -33,6 +33,8 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { busy, exchangeAnswer, online, toldEntry, watchAnswer } from "../statusShapes";
+import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
 // #region Fixtures
 
@@ -1029,5 +1031,103 @@ describe("the grouped list's measures", () => {
     // size has to out-weigh it rather than win by load order.
     test("sets the rename field's size by a selector heavier than the shared field's", () => {
         expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rn .chat-rn-in")).toMatch(/font-size:\s*13\.5px;/);
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    /** Someone by primary alias, carrying a stale status of their own the face must not read. */
+    function someone(alias: string, n: number): ChannelPerson {
+        return { ...person(n, "Anna", "Reyes"), person_alias_guid: alias.toUpperCase(), status: busy(null, -60_000) as ChannelPerson["status"] };
+    }
+
+    function mountPair(alias: string): VueWrapper {
+        return mountDetails({ kind: "person", title: "Anna Reyes", facts: personFacts({ people: [someone(alias, 4)] }), personAliasGuid: viewer });
+    }
+
+    test("the pair draws the other person's badge from the store and its words after the name", () => {
+        const w = mountPair(anna);
+        const identity = w.get("[data-testid='details-identity']");
+
+        expect(badgesIn(identity.element)).toEqual([{ state: "online", isMoving: false }]);
+        expect(plain(identity.get("[data-testid='details-name']").text())).toBe("Anna Reyes, online");
+    });
+
+    test("a group's People rows are 32px faces with each person's badge and words, her own row drawing her own face", () => {
+        const w = mountGroup({ facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6), someone(carl, 7)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        const rows = w.findAll("[data-testid='details-person']");
+
+        expect(rows.map(row => row.findComponent(Avatar).props("size"))).toEqual([32, 32, 32, 32]);
+        expect(rows.map(row => badgesIn(row.element).map(badge => badge.state))).toEqual([["online"], ["online"], ["busy"], []]);
+        expect(rows.map(row => spoken(row))).toEqual(["Ted Decker (you), online", "Anna Reyes, online", "Anna Reyes, busy", "Anna Reyes"]);
+        expect(badgesIn(w.get("[data-testid='details-identity']").element)).toEqual([]);
+    });
+
+    test("kept mounted closed, it keeps its people asked about, since it draws them from the room's facts read at open and has no read of its own", async () => {
+        const w = mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(carl, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        const asked = status.store.watched();
+        expect(asked).toEqual([viewer, anna, carl]);
+
+        // an exchange while closed tells the quiet person's status, so opening draws it at once
+        status.store.exchanged(asked, exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(online(1000)), [carl]: toldEntry(online(1000)) })));
+        await w.setProps({ isOpen: true });
+        await nextTick();
+
+        const rows = w.findAll("[data-testid='details-person']");
+        expect(rows.map(row => badgesIn(row.element))).toEqual([[{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }]]);
+    });
+
+    test("a group's People rows keep the group's one row height with their 32px faces", () => {
+        const w = mountGroup({ facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
+        const rows = w.findAll("[data-testid='details-person']");
+        const rules = styleRules(join(shellFolder, "components/conversationDetails.partial.obs"), /^\.chat-sg-row\.chat-rd-prow$/);
+        const padding = rules.map(body => /padding-block:\s*(\d+)px/.exec(body)?.[1]).find(value => value !== undefined);
+
+        expect(rows.length).toBeGreaterThan(1);
+        expect(rows.every(row => row.classes("chat-rd-prow"))).toBe(true);
+        // the group's least row height is 44px, and every row after the first draws a 1px rule
+        expect(padding).toBeDefined();
+        expect(1 + Number(padding) * 2 + 32).toBeLessThanOrEqual(44);
+    });
+
+    test("her own People row draws nothing under Appear offline, as everyone else sees her", async () => {
+        const w = mountGroup({ personName: "Ted Decker", personAliasGuid: viewer });
+
+        expect(badgesIn(w.findAll("[data-testid='details-person']")[0].element)).toHaveLength(1);
+        status.mine.value = { busy_until: null, appear_offline: true };
+        await afterFades();
+
+        expect(badgesIn(w.findAll("[data-testid='details-person']")[0].element)).toEqual([]);
+        expect(spoken(w.findAll("[data-testid='details-person']")[0])).toBe("Ted Decker (you)");
+    });
+
+    test.each([
+        ["the identity", /^\.chat-rd-id(\[|:|$)/],
+        ["a People row", /^\.chat-rd-person(\[|:|$)/]
+    ])("rings its badge in %s's fill", (_place, selector) => {
+        expect(setsBothRings(join(shellFolder, "components/conversationDetails.partial.obs"), selector)).toBe(true);
+    });
+
+    test.each(swaps)("the pair swapped in place to another person, %s, draws the new person's face as state", async (_case, from, to) => {
+        const w = mountPair(from);
+        const face = w.get("[data-testid='details-identity'] .chat-av").element;
+
+        await w.setProps({ facts: personFacts({ people: [someone(to, 4)] }) });
+        await nextTick();
+
+        expect(w.get("[data-testid='details-identity'] .chat-av").element).not.toBe(face);
+        expect(badgesIn(w.element).filter(badge => badge.isMoving)).toEqual([]);
+        expect(badgesIn(w.element)).toHaveLength(to === carl ? 0 : 1);
     });
 });

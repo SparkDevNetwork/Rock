@@ -202,9 +202,12 @@ export function createPlatformCall(options: PlatformCallOptions): PlatformCall {
     };
 }
 
-/** What the token exchange answers once read. */
+/**
+ * What the token exchange answers once read. A body that named people is answered with their
+ * status as presence, left out when the platform's read of it did not answer in time.
+ */
 export type ExchangeAnswer =
-    | { ok: true, accessToken: string, expiresInSeconds: number, settings: unknown }
+    | { ok: true, accessToken: string, expiresInSeconds: number, settings: unknown, presence?: unknown }
     | { ok: false, status: number, code: string, retryAfterSeconds: number | null };
 
 /**
@@ -215,7 +218,9 @@ export type ExchangeAnswer =
  * @param publishableKey The platform's publishable key.
  * @param churchToken The token Rock signed.
  * @param options signal, which gives the exchange up, a request given up answering as one that
- * reached nothing; now, the time in milliseconds a Retry-After date is read against.
+ * reached nothing; now, the time in milliseconds a Retry-After date is read against; body, what
+ * the page tells and asks the platform with the exchange, sent as JSON when given; region, the
+ * database's region, which pins the exchange beside it when given.
  *
  * @returns The token and settings, or the refusal.
  */
@@ -224,12 +229,21 @@ export async function exchangeChurchToken(
     projectUrl: string,
     publishableKey: string,
     churchToken: string,
-    options: { signal?: AbortSignal, now?: number } = {}
+    options: { signal?: AbortSignal, now?: number, body?: Record<string, unknown>, region?: string | null } = {}
 ): Promise<ExchangeAnswer> {
+    const headers: Record<string, string> = { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey };
+    if (options.body) {
+        headers["Content-Type"] = "application/json";
+    }
+    if (options.region) {
+        headers["x-region"] = options.region;
+    }
+
     try {
         const response = await fetch(`${projectUrl.replace(/\/+$/, "")}/functions/v1/token-exchange`, {
             method: "POST",
-            headers: { "Authorization": `Bearer ${churchToken}`, "apikey": publishableKey },
+            headers,
+            ...(options.body ? { body: JSON.stringify(options.body) } : {}),
             ...(options.signal ? { signal: options.signal } : {})
         });
         // An unreadable body is a refusal, unless the signal ended the read: then the
@@ -243,7 +257,13 @@ export async function exchangeChurchToken(
         }) as TokenExchangeResponse | null;
 
         if (response.ok && body?.access_token && typeof body.expires_in === "number") {
-            return { ok: true, accessToken: body.access_token, expiresInSeconds: body.expires_in, settings: body.settings };
+            return {
+                ok: true,
+                accessToken: body.access_token,
+                expiresInSeconds: body.expires_in,
+                settings: body.settings,
+                ...("presence" in body ? { presence: body.presence } : {})
+            };
         }
 
         return {

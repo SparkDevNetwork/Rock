@@ -29,6 +29,8 @@ import { nextTick } from "vue";
 import ProfileCard from "../../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import { ChatBadge, PersonProfile } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ProfileRockState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { join } from "path";
+import { anna, badgesIn, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
 // #region Fixtures
 
@@ -620,5 +622,89 @@ describe("blocking from the card", () => {
         const w = mountCard(profile({ is_blocked: true, can_message: false }), { isBlockBusy: true });
 
         expect(w.get("[data-testid='profile-unblock']").attributes("disabled")).toBeDefined();
+    });
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    const identity = (w: VueWrapper): Element => w.get("[data-testid='profile-identity']").element;
+    const line = (w: VueWrapper): string | null => {
+        const found = w.find("[data-testid='profile-line']");
+        return found.exists() ? found.text().replace(/\s+/g, " ").trim() : null;
+    };
+
+    test("the card draws the person's badge and their words on the campus line", () => {
+        const w = mountCard(profile({ person_alias_guid: anna.toUpperCase() }));
+
+        expect(badgesIn(identity(w))).toEqual([{ state: "online", isMoving: false }]);
+        expect(line(w)).toBe("Online, Downtown Campus");
+        expect(w.get("[data-testid='profile-status']").text()).toBe("Online");
+        expect(w.get("[data-testid='profile-campus']").text()).toBe("Downtown Campus");
+    });
+
+    test("the words stand alone with no campus, and the line holds only the campus when the store says nothing", () => {
+        expect(line(mountCard(profile({ person_alias_guid: anna, campus_id: null })))).toBe("Online");
+        wrapper?.unmount();
+        expect(line(mountCard(profile({ person_alias_guid: carl })))).toBe("Downtown Campus");
+        wrapper?.unmount();
+        expect(line(mountCard(profile({ person_alias_guid: carl, campus_id: null })))).toBeNull();
+    });
+
+    test("her own card draws her own face in her own words, and her hollow ring under Appear offline", async () => {
+        const w = mountCard(profile({ person_alias_guid: viewer, is_self: true, campus_id: null }));
+        expect(line(w)).toBe("Online");
+
+        status.mine.value = { busy_until: null, appear_offline: true };
+        await nextTick();
+
+        expect(badgesIn(identity(w)).map(badge => badge.state)).toEqual(["hidden"]);
+        expect(line(w)).toBe("Appear offline");
+    });
+
+    test("the words line is one line that never splits into columns: the words keep their width up to the line's, the campus gives way first with an ellipsis", () => {
+        const sheet = join(shellFolder, "components/profileCard.partial.obs");
+        const rule = (selector: RegExp): string => styleRules(sheet, selector).join(";");
+        const w = mountCard(profile({ person_alias_guid: anna }));
+
+        // the line never wraps, and holds what does not fit inside itself
+        expect(rule(/^\.chat-pc-line$/)).toMatch(/white-space:\s*nowrap/);
+        expect(rule(/^\.chat-pc-line$/)).toMatch(/overflow:\s*hidden/);
+        expect(rule(/^\.chat-pc-line$/)).not.toMatch(/flex-wrap:\s*wrap/);
+        // the words never shrink for the campus, and cut with an ellipsis only past the whole line
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/flex:\s*none/);
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/max-width:\s*100%/);
+        expect(rule(/^\.chat-pc-status$/)).toMatch(/text-overflow:\s*ellipsis/);
+        // the campus shrinks, its name cut with an ellipsis, its pin kept
+        expect(rule(/^\.chat-pc-campus$/)).toMatch(/min-width:\s*0/);
+        expect(rule(/^\.chat-pc-place$/)).toMatch(/text-overflow:\s*ellipsis/);
+        expect(rule(/^\.chat-pc-place$/)).toMatch(/overflow:\s*hidden/);
+        expect(w.get("[data-testid='profile-campus'] .chat-pc-place").text()).toBe("Downtown Campus");
+    });
+
+    test("rings its badge in the card's fill", () => {
+        expect(setsBothRings(join(shellFolder, "components/profileCard.partial.obs"), /^\.chat-pc-id(\[|:|$)/)).toBe(true);
+    });
+
+    test.each(swaps)("swapped in place to another person, %s, draws the new person's face as state", async (_case, from, to) => {
+        const w = mountCard(profile({ person_alias_guid: from }));
+        const face = w.get("[data-testid='profile-identity'] .chat-av").element;
+
+        await w.setProps({ person: profile({ person_alias_guid: to }) });
+        await nextTick();
+
+        expect(w.get("[data-testid='profile-identity'] .chat-av").element).not.toBe(face);
+        expect(badgesIn(card(w)).filter(badge => badge.isMoving)).toEqual([]);
+        expect(badgesIn(card(w))).toHaveLength(to === carl ? 0 : 1);
     });
 });

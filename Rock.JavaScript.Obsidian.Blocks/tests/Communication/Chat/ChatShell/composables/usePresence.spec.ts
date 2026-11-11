@@ -23,13 +23,21 @@
 // until it expires, stops, is overtaken, sent or blocked, each end recorded once with its cause and
 // never before a typist has been shown for the minimum; and the platform's answer of who is typing,
 // drawn as what is.
-import { reactive, shallowRef } from "vue";
+//
+// And others' online status: one store by person, which keeps each person's newest decision
+// however late the answer carrying it lands, draws from it by the server's clock without ever
+// writing it again, moves a person's revision only when what is drawn changes, and answers
+// nothing for someone blocked, for the person's own carried copy, or with the switch off.
+import { computed, defineComponent, h as render, reactive, shallowRef, watchEffect } from "vue";
+import { mount } from "@vue/test-utils";
 import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import { presenceStatusKey, useFaceStatus } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatError, ChatPerson, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { asOf, away, busy, exchangeAnswer, heldNothingMs, nothing, online, personWithoutStatus, pgTime, readerPerson, rowLifeMs, serverNow, serverNowSeconds, toldEntry, watchAnswer } from "../statusShapes";
 
 const me = "a0000007-0000-4000-8000-000000000000";
 const anna = "a0000001-0000-4000-8000-000000000000";
@@ -71,8 +79,11 @@ function refused(code: string, status = 400, text?: string): CallResult {
 
 type Call = { path: string, body: Record<string, unknown>, options: { headers?: Record<string, string> } | undefined };
 
-/** The settings a platform with the stop and the first signal's wait answers, typing on. */
-const current = { flags: { typing: true }, routes: { region: "us-east-1" }, limits: { typing_first_after_ms: 700 } };
+/**
+ * The settings a platform with the stop and the first signal's wait answers, typing on, at a pace of
+ * its own: these cells time the pace a platform sends, not the client's fallback for one it leaves out.
+ */
+const current = { flags: { typing: true }, routes: { region: "us-east-1" }, limits: { typing_first_after_ms: 700, typing_interval_ms: 4000, typing_expiry_ms: 6000 } };
 
 /** A presence with every outside piece stood in for; a test changes what it reads through the handles returned. */
 function build(rawSettings: Record<string, unknown> = {}) {
@@ -97,6 +108,9 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const blocked = new Set<string>();
     const reports: string[] = [];
     const stopped = { value: false };
+    // Her own settings as the sidebar last read them: her Busy and her Appear offline, read, as
+    // they are on a page once the sidebar has answered.
+    const prefs = reactive({ state: { me: { busy_until: null as string | null, appear_offline: false }, isMeRead: true } });
     // The newest message the person's client holds for each place, by place key.
     const newest: Record<string, number | null> = { [group]: 10 };
     // Places whose history may be behind the person, as a send still out leaves one.
@@ -108,6 +122,41 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const sent: Record<string, Record<string, number>> = {};
     // What the presence told the record, in order.
     const records: string[] = [];
+    // The page the status watches: each listener by event, with the options it was added with. As
+    // a browser does, a removal finds a listener only by its capture, so one removed without the
+    // capture it was added with stays.
+    const listeners: Array<{ on: "window" | "document", type: string, listener: (event: unknown) => void, options: unknown }> = [];
+    const isCapture = (options: unknown): boolean => typeof options === "boolean" ? options : (options as { capture?: unknown } | undefined)?.capture === true;
+    const page = { visibilityState: "visible" };
+    const targets = {
+        document: {
+            get visibilityState(): string {
+                return page.visibilityState;
+            },
+            addEventListener: (type: string, listener: () => void) => listeners.push({ on: "document", type, listener, options: undefined }),
+            removeEventListener: (type: string, listener: () => void) => {
+                listeners.splice(listeners.findIndex(l => l.on === "document" && l.type === type && l.listener === listener) >>> 0, 1);
+            }
+        },
+        window: {
+            addEventListener: (type: string, listener: (event: unknown) => void, options?: unknown) => listeners.push({ on: "window", type, listener, options }),
+            removeEventListener: (type: string, listener: (event: unknown) => void, options?: unknown) => {
+                const index = listeners.findIndex(l => l.on === "window" && l.type === type && l.listener === listener && isCapture(l.options) === isCapture(options));
+                if (index >= 0) {
+                    listeners.splice(index, 1);
+                }
+            }
+        }
+    };
+    // Every goodbye sent, by the id it named.
+    const leaves: string[] = [];
+    // The session as the status reads it: when the next refresh is due, whether one is out, and every refresh asked.
+    const session = {
+        next: Date.now() + 210_000 as number | null,
+        out: null as string | null,
+        life: 300,
+        asked: [] as string[]
+    };
 
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
@@ -139,10 +188,29 @@ function build(rawSettings: Record<string, unknown> = {}) {
             typingEnded: (place, cause, message) => records.push(`ended ${place} ${cause}${message ? ` ${message.id}` : ""}`)
         },
         report: code => reports.push(code),
-        isStopped: () => stopped.value
+        isStopped: () => stopped.value,
+        prefs,
+        targets,
+        leave: clientId => leaves.push(clientId),
+        session: {
+            refresh: async reason => {
+                session.asked.push(reason);
+                return true;
+            },
+            nextRefreshAt: () => session.next,
+            tokenLifeSeconds: () => session.life,
+            inFlight: () => session.out as ReturnType<PresenceDependencies["session"]["inFlight"]>
+        }
     };
 
     const presence: Presence = createPresence(dependencies);
+
+    /** Fires a page event on whichever of the window or the document listens for it. */
+    function fire(type: string, event: unknown = {}): void {
+        for (const listener of listeners.filter(l => l.type === type)) {
+            listener.listener(event);
+        }
+    }
 
     /** A page or a live copy brings someone's message into the client's history. */
     function hold(id: number, alias: string, parentId: number | null = null): void {
@@ -156,7 +224,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, listeners, page, leaves, session, fire, me: prefs.state.me, prefs: prefs.state };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -188,7 +256,7 @@ describe("the person's own signals", () => {
 
         expect(h.calls).toEqual([{
             path: "chat-typing",
-            body: { p_channel_id: group, p_parent_id: null, p_after: 10 },
+            body: { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: h.presence.status.clientId() },
             options: { headers: { "x-region": "us-east-1" } }
         }]);
     });
@@ -202,7 +270,7 @@ describe("the person's own signals", () => {
 
         expect(h.calls).toHaveLength(1);
         expect(h.calls[0].options?.headers?.["x-region"]).toBeUndefined();
-        expect(h.calls[0].body).toEqual({ p_channel_id: group, p_parent_id: null });
+        expect(h.calls[0].body).toEqual({ p_channel_id: group, p_parent_id: null, p_client: h.presence.status.clientId() });
     });
 
     test("the first wait is the platform's, read as the turn starts", async () => {
@@ -315,7 +383,7 @@ describe("the person's own signals", () => {
         h.presence.typed(group, null, "");
         await pass(5000);
 
-        expect(h.calls.map(c => c.body)).toEqual([{ p_channel_id: group, p_parent_id: null, p_after: 10 }]);
+        expect(h.calls.map(c => c.body)).toEqual([{ p_channel_id: group, p_parent_id: null, p_after: 10, p_client: h.presence.status.clientId() }]);
     });
 
     test("clearing an announced box sends one stop; a box never announced, or cleared again, sends none", async () => {
@@ -330,9 +398,10 @@ describe("the person's own signals", () => {
         h.presence.typed(group, 40, "");
         await pass(5000);
 
+        const client = h.presence.status.clientId();
         expect(h.calls.map(c => c.body)).toEqual([
-            { p_channel_id: group, p_parent_id: null, p_after: 10 },
-            { p_channel_id: group, p_parent_id: null, p_after: 10, p_stopped: true }
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: client },
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_stopped: true, p_client: client }
         ]);
         expect(jest.getTimerCount()).toBe(0);
     });
@@ -439,9 +508,10 @@ describe("the person's own signals", () => {
         h.presence.typed(group, 40, "bc");
         await settle();
 
+        const client = h.presence.status.clientId();
         expect(h.calls.map(c => c.body)).toEqual([
-            { p_channel_id: group, p_parent_id: null, p_after: 10 },
-            { p_channel_id: group, p_parent_id: 40, p_after: 44 }
+            { p_channel_id: group, p_parent_id: null, p_after: 10, p_client: client },
+            { p_channel_id: group, p_parent_id: 40, p_after: 44, p_client: client }
         ]);
     });
 
@@ -1247,3 +1317,1261 @@ describe("a stopped presence", () => {
         expect(jest.getTimerCount()).toBe(0);
     });
 });
+
+// #region Others' status
+
+/** A presence with status on, on a page whose clock reads the fixtures' server now. */
+function buildStatus(rawSettings: Record<string, unknown> = {}) {
+    jest.setSystemTime(serverNow);
+    const built = build({ flags: { typing: true, online: true }, ...rawSettings });
+    return { ...built, status: built.presence.status };
+}
+
+/** What a face draws for someone, held as a view holds it: read again only when that person's revision moves. */
+function face(status: Presence["status"], guid: string) {
+    return computed(() => status.statusOf(guid));
+}
+
+describe("others' status, the newest decision", () => {
+    test("an answer decided before a carried status changes nothing when it lands after it, and neither does a carried status decided before an answer", () => {
+        const h = buildStatus();
+
+        h.status.carried(anna, online(2000));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+
+        h.status.told([readerPerson(sam, busy(null, 5000))]);
+        h.status.carried(sam, online(4000));
+        expect(h.status.statusOf(sam)?.state).toBe("busy");
+    });
+
+    test("two decisions 300 microseconds apart inside one millisecond, landing in reverse, keep the later", () => {
+        const h = buildStatus();
+
+        h.status.told([readerPerson(anna, away(0, rowLifeMs, 700))]);
+        h.status.carried(anna, online(0, rowLifeMs, 400));
+
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+    });
+
+    test("two answers of one decision time keep the one written later", () => {
+        const h = buildStatus();
+
+        h.status.told([readerPerson(anna, online(1000))]);
+        h.status.carried(anna, away(1000));
+
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+    });
+
+    test("the decision time alone says she shows nothing from then, and an older one changes nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.told([readerPerson(anna, nothing(-1000))]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+
+        h.status.told([readerPerson(anna, nothing(1000))]);
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("a person a reader sends with no status key tells nothing, and neither does a status the client cannot read", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.told([personWithoutStatus(anna), null, "x"]);
+        h.status.told([readerPerson(anna, { state: "online", until: pgTime(1000), as_of: String(asOf(5000)) })]);
+        h.status.told([readerPerson(anna, { state: "dancing", until: pgTime(1000), as_of: asOf(5000) })]);
+        h.status.told([readerPerson(anna, { state: "online", as_of: asOf(5000) })]);
+        h.status.carried(anna, undefined);
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("an exchange writes each person it asked about from its told, at the answer's one decision time, and nothing for anyone it did not ask about", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna.toUpperCase()]: toldEntry(away(1000)), [lee]: toldEntry(online(1000)) })));
+
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        expect(h.status.statusOf(lee)).toBeNull();
+        // the entry took the answer's time: a reader decided between the two changes nothing, one after replaces it
+        h.status.told([readerPerson(anna, online(500))]);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        h.status.told([readerPerson(anna, online(1500))]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("an exchange tells a person it asked about and left out of its told nothing, as of the answer's time", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(sam, online(0)), readerPerson(anna, online(0))]);
+
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
+
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        expect(h.status.statusOf(sam)).toBeNull();
+        // the nothing holds from the answer's time: a reader decided before it changes nothing
+        h.status.told([readerPerson(sam, online(500))]);
+        expect(h.status.statusOf(sam)).toBeNull();
+    });
+
+    test("an exchange decided before what is held writes nothing, its told or its silence", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(2000)), readerPerson(sam, away(2000))]);
+
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(busy(null, 1000)) })));
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)?.state).toBe("away");
+    });
+
+    test("an exchange's presence the client cannot read writes nothing for anyone, and neither does a told entry it cannot read", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0)), readerPerson(sam, online(0))]);
+
+        // the per-person map the exchange once answered, a time not a whole number, a told not a map
+        h.status.exchanged([anna, sam], exchangeAnswer({ [anna]: away(1000) }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: String(asOf(1000)), told: {} }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000) + 0.5, told: {} }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000) }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000), told: [] }));
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)?.state).toBe("online");
+
+        // an entry it cannot read writes nothing for her, and the rest of the answer still writes
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: "away" as unknown as Record<string, unknown> })));
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)).toBeNull();
+    });
+
+    test("an exchange whose read did not answer in time, or that failed, changes nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.exchanged([anna], exchangeAnswer());
+        h.status.exchanged([anna], null);
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("a status carried for the person's own id writes nothing, in any case, though her own answer does", () => {
+        const h = buildStatus();
+        // her own answer says nothing of her, and with no idle line her input draws nothing, so only a write could draw her
+        h.status.told([readerPerson(me, nothing(0))]);
+
+        h.status.carried(me, online(1000));
+        h.status.carried(me.toUpperCase(), online(1000));
+        expect(h.status.statusOf(me)).toBeNull();
+
+        h.status.told([readerPerson(me, online(2000))]);
+        expect(h.status.statusOf(me)?.state).toBe("online");
+    });
+
+    test("keys are read in lower case wherever an id comes from", () => {
+        const h = buildStatus();
+
+        h.status.carried(anna.toUpperCase(), online(0));
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(anna.toUpperCase())?.state).toBe("online");
+    });
+
+    test("draws the words a label and a tip read", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0)), readerPerson(sam, busy(null, 0))]);
+
+        expect(h.status.statusOf(anna)).toEqual({ state: "online", label: ", online", tip: "Online", busyUntil: null, revision: expect.any(Number) });
+        expect(h.status.statusOf(sam)).toEqual({ state: "busy", label: ", busy", tip: "Busy", busyUntil: null, revision: expect.any(Number) });
+    });
+
+    test("carries Busy's end as a server time, so the note above the box words it from the store and nothing else", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(3_600_000, 0)), readerPerson(sam, busy(60_000, 0))]);
+
+        expect(h.status.statusOf(anna)?.busyUntil).toBe(serverNow + 3_600_000);
+        jest.advanceTimersByTime(60_000);
+        expect(h.status.statusOf(sam)).toEqual(expect.objectContaining({ state: "away", busyUntil: null }));
+    });
+});
+
+describe("others' status with the switch off", () => {
+    test("nothing is written while it is off, and turning it off empties the store, so nothing from before draws when it comes back", () => {
+        const h = buildStatus({ flags: { typing: true } });
+        const on = readSettings({ ...current, flags: { typing: true, online: true } });
+        const off = readSettings({ ...current, flags: { typing: true } });
+
+        h.status.told([readerPerson(anna, online(0))]);
+        h.settings.value = on;
+        expect(h.status.statusOf(anna)).toBeNull();
+
+        h.status.told([readerPerson(anna, online(0))]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+
+        h.settings.value = off;
+        expect(h.status.statusOf(anna)).toBeNull();
+        h.settings.value = on;
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+});
+
+describe("others' status drawn over time", () => {
+    test("Busy draws Away past its end and nothing past its row's end, by a server clock 30 s ahead of the page's, with no request", () => {
+        const h = buildStatus();
+        h.status.clockFrom(serverNowSeconds + 30);
+        h.status.told([readerPerson(anna, busy(60_000, 0, 120_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("busy");
+
+        jest.advanceTimersByTime(29_999);
+        expect(drawn.value?.state).toBe("busy");
+        jest.advanceTimersByTime(1);
+        expect(drawn.value?.state).toBe("away");
+
+        jest.advanceTimersByTime(59_999);
+        expect(drawn.value?.state).toBe("away");
+        jest.advanceTimersByTime(1);
+        expect(drawn.value).toBeNull();
+        expect(h.calls).toEqual([]);
+    });
+
+    test("what is drawn is worked out from the entry and the clock, never written over it, so a newer token's clock draws the entry again", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(60_000, 0))]);
+        const drawn = face(h.status, anna);
+
+        jest.advanceTimersByTime(60_000);
+        expect(drawn.value?.state).toBe("away");
+
+        // a token minted now says the server is 30 s behind the page, so her Busy has 30 s left
+        h.status.clockFrom(Date.now() / 1000 - 30);
+        expect(drawn.value?.state).toBe("busy");
+    });
+
+    test("reads a row's end as Postgres writes it, to the microsecond with its offset", () => {
+        const h = buildStatus();
+        const status = online(0, 10_000);
+        expect(status.until).toMatch(/^2026-11-10T15:00:10\.000123\+00:00$/);
+        h.status.told([readerPerson(anna, status)]);
+        const drawn = face(h.status, anna);
+
+        jest.advanceTimersByTime(9_999);
+        expect(drawn.value?.state).toBe("online");
+        jest.advanceTimersByTime(1);
+        expect(drawn.value).toBeNull();
+    });
+
+    test("a person's revision moves only when what is drawn changes: a later end of the same state moves nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        let reads = 0;
+        const drawn = computed(() => {
+            reads++;
+            return h.status.statusOf(anna);
+        });
+        const first = drawn.value!.revision;
+
+        h.status.told([readerPerson(anna, online(1000, rowLifeMs + 1000))]);
+        expect(drawn.value?.revision).toBe(first);
+        expect(reads).toBe(1);
+
+        h.status.carried(anna, away(2000));
+        expect(drawn.value?.state).toBe("away");
+        expect(drawn.value!.revision).toBeGreaterThan(first);
+        expect(reads).toBe(2);
+    });
+
+    test("Busy's end words follow the viewer's day: told as tomorrow at 11:59 PM, a face held across midnight reads the time alone", () => {
+        const h = buildStatus();
+        const lateEvening = new Date(2026, 10, 10, 23, 59).getTime();
+        jest.setSystemTime(lateEvening);
+        // the server 30 s ahead of the page: the words turn at the viewer's midnight, by the page's clock
+        h.status.clockFrom(lateEvening / 1000 + 30);
+        const at = lateEvening + 30_000 - serverNow;
+        const timers = jest.spyOn(global, "setTimeout");
+        h.status.told([readerPerson(anna, busy(new Date(2026, 10, 11, 8, 0).getTime() - serverNow, at, at + rowLifeMs))]);
+        const drawn = face(h.status, anna);
+        const first = drawn.value!.revision;
+        expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
+
+        jest.advanceTimersByTime(59_999);
+        expect(drawn.value!.revision).toBe(first);
+        jest.advanceTimersByTime(1);
+
+        expect(drawn.value?.tip).toMatch(/^Busy until 8:00\sAM$/u);
+        expect(drawn.value?.label).toMatch(/^, busy until 8:00\sAM$/u);
+        expect(drawn.value!.revision).toBeGreaterThan(first);
+        expect(h.calls).toEqual([]);
+        // one timer at the write, one when the midnight wake sets the next: a wake that came early would set one again and again
+        expect(timers).toHaveBeenCalledTimes(2);
+        timers.mockRestore();
+    });
+
+    test("an end two days on reads its day, then tomorrow, then the time alone, waking at each of the viewer's midnights", () => {
+        const h = buildStatus();
+        const evening = new Date(2026, 10, 10, 22, 0).getTime();
+        jest.setSystemTime(evening);
+        h.status.clockFrom(evening / 1000);
+        const at = evening - serverNow;
+        const end = new Date(2026, 10, 12, 8, 0).getTime() - serverNow;
+        // a row that lasts past both midnights, so only the words can change
+        h.status.told([readerPerson(anna, busy(end, at, end))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.tip).toMatch(/^Busy until Nov 12, 8:00\sAM$/u);
+        const first = drawn.value!.revision;
+
+        jest.advanceTimersByTime(7_200_000 - 1);
+        expect(drawn.value!.revision).toBe(first);
+        jest.advanceTimersByTime(1);
+        expect(drawn.value?.tip).toMatch(/^Busy until tomorrow, 8:00\sAM$/u);
+
+        jest.advanceTimersByTime(86_400_000);
+        expect(drawn.value?.tip).toMatch(/^Busy until 8:00\sAM$/u);
+        expect(drawn.value!.revision).toBeGreaterThan(first);
+    });
+
+    test("Busy's end moving is a change of what is drawn, since its words change", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(3_600_000, 0))]);
+        const first = h.status.statusOf(anna)!.revision;
+
+        h.status.told([readerPerson(anna, busy(7_200_000, 1000))]);
+
+        expect(h.status.statusOf(anna)!.revision).toBeGreaterThan(first);
+    });
+});
+
+describe("others' status and blocks", () => {
+    test("someone blocked draws nothing at once, and a decision older than the block's never draws after the unblock", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        h.blocked.add(anna);
+        expect(h.status.statusOf(anna)).toBeNull();
+
+        h.status.blockChanged([anna], asOf(1000));
+        expect(drawn.value).toBeNull();
+        h.status.carried(anna, online(500));
+        h.blocked.delete(anna);
+        expect(h.status.statusOf(anna)).toBeNull();
+
+        h.status.told([readerPerson(anna, online(2000))]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("a face stops drawing someone blocked though the block was decided before the status it holds, and draws that status again after the unblock", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(2000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        h.blocked.add(anna);
+        h.status.blockChanged([anna], asOf(1000));
+        expect(drawn.value).toBeNull();
+
+        h.blocked.delete(anna);
+        h.status.blockChanged([anna], asOf(1500));
+        expect(drawn.value?.state).toBe("online");
+    });
+
+    test("a status carried for someone blocked is never written, so nothing of it draws after the unblock", () => {
+        const h = buildStatus();
+        h.blocked.add(anna);
+
+        h.status.carried(anna, online(5000));
+        h.blocked.delete(anna);
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("a block learned with no decision time clears her at her entry's own", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(1000))]);
+
+        h.status.blockChanged([anna.toUpperCase()], null);
+        h.status.carried(anna, online(500));
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+});
+
+describe("the people watched", () => {
+    test("the person first, then every face's people by rank and in each face's order, each once and in lower case", () => {
+        const h = buildStatus();
+        h.status.register(() => [sam.toUpperCase(), lee], 3);
+        h.status.register(() => [anna], 1);
+        h.status.register(() => [lee, anna, me], 2);
+
+        expect(h.status.watched()).toEqual([me, anna, lee, sam]);
+    });
+
+    test("a face that unregisters leaves the list", () => {
+        const h = buildStatus();
+        const unregister = h.status.register(() => [anna], 1);
+
+        unregister();
+
+        expect(h.status.watched()).toEqual([me]);
+    });
+
+    test("is cut at 200, the platform's cap, keeping the higher ranks", () => {
+        const h = buildStatus();
+        const many = Array.from({ length: 250 }, (_, index) => `b${String(index).padStart(7, "0")}-0000-4000-8000-000000000000`);
+        h.status.register(() => many, 3);
+        h.status.register(() => [anna], 1);
+
+        const watched = h.status.watched();
+
+        expect(watched).toHaveLength(200);
+        expect(watched.slice(0, 3)).toEqual([me, anna, many[0]]);
+    });
+});
+
+describe("a face's status", () => {
+    const statusFace = defineComponent({
+        props: { people: { type: Array, required: true } },
+        setup(props) {
+            const statusOf = useFaceStatus(() => props.people as string[], 1);
+            return () => render("span", statusOf((props.people as string[])[0])?.state ?? "none");
+        }
+    });
+
+    test("registers its people while mounted and answers from the store", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        const wrapper = mount(statusFace, { props: { people: [anna] }, global: { provide: { [presenceStatusKey as symbol]: h.status } } });
+        expect(h.status.watched()).toEqual([me, anna]);
+        expect(wrapper.text()).toBe("online");
+
+        wrapper.unmount();
+        expect(h.status.watched()).toEqual([me]);
+    });
+
+    test("with no provider, as a part drawn without the shell, registers nothing and draws no status", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        const wrapper = mount(statusFace, { props: { people: [anna] } });
+
+        expect(wrapper.text()).toBe("none");
+        expect(h.status.watched()).toEqual([me]);
+    });
+});
+
+describe("a stopped status", () => {
+    test("its deadline bumps nothing and a late write changes nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0, 10_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        h.stopped.value = true;
+        h.presence.stop();
+        expect(jest.getTimerCount()).toBe(0);
+
+        h.status.told([readerPerson(sam, online(0))]);
+        h.status.carried(lee, online(0));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
+        h.status.blockChanged([anna], asOf(2000));
+
+        expect(drawn.value?.state).toBe("online");
+        expect(h.status.statusOf(sam)).toBeNull();
+        expect(h.status.statusOf(lee)).toBeNull();
+        expect(jest.getTimerCount()).toBe(0);
+    });
+
+    test("an exchange's answer writes nothing, a settle asks nothing, and the page's events send nothing more than the stop's one goodbye", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        const body = h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.session.next = Date.now() + 700_000;
+        h.page.visibilityState = "hidden";
+
+        h.stopped.value = true;
+        h.presence.stop();
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(0, { [anna]: toldEntry(online(0)) })));
+        h.status.settled("scheduled", true);
+        h.fire("pagehide");
+
+        expect(body).not.toBeNull();
+        expect(h.status.statusOf(anna)).toBeNull();
+        expect(h.session.asked).toEqual([]);
+        expect(h.leaves).toEqual([body?.client_id]);
+        expect(h.listeners).toEqual([]);
+    });
+
+    test("a stop says goodbye only for an id a body carried, and never once the latest answer said status is off", () => {
+        const never = buildStatus();
+        never.stopped.value = true;
+        never.presence.stop();
+
+        const off = buildStatus();
+        off.status.exchangeBody("start");
+        off.status.exchanged([], exchangeAnswer());
+        off.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+        off.stopped.value = true;
+        off.presence.stop();
+
+        expect([never.leaves, off.leaves]).toEqual([[], []]);
+    });
+});
+
+// The page's side of each exchange: one client id a page until a goodbye spends it, a body on
+// every exchange unless the latest answer said status is off, the people watched named only by a
+// refresh that asks about them, and the person's idle time from what she last did on a visible page.
+describe("the page's id and each exchange's body", () => {
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+    test("before any answer a body goes, even with the switch read as off, naming nobody; one id a page", () => {
+        const h = buildStatus({ flags: { typing: true } });
+
+        const first = h.status.exchangeBody("start");
+        const second = h.status.exchangeBody("start");
+
+        expect(first).toEqual({ client_id: expect.stringMatching(uuid), kind: "web", idle_seconds: 0 });
+        expect(second?.client_id).toBe(first?.client_id);
+        expect(h.status.clientId()).toBe(first?.client_id);
+    });
+
+    test("a latest answer saying status is off sends no body, and one saying on brings them back at the next exchange", () => {
+        const h = buildStatus();
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+
+        expect(h.status.exchangeBody("scheduled")).toBeNull();
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: true } });
+
+        expect(h.status.exchangeBody("scheduled")).toMatchObject({ kind: "web", watched: [me] });
+    });
+
+    test("only a scheduled or early refresh names the people watched, and only their ids shaped as one, so one malformed id costs nobody else", () => {
+        const h = buildStatus();
+        h.status.register(() => ["", "not-a-guid", anna, `${sam}x`], 1);
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+
+        for (const reason of ["start", "recheck", "expired", "retry"] as const) {
+            expect(h.status.exchangeBody(reason)).not.toHaveProperty("watched");
+        }
+        expect(h.status.exchangeBody("scheduled")?.watched).toEqual([me, anna]);
+        expect(h.status.exchangeBody("early")?.watched).toEqual([me, anna]);
+    });
+
+    test("idle is whole seconds since the last input on a visible page, the clock running while it is hidden", () => {
+        const h = buildStatus();
+
+        jest.advanceTimersByTime(5000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(3500);
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(3);
+
+        h.page.visibilityState = "hidden";
+        h.fire("pointerdown");
+        jest.advanceTimersByTime(10_000);
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(13);
+    });
+
+    test("a scroll is not her input: the feed scrolls itself to the newest message as others post and type, and that scroll arrives as hers would", () => {
+        const h = buildStatus();
+
+        jest.advanceTimersByTime(5000);
+        h.fire("scroll");
+
+        expect(h.status.exchangeBody("start")?.idle_seconds).toBe(5);
+    });
+
+    test("one set of input listeners on the window, capturing and passive, every one gone at stop", () => {
+        const h = buildStatus();
+
+        const input = h.listeners.filter(l => !["visibilitychange", "pagehide", "pageshow"].includes(l.type));
+        expect(input.map(l => `${l.on} ${l.type}`).sort()).toEqual(["keydown", "pointerdown", "pointermove", "touchstart", "wheel"].map(type => `window ${type}`));
+        expect(input.every(l => (l.options as AddEventListenerOptions)?.capture === true && (l.options as AddEventListenerOptions)?.passive === true)).toBe(true);
+
+        h.stopped.value = true;
+        h.presence.stop();
+
+        expect(h.listeners).toEqual([]);
+    });
+
+    test("closing the page says goodbye for an id a body carried and spends it, so the next body carries a new one; a hidden page says nothing", () => {
+        const h = buildStatus();
+        h.fire("pagehide");
+        expect(h.leaves).toEqual([]);
+
+        const first = h.status.exchangeBody("start")?.client_id;
+        h.page.visibilityState = "hidden";
+        h.fire("visibilitychange");
+        expect(h.leaves).toEqual([]);
+
+        h.fire("pagehide");
+        h.fire("pagehide");
+        const next = h.status.exchangeBody("start")?.client_id;
+
+        expect(h.leaves).toEqual([first]);
+        expect(next).toMatch(uuid);
+        expect(next).not.toBe(first);
+    });
+
+    test("no goodbye once the latest answer said status is off, though a body carried the id", () => {
+        const h = buildStatus();
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: false } });
+
+        h.fire("pagehide");
+
+        expect(h.leaves).toEqual([]);
+    });
+
+    test("a page restored from the back-forward cache counts as her input and holds one ask for the recheck's settle, asking nothing itself; a fresh load's pageshow does neither", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchangeBody("start");
+        h.status.exchanged([], exchangeAnswer());
+        jest.advanceTimersByTime(400_000);
+
+        h.fire("pageshow", { persisted: false });
+        expect(h.status.exchangeBody("recheck")?.idle_seconds).toBe(400);
+        h.status.exchanged([], exchangeAnswer());
+        h.status.settled("recheck", true);
+        expect(h.session.asked).toEqual([]);
+
+        h.fire("pageshow", { persisted: true });
+        expect(h.session.asked).toEqual([]);
+        expect(h.status.exchangeBody("recheck")?.idle_seconds).toBe(0);
+        h.status.exchanged([], exchangeAnswer());
+        h.status.settled("recheck", true);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+});
+
+// A sleeping machine fires no timer, and a page left visible across it hears neither of its own
+// show events, so what is drawn is read again against the clock whenever the page comes back.
+describe("others' status drawn again against the clock", () => {
+    test("a clock that jumped past a row's end with no timer fired draws nothing once redrawn", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0, 10_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.setSystemTime(serverNow + 20_000);
+        expect(drawn.value?.state).toBe("online");
+        h.status.rearm();
+
+        expect(drawn.value).toBeNull();
+    });
+
+    test.each([
+        ["shown again", (h: ReturnType<typeof buildStatus>) => h.fire("visibilitychange")],
+        ["restored from the back-forward cache", (h: ReturnType<typeof buildStatus>) => h.fire("pageshow", { persisted: true })],
+        ["the first input after a sleep", (h: ReturnType<typeof buildStatus>) => h.fire("keydown")]
+    ])("%s, the page draws again against the clock", (_name, wake) => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0, 10_000))]);
+        const drawn = face(h.status, anna);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.setSystemTime(serverNow + 20_000);
+        wake(h);
+
+        expect(drawn.value).toBeNull();
+    });
+});
+
+// Asking early, as the model does: an input asks when what the server holds of her runs out before
+// the next refresh, and a page shown asks when its badges are older than a token's life; never
+// while a refresh is out, which flags one ask again for the session to settle first; at most once
+// a minute, and never before the first answer, with status off or with no idle line.
+describe("asking early", () => {
+    const idle = { limits: { presence_idle_seconds: 600 } };
+
+    /** One exchange of a reason lands and settles, its next refresh due a time after now. */
+    function land(h: ReturnType<typeof buildStatus>, reason: Parameters<Presence["status"]["exchangeBody"]>[0], nextAfterMs: number, presence?: Record<string, unknown>): void {
+        const body = h.status.exchangeBody(reason);
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(presence));
+        h.session.next = Date.now() + nextAfterMs;
+        h.session.out = null;
+        h.status.settled(reason, true);
+    }
+
+    test("an input asks only when what the server holds of her runs out before the next refresh, and at most once a minute", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual([]);
+
+        h.session.next = serverNow + 700_000;
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(2000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual(["early"]);
+
+        jest.advanceTimersByTime(59_000);
+        h.fire("keydown");
+        expect(h.session.asked).toEqual(["early", "early"]);
+    });
+
+    test("nothing asks before the first answer, with status off, or with no idle line", () => {
+        const before = buildStatus(idle);
+        before.session.next = serverNow + 700_000;
+        jest.advanceTimersByTime(1000);
+        before.fire("keydown");
+
+        const noLine = buildStatus();
+        land(noLine, "start", 700_000);
+        jest.advanceTimersByTime(1000);
+        noLine.fire("keydown");
+
+        const off = buildStatus(idle);
+        land(off, "start", 700_000);
+        off.settings.value = readSettings({ flags: { typing: true, online: false }, ...idle });
+        jest.advanceTimersByTime(1000);
+        off.fire("keydown");
+
+        expect([before.session.asked, noLine.session.asked, off.session.asked]).toEqual([[], [], []]);
+    });
+
+    test("an input while a refresh is out flags one ask, which its settle makes once the body that landed is older than the input", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(5000);
+
+        h.session.out = "scheduled";
+        const body = h.status.exchangeBody("scheduled");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(online(0)) })));
+        expect(h.session.asked).toEqual([]);
+
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", true);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown while a refresh is out, with no input since its body, asks nothing once that refresh lands with presence", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        h.session.out = "scheduled";
+        const body = h.status.exchangeBody("scheduled");
+        h.fire("visibilitychange");
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(online(0)) })));
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", true);
+
+        expect(h.session.asked).toEqual([]);
+    });
+
+    test("a flag survives a failed settle, and the next landing asks once for a page still stale", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(301_000);
+
+        h.session.out = "recheck";
+        h.status.exchangeBody("recheck");
+        h.fire("visibilitychange");
+        h.status.exchanged([], null);
+        h.session.out = null;
+        h.session.next = null;
+        h.status.settled("recheck", false);
+        expect(h.session.asked).toEqual([]);
+
+        land(h, "retry", 210_000);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown inside the wait after a failed refresh flags, and the retry's settle asks once", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(301_000);
+        h.session.next = null;
+
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual([]);
+        land(h, "retry", 210_000);
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a page shown asks only once its badges are older than a token's life, the start's landing counting, and asks at once with no refresh out", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        jest.advanceTimersByTime(120_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual([]);
+
+        jest.advanceTimersByTime(181_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("an answer with no presence map leaves the page as stale as it was; one with a map makes it fresh", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(250_000);
+        land(h, "recheck", 210_000);
+        jest.advanceTimersByTime(51_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+
+        land(h, "early", 210_000, watchAnswer(0, { [me]: toldEntry(online(0)) }));
+        jest.advanceTimersByTime(61_000);
+        h.fire("visibilitychange");
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    test("a flag set while a refresh was out starts no minute, so an input once it has settled asks at once", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+
+        h.session.out = "scheduled";
+        h.status.exchangeBody("scheduled");
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+        h.status.exchanged([], null);
+        h.session.out = null;
+        h.session.next = serverNow + 700_000;
+        h.status.settled("scheduled", false);
+        expect(h.session.asked).toEqual([]);
+
+        jest.advanceTimersByTime(1000);
+        h.fire("keydown");
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+
+    // The real session never reaches this state: after a failed exchange it either waits, with no
+    // next refresh, or mints again inside the same try. The cell guards the rule for a later reader
+    // of the held input between a failure and the next landing.
+    test("a failed exchange leaves the input the server holds as it was, so the next input still asks", () => {
+        const h = buildStatus(idle);
+        land(h, "start", 210_000);
+        jest.advanceTimersByTime(70_000);
+        h.fire("keydown");
+
+        h.status.exchangeBody("scheduled");
+        h.status.exchanged([], null);
+        h.session.next = serverNow + 650_000;
+        jest.advanceTimersByTime(2000);
+        h.fire("keydown");
+
+        expect(h.session.asked).toEqual(["early"]);
+    });
+});
+
+describe("status carried on typing", () => {
+    test("a start with status writes it as the dots are drawn, and so do a stop's and a stale row's", () => {
+        const h = buildStatus();
+
+        h.presence.heard("typing", signal(anna, { status: online(0) }), group);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+
+        h.presence.heard("typing", signal(anna, { stopped: true, status: away(1000) }), group);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+
+        // a signal naming a message older than one of hers held was sent before it and draws no dots, but its status is newer
+        h.hold(12, sam);
+        h.presence.heard("typing", signal(sam, { after: 11, status: busy(null, 1000) }), group);
+        expect(h.presence.state.typists[group]).toEqual([anna]);
+        expect(h.status.statusOf(sam)?.state).toBe("busy");
+    });
+
+    test("a stop with no status key, and a start with none, write nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        const at = h.status.statusOf(anna)?.revision;
+
+        h.presence.heard("typing", signal(anna, { stopped: true }), group);
+        h.presence.heard("typing", signal(anna), group);
+
+        expect(h.status.statusOf(anna)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("one for a blocked typist, or her own room row, writes nothing", () => {
+        const h = buildStatus();
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
+        h.blocked.add(anna);
+
+        h.presence.heard("typing", signal(anna, { status: online(1000) }), group);
+        h.presence.heard("typing", signal(me, { status: online(1000) }), group);
+        h.blocked.delete(anna);
+
+        expect(h.status.statusOf(anna)).toBeNull();
+        expect(h.status.statusOf(me)).toBeNull();
+    });
+
+    test("with typing off and status on a row still carries its status, though it draws no dots", () => {
+        const h = buildStatus({ flags: { typing: false, online: true } });
+
+        h.presence.heard("typing", signal(anna, { status: busy(null, 0) }), group);
+
+        expect(h.presence.state.typists).toEqual({});
+        expect(h.status.statusOf(anna)?.state).toBe("busy");
+    });
+
+    test("with status off a row writes nothing", () => {
+        const h = buildStatus({ flags: { typing: true, online: false } });
+
+        h.presence.heard("typing", signal(anna, { status: online(0) }), group);
+        h.settings.value = readSettings({ ...current, flags: { typing: true, online: true } });
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("a row with every key but status changed, and no status, writes nothing", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+        const at = h.status.statusOf(anna)?.revision;
+
+        h.presence.heard("typing", { ...signal(anna), after: 11, interval_ms: 9000, id: "sig-other", state: "away", until: pgTime(1000), as_of: asOf(5000) }, group);
+
+        expect(h.status.statusOf(anna)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+});
+
+describe("nothing but status writes", () => {
+    test("a reader's person whose status cannot be read writes nothing, whatever else it carries", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0))]);
+
+        h.status.told([{ ...readerPerson(anna, { as_of: "soon" }), state: "away", until: pgTime(1000), as_of: asOf(5000) }]);
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+});
+
+describe("the typing call's client", () => {
+    test("every signal names the page's id, the one the exchange's body carries", async () => {
+        const h = buildStatus();
+        const id = h.status.exchangeBody("start")?.client_id;
+
+        h.presence.typed(group, null, "a");
+        await pass(700);
+        h.presence.typed(group, null, "");
+        await settle();
+
+        expect(id).toEqual(expect.any(String));
+        expect(h.calls.map(c => c.body.p_client)).toEqual([id, id]);
+    });
+
+    test("a page whose goodbye spent its id names a new one, minted for the signal, and never a client as null", async () => {
+        const h = buildStatus();
+        const id = h.status.exchangeBody("start")?.client_id;
+        h.status.exchanged([], exchangeAnswer());
+        h.fire("pagehide", { persisted: true });
+
+        h.presence.typed(group, null, "a");
+        await pass(700);
+
+        expect(h.calls[0].body.p_client).toEqual(expect.any(String));
+        expect(h.calls[0].body.p_client).not.toBe(id);
+        expect(h.status.exchangeBody("recheck")?.client_id).toBe(h.calls[0].body.p_client);
+    });
+});
+
+describe("Appear offline and typing", () => {
+    test("Appear offline in her settings stops the next signal, and the switch being off changes nothing of it", async () => {
+        const on = buildStatus();
+        on.me.appear_offline = true;
+        on.presence.typed(group, null, "a");
+        await pass(700);
+
+        const off = buildStatus({ flags: { typing: true, online: false } });
+        off.me.appear_offline = true;
+        off.presence.typed(group, null, "a");
+        await pass(700);
+
+        expect(on.calls).toEqual([]);
+        expect(off.calls).toEqual([]);
+    });
+});
+
+describe("her own face", () => {
+    const idleLine = { limits: { presence_idle_seconds: 30 } };
+
+    test("draws Online before any answer of hers, and from her input while it is fresh, whatever an answer says", () => {
+        const h = buildStatus(idleLine);
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "online", tip: "Online", label: ", online" }));
+
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(away(0)) })));
+        expect(h.status.statusOf(me)?.state).toBe("online");
+
+        // with her input past the idle line and no answer of hers yet, she has the page open
+        const fresh = buildStatus(idleLine);
+        jest.advanceTimersByTime(31_000);
+        expect(fresh.status.statusOf(me)?.state).toBe("online");
+    });
+
+    test("draws her answer once her input is older than the idle line, nothing for a null one, and Online again at her next input, each by revision", () => {
+        const h = buildStatus(idleLine);
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("online");
+
+        jest.advanceTimersByTime(30_000);
+        expect(drawn.value).toBeNull();
+
+        h.fire("keydown");
+        expect(drawn.value?.state).toBe("online");
+
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(31_000, { [me]: toldEntry(away(31_000)) })));
+        jest.advanceTimersByTime(30_000);
+        expect(drawn.value?.state).toBe("away");
+    });
+
+    test("draws Busy from her settings at once, with her own words, and Busy with no end for infinity", () => {
+        const h = buildStatus(idleLine);
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("online");
+        const at = drawn.value?.revision ?? 0;
+
+        h.me.busy_until = pgTime(3_600_000);
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "busy", busyUntil: serverNow + 3_600_000 }));
+        // her revision moves, so her face fades to it rather than drawing it as state
+        expect(drawn.value?.revision).toBeGreaterThan(at);
+        expect(drawn.value?.tip).toMatch(/^Busy, notifications paused until /);
+
+        h.me.busy_until = "infinity";
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "busy", tip: "Busy, notifications paused", busyUntil: null }));
+
+        h.me.busy_until = pgTime(-1000);
+        expect(drawn.value?.state).toBe("online");
+    });
+
+    test("turns from Busy to her automatic state at its end, with no request", () => {
+        const h = buildStatus(idleLine);
+        h.me.busy_until = pgTime(60_000);
+        // her answer was decided while a longer Busy was on, so only her settings' end can turn her
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0, { [me]: toldEntry({ ...busy(120_000, 0), auto: "online" }) })));
+        const drawn = face(h.status, me);
+        expect(drawn.value?.state).toBe("busy");
+        const at = drawn.value?.revision ?? 0;
+
+        // her input is older than the idle line by then, so what draws is her answer's automatic state
+        jest.advanceTimersByTime(60_000);
+
+        expect(drawn.value?.state).toBe("online");
+        expect(drawn.value?.revision).toBeGreaterThan(at);
+        expect(h.session.asked).toEqual([]);
+    });
+
+    test("draws Appear offline from her settings as hidden, before Busy and her input", () => {
+        const h = buildStatus(idleLine);
+        h.me.busy_until = "infinity";
+        const drawn = face(h.status, me);
+
+        h.me.appear_offline = true;
+
+        expect(drawn.value).toEqual(expect.objectContaining({ state: "hidden", tip: "Appear offline" }));
+    });
+
+    test("draws nothing until her settings have been read, then what they say, with no Online between", () => {
+        const h = buildStatus(idleLine);
+        h.prefs.isMeRead = false;
+        const states: Array<string | null> = [];
+        const stopRecording = watchEffect(() => states.push(h.status.statusOf(me)?.state ?? null), { flush: "sync" });
+        expect(h.status.statusOf(me)).toBeNull();
+
+        // as the sidebar's me lands: her settings, then that they are read
+        h.me.appear_offline = true;
+        h.prefs.isMeRead = true;
+        stopRecording();
+
+        expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "hidden" }));
+        expect(states).toEqual([null, "hidden"]);
+    });
+
+    test("an answer of hers that says Busy with no automatic state, her settings not Busy and her input old, draws Away", () => {
+        const h = buildStatus(idleLine);
+        jest.advanceTimersByTime(31_000);
+
+        h.status.told([readerPerson(me, busy(600_000, 31_000))]);
+
+        expect(h.status.statusOf(me)?.state).toBe("away");
+    });
+
+    test("an idle line shortened by a later exchange draws her answer at once when her input is already past the new line", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
+        const drawn = face(h.status, me);
+        jest.advanceTimersByTime(60_000);
+        expect(drawn.value?.state).toBe("online");
+
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30 } });
+
+        expect(drawn.value).toBeNull();
+    });
+
+    test("an idle line shortened while her input is fresh moves her deadline to the new line", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
+        const drawn = face(h.status, me);
+        jest.advanceTimersByTime(10_000);
+
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30 } });
+        expect(drawn.value?.state).toBe("online");
+
+        jest.advanceTimersByTime(21_000);
+        expect(drawn.value).toBeNull();
+    });
+
+    test("a Busy her settings say once they are read ends by the one timer, with nothing else written", () => {
+        const h = buildStatus(idleLine);
+        h.prefs.isMeRead = false;
+        const drawn = face(h.status, me);
+
+        h.me.busy_until = pgTime(60_000);
+        h.prefs.isMeRead = true;
+        expect(drawn.value?.state).toBe("busy");
+
+        // no answer of hers: Online, since she has the page open
+        jest.advanceTimersByTime(61_000);
+        expect(drawn.value?.state).toBe("online");
+    });
+
+    test("draws nothing with the switch off, whatever her settings say", () => {
+        const h = buildStatus({ flags: { typing: true, online: false }, ...idleLine });
+        h.me.appear_offline = true;
+
+        expect(h.status.statusOf(me)).toBeNull();
+    });
+});
+
+describe("the status store's size", () => {
+    test("drops a person who has drawn nothing for longer than any older decision of theirs could, so a write walks only who can still draw", () => {
+        const h = buildStatus();
+        const people = Array.from({ length: 300 }, (_, i) => `b${String(i).padStart(7, "0")}-0000-4000-8000-000000000000`);
+        h.status.told(people.map(alias => readerPerson(alias, online(0))));
+
+        // past every row's end, and past how long the store keeps a decision that draws nothing
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(anna, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
+        const parse = jest.spyOn(Date, "parse");
+        h.status.told([readerPerson(sam, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
+        const parsed = parse.mock.calls.length;
+        parse.mockRestore();
+
+        expect(parsed).toBeLessThan(20);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(people[0])).toBeNull();
+    });
+
+    test("keeps a decision that says nothing for as long as an older one could still draw", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, nothing(0))]);
+
+        jest.advanceTimersByTime(rowLifeMs - 10_000);
+        h.status.told([readerPerson(sam, online(rowLifeMs - 10_000))]);
+        h.status.carried(anna, online(-1000));
+
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("keeps a decision that says nothing past the platform's longest row, whatever the viewer's own token's life, with room for that row to grow", () => {
+        const h = buildStatus();
+        // a token minted from a church token held, which the platform cuts to two minutes
+        h.session.life = 120;
+        h.status.told([readerPerson(anna, nothing(0))]);
+
+        jest.advanceTimersByTime(400_000);
+        h.status.told([readerPerson(sam, online(400_000))]);
+        // decided before the nothing, its row the platform's full token life and slack
+        h.status.carried(anna, online(-10_000, rowLifeMs - 10_000));
+        expect(h.status.statusOf(anna)).toBeNull();
+
+        // a platform whose rows last half again as long
+        jest.advanceTimersByTime(400_000);
+        h.status.told([readerPerson(sam, online(800_000))]);
+        h.status.carried(anna, online(-10_000, rowLifeMs * 1.5));
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("never drops her own answer, so a null one still draws nothing once her input is old", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
+
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(sam, online(heldNothingMs + 1000))]);
+
+        expect(h.status.statusOf(me)).toBeNull();
+    });
+
+    test("holds nothing for a face that draws nothing: reading people never told, or told and let go, keeps none of them", () => {
+        const h = buildStatus();
+        const people = Array.from({ length: 300 }, (_, i) => `b${String(i).padStart(7, "0")}-0000-4000-8000-000000000000`);
+        h.status.told(people.slice(0, 150).map(alias => readerPerson(alias, online(0))));
+        people.forEach(alias => h.status.statusOf(alias));
+
+        // past every row's end and the keeping of a decision that draws nothing, so the told are let go too
+        jest.advanceTimersByTime(heldNothingMs + 1000);
+        h.status.told([readerPerson(sam, online(heldNothingMs, heldNothingMs + rowLifeMs))]);
+        const set = jest.spyOn(Map.prototype, "set");
+        const read = people.map(alias => h.status.statusOf(alias));
+        const kept = set.mock.calls.length;
+        set.mockRestore();
+
+        expect(read).toEqual(people.map(() => null));
+        // reading 300 faces that draw nothing adds nothing the store keeps
+        expect(kept).toBe(0);
+    });
+});
+
+describe("what a face reads", () => {
+    test("a token exchange that answers the same switch and idle line draws no face again, hers included; a switch flipped draws each", () => {
+        const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
+        h.status.told([readerPerson(anna, online(0))]);
+        const renders = { anna: 0, me: 0 };
+        const stops = [
+            watchEffect(() => void (renders.anna++, h.status.statusOf(anna)), { flush: "sync" }),
+            watchEffect(() => void (renders.me++, h.status.statusOf(me)), { flush: "sync" })
+        ];
+
+        // as each landed exchange does, the settings replaced whole, here with a new token's pace too
+        h.settings.value = readSettings({ flags: { typing: true, online: true }, limits: { presence_idle_seconds: 30, typing_interval_ms: 9000 } });
+        h.settings.value = { ...h.settings.value };
+        expect(renders).toEqual({ anna: 1, me: 1 });
+
+        h.settings.value = readSettings({ flags: { typing: true, online: false }, limits: { presence_idle_seconds: 30 } });
+        stops.forEach(stop => stop());
+
+        expect(renders).toEqual({ anna: 2, me: 2 });
+        expect(h.status.statusOf(anna)).toBeNull();
+    });
+
+    test("two reads at one revision are the same status, hers included, and a change is a new one", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, busy(3_600_000))]);
+        const annaBusy = h.status.statusOf(anna);
+        const mine = h.status.statusOf(me);
+
+        expect(annaBusy?.state).toBe("busy");
+        expect(h.status.statusOf(anna)).toBe(annaBusy);
+        expect(h.status.statusOf(anna.toUpperCase())).toBe(annaBusy);
+        expect(h.status.statusOf(me)).toBe(mine);
+
+        h.status.told([readerPerson(anna, away(1000))]);
+        h.me.appear_offline = true;
+
+        expect(h.status.statusOf(anna)).not.toBe(annaBusy);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        expect(h.status.statusOf(me)).not.toBe(mine);
+        expect(h.status.statusOf(me)?.state).toBe("hidden");
+    });
+});
+
+// #endregion Others' status

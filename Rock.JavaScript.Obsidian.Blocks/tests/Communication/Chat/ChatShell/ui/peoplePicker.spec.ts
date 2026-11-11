@@ -26,6 +26,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PeoplePicker from "../../../../../src/Communication/Chat/ChatShell/ui/peoplePicker.partial.obs";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, chatSheet, createStatusStore, provideStatus, fillsAndRings, setsBothRings, StatusStore } from "../statusStore";
 
 /** One person as chat_search_people answers them, exactly its keys. */
 function person(n: number, nickName: string, lastName: string, inRoom?: boolean): PersonRow {
@@ -237,4 +238,51 @@ test("an answer is said: how many can be picked, or that no one was found", asyn
     await answer(w, "zz", []);
 
     expect(w.emitted("announce")).toEqual([["1 person found"], ["No one found"]]);
+});
+
+describe("online status", () => {
+    let status: StatusStore;
+    let unprovide: () => void;
+
+    beforeEach(() => {
+        status = createStatusStore();
+        unprovide = provideStatus(status);
+    });
+
+    afterEach(() => {
+        unprovide();
+    });
+
+    const found = [statusAnna, statusBen, statusCarl].map((alias, n) => ({ ...person(n, "Anna", "Reyes"), person_alias_guid: alias.toUpperCase() }));
+
+    test("each result draws its person's badge from the store and the words in the option's name", async () => {
+        const w = draw({ isInline: true });
+        await answer(w, "a", found);
+        const options = w.findAll("[data-testid='pp-option']");
+
+        expect(options.map(option => badgesIn(option.element).map(badge => badge.state))).toEqual([["online"], ["busy"], []]);
+        expect(options.map(option => option.get(".chat-pk-o-main").text())).toEqual(["Anna Reyes, online", "Anna Reyes, busy", "Anna Reyes"]);
+    });
+
+    test("a chosen person's chip draws no badge", async () => {
+        const w = draw({ isInline: true, chosen: [found[0]] });
+        await nextTick();
+
+        expect(w.findAll(".chat-pk-chips .chat-av").length).toBeGreaterThan(0);
+        expect(badgesIn(w.get(".chat-pk-chips").element)).toEqual([]);
+    });
+
+    test.each([
+        ["the list over the page", /^\.chat-pk-list$/],
+        ["the list inline", /^\.chat-pk\.is-inline \.chat-pk-list$/]
+    ])("rings its badge in %s's fill", (_place, selector) => {
+        expect(setsBothRings(chatSheet, selector)).toBe(true);
+    });
+
+    test("rings its badge in each result's own fill as it changes: hover, the active option, none when dimmed", () => {
+        const states = fillsAndRings(chatSheet, /^\.chat-pk-opt(:hover|\.is-active|\[aria-disabled="true"\])$/);
+
+        expect(states).toHaveLength(3);
+        expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
+    });
 });

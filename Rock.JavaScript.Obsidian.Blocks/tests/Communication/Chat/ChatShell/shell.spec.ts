@@ -22,13 +22,14 @@ import { createChatShell, PlatformClientLike, ShellOptions } from "../../../../s
 import { churchTokenFromAction, refusalMessage } from "../../../../src/Communication/Chat/ChatShell/shellSession.partial";
 import { channelTopic, personalTopic } from "../../../../src/Communication/Chat/ChatShell/composables/useRealtimeHub.partial";
 import { rememberedChannelKey, revealCeilingMs } from "../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
-import { toRaw } from "vue";
+import { computed, toRaw, watch, watchEffect } from "vue";
 import { HistoryPage, MentionRow, SidebarRow, TimelineMessage, UnreadMention } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { DoorResult } from "../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { lockedReason, noKeySentence } from "../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { quoteKey } from "../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { messageForError } from "../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { FakeRequest, limits as attachmentLimits, nextUpload } from "./attachmentFakes";
+import { asOf, away, busy, dmPreview, nothing, online, pgTime, readerPerson, serverNow, typingRow } from "./statusShapes";
 
 const tenant = "10000000-0000-4000-8000-000000000001";
 const person = "a0000007-0000-4000-8000-000000000000";
@@ -154,6 +155,17 @@ function build(options: {
     exchangeAnswers: { value: ExchangeAnswer[] },
     exchangeTimes: number[],
     exchangeSignals: Array<AbortSignal | null>,
+    exchangeBodies: Array<Record<string, unknown> | null>,
+    exchangeHeaders: Array<Record<string, string>>,
+    exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null },
+    exchangeRead: { value: (() => void) | null },
+    statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }>,
+    statusAnswer: { value: { status: number, body: unknown } },
+    bootstrapCalls: Array<Record<string, unknown>>,
+    marks: string[],
+    heldMint: { value: Deferred<void> | null },
+    serverAheadSeconds: { value: number },
+    exchangeDelayMs: { value: number },
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
     uploads: FakeRequest[],
@@ -221,9 +233,32 @@ function build(options: {
     const exchangeTimes: number[] = [];
     // The signal each exchange's request was handed, which a try given up aborts.
     const exchangeSignals: Array<AbortSignal | null> = [];
+    // The body each exchange carried, null for none, and its headers.
+    const exchangeBodies: Array<Record<string, unknown> | null> = [];
+    const exchangeHeaders: Array<Record<string, string>> = [];
+    // What an exchange that named people answers, as the status read does in time: by default one
+    // decision time telling none of them anything; null answers with no presence, as when the read
+    // did not answer in time.
+    const exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null } = {
+        value: () => ({ as_of: Date.now() * 1000, told: {} })
+    };
+    // Run as an exchange's answer is read, after its request has answered.
+    const exchangeRead: { value: (() => void) | null } = { value: null };
+    // Every chat_set_status asked, and whether it was to survive the page closing.
+    const statusCalls: Array<{ body: Record<string, unknown>, keepalive: boolean }> = [];
+    const statusAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: { client: "leave" } } };
+    const bootstrapCalls: Array<Record<string, unknown>> = [];
+    const marks: string[] = [];
+    // Set, the next mint waits for the test to let it answer.
+    const heldMint: { value: Deferred<void> | null } = { value: null };
+    // How far the platform's clock runs ahead of the page's as it mints a token, in seconds, which
+    // the token's mint time carries.
+    const serverAheadSeconds = { value: 0 };
+    // Set, each exchange's request takes this long to answer, so the person's input can land while one is out.
+    const exchangeDelayMs = { value: 0 };
     // Every roster page asked; each answers with nobody.
     const memberCalls: Array<Record<string, unknown>> = [];
-    const windowListeners: Record<string, Array<() => void>> = {};
+    const windowListeners: Record<string, Array<(event?: unknown) => void>> = {};
     const documentListeners: Record<string, Array<() => void>> = {};
     const pageDocument = {
         visibilityState: "visible",
@@ -266,6 +301,7 @@ function build(options: {
         session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: options.linkedChannelId === undefined ? channelA : options.linkedChannelId,
         mintChurchToken: async () => {
+            await heldMint.value?.promise;
             counts.mints++;
             const isOk = mintGate.value === "ok";
             return { isSuccess: true, statusCode: 200, data: { gate: mintGate.value, churchToken: isOk ? `church-${counts.mints}` : null } };
@@ -278,7 +314,20 @@ function build(options: {
             if (url.endsWith("/functions/v1/token-exchange")) {
                 exchangeTimes.push(Date.now());
                 exchangeSignals.push(init.signal ?? null);
-                await heldExchange.value?.promise;
+                const sentBody = typeof init.body === "string" ? JSON.parse(init.body) as Record<string, unknown> : null;
+                exchangeBodies.push(sentBody);
+                exchangeHeaders.push({ ...init.headers as Record<string, string> });
+                if (exchangeDelayMs.value > 0) {
+                    await new Promise(resolve => setTimeout(resolve, exchangeDelayMs.value));
+                }
+                const held = heldExchange.value;
+                if (held) {
+                    // a request waiting on the network gives up when it is aborted, as fetch does
+                    await new Promise<void>((resolve, reject) => {
+                        void held.promise.then(resolve);
+                        init.signal?.addEventListener("abort", () => reject(new DOMException("aborted", "AbortError")));
+                    });
+                }
                 const failure = exchangeAnswers.value.shift();
                 if (failure === "unreachable") {
                     throw new TypeError("Failed to fetch");
@@ -291,7 +340,16 @@ function build(options: {
                         json: async () => ({ error: { code: failure.code ?? "rpc.unavailable" } })
                     } as unknown as Response;
                 }
-                return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
+                const watched = Array.isArray(sentBody?.watched) ? sentBody.watched as string[] : null;
+                const presence = watched && exchangePresence.value ? { presence: exchangePresence.value(watched) } : {};
+                const answer = { access_token: tokenFor(tokenPerson.value, serverAheadSeconds.value), expires_in: 300, settings: exchangeSettings.value, ...presence };
+                return {
+                    ...fakeResponse(200, answer),
+                    json: async () => {
+                        exchangeRead.value?.();
+                        return answer;
+                    }
+                } as unknown as Response;
             }
             const body = JSON.parse(init.body as string);
             if (url.endsWith("/rest/v1/rpc/chat_report_problem")) {
@@ -327,8 +385,13 @@ function build(options: {
                 return fakeResponse(deviceAnswer.value.status, deviceAnswer.value.body);
             }
             // Every platform call is a POST through the shell's one call path.
+            if (url.endsWith("/rest/v1/rpc/chat_set_status")) {
+                statusCalls.push({ body, keepalive: init.keepalive === true });
+                return fakeResponse(statusAnswer.value.status, statusAnswer.value.body);
+            }
             if (url.endsWith("/rest/v1/rpc/chat_get_bootstrap")) {
                 counts.bootstraps++;
+                bootstrapCalls.push(body);
                 // an error here is a fetch that never reached the platform, as when offline
                 if (bootstrap.value instanceof Error) {
                     throw bootstrap.value;
@@ -421,7 +484,7 @@ function build(options: {
                 }
             }
         },
-        mark: () => undefined,
+        mark: name => marks.push(name),
         startDirectMessage: options.startDirectMessage,
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
@@ -445,11 +508,13 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, exchangeSignals, exchangeBodies, exchangeHeaders, exchangePresence, exchangeRead, statusCalls, statusAnswer, bootstrapCalls, marks, heldMint, serverAheadSeconds, exchangeDelayMs, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
         fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
         fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
-        firePageHide: () => (windowListeners["pagehide"] ?? []).forEach(l => l())
+        firePageHide: (persisted = false) => (windowListeners["pagehide"] ?? []).forEach(l => l({ persisted })),
+        firePageShow: (persisted: boolean) => (windowListeners["pageshow"] ?? []).forEach(l => l({ persisted })),
+        fireInput: (type = "keydown") => (windowListeners[type] ?? []).forEach(l => l({}))
     };
 }
 
@@ -478,13 +543,13 @@ function memberFacts(channelId: string, extra: Record<string, unknown> = {}): Re
     };
 }
 
-/** A platform token naming a person in its subject, as the token exchange signs one; unsigned here. */
-function tokenFor(personAliasGuid: string | null): string {
+/** A platform token naming a person in its subject and minted now by a clock some seconds ahead of the page's, as the token exchange signs one; unsigned here. */
+function tokenFor(personAliasGuid: string | null, aheadSeconds = 0): string {
     if (personAliasGuid === null) {
         return "platform";
     }
     const part = (value: unknown): string => Buffer.from(JSON.stringify(value)).toString("base64url");
-    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant })}.signature`;
+    return `${part({ alg: "ES256" })}.${part({ sub: personAliasGuid, tid: tenant, iat: Math.floor(Date.now() / 1000) + aheadSeconds })}.signature`;
 }
 
 /** Answers the oldest pending history call for a channel. */
@@ -3409,7 +3474,7 @@ describe("settings", () => {
     test("the bootstrap's me is where the person's own switches start", async () => {
         const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
 
-        expect(h.shell.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false });
+        expect(h.shell.prefs.state.me).toEqual({ show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, busy_until: null, appear_offline: false });
     });
 
     test("a room's notify mode is one chat_set_prefs call with the room and the patch", async () => {
@@ -4795,7 +4860,7 @@ describe("typing", () => {
         h.shell.presence.typed(channelA, null, "H");
         await firstWait();
 
-        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10 }]);
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: null, p_after: 10, p_client: h.exchangeBodies[0]?.client_id }]);
         expect(h.typingCalls[0].headers["x-region"]).toBe("us-east-1");
     });
 
@@ -4839,8 +4904,8 @@ describe("typing", () => {
         empty.shell.presence.typed(channelA, 40, "H");
         await firstWait();
 
-        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44 }]);
-        expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40 }]);
+        expect(h.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 44, p_client: h.exchangeBodies[0]?.client_id }]);
+        expect(empty.typingCalls.map(c => c.body)).toEqual([{ p_channel_id: channelA, p_parent_id: 40, p_after: 40, p_client: empty.exchangeBodies[0]?.client_id }]);
     });
 
     // Until the thread's first page lands its replies are not held, so a signal would name the
@@ -5137,7 +5202,7 @@ describe("a start the platform cannot answer yet", () => {
         await h.shell.stop();
     });
 
-    test("a try that runs past its deadline aborts the exchange's request, at the start and on a refresh", async () => {
+    test("a try that runs past its deadline aborts the exchange's request, at the start and on a refresh, each carrying its reason's body", async () => {
         const starting = build();
         starting.heldExchange.value = deferred<void>();
         void starting.shell.start();
@@ -5145,9 +5210,12 @@ describe("a start the platform cannot answer yet", () => {
         expect(starting.exchangeSignals[0]?.aborted).toBe(false);
         await advance(1);
         expect(starting.exchangeSignals[0]?.aborted).toBe(true);
+        // the start's body, which names nobody
+        expect(Object.keys(starting.exchangeBodies[0] ?? {}).sort()).toEqual(["client_id", "idle_seconds", "kind"]);
         await starting.shell.stop();
 
         const h = build();
+        h.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
         const signedIn = h.shell.start();
         await advance(0);
         answerHistory(h, channelA, 10);
@@ -5161,6 +5229,8 @@ describe("a start the platform cannot answer yet", () => {
         expect(h.exchangeSignals[1]?.aborted).toBe(false);
         await advance(1);
         expect(h.exchangeSignals[1]?.aborted).toBe(true);
+        // a recheck's body, the page's one id, naming nobody
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 0 });
         await h.shell.stop();
     });
 
@@ -5218,5 +5288,950 @@ describe("a start the platform cannot answer yet", () => {
         await settle();
 
         expect(quick.reports.filter(r => r.p_kind === "start")).toEqual([]);
+    });
+});
+
+// Online status rides the token exchange the page already makes: every exchange beats with the
+// page's one client id, a refresh that asks about people names them, the page says goodbye as it
+// closes, and the page asks early only between the session's own refreshes. These run the real
+// session, sign-in and exchange over a fake network, so the body read here is the body sent.
+describe("online status on the token exchange", () => {
+    const realRandom = Math.random;
+    const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+    const ada = "a0000001-0000-4000-8000-000000000000";
+    const on = { limits: { ...platformLimits, presence_idle_seconds: 600 }, flags: { online: true } };
+    const off = { limits: { ...platformLimits, presence_idle_seconds: 600 }, flags: { online: false } };
+
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: 0 });
+        // every wait at the middle of its range: a token of 300 s is refreshed at 210 s
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    /** A shell for a church whose settings are given, signed in with channel A open; its tokens name the person and their mint time. */
+    async function begin(settings: Record<string, unknown> = on): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.tokenPerson.value = person;
+        h.exchangeSettings.value = settings;
+        const starting = h.shell.start();
+        await advance(0);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        return h;
+    }
+
+    /** The bodies of the exchanges from an index on, as which named people. */
+    function watchedFrom(h: ReturnType<typeof build>, index: number): boolean[] {
+        return h.exchangeBodies.slice(index).map(body => Array.isArray(body?.watched));
+    }
+
+    test("the start's first try, before any answer, beats with the page's id and names nobody, and every try of a waited start does the same", async () => {
+        const h = build();
+        h.exchangeSettings.value = on;
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 4, code: "rpc.unavailable" }];
+        const starting = h.shell.start();
+        await advance(0);
+
+        expect(h.exchangeBodies[0]).toEqual({ client_id: expect.stringMatching(uuid), kind: "web", idle_seconds: 0 });
+        expect(h.exchangeHeaders[0]["Content-Type"]).toBe("application/json");
+
+        await advance(4000);
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 4 });
+    });
+
+    test("an answer with status off stops the bodies, and a later answer with it on brings them back at the next exchange", async () => {
+        const h = await begin(off);
+
+        await advance(210_000);
+        h.exchangeSettings.value = on;
+        await advance(210_000);
+        await advance(210_000);
+
+        expect(h.exchangeBodies.map(body => body === null ? "none" : Array.isArray(body.watched) ? "watched" : "beat")).toEqual(["beat", "none", "none", "watched"]);
+        expect(h.exchangeHeaders[1]).not.toHaveProperty("Content-Type");
+    });
+
+    test("only the scheduled refresh names the people watched; the start, a recheck, a call refused as expired and the retry after a failure name nobody", async () => {
+        const h = await begin();
+        personal(h, "session.recheck", {});
+        await advance(0);
+        h.personAnswer.value = { status: 401, body: {} };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 2, code: "rpc.unavailable" }];
+        await advance(210_000);
+        await advance(2000);
+        await advance(210_000);
+
+        expect(watchedFrom(h, 0)).toEqual([false, false, false, true, false, true]);
+        expect(h.exchangeBodies[5]?.watched).toEqual([person]);
+    });
+
+    test("one id a page; once the page is put away and restored from the back-forward cache, the first body carries a new one", async () => {
+        (Math.random as unknown as jest.SpyInstance).mockImplementation(realRandom);
+        const h = await begin();
+        personal(h, "session.recheck", {});
+        await advance(0);
+        const first = h.exchangeBodies[0]?.client_id;
+        expect(h.exchangeBodies[1]?.client_id).toBe(first);
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        h.pageDocument.visibilityState = "visible";
+        h.fireShown();
+        h.firePageShow(true);
+        await advance(0);
+
+        expect(h.exchangeBodies).toHaveLength(3);
+        expect(h.exchangeBodies[2]?.client_id).toMatch(uuid);
+        expect(h.exchangeBodies[2]?.client_id).not.toBe(first);
+    });
+
+    test("closing the page says goodbye for the id an exchange carried, through the call that survives the page and never mints, even refused as expired; hiding it says nothing", async () => {
+        const h = await begin();
+        const mints = h.counts.mints;
+        h.statusAnswer.value = { status: 401, body: { message: "auth.expired" } };
+
+        h.pageDocument.visibilityState = "hidden";
+        h.fireShown();
+        await advance(0);
+        expect(h.statusCalls).toEqual([]);
+        expect(h.exchangeBodies).toHaveLength(1);
+
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.statusCalls).toEqual([{ body: { p_client: h.exchangeBodies[0]?.client_id, p_change: { client: "leave" } }, keepalive: true }]);
+        expect(h.counts.mints).toBe(mints);
+    });
+
+    test("no goodbye once the latest answer said status is off, though the start's body carried the id", async () => {
+        const h = await begin(off);
+
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.exchangeBodies[0]).not.toBeNull();
+        expect(h.statusCalls).toEqual([]);
+    });
+
+    test("a church token the platform calls stale is minted again in the same try, and the second exchange carries the same id and people", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangeAnswers.value = [{ status: 401, code: "auth.stale_token" }];
+
+        await advance(210_000);
+
+        expect(h.exchangeBodies.slice(1)).toHaveLength(2);
+        expect(h.exchangeBodies[2]).toEqual({ ...h.exchangeBodies[1], idle_seconds: expect.any(Number) });
+        expect(h.exchangeBodies[2]?.watched).toEqual([person, ada]);
+    });
+
+    test("a face registered with a malformed id still beats and asks about everyone else, that id left out", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => ["", "not-a-guid", ada], 1);
+
+        await advance(210_000);
+
+        expect(h.exchangeBodies[1]).toEqual({ client_id: h.exchangeBodies[0]?.client_id, kind: "web", idle_seconds: 210, watched: [person, ada] });
+    });
+
+    test("an answer read in full as its try is given up reaches nothing: no status written and no exchange marked", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString() } } });
+        h.exchangeRead.value = () => {
+            h.exchangeRead.value = null;
+            // the try's deadline passes while the answer's body is read
+            jest.advanceTimersByTime(10_000);
+        };
+        const marked = h.marks.filter(mark => mark === "chat:exchange").length;
+
+        jest.advanceTimersByTime(210_000);
+        await settle();
+
+        expect(h.exchangeSignals[1]?.aborted).toBe(true);
+        expect(h.shell.presence.status.statusOf(ada)).toBeNull();
+        expect(h.marks.filter(mark => mark === "chat:exchange").length).toBe(marked);
+    });
+
+    test("a landed answer naming people writes their status, by the clock of the token it minted", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString() } } });
+
+        await advance(210_000);
+
+        expect(h.shell.presence.status.statusOf(ada)?.state).toBe("online");
+    });
+
+    test("with the server's clock a minute behind the page's, a row the page's clock calls ended still runs by the server's, and draws Online", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.serverAheadSeconds.value = -60;
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() - 30_000).toISOString() } } });
+
+        await advance(210_000);
+
+        expect(h.shell.presence.status.statusOf(ada)?.state).toBe("online");
+    });
+
+    test("the server's clock is taken from the token before its answer is drawn: a row its clock calls ended never draws, not even for a moment under the clock before", async () => {
+        const h = await begin();
+        h.shell.presence.status.register(() => [ada], 1);
+        h.serverAheadSeconds.value = 60;
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 30_000).toISOString() } } });
+        const drawn: Array<string | null> = [];
+        const stopWatching = watchEffect(() => {
+            drawn.push(h.shell.presence.status.statusOf(ada)?.state ?? null);
+        }, { flush: "sync" });
+
+        await advance(210_000);
+        stopWatching();
+
+        expect(h.exchangeBodies[1]?.watched).toEqual([person, ada]);
+        expect(drawn).not.toContain("online");
+    });
+
+    test("a scroll alone is not her input, as the feed's own pin to the newest message makes one: the next body's idle time runs on", async () => {
+        const h = await begin();
+        await advance(100_000);
+        h.fireInput("scroll");
+        await advance(110_000);
+
+        expect(h.exchangeBodies[1]?.idle_seconds).toBe(210);
+    });
+
+    test("after a start refused, a page restored from the back-forward cache signs nobody in: the refusal stands until the page loads again", async () => {
+        const h = build();
+        h.exchangeSettings.value = on;
+        h.mintGate.value = "banned";
+        await h.shell.start();
+        expect(h.shell.state.phase).toBe("refused");
+        const mints = h.counts.mints;
+
+        h.mintGate.value = "ok";
+        h.firePageHide(true);
+        h.firePageShow(true);
+        h.fireOnline();
+        h.fireShown();
+        await advance(0);
+        await advance(300_000);
+
+        expect([h.counts.mints, h.exchangeBodies.length, h.shell.state.phase]).toEqual([mints, 0, "refused"]);
+    });
+
+    test("a shell stopped in place, its page still open, says goodbye for the id an exchange carried, and a page hide after says no more", async () => {
+        const h = await begin();
+
+        await h.shell.stop();
+        h.firePageHide();
+        await advance(0);
+
+        expect(h.statusCalls).toEqual([{ body: { p_client: h.exchangeBodies[0]?.client_id, p_change: { client: "leave" } }, keepalive: true }]);
+    });
+
+    describe("asking early", () => {
+        test("an input while a scheduled refresh mints asks nothing more: the body, built after the mint, carries it", async () => {
+            const h = await begin();
+            await advance(210_000);
+            h.heldMint.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length;
+
+            await advance(1000);
+            h.fireInput();
+            h.heldMint.value.resolve();
+            h.heldMint.value = null;
+            await advance(0);
+            await advance(60_000);
+
+            expect(h.exchangeBodies.slice(index)).toEqual([expect.objectContaining({ idle_seconds: 0, watched: [person] })]);
+        });
+
+        test("inputs while the exchange's request is out ask exactly one early exchange once it lands, naming the people watched", async () => {
+            const h = await begin();
+            await advance(210_000);
+            h.heldExchange.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(1000);
+            h.fireInput();
+            await advance(1000);
+            h.fireInput("pointerdown");
+            h.heldExchange.value.resolve();
+            h.heldExchange.value = null;
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+            expect(h.exchangeBodies[index + 1]?.idle_seconds).toBe(0);
+        });
+
+        test.each([
+            ["the restore first", ["pageshow", "visible"]],
+            ["the page shown first", ["visible", "pageshow"]]
+        ])("a page restored from the back-forward cache after longer than a token's life asks exactly one early exchange naming the people watched, %s", async (_order, events) => {
+            const h = await begin();
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            // a page in the back-forward cache runs no timer: its clock moves, its timers do not
+            jest.setSystemTime(Date.now() + 400_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            for (const event of events) {
+                event === "pageshow" ? h.firePageShow(true) : h.fireShown();
+            }
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual(events[0] === "pageshow" ? [false, true] : [true]);
+        });
+
+        test("a restore whose recheck fails keeps the one ask, and the retry's landing makes it", async () => {
+            const h = await begin();
+            // No answer carries status, so the badges are stale while the token still lives, which
+            // a failed refresh keeps rather than ending the session.
+            h.exchangePresence.value = null;
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            jest.setSystemTime(Date.now() + 100_000);
+            const index = h.exchangeBodies.length;
+            h.exchangeAnswers.value = [{ status: 503, retryAfter: 2, code: "rpc.unavailable" }];
+
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            h.fireShown();
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([false]);
+            await advance(2000);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([false, false, true]);
+        });
+
+        test("a stale page shown inside the wait after a failed refresh asks once, when the retry lands", async () => {
+            const h = await begin();
+            // the watch never answers in time, so no answer freshens the badges
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.exchangeAnswers.value = [{ status: 503, retryAfter: 30, code: "rpc.unavailable" }];
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(10_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([true]);
+            await advance(20_000);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, false, true]);
+        });
+
+        test("a page shown while a refresh that asked about people is out asks nothing more when it lands with no presence, the platform's not now", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.heldExchange.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length - 1;
+
+            await advance(1000);
+            h.fireShown();
+            h.heldExchange.value.resolve();
+            h.heldExchange.value = null;
+            await advance(0);
+            await advance(60_000);
+
+            expect(watchedFrom(h, index)).toEqual([true]);
+        });
+
+        test("a stale page whose answers carry no status, in steady use for a minute with each exchange a second out, asks early once", async () => {
+            const h = await begin();
+            // the watch never answers in time, and each exchange takes over a second, so her input lands while one is out
+            h.exchangePresence.value = null;
+            h.exchangeDelayMs.value = 1200;
+            await advance(400_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            // a move, and another half a second later while the last ask is out, every two seconds
+            for (let at = 0; at < 60_000; at += 2000) {
+                h.fireInput("pointermove");
+                await advance(500);
+                h.fireInput("pointermove");
+                await advance(1500);
+            }
+
+            expect(watchedFrom(h, index)).toEqual([true]);
+        }, 30_000);
+
+        test("with an idle line shorter than the refresh window, steady input with each exchange a second out asks early once a minute", async () => {
+            const h = await begin({ ...on, limits: { ...on.limits, presence_idle_seconds: 120 } });
+            // every answer carries status, so the page is never stale; only her input can ask
+            h.exchangeDelayMs.value = 1200;
+            await advance(150_000);
+            const index = h.exchangeBodies.length;
+
+            // a move every second, as often as an input does more than note its time, so one lands
+            // while each ask is out
+            const moveFor = async (milliseconds: number): Promise<void> => {
+                for (let at = 0; at < milliseconds; at += 1000) {
+                    h.fireInput("pointermove");
+                    await advance(1000);
+                }
+            };
+            await moveFor(58_000);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            await moveFor(4000);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+        }, 30_000);
+
+        test("a stale page shown again and again asks early once a minute", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(400_000);
+            const index = h.exchangeBodies.length;
+            const show = (): void => {
+                h.pageDocument.visibilityState = "hidden";
+                h.fireShown();
+                h.pageDocument.visibilityState = "visible";
+                h.fireShown();
+            };
+
+            show();
+            await advance(0);
+            for (let at = 0; at < 55_000; at += 5000) {
+                await advance(5000);
+                show();
+            }
+            await advance(0);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            await advance(6000);
+            show();
+            await advance(0);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+        });
+
+        test("a stale page asks again after a recheck only a minute after the last early ask", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(425_000);
+            const index = h.exchangeBodies.length;
+
+            // back after seven minutes with nothing done: her first move asks early, and its answer carries no status
+            h.fireInput();
+            await advance(0);
+            await advance(20_000);
+            // put away and restored inside the minute: the recheck lands, and the stale page waits
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([true, false]);
+        });
+
+        test("a page restored after twelve minutes counts as her input, and asks once more for the stale page with no show to follow", async () => {
+            const h = await begin();
+            await advance(250_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.firePageHide(true);
+            jest.setSystemTime(Date.now() + 720_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            h.firePageShow(true);
+            await advance(0);
+            await advance(30_000);
+
+            expect(watchedFrom(h, index)).toEqual([false, true]);
+            expect(h.exchangeBodies.slice(index).map(body => body?.idle_seconds)).toEqual([0, 0]);
+        });
+
+        test("a stale page's ask never spends her input's minute: her first move after it, the platform holding her idle past the line, asks at once", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            await advance(190_000);
+            const index = h.exchangeBodies.length;
+
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
+            await advance(2000);
+            h.fireInput();
+            await advance(0);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+            expect(h.exchangeBodies[index]?.idle_seconds).toBe(400);
+            expect(h.exchangeBodies[index + 1]?.idle_seconds).toBe(0);
+        });
+
+        test("a page shown while a refresh mints holds one ask and starts no minute: shown again after a settle that asked nothing, the stale page asks at once", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(210_000);
+            h.heldMint.value = deferred<void>();
+            await advance(210_000);
+            const index = h.exchangeBodies.length;
+
+            // shown while the scheduled refresh mints, then put away before it lands
+            h.fireShown();
+            h.pageDocument.visibilityState = "hidden";
+            h.fireShown();
+            h.heldMint.value.resolve();
+            h.heldMint.value = null;
+            await advance(0);
+            await advance(17_000);
+            expect(watchedFrom(h, index)).toEqual([true]);
+
+            h.pageDocument.visibilityState = "visible";
+            h.fireShown();
+            await advance(0);
+
+            expect(watchedFrom(h, index)).toEqual([true, true]);
+        });
+
+        test("a stale page shown with no refresh out asks at once; shown two minutes after the start it asks nothing", async () => {
+            const h = await begin();
+            h.exchangePresence.value = null;
+            await advance(120_000);
+            h.fireShown();
+            await advance(0);
+            expect(h.exchangeBodies).toHaveLength(1);
+
+            await advance(181_000);
+            h.fireShown();
+            await advance(0);
+
+            expect(watchedFrom(h, 0)).toEqual([false, true, true]);
+        });
+    });
+
+    describe("the sidebar's status", () => {
+        test("the sidebar asks for status until a read with it is applied, then no more", async () => {
+            jest.useRealTimers();
+            const h = build();
+            const starting = h.shell.start();
+            await settle();
+            answerHistory(h, channelA, 10);
+            await starting;
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, false]);
+        });
+
+        test("a Try again after a failed first read still asks for status", async () => {
+            jest.useRealTimers();
+            const h = build({ linkedChannelId: null });
+            h.bootstrap.value = new Error("offline");
+            await h.shell.start();
+
+            h.bootstrap.value = { channels: [] };
+            h.shell.channels.retryLoad();
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, true]);
+        });
+
+        test("a read overtaken by a newer one is never applied, so the newer one still asks for status", async () => {
+            jest.useRealTimers();
+            const h = build({ linkedChannelId: null });
+            h.heldBootstraps.value = [];
+            const starting = h.shell.start();
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [] }));
+            await settle();
+            h.heldBootstraps.value[1].resolve(fakeResponse(200, { channels: [] }));
+            await starting;
+            await settle();
+            personal(h, "membership.changed", { channel_id: channelB });
+            await settle();
+
+            expect(h.bootstrapCalls.map(call => call.p_status)).toEqual([true, true, false]);
+        });
+    });
+});
+
+// Online status reaches the store from everything that carries it: the people of a room's facts, a
+// profile card, the people searches and the roster, the sidebar's map, a typing row and a
+// dm.preview. Each is written before what carries it is drawn, so a face never fades in once; an
+// answer that names nobody, or is refused, leaves everyone as they were, and nothing but a status
+// writes. Her own face reads her own settings, and a block clears a person at its decision time.
+describe("online status into the store", () => {
+    const ada = "a0000001-0000-4000-8000-000000000000";
+    const sam = "a0000002-0000-4000-8000-000000000000";
+    const adaPerson = { person_alias_guid: ada, nick_name: "Ada", last_name: "Member", avatar_url: null };
+    const on = { limits: { ...platformLimits, presence_idle_seconds: 600, typing_first_after_ms: 1 }, flags: { online: true, typing: true }, routes: { region: "us-east-1" } };
+    const off = { ...on, flags: { online: false, typing: true } };
+    const groupRow = { channel_id: channelA, room_kind: "group", title: "Room", is_member: true, can_post: true, last_message_id: 10, last_message_preview: "m10", is_unread: false, rev: 5 } as unknown as SidebarRow;
+    const adaRow = { channel_id: channelB, room_kind: "person", title: "Ada Member", is_member: true, can_post: true, last_message_id: 5, last_message_preview: "m5", is_unread: false, rev: 1 } as unknown as SidebarRow;
+
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: serverNow });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    /** A shell signed in with status on, room A open and both topics joined; prepare runs before the start. */
+    async function begin(prepare: (h: ReturnType<typeof build>) => void = () => undefined, settings: Record<string, unknown> = on): Promise<ReturnType<typeof build>> {
+        const h = build();
+        h.tokenPerson.value = person;
+        h.exchangeSettings.value = settings;
+        h.listAnswers.chat_list_threads = { threads: [], has_more: false };
+        h.listAnswers.chat_list_mentions = { mentions: [], has_more: false };
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        prepare(h);
+        const starting = h.shell.start();
+        await advance(0);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        topicOf(h, personalTopic(tenant, person)).status?.("SUBSCRIBED");
+        topicOf(h, channelTopic(tenant, channelA)).status?.("SUBSCRIBED");
+        await settle();
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 10);
+            await settle();
+        }
+        return h;
+    }
+
+    const stateOf = (h: ReturnType<typeof build>, alias: string): string | null => h.shell.presence.status.statusOf(alias)?.state ?? null;
+
+    function roomEvent(h: ReturnType<typeof build>, event: string, payload: Record<string, unknown>): void {
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event, payload });
+    }
+
+    /** The New message search answers these people. */
+    async function searched(h: ReturnType<typeof build>, people: unknown[]): Promise<void> {
+        h.listAnswers.chat_search_people = { people };
+        await h.shell.directMessages.search("a");
+        await settle();
+    }
+
+    test("a room's facts tell each listed person's status before the facts are held, and a read that leaves someone out leaves her as she was", async () => {
+        const seen: Array<string | null> = [];
+        const h = await begin(b => {
+            b.channelFacts[channelA] = memberFacts(channelA, { people: [readerPerson(ada, online(0))] });
+            watch(() => b.shell.rooms.factsOf(channelA), facts => {
+                if (facts) {
+                    seen.push(b.shell.presence.status.statusOf(ada)?.state ?? null);
+                }
+            }, { flush: "sync" });
+        });
+        expect(seen[0]).toBe("online");
+
+        h.channelFacts[channelA] = memberFacts(channelA, { people: [readerPerson(sam, away(1000))] });
+        personal(h, "membership.changed", { channel_id: channelA, id: "5e0000c1-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.channelReads.filter(id => id === channelA).length).toBeGreaterThan(1);
+        expect(stateOf(h, sam)).toBe("away");
+        expect(stateOf(h, ada)).toBe("online");
+    });
+
+    test("a card's person tells her status, and a card refused leaves it", async () => {
+        const h = await begin();
+        h.personAnswer.value = { status: 200, body: { ...readerPerson(ada, busy(null, 0)), campus_id: null, is_self: false, is_leader: false } };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+        expect(stateOf(h, ada)).toBe("busy");
+
+        h.shell.rooms.closeCard();
+        h.personAnswer.value = { status: 500, body: { message: "rpc.unavailable" } };
+        h.shell.rooms.openCard(ada, channelA);
+        await advance(0);
+
+        expect(h.personCalls.length).toBe(2);
+        expect(stateOf(h, ada)).toBe("busy");
+    });
+
+    test("the New message search tells each person's status; a person with every key but status changed tells nothing", async () => {
+        const h = await begin();
+
+        await searched(h, [readerPerson(sam, online(0))]);
+        expect(stateOf(h, sam)).toBe("online");
+        const at = h.shell.presence.status.statusOf(sam)?.revision;
+
+        await searched(h, [{ person_alias_guid: sam, nick_name: "Sam", last_name: "Other", avatar_url: "x", state: "away", until: pgTime(1000), as_of: asOf(5000) }]);
+        expect(h.shell.presence.status.statusOf(sam)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("the sidebar's map writes only the people it says something of, before its rows are held", async () => {
+        const seen: Array<string | null> = [];
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] }, status: { [ada]: online(0) } };
+            watch(() => b.shell.channels.rows.length, () => seen.push(b.shell.presence.status.statusOf(ada)?.state ?? null), { flush: "sync" });
+        });
+        expect(seen[0]).toBe("online");
+        await searched(h, [readerPerson(sam, online(-1000))]);
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] }, status: { [sam]: nothing(0), [ada.toUpperCase()]: away(1000) } };
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c2-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.counts.bootstraps).toBe(2);
+        expect(stateOf(h, sam)).toBe("online");
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("a typing row's status is written as the dots are drawn, and the signal names the page's own id as its client", async () => {
+        const h = await begin();
+        const seen: Array<string | null> = [];
+        watch(() => h.shell.presence.state.typists[channelA], () => seen.push(stateOf(h, ada)), { flush: "sync" });
+
+        roomEvent(h, "typing", typingRow(channelA, ada, busy(null, 0)));
+        expect(seen).toEqual(["busy"]);
+        expect(stateOf(h, ada)).toBe("busy");
+
+        h.shell.presence.typed(channelA, null, "hello");
+        await advance(5);
+        expect(h.typingCalls[0]?.body.p_client).toBe(h.exchangeBodies[0]?.client_id);
+    });
+
+    test("a dm.preview's status is written with the row's move, its sender read in lower case, on a page whose conversation is another", async () => {
+        const h = await begin();
+        const seen: Array<string | null> = [];
+        watch(() => h.shell.channels.rows.find(row => row.channel_id === channelB)?.last_message_id, () => seen.push(stateOf(h, ada)), { flush: "sync" });
+
+        personal(h, "dm.preview", dmPreview(channelB, ada, away(0)));
+
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+        expect(seen).toEqual(["away"]);
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("a dm.preview with every key but status changed writes nothing", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+        const at = h.shell.presence.status.statusOf(ada)?.revision;
+
+        personal(h, "dm.preview", { ...dmPreview(channelB, ada), state: "away", until: pgTime(1000), as_of: asOf(5000), message_id: 42 });
+
+        expect(h.shell.presence.status.statusOf(ada)).toEqual(expect.objectContaining({ state: "online", revision: at }));
+    });
+
+    test("a dm.preview kept for a sidebar read's replay is written once, as it arrives, and not again by the replay", async () => {
+        const h = await begin();
+        h.heldBootstraps.value = [];
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c3-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        personal(h, "dm.preview", dmPreview(channelB, ada, online(1000)));
+        // the same decision instant, written later: the page's later word on it
+        roomEvent(h, "typing", typingRow(channelA, ada, away(1000)));
+        expect(stateOf(h, ada)).toBe("away");
+
+        h.heldBootstraps.value[0].resolve(fakeResponse(200, { channels: [groupRow, adaRow], me: { blocked_aliases: [] } }));
+        await advance(0);
+
+        expect(stateOf(h, ada)).toBe("away");
+    });
+
+    test("with status off neither a typing row nor a dm.preview writes, so nothing of them draws once it is on", async () => {
+        const h = await begin(undefined, off);
+
+        roomEvent(h, "typing", typingRow(channelA, ada, online(0)));
+        personal(h, "dm.preview", dmPreview(channelB, sam, online(0)));
+        h.exchangeSettings.value = on;
+        await advance(210_000);
+
+        // her own face draws once the switch is on
+        expect(stateOf(h, person)).toBe("online");
+        expect(stateOf(h, ada)).toBeNull();
+        expect(stateOf(h, sam)).toBeNull();
+    });
+
+    test("her own face reads Busy from the sidebar's me at once", async () => {
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [], busy_until: pgTime(3_600_000), appear_offline: false } };
+        });
+
+        expect(h.shell.presence.status.statusOf(person)).toEqual(expect.objectContaining({ state: "busy", busyUntil: serverNow + 3_600_000 }));
+    });
+
+    test("a block's answer clears her from its decision time, so a status decided before it never draws after the unblock", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+
+        // the sidebar a change reads again names the set as the platform now holds it
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        h.blocksAnswer.value = { people: [adaPerson], blocked_aliases: [ada], as_of: asOf(1000) };
+        h.shell.blocks.ask(adaPerson);
+        await h.shell.blocks.confirm();
+        await advance(0);
+        expect(stateOf(h, ada)).toBeNull();
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        h.blocksAnswer.value = { people: [], blocked_aliases: [], as_of: asOf(2000) };
+        await h.shell.blocks.unblock(adaPerson, true);
+        await advance(0);
+        await searched(h, [readerPerson(ada, online(1500))]);
+        expect(stateOf(h, ada)).toBeNull();
+
+        await searched(h, [readerPerson(ada, online(2500))]);
+        expect(stateOf(h, ada)).toBe("online");
+    });
+
+    test("a face holding her redraws at the block and again at the unblock", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(5000))]);
+        const drawn = computed(() => h.shell.presence.status.statusOf(ada)?.state ?? null);
+        expect(drawn.value).toBe("online");
+
+        // the sidebar a change reads again names the set as the platform now holds it
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        h.blocksAnswer.value = { people: [adaPerson], blocked_aliases: [ada], as_of: asOf(1000) };
+        h.shell.blocks.ask(adaPerson);
+        await h.shell.blocks.confirm();
+        await advance(0);
+        expect(drawn.value).toBeNull();
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [] } };
+        h.blocksAnswer.value = { people: [], blocked_aliases: [], as_of: asOf(2000) };
+        await h.shell.blocks.unblock(adaPerson, true);
+        await advance(0);
+        expect(drawn.value).toBe("online");
+    });
+
+    test("the sidebar's first set redraws a face holding her, clearing her at her own decision time", async () => {
+        const h = await begin(b => {
+            b.bootstrap.value = { channels: [groupRow, adaRow], me: {} };
+        });
+        await searched(h, [readerPerson(ada, online(0))]);
+        const drawn = computed(() => h.shell.presence.status.statusOf(ada)?.state ?? null);
+        expect(drawn.value).toBe("online");
+
+        h.bootstrap.value = { channels: [groupRow, adaRow], me: { blocked_aliases: [ada] } };
+        personal(h, "membership.changed", { channel_id: channelC, id: "5e0000c4-0000-4000-8000-000000000000" });
+        await advance(0);
+
+        expect(h.shell.blocks.isBlocked(ada)).toBe(true);
+        expect(drawn.value).toBeNull();
+    });
+
+    test("a copy withheld for someone the set does not name heals without clearing her status", async () => {
+        const h = await begin();
+        await searched(h, [readerPerson(ada, online(0))]);
+        const lists = h.blockCalls.length;
+
+        roomEvent(h, "message.created", { id: 11, channel_id: channelA, parent_id: null, shown_in_channel: false, person_alias_guid: ada, message_type: "text", body: null, pieces: null, sender_nick_name: null, sender_last_name: null, created_at: "2026-11-10T15:00:00Z", blocked: true });
+        await advance(0);
+        while (h.history[channelA]?.length) {
+            answerHistory(h, channelA, 11);
+            await settle();
+        }
+
+        expect(h.blockCalls.slice(lists).map(c => c.name)).toEqual(["chat_list_blocks"]);
+        expect(stateOf(h, ada)).toBe("online");
+    });
+    test("a page restored while a refresh is out, which lands for the id its goodbye spent, holds nothing of her, so her restore asks early at once with the new id", async () => {
+        // ids made of real randomness, so a new one differs from the one spent
+        (Math.random as unknown as jest.SpyInstance).mockRestore();
+        const h = await begin();
+        h.heldExchange.value = deferred<void>();
+        const held = h.heldExchange.value;
+        // the scheduled refresh falls inside the token's last third, wherever randomness puts it
+        while (h.exchangeBodies.length < 2) {
+            await advance(1000);
+        }
+        const spent = h.exchangeBodies[1]?.client_id;
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        await advance(2000);
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        h.heldExchange.value = null;
+        held.resolve();
+        await advance(0);
+
+        expect(h.exchangeBodies).toHaveLength(3);
+        expect(h.exchangeBodies[2]).toEqual(expect.objectContaining({ idle_seconds: 0, watched: expect.arrayContaining([person]) }));
+        expect(h.exchangeBodies[2]?.client_id).not.toBe(spent);
+    });
+
+    test("a restore whose recheck goes on the church token still held reports her input from the restore, since the status hears the restore first", async () => {
+        const h = await begin();
+        // the scheduled refresh's exchange fails after its mint, so the session waits holding that church token
+        h.exchangeAnswers.value = [{ status: 503, retryAfter: 120, code: "rpc.unavailable" }];
+        await advance(210_000);
+        const mints = h.counts.mints;
+        const exchanges = h.exchangeBodies.length;
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        // a page in the back-forward cache runs no timer: the clock passes the wait's end and its
+        // retry has not run, so the church token is still held when the page comes back
+        jest.setSystemTime(Date.now() + 40_000);
+
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        await advance(0);
+
+        expect({ mints: h.counts.mints, bodies: h.exchangeBodies.slice(exchanges) }).toEqual({ mints, bodies: [expect.objectContaining({ idle_seconds: 0 })] });
+    });
+
+    test("a restore with status off still asks the sign-in's recheck, with no body", async () => {
+        const h = await begin(undefined, off);
+        const exchanges = h.exchangeBodies.length;
+
+        h.pageDocument.visibilityState = "hidden";
+        h.firePageHide(true);
+        await advance(30_000);
+        h.pageDocument.visibilityState = "visible";
+        h.firePageShow(true);
+        await advance(0);
+
+        expect(h.exchangeBodies.slice(exchanges)).toEqual([null]);
+        expect(h.statusCalls).toEqual([]);
     });
 });

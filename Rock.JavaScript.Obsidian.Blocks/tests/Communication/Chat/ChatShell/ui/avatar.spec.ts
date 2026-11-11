@@ -359,3 +359,205 @@ describe("a photo avatar on the first load", () => {
         wrapper.unmount();
     });
 });
+
+// A face's online status: a small disc at its lower right on the rim, a glyph per state so the
+// shape says it as well as the colour, drawn beside the face inside the avatar's one root so no
+// face without one changes. Only a single face of 32px or more carries it; the person's own face
+// alone draws the hollow ring of Appear offline. It draws as state when it mounts and fades only
+// for a change the store made after that.
+describe("a face's status badge", () => {
+    type Status = { state: "online" | "away" | "busy" | "hidden", label: string, tip: string, busyUntil: number | null, revision: number };
+
+    const statuses: Record<"online" | "away" | "busy", Status> = {
+        online: { state: "online", label: ", online", tip: "Online", busyUntil: null, revision: 4 },
+        away: { state: "away", label: ", away", tip: "Away", busyUntil: null, revision: 4 },
+        busy: { state: "busy", label: ", busy until 3:00 PM", tip: "Busy until 3:00 PM", busyUntil: Date.parse("2026-11-10T21:00:00Z"), revision: 4 }
+    };
+    const hidden: Status = { state: "hidden", label: "", tip: "Appear offline", busyUntil: null, revision: 4 };
+    const anna = [{ name: "Anna Lee", photoUrl: null }];
+
+    // Drawn with Vue's own transition, so the badge sits in the root as the page has it.
+    const global = { stubs: { transition: false } };
+
+    function withStatus(status: Status | null, extra: Record<string, unknown> = {}): VueWrapper {
+        return mount(Avatar, { props: { people: anna, size: 36, status, ...extra }, attachTo: document.body, global });
+    }
+
+    function badgeOf(wrapper: VueWrapper): HTMLElement | null {
+        return wrapper.element.querySelector<HTMLElement>("[data-testid='status-badge']");
+    }
+
+    afterEach(() => {
+        document.body.replaceChildren();
+        jest.useRealTimers();
+    });
+
+    test.each([
+        ["online", "polyline"],
+        ["away", "circle"],
+        ["busy", "rect"]
+    ] as const)("%s draws its disc and its own glyph beside the face, in the avatar's one root", (state, shape) => {
+        const wrapper = withStatus(statuses[state]);
+        const badge = badgeOf(wrapper)!;
+
+        expect(badge.dataset.state).toBe(state);
+        expect(badge.parentElement).toBe(wrapper.element);
+        expect(wrapper.element.classList.contains("chat-pile")).toBe(true);
+        expect(badge.previousElementSibling?.classList.contains("chat-av")).toBe(true);
+        const shown = badge.querySelectorAll(".is-shown");
+        expect(shown).toHaveLength(1);
+        expect(shown[0].querySelector(shape)).not.toBeNull();
+    });
+
+    test("is inside the avatar's hidden root, so a screen reader hears the words its host puts in a label instead", () => {
+        const wrapper = withStatus(statuses.online);
+
+        expect(badgeOf(wrapper)!.closest("[aria-hidden='true']")).toBe(wrapper.element);
+    });
+
+    test("shows its words on a resting pointer", async () => {
+        jest.useFakeTimers();
+        const wrapper = withStatus(statuses.busy);
+
+        badgeOf(wrapper)!.dispatchEvent(new MouseEvent("mouseenter"));
+        jest.advanceTimersByTime(500);
+        await nextTick();
+
+        expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Busy until 3:00 PM");
+        wrapper.unmount();
+    });
+
+    test("the person's own face under Appear offline draws a hollow ring and no glyph", () => {
+        const badge = badgeOf(withStatus(hidden, { own: true }))!;
+
+        expect(badge.dataset.state).toBe("hidden");
+        expect(badge.querySelector(".chat-status-glyph")).toBeNull();
+    });
+
+    test("Appear offline on a face not marked as the person's own draws nothing, as others see her", () => {
+        expect(badgeOf(withStatus(hidden))).toBeNull();
+    });
+
+    test("no status draws nothing and makes no badge, so a face that never shows one holds no tooltip", () => {
+        const wrapper = withStatus(null);
+        const bare = mount(Avatar, { props: { people: anna, size: 36 }, global });
+
+        expect(badgeOf(wrapper)).toBeNull();
+        expect(badgeOf(bare)).toBeNull();
+        expect(wrapper.findComponent({ name: "statusBadge.partial" }).exists()).toBe(false);
+    });
+
+    test.each([24, 28, 31])("a face of %ipx draws no status, too small for it to read", size => {
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online }, global });
+
+        expect(badgeOf(wrapper)).toBeNull();
+    });
+
+    test("a pile draws no status, whoever it would be for", () => {
+        const wrapper = mount(Avatar, { props: { people: [...anna, { name: "Sam Ray", photoUrl: null }], size: 36, status: statuses.online }, global });
+
+        expect(badgeOf(wrapper)).toBeNull();
+    });
+
+    test.each([[32, -1.3], [36, -0.7], [44, 0.4], [56, 2.2]])("sits on the rim of a %ipx face, %fpx from its right and bottom edges", (size, offset) => {
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online }, global });
+        const badge = badgeOf(wrapper)!;
+
+        expect(parseFloat(badge.style.right)).toBeCloseTo(offset, 5);
+        expect(parseFloat(badge.style.bottom)).toBeCloseTo(offset, 5);
+    });
+
+    test("mounted, it draws as state; a change at a later revision crossfades, and a redraw at the same revision does not", async () => {
+        const wrapper = withStatus(statuses.online);
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(false);
+
+        await wrapper.setProps({ status: { ...statuses.online, tip: "Online" } });
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(false);
+
+        await wrapper.setProps({ status: { ...statuses.away, revision: 5 } });
+        expect(badgeOf(wrapper)!.dataset.state).toBe("away");
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(true);
+    });
+
+    /** The classes of Vue's transition a badge carries now, entering or leaving. */
+    function transitionClasses(badge: HTMLElement | null): string[] {
+        return [...badge?.classList ?? []].filter(name => /^chat-status-(enter|leave|appear)-/.test(name));
+    }
+
+    test("a face mounted with a status draws it at once, with no fade in", async () => {
+        const wrapper = withStatus(statuses.online);
+        await nextTick();
+
+        expect(transitionClasses(badgeOf(wrapper))).toEqual([]);
+    });
+
+    test("a status arriving on a face drawn with none fades in", async () => {
+        const wrapper = withStatus(null);
+
+        await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+        expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-enter-active");
+    });
+
+    test("a status going to nothing fades out, the badge kept until its fade is over", async () => {
+        const wrapper = withStatus(statuses.online);
+
+        await wrapper.setProps({ status: null });
+
+        expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-leave-active");
+    });
+
+    // Where status shows is a short list; every other face of a person (message rows, the @
+    // picker, reactions and who reacted, thread and mention faces, quotes, the typing bubble,
+    // face stacks, remove member, blocked people) draws none, so none of them asks the store.
+    test("only the places that show status read it: every other face is passed none", () => {
+        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "peoplePicker"];
+        const shell = join(__dirname, "../../../../../src/Communication/Chat/ChatShell");
+        const parts = ["components", "ui"].flatMap(folder => readdirSync(join(shell, folder)).filter(name => name.endsWith(".obs")).map(name => join(shell, folder, name)));
+        const others = parts.filter(path => !hosts.some(host => path.endsWith(`${host}.partial.obs`)) && !path.endsWith("avatar.partial.obs"));
+
+        expect(others.filter(path => /<Avatar\b/.test(readFileSync(path, "utf8"))).length).toBeGreaterThanOrEqual(12);
+        for (const path of others) {
+            const text = readFileSync(path, "utf8");
+            expect([path, /<Avatar\b[^>]*:status=/.test(text) || text.includes("useFaceStatus")]).toEqual([path, false]);
+        }
+    });
+
+    // The first screen is drawn under its veil and revealed in one crossfade: a status that comes
+    // or goes before then is part of what the reveal shows, so it draws as state, as photos wait
+    // for the same release.
+    describe("under the first screen's veil", () => {
+        const veiled = (isReleased: boolean): Record<symbol, unknown> => ({
+            [pageRevealKey as symbol]: { state: { kind: "channel", isSkeletonShown: false, isSidebarRevealed: isReleased, isMainRevealed: isReleased, isReleased }, holdFace: () => undefined }
+        });
+
+        function underVeil(status: Status | null, isReleased: boolean): VueWrapper {
+            return mount(Avatar, { props: { people: anna, size: 36, status }, attachTo: document.body, global: { ...global, provide: veiled(isReleased) } });
+        }
+
+        test("a status arriving before the reveal is released draws as state", async () => {
+            const wrapper = underVeil(null, false);
+
+            await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+            expect(badgeOf(wrapper)).not.toBeNull();
+            expect(transitionClasses(badgeOf(wrapper))).toEqual([]);
+        });
+
+        test("a status going before the reveal is released leaves at once", async () => {
+            const wrapper = underVeil(statuses.online, false);
+
+            await wrapper.setProps({ status: null });
+
+            expect(badgeOf(wrapper)).toBeNull();
+        });
+
+        test("once released, a status arriving fades in as anywhere", async () => {
+            const wrapper = underVeil(null, true);
+
+            await wrapper.setProps({ status: { ...statuses.online, revision: 5 } });
+
+            expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-enter-active");
+        });
+    });
+});

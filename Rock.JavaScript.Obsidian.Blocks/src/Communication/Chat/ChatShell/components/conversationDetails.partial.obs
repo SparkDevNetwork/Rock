@@ -11,11 +11,11 @@
 
         <div class="chat-rd-id" data-testid="details-identity">
             <ChannelMark v-if="kind === 'channel'" class="chat-rd-mark" data-testid="details-mark" :isPublic="facts.is_public" :imageUrl="facts.icon_url" />
-            <Avatar v-else-if="kind === 'person'" :people="[otherFace]" :size="44" />
-            <GroupFace v-else class="chat-rd-group" :people="groupFaces" :count="facts.member_count - 1" :size="44" />
+            <Avatar v-else-if="kind === 'person'" :key="otherAlias ?? undefined" :people="[otherFace]" :size="44" :status="otherStatus" />
+            <GroupFace v-else :people="groupFaces" :count="facts.member_count - 1" :size="44" />
 
             <span class="chat-rd-main">
-                <b class="chat-rd-name" data-testid="details-name">{{ title }}</b>
+                <b class="chat-rd-name" data-testid="details-name">{{ title }}<span v-if="otherStatus" class="chat-sr-only">{{ otherStatus.label }}</span></b>
                 <span class="chat-rd-meta">
                     <!-- The dots between the parts are drawn for the eye; a screen reader hears commas. -->
                     <template v-for="(item, index) in metaItems" :key="item">
@@ -52,9 +52,12 @@
                       ariaLabel="People in this conversation"
                       isList
                       data-testid="details-people">
-            <SettingRow v-for="chip in groupChips" :key="chip.key" role="listitem" data-testid="details-person">
+            <SettingRow v-for="chip in groupChips" :key="chip.key" class="chat-rd-prow" role="listitem" data-testid="details-person">
                 <template #text>
-                    <span class="chat-rd-person"><Avatar :people="[chip]" :size="24" /><span>{{ chip.label }}</span></span>
+                    <span class="chat-rd-person">
+                        <Avatar :people="[chip]" :size="32" :status="chipStatus(chip.alias)" />
+                        <span>{{ chip.label }}<span v-if="chipStatus(chip.alias)" class="chat-sr-only">{{ chipStatus(chip.alias)?.label }}</span></span>
+                    </span>
                 </template>
             </SettingRow>
         </SettingGroup>
@@ -229,9 +232,10 @@
     flex: none;
 }
 
-/* A group's mark, its faces ringed in the dialog's color. */
-.chat-rd-group {
+/* The identity's face and a group's mark, ringed in the dialog's color: the badge and a mark's faces alike. */
+.chat-rd-id {
     --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
 }
 
 .chat-rd-main {
@@ -296,7 +300,16 @@
     white-space: nowrap;
 }
 
+/* A People row centres its 32px face inside the group's least row height, so it keeps the one measure every row in a group has. */
+.chat-sg-row.chat-rd-prow {
+    padding-block: 4px;
+}
+
+/* A person in a group's People, whose badge rings in the group's fill. */
 .chat-rd-person {
+    --chat-av-ring: var(--chat-surface);
+    --chat-av-ring-over: transparent;
+
     display: inline-flex;
     gap: 10px;
     align-items: center;
@@ -515,12 +528,13 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { failureNote } from "../composables/saveRule.partial";
     import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs } from "../composables/usePrefs.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { failedWords, finalWords, offlineWords } from "../errors.partial";
-    import { ChannelFacts, ChannelLeader } from "../types.partial";
+    import { ChannelFacts, ChannelLeader, FaceStatus } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
-    import { peopleCountWords } from "../ui/face.partial";
+    import { peopleCountWords, shownStatus } from "../ui/face.partial";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -582,6 +596,12 @@
 
         /** The church's name, which the leave confirm says the group is at. */
         organizationName: {
+            type: String,
+            default: ""
+        },
+
+        /** The person's primary alias, whose own row in a group draws her own status. */
+        personAliasGuid: {
             type: String,
             default: ""
         },
@@ -722,6 +742,21 @@
         return { name: other ? fullName(other) || props.title : props.title, photoUrl: other?.avatar_url ?? null };
     });
 
+    /**
+     * The other person of a two-person room, by primary alias, which keys the face: details kept
+     * open across a room switch draw another person as another face, never faded from the last.
+     */
+    const otherAlias = computed((): string | null => props.kind === "person" ? props.facts.people[0]?.person_alias_guid.toLowerCase() ?? null : null);
+
+    // Asked about while closed too: the dialog draws its people from the room's facts, read once at
+    // the room's open, with no read of its own, so only the exchanges keep their status current
+    // for the moment it opens; a group is at most nine people, one room at a time.
+    const statusOf = useFaceStatus(() => props.kind === "person"
+        ? (otherAlias.value ? [otherAlias.value] : [])
+        : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
+
+    const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
+
     const groupFaces = computed((): AvatarPerson[] => props.facts.people.map(person => ({ name: fullName(person), photoUrl: person.avatar_url })));
 
     /** The line under the name: what kind of room it is and where, each part joined by a dot. */
@@ -755,9 +790,9 @@
     const leaders = computed((): AvatarPerson[] => props.facts.leaders.slice(0, 3).map(leader => ({ name: fullName(leader), photoUrl: leader.avatar_url })));
 
     /** Everyone in a group, the person first and marked as them. */
-    const groupChips = computed((): Array<AvatarPerson & { key: string, label: string }> => [
-        { key: "you", name: props.personName, photoUrl: props.personPhotoUrl, label: `${props.personName} (you)` },
-        ...props.facts.people.map(person => ({ key: person.person_alias_guid, name: fullName(person), photoUrl: person.avatar_url, label: fullName(person) }))
+    const groupChips = computed((): Array<AvatarPerson & { key: string, alias: string, label: string }> => [
+        { key: "you", alias: props.personAliasGuid.toLowerCase(), name: props.personName, photoUrl: props.personPhotoUrl, label: `${props.personName} (you)` },
+        ...props.facts.people.map(person => ({ key: person.person_alias_guid, alias: person.person_alias_guid.toLowerCase(), name: fullName(person), photoUrl: person.avatar_url, label: fullName(person) }))
     ]);
 
     /** The members' first names, which is what a blank name shows. */
@@ -841,6 +876,11 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    /** What a People row's face shows of its person's status: her own row is one others see too, so it shows nothing of her Appear offline. */
+    function chipStatus(alias: string): FaceStatus | null {
+        return alias ? shownStatus(statusOf(alias), false) : null;
+    }
 
     /** A person's name as the chat shows it. */
     function fullName(person: ChannelLeader): string {

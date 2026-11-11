@@ -68,6 +68,15 @@
     --chat-conn-line-warning: rgba(229, 134, 0, .30);
     --chat-conn-line-info: rgba(0, 93, 215, .30);
     --chat-success: var(--base-success, #01A11E);
+    /*
+        A face's online status badge, one fixed value per theme and never Rock's success or danger,
+        which a church's theme may set to anything. Each reads 3 to 1 against every fill a face's
+        ring takes, the current row's wash for any church color included; the light green and amber
+        are darker than the dark theme's for that.
+    */
+    --chat-presence-online: #008A1A;
+    --chat-presence-away: #A86400;
+    --chat-presence-busy: #D70015;
     --chat-mn-me-bg: #F7E0C0;
 
     /* The message row and the feed around it. The church color's mixes come from script, as above. */
@@ -302,6 +311,9 @@
     --chat-info-ink: #7DB3FF;
     --chat-info-soft: #0A203D;
     --chat-mn-me-bg: #4E3410;
+    --chat-presence-online: #01A11E;
+    --chat-presence-away: #C27400;
+    --chat-presence-busy: #F0303F;
     --chat-bubble-hover: rgba(248, 248, 252, .07);
     --chat-row-mention: #201C15;
     --chat-mention-ring: rgba(229, 134, 0, .35);
@@ -380,6 +392,9 @@
         --chat-info-ink: #7DB3FF;
         --chat-info-soft: #0A203D;
         --chat-mn-me-bg: #4E3410;
+        --chat-presence-online: #01A11E;
+        --chat-presence-away: #C27400;
+        --chat-presence-busy: #F0303F;
         --chat-bubble-hover: rgba(248, 248, 252, .07);
         --chat-row-mention: #201C15;
         --chat-mention-ring: rgba(229, 134, 0, .35);
@@ -636,7 +651,9 @@
     }
 }
 
+/* Positioned, so a single face's status badge sits on its rim; no face moves for it. */
 .chat-pile {
+    position: relative;
     display: inline-flex;
 }
 
@@ -1531,7 +1548,11 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     height: 13px;
 }
 
+/* A result's badge rings in the list's fill, under the result's own as it changes. */
 .chat-shell .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
     position: absolute;
     top: calc(100% + 6px);
     right: 0;
@@ -1565,10 +1586,14 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 }
 
 .chat-shell .chat-pk-opt:hover {
+    --chat-av-ring-over: var(--chat-hover);
+
     background: var(--chat-hover);
 }
 
 .chat-shell .chat-pk-opt.is-active {
+    --chat-av-ring-over: var(--chat-brand-tint);
+
     background: var(--chat-brand-tint);
 }
 
@@ -1647,8 +1672,11 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     display: none;
 }
 
-/* Inline, as Add people draws it: the results listed under the field rather than over the view. */
+/* Inline, as Add people draws it: the results listed under the field rather than over the view, on the dialog's fill. */
 .chat-shell .chat-pk.is-inline .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
     position: static;
     max-height: 248px;
     padding: 0;
@@ -1661,6 +1689,8 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 /* Someone the room cannot take, such as a person already in it, is listed dimmed with the reason. */
 .chat-shell .chat-pk-opt[aria-disabled="true"] {
+    --chat-av-ring-over: transparent;
+
     cursor: default;
     background: none;
 }

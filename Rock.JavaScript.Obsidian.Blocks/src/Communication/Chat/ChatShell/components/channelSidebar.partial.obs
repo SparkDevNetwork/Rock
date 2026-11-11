@@ -115,12 +115,14 @@
                         <!-- A direct message: the face, the name and time over the preview and the end mark. -->
                         <template v-else>
                             <span class="chat-row-face" aria-hidden="true">
-                                <Avatar v-if="row.room_kind === 'person'" :people="[personFaceOf(row)]" :size="36" />
+                                <Avatar v-if="row.room_kind === 'person'" :people="[personFaceOf(row)]" :size="36" :status="rowStatus(row)" />
                                 <GroupFace v-else :people="rowPeople(row).map(personFace)" :count="row.dm_other_count" />
                             </span>
                             <span class="chat-row-main">
                                 <span class="chat-row-top">
                                     <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
+                                    <!-- The person's status is heard as part of their name, before the time and the preview. -->
+                                    <span v-if="row.room_kind === 'person' && rowStatus(row)" class="chat-sr-only" data-testid="row-status-words">{{ rowStatus(row)?.label }}</span>
                                     <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
                                     <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
                                 </span>
@@ -168,10 +170,10 @@
             <button type="button"
                     class="chat-me-btn"
                     aria-haspopup="dialog"
-                    :aria-label="`Chat settings, ${personName}`"
+                    :aria-label="`Chat settings, ${personName}${ownStatus?.label ?? ''}`"
                     data-testid="sidebar-me"
                     @click="emit('settings')">
-                <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
+                <Avatar :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own />
                 <span class="chat-me-who">
                     <b data-testid="sidebar-me-name">{{ personName }}</b>
                     <span v-if="personCampusName" data-testid="sidebar-me-campus">{{ personCampusName }}</span>
@@ -268,6 +270,10 @@
 
 /* The foot: one button for who the person is and their settings, its gear turning on hover. */
 .chat-side-me {
+    /* her own face's badge, ringed in the foot button's fill over the sidebar */
+    --chat-av-ring: var(--chat-sidebar);
+    --chat-av-ring-over: transparent;
+
     flex: none;
     padding: 8px;
     border-top: 1px solid var(--chat-line);
@@ -290,10 +296,14 @@
 }
 
 .chat-me-btn:hover {
+    --chat-av-ring-over: var(--chat-hover);
+
     background: var(--chat-hover);
 }
 
 .chat-me-btn:active {
+    --chat-av-ring-over: var(--chat-press);
+
     background: var(--chat-press);
 }
 
@@ -736,8 +746,9 @@
     import IconButton from "../ui/iconButton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
     import { notifyIconFor } from "../composables/usePrefs.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
-    import { SidebarRow } from "../types.partial";
+    import { FaceStatus, SidebarRow } from "../types.partial";
 
     // #region Types
 
@@ -779,6 +790,12 @@
         isNewMessageInert: {
             type: Boolean,
             default: false
+        },
+
+        /** The person's primary alias, whose own face the foot draws. */
+        personAliasGuid: {
+            type: String,
+            default: ""
         },
 
         /** The person's own name, photo and campus by its name, drawn in the foot. */
@@ -858,9 +875,17 @@
     /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
     const flashIds = ref(new Set<string>());
 
+    // Her own face, kept first when the people asked about are cut.
+    const ownStatusOf = useFaceStatus(() => props.personAliasGuid ? [props.personAliasGuid] : [], 0);
+
+    // Every two-person row's other person, kept last, since the open conversation and any panel matter more.
+    const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 3);
+
     // #endregion Values
 
     // #region Computed Values
+
+    const ownStatus = computed(() => props.personAliasGuid ? ownStatusOf(props.personAliasGuid) : null);
 
     /**
      * The rooms by section, filtered by the search over the names they are drawn under. Starred
@@ -907,6 +932,17 @@
     /** A channel's row is Community's one dense line; a direct message's is Conversational's two lines. */
     function lookOf(row: SidebarRow): FeedLayout {
         return row.room_kind === "channel" ? "community" : "conversational";
+    }
+
+    /** A two-person conversation's other person, by primary alias; empty for a row that names none. */
+    function otherAliasOf(row: SidebarRow): string {
+        return rowPeople(row)[0]?.person_alias_guid ?? "";
+    }
+
+    /** What a two-person row's face draws of its other person's status. */
+    function rowStatus(row: SidebarRow): FaceStatus | null {
+        const alias = otherAliasOf(row);
+        return alias ? statusOf(alias) : null;
     }
 
     /** A two-person conversation's face: the other person, or initials from its title without them. */

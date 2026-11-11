@@ -28,6 +28,7 @@ import { brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/
 // A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
 const sheetPath = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
 const blockPath = resolve(__dirname, "../../../../../../Rock.Blocks/Communication/Chat/ChatShell.cs");
+const badgePath = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs");
 
 // #region The sheet, parsed
 
@@ -208,6 +209,11 @@ const tokens: Token[] = [
     { name: "info-ink", light: "#0049A8", dark: "#7DB3FF" },
     { name: "info-soft", light: "#E6EFFA", dark: "#0A203D" },
     { name: "success", light: "#01A11E", rock: "base-success" },
+    // A face's online status: a fixed value per theme, never Rock's own, so a church's theme cannot
+    // turn Online into its brand green or Busy into a pale red.
+    { name: "presence-online", light: "#008A1A", dark: "#01A11E" },
+    { name: "presence-away", light: "#A86400", dark: "#C27400" },
+    { name: "presence-busy", light: "#D70015", dark: "#F0303F" },
     { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
     // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
     { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
@@ -523,6 +529,100 @@ describe("the chat token sheet", () => {
     });
 });
 
+// The online status badge's three colours. Each is one fixed value per theme, never leaning on
+// Rock's success or danger variables, which a church's theme may set to anything. A badge sits in
+// a ring of whatever its face sits on, so each colour must read at 3 to 1, as a graphic, against
+// every fill that ring takes: the surfaces, the hover over each, and the current row's wash for
+// any church colour. The flash and the press are moments, not fills a badge rests on, and are left
+// out.
+describe("the online status colours", () => {
+    let sheet: Sheet;
+
+    beforeAll(() => {
+        sheet = readSheet();
+    });
+
+    type Rgb = [number, number, number];
+
+    const presence = ["presence-online", "presence-away", "presence-busy"];
+
+    /** Ten church colours across the wheel and its extremes, Rock orange among them. */
+    const churches = ["#FF791D", "#0A2A5E", "#1D4ED8", "#1B5E20", "#6B21A8", "#C62828", "#00897B", "#111111", "#D4A017", "#84CC16"];
+
+    /** The value a token sheet declaration holds: its own color, or the color behind a Rock variable. */
+    function colorOf(value: string): { rgb: Rgb, alpha: number } {
+        const rgba = /rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)/.exec(value);
+        if (rgba) {
+            return { rgb: [Number(rgba[1]), Number(rgba[2]), Number(rgba[3])], alpha: rgba[4] === undefined ? 1 : Number(rgba[4]) };
+        }
+        const hex = /#([0-9a-f]{6})(?![0-9a-f])/i.exec(value)!;
+        return { rgb: [0, 2, 4].map(at => parseInt(hex[1].slice(at, at + 2), 16)) as Rgb, alpha: 1 };
+    }
+
+    function tokenColor(name: string, where: (rule: Rule) => boolean): { rgb: Rgb, alpha: number } {
+        const [value] = valuesOf(sheet, `--chat-${name}`, where);
+        return colorOf(value);
+    }
+
+    /** A translucent fill over the color under it, as the browser draws it. */
+    function over(top: { rgb: Rgb, alpha: number }, under: Rgb): Rgb {
+        return top.rgb.map((channel, index) => channel * top.alpha + under[index] * (1 - top.alpha)) as Rgb;
+    }
+
+    function contrast(a: Rgb, b: Rgb): number {
+        const luminance = (rgb: Rgb): number => {
+            const [r, g, bl] = rgb.map(channel => {
+                const c = channel / 255;
+                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * bl;
+        };
+        const [high, low] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+        return (high + 0.05) / (low + 0.05);
+    }
+
+    test.each(presence)("--chat-%s is a fixed value of its own in each theme, never a Rock variable", name => {
+        const values = [isLight, isDarkExplicit, isDarkUnthemed, isDarkFollowingSystem].map(where => valuesOf(sheet, `--chat-${name}`, where));
+
+        for (const found of values) {
+            expect(found).toHaveLength(1);
+            expect(found[0]).toMatch(/^#[0-9a-f]{6}$/);
+        }
+        expect(values[0][0]).not.toBe(values[1][0]);
+        expect(values[1][0]).toBe(values[2][0]);
+        expect(values[1][0]).toBe(values[3][0]);
+    });
+
+    test.each([["light", isLight, "light"], ["dark", isDarkExplicit, "dark"]] as const)("each reads 3 to 1 against every fill its ring takes in %s", (_label, where, theme) => {
+        const hover = tokenColor("hover", where);
+        const surfaces = ["surface", "sidebar", "raised"].map(name => ({ name, rgb: tokenColor(name, where).rgb }));
+        const fills = [
+            ...surfaces,
+            ...surfaces.map(surface => ({ name: `hover on ${surface.name}`, rgb: over(hover, surface.rgb) })),
+            ...churches.map(church => ({ name: `the current row's wash, ${church}`, rgb: colorOf(brandTokens(church)[theme]["brand-wash"]).rgb }))
+        ];
+
+        for (const name of presence) {
+            const badge = tokenColor(name, where).rgb;
+            const failing = fills.filter(fill => contrast(badge, fill.rgb) < 3).map(fill => `${name} on ${fill.name}`);
+
+            expect(failing).toEqual([]);
+        }
+    });
+
+    test.each([["light", isLight], ["dark", isDarkExplicit]] as const)("the glyph reads 3 to 1 on each disc in %s, in the colour the badge draws it", (_label, where) => {
+        // the token the badge itself names, so a change of the badge's colour is checked as well as of the token
+        const badge = readSheet(badgePath).rules.find(rule => rule.selector.trim() === ".chat-status")!;
+        const glyph = /var\(--chat-([\w-]+)\)/.exec(badge.declarations.get("color") ?? "")![1];
+        // a token the dark theme does not set again keeps its light value there
+        const glyphRgb = (valuesOf(sheet, `--chat-${glyph}`, where).length ? tokenColor(glyph, where) : tokenColor(glyph, isLight)).rgb;
+
+        const failing = presence.filter(name => contrast(glyphRgb, tokenColor(name, where).rgb) < 3);
+
+        expect(failing).toEqual([]);
+    });
+});
+
 // The components' own style blocks, read as text: what jsdom cannot lay out or animate is checked
 // as the rules that do it.
 describe("the components' own styles", () => {
@@ -562,6 +662,16 @@ describe("the components' own styles", () => {
     function selectorsOf(sheet: Sheet): { selector: string, rule: Rule }[] {
         return sheet.rules.flatMap(rule => splitTopLevel(rule.selector, ",").map(selector => ({ selector: selector.replace(/\s+/g, " "), rule })));
     }
+
+    // A badge that crossfaded once still fades out at its row's end: a scoped rule with more classes
+    // wins the transition outright, so every one set on the badge itself must carry the fade.
+    test("every transition on the status badge itself carries its opacity, so a badge that has changed still fades in and out", () => {
+        const onBadge = selectorsOf(readSheet(badgePath))
+            .filter(({ selector, rule }) => rule.declarations.has("transition") && /\.chat-status(?![\w-])[^\s>+~]*$/.test(selector));
+
+        expect(onBadge.length).toBeGreaterThan(0);
+        expect(onBadge.filter(({ rule }) => !/(^|,)\s*opacity\s/.test(rule.declarations.get("transition")!)).map(({ selector }) => selector)).toEqual([]);
+    });
 
     // A message arriving, the person's own or anyone's, rides the stack's glide as it fades in, so
     // no row grows from a corner of its own: nothing a look sets can slide its text sideways.

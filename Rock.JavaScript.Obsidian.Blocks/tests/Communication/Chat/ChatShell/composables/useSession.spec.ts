@@ -503,8 +503,8 @@ describe("settings from the token exchange", () => {
             gap_reorder_ms: 500,
             gap_repair_wait_ms: 5000,
             stale_reload_ms: 900000,
-            typing_interval_ms: 4000,
-            typing_expiry_ms: 6000,
+            typing_interval_ms: 5000,
+            typing_expiry_ms: 7500,
             typing_first_after_ms: 700,
             typing_min_show_ms: 1000,
             dm_max_others: 0,
@@ -518,11 +518,13 @@ describe("settings from the token exchange", () => {
             people_search_size: 0,
             attachment_max_bytes: 0,
             attachment_max_files: 0,
+            // no idle line, which turns asking early off rather than guessing one
+            presence_idle_seconds: 0,
             // no list takes no files
             attachment_types: []
         },
-        // GIFs and typing are off unless the platform says the church has them on
-        flags: { gifs: false, typing: false },
+        // GIFs, typing and online status are off unless the platform says the church has them on
+        flags: { gifs: false, typing: false, online: false },
         push: { web: null, vapid_key: null, prompt: "after_send" }
     };
 
@@ -574,7 +576,7 @@ describe("settings from the token exchange", () => {
         expect(readSettings({ flags: { gifs: "true" } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: { gifs: 1 } }).flags.gifs).toBe(false);
         expect(readSettings({ flags: {} }).flags.gifs).toBe(false);
-        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, other: "kept" });
+        expect(readSettings({ flags: { gifs: true, other: "kept" } }).flags).toEqual({ gifs: true, typing: false, online: false, other: "kept" });
     });
 
     test("the first wait and the minimum show are read as sent, else 0.7 and 1 second, and no setting says whether a stop is taken", () => {
@@ -593,11 +595,11 @@ describe("settings from the token exchange", () => {
 
     // A platform that sends no pace sends no typing flag either, so the defaults only keep a
     // missing key from becoming a signal on every key.
-    test("the typing pace and expiry are read as sent, else 4 and 6 seconds", () => {
+    test("the typing pace and expiry are read as sent, else 5 and 7.5 seconds", () => {
         expect(readSettings({ limits: { typing_interval_ms: 6860, typing_expiry_ms: 9000 } }).limits)
             .toMatchObject({ typing_interval_ms: 6860, typing_expiry_ms: 9000 });
         expect(readSettings({ limits: { typing_interval_ms: "6860", typing_expiry_ms: 0 } }).limits)
-            .toMatchObject({ typing_interval_ms: 4000, typing_expiry_ms: 6000 });
+            .toMatchObject({ typing_interval_ms: 5000, typing_expiry_ms: 7500 });
     });
 
     test("the database's region is read when it is a region's name, else there is none", () => {
@@ -1303,5 +1305,194 @@ describe("a start the platform cannot answer yet", () => {
 
         expect(p.exchanges).toHaveLength(2);
         expect(started.result).toBe(true);
+    });
+});
+
+// Online status asks the platform early only through the session, and only between refreshes:
+// each exchange says why it was asked, so its body knows whether to name the people watched;
+// the page reads when the next refresh is due, how long a token lives and whether one is out; and
+// it is told once each refresh has settled, by when the next is scheduled and a new ask starts a
+// new exchange rather than joining the one that just landed.
+describe("a refresh's reason, and what the page reads of the session", () => {
+    const ok = (churchToken: string): ExchangeResult => ({ ok: true, accessToken: `platform-for-${churchToken}`, expiresInSeconds: 300 });
+    const unavailable: ExchangeResult = { ok: false, status: 503, code: "rpc.unavailable" };
+
+    test("each asker's reason reaches the exchange: the start, the timer, a recheck, a call refused as expired and the wait after a failure; a refresh asked while one runs keeps the first's", async () => {
+        const reasons: string[] = [];
+        const failures: ExchangeResult[] = [];
+        const f = fakes({
+            exchange: async (churchToken, options) => {
+                reasons.push(options.reason);
+                return failures.shift() ?? ok(churchToken);
+            }
+        });
+        const session = createSession(f.dependencies);
+
+        await session.start();
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+        await session.refresh("recheck");
+        await session.withFreshToken(async () => "expired", answer => answer === "expired");
+        failures.push(unavailable);
+        await session.refresh("recheck");
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+        await Promise.all([session.refresh("recheck"), session.refresh("early")]);
+
+        expect(reasons).toEqual(["start", "scheduled", "recheck", "expired", "recheck", "retry", "recheck"]);
+    });
+
+    test("the next refresh's time is the schedule's, and there is none while starting, inside the wait after a failure, or once stopped; a token's life is the latest exchange's", async () => {
+        const clock = { value: 1000 };
+        const mint = { held: null as Promise<void> | null };
+        const failures: ExchangeResult[] = [];
+        const f = fakes({
+            now: () => clock.value,
+            mintChurchToken: async () => {
+                await mint.held;
+                return { gate: "ok", churchToken: "church" };
+            },
+            exchange: async churchToken => failures.shift() ?? ok(churchToken)
+        });
+        const session = createSession(f.dependencies);
+        let release!: () => void;
+        mint.held = new Promise(resolve => release = resolve);
+
+        expect(session.tokenLifeSeconds()).toBe(0);
+        const starting = session.start();
+        expect(session.nextRefreshAt()).toBeNull();
+        release();
+        mint.held = null;
+        await starting;
+
+        // with random 0.5 the refresh is at 0.7 of the token's 300 s
+        expect(session.nextRefreshAt()).toBe(1000 + 210_000);
+        expect(session.tokenLifeSeconds()).toBe(300);
+
+        clock.value = 5000;
+        failures.push(unavailable);
+        await session.refresh("recheck");
+        expect(session.nextRefreshAt()).toBeNull();
+
+        clock.value = 7000;
+        f.timers[f.timers.length - 1].callback();
+        await settle();
+        expect(session.nextRefreshAt()).toBe(7000 + 210_000);
+
+        session.stop();
+        expect(session.nextRefreshAt()).toBeNull();
+    });
+
+    test("a refresh is out from its mint to its settle, with its reason, and the start is out as the start through every try and wait", async () => {
+        const failures: ExchangeResult[] = [unavailable];
+        const mint = { held: null as Promise<void> | null };
+        const f = fakes({
+            mintChurchToken: async () => {
+                await mint.held;
+                return { gate: "ok", churchToken: "church" };
+            },
+            exchange: async churchToken => failures.shift() ?? ok(churchToken)
+        });
+        const session = createSession(f.dependencies);
+        expect(session.inFlight()).toBeNull();
+
+        const starting = session.start();
+        expect(session.inFlight()).toBe("start");
+        await settle();
+        // inside the start's wait after its failed first try
+        expect(f.timers).toHaveLength(1);
+        expect(session.inFlight()).toBe("start");
+        f.timers[0].callback();
+        await starting;
+        expect(session.inFlight()).toBeNull();
+
+        let release!: () => void;
+        mint.held = new Promise(resolve => release = resolve);
+        const refreshing = session.refresh("recheck");
+        expect(session.inFlight()).toBe("recheck");
+        void session.refresh("early");
+        expect(session.inFlight()).toBe("recheck");
+        release();
+        await refreshing;
+        expect(session.inFlight()).toBeNull();
+    });
+
+    test("is told once each refresh has settled, by when the next is scheduled and a new refresh starts a new exchange; a failed one is told too", async () => {
+        const clock = { value: 1000 };
+        const failures: ExchangeResult[] = [];
+        const told: Array<{ reason: string, ok: boolean, next: number | null, out: string | null }> = [];
+        const asked: { value: Promise<boolean> | null } = { value: null };
+        const exchanges: string[] = [];
+        const f = fakes({
+            now: () => clock.value,
+            exchange: async churchToken => {
+                exchanges.push(churchToken);
+                return failures.shift() ?? ok(churchToken);
+            },
+            settled: (reason, isOk) => {
+                told.push({ reason, ok: isOk, next: session.nextRefreshAt(), out: session.inFlight() });
+                if (reason === "recheck" && isOk) {
+                    asked.value = session.refresh("early");
+                }
+            }
+        });
+        const session = createSession(f.dependencies);
+        await session.start();
+
+        clock.value = 5000;
+        await session.refresh("recheck");
+        expect(told.slice(1, 2)).toEqual([{ reason: "recheck", ok: true, next: 5000 + 210_000, out: null }]);
+        expect(await asked.value).toBe(true);
+        // the start, the recheck, and the early refresh asked from inside the recheck's settle
+        expect(exchanges).toHaveLength(3);
+        expect(told.map(t => `${t.reason} ${t.ok}`)).toEqual(["start true", "recheck true", "early true"]);
+
+        failures.push(unavailable);
+        await session.refresh("scheduled");
+        expect(told[told.length - 1]).toEqual({ reason: "scheduled", ok: false, next: null, out: null });
+    });
+
+    test("the start is told after each try, its last once it is no longer starting, so a refresh asked then starts an exchange of its own", async () => {
+        const failures: ExchangeResult[] = [unavailable, unavailable];
+        const told: string[] = [];
+        const exchanges: string[] = [];
+        const f = fakes({
+            exchange: async churchToken => {
+                exchanges.push(churchToken);
+                return failures.shift() ?? ok(churchToken);
+            },
+            settled: (reason, isOk) => {
+                told.push(`${reason} ${isOk} ${session.inFlight()}`);
+                if (reason === "start" && isOk) {
+                    void session.refresh("early");
+                }
+            }
+        });
+        const session = createSession(f.dependencies);
+
+        const starting = session.start();
+        await settle();
+        f.timers[0].callback();
+        await settle();
+        f.timers[1].callback();
+        await starting;
+        await settle();
+
+        expect(told).toEqual(["start false start", "start false start", "start true null", "early true null"]);
+        expect(exchanges).toHaveLength(4);
+    });
+});
+
+describe("online status's settings", () => {
+    test("the idle line is read as sent, a positive whole number of seconds, else 0", () => {
+        expect(readSettings({ limits: { presence_idle_seconds: 600 } }).limits.presence_idle_seconds).toBe(600);
+        expect(readSettings({ limits: { presence_idle_seconds: "600" } }).limits.presence_idle_seconds).toBe(0);
+        expect(readSettings({ limits: {} }).limits.presence_idle_seconds).toBe(0);
+    });
+
+    test("online status is on only when the platform's flag is the boolean true", () => {
+        expect(readSettings({ flags: { online: true } }).flags.online).toBe(true);
+        expect(readSettings({ flags: { online: "true" } }).flags.online).toBe(false);
+        expect(readSettings({ flags: {} }).flags.online).toBe(false);
     });
 });
