@@ -296,8 +296,8 @@ describe("exchangeChurchToken", () => {
         expect(await answering).toEqual({ ok: false, status: 0, code: "rpc.transport", retryAfterSeconds: null });
     });
 
-    test("a body goes as JSON with its content type, and the region as x-region, each only when given; the answer's presence map comes back beside the token", async () => {
-        const presence = { "a0000001-0000-4000-8000-000000000000": { state: "online", until: "2026-11-10T15:09:30.000123+00:00", as_of: 1_789_052_400_000_000 } };
+    test("a body goes as JSON with its content type, and the region as x-region, each only when given; the answer's presence comes back beside the token", async () => {
+        const presence = { as_of: 1_789_052_400_000_000, told: { "a0000001-0000-4000-8000-000000000000": { state: "online", until: "2026-11-10T15:09:30.000123+00:00" } } };
         const sent: RequestInit[] = [];
         const fetch: PlatformCallOptions["fetch"] = async (_to, init) => {
             sent.push(init);

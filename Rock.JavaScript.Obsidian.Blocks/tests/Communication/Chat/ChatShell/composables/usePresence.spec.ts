@@ -37,7 +37,7 @@ import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/co
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { ChatError, ChatPerson, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { asOf, away, busy, exchangeAnswer, heldNothingMs, nothing, online, personWithoutStatus, pgTime, readerPerson, rowLifeMs, serverNow, serverNowSeconds } from "../statusShapes";
+import { asOf, away, busy, exchangeAnswer, heldNothingMs, nothing, online, personWithoutStatus, pgTime, readerPerson, rowLifeMs, serverNow, serverNowSeconds, toldEntry, watchAnswer } from "../statusShapes";
 
 const me = "a0000007-0000-4000-8000-000000000000";
 const anna = "a0000001-0000-4000-8000-000000000000";
@@ -1337,7 +1337,7 @@ describe("others' status, the newest decision", () => {
         const h = buildStatus();
 
         h.status.carried(anna, online(2000));
-        h.status.exchanged([anna], exchangeAnswer({ [anna]: away(1000) }));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
         expect(h.status.statusOf(anna)?.state).toBe("online");
 
         h.status.told([readerPerson(sam, busy(null, 5000))]);
@@ -1387,15 +1387,61 @@ describe("others' status, the newest decision", () => {
         expect(h.status.statusOf(anna)?.state).toBe("online");
     });
 
-    test("an exchange writes each person it asked about that its map names, and nothing for anyone else", () => {
+    test("an exchange writes each person it asked about from its told, at the answer's one decision time, and nothing for anyone it did not ask about", () => {
         const h = buildStatus();
-        h.status.told([readerPerson(sam, online(0))]);
+        h.status.told([readerPerson(anna, online(0))]);
 
-        h.status.exchanged([anna, sam], exchangeAnswer({ [anna]: away(1000), [lee]: online(1000) }));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna.toUpperCase()]: toldEntry(away(1000)), [lee]: toldEntry(online(1000)) })));
 
         expect(h.status.statusOf(anna)?.state).toBe("away");
-        expect(h.status.statusOf(sam)?.state).toBe("online");
         expect(h.status.statusOf(lee)).toBeNull();
+        // the entry took the answer's time: a reader decided between the two changes nothing, one after replaces it
+        h.status.told([readerPerson(anna, online(500))]);
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        h.status.told([readerPerson(anna, online(1500))]);
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+    });
+
+    test("an exchange tells a person it asked about and left out of its told nothing, as of the answer's time", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(sam, online(0)), readerPerson(anna, online(0))]);
+
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
+
+        expect(h.status.statusOf(anna)?.state).toBe("away");
+        expect(h.status.statusOf(sam)).toBeNull();
+        // the nothing holds from the answer's time: a reader decided before it changes nothing
+        h.status.told([readerPerson(sam, online(500))]);
+        expect(h.status.statusOf(sam)).toBeNull();
+    });
+
+    test("an exchange decided before what is held writes nothing, its told or its silence", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(2000)), readerPerson(sam, away(2000))]);
+
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(busy(null, 1000)) })));
+
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)?.state).toBe("away");
+    });
+
+    test("an exchange's presence the client cannot read writes nothing for anyone, and neither does a told entry it cannot read", () => {
+        const h = buildStatus();
+        h.status.told([readerPerson(anna, online(0)), readerPerson(sam, online(0))]);
+
+        // the per-person map the exchange once answered, a time not a whole number, a told not a map
+        h.status.exchanged([anna, sam], exchangeAnswer({ [anna]: away(1000) }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: String(asOf(1000)), told: {} }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000) + 0.5, told: {} }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000) }));
+        h.status.exchanged([anna, sam], exchangeAnswer({ as_of: asOf(1000), told: [] }));
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)?.state).toBe("online");
+
+        // an entry it cannot read writes nothing for her, and the rest of the answer still writes
+        h.status.exchanged([anna, sam], exchangeAnswer(watchAnswer(1000, { [anna]: "away" as unknown as Record<string, unknown> })));
+        expect(h.status.statusOf(anna)?.state).toBe("online");
+        expect(h.status.statusOf(sam)).toBeNull();
     });
 
     test("an exchange whose read did not answer in time, or that failed, changes nothing", () => {
@@ -1727,7 +1773,7 @@ describe("a stopped status", () => {
 
         h.status.told([readerPerson(sam, online(0))]);
         h.status.carried(lee, online(0));
-        h.status.exchanged([anna], exchangeAnswer({ [anna]: away(1000) }));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(away(1000)) })));
         h.status.blockChanged([anna], asOf(2000));
 
         expect(drawn.value?.state).toBe("online");
@@ -1745,7 +1791,7 @@ describe("a stopped status", () => {
 
         h.stopped.value = true;
         h.presence.stop();
-        h.status.exchanged([anna], exchangeAnswer({ [anna]: online(0) }));
+        h.status.exchanged([anna], exchangeAnswer(watchAnswer(0, { [anna]: toldEntry(online(0)) })));
         h.status.settled("scheduled", true);
         h.fire("pagehide");
 
@@ -1944,7 +1990,7 @@ describe("asking early", () => {
     const idle = { limits: { presence_idle_seconds: 600 } };
 
     /** One exchange of a reason lands and settles, its next refresh due a time after now. */
-    function land(h: ReturnType<typeof buildStatus>, reason: Parameters<Presence["status"]["exchangeBody"]>[0], nextAfterMs: number, presence?: Record<string, Record<string, unknown>>): void {
+    function land(h: ReturnType<typeof buildStatus>, reason: Parameters<Presence["status"]["exchangeBody"]>[0], nextAfterMs: number, presence?: Record<string, unknown>): void {
         const body = h.status.exchangeBody(reason);
         h.status.exchanged(body?.watched ?? [], exchangeAnswer(presence));
         h.session.next = Date.now() + nextAfterMs;
@@ -2003,7 +2049,7 @@ describe("asking early", () => {
         h.fire("keydown");
         jest.advanceTimersByTime(1000);
         h.fire("keydown");
-        h.status.exchanged(body?.watched ?? [], exchangeAnswer({ [me]: online(0) }));
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(online(0)) })));
         expect(h.session.asked).toEqual([]);
 
         h.session.out = null;
@@ -2020,7 +2066,7 @@ describe("asking early", () => {
         h.session.out = "scheduled";
         const body = h.status.exchangeBody("scheduled");
         h.fire("visibilitychange");
-        h.status.exchanged(body?.watched ?? [], exchangeAnswer({ [me]: online(0) }));
+        h.status.exchanged(body?.watched ?? [], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(online(0)) })));
         h.session.out = null;
         h.session.next = serverNow + 700_000;
         h.status.settled("scheduled", true);
@@ -2082,7 +2128,7 @@ describe("asking early", () => {
         h.fire("visibilitychange");
         expect(h.session.asked).toEqual(["early"]);
 
-        land(h, "early", 210_000, { [me]: online(0) });
+        land(h, "early", 210_000, watchAnswer(0, { [me]: toldEntry(online(0)) }));
         jest.advanceTimersByTime(61_000);
         h.fire("visibilitychange");
         expect(h.session.asked).toEqual(["early"]);
@@ -2158,7 +2204,7 @@ describe("status carried on typing", () => {
 
     test("one for a blocked typist, or her own room row, writes nothing", () => {
         const h = buildStatus();
-        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
         h.blocked.add(anna);
 
         h.presence.heard("typing", signal(anna, { status: online(1000) }), group);
@@ -2262,7 +2308,7 @@ describe("her own face", () => {
         const h = buildStatus(idleLine);
         expect(h.status.statusOf(me)).toEqual(expect.objectContaining({ state: "online", tip: "Online", label: ", online" }));
 
-        h.status.exchanged([me], exchangeAnswer({ [me]: away(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0, { [me]: toldEntry(away(0)) })));
         expect(h.status.statusOf(me)?.state).toBe("online");
 
         // with her input past the idle line and no answer of hers yet, she has the page open
@@ -2273,7 +2319,7 @@ describe("her own face", () => {
 
     test("draws her answer once her input is older than the idle line, nothing for a null one, and Online again at her next input, each by revision", () => {
         const h = buildStatus(idleLine);
-        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
         const drawn = face(h.status, me);
         expect(drawn.value?.state).toBe("online");
 
@@ -2283,7 +2329,7 @@ describe("her own face", () => {
         h.fire("keydown");
         expect(drawn.value?.state).toBe("online");
 
-        h.status.exchanged([me], exchangeAnswer({ [me]: away(31_000) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(31_000, { [me]: toldEntry(away(31_000)) })));
         jest.advanceTimersByTime(30_000);
         expect(drawn.value?.state).toBe("away");
     });
@@ -2311,7 +2357,7 @@ describe("her own face", () => {
         const h = buildStatus(idleLine);
         h.me.busy_until = pgTime(60_000);
         // her answer was decided while a longer Busy was on, so only her settings' end can turn her
-        h.status.exchanged([me], exchangeAnswer({ [me]: { ...busy(120_000, 0), auto: "online" } }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0, { [me]: toldEntry({ ...busy(120_000, 0), auto: "online" }) })));
         const drawn = face(h.status, me);
         expect(drawn.value?.state).toBe("busy");
         const at = drawn.value?.revision ?? 0;
@@ -2361,7 +2407,7 @@ describe("her own face", () => {
 
     test("an idle line shortened by a later exchange draws her answer at once when her input is already past the new line", () => {
         const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
-        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
         const drawn = face(h.status, me);
         jest.advanceTimersByTime(60_000);
         expect(drawn.value?.state).toBe("online");
@@ -2373,7 +2419,7 @@ describe("her own face", () => {
 
     test("an idle line shortened while her input is fresh moves her deadline to the new line", () => {
         const h = buildStatus({ limits: { presence_idle_seconds: 600 } });
-        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
         const drawn = face(h.status, me);
         jest.advanceTimersByTime(10_000);
 
@@ -2457,7 +2503,7 @@ describe("the status store's size", () => {
 
     test("never drops her own answer, so a null one still draws nothing once her input is old", () => {
         const h = buildStatus({ limits: { presence_idle_seconds: 30 } });
-        h.status.exchanged([me], exchangeAnswer({ [me]: nothing(0) }));
+        h.status.exchanged([me], exchangeAnswer(watchAnswer(0)));
 
         jest.advanceTimersByTime(heldNothingMs + 1000);
         h.status.told([readerPerson(sam, online(heldNothingMs + 1000))]);

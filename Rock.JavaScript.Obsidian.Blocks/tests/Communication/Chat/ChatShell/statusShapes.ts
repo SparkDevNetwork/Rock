@@ -19,7 +19,9 @@
 // A status is decided at an instant, written as epoch microseconds in a JSON integer, so two
 // decisions inside one millisecond still order; a time it holds to is a timestamptz as Postgres
 // writes one into JSON, to the microsecond with its offset. A person the rule says nothing about
-// for the reader (offline, hidden, blocked, unrelated) is answered with the decision time alone.
+// for the reader (offline, hidden, blocked, unrelated) is answered with the decision time alone,
+// except by the token exchange, which sends one decision time for its whole answer and leaves
+// such a person out.
 // Her automatic state rides only on her own entry, and only while she is Busy.
 
 /** The server's clock in these fixtures: 3:00 PM UTC on the day. */
@@ -98,11 +100,34 @@ export function personWithoutStatus(alias: string): Record<string, unknown> {
 }
 
 /**
- * The token exchange's answer once its status read ran in time: a top-level presence map by
- * primary alias, beside the token and settings, never inside them. Left out when the read did not
- * answer in time, which is no failure.
+ * A watched person's entry in the token exchange's answer: her status without a decision time,
+ * since the answer carries one time for every entry.
+ *
+ * @param status The status as a reader would carry it, its decision time dropped.
  */
-export function exchangeAnswer(presence?: Record<string, Record<string, unknown>>): Record<string, unknown> {
+export function toldEntry(status: Record<string, unknown>): Record<string, unknown> {
+    const { as_of: _, ...entry } = status;
+    return entry;
+}
+
+/**
+ * The token exchange's presence: one decision time for the whole answer, and told naming only the
+ * watched people it tells something of; a watched person it leaves out is told nothing as of then.
+ *
+ * @param msAfter Milliseconds after the fixtures' server now that the answer was decided.
+ * @param told The entries, each without a time of its own.
+ * @param micros Microseconds more, inside that millisecond.
+ */
+export function watchAnswer(msAfter = 0, told: Record<string, Record<string, unknown>> = {}, micros = 0): Record<string, unknown> {
+    return { as_of: asOf(msAfter, micros), told };
+}
+
+/**
+ * The token exchange's answer once its status read ran in time: a top-level presence, beside the
+ * token and settings, never inside them. Left out when the read did not answer in time, which is
+ * no failure.
+ */
+export function exchangeAnswer(presence?: Record<string, unknown>): Record<string, unknown> {
     return {
         access_token: platformToken({ iat: serverNowSeconds, exp: serverNowSeconds + 300, sub: "a0000007-0000-4000-8000-000000000000", online: true }),
         expires_in: 300,

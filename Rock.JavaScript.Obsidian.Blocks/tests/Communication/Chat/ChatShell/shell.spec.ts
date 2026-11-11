@@ -236,10 +236,11 @@ function build(options: {
     // The body each exchange carried, null for none, and its headers.
     const exchangeBodies: Array<Record<string, unknown> | null> = [];
     const exchangeHeaders: Array<Record<string, string>> = [];
-    // What an exchange that named people answers for them, as the status read does in time; null
-    // answers with no presence map, as when the read did not answer in time.
+    // What an exchange that named people answers, as the status read does in time: by default one
+    // decision time telling none of them anything; null answers with no presence, as when the read
+    // did not answer in time.
     const exchangePresence: { value: ((watched: string[]) => Record<string, unknown>) | null } = {
-        value: watched => Object.fromEntries(watched.map(alias => [alias, { as_of: Date.now() * 1000 }]))
+        value: () => ({ as_of: Date.now() * 1000, told: {} })
     };
     // Run as an exchange's answer is read, after its request has answered.
     const exchangeRead: { value: (() => void) | null } = { value: null };
@@ -5452,7 +5453,7 @@ describe("online status on the token exchange", () => {
     test("an answer read in full as its try is given up reaches nothing: no status written and no exchange marked", async () => {
         const h = await begin();
         h.shell.presence.status.register(() => [ada], 1);
-        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString(), as_of: Date.now() * 1000 } });
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString() } } });
         h.exchangeRead.value = () => {
             h.exchangeRead.value = null;
             // the try's deadline passes while the answer's body is read
@@ -5471,7 +5472,7 @@ describe("online status on the token exchange", () => {
     test("a landed answer naming people writes their status, by the clock of the token it minted", async () => {
         const h = await begin();
         h.shell.presence.status.register(() => [ada], 1);
-        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString(), as_of: Date.now() * 1000 } });
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 570_000).toISOString() } } });
 
         await advance(210_000);
 
@@ -5482,7 +5483,7 @@ describe("online status on the token exchange", () => {
         const h = await begin();
         h.shell.presence.status.register(() => [ada], 1);
         h.serverAheadSeconds.value = -60;
-        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() - 30_000).toISOString(), as_of: Date.now() * 1000 } });
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() - 30_000).toISOString() } } });
 
         await advance(210_000);
 
@@ -5493,7 +5494,7 @@ describe("online status on the token exchange", () => {
         const h = await begin();
         h.shell.presence.status.register(() => [ada], 1);
         h.serverAheadSeconds.value = 60;
-        h.exchangePresence.value = () => ({ [ada]: { state: "online", until: new Date(Date.now() + 30_000).toISOString(), as_of: Date.now() * 1000 } });
+        h.exchangePresence.value = () => ({ as_of: Date.now() * 1000, told: { [ada]: { state: "online", until: new Date(Date.now() + 30_000).toISOString() } } });
         const drawn: Array<string | null> = [];
         const stopWatching = watchEffect(() => {
             drawn.push(h.shell.presence.status.statusOf(ada)?.state ?? null);
