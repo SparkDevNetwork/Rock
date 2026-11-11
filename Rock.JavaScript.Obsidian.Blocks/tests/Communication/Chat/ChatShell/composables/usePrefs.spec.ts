@@ -986,6 +986,26 @@ describe("a status save's answer", () => {
         expect("retryInMs" in outcome).toBe(false);
     });
 
+    // A count another tab posted may be missing or malformed; each reads as the first failure, so
+    // the wait is never NaN, which the rule would ask again at once.
+    test.each([
+        ["missing", undefined],
+        ["not a number", NaN],
+        ["endless", Infinity],
+        ["zero", 0],
+        ["below zero", -3]
+    ])("a failure count %s waits as the first failure does", async (_name, failures) => {
+        const result = await statusCallResult(statusSaveFailures.network);
+
+        expect(statusSaveOutcome(result, failures as number, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: backoffMs(1, 0.5) });
+    });
+
+    test("a failure count with a fraction counts its whole failures", async () => {
+        const result = await statusCallResult(statusSaveFailures.network);
+
+        expect(statusSaveOutcome(result, 2.7, () => 0.5)).toMatchObject({ isSaved: false, retryInMs: backoffMs(2, 0.5) });
+    });
+
     test("a refusal of a code this release does not know, carrying a sentence, is shown in that sentence", () => {
         const outcome = statusSaveOutcome({ ok: false, status: 409, error: { code: "rpc.status_conflict", severity: "failed", text: "Your status changed somewhere else." }, retryAfterSeconds: null }, 1);
 

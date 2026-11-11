@@ -363,6 +363,37 @@ describe("a save that names a wait", () => {
     });
 });
 
+describe("a named wait that is no wait", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    // An owner that miscounts must never make the rule ask in a loop: a wait that is not a finite
+    // number of milliseconds from zero up is final, and puts the control back once.
+    test.each([
+        ["not a number", NaN],
+        ["endless", Infinity],
+        ["before now", -1]
+    ])("a wait %s is final: the control goes back, said once, and nothing is asked again", async (_name, retryInMs) => {
+        const s = setup();
+
+        const saved = s.rule.save("status", s.change("busy"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs });
+        await settle();
+        jest.advanceTimersByTime(60_000);
+        await settle();
+
+        expect(s.asks).toHaveLength(1);
+        expect(s.shown.value).toBe("auto");
+        expect(s.refusals).toEqual([failedWords("Couldn't save.")]);
+        expect(await saved).toBe(false);
+    });
+});
+
 describe("a failure that names no wait", () => {
     test("puts the control back and says why", async () => {
         const s = setup();

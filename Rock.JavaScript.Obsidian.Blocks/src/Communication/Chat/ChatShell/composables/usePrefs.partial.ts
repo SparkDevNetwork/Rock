@@ -331,7 +331,9 @@ export function statusSaveOutcome(result: CallResult, failures: number, random: 
         return { isSaved: false, failure };
     }
 
-    const backoffMs = Math.round(Math.min(statusRetryCapMs, statusRetryFirstMs * 2 ** (Math.max(1, failures) - 1)) * (0.8 + 0.4 * random()));
+    // a count another tab posted may be missing or malformed, and counts as the first failure
+    const count = Number.isFinite(failures) && failures >= 1 ? Math.floor(failures) : 1;
+    const backoffMs = Math.round(Math.min(statusRetryCapMs, statusRetryFirstMs * 2 ** (count - 1)) * (0.8 + 0.4 * random()));
     if (result.status === 429) {
         return { isSaved: false, failure, retryInMs: Math.max(backoffMs, (result.retryAfterSeconds ?? 0) * 1000) };
     }

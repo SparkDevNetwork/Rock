@@ -119,6 +119,19 @@ type SaveTrack = {
 };
 
 /**
+ * Whether an owner's named wait is one the rule can keep: a finite number of milliseconds from
+ * zero up. Anything else is read as no wait, so the failure is final; a wait of NaN would
+ * otherwise be due at once and ask in a loop.
+ *
+ * @param retryInMs The wait an outcome named, or nothing.
+ *
+ * @returns Whether it is a wait.
+ */
+function isWait(retryInMs: number | undefined): retryInMs is number {
+    return typeof retryInMs === "number" && Number.isFinite(retryInMs) && retryInMs >= 0;
+}
+
+/**
  * Creates a save rule.
  *
  * @param isStopped Whether its owner has stopped, after which no answer reaches the screen.
@@ -182,7 +195,7 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
             }
             asked.resolve(isNewest);
         }
-        else if (outcome.retryInMs !== undefined) {
+        else if (isWait(outcome.retryInMs)) {
             // The wait is outside the flight, so a lock the ask runs under is free through it and
             // a change made meanwhile is what the next ask sends.
             track.notBefore = performance.now() + outcome.retryInMs;
