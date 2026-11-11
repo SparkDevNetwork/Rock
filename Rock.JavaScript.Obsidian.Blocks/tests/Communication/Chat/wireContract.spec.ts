@@ -87,6 +87,6 @@ describe("chat wire contract", () => {
         for (const code of ["rpc.typing_off", "rpc.typing_not_here", "rpc.bad_parent", "authz.not_member"]) {
             expect(contract.error_codes.codes).toContain(code);
         }
-        expect(contract.limits).toMatchObject({ typing_interval_ms: 4000, typing_expiry_ms: 6000 });
+        expect(contract.limits).toMatchObject({ typing_interval_ms: 5000, typing_expiry_ms: 7500 });
     });
 });

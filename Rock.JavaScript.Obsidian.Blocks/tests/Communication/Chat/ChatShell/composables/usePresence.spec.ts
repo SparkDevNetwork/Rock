@@ -79,8 +79,11 @@ function refused(code: string, status = 400, text?: string): CallResult {
 
 type Call = { path: string, body: Record<string, unknown>, options: { headers?: Record<string, string> } | undefined };
 
-/** The settings a platform with the stop and the first signal's wait answers, typing on. */
-const current = { flags: { typing: true }, routes: { region: "us-east-1" }, limits: { typing_first_after_ms: 700 } };
+/**
+ * The settings a platform with the stop and the first signal's wait answers, typing on, at a pace of
+ * its own: these cells time the pace a platform sends, not the client's fallback for one it leaves out.
+ */
+const current = { flags: { typing: true }, routes: { region: "us-east-1" }, limits: { typing_first_after_ms: 700, typing_interval_ms: 4000, typing_expiry_ms: 6000 } };
 
 /** A presence with every outside piece stood in for; a test changes what it reads through the handles returned. */
 function build(rawSettings: Record<string, unknown> = {}) {

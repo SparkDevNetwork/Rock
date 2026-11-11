@@ -503,8 +503,8 @@ describe("settings from the token exchange", () => {
             gap_reorder_ms: 500,
             gap_repair_wait_ms: 5000,
             stale_reload_ms: 900000,
-            typing_interval_ms: 4000,
-            typing_expiry_ms: 6000,
+            typing_interval_ms: 5000,
+            typing_expiry_ms: 7500,
             typing_first_after_ms: 700,
             typing_min_show_ms: 1000,
             dm_max_others: 0,
@@ -593,11 +593,11 @@ describe("settings from the token exchange", () => {
 
     // A platform that sends no pace sends no typing flag either, so the defaults only keep a
     // missing key from becoming a signal on every key.
-    test("the typing pace and expiry are read as sent, else 4 and 6 seconds", () => {
+    test("the typing pace and expiry are read as sent, else 5 and 7.5 seconds", () => {
         expect(readSettings({ limits: { typing_interval_ms: 6860, typing_expiry_ms: 9000 } }).limits)
             .toMatchObject({ typing_interval_ms: 6860, typing_expiry_ms: 9000 });
         expect(readSettings({ limits: { typing_interval_ms: "6860", typing_expiry_ms: 0 } }).limits)
-            .toMatchObject({ typing_interval_ms: 4000, typing_expiry_ms: 6000 });
+            .toMatchObject({ typing_interval_ms: 5000, typing_expiry_ms: 7500 });
     });
 
     test("the database's region is read when it is a region's name, else there is none", () => {

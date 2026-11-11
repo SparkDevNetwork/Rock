@@ -118,8 +118,8 @@ export const defaultLimits: Omit<ChatSettings["limits"], keyof PlatformLimits | 
     stale_reload_ms: 900000,
     // A platform without typing's pace sends no typing flag either; these only keep a missing key
     // from becoming a signal on every key.
-    typing_interval_ms: 4000,
-    typing_expiry_ms: 6000,
+    typing_interval_ms: 5000,
+    typing_expiry_ms: 7500,
     // A message sent within the first wait never shows typing; a typist drawn stays at least the
     // minimum, so a word typed and deleted never blinks.
     typing_first_after_ms: 700,
