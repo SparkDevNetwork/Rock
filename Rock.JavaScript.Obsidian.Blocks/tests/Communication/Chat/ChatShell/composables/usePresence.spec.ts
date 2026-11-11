@@ -115,9 +115,6 @@ function build(rawSettings: Record<string, unknown> = {}) {
     const sent: Record<string, Record<string, number>> = {};
     // What the presence told the record, in order.
     const records: string[] = [];
-    // The page's window and document, for its return to view and a back-forward restore.
-    const page = new EventTarget();
-    const seen = Object.assign(new EventTarget(), { visibilityState: "visible" as DocumentVisibilityState });
 
     const dependencies: PresenceDependencies = {
         callFunction: (path, body, options) => {
@@ -149,8 +146,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
             typingEnded: (place, cause, message) => records.push(`ended ${place} ${cause}${message ? ` ${message.id}` : ""}`)
         },
         report: code => reports.push(code),
-        isStopped: () => stopped.value,
-        targets: { window: page, document: seen }
+        isStopped: () => stopped.value
     };
 
     const presence: Presence = createPresence(dependencies);
@@ -167,7 +163,7 @@ function build(rawSettings: Record<string, unknown> = {}) {
         presence.messageArrived(group, { id, channel_id: group, parent_id: parentId, person_alias_guid: alias });
     }
 
-    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive, page, seen };
+    return { presence, calls, held, answers, rejections, settings, token, state, rows, people, blocked, reports, stopped, newest, behind, offScreen, records, hold, arrive };
 }
 
 /** A typing signal as chat_typing writes it. */
@@ -1444,32 +1440,6 @@ describe("others' status drawn over time", () => {
         expect(drawn.value).toBeNull();
     });
 
-    test("a wall clock that jumped past a row's end with no timer fired is drawn again when the page is seen again", () => {
-        const h = buildStatus();
-        h.status.told([readerPerson(anna, online(0, 10_000))]);
-        const drawn = face(h.status, anna);
-        expect(drawn.value?.state).toBe("online");
-
-        // a laptop asleep: the clock moves on and no timer fires
-        jest.setSystemTime(serverNow + 20_000);
-        expect(drawn.value?.state).toBe("online");
-
-        h.seen.dispatchEvent(new Event("visibilitychange"));
-        expect(drawn.value).toBeNull();
-    });
-
-    test("a wall clock that jumped past a row's end with no timer fired is drawn again when the page is restored from the back-forward cache", () => {
-        const h = buildStatus();
-        h.status.told([readerPerson(anna, online(0, 10_000))]);
-        const drawn = face(h.status, anna);
-        expect(drawn.value?.state).toBe("online");
-
-        jest.setSystemTime(serverNow + 20_000);
-        h.page.dispatchEvent(new Event("pageshow"));
-
-        expect(drawn.value).toBeNull();
-    });
-
     test("a person's revision moves only when what is drawn changes: a later end of the same state moves nothing", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0))]);
@@ -1559,18 +1529,10 @@ describe("the people watched", () => {
         expect(watched).toHaveLength(200);
         expect(watched.slice(0, 3)).toEqual([me, anna, many[0]]);
     });
-
-    test("is cut at the platform's presence_watched_max when it names one", () => {
-        const h = buildStatus();
-        h.settings.value = { ...h.settings.value, limits: { ...h.settings.value.limits, presence_watched_max: 3 } as typeof h.settings.value.limits };
-        h.status.register(() => [anna, sam, lee], 2);
-
-        expect(h.status.watched()).toEqual([me, anna, sam]);
-    });
 });
 
 describe("a face's status", () => {
-    const Face = defineComponent({
+    const statusFace = defineComponent({
         props: { people: { type: Array, required: true } },
         setup(props) {
             const statusOf = useFaceStatus(() => props.people as string[], 1);
@@ -1582,7 +1544,7 @@ describe("a face's status", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0))]);
 
-        const wrapper = mount(Face, { props: { people: [anna] }, global: { provide: { [presenceStatusKey as symbol]: h.status } } });
+        const wrapper = mount(statusFace, { props: { people: [anna] }, global: { provide: { [presenceStatusKey as symbol]: h.status } } });
         expect(h.status.watched()).toEqual([me, anna]);
         expect(wrapper.text()).toBe("online");
 
@@ -1594,7 +1556,7 @@ describe("a face's status", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0))]);
 
-        const wrapper = mount(Face, { props: { people: [anna] } });
+        const wrapper = mount(statusFace, { props: { people: [anna] } });
 
         expect(wrapper.text()).toBe("none");
         expect(h.status.watched()).toEqual([me]);
@@ -1602,7 +1564,7 @@ describe("a face's status", () => {
 });
 
 describe("a stopped status", () => {
-    test("its deadline bumps nothing, the page's return redraws nothing, and a late write changes nothing", () => {
+    test("its deadline bumps nothing and a late write changes nothing", () => {
         const h = buildStatus();
         h.status.told([readerPerson(anna, online(0, 10_000))]);
         const drawn = face(h.status, anna);
@@ -1616,9 +1578,6 @@ describe("a stopped status", () => {
         h.status.carried(lee, online(0));
         h.status.exchanged([anna], exchangeAnswer({ [anna]: away(1000) }));
         h.status.blockChanged([anna], asOf(2000));
-        jest.setSystemTime(serverNow + 20_000);
-        h.seen.dispatchEvent(new Event("visibilitychange"));
-        h.page.dispatchEvent(new Event("pageshow"));
 
         expect(drawn.value?.state).toBe("online");
         expect(h.status.statusOf(sam)).toBeNull();

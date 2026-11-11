@@ -376,8 +376,11 @@ describe("a face's status badge", () => {
     const hidden: Status = { state: "hidden", label: "", tip: "Appear offline", revision: 4 };
     const anna = [{ name: "Anna Lee", photoUrl: null }];
 
+    // Drawn with Vue's own transition, so the badge sits in the root as the page has it.
+    const global = { stubs: { transition: false } };
+
     function withStatus(status: Status | null, extra: Record<string, unknown> = {}): VueWrapper {
-        return mount(Avatar, { props: { people: anna, size: 36, status, ...extra }, attachTo: document.body });
+        return mount(Avatar, { props: { people: anna, size: 36, status, ...extra }, attachTo: document.body, global });
     }
 
     function badgeOf(wrapper: VueWrapper): HTMLElement | null {
@@ -437,7 +440,7 @@ describe("a face's status badge", () => {
 
     test("no status draws nothing and makes no badge, so a face that never shows one holds no tooltip", () => {
         const wrapper = withStatus(null);
-        const bare = mount(Avatar, { props: { people: anna, size: 36 } });
+        const bare = mount(Avatar, { props: { people: anna, size: 36 }, global });
 
         expect(badgeOf(wrapper)).toBeNull();
         expect(badgeOf(bare)).toBeNull();
@@ -445,19 +448,19 @@ describe("a face's status badge", () => {
     });
 
     test.each([24, 28, 31])("a face of %ipx draws no status, too small for it to read", size => {
-        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online } });
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online }, global });
 
         expect(badgeOf(wrapper)).toBeNull();
     });
 
     test("a pile draws no status, whoever it would be for", () => {
-        const wrapper = mount(Avatar, { props: { people: [...anna, { name: "Sam Ray", photoUrl: null }], size: 36, status: statuses.online } });
+        const wrapper = mount(Avatar, { props: { people: [...anna, { name: "Sam Ray", photoUrl: null }], size: 36, status: statuses.online }, global });
 
         expect(badgeOf(wrapper)).toBeNull();
     });
 
     test.each([[32, -1.3], [36, -0.7], [44, 0.4], [56, 2.2]])("sits on the rim of a %ipx face, %fpx from its right and bottom edges", (size, offset) => {
-        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online } });
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online }, global });
         const badge = badgeOf(wrapper)!;
 
         expect(parseFloat(badge.style.right)).toBeCloseTo(offset, 5);
