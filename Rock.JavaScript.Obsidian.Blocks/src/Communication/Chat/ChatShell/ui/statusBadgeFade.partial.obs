@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Transition name="chat-status" :css="!isHeld">
-        <StatusBadge v-if="status" :status="status" :faceSize="faceSize" />
+        <StatusBadge v-if="status" :status="status" :faceSize="faceSize" :hasTip="hasTip" />
     </Transition>
 </template>
 
@@ -29,6 +29,12 @@
         faceSize: {
             type: Number as PropType<number>,
             required: true
+        },
+
+        /** Whether the badge shows its words on a resting pointer. */
+        hasTip: {
+            type: Boolean,
+            default: true
         }
     });
 

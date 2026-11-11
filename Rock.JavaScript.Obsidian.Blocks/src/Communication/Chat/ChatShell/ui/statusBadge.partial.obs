@@ -135,6 +135,12 @@
         faceSize: {
             type: Number as PropType<number>,
             required: true
+        },
+
+        /** Whether the badge shows its words on a resting pointer; not inside a control whose own tip and name carry them. */
+        hasTip: {
+            type: Boolean,
+            default: true
         }
     });
 
@@ -142,7 +148,7 @@
 
     const badgeElement = ref<HTMLElement>();
 
-    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter } = useTooltip(badgeElement);
+    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter } = useTooltip(badgeElement, () => !props.hasTip);
 
     /** The chat's root, which the tip is drawn in; null where the face is drawn alone. */
     const tipHost = ref<HTMLElement | null>(null);

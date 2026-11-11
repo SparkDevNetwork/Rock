@@ -11,7 +11,7 @@
             <template v-else-if="initialsOf(person.name, index)">{{ initialsOf(person.name, index) }}</template>
             <Icon v-else name="users" size="xs" />
         </span>
-        <StatusBadgeFade :status="drawnStatus" :faceSize="size" />
+        <StatusBadgeFade :status="drawnStatus" :faceSize="size" :hasTip="hasStatusTip" />
     </span>
 </template>
 
@@ -69,6 +69,12 @@
         own: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /** Whether the badge shows its words on a resting pointer; not on a face inside a button whose own tip and name carry them. */
+        hasStatusTip: {
+            type: Boolean,
+            default: true
         }
     });
 

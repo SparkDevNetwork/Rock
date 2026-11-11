@@ -12,7 +12,7 @@
               @openChange="onOpenChange"
               @select="onSelect">
             <template #anchor>
-                <Avatar v-if="trigger === 'face'" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own />
+                <Avatar v-if="trigger === 'face'" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own :hasStatusTip="false" />
                 <template v-else>Change</template>
             </template>
         </Menu>

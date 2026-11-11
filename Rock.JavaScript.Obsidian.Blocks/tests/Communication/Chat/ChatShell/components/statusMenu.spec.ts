@@ -491,6 +491,23 @@ describe("the sidebar foot's face", () => {
         expect(keys()).toHaveLength(6);
     });
 
+    // The button's tip and name already carry it, so resting on the badge shows one tip, not two.
+    test("its badge holds no tip of its own inside the button", async () => {
+        jest.useFakeTimers();
+        try {
+            const w = mountMenu({ trigger: "face" }, guid => guid === "a0000001-0000-4000-8000-000000000000" ? online : null);
+
+            trigger(w).querySelector("[data-testid='status-badge']")!.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+
+            expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).not.toContain("Online");
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("draws her Appear offline as the hollow ring, her own face being the only one that shows it", () => {
         const hidden: FaceStatus = { state: "hidden", label: ", appear offline", tip: "Appear offline", busyUntil: null, revision: 2 };
         const w = mountMenu({ trigger: "face" }, () => hidden);
