@@ -359,3 +359,120 @@ describe("a photo avatar on the first load", () => {
         wrapper.unmount();
     });
 });
+
+// A face's online status: a small disc at its lower right on the rim, a glyph per state so the
+// shape says it as well as the colour, drawn beside the face inside the avatar's one root so no
+// face without one changes. Only a single face of 32px or more carries it; the person's own face
+// alone draws the hollow ring of Appear offline. It draws as state when it mounts and fades only
+// for a change the store made after that.
+describe("a face's status badge", () => {
+    type Status = { state: "online" | "away" | "busy" | "hidden", label: string, tip: string, revision: number };
+
+    const statuses: Record<"online" | "away" | "busy", Status> = {
+        online: { state: "online", label: ", online", tip: "Online", revision: 4 },
+        away: { state: "away", label: ", away", tip: "Away", revision: 4 },
+        busy: { state: "busy", label: ", busy until 3:00 PM", tip: "Busy until 3:00 PM", revision: 4 }
+    };
+    const hidden: Status = { state: "hidden", label: "", tip: "Appear offline", revision: 4 };
+    const anna = [{ name: "Anna Lee", photoUrl: null }];
+
+    function withStatus(status: Status | null, extra: Record<string, unknown> = {}): VueWrapper {
+        return mount(Avatar, { props: { people: anna, size: 36, status, ...extra }, attachTo: document.body });
+    }
+
+    function badgeOf(wrapper: VueWrapper): HTMLElement | null {
+        return wrapper.element.querySelector<HTMLElement>("[data-testid='status-badge']");
+    }
+
+    afterEach(() => {
+        document.body.replaceChildren();
+        jest.useRealTimers();
+    });
+
+    test.each([
+        ["online", "polyline"],
+        ["away", "circle"],
+        ["busy", "rect"]
+    ] as const)("%s draws its disc and its own glyph beside the face, in the avatar's one root", (state, shape) => {
+        const wrapper = withStatus(statuses[state]);
+        const badge = badgeOf(wrapper)!;
+
+        expect(badge.dataset.state).toBe(state);
+        expect(badge.parentElement).toBe(wrapper.element);
+        expect(wrapper.element.classList.contains("chat-pile")).toBe(true);
+        expect(badge.previousElementSibling?.classList.contains("chat-av")).toBe(true);
+        const shown = badge.querySelectorAll(".is-shown");
+        expect(shown).toHaveLength(1);
+        expect(shown[0].querySelector(shape)).not.toBeNull();
+    });
+
+    test("is inside the avatar's hidden root, so a screen reader hears the words its host puts in a label instead", () => {
+        const wrapper = withStatus(statuses.online);
+
+        expect(badgeOf(wrapper)!.closest("[aria-hidden='true']")).toBe(wrapper.element);
+    });
+
+    test("shows its words on a resting pointer", async () => {
+        jest.useFakeTimers();
+        const wrapper = withStatus(statuses.busy);
+
+        badgeOf(wrapper)!.dispatchEvent(new MouseEvent("mouseenter"));
+        jest.advanceTimersByTime(500);
+        await nextTick();
+
+        expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe("Busy until 3:00 PM");
+        wrapper.unmount();
+    });
+
+    test("the person's own face under Appear offline draws a hollow ring and no glyph", () => {
+        const badge = badgeOf(withStatus(hidden, { own: true }))!;
+
+        expect(badge.dataset.state).toBe("hidden");
+        expect(badge.querySelector(".chat-status-glyph")).toBeNull();
+    });
+
+    test("Appear offline on a face not marked as the person's own draws nothing, as others see her", () => {
+        expect(badgeOf(withStatus(hidden))).toBeNull();
+    });
+
+    test("no status draws nothing and makes no badge, so a face that never shows one holds no tooltip", () => {
+        const wrapper = withStatus(null);
+        const bare = mount(Avatar, { props: { people: anna, size: 36 } });
+
+        expect(badgeOf(wrapper)).toBeNull();
+        expect(badgeOf(bare)).toBeNull();
+        expect(wrapper.findComponent({ name: "statusBadge.partial" }).exists()).toBe(false);
+    });
+
+    test.each([24, 28, 31])("a face of %ipx draws no status, too small for it to read", size => {
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online } });
+
+        expect(badgeOf(wrapper)).toBeNull();
+    });
+
+    test("a pile draws no status, whoever it would be for", () => {
+        const wrapper = mount(Avatar, { props: { people: [...anna, { name: "Sam Ray", photoUrl: null }], size: 36, status: statuses.online } });
+
+        expect(badgeOf(wrapper)).toBeNull();
+    });
+
+    test.each([[32, -1.3], [36, -0.7], [44, 0.4], [56, 2.2]])("sits on the rim of a %ipx face, %fpx from its right and bottom edges", (size, offset) => {
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online } });
+        const badge = badgeOf(wrapper)!;
+
+        expect(parseFloat(badge.style.right)).toBeCloseTo(offset, 5);
+        expect(parseFloat(badge.style.bottom)).toBeCloseTo(offset, 5);
+    });
+
+    test("mounted, it draws as state; a change at a later revision crossfades, and a redraw at the same revision does not", async () => {
+        const wrapper = withStatus(statuses.online);
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(false);
+
+        await wrapper.setProps({ status: { ...statuses.online, tip: "Online" } });
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(false);
+
+        await wrapper.setProps({ status: { ...statuses.away, revision: 5 } });
+        expect(badgeOf(wrapper)!.dataset.state).toBe("away");
+        expect(badgeOf(wrapper)!.classList.contains("is-changing")).toBe(true);
+    });
+});
