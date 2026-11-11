@@ -999,8 +999,12 @@ export type TokenExchangeResponse = {
     /** The settings beside the token; any key may be missing, and the client has a default. */
     settings?: unknown;
 
-    /** The people the body asked about, by primary alias; left out when the read did not answer in time, which is no failure. */
-    presence?: Record<string, PersonStatus>;
+    /**
+     * The people the body asked about: one decision time, in microseconds, for every one of them,
+     * and each person's status by primary alias, a person with nothing to draw left out. Left out
+     * whole when the read did not answer in time, which is no failure.
+     */
+    presence?: { as_of: number, told: Record<string, Omit<PersonStatus, "as_of">> };
     error?: { code?: string, message?: string };
 };
 
