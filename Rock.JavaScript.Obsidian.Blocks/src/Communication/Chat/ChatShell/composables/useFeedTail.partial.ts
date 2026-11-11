@@ -28,7 +28,9 @@
 // motions this change moves again, reads where everything now lays out with nothing of its own
 // moving, and plays each part from where it stood on screen to there, so a change that lands
 // mid-motion continues from what is on screen and two motions never stack. A row that steps, as the
-// rows above one changing height do, steps whole, its parts with it. The view's open is its entrance
+// rows above one changing height do, steps whole: each part rides the box it hangs in (a face its
+// line, a name line its row, Edited its time line), and only a part that changes place in that box,
+// or changes box, moves. The view's open is its entrance
 // and its first read: a change of state alone in it is planned as any change is, with no arrival or
 // start fading in since none was recorded, over a message's time on the state curve, never faster
 // however little of the entrance is left. What the record says happens while the view enters plays
@@ -90,7 +92,7 @@ export const feedTailKey: InjectionKey<FeedTail> = Symbol("chat-feed-tail");
  * where the box it hangs in stood then: its line for a face, its row for a name line, its time
  * line for Edited.
  */
-type Part = { id: string, element: HTMLElement, box: DOMRect, row?: string, holder?: DOMRect };
+type Part = { id: string, element: HTMLElement, box: DOMRect, row?: string, hangsIn?: DOMRect };
 
 /** Where the tail stood on screen before a change. */
 type Before = {
@@ -354,7 +356,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
     /** A part where it stands on screen; in a row, with the box it hangs in, which carries it when its row steps. */
     function partOf(id: string, element: HTMLElement): Part {
         const row = rowKeyOf(element);
-        return { id, element, box: element.getBoundingClientRect(), row, holder: row === undefined ? undefined : element.parentElement?.getBoundingClientRect() };
+        return { id, element, box: element.getBoundingClientRect(), row, hangsIn: row === undefined ? undefined : element.parentElement?.getBoundingClientRect() };
     }
 
     /** The laid-out box of the container a part out of the flow is placed in. */
@@ -465,8 +467,10 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             }
         }
         // A foot in flight is let go with the moves, so what it shows now is read first: it opens
-        // from there, and a row still under the bubble goes on showing down to where it showed,
-        // its bottom on screen as read before the render less its clip, never past the bubble.
+        // from there, and a row still under the bubble goes on showing down to where it showed, its
+        // bottom on screen as read before the render less its clip. That is never past the bubble:
+        // every foot, the stack and the bubble's own move in one change share one timing, so a
+        // clipped row's foot shows at or above the bubble's top in every frame.
         const feetWere = new Map<Element, number>();
         const shownWere = new Map<Element, number>();
         for (const animation of motionsOf(content, true)) {
@@ -586,7 +590,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             ? [...tailNow].filter(holder => holder !== bubbleNow).map(holder => {
                 const bottom = holder.getBoundingClientRect().bottom + offset;
                 const shown = shownWere.get(holder);
-                return { holder, by: Math.max(bottom - foot.box.top, shown === undefined ? 0 : bottom - shown) };
+                return { holder, by: shown === undefined ? bottom - foot.box.top : bottom - shown };
             }).filter(clip => clip.by >= .5)
             : [];
 
@@ -643,8 +647,8 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
             // its parts with it, each carried by its own box, not by the row's edge, since a reaction
             // under a face's line moves the row's foot and not the face's. A face hangs from its
             // line's foot, at its bubble's, so it moves from foot to foot; anything else from its top.
-            const holder = part.row !== undefined && part.row === from.row && part.holder && from.holder ? { was: from.holder, now: part.holder } : undefined;
-            const step = holder ? (kind === "face" ? holder.was.bottom - holder.now.bottom : holder.was.top - holder.now.top) - offset : 0;
+            const box = part.row !== undefined && part.row === from.row && part.hangsIn && from.hangsIn ? { was: from.hangsIn, now: part.hangsIn } : undefined;
+            const step = box ? (kind === "face" ? box.was.bottom - box.now.bottom : box.was.top - box.now.top) - offset : 0;
             const y = (kind === "face" ? from.box.bottom - (part.box.bottom + start.y) : from.box.top - (part.box.top + start.y)) - step;
             const by = { x: from.box.left - (part.box.left + start.x), y };
             if (kind === "edited" && Math.abs(by.x) >= .5) {
