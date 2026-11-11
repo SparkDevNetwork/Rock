@@ -60,7 +60,7 @@ const padTop = 10;
 const padBottom = 18;
 
 /** A row: its key, who sent it, its bubble's size, and its files' box when it has no text. */
-type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean, isFull?: boolean, isEdited?: boolean };
+type Row = { key: string, sender: string, h?: number, w?: number, filesOnly?: boolean, isNewGroup?: boolean, isFull?: boolean, isEdited?: boolean, isReacted?: boolean };
 
 /** A row group: its key is its first row's, as the feed's layout keys a group. */
 type Group = { key: string, sender: string, rows: Row[] };
@@ -85,7 +85,7 @@ function groupsOf(rows: Row[]): Group[] {
  * time line as its row's, the time line kept and hidden when its row does not show it; the face
  * also carries the person mark the feed drew before.
  */
-function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after", isScrollerless?: boolean, isLanded?: boolean } = {}) {
+function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | null, content: () => HTMLElement | null) => Stage, options: { rows?: Row[], typing?: Typing | null, isInRun?: boolean, isGroup?: boolean, isFollowing?: boolean, ownFollow?: "before" | "after", isScrollerless?: boolean, isLanded?: boolean, isLandedByRead?: boolean } = {}) {
     const rows = reactive<Row[]>([...(options.rows ?? [])]);
     // whether the view's open has drawn its first read: a view drawn here has, unless a cell opens it
     const landed = ref(options.isLanded ?? true);
@@ -130,6 +130,12 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                 landed: () => landed.value
             };
             useFeedTail(tail);
+            // a view that marks its open landed as it draws what its first read brought, in the same render
+            if (options.isLandedByRead) {
+                watch(typing, () => {
+                    landed.value = true;
+                });
+            }
             if (options.ownFollow === "after") {
                 ownFollow();
             }
@@ -160,7 +166,7 @@ function draw(motion: MessageMotion, stageOf: (scroller: () => HTMLElement | nul
                                             row.isFull ? h("div", { class: "chat-msg-files", "data-w": 160, "data-h": 120 }) : null
                                         ])
                                 ]),
-                                row.isFull ? h("div", { class: "chat-reacts" }, "👍 1") : null,
+                                row.isFull || row.isReacted ? h("div", { class: "chat-reacts" }, "👍 1") : null,
                                 // an edited message's time line keeps its time and says Edited alone when its row gives the time up
                                 h("div", { class: "chat-meta", "data-tail": "meta", hidden: !isMetaShown && !row.isEdited }, row.isEdited
                                     ? [
@@ -1299,10 +1305,10 @@ describe("the view's own entrance", () => {
         scroller.getAnimations = (() => [entrance]) as never;
     }
 
-    // The open's re-read names a typist about a tenth of a second in, as the only change. No event
-    // is recorded for her, so only the entrance can carry the bubble's room: the rows above rise
-    // with it to the entrance's end, never stepping in one frame.
-    test("a typist the open's read names, alone, rides the entrance: the rows above never step", async () => {
+    // The open's first read names a typist about a tenth of a second in, as the only change. No
+    // event is recorded for her, so the open's plan carries the bubble's room: the rows above rise
+    // over a message's time, never stepping in one frame.
+    test("a typist the open's read names, alone, glides in over a message's time: the rows above never step", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }] });
         entering(v, 140);
@@ -1462,6 +1468,23 @@ describe("the open's first read", () => {
         expect(Math.max(...steps)).toBeLessThan(20);
     });
 
+    // A view can mark its open landed in the same render as what the read brought, after the tail has
+    // read where it stood for that render: the change is still the open's, so it plays as the open.
+    test("landing in the render its read already woke the tail for, the typist it names glides in with the stack", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }], isLanded: false, isLandedByRead: true });
+        const top = seen(row(v, "k:1")).top;
+
+        v.typing.value = tedTyping;
+        await settle();
+
+        expect(v.landed.value).toBe(true);
+        expect(named((stage as Stage).played).filter(name => name.includes("tail-content"))).toEqual(["chat-tail-open tail-content"]);
+        const tops = sample(() => seen(row(v, "k:1")).top);
+        expect(near(tops[0], top)).toBe(true);
+        expect(tops[tops.length - 1]).toBeLessThan(top - 20);
+    });
+
     test("once it has landed naming no one, a typist a later read names is simply there", async () => {
         const motion = createMessageMotion();
         const v = view(motion, { rows: [{ key: "k:1", sender: ted }], isLanded: false });
@@ -1565,5 +1588,77 @@ describe("the open's first read", () => {
         for (let index = 1; index < after.length; index++) {
             expect(Math.abs(after[index] - after[index - 1])).toBeLessThan(16);
         }
+    });
+});
+
+// A part hangs in a box of its row and rides that box, not the row's edge: a face hangs from its
+// line at its bubble's foot, a name line from its row's top, Edited from its time line. A row that
+// grows below a face, a reaction or a thread summary under its line, moves the row's foot and not
+// the face's; a row that grows above a time line moves Edited with it.
+describe("a part rides the box it hangs in", () => {
+    /** Each frame, how far a part's edge stands from the same edge of the box it hangs in. */
+    const gaps = (v: View, id: string, holder: () => Element, edge: "top" | "bottom"): number[] => sample(() => Math.round(seen(holder())[edge] - seen(part(v, id))[edge]));
+    const faceGaps = (v: View, key: string): number[] => gaps(v, `face:${key}`, () => part(v, `box:${key}`), "bottom");
+
+    test("the open's read bringing a reaction to the newest row, his: his face stays at his bubble's foot from the first frame", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: me }, { key: "k:2", sender: ted }], isLanded: false });
+        const before = seen(part(v, "face:k:2")).bottom;
+
+        v.landed.value = true;
+        v.rows[1].isReacted = true;
+        await settle();
+
+        const first = seen(part(v, "face:k:2")).bottom;
+        expect(new Set(faceGaps(v, "k:2")).size).toBe(1);
+        expect(Math.abs(first - before)).toBeLessThanOrEqual(1);
+    });
+
+    test("the open's read bringing a reaction to his row above the newest: his face rides his bubble as the row steps", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }], isLanded: false });
+
+        v.landed.value = true;
+        v.rows[0].isReacted = true;
+        await settle();
+
+        expect(new Set(faceGaps(v, "k:1")).size).toBe(1);
+    });
+
+    test("the open's read bringing a reaction to an edited row above the newest: Edited stays on its time line", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted, isEdited: true }, { key: "k:2", sender: me }], isLanded: false });
+
+        v.landed.value = true;
+        v.rows[0].isReacted = true;
+        await settle();
+
+        expect(new Set(gaps(v, "edited", () => part(v, "meta:k:1"), "top")).size).toBe(1);
+    });
+
+    test.each([
+        ["above the newest", [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }], 0, "k:1"],
+        ["the newest", [{ key: "k:1", sender: me }, { key: "k:2", sender: ted }], 1, "k:2"]
+    ] as [string, Row[], number, string][])("the open's read growing his bubble, %s: his face rides his bubble's foot", async (_, rows, grown, key) => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows, isLanded: false });
+
+        v.landed.value = true;
+        v.rows[grown].h = 80;
+        await settle();
+
+        expect(new Set(faceGaps(v, key)).size).toBe(1);
+    });
+
+    test("live, a message arriving in the render that brings a reaction to his row above: his face rides his bubble", async () => {
+        const motion = createMessageMotion();
+        const v = view(motion, { rows: [{ key: "k:1", sender: ted }, { key: "k:2", sender: me }] });
+
+        motion.arrived(message(3), place);
+        v.rows[0].isReacted = true;
+        v.rows.push({ key: "k:3", sender: me });
+        await settle();
+
+        expect(new Set(faceGaps(v, "k:1")).size).toBe(1);
     });
 });
