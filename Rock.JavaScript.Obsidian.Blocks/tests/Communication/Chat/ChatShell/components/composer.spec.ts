@@ -1445,7 +1445,7 @@ describe("the composer's Busy note", () => {
 
         const wrapper = mountWith(store, { busyPerson: person(cindy, "Cindy") });
 
-        expect(partsOf(wrapper)).toEqual(["name:Cindy ", "fixed:is busy", "until: until 3:00 PM", "fixed: and won't be notified."]);
+        expect(partsOf(wrapper)).toEqual(["name:Cindy", "fixed: is busy", "until: until 3:00 PM", "fixed: and won't be notified."]);
         expect(describedBy(wrapper)).toBe("Cindy is busy until 3:00 PM and won't be notified.");
     });
 
@@ -1475,7 +1475,7 @@ describe("the composer's Busy note", () => {
         const open = mountWith(store, { busyPerson: person(grace, "Grace") });
 
         expect(describedBy(long)).toBe("Alexandrina-Josephine is busy until tomorrow, 8:00 AM and won't be notified.");
-        expect(partsOf(open)).toEqual(["name:Grace ", "fixed:is busy", "fixed: and won't be notified."]);
+        expect(partsOf(open)).toEqual(["name:Grace", "fixed: is busy", "fixed: and won't be notified."]);
         expect(describedBy(open)).toBe("Grace is busy and won't be notified.");
     });
 
@@ -1655,18 +1655,24 @@ describe("the composer's Busy note", () => {
             const until = rule(".chat-composer-note-until");
             const fixed = rule(".chat-composer-note-fixed");
 
-            expect(name).toMatch(/flex: 0 1 auto;/);
-            // the floor is capped at the name's own width, so a short name takes one space and no padding
-            expect(name).toMatch(/min-width: calc-size\(max-content, min\(size, 2\.4em\)\);/);
+            // The shrink factors sum past one, so flexbox hands out the whole overflow and the
+            // overflow never cuts the end words; the name's weight is so much the heavier that the
+            // time keeps every glyph until the name sits at its floor. A weight of a thousand
+            // still cut the time early at a phone's width, measured.
+            expect(name).toMatch(/flex: 0 1000000 auto;/);
+            expect(until).toMatch(/flex: 0 1 auto;/);
+            // no floor where the browser has no calc-size, and where it has one, a few letters capped
+            // at the name's own width, so a short name is never padded
+            expect(name).toMatch(/min-width: 0;\s*min-width: calc-size\(max-content, min\(size, 2\.4em\)\);/);
             expect(name).not.toMatch(/min-width: 2\.4em;/);
             expect(name).toMatch(/text-overflow: ellipsis;/);
-            expect(until).toMatch(/flex: 0 \.0001 auto;/);
             expect(until).toMatch(/min-width: 0;/);
             expect(until).toMatch(/text-overflow: ellipsis;/);
             expect(fixed).toMatch(/flex: none;/);
             expect(fixed).not.toMatch(/overflow|ellipsis/);
-            // the space after the name is the name's own, so an ellipsis cutting the name cuts it too
+            // each space is its part's own text, kept by pre
             expect(name).toMatch(/white-space: pre;/);
+            expect(fixed).toMatch(/white-space: pre;/);
         });
 
         test("only fades, over the fast state time, and nothing moves it", () => {

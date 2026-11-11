@@ -49,8 +49,8 @@
             -->
             <Transition name="chat-note" :key="busyPerson?.person_alias_guid ?? ''">
                 <span v-if="busyNote" class="chat-composer-note" aria-hidden="true" data-testid="composer-busy-note">
-                    <span class="chat-composer-note-name" data-part="name">{{ `${busyNote.name} ` }}</span>
-                    <span class="chat-composer-note-fixed" data-part="fixed">is busy</span>
+                    <span class="chat-composer-note-name" data-part="name">{{ busyNote.name }}</span>
+                    <span class="chat-composer-note-fixed" data-part="fixed">{{ " is busy" }}</span>
                     <span v-if="busyNote.until" class="chat-composer-note-until" data-part="until">{{ busyNote.until }}</span>
                     <span class="chat-composer-note-fixed" data-part="fixed">{{ " and won't be notified." }}</span>
                     <span :id="busyNoteId" class="chat-sr-only">{{ busyNote.sentence }}</span>
@@ -546,14 +546,17 @@
 
 /*
  * The name gives way first, to a few letters, the header above naming her in full; then the time.
- * "is busy" and "and won't be notified." never do, since they say what sending does. Each space
- * is its part's own text, kept by pre; the one after the name ends the name's part, so an ellipsis
- * cutting the name cuts it too and a cut name leaves one gap, not two. The few-letters floor is
- * capped at the name's own width (calc-size, where the browser has it), so a short name is never
- * padded past its space; a browser without calc-size has no floor and the name gives way alone.
+ * "is busy" and "and won't be notified." never do, since they say what sending does. The two
+ * shrink factors sum past one, since below one flexbox hands out only that share of the overflow
+ * and the note's overflow would cut the end words instead; the name's is so much the heavier that
+ * the time gives up less than a layout unit until the name sits at its floor. Each space is its
+ * part's own text, kept by pre; the one before "is busy" is the fixed part's, so a cut name always
+ * keeps a gap before it, which an ellipsis alone does not leave. The few-letters floor is capped at
+ * the name's own width (calc-size, where the browser has it), so a short name is never padded; a
+ * browser without calc-size has no floor, which pads nothing either.
  */
 .chat-composer-note-name {
-    flex: 0 1 auto;
+    flex: 0 1000000 auto;
     min-width: 0;
     min-width: calc-size(max-content, min(size, 2.4em));
     overflow: hidden;
@@ -562,7 +565,7 @@
 }
 
 .chat-composer-note-until {
-    flex: 0 .0001 auto;
+    flex: 0 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
