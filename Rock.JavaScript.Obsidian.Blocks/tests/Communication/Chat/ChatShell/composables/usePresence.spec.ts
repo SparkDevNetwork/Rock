@@ -30,7 +30,8 @@
 // nothing for someone blocked, for the person's own carried copy, or with the switch off.
 import { computed, defineComponent, h as render, reactive, shallowRef } from "vue";
 import { mount } from "@vue/test-utils";
-import { createPresence, Presence, PresenceDependencies, presenceStatusKey, typingWords, useFaceStatus } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import { createPresence, Presence, PresenceDependencies, typingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
+import { presenceStatusKey, useFaceStatus } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { quoteKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { readSettings } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { classifyPlatformError } from "../../../../../src/Communication/Chat/ChatShell/errors.partial";
