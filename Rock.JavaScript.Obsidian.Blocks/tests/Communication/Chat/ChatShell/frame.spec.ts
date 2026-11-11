@@ -99,6 +99,9 @@ const mockOlderAnswers: Array<() => void> = [];
 /** The shell the test mounted last, so a test can open a draft on it. */
 let mockShell: Record<string, unknown> | null = null;
 
+/** Set by a test about the start, so the next shell is still signing in when the block mounts. */
+let mockStarting = false;
+
 /** What the block built its last shell with, which carries the frame's views for a mention's jump. */
 let mockShellOptions: ShellOptions | null = null;
 
@@ -169,7 +172,8 @@ resetConfig();
 /** The shell the block drives, reduced to what the frame reads, ready with two rooms loaded. */
 function fakeShell(): Record<string, unknown> {
     const state = reactive({
-        phase: "ready",
+        phase: mockStarting ? "starting" : "ready",
+        startWait: null as string | null,
         isOpening: false,
         gate: "ok",
         connection: null,
@@ -254,6 +258,7 @@ function fakeShell(): Record<string, unknown> {
         selectChannel: jest.fn(async (channelId: string) => {
             state.activeChannelId = channelId;
         }),
+        relink: jest.fn(),
         seen: jest.fn(),
         markRead: jest.fn(),
         firstMessageShown: jest.fn(),
@@ -749,6 +754,7 @@ afterEach(() => {
     wrapper = null;
     mockShell = null;
     mockShellOptions = null;
+    mockStarting = false;
     mockInvoke.mockReset();
     mockThreadPages = null;
     mockOlderAnswers.length = 0;
@@ -2517,6 +2523,49 @@ describe("a push about a thread reply", () => {
         expect(flashingRows(w)).toHaveLength(1);
         expect(scrolledTo).toContain(replyRow(w, 42));
         expect(threadsOf().loadOlderReplies).not.toHaveBeenCalled();
+    });
+
+    test("a tap that reaches a page still signing in opens nothing until it signs in, then its room and the drawer at the reply", async () => {
+        mockStarting = true;
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        const w = await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        await settle();
+
+        // nothing can be read before sign-in, so the tap is the room the page load opens
+        expect(mockShell!.relink).toHaveBeenCalledWith(team.channel_id);
+        expect(mockShell!.selectChannel).not.toHaveBeenCalled();
+        expect(threadsOf().openThread).not.toHaveBeenCalled();
+
+        const state = mockShell!.state as { phase: string, activeChannelId: string | null };
+        state.phase = "ready";
+        state.activeChannelId = team.channel_id;
+        await settle();
+        await settle();
+
+        expect(threadsOf().openThread).toHaveBeenCalledTimes(1);
+        expect(threadsOf().openThread).toHaveBeenCalledWith(team.channel_id, 40);
+        expect(isFlashing(w, 42)).toBe(true);
+    });
+
+    test("a room's tap while signing in takes the place of an earlier tap's reply, so no thread opens", async () => {
+        mockStarting = true;
+        mockThreadPages = { newest: [41, 42, 43], older: [] };
+        await mountBlock(1200);
+
+        fromWorker({ type: "chat.push.open", channel_id: team.channel_id, root_id: "40", message_id: "42" });
+        fromWorker({ type: "chat.push.open", channel_id: dmAnna.channel_id });
+        await settle();
+
+        expect((mockShell!.relink as jest.Mock).mock.calls.map(c => c[0])).toEqual([team.channel_id, dmAnna.channel_id]);
+        const state = mockShell!.state as { phase: string, activeChannelId: string | null };
+        state.phase = "ready";
+        state.activeChannelId = dmAnna.channel_id;
+        await settle();
+        await settle();
+
+        expect(threadsOf().openThread).not.toHaveBeenCalled();
     });
 
     test("a reply older than the newest page is found by loading older pages until it appears", async () => {
@@ -4867,5 +4916,111 @@ describe("a shell rebuilt by a birthdate save", () => {
         await settle();
 
         expect(w.get("[data-testid='header-title']").text()).toBe("Worship Team Leaders");
+    });
+});
+
+// Before chat has signed in, the first load's veil stays and carries one status line, on the
+// column's veil on a wide block and on the list's on a phone; one hidden region at the block's
+// root says each stage once, outside every veil, inert and busy part of the page. New message waits
+// for sign-in, as a first message can only fail before it; search stays live.
+describe("a start still signing in", () => {
+    type StartState = { phase: string, startWait: string | null, gate: string };
+    type RevealState = { isSkeletonShown: boolean, isSidebarRevealed: boolean, isMainRevealed: boolean };
+    const stateOf = (): StartState => mockShell!.state as unknown as StartState;
+    const revealOf = (): RevealState => (mockShell!.reveal as { state: RevealState }).state;
+
+    async function mountStarting(width: number): Promise<VueWrapper> {
+        mockStarting = true;
+        const w = await mountBlock(width);
+        Object.assign(revealOf(), { isSidebarRevealed: false, isMainRevealed: false, isSkeletonShown: true });
+        await settle();
+        return w;
+    }
+
+    const region = (w: VueWrapper): HTMLElement => w.get("[data-testid='start-status']").element as HTMLElement;
+
+    test("one status region at the block's root, empty at mount, inside nothing hidden, inert or busy", async () => {
+        const w = await mountStarting(1200);
+        const status = region(w);
+
+        expect(status.getAttribute("role")).toBe("status");
+        expect(status.getAttribute("aria-live")).toBe("polite");
+        expect(status.textContent?.trim()).toBe("");
+        for (let node: HTMLElement | null = status; node; node = node.parentElement) {
+            expect(node.getAttribute("aria-hidden")).not.toBe("true");
+            expect(node.hasAttribute("inert")).toBe(false);
+            expect(node.getAttribute("aria-busy")).not.toBe("true");
+        }
+    });
+
+    test("says each stage once and nothing on a try that changes no stage, then a refusal's sentence", async () => {
+        const w = await mountStarting(1200);
+        const said: string[] = [];
+        const observer = new MutationObserver(() => said.push(region(w).textContent?.trim() ?? ""));
+        observer.observe(region(w), { childList: true, characterData: true, subtree: true });
+
+        for (const stage of ["connecting", "connecting", "slow", "long"]) {
+            stateOf().startWait = stage;
+            await settle();
+        }
+        stateOf().phase = "failed";
+        await settle();
+        observer.disconnect();
+
+        expect(said).toEqual([
+            "Connecting to chat\u2026",
+            "Still connecting. Chat will open as soon as it can.",
+            "Chat is still trying to connect. If this keeps happening, let your church know.",
+            "Chat could not start. Try again later, and let your church know if this keeps happening."
+        ]);
+        // the region outlives the frame's swap for the notice, so the sentence is heard
+        expect(w.find("[data-testid='chat-frame']").exists()).toBe(false);
+    });
+
+    test("says nothing once chat is ready, the start's words left for the leaving veil", async () => {
+        const w = await mountStarting(1200);
+        stateOf().startWait = "slow";
+        await settle();
+
+        stateOf().phase = "ready";
+        await settle();
+
+        expect(region(w).textContent?.trim()).toBe("");
+    });
+
+    test.each([
+        [1200, "frame-main", "frame-sidebar"],
+        [500, "frame-sidebar", "frame-main"]
+    ])("at %p wide draws the line on the veil of %p only, hidden from screen readers", async (width, drawn, bare) => {
+        const w = await mountStarting(width);
+        expect(w.find("[data-testid='veil-status']").exists()).toBe(false);
+
+        stateOf().startWait = "connecting";
+        await settle();
+
+        const lines = w.findAll("[data-testid='veil-status']");
+        expect(lines).toHaveLength(1);
+        expect(w.find("[data-testid='" + drawn + "'] [data-testid='veil-status']").exists()).toBe(true);
+        expect(w.find("[data-testid='" + bare + "'] [data-testid='veil-status']").exists()).toBe(false);
+        expect(lines[0].attributes("aria-hidden")).toBe("true");
+        expect(lines[0].text()).toBe("Connecting to chat\u2026");
+    });
+
+    test("New message is out of reach from mount until chat signs in, while search takes focus and keeps it when the line shows", async () => {
+        const w = await mountStarting(1200);
+        expect(w.get("[data-testid='new-message']").attributes("inert")).toBeDefined();
+
+        const search = w.get("[data-testid='sidebar-search']").element as HTMLInputElement;
+        search.focus();
+        stateOf().startWait = "connecting";
+        await settle();
+
+        expect(document.activeElement).toBe(search);
+        expect(search.closest("[inert]")).toBeNull();
+
+        stateOf().phase = "ready";
+        await settle();
+
+        expect(w.get("[data-testid='new-message']").attributes("inert")).toBeUndefined();
     });
 });

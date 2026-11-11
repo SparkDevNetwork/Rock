@@ -5,6 +5,13 @@
          data-testid="chat-shell"
          :data-phase="shell.state.phase"
          :data-phone="isPhone ? 'true' : 'false'">
+        <!--
+            The page's one announcement of its start, mounted empty so each change is heard: outside
+            the frame, so it outlives the frame's swap for a refusal's notice, and outside every veil,
+            inert and busy part of the page, which a screen reader would not read or would hold back.
+        -->
+        <span class="chat-sr-only" role="status" aria-live="polite" data-testid="start-status">{{ startAnnouncement }}</span>
+
         <BirthdatePrompt v-if="isPromptShown"
                          :message="birthdateMessage"
                          :isSaving="isSavingBirthdate"
@@ -32,6 +39,7 @@
                                 :sidebarReads="shell.channels.sidebarReads"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
+                                :isNewMessageInert="shell.state.phase === 'starting'"
                                 :isPhone="isPhone"
                                 :loadState="shell.channels.loadState"
                                 :isBrowseOpen="mainView === 'directory'"
@@ -49,7 +57,8 @@
                         <PageVeil region="sidebar"
                                   :isRevealed="shell.reveal.state.isSidebarRevealed"
                                   :isMarksShown="shell.reveal.state.isSkeletonShown"
-                                  :kind="shell.reveal.state.kind" />
+                                  :kind="shell.reveal.state.kind"
+                                  :statusLine="isPhone ? startStatus : null" />
                     </template>
                 </ChannelSidebar>
             </div>
@@ -66,7 +75,8 @@
                 <PageVeil region="main"
                           :isRevealed="shell.reveal.state.isMainRevealed"
                           :isMarksShown="shell.reveal.state.isSkeletonShown"
-                          :kind="shell.reveal.state.kind" />
+                          :kind="shell.reveal.state.kind"
+                          :statusLine="isPhone ? null : startStatus" />
                 <!--
                     The conversation stays laid out under a full view, so its place in the feed
                     survives, and is out of reach until the view closes. Drawn as no box of its own,
@@ -758,7 +768,7 @@
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { useDialogs } from "./ChatShell/composables/useDialogs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
-    import { refusalMessage } from "./ChatShell/shell.partial";
+    import { refusalMessage, startWaitMessage } from "./ChatShell/shell.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
@@ -944,6 +954,26 @@
     const isRefused = computed((): boolean => shell.value.state.phase === "refused" || shell.value.state.phase === "failed");
 
     const refusal = computed((): string => refusalMessage(shell.value.state.phase, shell.value.state.gate));
+
+    /**
+     * What a start still waiting says, drawn on the one veil in view: the column's on a wide block,
+     * the list's on a phone, whose column is not on screen at first.
+     */
+    const startStatus = computed((): string | null => {
+        const stage = shell.value.state.startWait;
+        return stage ? startWaitMessage(stage) : null;
+    });
+
+    /**
+     * What the page says to a screen reader about its start: each stage once while it waits, a
+     * refusal's sentence once, and nothing once chat is ready, as a load that lands says nothing.
+     */
+    const startAnnouncement = computed((): string => {
+        if (shell.value.state.phase === "starting") {
+            return startStatus.value ?? "";
+        }
+        return isRefused.value && !isPromptShown.value ? refusal.value : "";
+    });
 
     /** The person's own campus by its name, for the sidebar's foot and Chat settings. */
     const personCampusName = computed((): string | null => {

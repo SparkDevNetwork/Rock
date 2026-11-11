@@ -44,6 +44,9 @@ const mentionPieces = [
 
 type Deferred<T> = { promise: Promise<T>, resolve: (value: T) => void };
 
+/** What one token exchange answers instead of passing: a status, or a request that reaches nothing. */
+type ExchangeAnswer = { status: number, retryAfter?: number, code?: string } | "unreachable";
+
 function deferred<T>(): Deferred<T> {
     let resolve!: (value: T) => void;
     const promise = new Promise<T>(r => resolve = r);
@@ -119,6 +122,8 @@ function build(options: {
     removed: string[],
     stored: Record<string, string>,
     fireBlur: () => void,
+    fireOnline: () => void,
+    fireShown: () => void,
     topics: LiveTopic[],
     counts: { mints: number, clients: number, setAuths: number, bootstraps: number },
     mintGate: { value: string },
@@ -145,6 +150,8 @@ function build(options: {
     deviceAnswer: { value: { status: number, body: unknown } },
     exchangeSettings: { value: Record<string, unknown> },
     heldExchange: { value: Deferred<void> | null },
+    exchangeAnswers: { value: ExchangeAnswer[] },
+    exchangeTimes: number[],
     memberCalls: Array<Record<string, unknown>>,
     begins: Array<Record<string, unknown>>,
     uploads: FakeRequest[],
@@ -207,10 +214,20 @@ function build(options: {
     const deviceAnswer: { value: { status: number, body: unknown } } = { value: { status: 200, body: {} } };
     const exchangeSettings = { value: { limits: platformLimits, ...(options.pushSettings ? { push: options.pushSettings } : {}) } as Record<string, unknown> };
     const heldExchange: { value: Deferred<void> | null } = { value: null };
+    // What the token exchanges answer before they pass, in order, and when each was asked.
+    const exchangeAnswers: { value: ExchangeAnswer[] } = { value: [] };
+    const exchangeTimes: number[] = [];
     // Every roster page asked; each answers with nobody.
     const memberCalls: Array<Record<string, unknown>> = [];
     const windowListeners: Record<string, Array<() => void>> = {};
-    const pageDocument = { visibilityState: "visible", addEventListener: () => undefined, removeEventListener: () => undefined };
+    const documentListeners: Record<string, Array<() => void>> = {};
+    const pageDocument = {
+        visibilityState: "visible",
+        addEventListener: (type: string, listener: () => void) => (documentListeners[type] ??= []).push(listener),
+        removeEventListener: (type: string, listener: () => void) => {
+            documentListeners[type] = (documentListeners[type] ?? []).filter(l => l !== listener);
+        }
+    };
 
     const client: PlatformClientLike = {
         realtime: {
@@ -255,7 +272,20 @@ function build(options: {
         },
         fetch: async (url, init) => {
             if (url.endsWith("/functions/v1/token-exchange")) {
+                exchangeTimes.push(Date.now());
                 await heldExchange.value?.promise;
+                const failure = exchangeAnswers.value.shift();
+                if (failure === "unreachable") {
+                    throw new TypeError("Failed to fetch");
+                }
+                if (failure) {
+                    return {
+                        ok: false,
+                        status: failure.status,
+                        headers: { get: (name: string) => name.toLowerCase() === "retry-after" && failure.retryAfter !== undefined ? String(failure.retryAfter) : null },
+                        json: async () => ({ error: { code: failure.code ?? "rpc.unavailable" } })
+                    } as unknown as Response;
+                }
                 return fakeResponse(200, { access_token: tokenFor(tokenPerson.value), expires_in: 300, settings: exchangeSettings.value });
             }
             const body = JSON.parse(init.body as string);
@@ -381,7 +411,9 @@ function build(options: {
             document: pageDocument,
             window: {
                 addEventListener: (type, listener) => (windowListeners[type] ??= []).push(listener),
-                removeEventListener: () => undefined
+                removeEventListener: (type, listener) => {
+                    windowListeners[type] = (windowListeners[type] ?? []).filter(l => l !== listener);
+                }
             }
         },
         mark: () => undefined,
@@ -408,8 +440,10 @@ function build(options: {
 
     return {
         shell, history, saves, joined, removed, stored, topics, counts, mintGate, bootstrap, pageDocument, sent, tokenPerson, reloads, heldSends, heldBootstraps, heldFacts,
-        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
+        channelReads, channelFacts, directoryCalls, sendRefusals, personCalls, personAnswer, foundDm, historyCalls, prefsCalls, prefsAnswer, deviceCalls, emojiCalls, deviceAnswer, exchangeSettings, heldExchange, exchangeAnswers, exchangeTimes, memberCalls, begins, uploads, blockCalls, blocksAnswer, listCalls, listAnswers, reports, typingCalls,
         fireBlur: () => (windowListeners["blur"] ?? []).forEach(l => l()),
+        fireOnline: () => (windowListeners["online"] ?? []).forEach(l => l()),
+        fireShown: () => (documentListeners["visibilitychange"] ?? []).forEach(l => l()),
         firePageHide: () => (windowListeners["pagehide"] ?? []).forEach(l => l())
     };
 }
@@ -4880,5 +4914,253 @@ describe("typing", () => {
 
         expect(h.shell.presence.state.typists).toEqual({});
         expect(h.typingCalls).toEqual([]);
+    });
+});
+
+// A start the platform cannot answer yet stays on the first load's veil and keeps trying, saying it
+// is connecting once a try has failed and a second has passed, in gentler words the longer it
+// waits; only a refusal says chat could not start. The page load runs once, at sign-in.
+describe("a start the platform cannot answer yet", () => {
+    beforeEach(() => {
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"], now: 0 });
+        // every wait at the middle of its range, so each try has one time
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+    });
+
+    afterEach(() => {
+        jest.restoreAllMocks();
+        jest.useRealTimers();
+    });
+
+    const busy = (retryAfter: number): ExchangeAnswer => ({ status: 503, retryAfter, code: "rpc.unavailable" });
+
+    /** Moves the clock and lets everything the timers started run on. */
+    async function advance(milliseconds: number): Promise<void> {
+        await jest.advanceTimersByTimeAsync(milliseconds);
+        await settle();
+    }
+
+    test("a first exchange answering 503 then 200 stays starting, never failed, and starts the live connection once", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(4)];
+        const phases: string[] = [];
+
+        const starting = h.shell.start();
+        await advance(3999);
+        phases.push(h.shell.state.phase);
+        expect(h.counts.clients).toBe(0);
+        expect(h.historyCalls).toEqual([]);
+
+        await advance(1);
+        phases.push(h.shell.state.phase);
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(phases).toEqual(["starting", "ready"]);
+        expect(h.exchangeTimes).toEqual([0, 4000]);
+        expect(h.counts.clients).toBe(1);
+        expect(h.shell.state.activeChannelId).toBe(channelA);
+    });
+
+    test("says it is connecting from a second after a failed try, then the slower words at 20 s and 2 min, and keeps the last words once ready", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(30), busy(30), busy(30), busy(30), busy(30)];
+
+        const starting = h.shell.start();
+        await advance(999);
+        expect(h.shell.state.startWait).toBeNull();
+        await advance(1);
+        expect(h.shell.state.startWait).toBe("connecting");
+
+        await advance(18999);
+        expect(h.shell.state.startWait).toBe("connecting");
+        await advance(1);
+        expect(h.shell.state.startWait).toBe("slow");
+
+        await advance(99999);
+        expect(h.shell.state.startWait).toBe("slow");
+        await advance(1);
+        expect(h.shell.state.startWait).toBe("long");
+
+        // the sixth try, at 150 s, passes
+        await advance(30000);
+        expect(h.shell.state.phase).toBe("ready");
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        // the veil leaving carries the words it had, so they never change just before it goes
+        expect(h.shell.state.startWait).toBe("long");
+    });
+
+    test("a first try that fails after the first second says it is connecting then, not before", async () => {
+        const h = build();
+        h.heldExchange.value = deferred<void>();
+        h.exchangeAnswers.value = [busy(4)];
+
+        void h.shell.start();
+        await advance(1500);
+        expect(h.shell.state.startWait).toBeNull();
+
+        const held = h.heldExchange.value;
+        h.heldExchange.value = null;
+        held.resolve();
+        await advance(0);
+
+        expect(h.shell.state.startWait).toBe("connecting");
+        await h.shell.stop();
+    });
+
+    test("a first try with no answer at all says it is connecting at 2.5 s, and a start answering at 2.4 s never does", async () => {
+        const h = build();
+        h.heldExchange.value = deferred<void>();
+        void h.shell.start();
+        await advance(2499);
+        expect(h.shell.state.startWait).toBeNull();
+        await advance(1);
+        expect(h.shell.state.startWait).toBe("connecting");
+        await h.shell.stop();
+
+        const quick = build();
+        quick.heldExchange.value = deferred<void>();
+        const starting = quick.shell.start();
+        await advance(2400);
+        quick.heldExchange.value.resolve();
+        await advance(0);
+        answerHistory(quick, channelA, 10);
+        await starting;
+        await advance(200000);
+
+        expect(quick.shell.state.phase).toBe("ready");
+        expect(quick.shell.state.startWait).toBeNull();
+    });
+
+    test("a refusal after tries that could pass ends failed, with the sentence it always had and nothing left scheduled", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(2), { status: 401, code: "auth.invalid_token" }];
+
+        const starting = h.shell.start();
+        await advance(2000);
+        await starting;
+
+        expect(h.shell.state.phase).toBe("failed");
+        expect(refusalMessage(h.shell.state.phase, h.shell.state.gate)).toBe("Chat could not start. Try again later, and let your church know if this keeps happening.");
+        expect(jest.getTimerCount()).toBe(0);
+        await advance(600000);
+        expect(h.exchangeTimes).toEqual([0, 2000]);
+    });
+
+    test("after a start that waited, a dropped connection is the banner's, and the start's words never change", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(2)];
+        const starting = h.shell.start();
+        await advance(2000);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+        const open = topicOf(h, channelTopic(tenant, channelA));
+        open.status?.("SUBSCRIBED");
+        await settle();
+        expect(h.shell.state.startWait).toBe("connecting");
+
+        open.status?.("CHANNEL_ERROR", new Error("channel error: connection lost"));
+        await advance(30000);
+
+        expect(h.shell.state.connection).not.toBeNull();
+        expect(h.shell.state.phase).toBe("ready");
+        expect(h.shell.state.startWait).toBe("connecting");
+    });
+
+    test("the network coming back brings the next try within a second, and the page shown does too, but not a page hidden", async () => {
+        // waits of 0.75, 1.5 and 3 s, then a fourth failure at 5.25 s waits 6 s, to 11.25 s
+        const failing = (): ReturnType<typeof build> => {
+            const h = build();
+            h.exchangeAnswers.value = ["unreachable", "unreachable", "unreachable", "unreachable"];
+            void h.shell.start();
+            return h;
+        };
+
+        const online = failing();
+        await advance(6250);
+        online.fireOnline();
+        await advance(749);
+        expect(online.exchangeTimes).toHaveLength(4);
+        await advance(1);
+        expect(online.exchangeTimes.slice(-1)).toEqual([7000]);
+        await online.shell.stop();
+
+        const shown = failing();
+        const start = Date.now();
+        await advance(6250);
+        shown.fireShown();
+        shown.fireShown();
+        await advance(750);
+        expect(shown.exchangeTimes.slice(-1)).toEqual([start + 7000]);
+        await shown.shell.stop();
+
+        const hidden = failing();
+        const hiddenStart = Date.now();
+        await advance(6250);
+        hidden.pageDocument.visibilityState = "hidden";
+        hidden.fireShown();
+        await advance(4999);
+        expect(hidden.exchangeTimes.slice(-1)).toEqual([hiddenStart + 5250]);
+        await advance(1);
+        expect(hidden.exchangeTimes.slice(-1)).toEqual([hiddenStart + 11250]);
+        await hidden.shell.stop();
+    });
+
+    test("a stop removes the page's listeners, so nothing it hears afterwards asks for a token", async () => {
+        const h = build();
+        h.exchangeAnswers.value = ["unreachable"];
+        void h.shell.start();
+        await advance(100);
+
+        await h.shell.stop();
+        h.fireOnline();
+        h.fireShown();
+        await advance(60000);
+
+        expect(h.exchangeTimes).toEqual([0]);
+    });
+
+    test("a room asked for while starting is the room the page load opens at sign-in, the last one winning, with nothing opened before", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(4)];
+        const starting = h.shell.start();
+        await advance(1000);
+
+        h.shell.relink(channelB);
+        h.shell.relink(channelC);
+        await advance(2000);
+        expect(h.historyCalls).toEqual([]);
+        expect(h.channelReads).toEqual([]);
+
+        await advance(1000);
+        answerHistory(h, channelC, 30);
+        await starting;
+
+        expect(h.historyCalls.map(c => c.p_channel_id)).toEqual([channelC]);
+        expect(h.shell.state.activeChannelId).toBe(channelC);
+    });
+
+    test("a start that waited tells the platform once, at ready, how long it took, how many tries and the words it reached; a start that did not tells nothing", async () => {
+        const h = build();
+        h.exchangeAnswers.value = [busy(4), busy(4)];
+        const starting = h.shell.start();
+        await advance(8000);
+        answerHistory(h, channelA, 10);
+        await starting;
+        await settle();
+
+        expect(h.reports.filter(r => r.p_kind === "start")).toEqual([{ p_kind: "start", p_code: "waited.connecting", p_count: 8000, p_detail: "tries-3" }]);
+
+        const quick = build();
+        const quickStart = quick.shell.start();
+        await advance(0);
+        answerHistory(quick, channelA, 10);
+        await quickStart;
+        await settle();
+
+        expect(quick.reports.filter(r => r.p_kind === "start")).toEqual([]);
     });
 });

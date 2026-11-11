@@ -368,6 +368,7 @@ describe("the page reveal", () => {
 
     test("at the ceiling reveals every region, so a call that never answers cannot lock the column", async () => {
         const reveal = createPageReveal({ kind: "channel" });
+        reveal.signedIn();
         reveal.sidebarAnswered();
 
         jest.advanceTimersByTime(revealCeilingMs);
@@ -386,11 +387,45 @@ describe("the page reveal", () => {
 
     test("at the ceiling reveals even a sidebar that never answered, which draws its own loading rows", () => {
         const reveal = createPageReveal({ kind: "channel" });
+        reveal.signedIn();
 
         jest.advanceTimersByTime(revealCeilingMs);
 
         expect(reveal.state.isSidebarRevealed).toBe(true);
         expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("before sign-in no ceiling reveals anything, however long sign-in takes, and the marks still come after their wait", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+
+        jest.advanceTimersByTime(revealCeilingMs * 40);
+
+        expect(reveal.state.isReleased).toBe(false);
+        expect(reveal.state.isSidebarRevealed).toBe(false);
+        expect(reveal.state.isMainRevealed).toBe(false);
+        expect(reveal.state.isSkeletonShown).toBe(true);
+    });
+
+    test("the ceiling counts from sign-in, not from mount", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        jest.advanceTimersByTime(60000);
+
+        reveal.signedIn();
+        jest.advanceTimersByTime(revealCeilingMs - 1);
+        expect(reveal.state.isReleased).toBe(false);
+
+        jest.advanceTimersByTime(1);
+        expect(reveal.state.isSidebarRevealed).toBe(true);
+        expect(reveal.state.isMainRevealed).toBe(true);
+    });
+
+    test("a stop before sign-in leaves no ceiling to start", () => {
+        const reveal = createPageReveal({ kind: "channel" });
+        reveal.stop();
+
+        reveal.signedIn();
+
+        expect(jest.getTimerCount()).toBe(0);
     });
 
     test("a room opening takes back the answers of the room before it, until the page is released", async () => {

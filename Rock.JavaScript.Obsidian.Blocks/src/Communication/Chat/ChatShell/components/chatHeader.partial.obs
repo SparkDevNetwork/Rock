@@ -30,10 +30,10 @@
                     <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
                 </span>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
-                    <span class="chat-header-live" data-testid="connection-dot"></span>Reconnecting…
+                    <span class="chat-live-dot" data-testid="connection-dot"></span>Reconnecting…
                 </span>
                 <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
-                    <span class="chat-header-live"></span>Catching up on new messages…
+                    <span class="chat-live-dot is-info"></span>Catching up on new messages…
                 </span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
@@ -252,22 +252,6 @@ button.chat-header-id:hover .chat-header-chev {
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
-}
-
-/* The live dot pulses while the connection's state is being worked out. */
-.chat-header-live {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 6px;
-    vertical-align: 1px;
-    background: var(--chat-warning);
-    border-radius: 50%;
-    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
-}
-
-.chat-header-sub[data-tone="info"] .chat-header-live {
-    background: var(--chat-info);
 }
 
 .chat-header-actions {
@@ -502,7 +486,6 @@ button.chat-header-id:hover .chat-header-chev {
 
 /* Looping decoration stops; the words beside it still say what is happening. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-header-live,
     .chat-conn-bar::after {
         animation: none;
     }

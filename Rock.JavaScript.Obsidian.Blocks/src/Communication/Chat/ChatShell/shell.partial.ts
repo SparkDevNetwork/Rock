@@ -66,6 +66,30 @@ const foundHistoryLimit = 16;
 /** What the tray says where a GIF waited so long its token ran out and the send was handed back. */
 const expiredGifNotice = "That GIF expired. Pick it again to send it.";
 
+/**
+ * How long a start that has met a failure stays quiet before it says it is connecting, so a start
+ * that only needs a second try says nothing. An estimate.
+ */
+export const startQuietMs = 1000;
+
+/** How long a start whose first try has not answered at all stays quiet. An estimate. */
+export const startSilentMs = 2500;
+
+/**
+ * When a start still waiting says so more gently: past the longest Retry-After the platform asks
+ * for and about two backoffs after it. An estimate.
+ */
+export const startSlowMs = 20000;
+
+/**
+ * When a start still waiting points the person at their church: no outage of the platform's own
+ * should run this long, and one that does is likely one that will not pass by itself. An estimate.
+ */
+export const startLongMs = 120000;
+
+/** The words of a start that is still waiting, in the order it reaches them. */
+const startWaitStages: Array<NonNullable<ShellState["startWait"]>> = ["connecting", "slow", "long"];
+
 /** What the Rock token action answered. */
 export type MintActionResult = {
     isSuccess: boolean;
@@ -183,6 +207,15 @@ export type ShellState = {
     phase: "starting" | "ready" | "refused" | "failed";
 
     /**
+     * How long the start has waited, in the words the page shows on the first load's veil: null
+     * while it is quiet, then connecting, slow and long. Set only while the phase is starting, and
+     * kept at ready so the leaving veil carries its words out. Drawing state only: the veil and
+     * the page's one announcement read it, and everything that asks whether chat is ready reads
+     * the phase.
+     */
+    startWait: "connecting" | "slow" | "long" | null;
+
+    /**
      * Whether the page load is still choosing the first conversation, which it does after the
      * shell is ready, so the page draws a loading state rather than asking the person to choose.
      */
@@ -292,6 +325,12 @@ export type ChatShell = {
     /** Signs in and runs the page load. */
     start: () => Promise<void>;
 
+    /**
+     * A room asked for before chat has signed in, by a push's tap, becomes the room the page load
+     * opens, as a link to it would be; once chat has signed in it changes nothing.
+     */
+    relink: (channelId: string) => void;
+
     /** Opens a channel the person chose. */
     selectChannel: (channelId: string) => Promise<void>;
 
@@ -380,6 +419,26 @@ export function refusalMessage(phase: ShellState["phase"], gate: string | null):
 }
 
 /**
+ * What a start still waiting says, on the first load's veil and once to a screen reader. No words
+ * offer to try again: the session's wait is what honours the platform's Retry-After, and reload is
+ * always the person's own.
+ *
+ * @param stage How long the start has waited.
+ *
+ * @returns The sentence.
+ */
+export function startWaitMessage(stage: NonNullable<ShellState["startWait"]>): string {
+    switch (stage) {
+        case "connecting":
+            return "Connecting to chat…";
+        case "slow":
+            return "Still connecting. Chat will open as soon as it can.";
+        default:
+            return "Chat is still trying to connect. If this keeps happening, let your church know.";
+    }
+}
+
+/**
  * What the Rock token action's answer means to the session.
  *
  * @param result What the action answered.
@@ -414,6 +473,7 @@ export function churchTokenFromAction(result: MintActionResult): ChurchTokenResu
 export function createChatShell(options: ShellOptions): ChatShell {
     const state = reactive<ShellState>({
         phase: "starting",
+        startWait: null,
         isOpening: true,
         gate: options.session.gate ?? null,
         connection: null,
@@ -496,8 +556,41 @@ export function createChatShell(options: ShellOptions): ChatShell {
         random: Math.random,
         setTimer: (callback, milliseconds) => setTimeout(callback, milliseconds),
         clearTimer: handle => clearTimeout(handle as ReturnType<typeof setTimeout>),
-        onEnded: () => void end()
+        onEnded: () => void end(),
+        onWaiting: () => onStartWaiting()
     });
+
+    /**
+     * The start's wait as the page tells it: when it began, how many of its tries failed, and
+     * whether the first quiet second is over.
+     */
+    const startWaited = { at: 0, tries: 0, isQuietOver: false };
+
+    /** A try of the start failed in a way that may pass: past the quiet second, the page says it is connecting. */
+    function onStartWaiting(): void {
+        startWaited.tries++;
+        if (startWaited.isQuietOver) {
+            showStartWait("connecting");
+        }
+    }
+
+    /** Moves the start's words on to a stage, never back, and only while it is still starting. */
+    function showStartWait(stage: NonNullable<ShellState["startWait"]>): void {
+        const reached = state.startWait === null ? -1 : startWaitStages.indexOf(state.startWait);
+        if (state.phase === "starting" && startWaitStages.indexOf(stage) > reached) {
+            state.startWait = stage;
+        }
+    }
+
+    /**
+     * The network coming back or the page shown is a reason to try again soon, whoever is waiting:
+     * a start, or a refresh after one that failed. The session decides what that moves.
+     */
+    const onPageBack = (): void => {
+        if (options.pageTargets.document.visibilityState === "visible") {
+            session.nudge();
+        }
+    };
 
     /** Puts the session's latest settings on the page: the banner and whether the composer is open. */
     function showSettings(): void {
@@ -1179,17 +1272,41 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            if (!await session.start()) {
+            options.pageTargets.window.addEventListener("online", onPageBack);
+            options.pageTargets.document.addEventListener("visibilitychange", onPageBack);
+
+            // The start's words: quiet for its first second, so a start that only needs a second
+            // try says nothing; then connecting, once a try has failed, or once the first has gone
+            // unanswered for longer; then gentler words the longer it waits.
+            startWaited.at = Date.now();
+            const stageTimers = [
+                setTimeout(() => {
+                    startWaited.isQuietOver = true;
+                    if (startWaited.tries > 0) {
+                        showStartWait("connecting");
+                    }
+                }, startQuietMs),
+                setTimeout(() => showStartWait("connecting"), startSilentMs),
+                setTimeout(() => showStartWait("slow"), startSlowMs),
+                setTimeout(() => showStartWait("long"), startLongMs)
+            ];
+
+            const isSignedIn = await session.start();
+            stageTimers.forEach(timer => clearTimeout(timer));
+
+            // Stopped while signing in, or ended by then: nothing is joined, and nothing is shown.
+            if (isStopped) {
+                return;
+            }
+
+            if (!isSignedIn) {
                 state.gate = session.state.gate;
                 state.phase = session.state.gate === "ok" ? "failed" : "refused";
                 return;
             }
 
-            // Stopped while signing in, or ended by then: nothing is joined.
-            if (isStopped) {
-                return;
-            }
-
+            // The page load starts now, so the reveal's ceiling does too.
+            reveal.signedIn();
             showSettings();
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
                 realtimeOptions(session.settings().limits, Math.random));
@@ -1205,6 +1322,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
             detachThreads = threads.attach(options.pageTargets);
             detachProblems = problems.attach(options.pageTargets);
             state.phase = "ready";
+
+            // A start that had to wait is counted once, with how long and how many tries it took
+            // and the words it reached, so a church's slow starts are seen without a report a try.
+            if (state.startWait !== null) {
+                problems.report("start", `waited.${state.startWait}`, Date.now() - startWaited.at, `tries-${startWaited.tries + 1}`);
+            }
 
             await opener.runPageLoad();
 
@@ -1236,6 +1359,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 state.push = push.state();
             }
         },
+
+        relink: (channelId: string): void => opener.relink(channelId),
 
         selectChannel: (channelId: string): Promise<void> => opener.select(channelId),
 
@@ -1378,6 +1503,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             // kept, and the save still carries it.
             session.stop();
             await Promise.all([tracker.leave(), threadSaved]);
+            options.pageTargets.window.removeEventListener("online", onPageBack);
+            options.pageTargets.document.removeEventListener("visibilitychange", onPageBack);
             detachPage?.();
             detachThreads?.();
             detachProblems?.();

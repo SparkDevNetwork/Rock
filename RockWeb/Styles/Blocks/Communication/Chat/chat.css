@@ -735,6 +735,33 @@
     }
 }
 
+/*
+    The live dot, which pulses while a connection's state is being worked out: the header's
+    "Reconnecting…" and "Catching up…", and a start's status line on the first load's veil. Warning
+    by default, info where nothing is wrong yet. One rule for every place it is drawn.
+*/
+.chat-live-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 6px;
+    vertical-align: 1px;
+    background: var(--chat-warning);
+    border-radius: 50%;
+    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+.chat-live-dot.is-info {
+    background: var(--chat-info);
+}
+
+/* Looping decoration stops; the words beside the dot still say what is happening. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-live-dot {
+        animation: none;
+    }
+}
+
 @keyframes chat-crossfade {
     from {
         opacity: 0;

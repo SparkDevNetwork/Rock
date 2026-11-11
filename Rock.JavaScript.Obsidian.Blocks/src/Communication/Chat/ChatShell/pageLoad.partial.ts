@@ -152,9 +152,11 @@ export const skeletonWaitMs = 150;
 export const faceGraceMs = 250;
 
 /**
- * How long after mount the reveal waits at most for the first screen's data. An estimate to
+ * How long after sign-in the reveal waits at most for the first screen's data. An estimate to
  * measure on the sandbox: past it, whatever has arrived is revealed and a region still waiting
- * keeps its skeleton and crossfades in when its data lands.
+ * keeps its skeleton and crossfades in when its data lands. It counts from sign-in, as nothing can
+ * answer before it: a sign-in that waits out an outage is the veil's to carry, never a reveal of
+ * an empty column over loading rows.
  */
 export const revealCeilingMs = 2500;
 
@@ -187,7 +189,7 @@ export type PageRevealState = {
  * is revealed, and a region still waiting is revealed on its own when it lands. The ceiling
  * releases it and reveals every region: one still waiting hands over to its own loading state, so
  * a call that never answers cannot lock the column.
- * Sign-in comes first without being tracked: nothing here can answer before it.
+ * Sign-in comes first, and the ceiling starts there: nothing here can answer before it.
  *
  * Once stopped, every timer is gone and every later answer is refused, so a load that outlives
  * the page writes nothing.
@@ -214,6 +216,9 @@ export type PageReveal = {
 
     /** The page load found no room to open, so the column has nothing more to wait for. */
     nothingToOpen: () => void;
+
+    /** The session signed in, so the page load is under way and the ceiling starts. */
+    signedIn: () => void;
 
     /** Something failed: whatever has arrived is revealed now, without the face grace. */
     failed: () => void;
@@ -242,7 +247,7 @@ export type PageRevealView = Pick<PageReveal, "state" | "holdFace">;
 export const pageRevealKey: InjectionKey<PageRevealView> = Symbol("chatPageReveal");
 
 /**
- * Creates the first load's reveal; the ceiling and the skeleton's wait run from now.
+ * Creates the first load's reveal; the skeleton's wait runs from now, the ceiling from sign-in.
  *
  * @param options The look to draw before anything is known.
  *
@@ -279,11 +284,7 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
 
     // Past the ceiling nothing more is waited for: a region whose data has not come is revealed
     // all the same and shows its own loading state, so no call can keep the column veiled.
-    let ceilingTimer: ReturnType<typeof setTimeout> | null = setTimeout(() => {
-        ceilingTimer = null;
-        answered.sidebar = answered.history = answered.facts = true;
-        release();
-    }, revealCeilingMs);
+    let ceilingTimer: ReturnType<typeof setTimeout> | null = null;
 
     /** Reveals every region that has its data, once the reveal is released. */
     function reveal(): void {
@@ -365,6 +366,16 @@ export function createPageReveal(options: { kind: RoomLook }): PageReveal {
         nothingToOpen: (): void => {
             answer("history");
             answer("facts");
+        },
+        signedIn: (): void => {
+            if (isStopped || state.isReleased || ceilingTimer !== null) {
+                return;
+            }
+            ceilingTimer = setTimeout(() => {
+                ceilingTimer = null;
+                answered.sidebar = answered.history = answered.facts = true;
+                release();
+            }, revealCeilingMs);
         },
         failed: (): void => {
             if (!isStopped) {
@@ -560,6 +571,9 @@ export type RoomOpener = {
 
     /** Opens the first conversation, saying chat is opening until it settles. */
     runPageLoad: () => Promise<void>;
+
+    /** A room asked for before sign-in becomes the room the page load opens; after it, nothing changes. */
+    relink: (channelId: string) => void;
 };
 
 /**
@@ -578,6 +592,12 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
 
     /** The open asked for last and the room it opens, which selecting that room again waits for. */
     let lastOpen: { channelId: string, outcome: Promise<OpenOutcome> } | null = null;
+
+    /**
+     * The room the page load opens first: the one the page's link named, or one a push's tap asked
+     * for before sign-in, the last asked winning, as a link that arrived late.
+     */
+    let linkedChannelId = dependencies.linkedChannelId;
 
     /**
      * Puts a channel on screen, or none. Every switch passes through here, so a message's editor
@@ -700,7 +720,7 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         try {
             const last: { outcome: OpenOutcome | null } = { outcome: null };
             const opened = await startPageLoad({
-                linkedChannelId: dependencies.linkedChannelId?.toLowerCase() ?? null,
+                linkedChannelId: linkedChannelId?.toLowerCase() ?? null,
                 rememberedChannelId: readRememberedChannel(storage, storageKey),
                 loadSidebar: () => dependencies.loadSidebar(),
                 // The load decides the opening room, so one it opens answers nothing to the reveal
@@ -736,5 +756,16 @@ export function createRoomOpener(dependencies: RoomOpenerDependencies): RoomOpen
         }
     }
 
-    return { open, select, closeActive, runPageLoad };
+    return {
+        open,
+        select,
+        closeActive,
+        runPageLoad,
+        relink: (channelId: string): void => {
+            // Read once the session has signed in; a tap after that opens the room itself.
+            if (state.phase === "starting") {
+                linkedChannelId = channelId;
+            }
+        }
+    };
 }

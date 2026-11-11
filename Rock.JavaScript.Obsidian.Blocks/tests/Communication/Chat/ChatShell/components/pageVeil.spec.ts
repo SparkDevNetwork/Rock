@@ -23,6 +23,8 @@
 //
 //   props: region: "sidebar" | "main", isRevealed: boolean, isMarksShown: boolean, kind: RoomLook
 //   marks: page-veil, the veil, while it is drawn
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PageVeil from "../../../../../src/Communication/Chat/ChatShell/components/pageVeil.partial.obs";
@@ -63,4 +65,37 @@ describe("the page veil", () => {
         expect(leaving).not.toBeNull();
         expect(leaving?.hasAttribute("inert")).toBe(true);
     });
+
+    test.each(["sidebar", "main"] as const)("over the %s, draws the status line it is given, hidden from screen readers, and changes its words in place", async region => {
+        const w = drawVeil(region);
+        expect(w.find("[data-testid='veil-status']").exists()).toBe(false);
+
+        await w.setProps({ statusLine: "Connecting to chat\u2026" });
+        const line = w.get("[data-testid='veil-status']");
+        expect(line.attributes("aria-hidden")).toBe("true");
+        expect(line.text()).toBe("Connecting to chat\u2026");
+        expect(line.find(".chat-live-dot").exists()).toBe(true);
+
+        await w.setProps({ statusLine: "Still connecting. Chat will open as soon as it can." });
+        expect(w.get("[data-testid='veil-status']").text()).toBe("Still connecting. Chat will open as soon as it can.");
+    });
+
+    test("a channel's header drops its description mark while the status line takes the second line", async () => {
+        const w = drawVeil("main");
+        expect(w.find(".chat-veil-desc").exists()).toBe(true);
+
+        await w.setProps({ statusLine: "Connecting to chat\u2026" });
+
+        expect(w.find(".chat-veil-desc").exists()).toBe(false);
+        expect(w.find("[data-testid='veil-header'] [data-testid='veil-status']").exists()).toBe(true);
+    });
+
+    test("under reduced motion the status line's dot stands still, by the one rule every live dot shares", () => {
+        const sheet = readFileSync(resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+        // each block runs to the brace at the line's start that closes it
+        const reduced = Array.from(sheet.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\r?\n\}/g)).map(m => m[1]);
+
+        expect(reduced.some(block => /\.chat-live-dot\s*\{[^}]*animation:\s*none/.test(block))).toBe(true);
+    });
 });
+
