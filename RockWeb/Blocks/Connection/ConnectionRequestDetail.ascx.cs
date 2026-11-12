@@ -449,7 +449,7 @@ namespace RockWeb.Blocks.Connection
 
             if ( connectionRequest != null )
             {
-                breadCrumbs.Add( new BreadCrumb( connectionRequest.PersonAlias.Person.FullName, pageReference ) );
+                breadCrumbs.Add( new BreadCrumb( connectionRequest.PersonAlias.Person.FullName.EncodeHtml(), pageReference ) );
             }
             else
             {
@@ -459,7 +459,7 @@ namespace RockWeb.Blocks.Connection
                     : null;
                 if ( connectionOpportunity != null )
                 {
-                    breadCrumbs.Add( new BreadCrumb( string.Format( "New {0} Connection Request", connectionOpportunity.Name ), pageReference ) );
+                    breadCrumbs.Add( new BreadCrumb( string.Format( "New {0} Connection Request", connectionOpportunity.Name.EncodeHtml() ), pageReference ) );
                 }
                 else
                 {
@@ -2099,11 +2099,11 @@ namespace RockWeb.Blocks.Connection
 
             if ( connector != null )
             {
-                lConnectorFullName.Text = connector.FullName;
+                lConnectorFullName.Text = connector.FullName.EncodeHtml();
                 lConnectorProfilePhoto.Text = string.Format(
                     @"<div class=""board-card-photo mb-1"" style=""background-image: url( '{0}' );"" title=""{1} Profile Photo""></div>",
                     connector.PhotoUrl,
-                    connector.FullName );
+                    connector.FullName.EncodeHtml() );
             }
             else
             {
