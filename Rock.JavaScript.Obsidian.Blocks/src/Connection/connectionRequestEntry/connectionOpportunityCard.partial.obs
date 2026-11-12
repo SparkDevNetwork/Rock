@@ -201,9 +201,8 @@
         if (!html) {
             return "";
         }
-        const el = document.createElement("div");
-        el.innerHTML = html;
-        return (el.textContent ?? "").trim();
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        return (doc.body.textContent ?? "").trim();
     });
 
     // #endregion Computed Values
