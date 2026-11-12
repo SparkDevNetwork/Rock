@@ -1806,6 +1806,19 @@ describe("her status across her tabs", () => {
             await expect(a.prefs.setStatus(busy)).rejects.toMatchObject({ name: "DataCloneError" });
         });
 
+        test("a saved post that throws still leaves this tab settled on the landed choice", async () => {
+            const b = statusBrowser({ postThrows: { kind: "saved", name: "DataCloneError" } });
+            const a = b.open();
+            a.prefs.setMe(sidebarMe(automatic));
+
+            await a.prefs.setStatus(busy);
+            await after(1000);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+
+            expect(shown(a)).toEqual(settled(busy));
+        });
+
         test("a channel the browser has closed reaches no tab and stops nothing: the choice is still saved", async () => {
             const b = statusBrowser({ postThrows: { kind: "choice", name: "InvalidStateError" } });
             const a = b.open();
@@ -1842,23 +1855,46 @@ describe("her status across her tabs", () => {
             expect(waitFor(a)).toBeNull();
         });
 
-        test("waits through the pause and the call, and is let go as the save lands", async () => {
+        test("ends the pause and asks the save at once, and is let go as it lands", async () => {
             const b = statusBrowser();
             const a = b.open();
             await a.prefs.setStatus(hidden);
+            await after(300);
             const wait = waitFor(a);
 
-            await after(1000);
-            expect(b.calls).toHaveLength(1);
+            await after(0);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[a.n, 300]]);
             await after(500);
             expect(wait?.isLetGo()).toBe(false);
             b.calls[0].answer.resolve(landed);
             await after(0);
 
             expect(wait?.isLetGo()).toBe(true);
+            await after(60_000);
+            expect(b.calls).toHaveLength(1);
         });
 
-        test("in a tab that did not choose it, is let go as the chooser's saved post arrives", async () => {
+        test("ends the pause a lock's holder is waiting out for a record heard inside it", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            let free!: () => void;
+            void b.locks.tab().request(lockName, {}, () => new Promise<void>(resolve => free = resolve));
+            await a.prefs.setStatus(busy);
+            await after(1100);
+            await t2.prefs.setStatus(automatic);
+            await after(100);
+            free();
+            await after(0);
+            expect(b.calls).toHaveLength(0);
+
+            waitFor(a);
+            await after(0);
+
+            expect(b.calls.map(c => [c.tab, c.change, c.at])).toEqual([[a.n, { status: "auto" }, 1200]]);
+        });
+
+        test("in a tab that took the choice from another, ends its hand-off too, and the chooser's own copy then sends nothing", async () => {
             const b = statusBrowser();
             const a = b.open();
             const t2 = b.open();
@@ -1866,7 +1902,30 @@ describe("her status across her tabs", () => {
             await delivered();
             const wait = waitFor(t2);
 
-            await after(1000);
+            await after(0);
+            expect(b.calls.map(call => [call.tab, call.at])).toEqual([[t2.n, 1]]);
+            b.calls[0].answer.resolve(landed);
+            await after(0);
+            expect(wait?.isLetGo()).toBe(true);
+
+            await delivered();
+            await after(60_000);
+            expect(b.calls).toHaveLength(1);
+            expect([a, t2].map(shown)).toEqual([settled(hidden), settled(hidden)]);
+        });
+
+        test("in a tab that did not choose it, is let go as the chooser's saved post arrives", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            const t2 = b.open();
+            // this tab's session names another person at its grant, so it sends nothing and the chooser's copy goes
+            t2.person.value = someoneElse;
+            await a.prefs.setStatus(hidden);
+            await delivered();
+            const wait = waitFor(t2);
+
+            await after(999);
+            expect(b.calls.map(call => call.tab)).toEqual([a.n]);
             expect(wait?.isLetGo()).toBe(false);
             b.calls[0].answer.resolve(landed);
             await after(0);
@@ -1901,6 +1960,63 @@ describe("her status across her tabs", () => {
 
             expect(waits.map(wait => wait?.isLetGo())).toEqual([true, true]);
             expect([waitFor(a), waitFor(t2)]).toEqual([null, null]);
+        });
+
+        test("a retry asked at once after a wake is waited for, so a send just after the network returns carries her choice", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.network));
+            await after(3000);
+            expect(waitFor(a)).toBeNull();
+
+            a.fire("online", {});
+            await after(0);
+            expect(b.calls.map(call => call.at)).toEqual([1000, 4000]);
+            const wait = waitFor(a);
+            expect(wait?.isLetGo()).toBe(false);
+            b.calls[1].answer.resolve(landed);
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
+        });
+
+        test("a retry due within the 5 s is waited for, and a failure that moves it out lets go", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            jest.spyOn(Math, "random").mockReturnValue(0.5);
+            await a.prefs.setStatus(hidden);
+            await after(1000);
+            b.calls[0].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            // asked again at 11 s, so at 6.5 s it is due inside the wait
+            await after(5500);
+            const wait = waitFor(a);
+            expect(wait?.isLetGo()).toBe(false);
+
+            await after(4500);
+            expect(b.calls.map(call => call.at)).toEqual([1000, 11_000]);
+            expect(wait?.isLetGo()).toBe(false);
+            b.calls[1].answer.resolve(await statusCallResult(statusSaveFailures.maintenance));
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
+            expect(waitFor(a)).toBeNull();
+        });
+
+        test("the tab leaving for the back-forward cache lets it go at once", async () => {
+            const b = statusBrowser();
+            const a = b.open();
+            await a.prefs.setStatus(hidden);
+            // the save is out, so only the leaving can let the wait go
+            await after(1000);
+            const wait = waitFor(a);
+
+            a.fire("pagehide", { persisted: true });
+            await after(0);
+
+            expect(wait?.isLetGo()).toBe(true);
         });
 
         test("a save that cannot go is waited for 5 s at most, and the choice still goes after", async () => {

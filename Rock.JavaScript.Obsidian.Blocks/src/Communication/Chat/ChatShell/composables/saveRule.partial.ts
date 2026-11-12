@@ -105,6 +105,12 @@ export type SaveRule = {
     wake: (key: string) => void;
 
     /**
+     * Ends a setting's pause now, as when something waits on its answer: the change waiting is
+     * asked at once unless a save is out or a named wait holds it, which still hold.
+     */
+    hasten: (key: string) => void;
+
+    /**
      * Drops a setting's change waiting, resolving false, so its named wait ends with it, as when
      * its owner forgets the change; one out is still answered.
      */
@@ -272,6 +278,15 @@ export function createSaveRule(isStopped: () => boolean): SaveRule {
                 return;
             }
             track.notBefore = -Infinity;
+            next(track);
+        },
+
+        hasten: (key: string): void => {
+            const track = tracks.get(key);
+            if (!track?.waiting) {
+                return;
+            }
+            track.waiting.madeAt = -Infinity;
             next(track);
         },
 

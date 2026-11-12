@@ -161,11 +161,12 @@ const statusHandOffMs = 2000;
 const statusDeadlineMs = 15_000;
 
 /**
- * The longest a message she sends waits for a choice of hers still being saved: the pause and the
- * hand-off a copy may wait before it is sent, and two seconds for the call. An estimate; at it the
- * message goes, carrying what the server holds, and the save goes on to land on its own.
+ * The longest a message she sends waits for a choice of hers still being saved. The message ends
+ * the save's pause, so this is the call's time; a retry due inside it is waited for too. An
+ * estimate; at it the message goes, carrying what the server holds, and the save goes on to land
+ * on its own.
  */
-const statusSendWaitMs = statusPauseMs + statusHandOffMs + 2000;
+const statusSendWaitMs = 5000;
 
 /** The least time between two posts of her input to her other tabs, which only need it inside the idle line. */
 const inputPostGapMs = 30_000;
@@ -360,6 +361,9 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
     let callOut: AbortController | null = null;
     const lockWaits = new Set<AbortController>();
 
+    /** The holder's pause waits, which a message waiting on the save ends early. */
+    const pauseWaits = new Set<AbortController>();
+
     /** How many wakes this tab has had, so a try out at one knows to ask again at once if it fails. */
     let wakes = 0;
 
@@ -401,12 +405,12 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
     }
 
     /**
-     * Whether a message she sends now waits: a choice of hers is pending and its save has not yet
-     * failed. A save already failing is asked again on its clock, up to a minute out, so a message
-     * waiting for it would wait on the outage rather than the choice.
+     * Whether a message she sends now waits: a choice of hers is pending and its save is out or
+     * due inside the wait. A save failing with its next try further off waits on the outage, up to
+     * a minute, so a message waiting for it would wait on the outage rather than the choice.
      */
     function isSaveAwaited(): boolean {
-        return !isStopped() && !isAway && isPending() && clock.failures === 0;
+        return !isStopped() && !isAway && isPending() && clock.retryAt <= Date.now() + statusSendWaitMs;
     }
 
     function isNewer(record: StatusRecord, than: StatusRecord): boolean {
@@ -498,6 +502,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
         for (let wait = pauseEnds - performance.now(); wait > 0; wait = pauseEnds - performance.now()) {
             const leaving = new AbortController();
             lockWaits.add(leaving);
+            pauseWaits.add(leaving);
             await new Promise<void>(resolve => {
                 const timer = setTimeout(resolve, wait);
                 leaving.signal.addEventListener("abort", () => {
@@ -506,6 +511,7 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
                 });
             });
             lockWaits.delete(leaving);
+            pauseWaits.delete(leaving);
             if (isGone()) {
                 return nothingSent;
             }
@@ -578,8 +584,9 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
 
     /** Posts how a save went and settles it here, before the lock is let go. */
     function settleEverywhere(saved: SavedPost): void {
-        post(saved);
+        // settled here first, so a post that throws never leaves this tab holding a choice already answered
         settle(saved);
+        post(saved);
     }
 
     /**
@@ -772,6 +779,10 @@ export function createStatusTabs(state: PrefsState, rule: SaveRule, dependencies
             if (!isSaveAwaited()) {
                 return null;
             }
+            // the message asks the save now rather than after its pause; a retry's wait still holds
+            pauseEnds = -Infinity;
+            pauseWaits.forEach(waiting => waiting.abort());
+            rule.hasten("status");
             return new Promise<void>(resolve => {
                 // the choice covered, here or by another tab's post, its try failed, or the tab left
                 const stopWatching = watch(isSaveAwaited, isAwaited => {

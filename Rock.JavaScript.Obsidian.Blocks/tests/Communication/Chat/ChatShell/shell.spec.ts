@@ -6318,19 +6318,40 @@ describe("her status through the shell", () => {
         await advance(0);
     }
 
-    test("a message sent inside her choice's pause goes once its save is answered, so it never carries the status she left", async () => {
+    test("a message sent inside her choice's pause asks the save at once and goes once it is answered, so it never carries the status she left", async () => {
         const h = await browser().open();
         void h.shell.prefs.setStatus(hidden);
-        const sending = h.shell.send("now hidden");
+        await advance(200);
+        expect(saves(h)).toEqual([]);
 
-        await advance(999);
-        expect([saves(h), h.sent]).toEqual([[], []]);
-        await advance(1);
+        const sending = h.shell.send("now hidden");
         await settle();
 
         expect(saves(h)).toEqual([{ status: "appear_offline" }]);
         expect(h.sent.map(s => s.body)).toEqual(["now hidden"]);
         await sending;
+    });
+
+    test("two messages written during one wait go after the save, in the order written", async () => {
+        const h = await browser().open();
+        // the first save fails, so the wait lasts until its retry is asked at the network's return
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        h.statusAnswers.value = [statusSaveFailures.serverError as { status: number, body: unknown }];
+        void h.shell.prefs.setStatus(hidden);
+        await advance(1000);
+        await advance(7000);
+
+        // due at 11 s, inside the wait, so both wait for it
+        const first = h.shell.send("one");
+        const second = h.shell.send("two");
+        await advance(0);
+        expect(h.sent).toEqual([]);
+
+        await advance(3000);
+        await settle();
+        expect(saves(h)).toHaveLength(2);
+        expect(h.sent.map(s => s.body)).toEqual(["one", "two"]);
+        await Promise.all([first, second]);
     });
 
     test("with no choice pending a message goes at once", async () => {

@@ -479,6 +479,41 @@ describe("a wake", () => {
     });
 });
 
+describe("hastening", () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
+    });
+
+    test("ends a change's pause, so it is asked at once", () => {
+        const s = setup();
+
+        void s.rule.save("status", s.change("busy", { settleMs: 1_000 }));
+        jest.advanceTimersByTime(200);
+        s.rule.hasten("status");
+
+        expect(s.asks.map(a => a.value)).toEqual(["busy"]);
+    });
+
+    test("leaves a named wait standing, and a setting with nothing waiting as it was", async () => {
+        const s = setup();
+        s.rule.hasten("status");
+
+        void s.rule.save("status", s.change("busy"));
+        s.asks[0].answer.resolve({ isSaved: false, failure: failedWords("Couldn't save."), retryInMs: 10_000 });
+        await settle();
+        s.rule.hasten("status");
+        jest.advanceTimersByTime(9_999);
+        expect(s.asks).toHaveLength(1);
+
+        jest.advanceTimersByTime(1);
+        expect(s.asks).toHaveLength(2);
+    });
+});
+
 describe("a drop", () => {
     beforeEach(() => {
         jest.useFakeTimers();
