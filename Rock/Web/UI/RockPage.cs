@@ -2064,7 +2064,10 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 }
                 else
                 {
-                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasIdKey );
+                    var visitorKeyPersonAliasId = IdHasher.Instance.GetId( visitorKeyPersonAliasIdKey );
+                    currentVisitorCookiePersonAlias = visitorKeyPersonAliasId.HasValue
+                        ? new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasId.Value )
+                        : null;
                     if ( currentVisitorCookiePersonAlias == null )
                     {
                         // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
@@ -2209,7 +2212,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
             Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                segmentFilterCookieData = Personalization.SegmentFilterCookieData.FromCookieValue( cookieValueJson, false );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {
@@ -2239,7 +2242,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
-            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() ) );
+            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToCookieValue() ) );
 
             this.PersonalizationSegmentIds = segmentFilterCookieData.GetSegmentIds();
         }

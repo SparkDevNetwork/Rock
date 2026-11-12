@@ -938,7 +938,7 @@ namespace Rock.Net
             Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                segmentFilterCookieData = Personalization.SegmentFilterCookieData.FromCookieValue( cookieValueJson, _cookieValuesAreUrlDecoded );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {

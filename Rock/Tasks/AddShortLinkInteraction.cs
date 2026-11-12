@@ -102,7 +102,11 @@ namespace Rock.Tasks
 
                     if ( !personAliasId.HasValue && message.VisitorPersonAliasIdKey.IsNotNullOrWhiteSpace() )
                     {
-                        personAliasId = new PersonAliasService( rockContext ).GetSelect( message.VisitorPersonAliasIdKey, s => s.Id );
+                        var visitorPersonAliasId = Rock.Utility.IdHasher.Instance.GetId( message.VisitorPersonAliasIdKey );
+                        if ( visitorPersonAliasId.HasValue )
+                        {
+                            personAliasId = new PersonAliasService( rockContext ).GetSelect( visitorPersonAliasId.Value, s => ( int? ) s.Id );
+                        }
                     }
 
                     Parser uaParser = Parser.GetDefault();
