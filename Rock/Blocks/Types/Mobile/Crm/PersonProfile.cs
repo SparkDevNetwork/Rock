@@ -40,7 +40,7 @@ namespace Rock.Blocks.Types.Mobile.Crm
     /// <seealso cref="Rock.Blocks.RockBlockType" />
     [DisplayName( "Person Profile" )]
     [Category( "Mobile > Crm" )]
-    [Description( "The person profile block." )]
+    [Description( "Displays and edits the person set as the page's Person context. Anyone who can view the page can view any person, so limit the page to the roles allowed to view people's profiles." )]
     [IconCssClass( "ti ti-user" )]
     [SupportedSiteTypes( SiteType.Mobile )]
 
@@ -754,6 +754,11 @@ namespace Rock.Blocks.Types.Mobile.Crm
         [BlockAction]
         public BlockActionResult GetPersonProfileData()
         {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionForbidden();
+            }
+
             using ( var rockContext = RockApp.Current.CreateRockContext() )
             {
                 var person = RequestContext.GetContextEntity<Person>();
