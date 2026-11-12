@@ -200,3 +200,21 @@ test('the local run lists the type gate where the workflow runs it', () => {
   assert.ok(at("args: ['--test']") < at("'check-types.mjs'"), 'the local run checks types before testing the gates, unlike the workflow');
   assert.ok(at("'check-types.mjs'") < at('testProject, '), 'the local run builds before the type gate, unlike the workflow');
 });
+
+test('an install is skipped only when the cache holds every installed folder for the same lockfiles', () => {
+  // A restored folder stands in for an install only while the lockfile it was installed from is
+  // unchanged, so the key names all three lockfiles and every install reads the exact hit.
+  const steps = unlabelled().steps ?? [];
+  const cache = steps.find((step) => String(step.uses ?? '').startsWith('actions/cache') && /node_modules/.test(String(step.with?.path ?? '')));
+  assert.ok(cache, 'nothing restores the installed packages');
+  for (const dir of ['Dev Tools/chat-ci', 'Rock.JavaScript.Obsidian', 'Rock.JavaScript.Obsidian.Blocks']) {
+    assert.ok(String(cache.with.path).split('\n').map((line) => line.trim()).includes(`${dir}/node_modules`), `${dir} is not restored`);
+    assert.ok(String(cache.with.key).includes(`'${dir}/package-lock.json'`), `the key does not name ${dir}'s lockfile`);
+  }
+  assert.ok(!cache.with['restore-keys'], 'a partial match would stand in for an install from another lockfile');
+  const installs = steps.filter((step) => /npm ci/.test(String(step.run ?? '')));
+  assert.equal(installs.length, 3);
+  for (const install of installs) {
+    assert.match(String(install.if ?? ''), new RegExp(`steps\\.${cache.id}\\.outputs\\.cache-hit != 'true'`), `${install.name} runs whatever the cache held`);
+  }
+});

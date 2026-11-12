@@ -39,7 +39,29 @@ jobs:
         with:
           node-version: '24'
 
+      # The three packages' installed folders, kept between runs while their lockfiles and the Node
+      # version stay the same, so a run installs nothing it installed before; the framework's
+      # install alone took about two minutes of every run.
+      - name: Restore the installed packages
+        id: modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            Dev Tools/chat-ci/node_modules
+            Rock.JavaScript.Obsidian/node_modules
+            Rock.JavaScript.Obsidian.Blocks/node_modules
+          key: chat-ci-modules-${{ runner.os }}-node24-${{ hashFiles('Dev Tools/chat-ci/package-lock.json', 'Rock.JavaScript.Obsidian/package-lock.json', 'Rock.JavaScript.Obsidian.Blocks/package-lock.json') }}
+
+      # NuGet's package folder, kept between runs while no project changes what it references.
+      - name: Restore the NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~\.nuget\packages
+          key: chat-ci-nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'Directory.Build.targets') }}
+          restore-keys: chat-ci-nuget-${{ runner.os }}-
+
       - name: Install the chat gate tools
+        if: steps.modules.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./Dev Tools/chat-ci
 
@@ -55,10 +77,12 @@ jobs:
       # the framework package's own node_modules, so both packages are installed. They come before
       # the gates' own tests and the type check, which run the blocks package's type checker.
       - name: Install the framework dependencies the client tests import
+        if: steps.modules.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./Rock.JavaScript.Obsidian
 
       - name: Install the client dependencies
+        if: steps.modules.outputs.cache-hit != 'true'
         run: npm ci
         working-directory: ./Rock.JavaScript.Obsidian.Blocks
 
