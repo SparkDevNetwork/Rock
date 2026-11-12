@@ -143,6 +143,7 @@
                           conversationKey="new-message"
                           :sendFailure="pendingPhase === 'failed' ? draftFailure : null"
                           :lastFailure="draftNews"
+                          :busyPerson="busyPerson"
                           @retryFailed="emit('retry')"
                           @discardFailed="emit('discard')"
                           @vue:mounted="onComposerMounted"
@@ -826,6 +827,13 @@
     const heldText = computed((): string => pendingPhase.value ? "" : props.draft?.body ?? "");
 
     const refusedText = computed((): string | null => props.refused?.text ?? props.error);
+
+    /**
+     * The one person chosen, whom the composer's Busy note names as a direct message's composer
+     * names its other person, since what is sent here goes to her alone; nobody in a group. While
+     * an alert stands over the box it holds the composer's top edge, so the note waits for it to go.
+     */
+    const busyPerson = computed((): PersonRow | null => props.chosen.length === 1 && !refusedText.value ? props.chosen[0] : null);
 
     // #endregion Computed Values
 

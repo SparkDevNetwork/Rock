@@ -29,6 +29,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
+import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import NewMessage from "../../../../../src/Communication/Chat/ChatShell/components/newMessage.partial.obs";
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -932,6 +933,52 @@ describe("online status", () => {
 
         expect(w.get("[data-testid='nd-start']").findAll(".chat-av").length).toBeGreaterThan(0);
         expect(badgesIn(w.element)).toEqual([]);
+    });
+
+    // What she sends here goes to the one person chosen, so the box says what it does, as that
+    // conversation's own composer would: the same note, by the same composer.
+    describe("the Busy note", () => {
+        const note = (w: VueWrapper): string | null => {
+            const found = w.find("[data-testid='new-message-view'] [data-testid='composer-busy-note']");
+            return found.exists() ? found.findAll("[data-part]").map(part => part.element.textContent).join("") : null;
+        };
+
+        test.each([
+            ["a new conversation", fresh],
+            ["a conversation found", found]
+        ])("one Busy person chosen, %s: the composer names her and says it over the box", (_case, lookup) => {
+            const ben = byAlias(statusBen);
+            const w = mountView({ chosen: [ben], lookup, foundTitle: "Anna Reyes" });
+
+            expect(w.findComponent(Composer).props("busyPerson")).toEqual(ben);
+            expect(note(w)).toBe("Anna is busy and won't be notified.");
+            const id = editor(w).getAttribute("aria-describedby");
+            expect(plain(document.getElementById(id ?? "")?.textContent)).toBe("Anna is busy and won't be notified.");
+        });
+
+        test("one person chosen who is not Busy names her and draws no note", () => {
+            const anna = byAlias(statusAnna);
+            const w = mountView({ chosen: [anna], lookup: fresh });
+
+            expect(w.findComponent(Composer).props("busyPerson")).toEqual(anna);
+            expect(note(w)).toBeNull();
+        });
+
+        test("a group with a Busy person in it names nobody", () => {
+            const w = mountView({ chosen: [byAlias(statusBen), { ...andre, person_alias_guid: statusAnna }], lookup: fresh });
+
+            expect(w.findComponent(Composer).props("busyPerson")).toBeNull();
+            expect(note(w)).toBeNull();
+        });
+
+        test("while an alert stands over the box, the alert holds its top edge and the note waits", async () => {
+            const ben = byAlias(statusBen);
+            const w = mountView({ chosen: [ben], lookup: fresh, error: "The conversation could not be looked up." });
+            expect(note(w)).toBeNull();
+
+            await w.setProps({ error: null });
+            expect(note(w)).toBe("Anna is busy and won't be notified.");
+        });
     });
 
     test.each([
