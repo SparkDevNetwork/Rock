@@ -1571,9 +1571,10 @@ $('#{0}').tooltip();
                         GroupName = e.Group.Name
                     } );
 
-                // Only show blackout dates for groups the current person can schedule, which also hides "All Groups".
+                // Only show blackout dates for groups the current person can schedule. "All Groups" (no group) always
+                // shows, since the toolbox only loads when the current person can schedule at least one of the person's groups.
                 gBlackoutDates.DataSource = personScheduleExclusions.ToList()
-                    .Where( e => IsGroupAuthorized( e.GroupId ) )
+                    .Where( e => !e.GroupId.HasValue || IsGroupAuthorized( e.GroupId ) )
                     .ToList();
                 gBlackoutDates.DataBind();
             }
@@ -1643,11 +1644,7 @@ $('#{0}').tooltip();
                     .Where( g => IsGroupAuthorized( g.Value ) )
                     .ToList();
 
-                // "All Groups" is only offered when not limited to the groups the current person can schedule.
-                if ( _authorizedGroupIds == null )
-                {
-                    groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
-                }
+                groups.Insert( 0, new { Value = ( int? ) null, Text = ALL_GROUPS_STRING } );
 
                 ddlBlackoutGroups.DataSource = groups;
                 ddlBlackoutGroups.DataValueField = "Value";
@@ -1715,7 +1712,18 @@ $('#{0}').tooltip();
                 return;
             }
 
-            if ( !IsGroupAuthorized( ddlBlackoutGroups.SelectedValueAsId() ) )
+            /*
+                11/12/2026 - CH
+
+                "All Groups" (no group) is allowed when the current person can schedule at least one of this
+                person's groups, which SetSelectedPerson already requires before the toolbox loads. Unavailability
+                only marks the person as unavailable; it doesn't change any group or remove existing schedules,
+                so it doesn't need rights on every one of the person's groups.
+
+                Reason: Staff couldn't add "All Groups" unavailability for people outside their family.
+            */
+            var blackoutGroupId = ddlBlackoutGroups.SelectedValueAsId();
+            if ( blackoutGroupId.HasValue && !IsGroupAuthorized( blackoutGroupId ) )
             {
                 return;
             }
