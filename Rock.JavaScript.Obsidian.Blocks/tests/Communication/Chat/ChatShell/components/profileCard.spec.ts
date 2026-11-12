@@ -672,6 +672,29 @@ describe("online status", () => {
         expect(line(w)).toBe("Appear offline");
     });
 
+    // The card says who she is to the people who open it, so her own Busy reads as theirs does;
+    // what a Busy does to her is said where she acts on it, her face and the Status group.
+    test.each([
+        ["Busy until 3:00 PM", new Date(2026, 10, 10, 15, 0).toISOString()],
+        ["Busy", "infinity"]
+    ])("her own card says her Busy in the words others' cards use: %s", async (words, busyUntil) => {
+        jest.useFakeTimers({ now: new Date(2026, 10, 10, 12, 0), doNotFake: ["nextTick", "queueMicrotask", "setImmediate", "setTimeout", "clearTimeout", "setInterval", "clearInterval", "requestAnimationFrame", "cancelAnimationFrame"] });
+        unprovide();
+        status = createStatusStore({ clock: "page" });
+        unprovide = provideStatus(status);
+        status.mine.value = { busy_until: busyUntil, appear_offline: false };
+
+        try {
+            const w = mountCard(profile({ person_alias_guid: viewer, is_self: true, campus_id: null }));
+
+            expect(badgesIn(identity(w)).map(badge => badge.state)).toEqual(["busy"]);
+            expect(line(w)).toBe(words);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("the words line is one line that never splits into columns: the words keep their width up to the line's, the campus gives way first with an ellipsis", () => {
         const sheet = join(shellFolder, "components/profileCard.partial.obs");
         const rule = (selector: RegExp): string => styleRules(sheet, selector).join(";");

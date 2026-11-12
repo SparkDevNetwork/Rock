@@ -161,8 +161,8 @@ export function shownStatus(status: FaceStatus | null, isOwn: boolean): FaceStat
 }
 
 /**
- * The person's own status in words, for their own face's label, their own card and the Status
- * group: a Busy says what it does to them, since only they act on it.
+ * The person's own status in words, for their own face's label, the status menu and the Status
+ * group: a Busy says what it does to them, since only they act on it there.
  *
  * @param state Their state, hidden for Appear offline.
  * @param busyUntil When their Busy ends, or null for no end and for any other state.
@@ -177,6 +177,25 @@ export function ownStatusWords(state: FaceStatus["state"], busyUntil: Date | nul
     }
 
     return state === "online" ? "Online" : state === "away" ? "Away" : "Appear offline";
+}
+
+/**
+ * The words a profile card puts on its campus line: what everyone's card says of the person, on
+ * their own card too, since a card says who someone is to the people who open it; Appear offline,
+ * which nobody else is shown, only on their own.
+ *
+ * @param status What the card draws of the person.
+ * @param now The viewer's now.
+ * @param locale The viewer's locale, or the browser's when not given.
+ *
+ * @returns The words, such as "Busy until 3:00 PM".
+ */
+export function cardStatusWords(status: Pick<FaceStatus, "state" | "busyUntil">, now: Date, locale?: string): string {
+    if (status.state === "hidden") {
+        return ownStatusWords("hidden", null, now, locale);
+    }
+
+    return statusWords(status.state, status.busyUntil !== null ? new Date(status.busyUntil) : null, now, locale).tip;
 }
 
 /**

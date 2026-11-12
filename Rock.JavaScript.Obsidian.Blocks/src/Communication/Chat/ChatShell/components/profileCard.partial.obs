@@ -24,9 +24,9 @@
                         <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">You</span>
                     </div>
                     <!-- Their status first, in words, since a phone has no tooltip; the dot between is drawn for the eye and a screen reader hears a comma. -->
-                    <div v-if="campusName || cardStatus" class="chat-pc-line" data-testid="profile-line">
-                        <span v-if="cardStatus" class="chat-pc-status" data-testid="profile-status">{{ cardStatus.tip }}</span>
-                        <span v-if="cardStatus && campusName" class="chat-sr-only">, </span>
+                    <div v-if="campusName || cardWords" class="chat-pc-line" data-testid="profile-line">
+                        <span v-if="cardWords" class="chat-pc-status" data-testid="profile-status">{{ cardWords }}</span>
+                        <span v-if="cardWords && campusName" class="chat-sr-only">, </span>
                         <span v-if="campusName" class="chat-pc-campus" data-testid="profile-campus"><Icon name="pin" size="xs" /><span class="chat-pc-place">{{ campusName }}</span></span>
                     </div>
                 </div>
@@ -551,7 +551,7 @@
     import { Note } from "../ui/settingNote.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
-    import { shownStatus } from "../ui/face.partial";
+    import { cardStatusWords, shownStatus } from "../ui/face.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { meTitles } from "../composables/usePrefs.partial";
     import { ProfileRockState } from "../composables/useRooms.partial";
@@ -636,8 +636,11 @@
 
     const statusOf = useFaceStatus(() => [alias.value], 1);
 
-    /** What the card draws of the person's status, in their own words on their own card. */
+    /** What the card draws of the person's status: her own face on her own card, her Appear offline included. */
     const cardStatus = computed(() => shownStatus(statusOf(alias.value), props.person.is_self));
+
+    /** The campus line's words, the same on her own card as on everyone else's but for Appear offline. */
+    const cardWords = computed((): string | null => cardStatus.value ? cardStatusWords(cardStatus.value, new Date()) : null);
 
     const cardElement = ref<HTMLElement>();
     const isClosing = ref(false);

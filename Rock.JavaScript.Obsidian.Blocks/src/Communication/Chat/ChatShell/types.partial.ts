@@ -71,7 +71,7 @@ export type FaceStatus = {
     /** What a screen reader hears after the name, such as ", busy until 3:00 PM". */
     label: string;
 
-    /** What the tooltip and the profile card read, such as "Busy until 3:00 PM". */
+    /** What the tooltip reads, such as "Busy until 3:00 PM"; her own face's in her own words, such as "Busy, notifications paused". */
     tip: string;
 
     /** When a Busy drawn ends, in server epoch milliseconds; null for no end and for any other state. */
