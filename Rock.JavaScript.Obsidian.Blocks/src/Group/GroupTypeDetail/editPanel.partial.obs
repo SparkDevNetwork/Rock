@@ -1650,10 +1650,15 @@
 
         const result = await invokeBlockAction<number>("GetChatEnabledGroupCount");
 
-        // Warn if there are any chat channels that will be disabled
-        // if they disable chat for this group type.
+        // Warn if there are any chat channels that will be taken out of chat
+        // if they disable chat for this group type. The chat platform archives
+        // them at its next sync rather than on save, so say so there.
         if (result.isSuccess && result.data && result.data > 0) {
-            chatChannelsDisabledMessage.value = `${result.data.toLocaleString()} chat ${pluralize("channel", result.data)} will be immediately disabled if you disable chat for this group type.`;
+            const channels = `${result.data.toLocaleString()} chat ${pluralize("channel", result.data)}`;
+
+            chatChannelsDisabledMessage.value = isChatPlatformConfigured.value
+                ? `${channels} will be archived at the next Chat Platform Sync if you disable chat for this group type.`
+                : `${channels} will be immediately disabled if you disable chat for this group type.`;
         }
     });
 
