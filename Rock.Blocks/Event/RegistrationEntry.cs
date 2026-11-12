@@ -752,6 +752,11 @@ namespace Rock.Blocks.Event
                     return ActionBadRequest( errorMessage );
                 }
 
+                if ( args.PaymentPlan != null && !IsPaymentPlanAllowedForRegistration( rockContext, context, args, out var paymentPlanNotAllowedErrorMessage ) )
+                {
+                    return ActionBadRequest( paymentPlanNotAllowedErrorMessage );
+                }
+
                 if ( !ValidateFullPaymentOrPaymentPlanRequired( rockContext, context, args, submittedAmountToPayNow, out var fullPaymentRequiredMessage ) )
                 {
                     return ActionBadRequest( fullPaymentRequiredMessage );
@@ -1522,6 +1527,74 @@ namespace Rock.Blocks.Event
             return true;
         }
 
+        /// <summary>
+        /// Determines whether the posted payment plan is one the registration template offers for the remaining balance.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context used to calculate the amount due.</param>
+        /// <param name="context">The registration context that holds the template's payment plan settings.</param>
+        /// <param name="args">The registration arguments that contain the payment plan and the amount to pay now.</param>
+        /// <param name="errorMessage">The message to show when the payment plan is not allowed.</param>
+        /// <returns><see langword="true"/> if the payment plan is allowed; otherwise, <see langword="false"/>.</returns>
+        private bool IsPaymentPlanAllowedForRegistration( RockContext rockContext, RegistrationContext context, RegistrationEntryArgsBag args, out string errorMessage )
+        {
+            errorMessage = "The payment plan is not valid for this registration.";
+
+            var settings = context.RegistrationSettings;
+            var paymentPlan = args.PaymentPlan;
+
+            if ( !settings.IsPaymentPlanAllowed || !settings.PaymentDeadlineDate.HasValue )
+            {
+                return false;
+            }
+
+            var frequency = DefinedValueCache.Get( paymentPlan.TransactionFrequencyGuid );
+            if ( frequency == null || settings.PaymentPlanFrequencyValueIds?.Contains( frequency.Id ) != true )
+            {
+                return false;
+            }
+
+            if ( paymentPlan.StartDate.Date < RockDateTime.Today )
+            {
+                return false;
+            }
+
+            // Same options the client uses to offer plans. AmountToPayNow was already clamped by GetContext,
+            // and the balance is truncated to the currency's precision the way the client's RockCurrency does,
+            // so this remaining balance matches what the client shows.
+            var currencyPrecision = new RockCurrencyCodeInfo().DecimalPlaces;
+            var precisionFactor = ( decimal ) Math.Pow( 10, currencyPrecision );
+            var remainingBalance = Math.Truncate( ( CalculateTotalAmountDue( rockContext, context, args ) - args.AmountToPayNow ) * precisionFactor ) / precisionFactor;
+
+            var options = new PaymentPlanConfigurationOptions
+            {
+                AmountForPaymentPlan = remainingBalance,
+                CurrencyPrecision = currencyPrecision,
+                DesiredAllowedPaymentFrequencies = settings.PaymentPlanFrequencyValueIds.Select( id => DefinedValueCache.Get( id ) ).Where( v => v != null ).ToList(),
+                DesiredNumberOfPayments = paymentPlan.NumberOfPayments,
+                DesiredPaymentFrequency = frequency,
+                DesiredStartDate = paymentPlan.StartDate.Date,
+                EndDate = settings.PaymentDeadlineDate.Value.Date,
+                IsNumberOfPaymentsLimited = true,
+                MinNumberOfPayments = 2
+            };
+
+            // The posted plan must be exactly the one offered for its number of payments, so a crafted plan
+            // can't schedule less than the balance or fewer payments than the client allows.
+            var configuration = new PaymentPlanConfigurationService().Get( options );
+            var frequencyConfiguration = configuration.PaymentFrequencyConfiguration;
+
+            if ( frequencyConfiguration == null
+                || frequencyConfiguration.PaymentFrequency?.Guid != frequency.Guid
+                || configuration.NumberOfPayments != paymentPlan.NumberOfPayments
+                || configuration.AmountPerPayment != paymentPlan.AmountPerPayment )
+            {
+                return false;
+            }
+
+            errorMessage = null;
+            return true;
+        }
+
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
@@ -1759,8 +1832,22 @@ namespace Rock.Blocks.Event
             History.EvaluateChange( registrationChanges, "Confirmation Email", context.Registration.ConfirmationEmail, args.Registrar.Email );
             context.Registration.ConfirmationEmail = args.Registrar.Email;
 
-            History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, args.DiscountCode );
-            context.Registration.DiscountCode = args.DiscountCode;
+            var previousDiscountCode = context.Registration.DiscountCode;
+            var previousDiscountPercentage = context.Registration.DiscountPercentage;
+            var previousDiscountAmount = context.Registration.DiscountAmount;
+
+            // A blank or matching posted code keeps the saved code, since the saved discount amounts are kept below
+            // and clearing or padding only the code would free a use of a limited code.
+            var registrationDiscountCode = args.DiscountCode;
+            if ( !isNewRegistration
+                && context.Registration.DiscountCode.IsNotNullOrWhiteSpace()
+                && ( registrationDiscountCode.IsNullOrWhiteSpace() || string.Equals( registrationDiscountCode.Trim(), context.Registration.DiscountCode.Trim(), StringComparison.OrdinalIgnoreCase ) ) )
+            {
+                registrationDiscountCode = context.Registration.DiscountCode;
+            }
+
+            History.EvaluateChange( registrationChanges, "Discount Code", context.Registration.DiscountCode, registrationDiscountCode );
+            context.Registration.DiscountCode = registrationDiscountCode;
 
             /*
                 8/29/2024 - JMH
@@ -1948,6 +2035,68 @@ namespace Rock.Blocks.Event
 
             // Save the registration ( so we can get an id )
             rockContext.SaveChanges();
+
+            /*
+                11/09/26 - JMH
+
+                The discount usage check in GetRegistrationContext runs before the registration is saved,
+                so concurrent submits can each pass it and use a limited code past its MaxUsage.
+                Recount now that this registration has an Id, before its attribute values, registrants or payment are saved.
+                For a new registration, the earliest saved registrations keep the uses and a later one is removed.
+                A saved registration that switched to the code counts every use, and gets its previous discount back when over the limit.
+                When both kinds collide, both can lose the code, which fails safe.
+                A new or updated registrar may already be saved by then, and is left in place.
+                Redirect gateways are skipped because their payment has already been taken by this point.
+
+                Reason: Limited discount codes could be used past MaxUsage by concurrent submits.
+            */
+            var maxUsage = context.Discount?.RegistrationTemplateDiscount?.MaxUsage;
+            var isRedirectGateway = new FinancialGatewayService( rockContext ).Get( context.RegistrationSettings.FinancialGatewayId ?? 0 )?.GetGatewayComponent() is IRedirectionGatewayComponent;
+            var code = context.Registration.DiscountCode;
+            var isDiscountCodeNewToRegistration = isNewRegistration
+                || !string.Equals( previousDiscountCode?.Trim(), code?.Trim(), StringComparison.OrdinalIgnoreCase );
+
+            if ( isDiscountCodeNewToRegistration && !isRedirectGateway && maxUsage.HasValue && code.IsNotNullOrWhiteSpace() )
+            {
+                var registrationId = context.Registration.Id;
+                var registrationInstanceId = context.RegistrationSettings.RegistrationInstanceId;
+                var usageCount = new RegistrationService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Count( r =>
+                        r.RegistrationInstanceId == registrationInstanceId
+                        && r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase )
+                        && ( !isNewRegistration || r.Id <= registrationId ) );
+
+                if ( usageCount > maxUsage.Value )
+                {
+                    if ( isNewRegistration )
+                    {
+                        using ( var newRockContext = new RockContext() )
+                        {
+                            var newRegistrationService = new RegistrationService( newRockContext );
+                            var savedRegistration = newRegistrationService.Get( registrationId );
+
+                            if ( savedRegistration != null )
+                            {
+                                newRegistrationService.Delete( savedRegistration );
+                                newRockContext.SaveChanges();
+                            }
+                        }
+                    }
+                    else
+                    {
+                        context.Registration.DiscountCode = previousDiscountCode;
+                        context.Registration.DiscountPercentage = previousDiscountPercentage;
+                        context.Registration.DiscountAmount = previousDiscountAmount;
+                        rockContext.SaveChanges();
+                    }
+
+                    errorMessage = "The discount code is not valid";
+                    return SubmitRegistrationResult.DiscountCodeFailure;
+                }
+            }
+
             context.Registration.SaveAttributeValues( rockContext );
 
             // Save the history
@@ -4686,104 +4835,12 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            /*
-                JMH - 1/9/2026
-
-                Track whether any required fees are missing so the fee selection step is shown to the registrar
-                when necessary. This is critical when a registrant is moved off the waitlist and the registrar
-                must complete the registration and select applicable fees.
-
-                Previously, if a signature document was involved, the block always advanced directly to the
-                final step. This caused required fees to be skipped. The block now prioritizes fee selection,
-                even if it requires the signature document to be re-signed.
-             */
-            var requiredFees = fees.Where( fee => fee.IsRequired ).ToList();
-            var isAnyRequiredFeeMissing = requiredFees.Any( requiredFee =>
-            {
-                var isAnyRegistrantMissingTheRequiredFee = session.Registrants.Any( registrant =>
-                    !registrant.FeeItemQuantities.ContainsKey( requiredFee.Guid )
-                );
-
-                if ( isAnyRegistrantMissingTheRequiredFee )
-                {
-                    return true;
-                }
-
-                var doesAnyRegistrantNotHaveAnyOfTheRequiredFee = session.Registrants.Any( registrant =>
-                    registrant.FeeItemQuantities[requiredFee.Guid] <= 0
-                );
-
-                if ( doesAnyRegistrantNotHaveAnyOfTheRequiredFee )
-                {
-                    return true;
-                }
-
-                return false;
-            } );
-
-            /*
-                JMH - 1/9/2026
-
-                Handle registration fields that are configured to be visible only for non waitlist registrants.
-                When a registrar indicates that registrants are on the waitlist, or when capacity forces them
-                onto the waitlist, these fields are intentionally hidden, regardless of whether they are required,
-                and will have no values.
-
-                If a registrant is later moved off the waitlist, the registrar must be prompted to complete the
-                registration and provide values for any newly visible fields. Previously, if a signature document
-                was present, the block forced the registrar directly to the final step, causing these fields
-                to be skipped. The block now ensures all applicable fields are shown before finalizing, even if
-                this requires the signature document to be re-signed.
-             */
-            var nonWaitListRegistrants = session.Registrants
-                .Where( r => !r.IsOnWaitList )
-                .ToList();
-            var formFieldsShownOnlyToNonWaitListRegistrants = context.RegistrationSettings.Forms
-                .SelectMany( f => f.Fields.Where( ff => !ff.ShowOnWaitlist ) )
-                .ToDictionary( f => f.Guid, f => f );
-            var isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue =
-                formFieldsShownOnlyToNonWaitListRegistrants.Any( formField =>
-                    nonWaitListRegistrants.Any( registrant =>
-                    {
-                        var isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants =
-                            !registrant.FieldValues.ContainsKey( formField.Key );
-
-                        // If the registrant is missing the field entirely, then we know it's missing.
-                        if ( isNonWaitListRegistrantMissingFormFieldShownOnlyToNonWaitListRegistrants )
-                        {
-                            return true;
-                        }
-
-                        var fieldValue = registrant.FieldValues[formField.Key].ToStringSafe();
-                        var isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants = fieldValue.IsNullOrWhiteSpace();
-
-                        // If the field value is empty, then we know it's missing.
-                        if ( isNonWaitListRegistrantMissingValueForFieldShownOnlyToNonWaitListRegistrants )
-                        {
-                            return true;
-                        }
-
-                        // Some field values are stored as a ListItemBag in JSON format.
-                        // A field with a ListItemBag value is considered empty if its value property is empty.
-                        var fieldValueAsListItemBag = fieldValue.FromJsonOrNull<ListItemBag>();
-                        if ( fieldValueAsListItemBag != null && fieldValueAsListItemBag.Value.IsNullOrWhiteSpace() )
-                        {
-                            return true;
-                        }
-
-                        // This field has a value.
-                        return false;
-                    } )
-                );
-
-            // Determine the starting point. 
+            // Determine the starting point.
             var allowExternalRegistrationUpdates =
                 // External registration updates are supported if enabled and we are not doing inline signatures...
-                ( context.RegistrationSettings.AllowExternalRegistrationUpdates && !context.RegistrationSettings.IsInlineSignatureRequired )
-                // - OR - if there are any required fees that need to be selected by the registrar (signature doc will need to be signed again, if present)
-                || isAnyRequiredFeeMissing
-                // - OR - if there are any fields that need entry for non-waitlist registrants (signature doc will need to be signed again, if present)
-                || isAnyFieldShownOnlyToNonWaitListRegistrantsMissingAValue;
+                IsExternalRegistrationUpdateAllowed( context.RegistrationSettings )
+                // - OR - if the registrar still needs to choose required fees or fill in fields (signature doc will need to be signed again, if present)
+                || IsRegistrationMissingRequiredEntries( context, session );
             var allowRegistrationUpdates = !isExistingRegistration || allowExternalRegistrationUpdates;
             var startAtBeginning = !isExistingRegistration
                 || ( allowExternalRegistrationUpdates && PageParameter( PageParameterKey.StartAtBeginning ).AsBoolean() );
@@ -5081,6 +5138,42 @@ namespace Rock.Blocks.Event
             return registrationAttributes;
         }
 
+        /// <summary>
+        /// Gets one of the current person's saved accounts, limited to the accounts the page offers for this registration.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <param name="context">The registration context that names the financial gateway.</param>
+        /// <param name="gateway">The gateway component for the registration's financial gateway.</param>
+        /// <param name="savedAccountGuid">The unique identifier of the saved account that was posted.</param>
+        /// <returns>The saved account, or <see langword="null"/> if it is not one the page would offer.</returns>
+        private FinancialPersonSavedAccount GetOfferedSavedAccount( RockContext rockContext, RegistrationContext context, GatewayComponent gateway, Guid savedAccountGuid )
+        {
+            var currentPersonId = RequestContext.CurrentPerson?.Id;
+            var financialGateway = new FinancialGatewayService( rockContext ).Get( context.RegistrationSettings.FinancialGatewayId ?? 0 );
+
+            if ( !currentPersonId.HasValue
+                || !GetAttributeValue( AttributeKey.EnableSavedAccount ).AsBoolean()
+                || financialGateway == null
+                || gateway == null )
+            {
+                return null;
+            }
+
+            var financialGatewayId = financialGateway.Id;
+            var allowedCurrencyTypeIds = GetAllowedCurrencyTypes( gateway, financialGateway ).Select( c => c.Id ).ToList();
+
+            return new FinancialPersonSavedAccountService( rockContext )
+                .Queryable()
+                .Where( a => a.Guid == savedAccountGuid
+                    && a.PersonAlias.PersonId == currentPersonId.Value
+                    && a.FinancialGatewayId == financialGatewayId
+                    && a.FinancialPaymentDetailId.HasValue
+                    && a.FinancialPaymentDetail.CurrencyTypeValueId.HasValue
+                    && allowedCurrencyTypeIds.Contains( a.FinancialPaymentDetail.CurrencyTypeValueId.Value ) )
+                .AsNoTracking()
+                .FirstOrDefault();
+        }
+
         private ReferencePaymentInfo GetPaymentInfo(
             RockContext rockContext,
             RegistrationContext context,
@@ -5107,12 +5200,7 @@ namespace Rock.Blocks.Event
             // token when using a new payment method.
             if ( args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null )
             {
-                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
-                    .Queryable()
-                    .Where( a => a.Guid == args.SavedAccountGuid.Value
-                        && a.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
-                    .AsNoTracking()
-                    .FirstOrDefault();
+                var savedAccount = GetOfferedSavedAccount( rockContext, context, gateway, args.SavedAccountGuid.Value );
 
                 if ( savedAccount != null )
                 {
@@ -5174,12 +5262,7 @@ namespace Rock.Blocks.Event
             // token when using a new payment method.
             if ( args.SavedAccountGuid.HasValue && RequestContext.CurrentPerson != null )
             {
-                var savedAccount = new FinancialPersonSavedAccountService( rockContext )
-                    .Queryable()
-                    .Where( a => a.Guid == args.SavedAccountGuid.Value
-                        && a.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
-                    .AsNoTracking()
-                    .FirstOrDefault();
+                var savedAccount = GetOfferedSavedAccount( rockContext, context, gateway, args.SavedAccountGuid.Value );
 
                 if ( savedAccount != null )
                 {
@@ -5913,6 +5996,24 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
+            return GetSessionFromSavedRegistration( rockContext, registrationContext, registrationId.Value, currentPerson );
+        }
+
+        /// <summary>
+        /// Builds a registration session from a saved registration that the person owns or created.
+        /// </summary>
+        /// <param name="rockContext">The Rock database context.</param>
+        /// <param name="registrationContext">The registration context for the registration's instance.</param>
+        /// <param name="registrationId">The identifier of the saved registration.</param>
+        /// <param name="currentPerson">The person who must own or have created the registration.</param>
+        /// <returns>The session built from the saved registration, or <see langword="null"/> if it is not found for this person and instance.</returns>
+        private RegistrationEntrySessionBag GetSessionFromSavedRegistration( RockContext rockContext, RegistrationContext registrationContext, int registrationId, Person currentPerson )
+        {
+            if ( currentPerson is null )
+            {
+                return null;
+            }
+
             var authorizedAliasIds = currentPerson.Aliases?.Select( a => a.Id ).ToList();
 
             if ( authorizedAliasIds?.Any() != true )
@@ -5929,7 +6030,7 @@ namespace Rock.Blocks.Event
                 .Include( r => r.Registrants.Select( registrants => registrants.Fees ) )
                 .AsNoTracking()
                 .Where( r =>
-                    r.Id == registrationId.Value && (
+                    r.Id == registrationId && (
                         ( r.PersonAliasId.HasValue && authorizedAliasIds.Contains( r.PersonAliasId.Value ) ) ||
                         ( r.CreatedByPersonAliasId.HasValue && authorizedAliasIds.Contains( r.CreatedByPersonAliasId.Value ) )
                     ) &&
@@ -6049,6 +6150,100 @@ namespace Rock.Blocks.Event
         }
 
         /// <summary>
+        /// Determines whether a registrant can change the registrants and answers on a saved registration.
+        /// </summary>
+        /// <param name="settings">The registration settings for the template and instance.</param>
+        /// <returns><see langword="true"/> if external updates to saved registrations are allowed; otherwise, <see langword="false"/>.</returns>
+        private static bool IsExternalRegistrationUpdateAllowed( RegistrationSettings settings )
+        {
+            // External registration updates are only supported when inline signatures are not used.
+            return settings.AllowExternalRegistrationUpdates && !settings.IsInlineSignatureRequired;
+        }
+
+        /// <summary>
+        /// Determines whether the registrar still needs to choose a required fee or fill in a field
+        /// that was hidden while a registrant was on the wait list.
+        /// </summary>
+        /// <param name="context">The registration context that holds the template's fees and forms.</param>
+        /// <param name="session">The registration session whose registrants are checked.</param>
+        /// <returns><see langword="true"/> if any registrant is missing a required fee or a field shown only off the wait list; otherwise, <see langword="false"/>.</returns>
+        private static bool IsRegistrationMissingRequiredEntries( RegistrationContext context, RegistrationEntrySessionBag session )
+        {
+            /*
+                JMH - 1/9/2026
+
+                Track whether any required fees are missing so the fee selection step is shown to the registrar
+                when necessary. This is critical when a registrant is moved off the waitlist and the registrar
+                must complete the registration and select applicable fees.
+
+                Previously, if a signature document was involved, the block always advanced directly to the
+                final step. This caused required fees to be skipped. The block now prioritizes fee selection,
+                even if it requires the signature document to be re-signed.
+             */
+            var nonWaitListRegistrants = session.Registrants
+                .Where( r => !r.IsOnWaitList )
+                .ToList();
+            var requiredFees = context.RegistrationSettings.Fees?
+                .Where( fee => fee.IsActive && fee.IsRequired )
+                .ToList() ?? new List<RegistrationTemplateFee>();
+
+            // Fee quantities are keyed by fee item, and wait list registrants never carry fees.
+            var isAnyRequiredFeeMissing = requiredFees.Any( requiredFee =>
+                nonWaitListRegistrants.Any( registrant =>
+                    !requiredFee.FeeItems
+                        .Where( item => item.IsActive )
+                        .Any( item => registrant.FeeItemQuantities != null
+                            && registrant.FeeItemQuantities.TryGetValue( item.Guid, out var quantity )
+                            && quantity > 0 ) ) );
+
+            if ( isAnyRequiredFeeMissing )
+            {
+                return true;
+            }
+
+            /*
+                JMH - 1/9/2026
+
+                Handle registration fields that are configured to be visible only for non waitlist registrants.
+                When a registrar indicates that registrants are on the waitlist, or when capacity forces them
+                onto the waitlist, these fields are intentionally hidden, regardless of whether they are required,
+                and will have no values.
+
+                If a registrant is later moved off the waitlist, the registrar must be prompted to complete the
+                registration and provide values for any newly visible fields. Previously, if a signature document
+                was present, the block forced the registrar directly to the final step, causing these fields
+                to be skipped. The block now ensures all applicable fields are shown before finalizing, even if
+                this requires the signature document to be re-signed.
+             */
+            var formFieldsShownOnlyToNonWaitListRegistrants = context.RegistrationSettings.Forms
+                .SelectMany( f => f.Fields.Where( ff => !ff.ShowOnWaitlist ) )
+                .ToList();
+
+            return formFieldsShownOnlyToNonWaitListRegistrants.Any( formField =>
+                nonWaitListRegistrants.Any( registrant =>
+                {
+                    // If the registrant is missing the field entirely, then we know it's missing.
+                    if ( registrant.FieldValues == null || !registrant.FieldValues.TryGetValue( formField.Guid, out var value ) )
+                    {
+                        return true;
+                    }
+
+                    var fieldValue = value.ToStringSafe();
+
+                    if ( fieldValue.IsNullOrWhiteSpace() )
+                    {
+                        return true;
+                    }
+
+                    // Some field values are stored as a ListItemBag in JSON format.
+                    // A field with a ListItemBag value is considered empty if its value property is empty.
+                    var fieldValueAsListItemBag = fieldValue.FromJsonOrNull<ListItemBag>();
+
+                    return fieldValueAsListItemBag != null && fieldValueAsListItemBag.Value.IsNullOrWhiteSpace();
+                } ) );
+        }
+
+        /// <summary>
         /// Determines whether the registration belongs to the person. The person
         /// must be either the registrar or the person that created the registration.
         /// </summary>
@@ -6137,12 +6332,38 @@ namespace Rock.Blocks.Event
                 return null;
             }
 
+            if ( context.RegistrationSettings.IsLoginRequired && currentPerson == null )
+            {
+                errorMessage = $"You must be logged in to complete this {context.RegistrationSettings.RegistrationTerm.ToStringSafe().ToLower()}.";
+                return null;
+            }
+
             // Make sure an existing registration belongs to the current person,
             // the same way it is verified when the registration is first loaded.
             if ( context.Registration != null && !IsRegistrationOwnedByPerson( context.Registration, currentPerson ) )
             {
                 errorMessage = "Your existing registration was not found";
                 return null;
+            }
+
+            // When external updates are off the client only offers payment on a saved registration,
+            // so cost and save the saved registrants and answers instead of whatever was posted.
+            // The exception is a saved registration still missing required fees or fields, which the client lets the registrar complete.
+            if ( context.Registration != null && !IsExternalRegistrationUpdateAllowed( context.RegistrationSettings ) )
+            {
+                var savedSession = GetSessionFromSavedRegistration( rockContext, context, context.Registration.Id, currentPerson );
+
+                if ( savedSession == null )
+                {
+                    errorMessage = "Your existing registration was not found";
+                    return null;
+                }
+
+                if ( !IsRegistrationMissingRequiredEntries( context, savedSession ) )
+                {
+                    args.Registrants = savedSession.Registrants;
+                    args.FieldValues = savedSession.FieldValues;
+                }
             }
 
             // The wait list flag comes from the client and registrants on the wait
@@ -6635,7 +6856,8 @@ namespace Rock.Blocks.Event
         {
             Success,
             CapacityFullFailure,
-            FinancialAccountFailure
+            FinancialAccountFailure,
+            DiscountCodeFailure
         }
 
         /// <summary>
