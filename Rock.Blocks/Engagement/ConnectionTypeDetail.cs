@@ -240,14 +240,14 @@ namespace Rock.Blocks.Engagement
                     if ( invalidDueDurationStatusNames.Any() )
                     {
                         var label = invalidDueDurationStatusNames.Count == 1 ? "status" : "statuses";
-                        errorMessage = $"A Status Due Duration is required for the following {label}: {string.Join( ", ", invalidDueDurationStatusNames )}.";
+                        errorMessage = $"A Status Due Duration is required for the following {label}: {string.Join( ", ", invalidDueDurationStatusNames.Select( n => n.EncodeHtml() ) )}.";
                         return false;
                     }
 
                     if ( invalidDueSoonStatusNames.Any() )
                     {
                         var label = invalidDueSoonStatusNames.Count == 1 ? "status" : "statuses";
-                        errorMessage = $"A Due Soon Window is required and must not exceed Status Due Duration for the following {label}: {string.Join( ", ", invalidDueSoonStatusNames )}.";
+                        errorMessage = $"A Due Soon Window is required and must not exceed Status Due Duration for the following {label}: {string.Join( ", ", invalidDueSoonStatusNames.Select( n => n.EncodeHtml() ) )}.";
                         return false;
                     }
                 }
@@ -280,7 +280,7 @@ namespace Rock.Blocks.Engagement
                     {
                         var automationName = x.Automation?.AutomationName ?? "Unnamed Automation";
 
-                        return $"• Automation '{automationName}' on status '{x.StatusName}' must have a valid destination status selected.";
+                        return $"• Automation '{automationName.EncodeHtml()}' on status '{x.StatusName.EncodeHtml()}' must have a valid destination status selected.";
                     } );
 
                     errorMessage = "One or more status automations are invalid:<br>" + string.Join( "<br>", errorMessages );
@@ -1363,7 +1363,7 @@ namespace Rock.Blocks.Engagement
                 {
                     var label = invalidTypeWorkflows.Count == 1 ? "Workflow" : "Workflows";
                     var verb = invalidTypeWorkflows.Count == 1 ? "references" : "reference";
-                    var formattedWorkflowNames = invalidTypeWorkflows.Select( w => $"<strong>{w}</strong>" );
+                    var formattedWorkflowNames = invalidTypeWorkflows.Select( w => $"<strong>{w.EncodeHtml()}</strong>" );
                     futureFollowUpErrors.Add( $"The following Connection Type {label} {verb} Future Follow-Up: {string.Join( ", ", formattedWorkflowNames )}." );
                 }
 
@@ -1400,10 +1400,10 @@ namespace Rock.Blocks.Engagement
                             .GroupBy( x => new { x.OpportunityId, x.OpportunityName } )
                             .Select( g =>
                             {
-                                var formattedOpportunityName = $"<strong>{g.Key.OpportunityName}</strong>";
+                                var formattedOpportunityName = $"<strong>{g.Key.OpportunityName.EncodeHtml()}</strong>";
                                 var formattedWorkflowNames = g.Select( wf => wf.WorkflowName )
                                     .Distinct()
-                                    .Select( wf => $"<strong>{wf}</strong>" );
+                                    .Select( wf => $"<strong>{wf.EncodeHtml()}</strong>" );
 
                                 return $"{formattedOpportunityName} ({string.Join( ", ", formattedWorkflowNames )})";
                             } )
@@ -1434,7 +1434,7 @@ namespace Rock.Blocks.Engagement
                 {
                     if ( IsInvalidStatusGuid( primaryQualifier, statusGuids ) || IsInvalidStatusGuid( secondaryQualifier, statusGuids ) )
                     {
-                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName}</strong> references a status that does not exist." );
+                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName.EncodeHtml()}</strong> references a status that does not exist." );
                     }
                 }
                 else if ( workflow.TriggerType == ConnectionWorkflowTriggerType.StatusBecomesDue
@@ -1443,14 +1443,14 @@ namespace Rock.Blocks.Engagement
                 {
                     if ( IsInvalidStatusGuid( primaryQualifier, statusGuids ) )
                     {
-                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName}</strong> references a status that does not exist." );
+                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName.EncodeHtml()}</strong> references a status that does not exist." );
                     }
                 }
                 else if ( workflow.TriggerType == ConnectionWorkflowTriggerType.ActivityAdded )
                 {
                     if ( IsInvalidActivityGuid( primaryQualifier, activityTypeGuids ) )
                     {
-                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName}</strong> references an activity type that does not exist." );
+                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName.EncodeHtml()}</strong> references an activity type that does not exist." );
                     }
                 }
 
@@ -1459,7 +1459,7 @@ namespace Rock.Blocks.Engagement
                     if ( workflow.ManualTriggerFilterConnectionStatusGuid.HasValue
                     && !statusGuids.Contains( workflow.ManualTriggerFilterConnectionStatusGuid.Value ) )
                     {
-                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName}</strong> references a status that does not exist." );
+                        statusOrActivityErrors.Add( $"• Workflow <strong>{workflowName.EncodeHtml()}</strong> references a status that does not exist." );
                     }
                 }
             }
