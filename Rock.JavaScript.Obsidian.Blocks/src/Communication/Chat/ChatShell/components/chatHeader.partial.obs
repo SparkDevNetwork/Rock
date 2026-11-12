@@ -354,9 +354,11 @@ button.chat-header-id:hover .chat-header-chev {
 
 /*
     The count joins the stack as its last disc, overlapping as a face does and ringed like one, in
-    the quiet fill a group's mark gives its own "+N".
+    the quiet fill a group's mark gives its own "+N". Positioned as the faces' pile is, so it paints in
+    the same layer and order decides: it lies over the last face, as each face lies over the one before.
 */
 .chat-header-pile-count {
+    position: relative;
     display: inline-grid;
     place-items: center;
     min-width: 26px;
