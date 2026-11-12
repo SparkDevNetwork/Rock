@@ -164,17 +164,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             var person = new PersonService( new RockContext() ).Get( personId );
                             if ( person != null )
                             {
-                                /*
-                                    10/15/2026 - MSE
-
-                                    The grid filter writes this display value as raw HTML, and person names
-                                    can be set by anyone (for example through a public signup form), so the
-                                    name is HTML encoded. The saved preference is the person Id, so the name
-                                    is only encoded once.
-
-                                    Reason: Prevent stored XSS through a person's name.
-                                */
-                                e.Value = person.FullName.EncodeHtml();
+                                e.Value = person.FullName;
                             }
                         }
                         break;
