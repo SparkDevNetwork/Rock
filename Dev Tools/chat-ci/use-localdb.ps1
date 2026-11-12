@@ -36,6 +36,17 @@ foreach ($expected in '"DatabaseHost" value="localdb"', "`"SampleDataUrl`" value
     }
 }
 
+# The harness restores an image by writing its files into a Data folder beside the test assembly and
+# attaching them. Files the test process writes there inherit the workspace's permissions, which do
+# not let LocalDB write or delete them, so it attaches them read-only and cannot drop them for the
+# next class. The folder grants full control to everyone, inherited by every file written into it.
+$data = "$project\bin\Debug\net472\Data"
+New-Item -ItemType Directory -Force $data | Out-Null
+icacls $data /grant '*S-1-1-0:(OI)(CI)F' | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "The test database folder $data could not be opened to LocalDB."
+}
+
 sqllocaldb start MSSQLLocalDB
 if ($LASTEXITCODE -ne 0) {
     throw 'LocalDB did not start.'
