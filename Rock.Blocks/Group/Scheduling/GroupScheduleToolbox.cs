@@ -478,7 +478,7 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             box.IsSchedulePreferencesEnabled = toolboxData.IsSchedulePreferencesEnabled;
-            box.IsScheduleUnavailabilityEnabled = toolboxData.IsScheduleUnavailabilityEnabled;
+            box.IsScheduleUnavailabilityEnabled = toolboxData.IsScheduleUnavailabilityEnabled && IsScheduleUnavailabilityAuthorized( toolboxData );
             box.IsAdditionalTimeSignUpsEnabled = toolboxData.IsAdditionalTimeSignUpEnabled;
 
             SetButtonText( box );
@@ -815,6 +815,19 @@ namespace Rock.Blocks.Group.Scheduling
             }
 
             return groupId.HasValue && toolboxData.AuthorizedGroupIds.Contains( groupId.Value );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may add, view and delete the selected person's unavailability.
+        /// When limited to the groups the current person can schedule, they need SCHEDULE, EDIT or MANAGE_MEMBERS
+        /// on at least one of the person's groups. The Group entity type fallback that opens the toolbox for a
+        /// person with no groups doesn't count, since scheduling is secured per group.
+        /// </summary>
+        /// <param name="toolboxData">The toolbox data.</param>
+        /// <returns><c>true</c> if unavailability is allowed; otherwise, <c>false</c>.</returns>
+        private bool IsScheduleUnavailabilityAuthorized( ToolboxData toolboxData )
+        {
+            return toolboxData.AuthorizedGroupIds == null || toolboxData.AuthorizedGroupIds.Any();
         }
 
         /// <summary>
@@ -1219,10 +1232,15 @@ namespace Rock.Blocks.Group.Scheduling
                 rows = rows.Where( gm => gm.Group == null || !excludeGroupTypeGuids.Contains( gm.Group.GroupType.Guid ) ).ToList();
             }
 
-            // Only show rows for groups the current person can schedule, which also hides "All Groups" unavailability.
+            // Only show rows for groups the current person can schedule. "All Groups" unavailability (no group)
+            // shows when they can schedule at least one of the person's groups.
             if ( authorizedGroupIds != null )
             {
-                rows = rows.Where( r => r.Group != null && authorizedGroupIds.Contains( r.Group.Id ) ).ToList();
+                rows = rows
+                    .Where( r => r.Group != null
+                        ? authorizedGroupIds.Contains( r.Group.Id )
+                        : r.ConfirmationStatus == ToolboxScheduleRowConfirmationStatus.Unavailable && authorizedGroupIds.Any() )
+                    .ToList();
             }
 
             // Sort and project all of the above into a final collection of rows.
@@ -1723,8 +1741,11 @@ namespace Rock.Blocks.Group.Scheduling
                 ? toolboxData.SchedulableGroups.FirstOrDefault( g => g.Group.Guid == bag.GroupGuid )?.Group.Id
                 : null;
 
-            // When limited to the groups the current person can schedule, "All Groups" is not allowed.
-            if ( !IsGroupAuthorized( toolboxData, groupId ) )
+            var isAuthorized = bag.GroupGuid.HasValue
+                ? IsGroupAuthorized( toolboxData, groupId )
+                : IsScheduleUnavailabilityAuthorized( toolboxData );
+
+            if ( !isAuthorized )
             {
                 errorMessage = friendlyErrorMessage;
                 return;
