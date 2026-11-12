@@ -47,7 +47,20 @@ if ($LASTEXITCODE -ne 0) {
     throw "The test database folder $data could not be opened to LocalDB."
 }
 
+# A runner's automatic instance sometimes cannot be created on its first start, and sqllocaldb
+# reports that in its output while still exiting zero, so the instance's own state is what is read.
+# Once it fails, it is deleted and created again, which builds it fresh.
+function Test-Running {
+    return [bool]((sqllocaldb info MSSQLLocalDB 2>&1 | Out-String) -match 'State:\s+Running')
+}
+
 sqllocaldb start MSSQLLocalDB
-if ($LASTEXITCODE -ne 0) {
+if (-not (Test-Running)) {
+    sqllocaldb stop MSSQLLocalDB -k
+    sqllocaldb delete MSSQLLocalDB
+    sqllocaldb create MSSQLLocalDB -s
+}
+if (-not (Test-Running)) {
+    sqllocaldb info MSSQLLocalDB
     throw 'LocalDB did not start.'
 }
