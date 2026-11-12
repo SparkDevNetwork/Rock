@@ -131,7 +131,7 @@ namespace Rock.Rest.v2
 
                 var entity = Reflection.GetIEntityForEntityType( entityType.GetEntityType(), entityKey, false, rockContext );
 
-                if ( entity == null )
+                if ( entity == null || !RockRequestContext.IsContextEntityViewable( entity ) )
                 {
                     return BadRequest( $"The entity '{entityKey}' could not be found." );
                 }
