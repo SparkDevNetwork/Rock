@@ -2132,7 +2132,7 @@ namespace Rock.Blocks.Event
                 {
                     if ( isNewRegistration )
                     {
-                        using ( var newRockContext = new RockContext() )
+                        using ( var newRockContext = RockApp.Current.CreateRockContext() )
                         {
                             var newRegistrationService = new RegistrationService( newRockContext );
                             var savedRegistration = newRegistrationService.Get( registrationId );
