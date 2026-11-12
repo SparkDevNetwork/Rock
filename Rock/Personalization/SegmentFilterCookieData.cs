@@ -16,6 +16,7 @@
 //
 using System;
 using System.Linq;
+using System.Net;
 
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -93,6 +94,45 @@ namespace Rock.Personalization
         public int[] GetSegmentIds()
         {
             return SegmentIdKeys.Select( s => IdHasher.Instance.GetId( s ) ).Where( a => a.HasValue ).Select( s => s.Value ).ToArray();
+        }
+
+        /// <summary>
+        /// The purpose used to encrypt and authenticate the cookie value.
+        /// </summary>
+        private const string CookieEncryptionPurpose = "Rock.Personalization.SegmentFilterCookieData";
+
+        /// <summary>
+        /// Converts this data into the encrypted value stored in the
+        /// <see cref="Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS"/> cookie.
+        /// The value is authenticated so it can't be modified by the client,
+        /// and URL encoded so it survives readers that URL decode cookie values.
+        /// </summary>
+        /// <returns>The encrypted and URL encoded cookie value.</returns>
+        internal string ToCookieValue()
+        {
+            var encryptedValue = Rock.Security.Encryption.EncryptStringForPurpose( this.ToJson(), CookieEncryptionPurpose );
+
+            return WebUtility.UrlEncode( encryptedValue );
+        }
+
+        /// <summary>
+        /// Reads the data from a value created by <see cref="ToCookieValue"/>.
+        /// A blank, malformed, modified or old plain JSON value returns <c>null</c>
+        /// so the caller rebuilds the data from the database.
+        /// </summary>
+        /// <param name="cookieValue">The cookie value.</param>
+        /// <param name="isUrlDecoded"><c>true</c> if the cookie value was already URL decoded when the request was read.</param>
+        /// <returns>The <see cref="SegmentFilterCookieData"/>; otherwise <c>null</c>.</returns>
+        internal static SegmentFilterCookieData FromCookieValue( string cookieValue, bool isUrlDecoded )
+        {
+            if ( cookieValue.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var encryptedValue = isUrlDecoded ? cookieValue : WebUtility.UrlDecode( cookieValue );
+
+            return Rock.Security.Encryption.DecryptStringForPurpose( encryptedValue, CookieEncryptionPurpose )?.FromJsonOrNull<SegmentFilterCookieData>();
         }
     }
 }
