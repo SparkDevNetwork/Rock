@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Connection
 
                 rptConnectionOpportunities.DataBind();
 
-                lConnectionTypeName.Text = string.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name );
+                lConnectionTypeName.Text = string.Format( "<h4 class='block-title'>{0}</h4>", connectionType.Name.EncodeHtml() );
             }
         }
 
@@ -1257,8 +1257,8 @@ namespace RockWeb.Blocks.Connection
                 else
                 {
                     return string.Format(
-                        "{0} (<span class='small'>{1}</small>)",
-                        connectionRequestActivity.ConnectionActivityType.Name,
+                        "{0} (<span class='small'>{1}</span>)",
+                        connectionRequestActivity.ConnectionActivityType.Name.EncodeHtml(),
                         connectionRequestActivity.CreatedDateTime.ToRelativeDateString() );
                 }
             }
