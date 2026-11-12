@@ -994,7 +994,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             lDeceasedDateReadOnly.Text = Person.DeceasedDate.ToElapsedString();
 
             tbInactiveReasonNote.Text = Person.InactiveReasonNote;
-            lReasonNoteReadOnly.Text = Person.InactiveReasonNote;
+            lReasonNoteReadOnly.Text = Person.InactiveReasonNote.EncodeHtml();
 
             rpRace.SetValue( Person.RaceValueId );
             epEthnicity.SetValue( Person.EthnicityValueId );
