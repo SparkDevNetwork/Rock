@@ -39,9 +39,10 @@ jobs:
         with:
           node-version: '24'
 
-      # The three packages' installed folders, kept between runs while their lockfiles and the Node
-      # version stay the same, so a run installs nothing it installed before; the framework's
-      # install alone took about two minutes of every run.
+      # The three packages' installed folders, kept between runs while their manifests, their
+      # lockfiles and the Node version stay the same, so a run installs nothing it installed before;
+      # the framework's install alone took about two minutes of every run. The manifests are in the
+      # key so a manifest changed without its lockfile still meets the install that refuses it.
       - name: Restore the installed packages
         id: modules
         uses: actions/cache@v4
@@ -50,7 +51,7 @@ jobs:
             Dev Tools/chat-ci/node_modules
             Rock.JavaScript.Obsidian/node_modules
             Rock.JavaScript.Obsidian.Blocks/node_modules
-          key: chat-ci-modules-${{ runner.os }}-node24-${{ hashFiles('Dev Tools/chat-ci/package-lock.json', 'Rock.JavaScript.Obsidian/package-lock.json', 'Rock.JavaScript.Obsidian.Blocks/package-lock.json') }}
+          key: chat-ci-modules-${{ runner.os }}-node24-${{ hashFiles('Dev Tools/chat-ci/package.json', 'Dev Tools/chat-ci/package-lock.json', 'Rock.JavaScript.Obsidian/package.json', 'Rock.JavaScript.Obsidian/package-lock.json', 'Rock.JavaScript.Obsidian.Blocks/package.json', 'Rock.JavaScript.Obsidian.Blocks/package-lock.json') }}
 
       # NuGet's package folder, kept between runs while no project changes what it references.
       - name: Restore the NuGet packages
@@ -156,13 +157,14 @@ jobs:
       - name: Point the test harness at the runner's LocalDB, which it may replace
         run: '& "Dev Tools/chat-ci/use-localdb.ps1"'
 
-      # The database image the first run builds from the migrations, restored until one changes.
+      # The database image the first run builds from the migrations and the sample data, restored
+      # only on an exact match: the harness names an image by its last migration alone, so an image
+      # from an older edit of the same migrations would otherwise stand in for a fresh one.
       - name: Restore the test database image
         uses: actions/cache@v4
         with:
           path: ~\AppData\Local\Temp\RockUnitTests
-          key: chat-ci-localdb-${{ hashFiles('Rock.Migrations/Migrations/**', 'Rock.Tests.Integration/TestFramework/**') }}
-          restore-keys: chat-ci-localdb-
+          key: chat-ci-localdb-${{ hashFiles('Rock.Migrations/Migrations/**', 'Rock.Tests.Integration/TestFramework/**', 'Rock.Tests.Integration/TestData/SampleData/**') }}
 
       - name: Restore the NuGet packages
         uses: actions/cache@v4

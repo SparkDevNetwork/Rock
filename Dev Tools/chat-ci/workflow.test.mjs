@@ -144,6 +144,15 @@ test('the integration suite runs only when the label asks for it', () => {
   const setup = steps.findIndex((step) => /use-localdb\.ps1/.test(step));
   const run = steps.findIndex((step) => integrationProject.test(step) && /dotnet test/.test(step));
   assert.ok(setup >= 0 && setup < run, 'the gated job tests before the shared script points the harness at LocalDB');
+
+  // The harness names a database image by its last migration alone, so only an exact key over
+  // everything the image is built from may restore one.
+  const image = (job.steps ?? []).find((step) => /RockUnitTests/.test(String(step.with?.path ?? '')));
+  assert.ok(image, 'nothing restores the test database image');
+  for (const input of ['Rock.Migrations/Migrations/**', 'Rock.Tests.Integration/TestData/SampleData/**']) {
+    assert.ok(String(image.with.key).includes(`'${input}'`), `the image key does not name ${input}`);
+  }
+  assert.ok(!image.with['restore-keys'], 'an image built from other migrations would stand in for a fresh one');
 });
 
 test('every msbuild call restores in its own evaluation, so a package adapter is copied', () => {
@@ -217,6 +226,8 @@ test('an install is skipped only when the cache holds every installed folder for
   for (const dir of ['Dev Tools/chat-ci', 'Rock.JavaScript.Obsidian', 'Rock.JavaScript.Obsidian.Blocks']) {
     assert.ok(String(cache.with.path).split('\n').map((line) => line.trim()).includes(`${dir}/node_modules`), `${dir} is not restored`);
     assert.ok(String(cache.with.key).includes(`'${dir}/package-lock.json'`), `the key does not name ${dir}'s lockfile`);
+    // A manifest changed without its lockfile is what npm ci refuses, so a hit must not skip it.
+    assert.ok(String(cache.with.key).includes(`'${dir}/package.json'`), `the key does not name ${dir}'s manifest`);
   }
   assert.ok(!cache.with['restore-keys'], 'a partial match would stand in for an install from another lockfile');
   const installs = steps.filter((step) => /npm ci/.test(String(step.run ?? '')));
