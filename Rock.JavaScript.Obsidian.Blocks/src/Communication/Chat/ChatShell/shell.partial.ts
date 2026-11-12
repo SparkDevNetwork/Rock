@@ -862,6 +862,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     const sender = createSender({
         send: async (channelId, body, key, reply, quotedMessageId, files) => {
+            // the page whose row her message marks active, as her typing names it; none once stopped
+            const client = presence.status.clientId();
             const result = await call("chat_send_message", {
                 p_channel_id: channelId,
                 // files or a GIF with blank text go as no text, which the platform stores as none
@@ -869,7 +871,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 p_client_key: key ?? null,
                 ...(reply ? { p_parent_id: reply.parentId, p_shown_in_channel: reply.isShownInChannel } : {}),
                 ...(typeof quotedMessageId === "number" ? { p_quoted_message_id: quotedMessageId } : {}),
-                ...mediaArgs(files)
+                ...mediaArgs(files),
+                ...(client !== null ? { p_client: client } : {})
             });
             if (!result.ok) {
                 return { ok: false, error: result.error };

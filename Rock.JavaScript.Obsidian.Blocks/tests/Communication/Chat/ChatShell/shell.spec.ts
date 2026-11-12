@@ -2010,6 +2010,22 @@ describe("the send's answer", () => {
     });
 });
 
+// A message she sends is her input, so the platform marks her page's row active as it decides the
+// status the message carries; the send names the page as her typing does, by the same id.
+describe("the page a send names", () => {
+    test("a message and a thread's reply each name this page's client id", async () => {
+        const h = await started();
+        const client = h.shell.presence.status.clientId();
+        expect(client).toMatch(/^[0-9a-f-]{36}$/);
+
+        await h.shell.send("on my way");
+        await (h.shell as unknown as { sendReply: (rootId: number, body: string, isShownInChannel: boolean) => Promise<void> }).sendReply(10, "and here", false);
+        await settle();
+
+        expect(h.sent.map(sent => sent.args.p_client)).toEqual([client, client]);
+    });
+});
+
 describe("a thread's live counts", () => {
     test("reach the conversation's timeline, so a page read before them does not take them back", async () => {
         const h = await started();
