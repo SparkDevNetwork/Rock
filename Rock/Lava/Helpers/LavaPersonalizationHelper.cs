@@ -120,7 +120,7 @@ namespace Rock.Lava
                     .ToArray();
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
 
-                var newCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() );
+                var newCookie = new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToCookieValue() );
 
                 SetCookie( httpContext, newCookie );
             }
@@ -217,7 +217,7 @@ namespace Rock.Lava
             SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<SegmentFilterCookieData>();
+                segmentFilterCookieData = SegmentFilterCookieData.FromCookieValue( cookieValueJson, false );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {
