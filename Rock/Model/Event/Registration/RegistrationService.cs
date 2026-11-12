@@ -195,10 +195,15 @@ namespace Rock.Model
                 return null;
             }
 
-            // Look up and validate the discount by the code unless the registration has already been saved with the discount
+            // Look up and validate the discount by the code unless it is the code the registration was already saved with.
+            // A saved code is exempt because it may have expired or been used up since it was applied.
             if ( discountCode.IsNotNullOrWhiteSpace() )
             {
-                if ( registration == null || registration.DiscountCode.IsNullOrWhiteSpace() )
+                var isSavedDiscountCode = registration != null
+                    && registration.DiscountCode.IsNotNullOrWhiteSpace()
+                    && string.Equals( discountCode.Trim(), registration.DiscountCode.Trim(), StringComparison.OrdinalIgnoreCase );
+
+                if ( !isSavedDiscountCode )
                 {
                     var registrationTemplateDiscountService = new RegistrationTemplateDiscountService( rockContext );
 
