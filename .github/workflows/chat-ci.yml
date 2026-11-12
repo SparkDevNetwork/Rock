@@ -139,10 +139,11 @@ jobs:
   integration:
     name: integration tests, on the run-integration label
     runs-on: windows-2022
-    # These need a database and take minutes, so they stay off until somebody asks for them by
-    # putting the label on a pull request. There are no chat integration tests yet, so asking for
-    # them today fails on the empty run rather than reporting a success that nothing earned.
+    # These need a database and take minutes, so on a pull request they run only when somebody asks
+    # by putting the label on it; the chat platform's nightly workflow runs them every night on this
+    # branch, with the same database setup.
     if: contains(github.event.pull_request.labels.*.name, 'run-integration')
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v5
 
@@ -152,12 +153,23 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Point the test harness at the runner's LocalDB
-        # The harness defaults to a Linux SQL Server container, which a Windows runner cannot start.
-        run: |
-          Copy-Item Rock.Tests.Integration\app.TestSettings.config.example Rock.Tests.Integration\app.TestSettings.config
-          Copy-Item Rock.Tests.Integration\app.ConnectionStrings.config.example Rock.Tests.Integration\app.ConnectionStrings.config
-          (Get-Content Rock.Tests.Integration\app.TestSettings.config) -replace '"DatabaseHost" value="docker"', '"DatabaseHost" value="localdb"' | Set-Content Rock.Tests.Integration\app.TestSettings.config
+      - name: Point the test harness at the runner's LocalDB, which it may replace
+        run: '& "Dev Tools/chat-ci/use-localdb.ps1"'
+
+      # The database image the first run builds from the migrations, restored until one changes.
+      - name: Restore the test database image
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\Temp\RockUnitTests
+          key: chat-ci-localdb-${{ hashFiles('Rock.Migrations/Migrations/**', 'Rock.Tests.Integration/TestFramework/**') }}
+          restore-keys: chat-ci-localdb-
+
+      - name: Restore the NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~\.nuget\packages
+          key: chat-ci-nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj', 'Directory.Build.props', 'Directory.Build.targets') }}
+          restore-keys: chat-ci-nuget-${{ runner.os }}-
 
       - name: Build the integration test project and what it depends on
         run: msbuild Rock.Tests.Integration\Rock.Tests.Integration.csproj -restore /t:Build /p:Configuration=Debug /m /v:minimal /nologo
@@ -165,5 +177,7 @@ jobs:
       - name: Integration tests
         run: dotnet test Rock.Tests.Integration\Rock.Tests.Integration.csproj --no-build --filter "FullyQualifiedName~Communication.Chat.Platform" --logger "trx;LogFileName=integration.trx" --results-directory TestResults
 
-      - name: The integration run ran something
-        run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/integration.trx --minimum 1
+      # 247 is what the chat namespace holds today; the floor sits below it so a test added or
+      # retired does not need this line changed, while a filter that lost a folder still fails.
+      - name: The integration run ran its tests
+        run: node "Dev Tools/chat-ci/assert-tests-ran.mjs" TestResults/integration.trx --minimum 200

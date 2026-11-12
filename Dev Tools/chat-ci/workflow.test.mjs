@@ -137,6 +137,13 @@ test('the integration suite runs only when the label asks for it', () => {
   // later push to an already-labelled pull request.
   const triggers = workflow().on?.pull_request?.types ?? [];
   assert.ok(triggers.includes('labeled'), 'the workflow does not listen for a label being added');
+
+  // The harness defaults to a container a Windows runner cannot start; the shared script is what
+  // points it at LocalDB, and the platform's nightly run calls the same script.
+  const steps = stepsOf(job);
+  const setup = steps.findIndex((step) => /use-localdb\.ps1/.test(step));
+  const run = steps.findIndex((step) => integrationProject.test(step) && /dotnet test/.test(step));
+  assert.ok(setup >= 0 && setup < run, 'the gated job tests before the shared script points the harness at LocalDB');
 });
 
 test('every msbuild call restores in its own evaluation, so a package adapter is copied', () => {
