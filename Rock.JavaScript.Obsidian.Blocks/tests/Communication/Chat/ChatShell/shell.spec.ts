@@ -1404,6 +1404,7 @@ describe("the live cut", () => {
 
 describe("what the platform may send a released client", () => {
     afterEach(() => {
+        jest.useRealTimers();
         jest.restoreAllMocks();
     });
 
@@ -1498,24 +1499,167 @@ describe("what the platform may send a released client", () => {
         await toB;
     });
 
-    test("a Realtime error it cannot classify fetches a new token, reloads the sidebar and so rechecks access", async () => {
+    /** Realtime's words about the open channel, which this client does not know. */
+    function unknownError(h: ReturnType<typeof build>): void {
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "PolicyChanged: you may not read this any more" });
+    }
+
+    test("a Realtime error it cannot classify fetches a new token, reloads the sidebar and so rechecks access, after a random wait of two and a half to five seconds", async () => {
         const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
         const before = { ...h.counts };
 
-        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "PolicyChanged: you may not read this any more" });
+        unknownError(h);
         await settle();
+        jest.advanceTimersByTime(3_700);
+        await settle();
+        expect(h.counts.mints).toBe(before.mints);
+        expect(h.counts.bootstraps).toBe(before.bootstraps);
 
+        jest.advanceTimersByTime(100);
+        await settle();
         expect(h.counts.mints).toBe(before.mints + 1);
         expect(h.counts.setAuths).toBe(before.setAuths + 1);
         expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
     });
 
-    test("that refresh is shared with a recheck already asked for", async () => {
+    test("an unknown error that comes back for every new token waits twice as long each time, up to five minutes, one exchange per wait", async () => {
         const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(1);
         const before = { ...h.counts };
 
+        // Each new token is answered with the same words at once, a burst of them each time, the
+        // burst counting as one.
+        // the last would be 320 s uncapped; the fixture's session ends soon after it
+        const waits = [5_000, 10_000, 20_000, 40_000, 80_000, 160_000, 300_000];
+        for (const [index, waitMs] of waits.entries()) {
+            for (let i = 0; i < 10; i++) {
+                unknownError(h);
+            }
+            await settle();
+            // the sidebar read counts the rechecks: by the last round the session's own token
+            // refresh, due by the clock, also mints
+            jest.advanceTimersByTime(waitMs - 1);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before.bootstraps + index);
+            jest.advanceTimersByTime(1);
+            await settle();
+            expect(h.counts.bootstraps).toBe(before.bootstraps + index + 1);
+        }
+    });
+
+    test("the waits start over at five seconds after ten quiet minutes", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(1);
+        const before = { ...h.counts };
+
+        for (const waitMs of [5_000, 10_000, 20_000]) {
+            unknownError(h);
+            jest.advanceTimersByTime(waitMs);
+            await settle();
+        }
+        expect(h.counts.mints).toBe(before.mints + 3);
+
+        jest.advanceTimersByTime(600_001);
+        unknownError(h);
+        jest.advanceTimersByTime(5_000);
+        await settle();
+        expect(h.counts.mints).toBe(before.mints + 4);
+    });
+
+    test("words that keep coming during a wait join it rather than start it again, so the recheck still comes", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = { ...h.counts };
+
+        // one every second for ten seconds: the first wait, 3.75 s, ends inside it, and the next
+        // words begin a wait of 7.5 s that ends after it
+        for (let second = 0; second < 10; second++) {
+            unknownError(h);
+            jest.advanceTimersByTime(1_000);
+            await settle();
+        }
+
+        expect(h.counts.mints).toBe(before.mints + 1);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+
+    test("words that arrive after the shell stopped fetch no token and read no sidebar", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        const before = { ...h.counts };
+
+        await h.shell.stop();
+        unknownError(h);
+        jest.advanceTimersByTime(600_000);
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints);
+        expect(h.counts.bootstraps).toBe(before.bootstraps);
+    });
+
+    test("an unknown error's wait begun before the shell stops never fetches a token or the sidebar after it", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = { ...h.counts };
+
+        unknownError(h);
+        await settle();
+        await h.shell.stop();
+        jest.advanceTimersByTime(10_000);
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints);
+        expect(h.counts.bootstraps).toBe(before.bootstraps);
+    });
+
+    test("an unknown error that joins a channel change's wait reads the sidebar with its one token", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = { ...h.counts };
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["broadcast"]?.({ event: "channel.changed", payload: { channel_id: channelA } });
+        unknownError(h);
+        await settle();
+        jest.advanceTimersByTime(2_500);
+        await settle();
+
+        expect(h.counts.mints).toBe(before.mints + 1);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+
+    test("words it knows are handled at once and fetch no token", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = { ...h.counts };
+
+        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "You do not have permissions to read from this Channel topic: x" });
+        await settle();
+        expect(h.shell.state.errors.map(e => e.code)).toContain("rt.read_revoked");
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+
+        jest.advanceTimersByTime(10_000);
+        await settle();
+        expect(h.counts.mints).toBe(before.mints);
+        expect(h.counts.bootstraps).toBe(before.bootstraps + 1);
+    });
+
+    test("the waited refresh is shared with a recheck still out when it fires", async () => {
+        const h = await started();
+        jest.useFakeTimers({ doNotFake: ["queueMicrotask", "nextTick"] });
+        jest.spyOn(Math, "random").mockReturnValue(0.5);
+        const before = { ...h.counts };
+
+        unknownError(h);
+        jest.advanceTimersByTime(3_750);
         personal(h, "session.recheck", {});
-        topicOf(h, channelTopic(tenant, channelA)).listeners["system"]?.({ status: "error", message: "PolicyChanged: you may not read this any more" });
         await settle();
 
         expect(h.counts.mints).toBe(before.mints + 1);

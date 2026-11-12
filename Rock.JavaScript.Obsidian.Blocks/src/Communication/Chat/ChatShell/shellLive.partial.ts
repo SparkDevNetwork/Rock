@@ -31,10 +31,18 @@ import { ChannelUnreadEvent, ChatBadge, ChatError, MarkReadResult, MessageCreate
 
 /**
  * The longest a viewer waits before fetching a new token when the channel on screen changed, or
- * before reading the sidebar after a rejoin, an estimate. Everyone watching is told at once, and
- * the wait spreads their requests at Rock and Realtime.
+ * before reading the sidebar after a rejoin, an estimate, and the first wait after words from
+ * Realtime this client does not know. Everyone watching is told at once, and the wait spreads
+ * their requests at Rock and Realtime.
  */
 const channelChangedWaitMs = 5_000;
+
+/**
+ * The longest wait after words from Realtime this client does not know, an estimate. Each new
+ * token answered with them again doubles the wait up to this, since a second recheck that gets the
+ * same words learns nothing; a quiet twice this long starts the waits over.
+ */
+const unknownErrorWaitMaxMs = 300_000;
 
 /** The live signals that state a row's value, and so can be replayed over a sidebar's answer. */
 const replayedEvents = new Set(["channel.unread", "channel.mention", "dm.preview", "channel.read"]);
@@ -121,6 +129,13 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
     /** The pending wait before a recheck, so a stopped or ended shell can cancel it. */
     let recheckTimer: ReturnType<typeof setTimeout> | null = null;
 
+    /** Whether the pending recheck also reads the sidebar again, as an unknown error asks. */
+    let isRecheckReadingSidebar = false;
+
+    /** The waits begun in a row by words this client does not know, and when the last words came. */
+    let unknownErrorWaits = 0;
+    let unknownErrorAt = Number.NEGATIVE_INFINITY;
+
     // A sidebar read is a snapshot taken some time after it is asked for, so only the newest asked
     // for may land. One read is out at a time: an ask while one is out overtakes it, its answer is
     // dropped, and one more read follows however many ask meanwhile. Each overtaking ask moves the
@@ -154,6 +169,39 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             clearTimeout(recheckTimer);
             recheckTimer = null;
         }
+        isRecheckReadingSidebar = false;
+    }
+
+    /**
+     * Fetches a new token after a random wait, so a signal every client hears at once does not
+     * bring them all to the token exchange in the same second, and one that repeats cannot loop a
+     * client at the exchange at round-trip speed. An ask while a wait is pending joins it, so a
+     * stream of asks still makes one recheck per wait rather than none or one each.
+     *
+     * @param isReadingSidebar Whether the sidebar is read again with the recheck.
+     * @param waitMs How long a wait this ask begins lasts.
+     */
+    function recheckAfterWait(isReadingSidebar: boolean, waitMs: number): void {
+        if (isStopped()) {
+            return;
+        }
+        isRecheckReadingSidebar ||= isReadingSidebar;
+        if (recheckTimer !== null) {
+            return;
+        }
+        recheckTimer = setTimeout(() => {
+            const isSidebarAsked = isRecheckReadingSidebar;
+            recheckTimer = null;
+            isRecheckReadingSidebar = false;
+            // a session that ended during the wait has nobody to fetch a token for
+            if (isStopped()) {
+                return;
+            }
+            recheck();
+            if (isSidebarAsked) {
+                void loadSidebar().catch(() => undefined);
+            }
+        }, waitMs);
     }
 
     /** Cancels a rejoin's wait still pending. */
@@ -380,8 +428,7 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             }
             if (event === "channel.changed") {
                 if (channelId === state.activeChannelId) {
-                    cancelRecheck();
-                    recheckTimer = setTimeout(recheck, Math.random() * channelChangedWaitMs);
+                    recheckAfterWait(false, Math.random() * channelChangedWaitMs);
                 }
                 return;
             }
@@ -466,9 +513,21 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             problems.report("realtime", "rt.unknown");
             // Words this client does not know may be a lost read it was not built to recognise. A
             // new token makes Realtime decide again, and the sidebar read again shows what the
-            // person may still see.
-            recheck();
-            void loadSidebar().catch(() => undefined);
+            // person may still see. Both wait, since words that come back for every new token
+            // would otherwise loop every open page at the exchange. Words that join a wait already
+            // pending begin no round of their own, so a burst counts once.
+            const now = Date.now();
+            // twice the longest wait, so words that come back after even the longest are a run still
+            if (now - unknownErrorAt > 2 * unknownErrorWaitMaxMs) {
+                unknownErrorWaits = 0;
+            }
+            unknownErrorAt = now;
+            const longestMs = Math.min(channelChangedWaitMs * 2 ** unknownErrorWaits, unknownErrorWaitMaxMs);
+            if (recheckTimer === null && !isStopped()) {
+                unknownErrorWaits++;
+            }
+            // at least half the longest, so the floor grows with it and no wait is near nothing
+            recheckAfterWait(true, longestMs / 2 + Math.random() * longestMs / 2);
         },
         onStatus: error => {
             // The hub has already left a channel whose read was revoked; the person is told, and the
