@@ -26,7 +26,7 @@
             <div class="row">
                 <CheckBox formGroupClasses="col-sm-3" v-model="isEditMode" label="Edit Mode" text="Enable" help="Default: false" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="showAbbreviatedName" label="Abbreviated Name" text="Show" help="Default: false" />
-                <CheckBox formGroupClasses="col-sm-3" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: true; Only applies if not in edit mode" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="showEmptyValues" label="Empty Values" text="Show" help="Default: false; Only applies if not in edit mode" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="showPrePost" label="Render Pre/Post HTML" text="Show" help="Default: true" />
             </div>
             <div class="row">
@@ -174,5 +174,5 @@
 
     const showPrePost = ref(false);
     const importCode = getControlImportPath("attributeValuesContainer");
-    const exampleCode = `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="true" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" :showPrePostHtml="true" :displayWithinExistingRow="false" :displayAsCategoryDropdown="false" :displayAsContentSection="false" :isContentSectionCollapseDisabled="false" contentSectionTitle="Attributes" columnBreakpoint="md" globalCategoryNameOverride="" />`;
+    const exampleCode = `<AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="false" :showAbbreviatedName="false" :showEmptyValues="false" :displayAsTabs="false" :showCategoryLabel="true" :numberOfColumns="1" :entityTypeName="entityName" :showPrePostHtml="true" :displayWithinExistingRow="false" :displayAsCategoryDropdown="false" :displayAsContentSection="false" :isContentSectionCollapseDisabled="false" contentSectionTitle="Attributes" columnBreakpoint="md" />`;
 </script>
