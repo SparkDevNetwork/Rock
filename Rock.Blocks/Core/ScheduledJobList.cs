@@ -200,6 +200,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "lastRunDate", a => a.LastRunDateTime?.ToShortDateString() )
                 .AddTextField( "lastRunTime", a => a.LastRunDateTime?.ToShortTimeString() )
                 .AddTextField( "lastRunDurationSeconds", a => FormatDuration( a.LastRunDurationSeconds ) )
+                .AddField( "lastRunDurationSecondsValue", a => a.LastRunDurationSeconds )
                 .AddTextField( "lastStatus", a => a.LastStatus )
                 .AddTextField( "lastStatusMessage", a => a.LastStatusMessage )
                 .AddTextField( "lastStatusMessageAsHtml", a => a.LastStatusMessageAsHtml )
