@@ -16,7 +16,8 @@
                 a card drawn inside it; left in place where there is no root, as when a part is drawn alone.
             -->
             <div class="chat-pc-id" data-testid="profile-identity">
-                <Avatar :key="alias" :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" :status="cardStatus" :own="person.is_self" />
+                <!-- Its badge holds no tip: the line beside it says the words. -->
+                <Avatar :key="alias" :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="56" :status="cardStatus" :own="person.is_self" :hasStatusTip="false" />
                 <div class="chat-pc-who">
                     <div class="chat-pc-name">
                         <b data-testid="profile-name">{{ fullName }}</b>

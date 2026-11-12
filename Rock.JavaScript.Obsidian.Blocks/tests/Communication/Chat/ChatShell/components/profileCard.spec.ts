@@ -695,6 +695,32 @@ describe("online status", () => {
         }
     });
 
+    // The line beside the face already says the words, so the badge holds no tip that says them
+    // again, and on her own card none in her own longer words.
+    test.each([
+        ["her own card, Busy", viewer, true],
+        ["another person's card", anna, false]
+    ])("resting on the badge of %s shows no tip", async (_case, alias, isSelf) => {
+        jest.useFakeTimers({ now: new Date(2026, 10, 10, 12, 0) });
+        if (isSelf) {
+            status.mine.value = { busy_until: new Date(2026, 10, 10, 15, 0).toISOString(), appear_offline: false };
+        }
+
+        try {
+            const w = mountCard(profile({ person_alias_guid: alias, is_self: isSelf, campus_id: null }));
+            expect(badgesIn(identity(w))).toHaveLength(1);
+
+            identity(w).querySelector("[data-testid='status-badge']")!.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+
+            expect(document.querySelectorAll("[role='tooltip']")).toHaveLength(0);
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     test("the words line is one line that never splits into columns: the words keep their width up to the line's, the campus gives way first with an ellipsis", () => {
         const sheet = join(shellFolder, "components/profileCard.partial.obs");
         const rule = (selector: RegExp): string => styleRules(sheet, selector).join(";");
