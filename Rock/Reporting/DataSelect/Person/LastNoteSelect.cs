@@ -101,7 +101,7 @@ namespace Rock.Reporting.DataSelect.Person
         /// <inheritdoc/>
         public override ObsidianGridField GetObsidianGridField( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new HtmlObsidianGridField();
+            return new NoteTextField();
         }
 
         /// <summary>
@@ -292,6 +292,23 @@ namespace Rock.Reporting.DataSelect.Person
                     RockDropDownList ddlNoteType = controls[0] as RockDropDownList;
                     ddlNoteType.SelectedValue = selectionValues[0];
                 }
+            }
+        }
+
+        #endregion
+
+        #region Support Classes
+
+        /// <summary>
+        /// Renders note text as sanitized HTML. Note text can hold the editor's
+        /// line breaks and mentions, so it is sanitized rather than encoded.
+        /// </summary>
+        private class NoteTextField : HtmlObsidianGridField
+        {
+            /// <inheritdoc/>
+            public override object TransformValue( object rawValue, ObsidianGridFieldContext context )
+            {
+                return NoteService.SanitizeNoteText( rawValue as string );
             }
         }
 
