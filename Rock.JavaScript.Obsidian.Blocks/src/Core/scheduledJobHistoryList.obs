@@ -32,6 +32,7 @@
         <TextColumn name="runDuration"
                     title="Run Duration"
                     field="runDuration"
+                    sortField="durationSeconds"
                     :filter="numberValueFilter"
                     :filterValue="getRunDurationRowFilterValue"
                     visiblePriority="xs" />

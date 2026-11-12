@@ -55,6 +55,7 @@
         <TextColumn name="lastRunDurationSeconds"
                     title="Last Run Duration"
                     field="lastRunDurationSeconds"
+                    sortField="lastRunDurationSecondsValue"
                     width="9%"
                     :filter="textValueFilter"
                     visiblePriority="md"
