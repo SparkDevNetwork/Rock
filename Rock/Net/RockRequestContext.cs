@@ -692,14 +692,9 @@ namespace Rock.Net
 
                 // Don't provide a context entity the current person isn't
                 // allowed to view.
-                if ( entity is Rock.Security.ISecured securedEntity && !securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+                if ( !IsContextEntityViewable( entity ) )
                 {
-                    var isFamilyMemberOrBusiness = entity is Person contextPerson && IsFamilyMemberOrBusinessOfCurrentPerson( contextPerson );
-
-                    if ( !isFamilyMemberOrBusiness )
-                    {
-                        return null;
-                    }
+                    return null;
                 }
 
                 if ( entity != null && entity is IHasAttributes attributedEntity )
@@ -835,6 +830,30 @@ namespace Rock.Net
         public virtual IDictionary<string, string> GetPageParameters()
         {
             return new Dictionary<string, string>( PageParameters, StringComparer.InvariantCultureIgnoreCase );
+        }
+
+        /// <summary>
+        /// Determines whether the current person is allowed to use the entity
+        /// as a context entity. This is shared by the code that reads context
+        /// entities and the API that sets them so the two cannot drift apart.
+        /// </summary>
+        /// <param name="entity">The entity to be used as a context entity.</param>
+        /// <returns><c>true</c> if the entity is not secured, the current person has View access, or the entity is a family member or business of the current person; otherwise <c>false</c>.</returns>
+        internal bool IsContextEntityViewable( IEntity entity )
+        {
+            if ( !( entity is Rock.Security.ISecured securedEntity ) )
+            {
+                return true;
+            }
+
+            if ( securedEntity.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+            {
+                return true;
+            }
+
+            // A person can always use their own family members and
+            // businesses as context, even without View on the Person entity.
+            return entity is Person contextPerson && IsFamilyMemberOrBusinessOfCurrentPerson( contextPerson );
         }
 
         /// <summary>
