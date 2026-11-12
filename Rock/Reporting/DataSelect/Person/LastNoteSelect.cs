@@ -91,10 +91,19 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override DataControlField GetGridField( Type entityType, string selection )
         {
-            BoundField result = new BoundField();
-            result.HtmlEncode = false;
+            var callbackField = new CallbackField();
 
-            return result;
+            callbackField.OnFormatDataValue += ( sender, e ) =>
+            {
+                var noteText = e.DataValue as string;
+
+                // Note text can hold the editor's line breaks and mentions, so
+                // it is shown as sanitized HTML rather than encoded. Exports
+                // keep the stored text unchanged.
+                e.FormattedValue = e.Encode ? NoteService.SanitizeNoteText( noteText ) : noteText;
+            };
+
+            return callbackField;
         }
 
         /// <summary>
