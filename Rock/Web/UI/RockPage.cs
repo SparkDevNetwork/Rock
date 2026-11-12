@@ -1815,7 +1815,10 @@ namespace Rock.Web.UI
                 }
                 else
                 {
-                    currentVisitorCookiePersonAlias = new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasIdKey );
+                    var visitorKeyPersonAliasId = IdHasher.Instance.GetId( visitorKeyPersonAliasIdKey );
+                    currentVisitorCookiePersonAlias = visitorKeyPersonAliasId.HasValue
+                        ? new PersonAliasService( rockContext ).Get( visitorKeyPersonAliasId.Value )
+                        : null;
                     if ( currentVisitorCookiePersonAlias == null )
                     {
                         // There is a ROCK_VISITOR_KEY key with an IdKey, but that PersonAlias record
@@ -1960,7 +1963,7 @@ namespace Rock.Web.UI
             Personalization.SegmentFilterCookieData segmentFilterCookieData = null;
             if ( cookieValueJson != null )
             {
-                segmentFilterCookieData = cookieValueJson.FromJsonOrNull<Personalization.SegmentFilterCookieData>();
+                segmentFilterCookieData = Personalization.SegmentFilterCookieData.FromCookieValue( cookieValueJson, false );
                 bool isCookieDataValid = false;
                 if ( segmentFilterCookieData != null )
                 {
@@ -1990,7 +1993,7 @@ namespace Rock.Web.UI
                 segmentFilterCookieData.SegmentIdKeys = segmentIdKeys;
             }
 
-            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToJson() ) );
+            AddOrUpdateCookie( new HttpCookie( Rock.Personalization.RequestCookieKey.ROCK_SEGMENT_FILTERS, segmentFilterCookieData.ToCookieValue() ) );
 
             this.PersonalizationSegmentIds = segmentFilterCookieData.GetSegmentIds();
         }
