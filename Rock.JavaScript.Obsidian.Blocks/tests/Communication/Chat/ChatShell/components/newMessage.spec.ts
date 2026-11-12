@@ -964,6 +964,21 @@ describe("online status", () => {
             expect(note(w)).toBeNull();
         });
 
+        test.each([
+            ["swapped for someone who is not Busy", () => [byAlias(statusAnna)], () => byAlias(statusAnna)],
+            ["removed", () => [], () => null]
+        ])("the one Busy person %s while the note shows: the note goes at once", async (_case, chosen, named) => {
+            const w = mountView({ chosen: [byAlias(statusBen)], lookup: fresh });
+            expect(note(w)).toBe("Anna is busy and won't be notified.");
+
+            await w.setProps({ chosen: chosen() });
+
+            // with nobody chosen there is no box at all
+            const composer = w.findComponent(Composer);
+            expect(composer.exists() ? composer.props("busyPerson") : null).toEqual(named());
+            expect(note(w)).toBeNull();
+        });
+
         test("a group with a Busy person in it names nobody", () => {
             const w = mountView({ chosen: [byAlias(statusBen), { ...andre, person_alias_guid: statusAnna }], lookup: fresh });
 
