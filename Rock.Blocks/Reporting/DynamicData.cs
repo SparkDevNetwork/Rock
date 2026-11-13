@@ -698,16 +698,22 @@ namespace Rock.Blocks.Reporting
                             queryParamName = queryParamName.Substring( 1 );
                         }
 
-                        // If a page parameter (query or form) value matches, use it's value instead.
-                        var pageValue = PageParameter( queryParamName );
-                        if ( !pageValue.IsNullOrWhiteSpace() )
+                        // CurrentPersonId only ever comes from the signed-in person, never from a page parameter.
+                        if ( queryParamName.Equals( "CurrentPersonId", StringComparison.OrdinalIgnoreCase ) )
                         {
-                            queryParamValue = pageValue;
+                            if ( this.RequestContext.CurrentPerson != null )
+                            {
+                                queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                            }
                         }
-                        else if ( queryParamName.ToLower() == "currentpersonid" && this.RequestContext.CurrentPerson != null )
+                        else
                         {
-                            // If current person ID, use the value of the current person ID.
-                            queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                            // If a page parameter (query or form) value matches, use it's value instead.
+                            var pageValue = PageParameter( queryParamName );
+                            if ( !pageValue.IsNullOrWhiteSpace() )
+                            {
+                                queryParamValue = pageValue;
+                            }
                         }
 
                         sqlParameters.Add( queryParamName, queryParamValue );

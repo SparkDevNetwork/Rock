@@ -1042,16 +1042,22 @@ namespace RockWeb.Blocks.Reporting
                             queryParamName = queryParamName.Substring( 1 );
                         }
 
-                        // If a page parameter (query or form) value matches, use it's value instead
-                        string pageValue = PageParameter( queryParamName );
-                        if ( !string.IsNullOrWhiteSpace( pageValue ) )
+                        // CurrentPersonId only ever comes from the signed-in person, never from a page parameter.
+                        if ( queryParamName.Equals( "CurrentPersonId", StringComparison.OrdinalIgnoreCase ) )
                         {
-                            queryParamValue = pageValue;
+                            if ( CurrentPerson != null )
+                            {
+                                queryParamValue = CurrentPerson.Id.ToString();
+                            }
                         }
-                        else if ( queryParamName.ToLower() == "currentpersonid" && CurrentPerson != null )
+                        else
                         {
-                            // If current person id, use the value of the current person id
-                            queryParamValue = CurrentPerson.Id.ToString();
+                            // If a page parameter (query or form) value matches, use it's value instead
+                            string pageValue = PageParameter( queryParamName );
+                            if ( !string.IsNullOrWhiteSpace( pageValue ) )
+                            {
+                                queryParamValue = pageValue;
+                            }
                         }
 
                         parameters.Add( queryParamName, queryParamValue );
