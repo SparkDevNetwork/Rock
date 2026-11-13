@@ -1,7 +1,8 @@
 name: Private Build Results
 
 # Receives AppVeyor results for public develop (sent by appveyor-relay.yml) and
-# matches them to shipped PRs labeled `awaiting-build`.
+# matches them to shipped PRs labeled `awaiting-build` (and, on success,
+# `build-failed`).
 #
 # Which PRs a build covers: a PR is covered when the commit it shipped as
 # (recorded by private-ship.yml in a "shipped-sha" marker comment) is included
@@ -11,7 +12,9 @@ name: Private Build Results
 #     and the first develop build after that covers it.
 # Older PRs carry a "develop-sha" marker instead; it's read the same way.
 #
-#   success  Deletes each covered PR's branch and clears `awaiting-build`.
+#   success  Deletes each covered PR's branch (unless an open PR uses it) and
+#            clears `awaiting-build`. Also covers PRs an earlier build failed
+#            on, so `build-failed` clears once develop passes with the change.
 #   failure  Comments on each covered PR, labels it `build-failed`, keeps the
 #            branch, then runs ONE Claude analysis for the whole build and posts
 #            it on every covered PR. Several PRs caught in one build never start
@@ -57,10 +60,23 @@ jobs:
       - name: Find the shipped PRs this build covers
         id: match
         run: |
+          awaiting=$(gh pr list -R "$GITHUB_REPOSITORY" -s closed -l awaiting-build -L 100 --json number -q '.[].number')
+
+          # A passing build also clears PRs an earlier build failed on. Only
+          # those with the "build-failed-sha" marker, so PRs from before the
+          # marker existed are left alone.
+          failed=""
+          if [ "$STATE" = "success" ]; then
+            failed=$(gh pr list -R "$GITHUB_REPOSITORY" -s closed -l build-failed -L 100 --json number -q '.[].number')
+          fi
+
           covered=""
-          for pr in $(gh pr list -R "$GITHUB_REPOSITORY" -s closed -l awaiting-build -L 100 --json number -q '.[].number'); do
-            shipped=$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" -q '.[].body' \
-              | grep -oE '(shipped|develop)-sha: [0-9a-f]{40}' | tail -1 | cut -d' ' -f2)
+          for pr in $(printf '%s\n' $awaiting $failed | sort -un); do
+            comments=$(gh api "repos/$GITHUB_REPOSITORY/issues/$pr/comments?per_page=100" -q '.[].body')
+            if ! echo "$awaiting" | grep -qx "$pr"; then
+              echo "$comments" | grep -qE 'build-failed-sha: [0-9a-f]{40}' || continue
+            fi
+            shipped=$(echo "$comments" | grep -oE '(shipped|develop)-sha: [0-9a-f]{40}' | tail -1 | cut -d' ' -f2)
             [ -n "$shipped" ] || continue
 
             # "ahead": the build includes the shipped commit. "identical": it is
@@ -86,21 +102,37 @@ jobs:
 
             case "$STATE" in
               success)
-                # Never delete a shared branch, even if a PR was opened from one.
+                # Never delete a shared branch, even if a PR was opened from one,
+                # or a branch an open PR uses (a failed build's branch is kept so
+                # a fix can be made on it).
+                deleted=""
                 case "$head" in
                   develop|release-*|hotfix-*) ;;
-                  *) gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$head" > /dev/null 2>&1 || true ;;
+                  *)
+                    if [ -z "$(gh pr list -R "$GITHUB_REPOSITORY" -s open --head "$head" --json number -q '.[].number')" ]; then
+                      gh api -X DELETE "repos/$GITHUB_REPOSITORY/git/refs/heads/$head" > /dev/null 2>&1 && deleted=true
+                    fi
+                    ;;
                 esac
                 gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/awaiting-build" > /dev/null 2>&1 || true
+                gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/build-failed" > /dev/null 2>&1 || true
+                if [ -n "$deleted" ]; then
+                  branch_note="Branch \`$head\` deleted."
+                else
+                  branch_note="Branch \`$head\` kept."
+                fi
                 gh pr comment "$pr" -R "$GITHUB_REPOSITORY" \
-                  -b "AppVeyor passed on \`develop\` ([build]($URL), commit \`${SHA:0:7}\`). Branch \`$head\` deleted."
+                  -b "AppVeyor passed on \`develop\` ([build]($URL), commit \`${SHA:0:7}\`). $branch_note"
                 ;;
 
               failure)
                 gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$pr/labels/awaiting-build" > /dev/null 2>&1 || true
                 gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$pr/labels" -f "labels[]=build-failed" > /dev/null
+                # The marker lets a later passing build find this PR again.
                 gh pr comment "$pr" -R "$GITHUB_REPOSITORY" \
-                  -b "**AppVeyor failed on \`develop\`** ([build]($URL), commit \`${SHA:0:7}\`), and that build includes this PR's change. Your branch \`$head\` was kept. An analysis of the failure will be posted here in a few minutes."
+                  -b "**AppVeyor failed on \`develop\`** ([build]($URL), commit \`${SHA:0:7}\`), and that build includes this PR's change. Your branch \`$head\` was kept. An analysis of the failure will be posted here in a few minutes.
+
+          <!-- build-failed-sha: $SHA -->"
                 ;;
 
               error)
@@ -147,6 +179,10 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # The event comes from appveyor-relay.yml, which sends it as the
+          # "Rock Mirror Sync" GitHub App. The action refuses to run for a bot
+          # unless it's listed here.
+          allowed_bots: rock-mirror-sync[bot]
           prompt: |
             REPO: ${{ github.repository }}
 
