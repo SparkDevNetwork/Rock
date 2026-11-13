@@ -376,13 +376,15 @@ namespace Rock.Blocks.Communication
 
         /// <summary>
         /// Gets the folder to use as the root when browsing or uploading documents.
+        /// This is the current user's own folder when <see cref="IsUserSpecificRoot"/> is enabled.
         /// </summary>
-        private string DocumentRootFolder => GetAttributeValue( AttributeKey.DocumentRootFolder );
+        private string DocumentRootFolder => GetUserSpecificRootFolder( GetAttributeValue( AttributeKey.DocumentRootFolder ) );
 
         /// <summary>
         /// Gets the folder to use as the root when browsing or uploading images.
+        /// This is the current user's own folder when <see cref="IsUserSpecificRoot"/> is enabled.
         /// </summary>
-        private string ImageFolderRoot => GetAttributeValue( AttributeKey.ImageRootFolder );
+        private string ImageFolderRoot => GetUserSpecificRootFolder( GetAttributeValue( AttributeKey.ImageRootFolder ) );
 
         /// <summary>
         /// Should the attachment uploader be shown for email communications?
@@ -2040,6 +2042,76 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
+        /// Gets the root folder the HTML editor's file and image browsers may
+        /// use. When the User Specific Folders setting is enabled, this is a
+        /// folder named after the current user inside the configured root.
+        /// </summary>
+        /// <param name="rootFolder">The configured root folder. An empty value means the default ~/Content folder.</param>
+        /// <returns>The root folder the current user may browse and upload to, or <c>null</c> if the current user has no usable folder.</returns>
+        private string GetUserSpecificRootFolder( string rootFolder )
+        {
+            if ( !IsUserSpecificRoot )
+            {
+                return rootFolder;
+            }
+
+            var userFolderName = GetUserFolderName();
+
+            if ( userFolderName == null )
+            {
+                return null;
+            }
+
+            if ( rootFolder.IsNullOrWhiteSpace() )
+            {
+                rootFolder = "~/Content";
+            }
+
+            return $"{rootFolder.EnsureTrailingForwardslash()}{userFolderName}/";
+        }
+
+        /// <summary>
+        /// Gets the name of the current user's own folder, which is their
+        /// user name when it can safely be used as a single folder name.
+        /// </summary>
+        /// <returns>The folder name, or <c>null</c> if there is no logged in user or the user name is not a safe folder name.</returns>
+        private string GetUserFolderName()
+        {
+            var userName = RequestContext.CurrentUser?.UserName;
+
+            if ( userName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            // Windows ignores trailing dots and spaces in folder names, so
+            // "jsmith." would be the same folder as "jsmith".
+            var hasUnsafeEnds = userName != userName.Trim() || userName.EndsWith( "." );
+            var hasInvalidCharacters = userName.IndexOfAny( System.IO.Path.GetInvalidFileNameChars() ) >= 0
+                || userName.Contains( "/" )
+                || userName.Contains( "\\" );
+
+            if ( hasUnsafeEnds || hasInvalidCharacters )
+            {
+                return null;
+            }
+
+            return userName;
+        }
+
+        /// <summary>
+        /// Determines whether the HTML editor's file and image browsers have
+        /// a folder the current user may use. This is only <c>false</c> when
+        /// User Specific Folders is enabled and the current user has no safe
+        /// folder of their own.
+        /// </summary>
+        /// <returns><c>true</c> if the browsers have a folder to use; otherwise <c>false</c>.</returns>
+        private bool IsHtmlEditorFolderAvailable()
+        {
+            return !IsUserSpecificRoot || GetUserFolderName() != null;
+        }
+
+        /// <summary>
         /// Gets the security grant token that will be used by UI controls on
         /// this block to ensure they have the proper permissions.
         /// </summary>
@@ -2082,10 +2154,16 @@ namespace Rock.Blocks.Communication
         /// ADMINISTRATE on the block. This does not depend on the Enable
         /// Asset Manager setting because the File Browser and Image Browser
         /// rely on the same grant; the setting only controls the toolbar button.
+        /// Never authorized when the current user has no user specific folder.
         /// </summary>
         /// <returns><c>true</c> if the current person may browse the asset manager; otherwise <c>false</c>.</returns>
         private bool IsAssetManagerViewAuthorized()
         {
+            if ( !IsHtmlEditorFolderAvailable() )
+            {
+                return false;
+            }
+
             var currentPerson = GetCurrentPerson();
 
             return currentPerson != null
@@ -2096,11 +2174,17 @@ namespace Rock.Blocks.Communication
         /// <summary>
         /// Determines whether the current person may upload, rename, move
         /// and delete files and folders with the asset manager. Requires EDIT
-        /// or ADMINISTRATE on the block.
+        /// or ADMINISTRATE on the block. Never authorized when the current
+        /// user has no user specific folder.
         /// </summary>
         /// <returns><c>true</c> if the current person may manage files in the asset manager; otherwise <c>false</c>.</returns>
         private bool IsAssetManagerEditAuthorized()
         {
+            if ( !IsHtmlEditorFolderAvailable() )
+            {
+                return false;
+            }
+
             var currentPerson = GetCurrentPerson();
 
             return currentPerson != null
