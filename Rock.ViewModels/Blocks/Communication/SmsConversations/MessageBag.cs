@@ -52,6 +52,19 @@ namespace Rock.ViewModels.Blocks.Communication.SmsConversations
         public DateTimeOffset? CreatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets or sets the date and time an outbound message was sent. This
+        /// is <c>null</c> for a message that has not been sent yet and for an
+        /// inbound message.
+        /// </summary>
+        public DateTimeOffset? SendDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this is an outbound message
+        /// that has not been sent yet.
+        /// </summary>
+        public bool IsPending { get; set; }
+
+        /// <summary>
         /// Gets or sets the attachments. Non-image attachments will not have
         /// a <see cref="ConversationAttachmentBag.ThumbnailUrl"/>.
         /// </summary>

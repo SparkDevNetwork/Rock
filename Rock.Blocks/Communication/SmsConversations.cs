@@ -832,6 +832,8 @@ namespace Rock.Blocks.Communication
                             IsOutbound = response.IsOutbound,
                             OutboundSenderFullName = response.OutboundSenderFullName,
                             CreatedDateTime = response.CreatedDateTime?.ToRockDateTimeOffset(),
+                            SendDateTime = response.SendDateTime?.ToRockDateTimeOffset(),
+                            IsPending = response.MessageStatus == CommunicationRecipientStatus.Pending,
                             Attachments = attachments
                         } );
                     }
