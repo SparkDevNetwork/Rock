@@ -904,6 +904,12 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
             }
 
+            // Make the same access check that is used when the block loads.
+            if ( !GetIsAuthorizedToView( communication ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
+            }
+
             string outcomeMessage;
 
             if ( communication.Status == CommunicationStatus.PendingApproval )
@@ -970,6 +976,12 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
             }
 
+            // Make the same access check that is used when the block loads.
+            if ( !GetIsAuthorizedToView( communication ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
+            }
+
             string outcomeMessage;
 
             if ( communication.Status == CommunicationStatus.PendingApproval )
@@ -1020,6 +1032,12 @@ namespace Rock.Blocks.Communication
             if ( communication == null )
             {
                 return ActionBadRequest( $"Unable to find {CommunicationFriendlyName}." );
+            }
+
+            // Make the same access check that is used when the block loads.
+            if ( !GetIsAuthorizedToView( communication ) )
+            {
+                return ActionUnauthorized( EditModeMessage.NotAuthorizedToView( CommunicationFriendlyName ) );
             }
 
             if ( !CanApprove )
@@ -1112,12 +1130,12 @@ namespace Rock.Blocks.Communication
             string outcomeMessage;
             var shouldRemoveTabParam = false;
 
-            if ( communication.Status == CommunicationStatus.PendingApproval
-                && !communication.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            if ( !GetIsAuthorizedToCancel( communication ) )
             {
                 return ActionUnauthorized( $"Sorry, you are not authorized to cancel this {CommunicationFriendlyName}." );
             }
-            else if ( communication.Status == CommunicationStatus.Approved
+
+            if ( communication.Status == CommunicationStatus.Approved
                 && !communication.Recipients.Any( r => r.Status == CommunicationRecipientStatus.Pending ) )
             {
                 outcomeMessage = $"Sorry, unable to cancel this {CommunicationFriendlyName} as it has already been delivered to all recipients.";
@@ -1799,6 +1817,21 @@ namespace Rock.Blocks.Communication
 
             // In lax mode, all individuals may view all communications.
             return true;
+        }
+
+        /// <summary>
+        /// Gets whether the current person is authorized to cancel the sending of the communication.
+        /// </summary>
+        /// <param name="communication">The <see cref="Rock.Model.Communication"/> for which to check authorization.</param>
+        /// <returns>Whether the current person can edit the communication or created it.</returns>
+        private bool GetIsAuthorizedToCancel( Rock.Model.Communication communication )
+        {
+            var currentPerson = GetCurrentPerson();
+
+            // People rarely hold EDIT on their own communications, so the creator is allowed to stop their own send.
+            var isCreator = currentPerson != null && communication.CreatedByPersonAlias?.PersonId == currentPerson.Id;
+
+            return isCreator || communication.IsAuthorized( Authorization.EDIT, currentPerson );
         }
 
         /// <summary>
@@ -2955,7 +2988,7 @@ namespace Rock.Blocks.Communication
                 permissions.CanDeny = canApprove;
                 permissions.CanEdit = canApprove;
 
-                permissions.CanCancel = communication.IsAuthorized( Authorization.EDIT, currentPerson );
+                permissions.CanCancel = GetIsAuthorizedToCancel( communication );
             }
             else if ( communication.Status == CommunicationStatus.Approved )
             {
@@ -2968,7 +3001,7 @@ namespace Rock.Blocks.Communication
                     )
                     .Any();
 
-                permissions.CanCancel = hasPendingRecipients;
+                permissions.CanCancel = hasPendingRecipients && GetIsAuthorizedToCancel( communication );
 
                 // Allow them to create a copy if they have VIEW (don't require full EDIT auth).
                 permissions.CanDuplicate = communication.IsAuthorized( Authorization.VIEW, currentPerson );
