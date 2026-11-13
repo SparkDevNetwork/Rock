@@ -1092,7 +1092,7 @@ namespace Rock.WebStartup
         /// At this stage, the RockContext is initialized but standard framework
         /// methods that generate EF queries may or may not work so be careful.
         /// </remarks>
-        private static void InitializeQueryableAttributeValues()
+        internal static void InitializeQueryableAttributeValues()
         {
             // Find all core entity types and then all plugin entity types.
             var types = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
