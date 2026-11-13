@@ -452,8 +452,58 @@ namespace RockWeb.Blocks.Communication
         private void BindConversationRepeater( List<CommunicationRecipientResponse> responses )
         {
             rptConversation.Visible = true;
-            rptConversation.DataSource = responses;
+
+            // Order by the time shown on each message so a scheduled message
+            // appears where it was sent, not where it was written.
+            rptConversation.DataSource = responses
+                .OrderBy( r => GetMessageDateTime( r ) )
+                .ToList();
             rptConversation.DataBind();
+        }
+
+        /// <summary>
+        /// Gets the date and time to show for a message in the conversation. A sent
+        /// message uses the time it was sent. Every other message uses the time it was
+        /// created, which is also when a reply was received.
+        /// </summary>
+        /// <param name="response">The message in the conversation.</param>
+        /// <returns>The date and time to show for the message.</returns>
+        private static DateTime? GetMessageDateTime( CommunicationRecipientResponse response )
+        {
+            if ( response.MessageStatus == CommunicationRecipientStatus.Pending )
+            {
+                return response.CreatedDateTime;
+            }
+
+            return response.SendDateTime ?? response.CreatedDateTime;
+        }
+
+        /// <summary>
+        /// Gets the text that describes when a message in the conversation was sent
+        /// or received, in the same format as <see cref="CommunicationRecipientResponse.HumanizedCreatedDateTime"/>.
+        /// </summary>
+        /// <param name="response">The message in the conversation.</param>
+        /// <returns>The text to show under the message.</returns>
+        private static string GetMessageDateTimeText( CommunicationRecipientResponse response )
+        {
+            var messageDateTime = GetMessageDateTime( response );
+
+            if ( !messageDateTime.HasValue )
+            {
+                return string.Empty;
+            }
+
+            var now = RockDateTime.Now;
+            var messageDateTimeText = now.Date == messageDateTime.Value.Date
+                ? messageDateTime.Value.ToShortTimeString()
+                : Humanizer.DateHumanizeExtensions.Humanize( messageDateTime, true, now, null );
+
+            if ( response.MessageStatus == CommunicationRecipientStatus.Pending )
+            {
+                messageDateTimeText += " (Pending)";
+            }
+
+            return messageDateTimeText;
         }
 
         /// <summary>
@@ -1023,13 +1073,8 @@ namespace RockWeb.Blocks.Communication
                 lSenderName.Text = communicationRecipientResponse.OutboundSenderFullName.EncodeHtml();
 
                 var lblMessageDateTime = ( Label ) e.Item.FindControl( "lblMessageDateTime" );
-                lblMessageDateTime.ToolTip = communicationRecipientResponse.CreatedDateTime.ToString();
-                lblMessageDateTime.Text = communicationRecipientResponse.HumanizedCreatedDateTime.ToString();
-
-                if ( communicationRecipientResponse.MessageStatus == CommunicationRecipientStatus.Pending )
-                {
-                    lblMessageDateTime.Text += " (Pending)";
-                }
+                lblMessageDateTime.ToolTip = GetMessageDateTime( communicationRecipientResponse ).ToString();
+                lblMessageDateTime.Text = GetMessageDateTimeText( communicationRecipientResponse );
 
                 var divCommunication = ( HtmlGenericControl ) e.Item.FindControl( "divCommunication" );
 

@@ -444,6 +444,7 @@ namespace Rock.Model
                 {
                     r.Guid,
                     r.CreatedDateTime,
+                    r.SendDateTime,
                     r.SentMessage,
                     r.Status,
                     r.CommunicationId,
@@ -477,6 +478,7 @@ namespace Rock.Model
                 var communicationRecipientResponse = new CommunicationRecipientResponse
                 {
                     CreatedDateTime = communicationRecipient.CreatedDateTime,
+                    SendDateTime = communicationRecipient.SendDateTime,
                     OutboundSenderFullName = Person.FormatFullName(
                         communicationRecipient.SenderPersonNickName,
                         communicationRecipient.SenderPersonLastName,

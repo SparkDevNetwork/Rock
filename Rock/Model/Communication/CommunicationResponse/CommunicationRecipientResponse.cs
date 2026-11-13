@@ -186,6 +186,16 @@ namespace Rock.Model
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
+        /// Gets the date and time an outbound message was sent to the recipient.
+        /// This is <c>null</c> for a message that has not been sent yet and for
+        /// an inbound message, which was received at <see cref="CreatedDateTime"/>.
+        /// </summary>
+        /// <value>
+        /// The date and time the outbound message was sent.
+        /// </value>
+        public DateTime? SendDateTime { get; internal set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the message was sent from Rock, vs a mobile device
         /// </summary>
         /// <value>
