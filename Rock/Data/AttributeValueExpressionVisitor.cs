@@ -42,8 +42,20 @@ namespace Rock.Data
         /// <inheritdoc/>
         protected override Expression VisitBinary( BinaryExpression node )
         {
-            // ValueChecksum is only valid for equals and not equals comparisons.
-            if ( node.NodeType != ExpressionType.Equal && node.NodeType != ExpressionType.NotEqual )
+            /*
+                11/13/26 - CLAUDE
+
+                Only equality comparisons are rewritten. Two values that are
+                equal always have the same checksum, so adding a checksum check
+                to an equality comparison narrows the rows without losing any
+                matches. Two values that are different can still have the same
+                checksum, so the checksum cannot help a not-equal comparison,
+                and that comparison matches most rows anyway so an index seek
+                would not be used.
+
+                Reason: Rewriting a not-equal comparison returned the wrong rows.
+            */
+            if ( node.NodeType != ExpressionType.Equal )
             {
                 return base.VisitBinary( node );
             }
@@ -56,14 +68,7 @@ namespace Rock.Data
                     return base.VisitBinary( node );
                 }
 
-                // Create an expression that compares the specified value against ValueChecksum.
-                var memberExpression = Expression.Property( attributeValueExpression.Expression, "ValueChecksum" );
-                var callExpression = Expression.Call( null, _checksumMethod, node.Right );
-                var checksumExpression = Expression.Equal( memberExpression, Expression.Convert( callExpression, typeof( int ) ) );
-
-                // Return a new expression that says the original check and the
-                // ValueChecksum check must match.
-                return Expression.AndAlso( node, checksumExpression );
+                return AddChecksumComparison( node, attributeValueExpression, node.Right );
             }
 
             if ( IsAttributeValueMember( node.Right ) )
@@ -74,17 +79,42 @@ namespace Rock.Data
                     return base.VisitBinary( node );
                 }
 
-                // Create an expression that compares the specified value against ValueChecksum.
-                var memberExpression = Expression.Property( attributeValueExpression.Expression, "ValueChecksum" );
-                var callExpression = Expression.Call( null, _checksumMethod, node.Left );
-                var checksumExpression = Expression.Equal( memberExpression, callExpression );
-
-                // Return a new expression that says the original check and the
-                // ValueChecksum check must match.
-                return Expression.AndAlso( node, checksumExpression );
+                return AddChecksumComparison( node, attributeValueExpression, node.Left );
             }
 
             return base.VisitBinary( node );
+        }
+
+        /// <summary>
+        /// Creates an expression that requires both the original comparison and
+        /// a comparison of the ValueChecksum column against the checksum of the
+        /// other operand to match.
+        /// </summary>
+        /// <param name="node">The original equality comparison.</param>
+        /// <param name="valueExpression">The expression that accesses the Value property.</param>
+        /// <param name="otherOperand">The expression the Value property is being compared to.</param>
+        /// <returns>The original comparison combined with the checksum comparison.</returns>
+        private static Expression AddChecksumComparison( BinaryExpression node, MemberExpression valueExpression, Expression otherOperand )
+        {
+            var checksumMember = Expression.Property( valueExpression.Expression, "ValueChecksum" );
+            Expression checksumCall = Expression.Call( null, _checksumMethod, otherOperand );
+
+            /*
+                11/13/26 - CLAUDE
+
+                SqlFunctions.Checksum() returns int?, but ValueChecksum is int on
+                AttributeValue and int? on QueryableAttributeValue. Expression.Equal
+                throws if the two types do not match. The function call is converted
+                rather than the column so the column can still be used by the index.
+
+                Reason: Some comparison orders threw when the query was built.
+            */
+            if ( checksumCall.Type != checksumMember.Type )
+            {
+                checksumCall = Expression.Convert( checksumCall, checksumMember.Type );
+            }
+
+            return Expression.AndAlso( node, Expression.Equal( checksumMember, checksumCall ) );
         }
 
         /// <summary>
