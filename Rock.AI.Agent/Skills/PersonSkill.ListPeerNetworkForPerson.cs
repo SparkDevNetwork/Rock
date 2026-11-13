@@ -41,7 +41,7 @@ internal sealed partial class PersonSkill
         var results = peerNetworkService
             .Where( pn => pn.SourcePersonId == personId )
             .Join(
-                rockContext.Set<Rock.Model.Person>(),
+                rockContext.Set<Rock.Model.Person>().Where( p => !p.IsDeceased ),
                 pn => pn.TargetPersonId,
                 tp => tp.Id,
                 ( pn, tp ) => new { pn, tp }
@@ -54,6 +54,16 @@ internal sealed partial class PersonSkill
                 RelationshipScore = ( int ) Math.Round( g.Sum( x => x.pn.RelationshipScore ), 0 ),
                 PointDifference = g.Sum( x => x.pn.RelationshipScore ) - g.Sum( x => x.pn.RelationshipScoreLastUpdateValue )
             } )
+            /*
+                11/13/26 - CLAUDE
+
+                The name sort below uses string.Split, which Entity Framework
+                cannot translate to SQL, so every call threw a NotSupportedException.
+                Sorting happens in memory after the grouped rows are loaded.
+
+                Reason: Peer network tool failed against SQL Server.
+            */
+            .AsEnumerable()
             .OrderByDescending( x => x.RelationshipScore )
             .ThenBy( x => x.TargetName.Split( ' ' )[1] ) // LastName
             .ThenBy( x => x.TargetName.Split( ' ' )[0] ) // NickName

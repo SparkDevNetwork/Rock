@@ -51,7 +51,7 @@ internal sealed partial class PersonSkill
         }
 
         var searchQueryable = new PersonService( AgentRequestContext.RockContext )
-            .GetByFullNameOrdered( searchPattern, true, false, false, out _ );
+            .GetByFullNameOrdered( searchPattern, includeDeceased: false, includeBusinesses: false, allowFirstNameOnly: false, out _ );
 
         // Append campus filter if provided
         if ( campusIdKey.IsNotNullOrWhiteSpace() )
