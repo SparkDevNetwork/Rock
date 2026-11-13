@@ -9116,10 +9116,16 @@ namespace Rock.Rest.v2
 
             if ( parentLocationGuid == Guid.Empty )
             {
-                qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
                 if ( rootLocationGuid != Guid.Empty )
                 {
-                    qry = qry.Where( a => a.Guid == rootLocationGuid );
+                    // Ignore ParentLocationId when a root location is supplied,
+                    // since the root location may itself have a parent (#4705).
+                    qry = locationService.Queryable().AsNoTracking().Where( a => a.Guid == rootLocationGuid );
+                }
+                else
+                {
+                    // Look for top-level named locations when no root location is supplied.
+                    qry = locationService.Queryable().AsNoTracking().Where( a => a.ParentLocationId == null );
                 }
             }
             else
