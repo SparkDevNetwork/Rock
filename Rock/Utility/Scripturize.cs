@@ -341,12 +341,17 @@ namespace Rock.Utility
                 }
             }
 
-            return string.Format( "https://www.bible.com/bible/{0}/{1}.{2}.{3}.{4}",
+            // Chapter-only references (e.g. "Genesis 2") must not include an
+            // empty verse segment, otherwise YouVersion gets "GEN.2..NIV".
+            var chapterAndVerse = verse.IsNotNullOrWhiteSpace()
+                ? $"{chapter}.{verse}"
+                : chapter;
+
+            return string.Format( "https://www.bible.com/bible/{0}/{1}.{2}.{3}",
                     translationId,                                  // 0
-                    youVersionBook,    // 1
-                    chapter,                                        // 2
-                    verse,                                          // 3
-                    translation                                     // 4
+                    youVersionBook,                                 // 1
+                    chapterAndVerse,                                // 2
+                    translation                                     // 3
                 );
         }
 
