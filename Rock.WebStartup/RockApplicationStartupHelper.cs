@@ -23,12 +23,19 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using System.Web.Caching;
+using System.Web.Http;
+using System.Web.Optimization;
+using System.Web.Routing;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Rock.Bus;
 using Rock.Communication.Chat;
@@ -41,11 +48,15 @@ using Rock.Model;
 using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Security;
+using Rock.Transactions;
+using Rock.Utility;
 using Rock.Utility.CaptchaApi;
 using Rock.Utility.HtmlSanitization;
 using Rock.Utility.Settings;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.WebFarm;
 
 namespace Rock.WebStartup
@@ -1079,6 +1090,647 @@ namespace Rock.WebStartup
             return result;
         }
 
+        #region Stage 2 Startup
+
+        /// <summary>
+        /// Gets a value indicating whether the transaction queue is currently
+        /// being drained.
+        /// </summary>
+        public static bool QueueInUse { get; private set; }
+
+        /// <summary>
+        /// The thread themes are being compiled on.
+        /// </summary>
+        public static Thread CompileThemesThread { get; private set; }
+
+        /// <summary>
+        /// The thread block types are being compiled on.
+        /// </summary>
+        public static Thread BlockTypeCompilationThread { get; private set; }
+
+        // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
+        private static CancellationTokenSource _threadCancellationTokenSource = new CancellationTokenSource();
+
+        // cache callback object
+        private static CacheItemRemovedCallback _onCacheRemove = null;
+
+        /// <summary>
+        /// Runs the second stage of the application startup.
+        /// </summary>
+        /// <param name="appCodeAssembly">The assembly containing the application code from WebForms.</param>
+        public static void RunApplicationStartupStage2( Assembly appCodeAssembly )
+        {
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 2" ) )
+            {
+                ApplicationStartupStage2( appCodeAssembly );
+            }
+        }
+
+        /// <summary>
+        /// The second stage of the application startup.
+        /// </summary>
+        /// <param name="appCodeAssembly">The assembly containing the application code from WebForms.</param>
+        private static void ApplicationStartupStage2( Assembly appCodeAssembly )
+        {
+            ShowDebugTimingMessage( $"Application Start: (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
+
+            Rock.Bus.RockMessageBus.IsRockStarted = false;
+            QueueInUse = false;
+
+            /* 2020-05-20 MDP
+                * Prior to Application_Start, Rock.WebStartup has an AssemblyInitializer class that runs as a PreApplicationStartMethod.
+                *
+                * This will call RockApplicationStartupHelper which will take care of the following
+                *   -- EF Migrations
+                *   -- Rock Plugin Migrations (except for ones that are in App_Code)
+                *   -- Sending Version update notifications to Spark
+                *   -- Pre-loading EntityTypeCache, FieldTypeCache, and AttributeCache
+                *   -- Loading any attributes defined in web.config
+                *   -- Registering HttpModules
+                *   -- Initializing Lava
+                *   -- Starting the Job Scheduler (if configured to run)
+             */
+
+            /* 2020-05-20 MDP
+             * The remaining items need to be run here in Application_Start since they depend on things that don't happen until now
+             * like Routes, plugin stuff in App_Code
+             */
+
+            try
+            {
+                // AssemblyInitializer will catch any exception that it gets and sets AssemblyInitializerException.
+                // Doing this lets us do any error handling (now that RockWeb has started)
+                if ( AssemblyInitializer.AssemblyInitializerException != null )
+                {
+                    throw AssemblyInitializer.AssemblyInitializerException;
+                }
+
+                // register the App_Code assembly in the Rock.Reflection helper so that Reflection methods can search for types in it
+                Rock.Reflection.SetAppCodeAssembly( appCodeAssembly );
+
+                // Probably won't be any, but run any migrations that might be
+                // the additional assemblies. Any Any that are dll's get run in RunApplicationStartup())
+                RunPluginMigrations( appCodeAssembly );
+
+                // Register Routes
+                RouteTable.Routes.Clear();
+                Rock.Web.RockRouteHandler.RegisterRoutes();
+
+                // Configure Rock Rest API
+                GlobalConfiguration.Configure( Rock.Rest.WebApiConfig.Register );
+
+                // set the encryption protocols that are permissible for external SSL connections
+                System.Net.ServicePointManager.SecurityProtocol = System.Net.SecurityProtocolType.Tls | System.Net.SecurityProtocolType.Tls11 | System.Net.SecurityProtocolType.Tls12;
+
+                ShowDebugTimingMessage( "Register Routes" );
+
+                // add call back to keep IIS process awake at night and to provide a timer for the queued transactions
+                AddCallBack();
+
+                // register any EntityTypes or FieldTypes that are discovered in Rock or any plugins (including ones in ~/App_Code)
+                EntityTypeService.RegisterEntityTypes();
+                FieldTypeService.RegisterFieldTypes();
+
+                BundleConfig.RegisterBundles( BundleTable.Bundles );
+
+                // mark any user login stored as 'IsOnline' in the database as offline
+                MarkOnlineUsersOffline();
+
+                SqlServerTypes.Utilities.LoadNativeAssemblies( RockApp.Current.MapPath( "~" ) );
+
+                ShowDebugTimingMessage( "Register Types" );
+
+                LogStartupMessage( $"Application Started Successfully (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
+                }
+
+                ExceptionLogService.AlwaysLogToFile = false;
+
+                Task.Run( () => WarmupCache() );
+
+                // Perform any Rock startups
+                RunStartups();
+
+                if ( RockApp.Current?.InitializationSettings.IsRunScheduledJobsEnabled == true )
+                {
+                    LogStartupMessage( "Starting Job Scheduler" );
+                    Debug.WriteLine( "Starting Job Scheduler" );
+                    ServiceJobService.StartQuartzScheduler();
+                    Debug.WriteLine( "Job Scheduler Started" );
+                    LogStartupMessage( "Job Scheduler Started" );
+                }
+            }
+            catch ( Exception ex )
+            {
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "##Startup Exception##: {0}\n{1}", ex.Message, ex.StackTrace ) );
+                }
+
+                SetError66();
+                var startupException = new RockStartupException( "Error occurred during application startup", ex );
+                LogError( startupException );
+                throw startupException;
+            }
+
+            StartBlockTypeCompilationThread();
+
+            StartWorkflowActionUpdateAttributesThread();
+
+            StartCompileThemesThread();
+
+            StartEnsureChromeEngineThread();
+
+            Rock.Bus.RockMessageBus.IsRockStarted = true;
+
+            // Enable enforcement if it has been requested in the security settings.
+            DbContext.EnableStringValidation = new SecuritySettingsService().SecuritySettings.EnableServerModelValidation;
+        }
+
+        /// <summary>
+        /// Warms the cache up by loading various cache types into memory that
+        /// are most likely required for normal operation. This ensures that if
+        /// Rock starts up without a request coming in that many things will
+        /// be in cache already before the first request comes in.
+        /// </summary>
+        private static void WarmupCache()
+        {
+            Activity.Current = null;
+
+            using ( var activity = ObservabilityHelper.StartActivity( "Startup: Warmup Cache" ) )
+            {
+                var sw = Stopwatch.StartNew();
+
+                // These have probably already been loaded, but make sure they are still hot.
+                EntityTypeCache.All();
+                FieldTypeCache.All();
+
+                // Load additional cache items that are most likely going to be required for
+                // normal operation.
+                AttributeCache.All();
+                GroupTypeCache.All();
+                BlockTypeCache.All();
+                BlockCache.All();
+                DefinedTypeCache.All();
+                DefinedValueCache.All();
+                CategoryCache.All();
+
+                sw.Stop();
+
+                ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
+            }
+        }
+
+        /// <summary>
+        /// Starts the compile themes thread.
+        /// </summary>
+        private static void StartCompileThemesThread()
+        {
+            // compile less files
+            CompileThemesThread = new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                // Compile the next-generation themes.
+                var stopwatchCompileTheme = Stopwatch.StartNew();
+#pragma warning disable CS0618 // Type or member is obsolete
+                var compileMessages = ThemeService.CompileAll( _threadCancellationTokenSource.Token );
+#pragma warning restore CS0618 // Type or member is obsolete
+                stopwatchCompileTheme.Stop();
+
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    Debug.WriteLine( string.Format( "[{0,5:#} ms] Themes Compiled", stopwatchCompileTheme.Elapsed.TotalMilliseconds ) );
+
+                    if ( compileMessages.Any() )
+                    {
+                        Debug.WriteLine( "ThemeService.CompileAll messages:" );
+                        compileMessages.ForEach( m => Debug.WriteLine( $"> {m}" ) );
+                    }
+                }
+
+                // Start compiling the legacy themes.
+                var stopwatchCompileLess = Stopwatch.StartNew();
+
+                string messages = string.Empty;
+                bool onlyCompileIfNeeded = true;
+
+                // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                RockTheme.CompileAll( onlyCompileIfNeeded, out messages, _threadCancellationTokenSource.Token );
+                if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+                {
+                    if ( messages.IsNullOrWhiteSpace() )
+                    {
+                        if ( stopwatchCompileLess.Elapsed.TotalSeconds < 1 )
+                        {
+                            System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Less Files Compiled", stopwatchCompileLess.Elapsed.TotalMilliseconds ) );
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} seconds] Less Files Compiled", +stopwatchCompileLess.Elapsed.TotalSeconds ) );
+                        }
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine( "RockTheme.CompileAll messages: " + messages );
+                    }
+                }
+            } );
+
+            CompileThemesThread.Start();
+        }
+
+        private static void StartEnsureChromeEngineThread()
+        {
+            new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                try
+                {
+                    Rock.Pdf.PdfGenerator.EnsureChromeEngineInstalled();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( ex );
+                }
+            } ).Start();
+        }
+
+        /// <summary>
+        /// Starts the workflow action update attributes thread.
+        /// </summary>
+        private static void StartWorkflowActionUpdateAttributesThread()
+        {
+            // Update attributes for new workflow actions, instead of doing them on demand
+            // Not sure why we did this but this is the commit c23a4021d2ce7be96a30bae8c431c113f942f26f
+            new Thread( () =>
+            {
+                /* Set to background thread so that this thread doesn't prevent Rock from shutting down. */
+                Thread.CurrentThread.IsBackground = true;
+
+                Rock.Workflow.ActionContainer.Instance.UpdateAttributes();
+            } ).Start();
+        }
+
+        /// <summary>
+        /// Starts the block type compilation thread.
+        /// </summary>
+        private static void StartBlockTypeCompilationThread()
+        {
+            BlockTypeCompilationThread = new Thread( () =>
+            {
+                Activity.Current = null;
+
+                using ( ObservabilityHelper.StartActivity( "Startup: Block Type Compilation" ) )
+                {
+                    // This is used to cancel our BlockTypeCompilationThread if it isn't done when Rock shuts down
+                    _threadCancellationTokenSource = new CancellationTokenSource();
+                    // Set to background thread so that this thread doesn't prevent Rock from shutting down.
+                    Thread.CurrentThread.IsBackground = true;
+
+                    // Set priority to Below Normal. This was originally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+
+                    Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
+
+                    // get a list of all block types that are used by blocks
+                    var allUsedBlockTypeIds = new BlockTypeService( RockApp.Current.CreateRockContext() ).Queryable()
+                        .Where( a => a.Blocks.Any() )
+                        .OrderBy( a => a.Category )
+                        .Select( a => a.Id ).ToArray();
+
+                    // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                    BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
+
+                    BlockTypeService.RegisterBlockTypes( RockApp.Current.MapPath( "~" ), false );
+
+                    UpdateCompilerAttributesOnBlockTypes();
+
+                    Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                }
+            } );
+
+            BlockTypeCompilationThread.Start();
+        }
+
+        /// <summary>
+        /// Updates the block types with values from C# attributes when they
+        /// are available. This gives us peformance benefits to store them on
+        /// the block type and also solves issues if the block type C# type is
+        /// not available for some reason.
+        /// </summary>
+        private static void UpdateCompilerAttributesOnBlockTypes()
+        {
+            var blockTypesWithCompiledType = BlockTypeCache.All()
+               .Select( bt => new
+               {
+                   BlockType = bt,
+                   CompiledType = bt.GetCompiledType(),
+               } );
+
+            foreach ( var blockTypeWithCompiledType in blockTypesWithCompiledType )
+            {
+                var type = blockTypeWithCompiledType.CompiledType;
+                var siteTypes = BlockTypeService.GetSiteTypeFlagsForType( type );
+
+                var defaultRole = blockTypeWithCompiledType.BlockType.DefaultRole;
+
+                if ( type != null )
+                {
+                    defaultRole = BlockTypeService.GetDefaultRoleForType( type );
+                }
+
+                if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )
+                {
+                    using ( var rockContext = RockApp.Current.CreateRockContext() )
+                    {
+                        var blockTypeService = new BlockTypeService( rockContext );
+                        var blockType = blockTypeService.Queryable()
+                            .Where( bt => bt.Id == blockTypeWithCompiledType.BlockType.Id )
+                            .FirstOrDefault();
+                        if ( blockType == null )
+                        {
+                            continue;
+                        }
+                        blockType.SiteTypeFlags = siteTypes;
+                        blockType.DefaultRole = defaultRole;
+                        rockContext.SaveChanges();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Marks any user login stored as online in the database as offline.
+        /// </summary>
+        private static void MarkOnlineUsersOffline()
+        {
+            using var rockContext = RockApp.Current.CreateRockContext();
+            var userLoginService = new UserLoginService( rockContext );
+
+            foreach ( var user in userLoginService.Queryable().Where( u => u.IsOnLine == true ) )
+            {
+                user.IsOnLine = false;
+            }
+
+            rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Run any custom startup methods
+        /// </summary>
+        public static void RunStartups()
+        {
+            try
+            {
+                var startups = new Dictionary<int, List<IRockStartup>>();
+                foreach ( var startupType in Rock.Reflection.FindTypes( typeof( IRockStartup ) ).Select( a => a.Value ).ToList() )
+                {
+                    var startup = Activator.CreateInstance( startupType ) as IRockStartup;
+                    startups.TryAdd( startup.StartupOrder, new List<IRockStartup>() );
+                    startups[startup.StartupOrder].Add( startup );
+                }
+
+                foreach ( var startupList in startups.OrderBy( s => s.Key ).Select( s => s.Value ) )
+                {
+                    foreach ( var startup in startupList )
+                    {
+                        startup.OnStartup();
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex, null );
+            }
+        }
+
+        /// <summary>
+        /// Sets flag for serious error
+        /// </summary>
+        private static void SetError66()
+        {
+            HttpContext context = HttpContext.Current;
+            if ( context != null )
+            {
+                if ( context.Session != null )
+                {
+                    context.Session["RockExceptionOrder"] = "66";
+                }
+                else
+                {
+                    context.Cache["RockExceptionOrder"] = "66";
+                }
+            }
+        }
+
+        /// <summary>
+        /// Adds the call back that is used to Drain the Transaction Queue every 60 seconds
+        /// and do KeepAlive (if Configured)
+        /// </summary>
+        public static void AddCallBack()
+        {
+            if ( HttpRuntime.Cache["IISCallBack"] == null )
+            {
+                _onCacheRemove = new CacheItemRemovedCallback( CacheItemRemoved );
+                HttpRuntime.Cache.Insert(
+                    "IISCallBack",
+                    60,
+                    null,
+                    RockDateTime.SystemDateTime.AddSeconds( 60 ),
+                    Cache.NoSlidingExpiration,
+                    CacheItemPriority.NotRemovable,
+                    _onCacheRemove );
+            }
+        }
+
+        #endregion
+
+        #region App Shutdown
+
+        /// <summary>
+        /// Shuts down Rock application services and prepares the application domain for restart.
+        /// </summary>
+        /// <remarks>Shuts down the job scheduler when configured to run in the IIS context, stops the
+        /// message bus and web farm, cancels background compilation, drains the transaction queue, marks online users
+        /// offline, and requests the keep-alive URL to restart Rock after an application domain shutdown.</remarks>
+        public static void RunApplicationShutdown()
+        {
+            // Close out jobs infrastructure if running under IIS
+            if ( RockApp.Current?.InitializationSettings.IsRunScheduledJobsEnabled == true )
+            {
+                ServiceJobService.ShutdownQuartzScheduler();
+            }
+
+            // Log the reason that the application end was fired
+#if WEBFORMS
+            var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
+#else
+            var shutdownReason = "None";
+#endif
+
+            // Stop the bus and farm
+            RockMessageBus.IsRockStarted = false;
+            RockWebFarm.Shutdown( shutdownReason );
+
+            // Tell our CompileThemesThread and BlockTypeCompilationThread to cancel if they aren't done when Rock shuts down
+            _threadCancellationTokenSource?.Cancel();
+
+            // Send debug info to debug window
+            Debug.WriteLine( $"shutdownReason: {shutdownReason}" );
+
+            var shutdownMessage = $"Application Ended: {shutdownReason} (App PID: {RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})";
+            ShowDebugTimingMessage( shutdownMessage );
+            LogShutdownMessage( shutdownMessage );
+
+            // Process the transaction queue
+            DrainTransactionQueue();
+
+            // Mark any user login stored as 'IsOnline' in the database as offline
+            MarkOnlineUsersOffline();
+
+#if WEBFORMS
+            // Auto-restart appdomain restarts (triggered by web.config changes, new dlls in the bin folder, etc.)
+            // These types of restarts don't cause the worker process to restart, but they do cause ASP.NET to unload
+            // the current AppDomain and start up a new one. This will launch a web request which will auto-start Rock
+            // in these cases.
+            // https://weblog.west-wind.com/posts/2013/oct/02/use-iis-application-initialization-for-keeping-aspnet-apps-alive
+            var client = new WebClient();
+            client.DownloadString( GetKeepAliveUrl() );
+#endif
+        }
+
+        #endregion
+
+        #region Keep Alive
+
+        /// <summary>
+        /// Called every 60 seconds to Drain Transaction Queue and Keep Alive (if configured)
+        /// </summary>
+        /// <param name="k">The k.</param>
+        /// <param name="v">The v.</param>
+        /// <param name="r">The r.</param>
+        public static void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
+        {
+            try
+            {
+                if ( r == CacheItemRemovedReason.Expired )
+                {
+                    // Process the transaction queue on another thread
+                    Task.Run( () => DrainTransactionQueue() );
+
+                    // add cache item again
+                    AddCallBack();
+
+                    bool enableKeepAlive = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean();
+                    if ( enableKeepAlive )
+                    {
+                        DoKeepAlive();
+                    }
+                }
+                else
+                {
+                    if ( r != CacheItemRemovedReason.Removed )
+                    {
+                        throw new Exception( string.Format( "The IISCallBack cache object was removed without expiring.  Removed Reason: {0}", r.ConvertToString() ) );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                LogError( ex );
+            }
+        }
+
+        /// <summary>
+        /// Does the keep alive. Do this if Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE is enabled.
+        /// </summary>
+        private static void DoKeepAlive()
+        {
+            /* 04-07-2022 MDP
+
+            We call DoKeepAlive to help prevent IIS from falling asleep, but if IIS AppPool's Idle Time-out
+            is set to 0, this is not needed. The the Rock Solid Internal Hosting guide recommends that the
+            Idle Time-Out is set to 0, so we have DoKeepAlive disabled by default. If needed,
+            Rock.SystemKey.SystemSetting.ENABLE_KEEP_ALIVE can be enabled in Rock's System Settings. 
+
+            */
+
+            var keepAliveUrl = GetKeepAliveUrl();
+
+            // call a page on the site to keep IIS alive
+            if ( !string.IsNullOrWhiteSpace( keepAliveUrl ) )
+            {
+                try
+                {
+                    WebRequest request = WebRequest.Create( keepAliveUrl );
+                    WebResponse response = request.GetResponse();
+                }
+                catch ( Exception ex )
+                {
+                    LogError( new Exception( "Error doing KeepAlive request.", ex ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the keep alive URL.
+        /// </summary>
+        /// <returns></returns>
+        private static string GetKeepAliveUrl()
+        {
+            var keepAliveUrl = GlobalAttributesCache.Value( "KeepAliveUrl" );
+            if ( string.IsNullOrWhiteSpace( keepAliveUrl ) )
+            {
+                keepAliveUrl = GlobalAttributesCache.Value( "InternalApplicationRoot" ) ?? string.Empty;
+                keepAliveUrl = keepAliveUrl.EnsureTrailingForwardslash() + "KeepAlive.aspx";
+            }
+
+            return keepAliveUrl;
+        }
+
+        /// <summary>
+        /// Drains the transaction queue.
+        /// </summary>
+        public static void DrainTransactionQueue()
+        {
+            // process the transaction queue
+            if ( !QueueInUse )
+            {
+                QueueInUse = true;
+
+                /*
+                 * 2026-04-27 - DSH
+                 * 
+                 * Do not use a finally block here to turn QueueInUse back off.
+                 * There is a rare case with try/catch/finally where an exception
+                 * thrown inside a catch block can cause the finally block to not
+                 * execute under specific conditions, such as no exception handler
+                 * further upstream to catch the exception. This can lead to the
+                 * QueueInUse flag being left in the true state, which would prevent
+                 * the transaction queue from being processed until the application
+                 * is restarted.
+                 */
+                try
+                {
+                    RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
+                    QueueInUse = false;
+                }
+                catch ( Exception ex )
+                {
+                    QueueInUse = false;
+                    WriteErrorToRockLog( ex, "Rock.Transactions", "An error occurred while draining the transaction queue." );
+                }
+            }
+        }
+
+        #endregion
+
         #region Queryable Attribute Values
 
         /// <summary>
@@ -1528,6 +2180,33 @@ WHERE [PQ].[row_number] = 1
             catch
             {
                 // ignore
+            }
+        }
+
+        /// <summary>
+        /// A handler for Rock Logging exception messages via Rock Logger.
+        /// If a message is provided, it will log that message otherwise
+        /// it will log the exception message.
+        /// </summary>
+        /// <param name="ex">The exception to log.</param>
+        /// <param name="loggerCategory">The category of the logger.</param>
+        /// <param name="message">The message to log.</param>
+        private static void WriteErrorToRockLog( Exception ex, string loggerCategory, string message )
+        {
+            if ( string.IsNullOrWhiteSpace( loggerCategory ) )
+            {
+                loggerCategory = "RockWeb.Global";
+            }
+
+            var logger = RockLogger.LoggerFactory.CreateLogger( loggerCategory );
+
+            if ( !string.IsNullOrWhiteSpace( message ) )
+            {
+                logger.LogError( ex, message );
+            }
+            else
+            {
+                logger.LogError( ex.Message );
             }
         }
 

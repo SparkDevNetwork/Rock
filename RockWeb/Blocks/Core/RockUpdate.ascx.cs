@@ -37,6 +37,7 @@ using Rock.Update.Services;
 using Rock.Utility.Settings;
 using Rock.VersionInfo;
 using Rock.Web.Cache;
+using Rock.WebStartup;
 
 namespace RockWeb.Blocks.Core
 {
@@ -118,7 +119,7 @@ namespace RockWeb.Blocks.Core
                 nbRepoWarning.Visible = true;
             }
 
-            if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
+            if ( RockApplicationStartupHelper.CompileThemesThread.IsAlive || RockApplicationStartupHelper.BlockTypeCompilationThread.IsAlive )
             {
                 // Display a warning here but don't prevent them from going forward. This will be checked again after clicking update.
                 nbCompileThreadsIssue.Visible = true;
@@ -529,7 +530,7 @@ namespace RockWeb.Blocks.Core
             nbCompileThreadsIssue.Visible = false;
             nbPendingMigrationJobs.Visible = false;
 
-            if ( Global.CompileThemesThread.IsAlive || Global.BlockTypeCompilationThread.IsAlive )
+            if ( RockApplicationStartupHelper.CompileThemesThread.IsAlive || RockApplicationStartupHelper.BlockTypeCompilationThread.IsAlive )
             {
                 // Show message here and return
                 nbCompileThreadsIssue.Visible = true;

@@ -17,6 +17,8 @@
 using System.Configuration;
 using System.Web.Optimization;
 
+namespace Rock.WebStartup;
+
 /// <summary>
 /// Loads and concats JS bundles, fired during App_Start
 /// </summary>

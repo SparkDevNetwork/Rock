@@ -30,7 +30,7 @@ namespace Rock.AI.Agent.Tests.TestFramework
     /// test that computes distances or builds geography points in memory can run
     /// only on a non-ARM process. On ARM those tests are skipped rather than
     /// failed. This mirrors the ARM handling in
-    /// <c>RockWeb/App_Code/SqlServerTypes/Loader.cs</c>. A Windows-specific check
+    /// <c>Rock/SqlServerTypes/Loader.cs</c>. A Windows-specific check
     /// is unnecessary because this test project targets .NET Framework, which
     /// only runs on Windows.
     /// </remarks>
