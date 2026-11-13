@@ -23,46 +23,16 @@ namespace Rock.Utility
     #region Hub
 
     /// <summary>
-    /// A hub for sending/receiving SignalR messages relating to the progress and status of long-running tasks.
+    /// A server-push-only hub for messages about the progress and status of long-running tasks.
     /// </summary>
+    /// <remarks>
+    /// The hub exposes no client-callable methods. Server code sends through
+    /// <c>GlobalHost.ConnectionManager.GetHubContext&lt;TaskActivityMessageHub, ITaskActivityMessageHub&gt;()</c>,
+    /// and browser code only registers handlers.
+    /// </remarks>
     [HubName( "TaskActivityMessageHub" )]
     public class TaskActivityMessageHub : Hub<ITaskActivityMessageHub>
     {
-        /// <summary>
-        /// Send a notification to add a message to the task log.
-        /// </summary>
-        /// <param name="message"></param>
-        public void UpdateTaskLog( string message )
-        {
-            Clients.All.UpdateTaskLog( message );
-        }
-
-        /// <summary>
-        /// Send a notification to update the progress of the task.
-        /// </summary>
-        /// <param name="message"></param>
-        public void UpdateTaskProgress( TaskProgressMessage message )
-        {
-            Clients.All.UpdateTaskProgress( message );
-        }
-
-        /// <summary>
-        /// Send a notification that the task has started.
-        /// </summary>
-        /// <param name="message"></param>
-        public void NotifyTaskStarted( TaskStatusSummary message )
-        {
-            Clients.All.NotifyTaskStarted( message );
-        }
-
-        /// <summary>
-        /// Send a notification that the task is completed.
-        /// </summary>
-        /// <param name="message"></param>
-        public void NotifyTaskComplete( TaskStatusSummary message )
-        {
-            Clients.All.NotifyTaskComplete( message );
-        }
     }
 
     /// <summary>
