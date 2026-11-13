@@ -50,6 +50,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 1,
+        AllowLava = true,
         Key = AttributeKey.CampusCurrentItemTemplate )]
 
     [TextField( "Campus Dropdown Item Template",
@@ -57,6 +58,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 2,
+        AllowLava = true,
         Key = AttributeKey.CampusDropdownItemTemplate )]
 
     [TextField( "No Campus Text",
@@ -83,6 +85,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ ScheduleName }}",
         Order = 6,
+        AllowLava = true,
         Key = AttributeKey.ScheduleCurrentItemTemplate )]
 
     [TextField( "Schedule Dropdown Item Template",
@@ -90,6 +93,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ ScheduleName }}",
         Order = 7,
+        AllowLava = true,
         Key = AttributeKey.ScheduleDropdownItemTemplate )]
 
     [TextField( "No Schedule Text",

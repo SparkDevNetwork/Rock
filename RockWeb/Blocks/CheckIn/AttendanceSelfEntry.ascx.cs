@@ -239,6 +239,7 @@ ORDER BY [Text]",
         Category = AttributeCategory.Messages,
         Order = 22,
         DefaultValue = "Great to see you {{ CurrentPerson.NickName }}!",
+        AllowLava = true,
         Key = AttributeKey.KnownIndividualPanel1Title )]
     [CodeEditorField(
         "Known Individual Panel 1 Intro Text",
@@ -257,6 +258,7 @@ ORDER BY [Text]",
         Category = AttributeCategory.Messages,
         Order = 24,
         DefaultValue = "Thanks for Connecting!",
+        AllowLava = true,
         Key = AttributeKey.KnownIndividualPanel2Title )]
     [CodeEditorField(
         "Known Individual Panel 2 Intro Text",
