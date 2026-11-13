@@ -84,6 +84,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
         IsRequired = false,
         DefaultValue = "",
         Category = "CustomSetting",
+        AllowLava = true,
         Key = AttributeKeys.AdditionalFields,
         Order = 4 )]
 

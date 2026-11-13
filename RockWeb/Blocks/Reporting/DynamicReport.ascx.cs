@@ -93,6 +93,8 @@ namespace RockWeb.Blocks.Reporting
     [TextField( "DataFiltersPrePostHtmlConfig",
         Description = "JSON for the Dictionary<Guid,DataFilterPrePostHtmlConfig>",
         IsRequired = false,
+        AllowHtml = true,
+        AllowLava = true,
         Category = "CustomSetting" )]
 
     [BooleanField(

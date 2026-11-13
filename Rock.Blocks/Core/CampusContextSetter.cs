@@ -54,6 +54,7 @@ namespace Rock.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 1,
+        AllowLava = true,
         Key = AttributeKey.CurrentItemTemplate )]
 
     [TextField( "Dropdown Item Template",
@@ -61,6 +62,7 @@ namespace Rock.Blocks.Core
         IsRequired = true,
         DefaultValue = "{{ CampusName }}",
         Order = 2,
+        AllowLava = true,
         Key = AttributeKey.DropdownItemTemplate )]
 
     [TextField( "No Campus Text",
