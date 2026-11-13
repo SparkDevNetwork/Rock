@@ -607,6 +607,12 @@ namespace RockWeb.Blocks.Communication
                 var communication = service.Get( CommunicationId.Value );
                 if ( communication != null )
                 {
+                    if ( !IsAuthorizedToCancel( communication ) )
+                    {
+                        ShowResult( "Sorry, you are not authorized to cancel this communication!", communication, NotificationBoxType.Danger );
+                        return;
+                    }
+
                     if ( communication.Status == CommunicationStatus.Approved || communication.Status == CommunicationStatus.PendingApproval )
                     {
                         if ( !communication.Recipients
@@ -1851,6 +1857,19 @@ namespace RockWeb.Blocks.Communication
         }
 
         /// <summary>
+        /// Determines whether the current person may cancel the sending of a communication.
+        /// </summary>
+        /// <param name="communication">The communication whose send would be cancelled.</param>
+        /// <returns><c>true</c> if the current person can edit the communication or created it; otherwise <c>false</c>.</returns>
+        private bool IsAuthorizedToCancel( Rock.Model.Communication communication )
+        {
+            // People rarely hold EDIT on their own communications, so the creator is allowed to stop their own send.
+            var isCreator = CurrentPersonId.HasValue && communication.CreatedByPersonAlias?.PersonId == CurrentPersonId.Value;
+
+            return isCreator || communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+        }
+
+        /// <summary>
         /// Shows the actions.
         /// </summary>
         /// <param name="communication">The communication.</param>
@@ -1884,7 +1903,7 @@ namespace RockWeb.Blocks.Communication
                                 btnDeny.Visible = true;
                                 btnEdit.Visible = true;
                             }
-                            btnCancel.Visible = communication.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson );
+                            btnCancel.Visible = IsAuthorizedToCancel( communication );
                             break;
                         }
                     case CommunicationStatus.Approved:
@@ -1896,7 +1915,7 @@ namespace RockWeb.Blocks.Communication
                             .Where( r => r.CommunicationId == communication.Id ).Where( r => r.Status == CommunicationRecipientStatus.Pending ).Any();
 
 
-                            btnCancel.Visible = hasPendingRecipients;
+                            btnCancel.Visible = hasPendingRecipients && IsAuthorizedToCancel( communication );
 
                             // Allow then to create a copy if they have VIEW (don't require full EDIT auth)
                             btnCopy.Visible = communication.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson );
