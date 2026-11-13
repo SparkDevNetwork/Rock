@@ -22,9 +22,11 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 
 /// <summary>
-/// This is the hub for sending/receiving messages. Javascript clients need to
-/// implement a receiveNotification handler as shown below and
-/// ensure to add the signalR-2.2.0.min.js before including /SignalR/hubs
+/// A server-push-only hub for receiveNotification messages.
+/// It exposes no client-callable methods.
+/// Server code sends through <c>GlobalHost.ConnectionManager.GetHubContext&lt;RockMessageHub&gt;()</c>.
+/// JavaScript clients implement a receiveNotification handler as shown below and
+/// add the signalR-2.2.0.min.js script before including /SignalR/hubs.
 /// <code>
 ///     // in OnInit
 ///     RockPage.AddScriptLink( "~/Scripts/jquery.signalR-2.2.0.min.js", fingerprint: false );
@@ -45,9 +47,5 @@ namespace RockWeb
     [HubName( "rockMessageHub" )]
     public class RockMessageHub : Hub
     {
-        public void Send( string name, string message )
-        {
-            Clients.All.receiveNotification( name, message );
-        }
     }
 }
