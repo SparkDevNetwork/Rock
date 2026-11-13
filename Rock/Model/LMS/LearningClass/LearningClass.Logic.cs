@@ -65,7 +65,7 @@ namespace Rock.Model
             // If the person wasn't provided then we can skip the database call.
             if ( person == null )
             {
-                return ParentAuthority.IsAuthorized( action, person );
+                return false;
             }
 
             // If the person isn't authorized through normal security roles,
@@ -74,7 +74,11 @@ namespace Rock.Model
             var groupType = GroupTypeCache.Get( this.GroupTypeId );
             var facilitatorRoleIds = groupType?.Roles.Where( r => r.IsLeader ).Select( r => r.Id ) ?? new List<int>();
 
-            var hasFaciltiatorRole = Members.Any( p => p.PersonId == person.Id && facilitatorRoleIds.Contains( p.GroupRoleId ) );
+            var hasFaciltiatorRole = Members.Any( p =>
+                p.PersonId == person.Id
+                && facilitatorRoleIds.Contains( p.GroupRoleId )
+                && p.GroupMemberStatus == GroupMemberStatus.Active
+                && !p.IsArchived );
 
             if ( hasFaciltiatorRole )
             {
@@ -88,7 +92,9 @@ namespace Rock.Model
                     .Any( p =>
                         p.LearningClassId == this.Id
                         && p.PersonId == person.Id
-                        && p.GroupRole.IsLeader );
+                        && p.GroupRole.IsLeader
+                        && p.GroupMemberStatus == GroupMemberStatus.Active
+                        && !p.IsArchived );
 
                 if ( hasFaciltiatorRole )
                 {
