@@ -3696,8 +3696,17 @@ INSERT INTO [AttributeValueReferencedEntity] ([AttributeValueId], [EntityTypeId]
             Expression entityIdCompre = Expression.Equal( entityIdProperty, Expression.Convert( parentIdProperty, typeof( int? ) ) );
             Expression andExpression = Expression.And( attributeIdCompare, entityIdCompre );
 
+            /*
+                11/13/26 - CLAUDE
+
+                Use the queryable's own expression rather than wrapping the queryable in
+                Expression.Constant. EF6 accepts either, but EF Core treats a constant
+                IQueryable as an in-memory collection and cannot translate the subquery.
+
+                Reason: Keep attribute report columns translatable on EF Core.
+            */
             var match = new Expression[] {
-                Expression.Constant(attributeValues),
+                attributeValues.Expression,
                 Expression.Lambda<Func<AttributeValue, bool>>( andExpression, new ParameterExpression[] { attributeValueParameter })
             };
 
