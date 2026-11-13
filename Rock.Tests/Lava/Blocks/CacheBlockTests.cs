@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Lava;
+using Rock.Tests.Lava.Shared;
 
 namespace Rock.Tests.Lava.Blocks
 {
@@ -43,14 +44,14 @@ namespace Rock.Tests.Lava.Blocks
     {% endcache %}
 {% endfor %}";
 
-            foreach ( var engine in LavaUnitTestHelper.CurrentInstance.CreateActiveTestEngines() )
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 var context = engine.NewRenderContext( new List<string> { "Cache" } );
 
                 var output = engine.RenderTemplate( template, LavaRenderParameters.WithContext( context ) ).Text;
 
                 Assert.AreEqual( "Inner Content", output.Trim() );
-            }
+            } );
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Rock.Tests.Lava.Blocks
     {% endcache %}
 {% endfor %}";
 
-            foreach ( var engine in LavaUnitTestHelper.CurrentInstance.CreateActiveTestEngines() )
+            LavaRenderTestHelper.ExecuteForActiveEngines( engine =>
             {
                 // Simulate a global default that is wider than the caller's commands.
                 ( ( LavaEngineBase ) engine ).DefaultEnabledCommands = new List<string> { "Cache", "Sql" };
@@ -77,7 +78,7 @@ namespace Rock.Tests.Lava.Blocks
                 var output = engine.RenderTemplate( template, LavaRenderParameters.WithContext( context ) ).Text;
 
                 Assert.AreEqual( "The Lava command 'sql' is not configured for this template.", output.Trim() );
-            }
+            } );
         }
     }
 }
