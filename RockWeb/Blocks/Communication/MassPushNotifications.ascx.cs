@@ -238,6 +238,18 @@ namespace RockWeb.Blocks.Communication
 
             CommunicationDetails.Copy( communicationData, communication );
 
+            // The push image id comes from the client, so only keep the image of
+            // a template the person can view or a file the person just uploaded.
+            var template = new CommunicationTemplateService( rockContext ).Get( communication.CommunicationTemplateId ?? 0 );
+            var templatePushImageId = template != null && template.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson )
+                ? template.PushImageBinaryFileId
+                : null;
+
+            if ( !new BinaryFileService( rockContext ).IsUploadedBinaryFileAllowedForPerson( communication.PushImageBinaryFileId, templatePushImageId, CurrentPerson ) )
+            {
+                communication.PushImageBinaryFileId = templatePushImageId;
+            }
+
             return communication;
         }
 
