@@ -458,7 +458,15 @@ namespace RockWeb.Blocks.Groups
             if ( Request["PersonGuid"] != null )
             {
                 Guid.TryParse( Request["PersonGuid"].ToString(), out _targetPersonGuid );
-                _urlParms.Add( "PersonGuid", _targetPersonGuid.ToString() );
+
+                if ( IsTargetPersonAllowed( _targetPersonGuid ) )
+                {
+                    _urlParms.Add( "PersonGuid", _targetPersonGuid.ToString() );
+                }
+                else
+                {
+                    _targetPersonGuid = Guid.Empty;
+                }
             }
 
             if ( !Page.IsPostBack )
@@ -889,10 +897,11 @@ namespace RockWeb.Blocks.Groups
             Location targetPersonLocation = null;
 
             targetPerson = new PersonService( new RockContext() ).Queryable().Where( p => p.Guid == targetPersonGuid ).FirstOrDefault();
-            targetPersonLocation = targetPerson.GetHomeLocation();
 
             if ( targetPerson != null )
             {
+                targetPersonLocation = targetPerson.GetHomeLocation();
+
                 /*
                     10/18/2026 - MSE
 
@@ -923,6 +932,39 @@ namespace RockWeb.Blocks.Groups
                     lTitle.Text += string.Format( "<p>The person does not have an address on file.</p>" );
                 }
             }
+            else
+            {
+                ShowView();
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the current viewer may see the group finder view for the person in the PersonGuid parameter.
+        /// </summary>
+        /// <param name="targetPersonGuid">The Guid of the person from the PersonGuid parameter.</param>
+        /// <returns><c>true</c> if the viewer is that person or has Edit access to the block; otherwise <c>false</c>.</returns>
+        private bool IsTargetPersonAllowed( Guid targetPersonGuid )
+        {
+            /*
+                11/12/26 - JMH
+
+                The person view shows the target's full name and home address, so a Guid alone
+                must not unlock it. A person token link signs the recipient in, which sets CurrentPerson.
+
+                Reason: Keep a person's name and home address private to them and to block editors.
+            */
+            if ( targetPersonGuid == Guid.Empty )
+            {
+                return false;
+            }
+
+            var isViewerTheTargetPerson = CurrentPerson != null && CurrentPerson.Guid == targetPersonGuid;
+            if ( isViewerTheTargetPerson )
+            {
+                return true;
+            }
+
+            return IsUserAuthorized( Authorization.EDIT );
         }
 
         /// <summary>
