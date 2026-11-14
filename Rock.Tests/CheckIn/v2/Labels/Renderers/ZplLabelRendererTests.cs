@@ -730,6 +730,34 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
+        public void WriteTextField_WithZplControlCharacters_EscapesFieldData()
+        {
+            var renderer = new ZplLabelRenderer();
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag() );
+            field.Setup( f => f.GetConfiguration<TextFieldConfiguration>() )
+                .Returns( new TextFieldConfiguration() );
+            field.Setup( f => f.GetFormattedValues( request ) )
+                .Returns( () => new List<string> { "A^B~C_D" } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, "^FH^FDA_5EB_7EC_5FD^FS" );
+        }
+
+        [TestMethod]
         public void WriteTextField_With90DegreeRotation_RotatesFont()
         {
             var expectedFontCommand = $"^A0R";
@@ -2968,6 +2996,42 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
+        public void WriteBarcodeField_WithCode128AndZplControlCharacters_EscapesFieldData()
+        {
+            var request = new PrintLabelRequest
+            {
+                Label = new DesignedLabelBag(),
+                Capabilities = new PrinterCapabilities()
+            };
+
+            var renderer = new ZplLabelRenderer();
+
+            var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
+            {
+                FieldType = LabelFieldType.Barcode
+            } );
+
+            field.Setup( f => f.GetConfiguration<BarcodeFieldConfiguration>() )
+                .Returns( new BarcodeFieldConfiguration
+                {
+                    Format = BarcodeFormat.Code128,
+                    IsDynamic = true,
+                    DynamicTextTemplate = "A^B~C_D"
+                } );
+
+            var zpl = GetTextFromStream( stream =>
+            {
+                renderer.BeginLabel( stream, request );
+                stream.SetLength( 0 );
+
+                renderer.WriteField( field.Object );
+                renderer.Dispose();
+            } );
+
+            Assert.That.Contains( zpl, "^FH^FDA_5EB_7EC_5FD^FS" );
+        }
+
+        [TestMethod]
         public void WriteBarcodeField_WithAlternateId_IncludesValue()
         {
             var expectedPattern = new Regex( @"\^FD1234\^FS" );
@@ -3265,7 +3329,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FDText^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FH^FDText^FS
 ", zpl );
         }
 
@@ -3307,7 +3371,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FDText With Length Greater Than Thirty^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FH^FDText With Length Greater Than Thirty^FS
 ", zpl );
         }
 
@@ -3348,7 +3412,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FDText^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,24,24^FH^FDText^FS
 ", zpl );
         }
 
@@ -3393,7 +3457,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FDText With Length Greater Than Thirty^FS
+            Assert.AreEqual( @"^FO0,0^FB0,1,0,L^A0N,12,12^FH^FDText With Length Greater Than Thirty^FS
 ", zpl );
         }
 
