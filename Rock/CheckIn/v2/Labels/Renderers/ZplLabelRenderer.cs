@@ -233,7 +233,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
                 horizontalFontSize = ( int ) Math.Floor( fontSize * 0.8 );
             }
 
-            writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0{rotation},{horizontalFontSize},{fontSize}^FD{textValue}^FS" );
+            writer.WriteLine( $"^FB{ToDots( width )},{lineCount},0,{alignment}^A0{rotation},{horizontalFontSize},{fontSize}^FH^FD{EscapeFieldData( textValue )}^FS" );
         }
 
         /// <summary>
@@ -539,7 +539,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             {
                 WriteFieldOrigin( writer, field );
 
-                writer.WriteLine( $"^BY3^BCN,{ToDots( field.Field.Height )},N^FD{content}^FS" );
+                writer.WriteLine( $"^BY3^BCN,{ToDots( field.Field.Height )},N^FH^FD{EscapeFieldData( content )}^FS" );
             }
             else
             {
@@ -567,6 +567,23 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
                 writer.WriteLine( "^FS" );
             }
+        }
+
+        /// <summary>
+        /// Escapes a value for use as field data (<c>^FD</c>) in a field that enables the hexadecimal indicator
+        /// (<c>^FH</c>), so the printer treats ZPL control characters in the value as text.
+        /// </summary>
+        /// <param name="value">The value to escape.</param>
+        /// <returns>The escaped value.</returns>
+        internal static string EscapeFieldData( string value )
+        {
+            if ( string.IsNullOrEmpty( value ) )
+            {
+                return value;
+            }
+
+            // The underscore is the hexadecimal indicator, so it is replaced first to keep the escapes below intact.
+            return value.Replace( "_", "_5F" ).Replace( "^", "_5E" ).Replace( "~", "_7E" );
         }
 
         /// <summary>
