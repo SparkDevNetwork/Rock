@@ -753,7 +753,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.That.Contains( zpl, "^FH^FDA_5EB_7EC_5FD^FS" );
+            Assert.Contains( "^FH^FDA_5EB_7EC_5FD^FS", zpl );
         }
 
         [TestMethod]
@@ -3027,7 +3027,7 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
                 renderer.Dispose();
             } );
 
-            Assert.That.Contains( zpl, "^FH^FDA_5EB_7EC_5FD^FS" );
+            Assert.Contains( "^FH^FDA_5EB_7EC_5FD^FS", zpl );
         }
 
         [TestMethod]
