@@ -554,15 +554,22 @@ ORDER BY d.[Date];",
                     queryParamName = queryParamName.Substring( 1 );
                 }
 
-                // If a page parameter (query or form) value matches, use its value instead.
-                var pageValue = PageParameter( queryParamName );
-                if ( pageValue.IsNotNullOrWhiteSpace() )
+                // CurrentPersonId only ever comes from the signed-in person, never from a page parameter.
+                if ( queryParamName.Equals( "CurrentPersonId", StringComparison.OrdinalIgnoreCase ) )
                 {
-                    queryParamValue = pageValue;
+                    if ( this.RequestContext.CurrentPerson != null )
+                    {
+                        queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                    }
                 }
-                else if ( queryParamName.ToLower() == "currentpersonid" && this.RequestContext.CurrentPerson != null )
+                else
                 {
-                    queryParamValue = this.RequestContext.CurrentPerson.Id.ToString();
+                    // If a page parameter (query or form) value matches, use its value instead.
+                    var pageValue = PageParameter( queryParamName );
+                    if ( pageValue.IsNotNullOrWhiteSpace() )
+                    {
+                        queryParamValue = pageValue;
+                    }
                 }
 
                 parameters.Add( queryParamName, queryParamValue );
