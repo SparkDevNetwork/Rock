@@ -163,8 +163,58 @@
     --chat-r-empty: 16px;
     --chat-r-tip: 8px;
 
+    /*
+        Corner roles. A part takes the role of what it is, never a size, so one edit here reaches
+        every part of that kind: a control (a button, a tile, a grid cell), a list row, a field a
+        person types in, a surface (a popover, menu, card, dialog, sheet, bar or boxed note), an
+        item inset in a surface (a menu item, a tool in the bar, the tooltip), a mark inside text,
+        a full round (pills, dots, faces), and the message bubble's own corners.
+    */
+    --chat-r-inline: var(--rounded-xsmall, 4px);
+    --chat-r-inset: var(--rounded-small, 6px);
+    --chat-r-control: var(--rounded-medium, 8px);
+    --chat-r-row: 10px;
+    --chat-r-field: var(--rounded-large, 12px);
+    --chat-r-surface: var(--rounded-large, 12px);
+    /* A quoted message drawn inside a bubble, its corners the bubble's less its padding. */
+    --chat-r-quote: 16px;
+
     /* Type. */
     --chat-font: var(--font-family-body, "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji");
+
+    /*
+        The type scale, by job: a badge's count, a timestamp or secondary line, the interface's own
+        labels, a message's text, a title, an empty state's line. A face's initials are not on it;
+        they are sized from the face. Emoji drawn as pictures have their own steps.
+    */
+    --chat-fs-badge: 11px;
+    --chat-fs-small: 12px;
+    --chat-fs-ui: 13px;
+    --chat-fs-body: 14.5px;
+    --chat-fs-title: 16px;
+    --chat-fs-display: 20px;
+    --chat-emoji-sm: 16px;
+    --chat-emoji-md: 22px;
+    --chat-emoji-lg: 28px;
+    --chat-emoji-jumbo: 40px;
+
+    /*
+        Layers, lowest first. Raised and sticky lift a part over its own scrolling neighbours; a bar
+        floats over the feed (the message tools, the connection bar); the phone's panel slides over
+        the conversation and a full view covers it; then a notice, a dialog, a sheet's scrim and
+        the sheet, a popover, and over everything the tooltip and the reaction card.
+    */
+    --chat-z-raised: 2;
+    --chat-z-sticky: 3;
+    --chat-z-bar: 6;
+    --chat-z-panel: 8;
+    --chat-z-view: 20;
+    --chat-z-notice: 50;
+    --chat-z-modal: 60;
+    --chat-z-scrim: 70;
+    --chat-z-sheet: 71;
+    --chat-z-popover: 1050;
+    --chat-z-tip: 1060;
 
     /* Shadows. */
     --chat-shadow-card: var(--box-shadow, 0 0 2px rgba(145, 158, 171, .2), 0 12px 24px -4px rgba(145, 158, 171, .12));
@@ -191,6 +241,23 @@
     --chat-pop-scale: .96;
     --chat-react-from: .55;
     --chat-drawer-shift: 28px;
+
+    /*
+        Motion distances: a popover or small part rises 4 px, a view or row 8 px, a sheet its whole
+        height. A hover nudges a control by a pixel, grows a glyph and presses it back, or turns the
+        gear; a count rolls in from most of its own height. Each goes to nothing under reduced
+        motion below, so a part that moves by these needs no reduced-motion rule of its own.
+    */
+    --chat-rise-sm: 4px;
+    --chat-rise-md: 8px;
+    --chat-rise-sheet: 100%;
+    --chat-nudge: 1px;
+    --chat-glyph-grow: 1.15;
+    --chat-glyph-press: .92;
+    --chat-turn: 30deg;
+    --chat-roll-from: 70%;
+    /* A small delight's spring, which under reduced motion is only a quick fade. */
+    --chat-d-spring: var(--chat-t-base);
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
@@ -440,6 +507,15 @@
         --chat-d-fd-pop: 0ms;
         --chat-d-img-in: 140ms;
         --chat-d-reveal: 140ms;
+        --chat-rise-sm: 0px;
+        --chat-rise-md: 0px;
+        --chat-rise-sheet: 0%;
+        --chat-nudge: 0px;
+        --chat-glyph-grow: 1;
+        --chat-glyph-press: 1;
+        --chat-turn: 0deg;
+        --chat-roll-from: 0%;
+        --chat-d-spring: var(--chat-t-fast);
     }
 
     .chat-shell .chat-skeleton,
