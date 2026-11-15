@@ -114,7 +114,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/dialog.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/settingNote.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 2,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
+    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 1
   },
   "S5": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionBar.partial.obs": 4,

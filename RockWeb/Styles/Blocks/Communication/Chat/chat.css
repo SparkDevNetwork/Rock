@@ -509,7 +509,6 @@
         --chat-d-reveal: 140ms;
         --chat-rise-sm: 0px;
         --chat-rise-md: 0px;
-        --chat-rise-sheet: 0%;
         --chat-nudge: 0px;
         --chat-glyph-grow: 1;
         --chat-glyph-press: 1;
@@ -523,6 +522,311 @@
         animation: none;
     }
 }
+
+/*
+    The one set of motions. Every part plays one of these and writes no keyframes of its own, so a
+    motion changed here changes everywhere it plays. A motion that moves reads its distance from a
+    token, and a part names a distance of its own only through the set's own variable (such as
+    --chat-pop-from); under reduced motion every distance is nothing, so a rise is left a fade and
+    no part needs a reduced-motion rule. The few motions that move and nothing else, or that loop,
+    are redrawn still in the reduced-motion block after the set.
+*/
+
+/* Fade: opacity only, for scrims, swaps and anything that appears where it stands. */
+@keyframes chat-fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-fade-out {
+    to {
+        opacity: 0;
+    }
+}
+
+/*
+    A message's edited words swapping in. The same frames as the fade, under a name of their own:
+    the row waits on this name's end to drop the swap, and a fade ending inside the row (its
+    reactions, its attachments) must not end it early.
+*/
+@keyframes chat-crossfade {
+    from {
+        opacity: 0;
+    }
+}
+
+/*
+    The first load's reveal: the column's parts fade in; the feed's own rise plays beside it. The
+    shell waits on this name's end, so it is kept apart from the plain fade.
+*/
+@keyframes chat-reveal-in {
+    from {
+        opacity: 0;
+    }
+}
+
+/*
+    A photo or face fading in once decoded. It ends at full strength whatever the image's own
+    resting opacity, which is held at nothing until it is decoded.
+*/
+@keyframes chat-img-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Enter: rises into place as it fades in, by the rise; a part that rises less sets --chat-rise to a smaller step. */
+@keyframes chat-enter {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-rise));
+    }
+}
+
+/*
+    The conversation's entrance, which the feed plays on its scroller. Kept apart from Enter
+    because the feed's tail finds it by this name: whatever the open's first read changes at the
+    newest end while it plays glides in over a message's time rather than stepping inside a feed
+    still rising.
+*/
+@keyframes chat-feed-enter {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/*
+    A state's words arriving, such as a message's "Sent" or "Edited", dropping in from above. The
+    row waits on this name's end to drop the mark.
+*/
+@keyframes chat-meta-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-rise) * -.3));
+    }
+}
+
+/*
+    Pop: a popover rises toward its anchor from a little smaller, and leaves by half the distance.
+    The part sets --chat-pop-toward to -1 when it opens below its anchor.
+*/
+@keyframes chat-pop-in {
+    from {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-pop-from, var(--chat-rise-sm)))) scale(var(--chat-pop-scale));
+    }
+}
+
+@keyframes chat-pop-out {
+    to {
+        opacity: 0;
+        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-pop-from, var(--chat-rise-sm)) / 2)) scale(var(--chat-pop-scale));
+    }
+}
+
+/* A notice going: it fades as it sinks. */
+@keyframes chat-sink {
+    to {
+        opacity: 0;
+        transform: translateY(var(--chat-sink-to, var(--chat-rise-sm)));
+    }
+}
+
+/*
+    Slide: moves and nothing else, for a part whose fade runs beside it on its own clock. A sheet
+    slides its whole height; the message tools by --chat-slide-from and --chat-slide-to.
+*/
+@keyframes chat-slide-in {
+    from {
+        transform: translateY(var(--chat-slide-from, var(--chat-rise-sheet)));
+    }
+}
+
+@keyframes chat-slide-out {
+    to {
+        transform: translateY(var(--chat-slide-to, var(--chat-rise-sheet)));
+    }
+}
+
+/* Spring: small delights only, a reaction or a thread's count, from a little more than half size. */
+@keyframes chat-spring {
+    from {
+        opacity: .2;
+        transform: scale(var(--chat-react-from));
+    }
+}
+
+/* A badge springing in from half size. */
+@keyframes chat-badge-in {
+    from {
+        opacity: 0;
+        transform: scale(.5);
+    }
+}
+
+/* "Joined" springing in on a channel's row. */
+@keyframes chat-joined-in {
+    from {
+        opacity: 0;
+        transform: scale(.7);
+    }
+}
+
+/* Count: a number rolls in from below. */
+@keyframes chat-roll {
+    from {
+        opacity: 0;
+        transform: translateY(var(--chat-roll-from));
+    }
+}
+
+/* The tooltip, which moves by translate so the transform that places it is left alone. */
+@keyframes chat-tip-in {
+    from {
+        opacity: 0;
+        translate: 0 calc(var(--chat-rise) * .3);
+    }
+}
+
+/* A row closing up as it leaves, from the height the part names. */
+@keyframes chat-collapse {
+    from {
+        height: var(--chat-collapse-from);
+        opacity: 1;
+    }
+
+    to {
+        height: 0;
+        opacity: 0;
+    }
+}
+
+/*
+    Highlight: a jumped-to message's tint, held then faded. The feed and the thread wait on a name
+    holding "flash" to drop the mark. The sidebar row's and the community row's are drawn on a
+    different property and keep their own until the feed's highlight is one.
+*/
+@keyframes chat-flash {
+    0%,
+    55% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes chat-row-flash {
+    0% {
+        --chat-row-fill: var(--chat-flash);
+    }
+
+    100% {
+        --chat-row-fill: transparent;
+    }
+}
+
+@keyframes chat-cm-flash {
+    0%,
+    45% {
+        background-color: var(--chat-flash);
+    }
+}
+
+/* Loops: a busy spinner, a dot that waits, a skeleton breathing, the typing dots, the connection sweep. */
+@keyframes chat-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes chat-pulse {
+    50% {
+        opacity: .3;
+    }
+}
+
+@keyframes chat-skeleton-pulse {
+    from {
+        opacity: .55;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes chat-bob {
+    0%,
+    60%,
+    100% {
+        opacity: .45;
+        transform: none;
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateY(calc(var(--chat-rise) * -.2));
+    }
+}
+
+@keyframes chat-sweep {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(260%);
+    }
+}
+
+/*
+    Reduced motion: what only moves becomes a fade, and a loop that decorates is drawn still (a
+    busy spinner keeps turning, since it says something is happening). A later definition under a
+    matching query replaces the one above.
+*/
+@media (prefers-reduced-motion: reduce) {
+    @keyframes chat-pulse {
+        from,
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes chat-skeleton-pulse {
+        from,
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes chat-bob {
+        from,
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes chat-sweep {
+        from,
+        to {
+            transform: none;
+        }
+    }
+}
+
 
 /*
     The page the chat fills. A Full Worksurface page holds the block in a zone with the theme's
@@ -641,33 +945,13 @@
     appearance: none;
 }
 
-@keyframes chat-spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
 
-/* The first load's reveal: the column's parts fade in; the feed's own rise plays beside it. */
-@keyframes chat-reveal-in {
-    from {
-        opacity: 0;
-    }
-}
 
 /* The first load's veil is laid over the list. */
 .chat-side-list {
     position: relative;
 }
 
-@keyframes chat-skeleton-pulse {
-    from {
-        opacity: .55;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
 
 /* An initials avatar in the person's hue; the avatar component sets the hue and the size. */
 .chat-av {
@@ -717,15 +1001,6 @@
     animation: chat-img-in var(--chat-d-img-in) var(--chat-ease-state) both;
 }
 
-@keyframes chat-img-in {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
-}
 
 /* Positioned, so a single face's status badge sits on its rim; no face moves for it. */
 .chat-pile {
@@ -811,22 +1086,10 @@
     height: 8px;
     background: var(--chat-brand-fill);
     border-radius: 50%;
-    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-state);
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-state);
 }
 
-@keyframes chat-badge-in {
-    from {
-        opacity: 0;
-        transform: scale(.5);
-    }
-}
 
-/* A dot that waits, the live dot and the typing dots alike: a soft fade to a third and back. */
-@keyframes chat-pulse {
-    50% {
-        opacity: .3;
-    }
-}
 
 /*
     The live dot, which pulses while a connection's state is being worked out: the header's
@@ -855,19 +1118,7 @@
     }
 }
 
-@keyframes chat-crossfade {
-    from {
-        opacity: 0;
-    }
-}
 
-/* A state's words arriving, such as a message's "Sent" or "Edited", in either look. */
-@keyframes chat-meta-in {
-    from {
-        opacity: 0;
-        transform: translateY(-3px);
-    }
-}
 
 /* Reduced motion: the badge fades in rather than springing. */
 @media (prefers-reduced-motion: reduce) {
@@ -890,12 +1141,12 @@
     align-items: flex-end;
     overflow: hidden;
     background: var(--chat-scrim);
-    animation: chat-sheet-scrim-in var(--chat-t-base) var(--chat-ease-state);
+    animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
 }
 
 .chat-sheet-scrim.is-leaving {
     pointer-events: none;
-    animation: chat-sheet-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
 /* Slides up from below the edge, and back down faster as it goes; the safe area keeps it off a phone's home bar. */
@@ -909,12 +1160,12 @@
     background: var(--chat-raised);
     border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-sheet-in var(--chat-t-panel) var(--chat-ease-in);
+    animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
 }
 
 .chat-sheet.is-leaving,
 .chat-sheet-scrim.is-leaving .chat-sheet {
-    animation: chat-sheet-out var(--chat-t-base) var(--chat-ease-out) forwards;
+    animation: chat-slide-out var(--chat-t-base) var(--chat-ease-out) forwards;
 }
 
 .chat-sheet-grab {
@@ -979,29 +1230,9 @@
     line-height: 1.3;
 }
 
-@keyframes chat-sheet-scrim-in {
-    from {
-        opacity: 0;
-    }
-}
 
-@keyframes chat-sheet-scrim-out {
-    to {
-        opacity: 0;
-    }
-}
 
-@keyframes chat-sheet-in {
-    from {
-        transform: translateY(100%);
-    }
-}
 
-@keyframes chat-sheet-out {
-    to {
-        transform: translateY(100%);
-    }
-}
 
 /* A busy spinner, in the color of the text around it. */
 .chat-spinner {
@@ -1223,19 +1454,6 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     animation: chat-tip-in var(--chat-t-fast) var(--chat-ease-in);
 }
 
-@keyframes chat-tip-in {
-    from {
-        opacity: 0;
-        translate: 0 3px;
-    }
-}
-
-/* Reduced motion: the tip only fades. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-tip {
-        animation-name: chat-crossfade;
-    }
-}
 
 /*
     A panel's list of rows, shared by the threads list and the mentions inbox: one button under the
@@ -1267,30 +1485,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
 }
 
-@keyframes chat-enter {
-    from {
-        opacity: 0;
-        transform: translateY(var(--chat-rise));
-    }
-}
 
-/*
-    The conversation's entrance, which the feed plays on its scroller. Defined here, where no build
-    renames it, because the feed's tail finds it by this name: whatever the open's first read changes
-    at the newest end while it plays glides in over a message's time rather than stepping inside a
-    feed still rising.
-*/
-@keyframes chat-feed-enter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-
-    to {
-        opacity: 1;
-        transform: none;
-    }
-}
 
 .chat-shell .chat-ls-row {
     position: relative;
@@ -1577,15 +1772,10 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 /* Only the chip just chosen enters, so the others stay still as one is added. */
 .chat-shell .chat-pk-chip.is-new {
-    animation: chat-pk-in var(--chat-t-base) var(--chat-ease-in);
+    --chat-pop-from: 0px;
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
-@keyframes chat-pk-in {
-    from {
-        opacity: 0;
-        transform: scale(var(--chat-pop-scale));
-    }
-}
 
 .chat-shell .chat-pk-chip-n {
     min-width: 0;
@@ -1656,16 +1846,11 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     background: var(--chat-raised);
     border-radius: var(--chat-r-pop);
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-pk-pop-in var(--chat-t-base) var(--chat-ease-in);
+    --chat-pop-from: calc(var(--chat-rise) * .6);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
     scrollbar-width: thin;
 }
 
-@keyframes chat-pk-pop-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px) scale(var(--chat-pop-scale));
-    }
-}
 
 .chat-shell .chat-pk-opt {
     display: flex;
