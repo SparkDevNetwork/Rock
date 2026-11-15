@@ -305,7 +305,7 @@
     padding: 8px 8px 8px 12px;
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-quote-top) var(--chat-r-quote-top) var(--chat-r-tail) var(--chat-r-tail);
+    border-radius: var(--chat-r-field) var(--chat-r-field) var(--chat-r-tail) var(--chat-r-tail);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
@@ -347,7 +347,7 @@
     margin: 0;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-composer);
+    border-radius: var(--chat-r-field);
     box-shadow: var(--chat-shadow-composer);
     transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-base) var(--chat-ease-state);
 }
@@ -610,7 +610,7 @@
     color: var(--chat-muted);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-bar);
+    border-radius: var(--chat-r-surface);
 }
 
 /* Focus lands here only from the strip's buttons, to say why the box is not there. */

@@ -235,7 +235,7 @@
     color: var(--chat-muted);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-org);
+    border-radius: var(--chat-r-field);
 }
 
 .chat-side-search :deep(.chat-ic) {
@@ -250,7 +250,7 @@
     color: var(--chat-text-2);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-org);
+    border-radius: var(--chat-r-control);
 }
 
 /* The ring keeps its fill on hover, as the design's ring rule outranks the plain button's. */
@@ -564,7 +564,7 @@
     height: 32px;
     overflow: hidden;
     color: var(--chat-icon);
-    border-radius: 9px;
+    border-radius: var(--chat-r-control);
 }
 
 /* The name, then the private lock and the muted mark, which stay beside it however long it is. */
@@ -705,7 +705,7 @@
     white-space: nowrap;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-org);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 

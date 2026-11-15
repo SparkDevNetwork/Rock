@@ -256,7 +256,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-row);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -278,7 +278,7 @@
     text-align: left;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-row);
 }
 
 .chat-mb-who :deep(.chat-av) {
@@ -591,7 +591,7 @@
     color: var(--chat-icon);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: 16px;
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-mb-state h4 {

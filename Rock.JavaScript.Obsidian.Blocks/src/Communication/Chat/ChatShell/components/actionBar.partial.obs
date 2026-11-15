@@ -84,7 +84,7 @@
     padding: 3px;
     white-space: nowrap;
     background: var(--chat-raised);
-    border-radius: var(--chat-r-tools);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-bar);
 }
 
@@ -172,7 +172,7 @@
     width: 28px;
     height: 28px;
     color: var(--chat-icon);
-    border-radius: var(--chat-r-tool);
+    border-radius: var(--chat-r-inset);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -211,7 +211,7 @@
     line-height: 1;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-tool);
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-tool-glyph {

@@ -139,7 +139,7 @@
     overflow: hidden;
     color: var(--chat-text);
     background: var(--chat-raised);
-    border-radius: var(--chat-r-xl);
+    border-radius: var(--chat-r-surface);
     outline: none;
     box-shadow: var(--chat-shadow-pop);
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
@@ -273,7 +273,7 @@
     font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     text-decoration: none;
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 

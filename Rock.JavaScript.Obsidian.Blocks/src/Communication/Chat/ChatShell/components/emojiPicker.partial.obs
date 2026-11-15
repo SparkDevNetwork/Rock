@@ -196,7 +196,7 @@
     color: var(--chat-muted);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: 10px;
+    border-radius: var(--chat-r-field);
 }
 
 /*
@@ -349,7 +349,7 @@ img.chat-picker-glyph {
     cursor: pointer;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-control);
     opacity: .75;
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
@@ -392,7 +392,7 @@ img.chat-picker-glyph {
     height: 2px;
     content: "";
     background: var(--chat-brand);
-    border-radius: 2px;
+    border-radius: var(--chat-r-inline);
 }
 
 .chat-picker-tabs button:focus-visible {

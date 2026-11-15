@@ -45,10 +45,6 @@
   },
   "S2": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/gifPicker.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2,
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
   },

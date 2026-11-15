@@ -123,7 +123,7 @@
     color: var(--chat-muted);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: 10px;
+    border-radius: var(--chat-r-field);
 }
 
 .chat-gif-clear {
@@ -296,7 +296,7 @@
     margin-bottom: 4px;
     color: var(--chat-icon);
     background: var(--chat-bubble);
-    border-radius: 14px;
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-gif-retry {
