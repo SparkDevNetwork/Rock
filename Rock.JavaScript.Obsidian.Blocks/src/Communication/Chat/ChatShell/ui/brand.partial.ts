@@ -353,4 +353,20 @@ export function tokenDuration(element: Element, token: string, fallbackMs: numbe
     return match[2] === "s" ? Number(match[1]) * 1000 : Number(match[1]);
 }
 
+/**
+ * A distance the sheet names, in pixels, for a motion played in script, so it moves as far as the
+ * same motion in the sheet, and not at all under reduced motion, where the sheet sets it to 0px.
+ *
+ * @param element An element inside the chat.
+ * @param token The token's full name, such as `--chat-rise-sm`.
+ * @param fallbackPx The value to use when the token is not set in pixels.
+ *
+ * @returns The distance in pixels.
+ */
+export function tokenLength(element: Element, token: string, fallbackPx: number): number {
+    const match = /^(-?\d*\.?\d+)px$/.exec(getComputedStyle(element).getPropertyValue(token).trim());
+
+    return match ? Number(match[1]) : fallbackPx;
+}
+
 // #endregion The page's theme

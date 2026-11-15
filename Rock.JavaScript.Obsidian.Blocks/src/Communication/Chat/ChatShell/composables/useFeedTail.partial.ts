@@ -46,7 +46,7 @@
 
 import { inject, InjectionKey, nextTick, onBeforeUnmount, provide, Ref, watch } from "vue";
 import { ArrivalMotion, messageMotionKey } from "../messageMotion.partial";
-import { tokenDuration } from "../ui/brand.partial";
+import { tokenDuration, tokenLength } from "../ui/brand.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 
 /** What a view hands its tail. */
@@ -118,7 +118,7 @@ type Before = {
 type Leaving = { element: HTMLElement, done: () => void };
 
 /** The motion tokens, read from the view, so reduced motion's shorter values apply. */
-type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeOut: string, easeState: string };
+type Tokens = { msg: number, base: number, fast: number, easeIn: string, easeOut: string, easeState: string, riseSm: number };
 
 /** One start offset, the transform a part or the stack plays from to none. */
 type Offset = { x: number, y: number };
@@ -139,7 +139,9 @@ function tokensOf(element: Element): Tokens {
         fast: tokenDuration(element, "--chat-t-fast", 0),
         easeIn: read("--chat-ease-in").trim() || "linear",
         easeOut: read("--chat-ease-out").trim() || "linear",
-        easeState: read("--chat-ease-state").trim() || "linear"
+        easeState: read("--chat-ease-state").trim() || "linear",
+        // the sheet's small rise, 4px where the sheet is not on the page
+        riseSm: tokenLength(element, "--chat-rise-sm", 4)
     };
 }
 
@@ -775,7 +777,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 fadeIn(meta);
             }
             else {
-                play(meta, [{ opacity: 0, transform: "translateY(3px)" }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
+                play(meta, [{ opacity: 0, transform: `translateY(${.75 * tokens.riseSm}px)` }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
             }
         }
         if (seen < .999) {
