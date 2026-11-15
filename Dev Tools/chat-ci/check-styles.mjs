@@ -97,13 +97,14 @@ function splitOutside(text, isSeparator) {
 }
 
 /**
- * Whether a selector's rule lands on an icon. Only its last compound names the element the rule
- * styles: an icon named before a combinator is something that element sits in or follows, and one
+ * The compounds a selector's rule lands on. Only a selector's last compound names the element the
+ * rule styles: one named before a combinator is something that element sits in or follows, and one
  * inside :has() or :not() is something it holds or is not. Inside :deep(), :is() and their kind the
  * argument is the element itself, so its own last compounds are read the same way.
  */
-function isIconSelector(selector) {
-  return splitOutside(selector, (c) => c === ',').some((one) => {
+export function styledCompounds(selector) {
+  const out = [];
+  for (const one of splitOutside(selector, (c) => c === ',')) {
     const compounds = splitOutside(one.trim(), (c) => /[\s>+~]/.test(c)).filter((part) => part !== '');
     const last = compounds[compounds.length - 1] ?? '';
 
@@ -122,12 +123,17 @@ function isIconSelector(selector) {
         else if (last[end] === ')' && --depth === 0) break;
       }
       const name = pseudo[0].slice(0, -1);
-      if (SAME_ELEMENT.test(name) && isIconSelector(last.slice(i + pseudo[0].length, end))) return true;
+      if (SAME_ELEMENT.test(name)) out.push(...styledCompounds(last.slice(i + pseudo[0].length, end)));
       i = end;
     }
+    out.push(own);
+  }
+  return out;
+}
 
-    return ICON_CLASS.test(own) || ICON_ATTRIBUTE.test(own) || ICON_TYPE.test(own);
-  });
+/** Whether a selector's rule lands on an icon, by its class, its class attribute or the svg it draws. */
+function isIconSelector(selector) {
+  return styledCompounds(selector).some((own) => ICON_CLASS.test(own) || ICON_ATTRIBUTE.test(own) || ICON_TYPE.test(own));
 }
 
 /** A style binding or attribute that sizes what it is on, in CSS's names or a style object's. */
@@ -227,44 +233,17 @@ function scriptLiteral(content) {
  * that happens to read as hex is never taken for a color. Reports the line each literal is on.
  */
 function scanCss(file, text, start, end, hits, { isLiteralAllowed = false, isIconOwner = false } = {}) {
-  const css = text.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' '));
-  const stack = [];
-  let segmentStart = 0;
-  let selector = '';
-
-  const declaration = (from, to) => {
-    const body = css.slice(from, to);
-    const colon = body.indexOf(':');
-    if (colon < 0) return;
-    const property = body.slice(0, colon).trim().toLowerCase();
-    const value = body.slice(colon + 1);
-    const valueOffset = from + colon + 1 + value.search(/\S|$/);
-    const found = isLiteralAllowed ? null : cssLiteral(value);
-    if (found) {
-      hits.push(`${file}:${lineAt(text, start + valueOffset)}: ${found}`);
-    }
-    if (!isIconOwner && ICON_SIZE.test(property) && isIconSelector(selector)) {
-      hits.push(`${file}:${lineAt(text, start + valueOffset)}: an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
-    }
-  };
-
-  for (let i = 0; i < css.length; i++) {
-    const c = css[i];
-    if (c === '{') {
-      const prelude = css.slice(segmentStart, i).trim();
-      const isGroup = prelude.startsWith('@') && !/^@(font-face|page)/.test(prelude);
-      stack.push(isGroup ? 'group' : 'rule');
-      if (!isGroup) selector = prelude;
-      segmentStart = i + 1;
-    } else if (c === '}') {
-      if (stack[stack.length - 1] === 'rule') declaration(segmentStart, i);
-      stack.pop();
-      segmentStart = i + 1;
-    } else if (c === ';' && stack[stack.length - 1] === 'rule') {
-      declaration(segmentStart, i);
-      segmentStart = i + 1;
-    }
-  }
+  walkCss(cssCode(text, start, end), start, end, {
+    onDeclaration({ property, value, offset, selector }) {
+      const found = isLiteralAllowed ? null : cssLiteral(value);
+      if (found) {
+        hits.push(`${file}:${lineAt(text, offset)}: ${found}`);
+      }
+      if (!isIconOwner && ICON_SIZE.test(property) && isIconSelector(selector)) {
+        hits.push(`${file}:${lineAt(text, offset)}: an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
+      }
+    },
+  });
 }
 
 /**
@@ -282,29 +261,9 @@ function scanScript(file, text, start, end, hits) {
     }
   };
 
-  let i = start;
-  while (i < end) {
-    const c = text[i];
-    const next = text[i + 1];
-    if (c === '/' && next === '/') {
-      while (i < end && text[i] !== '\n') i++;
-    } else if (c === '/' && next === '*') {
-      const close = text.indexOf('*/', i + 2);
-      i = close < 0 ? end : close + 2;
-    } else if (c === '"' || c === "'" || c === '`') {
-      let j = i + 1;
-      while (j < end && text[j] !== c) {
-        if (text[j] === '\\') j++;
-        // A plain string ends at its line; only a template string runs on.
-        if (text[j] === '\n' && c !== '`') break;
-        j++;
-      }
-      const found = scriptLiteral(text.slice(i + 1, j));
-      if (found) report(i, found);
-      i = j + 1;
-    } else {
-      i++;
-    }
+  for (const string of scriptStrings(text, start, end)) {
+    const found = scriptLiteral(string.value);
+    if (found) report(string.offset - 1, found);
   }
 
   const script = text.slice(start, end);
@@ -461,31 +420,7 @@ export function scanKeyframeNames(files) {
   return hits;
 }
 
-// #region Convictions held by the ratchet
-
-/**
- * The style rules the ratchet holds, each with the reason a reader here needs. A ratchet rule may
- * keep the findings recorded for a file in known-debt.json and no more; a report rule only counts.
- */
-export const STYLE_RULES = [
-  { id: 'S1', mode: 'ratchet', reason: 'a font size is one of the sizes the token sheet names, so the type scale changes in one place' },
-  { id: 'S2', mode: 'ratchet', reason: 'a corner is one of the radii the token sheet names, so buttons, fields and surfaces stay one family' },
-  { id: 'S3', mode: 'ratchet', reason: 'a layer is one of the layers the token sheet names, so what floats over what is decided once; auto, -1, 0 and 1 only order siblings' },
-  { id: 'S4', mode: 'ratchet', reason: 'how far a thing moves while it animates is a token, so every rise and slide travels the same distance' },
-  { id: 'S5', mode: 'ratchet', reason: 'the chat has one set of animations, in the token sheet, so a motion is changed once for every screen' },
-  { id: 'S6', mode: 'ratchet', reason: 'a component never restyles the inside of another; a part that should look different changes itself, for every screen' },
-  { id: 'S7', mode: 'ratchet', reason: '!important ends the order the styles are written in, so the next change has to win by force too' },
-  { id: 'S8', mode: 'ratchet', reason: 'reduced motion is honoured once, in the token sheet, so no screen forgets it and none answers it differently' },
-  { id: 'S9', mode: 'ratchet', reason: 'a token nothing reads is a value a reader has to keep in mind for nothing' },
-  { id: 'S10', mode: 'report', reason: 'a token read once may be a value with a name and no second caller' },
-  { id: 'S11', mode: 'report', reason: 'a class the token sheet styles that no chat file uses may be a rule left behind' },
-  { id: 'S12', mode: 'ratchet', reason: 'a part owns its look: a rule outside it that names a class only that part renders is a screen restyling the part' },
-];
-
-/** Whether a file is the token sheet, which holds tokens and the shared rules. */
-function isSheet(file) {
-  return basename(file) === 'chat.css';
-}
+// #region Readers the style and parts checks share
 
 /**
  * A function from a character offset to its line, counting from one, which finds the line by a
@@ -512,37 +447,10 @@ function blank(text, from, to) {
 }
 
 /**
- * Each string literal in a stretch of script, skipping comments: its quote, its content and where
- * the content starts. A plain string ends at its line; a template string runs on.
+ * The comments and string literals in a stretch of script, in order, each with where it starts
+ * and ends. A plain string ends at its line; only a template string runs on.
  */
-export function* scriptStrings(text, start = 0, end = text.length) {
-  let i = start;
-  while (i < end) {
-    const c = text[i];
-    const next = text[i + 1];
-    if (c === '/' && next === '/') {
-      while (i < end && text[i] !== '\n') i++;
-    } else if (c === '/' && next === '*') {
-      const close = text.indexOf('*/', i + 2);
-      i = close < 0 ? end : close + 2;
-    } else if (c === '"' || c === "'" || c === '`') {
-      let j = i + 1;
-      while (j < end && text[j] !== c) {
-        if (text[j] === '\\') j++;
-        if (text[j] === '\n' && c !== '`') break;
-        j++;
-      }
-      yield { quote: c, value: text.slice(i + 1, j), offset: i + 1 };
-      i = j + 1;
-    } else {
-      i++;
-    }
-  }
-}
-
-/** A stretch of script with its comments blanked, so a pattern never matches what a comment says. */
-function scriptCode(text, start, end) {
-  let out = text;
+function* scriptTokens(text, start, end) {
   let i = start;
   while (i < end) {
     const c = text[i];
@@ -550,12 +458,12 @@ function scriptCode(text, start, end) {
     if (c === '/' && next === '/') {
       const close = text.indexOf('\n', i);
       const to = close < 0 || close > end ? end : close;
-      out = blank(out, i, to);
+      yield { kind: 'comment', from: i, to };
       i = to;
     } else if (c === '/' && next === '*') {
       const close = text.indexOf('*/', i + 2);
       const to = close < 0 ? end : close + 2;
-      out = blank(out, i, to);
+      yield { kind: 'comment', from: i, to };
       i = to;
     } else if (c === '"' || c === "'" || c === '`') {
       let j = i + 1;
@@ -564,12 +472,32 @@ function scriptCode(text, start, end) {
         if (text[j] === '\n' && c !== '`') break;
         j++;
       }
+      yield { kind: 'string', quote: c, from: i, to: j };
       i = j + 1;
     } else {
       i++;
     }
   }
-  return out;
+}
+
+/** Each string literal in a stretch of script, skipping comments: its quote, its content and where the content starts. */
+export function* scriptStrings(text, start = 0, end = text.length) {
+  for (const token of scriptTokens(text, start, end)) {
+    if (token.kind === 'string') yield { quote: token.quote, value: text.slice(token.from + 1, token.to), offset: token.from + 1 };
+  }
+}
+
+/** The text with a stretch of script's comments blanked, so a pattern never matches what a comment says. */
+function scriptCode(text, start, end) {
+  const pieces = [];
+  let at = 0;
+  for (const token of scriptTokens(text, start, end)) {
+    if (token.kind !== 'comment') continue;
+    pieces.push(text.slice(at, token.from), text.slice(token.from, token.to).replace(/[^\n]/g, ' '));
+    at = token.to;
+  }
+  pieces.push(text.slice(at));
+  return pieces.join('');
 }
 
 /**
@@ -600,13 +528,8 @@ export function regionsOf(file, text) {
 export function codeOf(file, text) {
   const { styles, scripts, template } = regionsOf(file, text);
   let out = text;
-  for (const { start, end } of styles) {
-    for (const match of text.slice(start, end).matchAll(/\/\*[\s\S]*?\*\//g)) out = blank(out, start + match.index, start + match.index + match[0].length);
-  }
-  for (const { start, end } of scripts) {
-    const code = scriptCode(text, start, end);
-    out = out.slice(0, start) + code.slice(start, end) + out.slice(end);
-  }
+  for (const { start, end } of styles) out = cssCode(out, start, end);
+  for (const { start, end } of scripts) out = scriptCode(out, start, end);
   if (template) {
     for (const match of text.slice(template.start, template.end).matchAll(/<!--[\s\S]*?-->/g)) {
       out = blank(out, template.start + match.index, template.start + match.index + match[0].length);
@@ -658,6 +581,39 @@ function walkCss(css, start, end, { onPrelude = () => {}, onDeclaration = () => 
       segmentStart = i + 1;
     }
   }
+}
+
+/** The text with a stretch of CSS's comments blanked and its line breaks kept, every offset holding. */
+function cssCode(text, start, end) {
+  return text.slice(0, start) + text.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' ')) + text.slice(end);
+}
+
+// #endregion Readers the style and parts checks share
+
+// #region Convictions held by the ratchet
+
+/**
+ * The style rules the ratchet holds, each with the reason a reader here needs. A ratchet rule may
+ * keep the findings recorded for a file in known-debt.json and no more; a report rule only counts.
+ */
+export const STYLE_RULES = [
+  { id: 'S1', mode: 'ratchet', reason: 'a font size is one of the sizes the token sheet names, so the type scale changes in one place' },
+  { id: 'S2', mode: 'ratchet', reason: 'a corner is one of the radii the token sheet names, so buttons, fields and surfaces stay one family' },
+  { id: 'S3', mode: 'ratchet', reason: 'a layer is one of the layers the token sheet names, so what floats over what is decided once; auto, -1, 0 and 1 only order siblings' },
+  { id: 'S4', mode: 'ratchet', reason: 'how far a thing moves while it animates is a token, so every rise and slide travels the same distance' },
+  { id: 'S5', mode: 'ratchet', reason: 'the chat has one set of animations, in the token sheet, so a motion is changed once for every screen' },
+  { id: 'S6', mode: 'ratchet', reason: 'a component never restyles the inside of another; a part that should look different changes itself, for every screen' },
+  { id: 'S7', mode: 'ratchet', reason: '!important ends the order the styles are written in, so the next change has to win by force too' },
+  { id: 'S8', mode: 'ratchet', reason: 'reduced motion is honoured once, in the token sheet, so no screen forgets it and none answers it differently' },
+  { id: 'S9', mode: 'ratchet', reason: 'a token nothing reads is a value a reader has to keep in mind for nothing' },
+  { id: 'S10', mode: 'report', reason: 'a token read once may be a value with a name and no second caller' },
+  { id: 'S11', mode: 'report', reason: 'a class the token sheet styles that no chat file uses may be a rule left behind' },
+  { id: 'S12', mode: 'ratchet', reason: 'a part owns its look: a rule outside it that names a class only that part renders is a screen restyling the part' },
+];
+
+/** Whether a file is the token sheet, which holds tokens and the shared rules. */
+function isSheet(file) {
+  return basename(file) === 'chat.css';
 }
 
 /** A token's name stripped from each var(), so a number in a token's name is never read as a literal. */
@@ -744,10 +700,9 @@ function scriptStyleFindings(file, text, start, end, add) {
 
 /** What a stretch of CSS holds against the style rules S1 to S8. */
 function cssFindings(file, text, start, end, add) {
-  const css = text.slice(0, start) + text.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' ')) + text.slice(end);
   const sheet = isSheet(file);
 
-  walkCss(css, start, end, {
+  walkCss(cssCode(text, start, end), start, end, {
     onPrelude({ prelude, offset }) {
       if (!sheet && /^@(-webkit-)?keyframes\b/i.test(prelude)) add('S5', offset, `keyframes outside the token sheet (${prelude})`);
       if (!sheet && /^@media\b/i.test(prelude) && /prefers-reduced-motion/i.test(prelude)) add('S8', offset, 'a reduced-motion query outside the token sheet');
@@ -788,40 +743,6 @@ function templateFindings(file, text, start, end, add) {
       at += piece.length + 1;
     }
   }
-}
-
-/**
- * The compounds a selector's rule lands on: the last compound of each selector in its list, and
- * inside :deep(), :is() and their kind the argument's own last compounds, since the argument is
- * the element itself. A compound named before a combinator, or inside :has() or :not(), is
- * something the element sits in, follows, holds or is not.
- */
-export function styledCompounds(selector) {
-  const out = [];
-  for (const one of splitOutside(selector, (c) => c === ',')) {
-    const compounds = splitOutside(one.trim(), (c) => /[\s>+~]/.test(c)).filter((part) => part !== '');
-    const last = compounds[compounds.length - 1] ?? '';
-
-    let own = '';
-    for (let i = 0; i < last.length; i++) {
-      const pseudo = /^::?[\w-]+\(/.exec(last.slice(i));
-      if (!pseudo) {
-        own += last[i];
-        continue;
-      }
-      let depth = 0;
-      let end = i + pseudo[0].length - 1;
-      for (; end < last.length; end++) {
-        if (last[end] === '(') depth++;
-        else if (last[end] === ')' && --depth === 0) break;
-      }
-      const name = pseudo[0].slice(0, -1);
-      if (SAME_ELEMENT.test(name)) out.push(...styledCompounds(last.slice(i + pseudo[0].length, end)));
-      i = end;
-    }
-    out.push(own);
-  }
-  return out;
 }
 
 /** Every class a template puts on an element: from class attributes and the strings of bound ones. */
