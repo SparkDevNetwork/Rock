@@ -509,6 +509,7 @@
         --chat-d-reveal: 140ms;
         --chat-rise-sm: 0px;
         --chat-rise-md: 0px;
+        --chat-rise-sheet: 0%;
         --chat-nudge: 0px;
         --chat-glyph-grow: 1;
         --chat-glyph-press: 1;
@@ -798,6 +799,18 @@
     matching query replaces the one above.
 */
 @media (prefers-reduced-motion: reduce) {
+    @keyframes chat-slide-in {
+        from {
+            opacity: 0;
+        }
+    }
+
+    @keyframes chat-slide-out {
+        to {
+            opacity: 0;
+        }
+    }
+
     @keyframes chat-pulse {
         from,
         to {
