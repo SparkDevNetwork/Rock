@@ -67,7 +67,7 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut a menu near its edge. */
 .chat-menu {
-    z-index: 1050;
+    z-index: var(--chat-z-popover);
     display: flex;
     flex-direction: column;
     min-width: 200px;
@@ -109,7 +109,7 @@
 }
 
 .chat-menu-desc {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -126,7 +126,7 @@
 /* Rock's theme styles every heading, so the menu's own states its whole face. */
 .chat-menu-head {
     padding: 6px 10px 4px;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     color: var(--chat-muted);
     text-transform: uppercase;
@@ -147,7 +147,7 @@
     width: 8px;
     height: 8px;
     background: var(--chat-danger);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-menu-sep {
@@ -190,21 +190,13 @@
     faster; toward the button is up when the menu opens below it and down when it flips above.
 */
 .chat-pop-enter-active {
-    transition: opacity var(--chat-t-base) var(--chat-ease-in), transform var(--chat-t-base) var(--chat-ease-in);
+    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-pop-leave-active {
-    transition: opacity var(--chat-t-fast) var(--chat-ease-out), transform var(--chat-t-fast) var(--chat-ease-out);
-}
-
-.chat-pop-enter-from {
-    opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
-}
-
-.chat-pop-leave-to {
-    opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-pop-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 </style>
 

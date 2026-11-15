@@ -38,7 +38,7 @@
     color: var(--chat-icon);
     background: transparent;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 

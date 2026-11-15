@@ -21,7 +21,7 @@
 .chat-card {
     max-width: 540px;
     overflow: hidden;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-xl);
@@ -35,7 +35,7 @@
 .is-community .chat-card {
     max-width: 520px;
     margin-top: 4px;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
     box-shadow: none;
 }
 
@@ -76,7 +76,7 @@
     width: 100%;
     aspect-ratio: 16 / 7;
     object-fit: cover;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 /* Before Safari 15 there is no aspect-ratio, so the box is held to 16 to 7 by its padding instead. */

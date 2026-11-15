@@ -650,7 +650,7 @@
 
 /* The panel is a third pane over the conversation, waiting off to the right until it opens. */
 .chat-shell[data-phone="true"] .chat-frame-panel {
-    z-index: 8;
+    z-index: var(--chat-z-panel);
     border-left: 0;
     transform: translateX(100%);
 }
@@ -693,38 +693,19 @@
 .chat-main-view {
     position: absolute;
     inset: 0;
-    z-index: 20;
+    z-index: var(--chat-z-view);
     display: flex;
     flex-direction: column;
     min-height: 0;
     background: var(--chat-surface);
-    animation: chat-view-in var(--chat-d-view) var(--chat-ease-in);
-}
-
-@keyframes chat-view-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
 /* After a join settles, the composer takes the join bar's place, rising in as a message does. */
 .chat-composer.is-entering {
-    animation: chat-composer-enter var(--chat-t-msg) var(--chat-ease-in);
-}
-
-@keyframes chat-composer-enter {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-}
-
-/* Reduced motion: the composer only fades back in. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-composer.is-entering {
-        animation-name: chat-crossfade;
-    }
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-msg) var(--chat-ease-in);
 }
 
 .chat-shell-empty {

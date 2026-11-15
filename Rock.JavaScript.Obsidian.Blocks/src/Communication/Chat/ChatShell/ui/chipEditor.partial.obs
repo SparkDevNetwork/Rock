@@ -30,7 +30,7 @@
     max-height: 180px;
     overflow-y: auto;
     padding: 7px 4px;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     line-height: 1.45;
     color: var(--chat-text);
     caret-color: var(--chat-text);

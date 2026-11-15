@@ -93,7 +93,7 @@
 }
 
 .chat-sg-sub {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 

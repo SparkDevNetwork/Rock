@@ -17,10 +17,11 @@
     display: flex;
     gap: 6px;
     align-items: flex-start;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-muted);
-    animation: chat-set-note-in var(--chat-t-base) var(--chat-ease-in);
+    --chat-rise: calc(var(--chat-rise-sm) * .5);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-set-note[data-kind="error"] {
@@ -45,26 +46,6 @@
 
 .chat-set-retry:hover {
     text-decoration-thickness: 2px;
-}
-
-@keyframes chat-set-note-in {
-    from {
-        opacity: 0;
-        transform: translateY(2px);
-    }
-}
-
-/* Reduced motion: a note only fades in. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-set-note {
-        animation-name: chat-set-note-fade;
-    }
-}
-
-@keyframes chat-set-note-fade {
-    from {
-        opacity: 0;
-    }
 }
 </style>
 

@@ -45,7 +45,7 @@
     height: 12px;
     color: var(--chat-media-fg);
     background: var(--chat-presence-online);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     box-shadow:
         0 0 0 2px var(--chat-av-ring-over, transparent),
         0 0 0 2px var(--chat-av-ring, var(--chat-surface));

@@ -27,7 +27,7 @@
     position: absolute;
     top: 124px;
     left: 50%;
-    z-index: 50;
+    z-index: var(--chat-z-notice);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -41,7 +41,7 @@
     gap: 8px;
     align-items: center;
     padding: 9px 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 500;
     line-height: 1.45;
     color: var(--chat-tip-fg);
@@ -72,7 +72,7 @@
     color: inherit;
     background: none;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 

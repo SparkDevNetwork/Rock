@@ -159,7 +159,7 @@
 }
 
 .chat-rm-n span {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -168,7 +168,7 @@
     width: 18px;
     height: 18px;
     border: 1.5px solid var(--chat-line-strong);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-base) var(--chat-ease-in);
 }
 
@@ -179,7 +179,7 @@
 
 .chat-rm-none {
     padding: 14px 10px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     text-align: center;
 }
@@ -190,38 +190,19 @@
     align-items: flex-start;
     padding: 10px 12px;
     margin: -4px 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-text);
     background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-md);
-    animation: chat-rm-strip-in var(--chat-t-base) var(--chat-ease-in);
+    border-radius: var(--chat-r-control);
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-rm-err .chat-ic {
     flex: none;
     margin-top: 1px;
     color: var(--chat-danger-ink);
-}
-
-@keyframes chat-rm-strip-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
-}
-
-/* Reduced motion: the refusal only fades in. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-rm-err {
-        animation-name: chat-rm-fade-in;
-    }
-}
-
-@keyframes chat-rm-fade-in {
-    from {
-        opacity: 0;
-    }
 }
 </style>
 

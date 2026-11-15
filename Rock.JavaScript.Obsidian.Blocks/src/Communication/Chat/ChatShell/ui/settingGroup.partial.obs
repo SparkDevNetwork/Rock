@@ -49,7 +49,7 @@
     overflow: hidden;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-modal.is-sheet .chat-sg {

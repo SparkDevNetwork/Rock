@@ -59,7 +59,7 @@
     width: calc(var(--chat-switch-h) - 4px);
     height: calc(var(--chat-switch-h) - 4px);
     background: var(--chat-knob);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     box-shadow: var(--chat-shadow-knob);
     transition: transform var(--chat-t-base) var(--chat-ease-in);
 }

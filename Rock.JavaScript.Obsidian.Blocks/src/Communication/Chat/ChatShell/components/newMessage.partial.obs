@@ -205,7 +205,7 @@
     height: 38px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-hdr-ic);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-nd-hdr-title {
@@ -218,7 +218,7 @@
 
 .chat-nd-hdr-title b {
     overflow: hidden;
-    font-size: 16px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     letter-spacing: -.01em;
     white-space: nowrap;
@@ -244,7 +244,7 @@
 /* Above the body, so the suggestions it drops over the start block stay on top. */
 .chat-nd-to {
     position: relative;
-    z-index: 4;
+    z-index: calc(var(--chat-z-sticky) + 1);
     flex: none;
     width: 100%;
     max-width: 780px;
@@ -299,7 +299,8 @@
     align-items: center;
     padding: 36px 24px 12px;
     text-align: center;
-    animation: chat-nd-strip-in var(--chat-t-msg) var(--chat-ease-in);
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-msg) var(--chat-ease-in);
 }
 
 .chat-nd-start.is-empty {
@@ -344,7 +345,7 @@
     align-items: center;
     justify-content: center;
     padding: 40px 24px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -367,8 +368,9 @@
     margin: 6px max(24px, calc(50% - 366px)) 4px;
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-lg);
-    animation: chat-nd-strip-in var(--chat-t-base) var(--chat-ease-in);
+    border-radius: var(--chat-r-surface);
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-nd.is-phone .chat-nd-found {
@@ -433,7 +435,7 @@
     min-width: 0;
     max-width: 100%;
     padding: 6px 13px 7px;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     line-height: 1.45;
     color: var(--chat-text);
     white-space: pre-wrap;
@@ -482,11 +484,12 @@
     gap: 10px;
     align-items: center;
     padding: 8px 8px 8px 12px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     background: var(--chat-danger-soft);
     border-radius: var(--chat-r-pop);
-    animation: chat-nd-strip-in var(--chat-t-base) var(--chat-ease-in);
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-nd-refused :deep(.chat-ic) {
@@ -539,13 +542,6 @@
     border: 0;
     border-radius: 0;
     box-shadow: none;
-}
-
-@keyframes chat-nd-strip-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
 }
 
 @media (prefers-reduced-motion: reduce) {

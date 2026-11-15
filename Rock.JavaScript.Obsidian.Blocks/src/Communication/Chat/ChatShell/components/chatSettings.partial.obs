@@ -164,7 +164,7 @@
     vertical-align: middle;
     content: "";
     background: currentColor;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     opacity: .55;
 }
 
@@ -178,7 +178,7 @@
 
 .chat-ms-foot {
     margin: 14px 0 0 2px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -198,7 +198,7 @@
     height: 7px;
     content: "";
     background: var(--chat-line-strong);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-push-status[data-state="on"]::before {
