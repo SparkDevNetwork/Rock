@@ -20,7 +20,7 @@
 // washes drawn from it are computed here too, because the browsers Rock supports have no
 // color-mix, and each is set on the chat's root in a light and a dark form so the sheet can pick
 // one under whichever theme is in force without running script again.
-import { applyBrand, brandFill, brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
+import { applyBrand, brandFill, brandTokens, tokenLength } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
 
 type Rgba = [number, number, number, number];
 
@@ -338,5 +338,27 @@ describe("the tokens drawn from the church color", () => {
                     .toEqual({ property: `--chat-${name}-${theme}`, value });
             }
         }
+    });
+});
+
+// A distance the sheet names, read in script for a motion the sheet cannot play itself, so a
+// motion in script moves as far as the same motion in the sheet, nothing under reduced motion.
+describe("a distance the sheet names", () => {
+    function element(style: string): HTMLElement {
+        const div = document.createElement("div");
+        div.setAttribute("style", style);
+        document.body.appendChild(div);
+        return div;
+    }
+
+    test("is read in pixels, a negative one and a fraction included", () => {
+        expect(tokenLength(element("--chat-rise-sm: 4px"), "--chat-rise-sm", 9)).toBe(4);
+        expect(tokenLength(element("--chat-rise-sm: -2.5px"), "--chat-rise-sm", 9)).toBe(-2.5);
+        expect(tokenLength(element("--chat-rise-sm: 0px"), "--chat-rise-sm", 9)).toBe(0);
+    });
+
+    test("falls back where the sheet is not on the page or names it in another unit", () => {
+        expect(tokenLength(element(""), "--chat-rise-sm", 4)).toBe(4);
+        expect(tokenLength(element("--chat-rise-sm: 100%"), "--chat-rise-sm", 4)).toBe(4);
     });
 });
