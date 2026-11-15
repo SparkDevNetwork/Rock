@@ -106,19 +106,24 @@ test('P4 refuses a media query read outside the viewport part, optional call inc
   assert.deepEqual(ruleLines(one(`${shell}/ui/viewport.partial.ts`, script), 'P4'), []);
 });
 
-test('P5 refuses a live region outside the announcer', () => {
+test('P5 refuses a live region outside the announcer, the roles that make one included', () => {
   const component = [
     '<template>',
     '    <div class="chat-sr-only" aria-live="polite">{{ said }}</div>',
     '    <div :aria-live="isOpen ? \'polite\' : \'off\'"></div>',
     '    <!-- aria-live is announced once, by the announcer -->',
+    '    <div class="chat-toast" role="alert">{{ text }}</div>',
+    '    <p class="chat-field-error" role=\'status\'>{{ error }}</p>',
+    '    <div role="dialog" aria-modal="true"></div>',
+    '    <div :role="isOpen ? \'menu\' : undefined"></div>',
     '</template>',
     '<script setup lang="ts">',
     '    element.setAttribute("aria-live", "polite");',
+    '    const role = "status";',
     '</script>',
   ].join('\n');
 
-  assert.deepEqual(ruleLines(one(`${shell}/components/composer.partial.obs`, component), 'P5'), [2, 3, 7]);
+  assert.deepEqual(ruleLines(one(`${shell}/components/composer.partial.obs`, component), 'P5'), [2, 3, 5, 6, 11]);
   assert.deepEqual(ruleLines(one(`${shell}/ui/announcer.partial.obs`, component), 'P5'), []);
 });
 
@@ -158,9 +163,12 @@ test('P8 refuses Tab handling outside the focus trap, and passes the reviewed ex
     'type Tab = "all" | "following";',
     'const tab = ref<Tab>("all");',
     'const label = "Tab";',
+    'if (event.key !== "Tab") return;',
+    'if ("Tab" !== e.code) return;',
+    'if (["Tab", "Enter"].includes(event.key)) pick();',
   ].join('\n');
 
-  assert.deepEqual(ruleLines(one(`${shell}/ui/menu.partial.ts`, script), 'P8'), [2, 3]);
+  assert.deepEqual(ruleLines(one(`${shell}/ui/menu.partial.ts`, script), 'P8'), [2, 3, 7, 8, 9]);
   for (const allowed of ['ui/focusTrap.partial.ts', 'components/mentionPicker.partial.ts', 'ui/tooltip.partial.ts', 'ui/peoplePicker.partial.ts']) {
     assert.deepEqual(ruleLines(one(`${shell}/${allowed}`, script), 'P8'), [], allowed);
   }
@@ -206,16 +214,18 @@ test('P10 refuses finding an element by its test id in production code', () => {
   assert.deepEqual(ruleLines(one(`${shell}/components/x.partial.obs`, template), 'P10'), []);
 });
 
-test('P15 refuses looking a room up in the rows outside the channel store', () => {
+test('P15 refuses looking a room up in the channel rows outside the channel store, not other rows', () => {
   const script = [
     'const row = shell.value.channels.rows.find(r => r.channel_id === channelId);',
-    'const index = rows.findIndex(r => r.channel_id === channelId);',
+    'const index = channels.rows.findIndex(r => r.channel_id === channelId);',
     'const name = state.directory.rows.find(row => row.channel_id === channelId)?.name;',
     'const held = rows.find(r => r.localId === key);',
-    'const root = state.list.rows.find(r => r.root.id === rootId);',
+    'const root = state.list.rows.find(r => r.channel_id === channelId && r.root.id === rootId);',
+    'const isHeld = dependencies.channels.rows.some(row => row.channel_id === channelId);',
+    'const back = channels.rows.find(r => channelId === r.channel_id);',
   ].join('\n');
 
-  assert.deepEqual(ruleLines(one(`${shell}/composables/useRooms.partial.ts`, script), 'P15'), [1, 2, 3]);
+  assert.deepEqual(ruleLines(one(`${shell}/composables/useRooms.partial.ts`, script), 'P15'), [1, 2, 6, 7]);
   assert.deepEqual(ruleLines(one(`${shell}/stores/channelStore.partial.ts`, script), 'P15'), []);
 });
 
@@ -285,6 +295,18 @@ test('T2 refuses one set of allowed values spelled out in two files, under any n
   ], JSON.stringify(findings));
   assert.deepEqual(ruleLines(findings, 'T2', `${shell}/components/threadsPanel.partial.ts`), [2]);
   assert.match(findings.find((found) => found.rule === 'T2').what, /channel.*group.*person|"channel" \| "group" \| "person"/);
+});
+
+test('T2 leaves the keys Pick and Omit take, which name fields rather than allowed values', () => {
+  const a = 'type Draft = Pick<Storage, "getItem" | "setItem">;\ntype Face = Omit<Person,\n    | "nick_name"\n    | "last_name">;\n';
+  const b = 'function store(storage: Pick<Storage, "setItem" | "getItem">, face: Omit<Person, "last_name" | "nick_name">) {}\n';
+
+  const findings = findPartDebt([
+    { file: `${shell}/a.partial.ts`, text: a },
+    { file: `${shell}/b.partial.ts`, text: b },
+  ]);
+
+  assert.deepEqual(ruleFiles(findings, 'T2'), [], JSON.stringify(findings));
 });
 
 test('T2 reads a union written over several lines as one set', () => {

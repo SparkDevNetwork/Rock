@@ -9,9 +9,9 @@ import test from 'node:test';
 import { debtTable, ratchet } from './known-debt.mjs';
 
 const rules = [
-  { id: 'S1', mode: 'ratchet' },
-  { id: 'S2', mode: 'ratchet' },
-  { id: 'S10', mode: 'report' },
+  { id: 'S1', mode: 'ratchet', reason: 'a font size comes from the type scale' },
+  { id: 'S2', mode: 'ratchet', reason: 'a corner comes from the radius tokens' },
+  { id: 'S10', mode: 'report', reason: 'a token read once may have no second caller' },
 ];
 
 function finding(rule, file, line = 1) {
@@ -40,6 +40,22 @@ test('a file holding more than its recorded count fails and names its findings',
   assert.match(result.failures[0], /S1/);
   assert.match(result.failures[0], /a\.obs/);
   assert.match(result.failures[0], /a\.obs:7/);
+  // The failure says why the rule exists and what to do, so nobody reaches for the debt file.
+  assert.match(result.failures[0], /a font size comes from the type scale/);
+  assert.match(result.failures[0], /use the shared owner; never raise the debt file/);
+});
+
+test('a raise against the base is allowed only in a change that edits the checks themselves', () => {
+  const findings = [finding('S1', 'a.obs'), finding('S1', 'a.obs')];
+  const debt = { S1: { 'a.obs': 2 } };
+  const baseDebt = { S1: { 'a.obs': 1 } };
+
+  const plain = ratchet({ rules, findings, debt, baseDebt });
+  assert.equal(plain.failures.length, 1, plain.failures.join('\n'));
+
+  const checksChanged = ratchet({ rules, findings, debt, baseDebt, isRaiseAllowed: true });
+  assert.deepEqual(checksChanged.failures, []);
+  assert.match(checksChanged.warnings.join('\n'), /rose.*checks/i);
 });
 
 test('an unlisted file blocks at once, and so does a rule with no entries', () => {

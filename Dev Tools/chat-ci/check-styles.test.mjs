@@ -602,6 +602,35 @@ test('S2 refuses a literal radius, a fallback included, and passes tokens, inher
   assert.deepEqual(ruleLines(findings, 'S2'), [1, 4, 5, 6, 7], JSON.stringify(findings));
 });
 
+test('S1 to S3 count a token a component defines for itself as a literal, and pass the sheet\'s own', () => {
+  const css = ':root {\n    --chat-r-md: 12px;\n    --chat-fs-3: 13px;\n    --chat-z-popover: 1050;\n}\n';
+  const component = [
+    '<template><div class="chat-cm" :style="{ fontSize: \'var(--chat-own-size)\' }"></div></template>',
+    '<style scoped>',
+    '.chat-cm {',
+    '    --chat-cm-radius: 6px;',
+    '    border-radius: var(--chat-cm-radius, 0);',
+    '    border-radius: var(--chat-cm-radius);',
+    '    border-radius: var(--chat-r-md);',
+    '    font-size: var(--chat-fs-3);',
+    '    font-size: var(--chat-own-size);',
+    '    z-index: var(--chat-z-popover);',
+    '    z-index: var(--chat-own-layer);',
+    '}',
+    '</style>',
+  ].join('\n');
+
+  const findings = findStyleDebt([
+    { file: sheet, text: css },
+    { file: `${shell}/components/example.partial.obs`, text: component },
+  ]);
+  const file = `${shell}/components/example.partial.obs`;
+
+  assert.deepEqual(ruleLines(findings, 'S1', file), [1, 9], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S2', file), [5, 6], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S3', file), [11], JSON.stringify(findings));
+});
+
 test('S3 refuses a literal layer other than auto, -1, 0 and 1, in style and script', () => {
   const component = [
     '<template><div class="chat-pop" style="z-index: 1050"></div></template>',
