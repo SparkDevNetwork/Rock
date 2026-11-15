@@ -206,7 +206,7 @@
     color: var(--chat-text-2);
     background: var(--chat-press);
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -224,7 +224,7 @@
     gap: 6px;
     align-items: center;
     margin: 14px 10px 4px;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     color: var(--chat-muted);
     text-transform: uppercase;
@@ -319,7 +319,7 @@
 
 .chat-mb-you {
     flex: none;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -375,6 +375,7 @@
 }
 
 .chat-mb-err {
+    --chat-rise: calc(var(--chat-rise-sm) * 1.25);
     display: flex;
     flex-basis: 100%;
     gap: 7px;
@@ -385,16 +386,8 @@
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-md);
-    animation: chat-mb-in var(--chat-t-base) var(--chat-ease-in) both;
-}
-
-/* A row's refusal rises in from half the message rise. */
-@keyframes chat-mb-in {
-    from {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-rise) * .5));
-    }
+    border-radius: var(--chat-r-control);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in) both;
 }
 
 .chat-mb-err > .chat-ic {
@@ -417,7 +410,7 @@
     color: inherit;
     background: none;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-mb-err-x:hover {
@@ -426,20 +419,9 @@
 
 /* A removed row collapses, from the height measured as it starts to leave. */
 .chat-mb-row.is-leaving {
+    --chat-collapse-from: var(--chat-mb-row-h);
     overflow: hidden;
-    animation: chat-mb-collapse var(--chat-d-row-collapse) var(--chat-ease-out) forwards;
-}
-
-@keyframes chat-mb-collapse {
-    from {
-        height: var(--chat-mb-row-h);
-        opacity: 1;
-    }
-
-    to {
-        height: 0;
-        opacity: 0;
-    }
+    animation: chat-collapse var(--chat-d-row-collapse) var(--chat-ease-out) forwards;
 }
 
 /* The foot under the list: one outlined button the width of the panel, as the design's members panel. */
@@ -496,7 +478,7 @@
 
 .chat-mb-foot-hint {
     margin: 6px 0 0;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
     text-align: center;
 }
@@ -532,7 +514,7 @@
     gap: 6px;
     align-items: center;
     margin: 8px 10px 0;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -557,7 +539,7 @@
 
 .chat-mb-none {
     margin: 18px 10px 4px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     text-align: center;
 }
@@ -585,7 +567,7 @@
 
 .chat-mb-end {
     padding: 16px 0 4px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
     text-align: center;
 }
@@ -622,7 +604,7 @@
 .chat-mb-state p {
     max-width: 30ch;
     margin: 0;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-muted);
 }

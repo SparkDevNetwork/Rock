@@ -130,7 +130,9 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut a card near its edge. */
 .chat-pc {
-    z-index: 1050;
+    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
+    --chat-pop-toward: -1;
+    z-index: var(--chat-z-popover);
     width: 300px;
     max-width: calc(100vw - 16px);
     padding: 16px 16px 14px;
@@ -140,13 +142,13 @@
     border-radius: var(--chat-r-xl);
     outline: none;
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-pc-in var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 /* Leaves half as far and faster than it came, and takes no press on its way out. */
 .chat-pc.is-leaving {
     pointer-events: none;
-    animation: chat-pc-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    animation: chat-pop-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
 /* The face beside the name and campus, the first thing read; its badge rings in the card's fill. */
@@ -203,7 +205,7 @@
     align-items: center;
     margin-top: 4px;
     overflow: hidden;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text-2);
     white-space: nowrap;
 }
@@ -241,7 +243,7 @@
     height: 3px;
     content: "";
     background: var(--chat-muted);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 /* The details under a rule: Rock's contact rows, the badges, the church's template. */
@@ -268,7 +270,7 @@
     min-height: 28px;
     padding: 0 8px;
     margin: 0 -8px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     text-decoration: none;
     border-radius: var(--chat-r-sm);
@@ -302,7 +304,7 @@
     flex: none;
     width: 15px;
     height: 15px;
-    border-radius: var(--chat-r-xs);
+    border-radius: var(--chat-r-inline);
 }
 
 .chat-pc-sk-bar {
@@ -340,7 +342,7 @@
     max-height: 160px;
     overflow-y: auto;
     overscroll-behavior: contain;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-text-2);
     contain: layout paint;
@@ -355,7 +357,7 @@
 }
 
 .chat-pc-lava :deep(:is(h1, h2, h3, h4, h5, h6)) {
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 700;
     color: var(--chat-text);
 }
@@ -376,7 +378,7 @@
 
 /* Rock's answer landing on rows the card already reserved. */
 .is-arriving {
-    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-state);
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-state);
 }
 
 /* The person's badges, each a pill in its badge's colors or the plain pill where it has none. */
@@ -395,7 +397,7 @@
     align-items: center;
     height: 24px;
     padding: 0 9px 0 7px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-text-2);
     background: var(--chat-pill-bg);
@@ -404,7 +406,7 @@
 }
 
 .chat-pc-badges li i {
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     color: var(--chat-icon);
 }
 
@@ -444,7 +446,7 @@
     overflow: hidden;
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-pc-btn {
@@ -456,7 +458,7 @@
     height: 34px;
     padding: 0 14px;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-on-brand);
     background: var(--chat-brand-fill);
@@ -512,7 +514,7 @@
     color: var(--chat-muted);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-pc-muted > :deep(.chat-ic) {
@@ -524,21 +526,6 @@
     display: block;
     font-weight: 600;
     color: var(--chat-text-2);
-}
-
-/* Enters from just toward what opened it and a touch small, as every popover does. */
-@keyframes chat-pc-in {
-    from {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
-    }
-}
-
-@keyframes chat-pc-out {
-    to {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
-    }
 }
 </style>
 

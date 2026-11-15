@@ -51,7 +51,8 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut the popover near its edge. */
 .chat-mention-pop {
-    z-index: 1050;
+    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
+    z-index: var(--chat-z-popover);
     width: 300px;
     max-width: calc(100vw - 16px);
     padding: 6px;
@@ -59,7 +60,7 @@
     background: var(--chat-raised);
     border-radius: var(--chat-r-pop);
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-mention-in var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 /* Waiting for the open's first answer: not drawn, and its way in held until it shows. */
@@ -71,12 +72,12 @@
 /* The way out, played while the picker's transition keeps it on the page as it closes. */
 .chat-mention-pop.is-leaving {
     pointer-events: none;
-    animation: chat-mention-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    animation: chat-pop-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
 .chat-mention-head {
     padding: 6px 10px 4px;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     color: var(--chat-muted);
     text-transform: uppercase;
@@ -115,29 +116,14 @@
 }
 
 .chat-mention-main span {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
 .chat-mention-empty {
     padding: 10px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
-}
-
-/* From just toward the box it sits on and a touch small; toward is down when it sits above. */
-@keyframes chat-mention-in {
-    from {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
-    }
-}
-
-@keyframes chat-mention-out {
-    to {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
-    }
 }
 </style>
 

@@ -222,13 +222,15 @@ describe("the entrance", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
         expect(w.get("[data-testid='join-bar']").classes()).toContain("chat-joinbar");
-        expect(style).toMatch(/\.chat-joinbar\s*\{[^}]*animation:\s*chat-strip-in var\(--chat-t-base\) var\(--chat-ease-in\)/);
-        expect(style).toMatch(/@keyframes chat-strip-in\s*\{\s*from\s*\{\s*opacity:\s*0;\s*transform:\s*translateY\(6px\);/);
+        expect(style).toMatch(/\.chat-joinbar\s*\{[^}]*--chat-rise:\s*calc\(var\(--chat-rise-sm\) \* 1\.5\);[^}]*animation:\s*chat-enter var\(--chat-t-base\) var\(--chat-ease-in\)/);
     });
 
     test("only fades in under reduced motion, as the quote strip does", () => {
-        const rules = reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs");
+        const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const reduced = sheet.slice(sheet.indexOf("@media (prefers-reduced-motion: reduce)"));
 
-        expect(rules.some(r => /(^|,)\s*\.chat-joinbar\s*(,|$)/.test(r.selector) && /animation-name:\s*chat-crossfade/.test(r.body))).toBe(true);
+        // The bar's rise is a multiple of the small rise, which the token sheet takes to nothing under reduced motion.
+        expect(reduced).toMatch(/--chat-rise-sm:\s*0px;/);
+        expect(reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs")).toHaveLength(0);
     });
 });

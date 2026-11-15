@@ -307,7 +307,7 @@
     text-align: left;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -340,7 +340,7 @@
 }
 
 .chat-me-who span {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -351,19 +351,13 @@
     width: 32px;
     height: 32px;
     color: var(--chat-icon);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-me-btn:hover .chat-me-gear {
     color: var(--chat-text);
-    transform: rotate(30deg);
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .chat-me-btn:hover .chat-me-gear {
-        transform: none;
-    }
+    transform: rotate(var(--chat-turn));
 }
 
 .chat-sec {
@@ -377,7 +371,7 @@
 .chat-sec h3 {
     margin: 0;
     font-family: inherit;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     /* A whole-pixel line, so nothing below it sits on a fraction. */
     line-height: 16px;
@@ -417,7 +411,7 @@
     text-align: left;
     background: var(--chat-row-fill);
     border: 0;
-    border-radius: var(--chat-r-org);
+    border-radius: var(--chat-r-row);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -542,16 +536,6 @@
 
 .chat-row.is-flash {
     animation: chat-row-flash var(--chat-d-row-flash) var(--chat-ease-state);
-}
-
-@keyframes chat-row-flash {
-    0% {
-        --chat-row-fill: var(--chat-flash);
-    }
-
-    100% {
-        --chat-row-fill: transparent;
-    }
 }
 
 .is-phone .chat-row {
@@ -696,7 +680,7 @@
 
 .chat-side-empty > span:not(.chat-side-empty-glyph) {
     max-width: 30ch;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

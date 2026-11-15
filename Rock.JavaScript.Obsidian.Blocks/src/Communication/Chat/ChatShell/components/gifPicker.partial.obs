@@ -137,7 +137,7 @@
     cursor: pointer;
     background: none;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-gif-clear:hover {
@@ -165,7 +165,7 @@
 .chat-gif-label {
     padding: 6px 2px 8px;
     margin: 0;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     line-height: 13px;
     color: var(--chat-muted);
@@ -184,7 +184,7 @@
     align-items: center;
     height: 30px;
     padding: 0 12px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text-2);
     white-space: nowrap;
@@ -228,7 +228,7 @@
     background-position: center;
     background-size: cover;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-gif-tile img {
@@ -312,7 +312,7 @@
     justify-content: flex-end;
     height: 28px;
     padding: 0 12px;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     color: var(--chat-muted);
     background: var(--chat-sidebar);
     border-top: 1px solid var(--chat-line);
@@ -327,13 +327,6 @@
     font-weight: 800;
     color: var(--chat-text-2);
     letter-spacing: .04em;
-}
-
-/* Reduced motion: the loading tiles hold still. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-gif-tile.is-loading {
-        animation: none;
-    }
 }
 </style>
 

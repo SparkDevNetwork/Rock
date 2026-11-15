@@ -222,7 +222,7 @@
     align-items: center;
     min-height: 20px;
     margin-top: 7px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     /* A whole-pixel line, so the badge sits on the pixel grid. */
     line-height: 20px;
     color: var(--chat-muted);
@@ -328,7 +328,7 @@
     position: absolute;
     top: 5px;
     right: 6px;
-    z-index: 2;
+    z-index: var(--chat-z-raised);
     width: 30px;
     height: 30px;
     pointer-events: none;
@@ -374,7 +374,7 @@
     content: "";
     border: 2px solid currentColor;
     border-right-color: transparent;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     animation: chat-spin var(--chat-d-spin) linear infinite;
 }
 

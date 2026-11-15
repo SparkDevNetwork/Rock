@@ -217,7 +217,7 @@
 .chat-picker-label {
     padding: 8px 4px 4px;
     margin: 0;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     line-height: 13px;
     color: var(--chat-muted);
@@ -243,12 +243,12 @@
     width: 36px;
     height: 36px;
     padding: 0;
-    font-size: 22px;
+    font-size: var(--chat-emoji-md);
     line-height: 1;
     cursor: pointer;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -263,8 +263,8 @@
 }
 
 img.chat-picker-glyph {
-    width: 22px;
-    height: 22px;
+    width: var(--chat-emoji-md);
+    height: var(--chat-emoji-md);
     object-fit: contain;
 }
 
@@ -274,11 +274,11 @@ img.chat-picker-glyph {
 
 .chat-picker-cell:hover .chat-picker-glyph,
 .chat-picker-cell:focus-visible .chat-picker-glyph {
-    transform: scale(1.15);
+    transform: scale(var(--chat-glyph-grow));
 }
 
 .chat-picker-cell:active .chat-picker-glyph {
-    transform: scale(.92);
+    transform: scale(var(--chat-glyph-press));
     transition-duration: var(--chat-d-glyph-press);
 }
 
@@ -313,14 +313,14 @@ img.chat-picker-glyph {
 
 .chat-picker-empty {
     padding: 28px 10px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     text-align: center;
 }
 
 .chat-picker-more {
     padding: 10px 4px 2px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
     text-align: center;
 }
@@ -356,7 +356,7 @@ img.chat-picker-glyph {
 
 /* The category glyphs sit quiet in grey until hovered or chosen, so the row reads as chrome. */
 .chat-picker-tab-glyph {
-    font-size: 16px;
+    font-size: var(--chat-emoji-sm);
     line-height: 1;
     opacity: .62;
     filter: grayscale(1);
@@ -414,13 +414,13 @@ img.chat-picker-glyph {
 .chat-picker-prev {
     flex: none;
     width: 30px;
-    font-size: 28px;
+    font-size: var(--chat-emoji-lg);
     line-height: 1;
     text-align: center;
 }
 
 img.chat-picker-prev {
-    height: 28px;
+    height: var(--chat-emoji-lg);
     object-fit: contain;
 }
 
@@ -440,7 +440,7 @@ img.chat-picker-prev {
 
 .chat-picker-name span {
     overflow: hidden;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 400;
     color: var(--chat-muted);
     text-overflow: ellipsis;
@@ -459,14 +459,6 @@ img.chat-picker-prev {
     .chat-picker-tray-more {
         width: 32px;
         height: 32px;
-    }
-}
-
-/* Reduced motion: no glyph scaling. The pop's distance and scale are already off in the tokens. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-picker-glyph {
-        transition: none;
-        transform: none !important;
     }
 }
 </style>

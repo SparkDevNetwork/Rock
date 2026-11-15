@@ -64,6 +64,7 @@
 }
 
 .chat-joinbar {
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     display: flex;
     gap: 12px;
     align-items: center;
@@ -71,14 +72,7 @@
     background: var(--chat-brand-tint);
     border: 1px solid color-mix(in srgb, var(--chat-brand) 35%, transparent);
     border-radius: var(--chat-r-bar);
-    animation: chat-strip-in var(--chat-t-base) var(--chat-ease-in);
-}
-
-@keyframes chat-strip-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-joinbar > :deep(.chat-ic) {
@@ -161,7 +155,7 @@
 .chat-joinbar-btn.is-line {
     height: 30px;
     padding: 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line-strong);
@@ -174,13 +168,6 @@
 .chat-joinbar-btn .chat-spinner {
     width: 13px;
     height: 13px;
-}
-
-/* Reduced motion: the bar only fades in, as the quote strip does. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-joinbar {
-        animation-name: chat-crossfade;
-    }
 }
 </style>
 

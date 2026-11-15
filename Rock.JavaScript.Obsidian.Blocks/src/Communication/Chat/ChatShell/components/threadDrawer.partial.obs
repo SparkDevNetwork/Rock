@@ -246,7 +246,7 @@
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-th-skeleton {
@@ -272,7 +272,7 @@
     gap: 10px;
     align-items: center;
     margin: 16px 18px 2px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-muted);
 }

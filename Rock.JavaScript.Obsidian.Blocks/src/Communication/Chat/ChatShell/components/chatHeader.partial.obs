@@ -182,7 +182,7 @@
     text-align: left;
     background: var(--chat-header-id-fill);
     border: 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -212,7 +212,7 @@ button.chat-header-id:active {
 
 button.chat-header-id:hover .chat-header-chev {
     opacity: 1;
-    transform: translateY(1px);
+    transform: translateY(var(--chat-nudge));
 }
 
 .is-phone .chat-header-id {
@@ -228,7 +228,7 @@ button.chat-header-id:hover .chat-header-chev {
     height: 38px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-hdr-ic);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-header-title {
@@ -240,7 +240,7 @@ button.chat-header-id:hover .chat-header-chev {
 
 .chat-header-name {
     overflow: hidden;
-    font-size: 16px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     letter-spacing: -.01em;
     white-space: nowrap;
@@ -309,7 +309,7 @@ button.chat-header-id:hover .chat-header-chev {
     height: 8px;
     pointer-events: none;
     background: var(--chat-danger);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
@@ -349,7 +349,7 @@ button.chat-header-id:hover .chat-header-chev {
     height: 26px;
     color: var(--chat-icon);
     background: var(--chat-hover);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 /*
@@ -391,7 +391,7 @@ button.chat-header-id:hover .chat-header-chev {
     gap: 10px;
     align-items: center;
     padding: 9px 20px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     border-bottom: 1px solid var(--chat-conn-line-warning);
 }
@@ -421,11 +421,11 @@ button.chat-header-id:hover .chat-header-chev {
     align-items: center;
     margin: 10px 16px 0;
     padding: 10px 12px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-text);
     background: var(--chat-warning-soft);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-service-banner :deep(.chat-ic) {
@@ -442,7 +442,7 @@ button.chat-header-id:hover .chat-header-chev {
 
 .chat-conn-bar-host {
     position: relative;
-    z-index: 6;
+    z-index: var(--chat-z-bar);
     flex: none;
     height: 0;
 }
@@ -464,7 +464,7 @@ button.chat-header-id:hover .chat-header-chev {
     width: 40%;
     content: "";
     background: linear-gradient(90deg, transparent, var(--chat-warning), transparent);
-    animation: chat-header-sweep var(--chat-d-sweep) var(--chat-ease-state) infinite;
+    animation: chat-sweep var(--chat-d-sweep) var(--chat-ease-state) infinite;
 }
 
 .chat-fade-enter-active,
@@ -475,27 +475,6 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-fade-enter-from,
 .chat-fade-leave-to {
     opacity: 0;
-}
-
-@keyframes chat-header-sweep {
-    from {
-        transform: translateX(-100%);
-    }
-
-    to {
-        transform: translateX(260%);
-    }
-}
-
-/* Looping decoration stops; the words beside it still say what is happening. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-conn-bar::after {
-        animation: none;
-    }
-
-    button.chat-header-id:hover .chat-header-chev {
-        transform: none;
-    }
 }
 </style>
 

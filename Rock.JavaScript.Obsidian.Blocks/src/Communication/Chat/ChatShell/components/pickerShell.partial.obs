@@ -26,7 +26,8 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut the picker near its edge. */
 .chat-picker {
-    z-index: 1050;
+    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
+    z-index: var(--chat-z-popover);
     display: flex;
     flex-direction: column;
     width: 328px;
@@ -37,7 +38,7 @@
     border-radius: var(--chat-r-pop);
     outline: none;
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-picker-in var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 /* A pill as wide as what it holds, as the emoji tray's quick reactions are. */
@@ -55,14 +56,14 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 71;
+    z-index: var(--chat-z-sheet);
     width: auto;
     max-width: none;
     height: 72%;
     max-height: none;
     padding-bottom: env(safe-area-inset-bottom, 0px);
     border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
-    animation: chat-picker-sheet-in var(--chat-t-panel) var(--chat-ease-in);
+    animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
 }
 
 .chat-picker-grab {
@@ -71,73 +72,36 @@
     height: 5px;
     margin: 8px auto 4px;
     background: var(--chat-line-strong);
-    border-radius: 3px;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-picker-scrim {
     position: absolute;
     inset: 0;
-    z-index: 70;
+    z-index: var(--chat-z-scrim);
     background: var(--chat-scrim);
-    animation: chat-crossfade var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-fade-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 /* Leaves half as far and faster than it came, and takes no press on its way out. */
 .chat-picker.is-leaving {
     pointer-events: none;
-    animation: chat-picker-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    animation: chat-pop-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
 .chat-picker.is-sheet.is-leaving {
-    animation: chat-picker-sheet-out var(--chat-t-base) var(--chat-ease-out) forwards;
+    animation: chat-slide-out var(--chat-t-base) var(--chat-ease-out) forwards;
 }
 
 .chat-picker-scrim.is-leaving {
     pointer-events: none;
-    animation: chat-picker-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+    animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
 }
 
-/* From just toward what opened it and a touch small; toward is down when the picker sits above. */
-@keyframes chat-picker-in {
-    from {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
-    }
-}
-
-@keyframes chat-picker-out {
-    to {
-        opacity: 0;
-        transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
-    }
-}
-
-@keyframes chat-picker-sheet-in {
-    from {
-        transform: translateY(100%);
-    }
-}
-
-@keyframes chat-picker-sheet-out {
-    to {
-        transform: translateY(100%);
-    }
-}
-
-@keyframes chat-picker-scrim-out {
-    to {
-        opacity: 0;
-    }
-}
-
-/* Reduced motion: the sheet only fades, as every other entrance does. */
+/* Reduced motion: the sheet's way out is a fade at the fast length, which the set's slide keeps at the base one. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-picker.is-sheet {
-        animation-name: chat-crossfade;
-    }
-
     .chat-picker.is-sheet.is-leaving {
-        animation: chat-picker-scrim-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+        animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
     }
 }
 </style>

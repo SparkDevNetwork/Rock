@@ -223,7 +223,7 @@
     height: 44px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 /* The leaders' faces in a pile, ringed by the sheet in the group's own color. */
@@ -271,7 +271,7 @@
     vertical-align: middle;
     content: "";
     background: currentColor;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     opacity: .55;
 }
 
@@ -289,7 +289,7 @@
     gap: 6px;
     align-items: center;
     max-width: 60%;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -330,7 +330,7 @@
     gap: 2px;
     padding: 3px;
     background: var(--chat-tab-track);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-seg-opt {
@@ -342,12 +342,12 @@
     height: 32px;
     padding: 0 6px;
     font: inherit;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-muted);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -382,7 +382,7 @@
     align-items: center;
     height: 30px;
     padding: 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: transparent;
@@ -461,18 +461,19 @@
 
 /* The leave confirm, asked in the Leave row's place in danger's soft color. */
 .chat-leave-box {
+    --chat-rise: calc(var(--chat-rise-sm) * .5);
     padding: 14px 16px;
     background: var(--chat-danger-soft);
-    animation: chat-rd-in var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-leave-box b {
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
 }
 
 .chat-leave-box p {
     margin: 4px 0 12px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text-2);
 }
 
@@ -499,26 +500,6 @@
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-}
-
-@keyframes chat-rd-in {
-    from {
-        opacity: 0;
-        transform: translateY(2px);
-    }
-}
-
-/* Reduced motion: the leave box only fades in. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-leave-box {
-        animation-name: chat-rd-fade-in;
-    }
-}
-
-@keyframes chat-rd-fade-in {
-    from {
-        opacity: 0;
-    }
 }
 </style>
 

@@ -76,7 +76,7 @@
 .chat-tools {
     position: absolute;
     top: 0;
-    z-index: 6;
+    z-index: var(--chat-z-bar);
     display: flex;
     gap: 2px;
     align-items: center;
@@ -227,11 +227,11 @@ img.chat-tool-glyph {
 }
 
 .chat-tool.is-glyph:hover .chat-tool-glyph {
-    transform: scale(1.15);
+    transform: scale(var(--chat-glyph-grow));
 }
 
 .chat-tool.is-glyph:active .chat-tool-glyph {
-    transform: scale(.92);
+    transform: scale(var(--chat-glyph-press));
     transition-duration: var(--chat-d-glyph-press);
 }
 
@@ -286,54 +286,14 @@ img.chat-tool-glyph {
     waits two frames for its starting class to be swapped, and the bar came late.
 */
 .chat-tools-enter-active {
-    animation: chat-tools-fade-in var(--chat-d-tools-show) linear, chat-tools-rise-in var(--chat-d-tools-move) var(--chat-ease-in);
+    --chat-slide-from: calc(var(--chat-rise-sm) * .75);
+    animation: chat-slide-in var(--chat-d-tools-move) var(--chat-ease-in), chat-fade-in var(--chat-d-tools-show) linear;
 }
 
 .chat-tools-leave-active {
+    --chat-slide-to: calc(var(--chat-rise-sm) * .75);
     pointer-events: none;
-    animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards, chat-tools-sink-out var(--chat-d-tools-move) var(--chat-ease-in) forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .chat-tool-glyph,
-    .chat-tool.is-glyph:hover .chat-tool-glyph,
-    .chat-tool.is-glyph:active .chat-tool-glyph {
-        transition: none;
-        transform: none;
-    }
-
-    /* Fades in and out where it stands, as every entrance does, without the rise and sink. */
-    .chat-tools-enter-active {
-        animation: chat-tools-fade-in var(--chat-d-tools-show) linear;
-    }
-
-    .chat-tools-leave-active {
-        animation: chat-tools-fade-out var(--chat-d-tools-hide) linear forwards;
-    }
-}
-
-@keyframes chat-tools-fade-in {
-    from {
-        opacity: 0;
-    }
-}
-
-@keyframes chat-tools-rise-in {
-    from {
-        transform: translateY(3px);
-    }
-}
-
-@keyframes chat-tools-fade-out {
-    to {
-        opacity: 0;
-    }
-}
-
-@keyframes chat-tools-sink-out {
-    to {
-        transform: translateY(3px);
-    }
+    animation: chat-slide-out var(--chat-d-tools-move) var(--chat-ease-in) forwards, chat-fade-out var(--chat-d-tools-hide) linear forwards;
 }
 </style>
 

@@ -80,7 +80,7 @@
 
 .chat-panel-title b {
     overflow: hidden;
-    font-size: 16px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     white-space: nowrap;
     text-overflow: ellipsis;
