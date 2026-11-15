@@ -32,6 +32,8 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { basename, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { runRatchet } from './known-debt.mjs';
+
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 
 const chatFolder = 'Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat';
@@ -459,8 +461,511 @@ export function scanKeyframeNames(files) {
   return hits;
 }
 
+// #region Convictions held by the ratchet
+
+/**
+ * The style rules the ratchet holds, each with the reason a reader here needs. A ratchet rule may
+ * keep the findings recorded for a file in known-debt.json and no more; a report rule only counts.
+ */
+export const STYLE_RULES = [
+  { id: 'S1', mode: 'ratchet', reason: 'a font size is one of the sizes the token sheet names, so the type scale changes in one place' },
+  { id: 'S2', mode: 'ratchet', reason: 'a corner is one of the radii the token sheet names, so buttons, fields and surfaces stay one family' },
+  { id: 'S3', mode: 'ratchet', reason: 'a layer is one of the layers the token sheet names, so what floats over what is decided once; auto, -1, 0 and 1 only order siblings' },
+  { id: 'S4', mode: 'ratchet', reason: 'how far a thing moves while it animates is a token, so every rise and slide travels the same distance' },
+  { id: 'S5', mode: 'ratchet', reason: 'the chat has one set of animations, in the token sheet, so a motion is changed once for every screen' },
+  { id: 'S6', mode: 'ratchet', reason: 'a component never restyles the inside of another; a part that should look different changes itself, for every screen' },
+  { id: 'S7', mode: 'ratchet', reason: '!important ends the order the styles are written in, so the next change has to win by force too' },
+  { id: 'S8', mode: 'ratchet', reason: 'reduced motion is honoured once, in the token sheet, so no screen forgets it and none answers it differently' },
+  { id: 'S9', mode: 'ratchet', reason: 'a token nothing reads is a value a reader has to keep in mind for nothing' },
+  { id: 'S10', mode: 'report', reason: 'a token read once may be a value with a name and no second caller' },
+  { id: 'S11', mode: 'report', reason: 'a class the token sheet styles that no chat file uses may be a rule left behind' },
+  { id: 'S12', mode: 'ratchet', reason: 'a part owns its look: a rule outside it that names a class only that part renders is a screen restyling the part' },
+];
+
+/** Whether a file is the token sheet, which holds tokens and the shared rules. */
+function isSheet(file) {
+  return basename(file) === 'chat.css';
+}
+
+/**
+ * A function from a character offset to its line, counting from one, which finds the line by a
+ * binary search over the line starts so a file with many findings is read once.
+ */
+export function lineFinder(text) {
+  const starts = [0];
+  for (let i = 0; i < text.length; i++) if (text[i] === '\n') starts.push(i + 1);
+  return (offset) => {
+    let low = 0;
+    let high = starts.length - 1;
+    while (low < high) {
+      const middle = (low + high + 1) >> 1;
+      if (starts[middle] <= offset) low = middle;
+      else high = middle - 1;
+    }
+    return low + 1;
+  };
+}
+
+/** The text with every character in the range blanked and its line breaks kept. */
+function blank(text, from, to) {
+  return text.slice(0, from) + text.slice(from, to).replace(/[^\n]/g, ' ') + text.slice(to);
+}
+
+/**
+ * Each string literal in a stretch of script, skipping comments: its quote, its content and where
+ * the content starts. A plain string ends at its line; a template string runs on.
+ */
+export function* scriptStrings(text, start = 0, end = text.length) {
+  let i = start;
+  while (i < end) {
+    const c = text[i];
+    const next = text[i + 1];
+    if (c === '/' && next === '/') {
+      while (i < end && text[i] !== '\n') i++;
+    } else if (c === '/' && next === '*') {
+      const close = text.indexOf('*/', i + 2);
+      i = close < 0 ? end : close + 2;
+    } else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1;
+      while (j < end && text[j] !== c) {
+        if (text[j] === '\\') j++;
+        if (text[j] === '\n' && c !== '`') break;
+        j++;
+      }
+      yield { quote: c, value: text.slice(i + 1, j), offset: i + 1 };
+      i = j + 1;
+    } else {
+      i++;
+    }
+  }
+}
+
+/** A stretch of script with its comments blanked, so a pattern never matches what a comment says. */
+function scriptCode(text, start, end) {
+  let out = text;
+  let i = start;
+  while (i < end) {
+    const c = text[i];
+    const next = text[i + 1];
+    if (c === '/' && next === '/') {
+      const close = text.indexOf('\n', i);
+      const to = close < 0 || close > end ? end : close;
+      out = blank(out, i, to);
+      i = to;
+    } else if (c === '/' && next === '*') {
+      const close = text.indexOf('*/', i + 2);
+      const to = close < 0 ? end : close + 2;
+      out = blank(out, i, to);
+      i = to;
+    } else if (c === '"' || c === "'" || c === '`') {
+      let j = i + 1;
+      while (j < end && text[j] !== c) {
+        if (text[j] === '\\') j++;
+        if (text[j] === '\n' && c !== '`') break;
+        j++;
+      }
+      i = j + 1;
+    } else {
+      i++;
+    }
+  }
+  return out;
+}
+
+/**
+ * Where a chat file's code sits: its style blocks, its script blocks and its template, as offsets.
+ * A stylesheet is one style region and a script file one script region.
+ */
+export function regionsOf(file, text) {
+  if (file.endsWith('.css')) return { styles: [{ start: 0, end: text.length }], scripts: [], template: null };
+  if (file.endsWith('.ts')) return { styles: [], scripts: [{ start: 0, end: text.length }], template: null };
+
+  const inner = (pattern) => [...text.matchAll(pattern)].map((match) => {
+    const start = match.index + match[0].indexOf('>') + 1;
+    return { start, end: start + match[1].length };
+  });
+  const templateStart = text.indexOf('<template');
+  const templateEnd = text.lastIndexOf('</template>');
+  return {
+    styles: inner(/<style[^>]*>([\s\S]*?)<\/style>/g),
+    scripts: inner(/<script[^>]*>([\s\S]*?)<\/script>/g),
+    template: templateStart >= 0 && templateEnd > templateStart ? { start: templateStart, end: templateEnd } : null,
+  };
+}
+
+/**
+ * A chat file with every comment blanked, in whichever language each region speaks, and its
+ * line breaks kept, so a pattern reads only code and every offset still holds.
+ */
+export function codeOf(file, text) {
+  const { styles, scripts, template } = regionsOf(file, text);
+  let out = text;
+  for (const { start, end } of styles) {
+    for (const match of text.slice(start, end).matchAll(/\/\*[\s\S]*?\*\//g)) out = blank(out, start + match.index, start + match.index + match[0].length);
+  }
+  for (const { start, end } of scripts) {
+    const code = scriptCode(text, start, end);
+    out = out.slice(0, start) + code.slice(start, end) + out.slice(end);
+  }
+  if (template) {
+    for (const match of text.slice(template.start, template.end).matchAll(/<!--[\s\S]*?-->/g)) {
+      out = blank(out, template.start + match.index, template.start + match.index + match[0].length);
+    }
+  }
+  return out;
+}
+
+/**
+ * Walks a stretch of CSS whose comments are already blanked, calling back for every rule's prelude
+ * and every declaration, with whether the declaration sits inside keyframes.
+ */
+function walkCss(css, start, end, { onPrelude = () => {}, onDeclaration = () => {} }) {
+  const stack = [];
+  let segmentStart = start;
+  let selector = '';
+
+  const declaration = (from, to) => {
+    const body = css.slice(from, to);
+    const colon = body.indexOf(':');
+    if (colon < 0) return;
+    const value = body.slice(colon + 1);
+    onDeclaration({
+      property: body.slice(0, colon).trim().toLowerCase(),
+      value: value.trim(),
+      offset: from + colon + 1 + value.search(/\S|$/),
+      selector,
+      isInKeyframes: stack.includes('keyframes'),
+    });
+  };
+
+  for (let i = start; i < end; i++) {
+    const c = css[i];
+    if (c === '{') {
+      const prelude = css.slice(segmentStart, i).trim();
+      const offset = segmentStart + css.slice(segmentStart, i).search(/\S|$/);
+      const isKeyframes = /^@(-webkit-)?keyframes\b/i.test(prelude);
+      const isGroup = prelude.startsWith('@') && !/^@(font-face|page)/.test(prelude);
+      stack.push(isKeyframes ? 'keyframes' : isGroup ? 'group' : 'rule');
+      if (!isGroup) selector = prelude;
+      onPrelude({ prelude, offset, isRule: !isGroup && !stack.slice(0, -1).includes('keyframes') });
+      segmentStart = i + 1;
+    } else if (c === '}') {
+      if (stack[stack.length - 1] === 'rule') declaration(segmentStart, i);
+      stack.pop();
+      segmentStart = i + 1;
+    } else if (c === ';' && stack[stack.length - 1] === 'rule') {
+      declaration(segmentStart, i);
+      segmentStart = i + 1;
+    }
+  }
+}
+
+/** A token's name stripped from each var(), so a number in a token's name is never read as a literal. */
+function withoutTokenNames(value) {
+  return value.replace(/var\(\s*--[\w-]+/g, 'var(');
+}
+
+const LENGTH = /(?<![\w.#-])-?\d*\.?\d+(px|r?em|%|pt|vw|vh|vmin|vmax|ch|ex|lh)(?![\w-])/i;
+const SIZE_KEYWORD = /(?<![\w-])(xx-small|x-small|small|medium|large|x-large|xx-large|xxx-large|smaller|larger)(?![\w-])/i;
+const NOT_A_VALUE = /^(inherit|initial|unset|revert|0)$/i;
+const SAFE_LAYER = /^(auto|-1|0|1|inherit|initial|unset|revert)$/i;
+const RADIUS = /^border(-(top|bottom)-(left|right)|-(start|end)-(start|end))?-radius$/;
+
+/** The ratchet rule a declaration breaks with its literal, or null. Shared by style blocks, inline styles and script. */
+function literalRule(property, rawValue) {
+  const value = rawValue.replace(/\s*!important\s*$/i, '').trim();
+  if (NOT_A_VALUE.test(value)) return null;
+  const bare = withoutTokenNames(value);
+  if (property === 'font-size' && (LENGTH.test(bare) || SIZE_KEYWORD.test(bare))) return { rule: 'S1', what: `a literal font size (${value})` };
+  if (property === 'font' && LENGTH.test(bare)) return { rule: 'S1', what: `a literal font size in the font shorthand (${value})` };
+  if (RADIUS.test(property) && LENGTH.test(bare)) return { rule: 'S2', what: `a literal radius (${value})` };
+  if (property === 'z-index' && !SAFE_LAYER.test(value) && /-?\d+/.test(bare)) return { rule: 'S3', what: `a literal layer (${value})` };
+  return null;
+}
+
+/** A px distance other than zero, as keyframes or a script animation hold it, or null. */
+function nonZeroPx(value) {
+  for (const match of withoutTokenNames(value).matchAll(/(?<![\w.#-])-?(\d*\.?\d+)px(?![\w-])/gi)) {
+    if (Number(match[1]) !== 0) return match[0];
+  }
+  return null;
+}
+
+/** A script's style property in CSS's own spelling: fontSize, "font-size" and font-size alike. */
+function cssName(name) {
+  return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+}
+
+/** A template string's static text, each ${...} standing for a value computed at run time. */
+function staticText(value) {
+  return value.replace(/\$\{[^}]*\}/g, 'X');
+}
+
+const SCRIPT_STYLE = /(["'`]?)(fontSize|font-size|font|borderRadius|border-radius|border(?:Top|Bottom)(?:Left|Right)Radius|border-(?:top|bottom)-(?:left|right)-radius|zIndex|z-index)\1\s*(?:=(?!=)|:)\s*(?:(["'`])((?:\\.|(?!\3)[^\\\n])*)\3|(-?\d+(?:\.\d+)?)(?![\w.]))/g;
+const SET_PROPERTY = /setProperty\(\s*(["'])([\w-]+)\1\s*,\s*(["'`])((?:\\.|(?!\3)[^\\\n])*)\3(\s*,\s*["']important["'])?/g;
+
+/** What a stretch of script, or a bound style in the template, holds against the style rules. */
+function scriptStyleFindings(file, text, start, end, add) {
+  const code = scriptCode(text, start, end).slice(start, end);
+
+  for (const match of code.matchAll(SCRIPT_STYLE)) {
+    if (/[\w$-]/.test(code[match.index - 1] ?? '')) continue;
+    const value = match[4] !== undefined ? staticText(match[4]) : match[5];
+    const found = literalRule(cssName(match[2]), value);
+    if (found) add(found.rule, start + match.index, found.what);
+  }
+  for (const match of code.matchAll(SET_PROPERTY)) {
+    const found = literalRule(match[2], staticText(match[4]));
+    if (found) add(found.rule, start + match.index, found.what);
+    if (match[5]) add('S7', start + match.index, 'an important priority set from script');
+  }
+  for (const string of scriptStrings(text, start, end)) {
+    if (/!important/i.test(string.value)) add('S7', string.offset, '!important in a script string');
+  }
+
+  // A script animation's keyframes are the first argument to animate(): the array up to its bracket.
+  for (const match of code.matchAll(/\.animate\(\s*\[/g)) {
+    let depth = 0;
+    let close = match.index + match[0].length - 1;
+    for (; close < code.length; close++) {
+      if (code[close] === '[') depth++;
+      else if (code[close] === ']' && --depth === 0) break;
+    }
+    const from = start + match.index + match[0].length - 1;
+    for (const string of scriptStrings(text, from, start + close)) {
+      const px = nonZeroPx(staticText(string.value));
+      if (px) {
+        add('S4', start + match.index, `a ${px} distance in a script animation's keyframes`);
+        break;
+      }
+    }
+  }
+}
+
+/** What a stretch of CSS holds against the style rules S1 to S8. */
+function cssFindings(file, text, start, end, add) {
+  const css = text.slice(0, start) + text.slice(start, end).replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, ' ')) + text.slice(end);
+  const sheet = isSheet(file);
+
+  walkCss(css, start, end, {
+    onPrelude({ prelude, offset }) {
+      if (!sheet && /^@(-webkit-)?keyframes\b/i.test(prelude)) add('S5', offset, `keyframes outside the token sheet (${prelude})`);
+      if (!sheet && /^@media\b/i.test(prelude) && /prefers-reduced-motion/i.test(prelude)) add('S8', offset, 'a reduced-motion query outside the token sheet');
+      if (/:deep\(|::v-deep|:global\(|>>>|\/deep\//.test(prelude)) add('S6', offset, `a selector reaching into another component (${prelude.replace(/\s+/g, ' ')})`);
+    },
+    onDeclaration({ property, value, offset, isInKeyframes }) {
+      if (/!important/i.test(value)) add('S7', offset, `!important on ${property}`);
+      if (property.startsWith('--')) return;
+      if (isInKeyframes) {
+        const px = nonZeroPx(value);
+        if (px) add('S4', offset, `a ${px} distance inside keyframes`);
+      }
+      const found = literalRule(property, value);
+      if (found) add(found.rule, offset, found.what);
+    },
+  });
+}
+
+/** What a template's inline styles hold: a static one read as CSS declarations, a bound one as script. */
+function templateFindings(file, text, start, end, add) {
+  const template = text.slice(start, end);
+  for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+    const valueStart = start + match.index + match[0].length - match[4].length - 1;
+    if (match[2] !== 'style') {
+      scriptStyleFindings(file, text, valueStart, valueStart + match[4].length, add);
+      continue;
+    }
+    let at = valueStart;
+    for (const piece of splitOutside(match[4], (c) => c === ';')) {
+      const colon = piece.indexOf(':');
+      if (colon >= 0) {
+        const property = piece.slice(0, colon).trim().toLowerCase();
+        const value = piece.slice(colon + 1);
+        if (/!important/i.test(value)) add('S7', at, `!important on ${property} in an inline style`);
+        const found = literalRule(property, value);
+        if (found) add(found.rule, at, `${found.what} in an inline style`);
+      }
+      at += piece.length + 1;
+    }
+  }
+}
+
+/**
+ * The compounds a selector's rule lands on: the last compound of each selector in its list, and
+ * inside :deep(), :is() and their kind the argument's own last compounds, since the argument is
+ * the element itself. A compound named before a combinator, or inside :has() or :not(), is
+ * something the element sits in, follows, holds or is not.
+ */
+export function styledCompounds(selector) {
+  const out = [];
+  for (const one of splitOutside(selector, (c) => c === ',')) {
+    const compounds = splitOutside(one.trim(), (c) => /[\s>+~]/.test(c)).filter((part) => part !== '');
+    const last = compounds[compounds.length - 1] ?? '';
+
+    let own = '';
+    for (let i = 0; i < last.length; i++) {
+      const pseudo = /^::?[\w-]+\(/.exec(last.slice(i));
+      if (!pseudo) {
+        own += last[i];
+        continue;
+      }
+      let depth = 0;
+      let end = i + pseudo[0].length - 1;
+      for (; end < last.length; end++) {
+        if (last[end] === '(') depth++;
+        else if (last[end] === ')' && --depth === 0) break;
+      }
+      const name = pseudo[0].slice(0, -1);
+      if (SAME_ELEMENT.test(name)) out.push(...styledCompounds(last.slice(i + pseudo[0].length, end)));
+      i = end;
+    }
+    out.push(own);
+  }
+  return out;
+}
+
+/** Every class a template puts on an element: from class attributes and the strings of bound ones. */
+function templateClasses(text, template) {
+  const classes = new Set();
+  const markup = text.slice(template.start, template.end);
+  for (const match of markup.matchAll(/\sclass\s*=\s*(["'])([^"']*)\1/g)) {
+    for (const name of match[2].split(/\s+/)) if (name) classes.add(name);
+  }
+  for (const match of markup.matchAll(/\s(?::class|v-bind:class)\s*=\s*(["'])([\s\S]*?)\1/g)) {
+    for (const string of match[2].matchAll(/['`]([\w\s-]+)['`]/g)) {
+      for (const name of string[1].split(/\s+/)) if (name) classes.add(name);
+    }
+  }
+  return classes;
+}
+
+/**
+ * Across files: S9 and S10 count every read of each token the sheet defines; S11 finds the chat
+ * classes the sheet styles that no other chat file names; S12 finds a rule outside a part naming a
+ * class only that part renders.
+ */
+function crossFileFindings(files, push) {
+  const codes = files.map(({ file, text }) => ({ file, text, code: codeOf(file, text) }));
+
+  // Tokens: defined by a declaration in the sheet, read by var() anywhere or by a script string
+  // that is the token's whole name, other than a style binding's key or the name setProperty
+  // writes. A name built from a prefix and a value read at run time reads the whole family.
+  const defined = new Map();
+  const reads = new Map();
+  const families = new Set();
+  for (const { file, text, code } of codes) {
+    if (!isSheet(file)) continue;
+    walkCss(code, 0, code.length, {
+      onDeclaration({ property, offset }) {
+        if (property.startsWith('--') && !defined.has(property)) defined.set(property, { file, text, offset });
+      },
+    });
+  }
+  const read = (name) => reads.set(name, (reads.get(name) ?? 0) + 1);
+  for (const { code } of codes) {
+    for (const match of code.matchAll(/var\(\s*(--[\w-]+)/g)) read(match[1]);
+    for (const match of code.matchAll(/(["'`])(--[\w-]+)\1/g)) {
+      const after = code.slice(match.index + match[0].length);
+      const before = code.slice(Math.max(0, match.index - 20), match.index);
+      if (/^\s*:/.test(after) || /setProperty\(\s*$/.test(before)) continue;
+      read(match[2]);
+    }
+    for (const match of code.matchAll(/(--[\w-]*-)(?:\$\{|["'`]\s*\+)/g)) {
+      // The name setProperty writes is a definition, not a read.
+      if (!/setProperty\(\s*["'`]$/.test(code.slice(Math.max(0, match.index - 20), match.index))) families.add(match[1]);
+    }
+  }
+  for (const [name, { file, text, offset }] of defined) {
+    if ([...families].some((prefix) => name.startsWith(prefix))) continue;
+    const count = reads.get(name) ?? 0;
+    const line = lineFinder(text)(offset);
+    if (count === 0) push({ rule: 'S9', file, line, what: `${name} is defined and never read` });
+    else if (count === 1) push({ rule: 'S10', file, line, what: `${name} is read once` });
+  }
+
+  // Classes the sheet styles that no other chat file names. A class built from a prefix at run time
+  // is reported too: the same prefixes build element ids, so reading them as classes would hide
+  // most of the sheet, and a report that names a few live classes costs a reader a search.
+  const named = new Set();
+  for (const { file, code } of codes) {
+    if (isSheet(file)) continue;
+    for (const match of code.matchAll(/(?<![\w-])chat-[\w-]*/g)) named.add(match[0]);
+  }
+  for (const { file, text, code } of codes) {
+    if (!isSheet(file)) continue;
+    const lineOf = lineFinder(text);
+    const seen = new Set();
+    walkCss(code, 0, code.length, {
+      onPrelude({ prelude, offset, isRule }) {
+        if (!isRule) return;
+        for (const match of prelude.matchAll(/\.(chat-[\w-]+)/g)) {
+          const name = match[1];
+          if (seen.has(name) || named.has(name)) continue;
+          seen.add(name);
+          push({ rule: 'S11', file, line: lineOf(offset), what: `.${name} is styled here and used by no chat file` });
+        }
+      },
+    });
+  }
+
+  // Parts' classes: a class a part's template renders that no other template renders is the part's.
+  const renderedBy = new Map();
+  for (const { file, text } of codes) {
+    if (!file.endsWith('.obs')) continue;
+    const { template } = regionsOf(file, text);
+    if (!template) continue;
+    for (const name of templateClasses(text, template)) {
+      if (!renderedBy.has(name)) renderedBy.set(name, new Set());
+      renderedBy.get(name).add(file);
+    }
+  }
+  const owner = new Map();
+  for (const [name, renderers] of renderedBy) {
+    const [only] = renderers;
+    if (renderers.size === 1 && /\/ui\/[^/]+\.obs$/.test(only)) owner.set(name, only);
+  }
+  for (const { file, text, code } of codes) {
+    const lineOf = lineFinder(text);
+    for (const { start, end } of regionsOf(file, text).styles) {
+      walkCss(code, start, end, {
+        onPrelude({ prelude, offset, isRule }) {
+          if (!isRule || prelude.startsWith('@')) return;
+          const parts = new Set();
+          for (const compound of styledCompounds(prelude)) {
+            for (const match of compound.matchAll(/\.([\w-]+)/g)) {
+              const part = owner.get(match[1]);
+              if (part && part !== file) parts.add(`.${match[1]} (${basename(part)})`);
+            }
+          }
+          if (parts.size > 0) push({ rule: 'S12', file, line: lineOf(offset), what: `restyles a part from outside it: ${[...parts].join(', ')}` });
+        },
+      });
+    }
+  }
+}
+
+/**
+ * Everything the chat files hold against the ratchet's style rules, as findings of rule, file,
+ * line and what. Reads each file alone for S1 to S8, then all of them together for S9 to S12.
+ */
+export function findStyleDebt(files) {
+  const findings = [];
+  for (const { file, text } of files) {
+    const lineOf = lineFinder(text);
+    const add = (rule, offset, what) => findings.push({ rule, file, line: lineOf(offset), what });
+    const { styles, scripts, template } = regionsOf(file, text);
+    for (const { start, end } of styles) cssFindings(file, text, start, end, add);
+    for (const { start, end } of scripts) scriptStyleFindings(file, text, start, end, add);
+    if (template) templateFindings(file, text, template.start, template.end, add);
+  }
+  crossFileFindings(files, (found) => findings.push(found));
+  return findings;
+}
+
+// #endregion Convictions held by the ratchet
+
 /** Every component and script file under a folder, as paths from the repository root. */
-function walk(folder) {
+export function walk(folder) {
   const out = [];
   for (const entry of readdirSync(folder, { withFileTypes: true })) {
     const full = resolve(folder, entry.name);
@@ -485,19 +990,22 @@ const invokedDirectly = process.argv[1] && resolve(process.argv[1]) === fileURLT
 if (invokedDirectly) {
   const rootFlag = args.indexOf('--root');
   const files = rootFlag >= 0 && args[rootFlag + 1] ? walk(resolve(args[rootFlag + 1])) : styleFiles();
+  // One kind of line ending, which keeps every line number and lets a pattern stop at a line feed.
+  const read = files.map((file) => ({ file, text: readFileSync(resolve(repoRoot, file), 'utf8').replace(/\r\n/g, '\n') }));
 
   const hits = [];
-  for (const file of files) {
-    hits.push(...scan(file, readFileSync(resolve(repoRoot, file), 'utf8')));
-  }
-  hits.push(...scanKeyframeNames(files.map((file) => ({ file, text: readFileSync(resolve(repoRoot, file), 'utf8') }))));
+  for (const { file, text } of read) hits.push(...scan(file, text));
+  hits.push(...scanKeyframeNames(read));
+
+  const isRatchetFailed = runRatchet({ title: 'style convictions', rules: STYLE_RULES, findings: findStyleDebt(read), args });
 
   if (hits.length > 0) {
     console.error('style literals, kept comments or icon sizes in chat components:');
     for (const hit of hits) console.error(`  ${hit}`);
     console.error('\nName a value in the token sheet, RockWeb/Styles/Blocks/Communication/Chat/chat.css, and use the token; move a root comment inside the root and a slot comment above its component or into an element; size an icon with --chat-ic-size and --chat-ic-stroke on what holds it.');
-    process.exit(1);
+  } else {
+    console.log(`no style literals: ${files.length} chat files checked`);
   }
 
-  console.log(`no style literals: ${files.length} chat files checked`);
+  if (hits.length > 0 || isRatchetFailed) process.exit(1);
 }

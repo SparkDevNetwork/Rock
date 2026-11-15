@@ -30,8 +30,21 @@ jobs:
   unit:
     name: gates, build, unit and client tests
     runs-on: windows-2022
+    env:
+      # The style and parts checks hold the chat to the debt recorded in known-debt.json, and that
+      # file may only fall against the commit this run builds on: the pull request's base, or the
+      # branch tip before this push.
+      CHAT_DEBT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
     steps:
       - uses: actions/checkout@v5
+
+      # The checkout holds one commit, so the one the debt file is compared with is fetched. When it
+      # cannot be (a new branch, or a tip a force push removed), the checks say so and skip the
+      # comparison rather than fail for want of history.
+      - name: Fetch the commit the debt file is compared with
+        if: env.CHAT_DEBT_BASE != '' && env.CHAT_DEBT_BASE != '0000000000000000000000000000000000000000'
+        continue-on-error: true
+        run: git fetch --no-tags --depth=1 origin $env:CHAT_DEBT_BASE
 
       - uses: microsoft/setup-msbuild@v2
 
@@ -70,8 +83,13 @@ jobs:
         run: npm run check:references
         working-directory: ./Dev Tools/chat-ci
 
-      - name: The chat components draw only from the token sheet
+      # Both checks print their debt table to the run's summary.
+      - name: The chat components draw only from the token sheet, and hold no more style debt than recorded
         run: npm run check:styles
+        working-directory: ./Dev Tools/chat-ci
+
+      - name: Every chat behaviour, type and value set keeps one home, with no more debt than recorded
+        run: npm run check:parts
         working-directory: ./Dev Tools/chat-ci
 
       # The chat components import the shared framework, and its compiled helpers resolve tslib from

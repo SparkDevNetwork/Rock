@@ -44,9 +44,15 @@ const gates = [
     cwd: here,
   },
   {
-    name: 'the chat components draw only from the token sheet',
+    name: 'the chat components draw only from the token sheet, and hold no more style debt than recorded',
     cmd: process.execPath,
     args: ['check-styles.mjs'],
+    cwd: here,
+  },
+  {
+    name: 'every chat behaviour, type and value set keeps one home, with no more debt than recorded',
+    cmd: process.execPath,
+    args: ['check-parts.mjs'],
     cwd: here,
   },
   {
