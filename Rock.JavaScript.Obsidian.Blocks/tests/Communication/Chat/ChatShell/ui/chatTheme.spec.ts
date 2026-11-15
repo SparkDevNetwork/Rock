@@ -276,17 +276,15 @@ const tokens: Token[] = [
     { name: "t-base", light: "180ms" },
     { name: "t-msg", light: "260ms" },
     { name: "t-panel", light: "300ms" },
-    { name: "rise", light: "10px" },
+    { name: "rise", light: "8px" },
     { name: "msg-scale", light: ".985" },
     { name: "pop-scale", light: ".96" },
-    { name: "react-from", light: ".55" },
-    { name: "drawer-shift", light: "28px" }
+    { name: "react-from", light: ".55" }
 ];
 
 /** What reduced motion changes: no lift, no scale, no slide, and shorter entrances. */
 const reducedMotion: Array<[string, string]> = [
     ["rise", "0px"],
-    ["drawer-shift", "0px"],
     ["msg-scale", "1"],
     ["pop-scale", "1"],
     ["react-from", "1"],
@@ -320,7 +318,6 @@ const namedLiterals: Named[] = [
     { name: "d-flash", value: "2.2s" },
     { name: "d-row-flash", value: "1.2s" },
     { name: "d-roll", value: "220ms" },
-    { name: "d-badge-in", value: "260ms" },
     { name: "d-pop-remove", value: "130ms" },
     { name: "d-tools-show", value: "90ms" },
     { name: "d-tools-move", value: "140ms" },
@@ -337,7 +334,6 @@ const namedLiterals: Named[] = [
     { name: "d-tab-thumb", value: "240ms", reduced: "0ms" },
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
-    { name: "d-fd-pop", value: "420ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-divider-fade", value: "600ms" },
     { name: "d-read-fade", value: "400ms" },
@@ -825,10 +821,10 @@ describe("the components' own styles", () => {
         expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise-sm", isReducedMotion)).toBe("0px");
     });
 
-    // A conversation opened in place of another rises 6px into view over the view time on the
+    // A conversation opened in place of another rises by the rise into view over the view time on the
     // entrance curve; under reduced motion a switch is not animated at all. Its keyframes are the
     // token sheet's, where the build keeps the name the feed's tail finds the entrance by.
-    test("a conversation switch enters its feed from 6px below, and not at all under reduced motion", () => {
+    test("a conversation switch enters its feed from the rise below, and not at all under reduced motion", () => {
         const animation = declarationOf(feedPath, ".chat-feed.is-entering", "animation");
         expect(animation).toContain(normalize("var(--chat-d-view) var(--chat-ease-in)"));
 
@@ -836,8 +832,8 @@ describe("the components' own styles", () => {
         expect(keyframesBody(feedPath, name)).toBeNull();
         const frames = normalize(keyframesBody(sheetPath, name) ?? "");
         expect(frames).toContain("opacity:0");
-        expect(frames).toContain(normalize("transform: translateY(calc(var(--chat-rise-sm) * 1.5))"));
-        expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise-sm")).toBe("4px");
+        expect(frames).toContain(normalize("transform: translateY(var(--chat-rise))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise")).toBe("8px");
 
         expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("none");
     });
@@ -1040,10 +1036,12 @@ describe("the components' own styles", () => {
 
         test("pops, and stays in its own layer for its whole life, only where it is marked to pop", () => {
             expect(sheetRule(".chat-badge.is-pop", "will-change")).toBe("transform");
-            expect(sheetRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring)"));
+            expect(sheetRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-spring var(--chat-d-spring) var(--chat-ease-spring)"));
             expect(sheetRule(".chat-badge", "will-change")).toBe("");
             expect(sheetRule(".chat-badge", "animation")).toBe("");
-            expect(declarationOf(sheetPath, ".chat-badge.is-pop", "animation-name", r => r.media.includes("prefers-reduced-motion"))).toBe("chat-crossfade");
+            // under reduced motion the spring has no scale and the quick time, so it only fades in
+            expect(declarationOf(sheetPath, ".chat-shell", "--chat-react-from", isReducedMotion)).toBe("1");
+            expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring", isReducedMotion)).toBe(normalize("var(--chat-t-fast)"));
         });
 
         test("pops in the sidebar, where a new mention arrives, and not in the threads list, where it was already seen", () => {

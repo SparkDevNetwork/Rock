@@ -777,7 +777,7 @@ export function useFeedTail(options: FeedTailOptions): FeedTail {
                 fadeIn(meta);
             }
             else {
-                play(meta, [{ opacity: 0, transform: `translateY(${.75 * tokens.riseSm}px)` }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
+                play(meta, [{ opacity: 0, transform: `translateY(${tokens.riseSm}px)` }, { opacity: 1, transform: "none" }], { delay: .45 * tokens.msg, duration: tokens.base, easing: tokens.easeIn, fill: "backwards", id: "chat-tail-in" });
             }
         }
         if (seen < .999) {

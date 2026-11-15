@@ -286,12 +286,12 @@ img.chat-tool-glyph {
     waits two frames for its starting class to be swapped, and the bar came late.
 */
 .chat-tools-enter-active {
-    --chat-slide-from: calc(var(--chat-rise-sm) * .75);
+    --chat-slide-from: var(--chat-rise-sm);
     animation: chat-slide-in var(--chat-d-tools-move) var(--chat-ease-in), chat-fade-in var(--chat-d-tools-show) linear;
 }
 
 .chat-tools-leave-active {
-    --chat-slide-to: calc(var(--chat-rise-sm) * .75);
+    --chat-slide-to: var(--chat-rise-sm);
     pointer-events: none;
     animation: chat-slide-out var(--chat-d-tools-move) var(--chat-ease-in) forwards, chat-fade-out var(--chat-d-tools-hide) linear forwards;
 }

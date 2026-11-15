@@ -195,7 +195,6 @@
     color: var(--chat-text);
     background: var(--chat-danger-soft);
     border-radius: var(--chat-r-control);
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 

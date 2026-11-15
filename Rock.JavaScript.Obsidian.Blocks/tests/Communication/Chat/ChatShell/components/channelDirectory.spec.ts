@@ -755,12 +755,12 @@ describe("under reduced motion", () => {
     });
 
     test("a row's refusal or failure only fades in", () => {
-        // Its rise is the small-rise token's, which is nothing under reduced motion, so the one
+        // It rises by the sheet's rise, which is nothing under reduced motion, so the one
         // enter motion is a fade there and the row's note keeps no reduced rule of its own.
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
         const rule = /\n\.chat-fd-err\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
 
-        expect(rule).toMatch(/--chat-rise:\s*calc\(var\(--chat-rise-sm\) \* 1\.5\)/);
+        expect(rule).not.toMatch(/--chat-rise:/);
         expect(rule).toMatch(/animation:\s*chat-enter /);
         expect(rules().some(r => /\.chat-fd-err/.test(r.selector))).toBe(false);
     });

@@ -3616,12 +3616,12 @@ describe("a channel the person has not joined", () => {
     });
 
     test("the composer's re-entry only fades in under reduced motion", () => {
-        // Its rise is the small-rise token's, which is nothing under reduced motion, so the one
+        // It rises by the sheet's rise, which is nothing under reduced motion, so the one
         // enter motion is a fade there and the composer keeps no reduced rule of its own.
         const source = readFileSync(join(__dirname, "../../../../src/Communication/Chat/chatShell.obs"), "utf8");
         const rule = /\.chat-composer\.is-entering\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
 
-        expect(rule).toMatch(/--chat-rise:\s*calc\(var\(--chat-rise-sm\) \* 1\.5\)/);
+        expect(rule).not.toMatch(/--chat-rise:/);
         expect(rule).toMatch(/animation:\s*chat-enter /);
         expect(reducedMotionRules("../../../../src/Communication/Chat/chatShell.obs").some(r => /\.chat-composer\.is-entering/.test(r.selector))).toBe(false);
     });

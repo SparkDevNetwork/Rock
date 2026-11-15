@@ -299,7 +299,6 @@
     align-items: center;
     padding: 36px 24px 12px;
     text-align: center;
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in);
 }
 
@@ -369,7 +368,6 @@
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-surface);
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
@@ -488,7 +486,6 @@
     color: var(--chat-text);
     background: var(--chat-danger-soft);
     border-radius: var(--chat-r-surface);
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 

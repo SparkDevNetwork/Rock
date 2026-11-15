@@ -51,7 +51,6 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut the popover near its edge. */
 .chat-mention-pop {
-    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
     z-index: var(--chat-z-popover);
     width: 300px;
     max-width: calc(100vw - 16px);

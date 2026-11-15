@@ -26,7 +26,6 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut the picker near its edge. */
 .chat-picker {
-    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
     z-index: var(--chat-z-popover);
     display: flex;
     flex-direction: column;

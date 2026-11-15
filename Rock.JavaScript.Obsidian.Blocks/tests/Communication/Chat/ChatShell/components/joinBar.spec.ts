@@ -216,21 +216,22 @@ describe("what is spoken", () => {
 });
 
 describe("the entrance", () => {
-    test("rises in from 6px below over the strip's time, as every strip does", () => {
+    test("rises in by the sheet's rise over the strip's time, as every strip does", () => {
         const w = mountBar();
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
         expect(w.get("[data-testid='join-bar']").classes()).toContain("chat-joinbar");
-        expect(style).toMatch(/\.chat-joinbar\s*\{[^}]*--chat-rise:\s*calc\(var\(--chat-rise-sm\) \* 1\.5\);[^}]*animation:\s*chat-enter var\(--chat-t-base\) var\(--chat-ease-in\)/);
+        expect(style).toMatch(/\.chat-joinbar\s*\{[^}]*animation:\s*chat-enter var\(--chat-t-base\) var\(--chat-ease-in\)/);
+        expect(/\.chat-joinbar\s*\{([^}]*)\}/.exec(style)?.[1]).not.toMatch(/--chat-rise:/);
     });
 
     test("only fades in under reduced motion, as the quote strip does", () => {
         const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
         const reduced = sheet.slice(sheet.indexOf("@media (prefers-reduced-motion: reduce)"));
 
-        // The bar's rise is a multiple of the small rise, which the token sheet takes to nothing under reduced motion.
-        expect(reduced).toMatch(/--chat-rise-sm:\s*0px;/);
+        // The bar rises by the sheet's rise, which the token sheet takes to nothing under reduced motion.
+        expect(reduced).toMatch(/--chat-rise:\s*0px;/);
         expect(reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs")).toHaveLength(0);
     });
 });

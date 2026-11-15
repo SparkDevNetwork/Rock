@@ -375,7 +375,6 @@
 }
 
 .chat-mb-err {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.25);
     display: flex;
     flex-basis: 100%;
     gap: 7px;

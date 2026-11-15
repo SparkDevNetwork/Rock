@@ -194,7 +194,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 

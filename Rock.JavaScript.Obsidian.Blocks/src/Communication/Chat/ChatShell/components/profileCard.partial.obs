@@ -130,7 +130,6 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut a card near its edge. */
 .chat-pc {
-    --chat-pop-from: calc(var(--chat-rise-sm) * 1.5);
     --chat-pop-toward: -1;
     z-index: var(--chat-z-popover);
     width: 300px;

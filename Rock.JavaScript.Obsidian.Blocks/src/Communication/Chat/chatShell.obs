@@ -617,7 +617,7 @@
     width: 392px;
     height: 100%;
     opacity: 0;
-    transform: translateX(var(--chat-drawer-shift));
+    transform: translateX(var(--chat-rise));
     transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-panel) var(--chat-ease-in);
 }
 
@@ -698,13 +698,11 @@
     flex-direction: column;
     min-height: 0;
     background: var(--chat-surface);
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
 /* After a join settles, the composer takes the join bar's place, rising in as a message does. */
 .chat-composer.is-entering {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in);
 }
 

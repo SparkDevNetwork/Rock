@@ -105,7 +105,6 @@
 }
 
 .chat-ap-err {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     margin: -4px 0 14px;
     color: var(--chat-text);
     background: var(--chat-danger-soft);

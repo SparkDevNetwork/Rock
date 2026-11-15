@@ -768,9 +768,9 @@ describe("the bar under reduced motion", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
         const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
 
-        // The rise and sink are the set's slides, 3px by the small rise, which the token sheet takes to a fade under reduced motion.
-        expect(style).toMatch(/\.chat-tools-enter-active\s*\{[^}]*--chat-slide-from:\s*calc\(var\(--chat-rise-sm\) \* \.75\);[^}]*animation:\s*chat-slide-in var\(--chat-d-tools-move\) var\(--chat-ease-in\), chat-fade-in var\(--chat-d-tools-show\) linear;/);
-        expect(style).toMatch(/\.chat-tools-leave-active\s*\{[^}]*--chat-slide-to:\s*calc\(var\(--chat-rise-sm\) \* \.75\);[^}]*animation:\s*chat-slide-out var\(--chat-d-tools-move\) var\(--chat-ease-in\) forwards, chat-fade-out var\(--chat-d-tools-hide\) linear forwards;/);
+        // The rise and sink are the set's slides, by the small rise, which the token sheet takes to a fade under reduced motion.
+        expect(style).toMatch(/\.chat-tools-enter-active\s*\{[^}]*--chat-slide-from:\s*var\(--chat-rise-sm\);[^}]*animation:\s*chat-slide-in var\(--chat-d-tools-move\) var\(--chat-ease-in\), chat-fade-in var\(--chat-d-tools-show\) linear;/);
+        expect(style).toMatch(/\.chat-tools-leave-active\s*\{[^}]*--chat-slide-to:\s*var\(--chat-rise-sm\);[^}]*animation:\s*chat-slide-out var\(--chat-d-tools-move\) var\(--chat-ease-in\) forwards, chat-fade-out var\(--chat-d-tools-hide\) linear forwards;/);
         expect(style).not.toContain("prefers-reduced-motion");
         expect(sheet).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\s*@keyframes chat-slide-in \{\s*from \{\s*opacity: 0;/);
     });

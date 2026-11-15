@@ -199,12 +199,12 @@
 
 .chat-pop-enter-from {
     opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .6)) scale(var(--chat-pop-scale));
+    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise-sm))) scale(var(--chat-pop-scale));
 }
 
 .chat-pop-leave-to {
     opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise) * .3)) scale(var(--chat-pop-scale));
+    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise-sm) / 2)) scale(var(--chat-pop-scale));
 }
 </style>
 

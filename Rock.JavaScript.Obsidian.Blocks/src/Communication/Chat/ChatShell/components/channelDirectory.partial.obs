@@ -356,7 +356,6 @@
 }
 
 .chat-fd-note {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     display: flex;
     flex: 1;
     gap: 8px;
@@ -610,7 +609,6 @@
 }
 
 .chat-fd-err {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     display: flex;
     gap: 6px;
     align-items: flex-start;
@@ -714,7 +712,7 @@
 /* A join just made pops in, once, in the church color. */
 .chat-fd-joined.is-fresh {
     color: var(--chat-brand-ink);
-    animation: chat-joined-in var(--chat-d-fd-pop) var(--chat-ease-spring);
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
 .chat-fd-joined.is-fresh :deep(.chat-ic) {

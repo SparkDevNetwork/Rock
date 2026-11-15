@@ -207,11 +207,10 @@
     --chat-t-base: 180ms;
     --chat-t-msg: 260ms;
     --chat-t-panel: 300ms;
-    --chat-rise: 10px;
+    --chat-rise: 8px;
     --chat-msg-scale: .985;
     --chat-pop-scale: .96;
     --chat-react-from: .55;
-    --chat-drawer-shift: 28px;
 
     /*
         Motion distances: a popover or small part rises 4 px, a view or row by the rise above, a
@@ -239,7 +238,6 @@
     --chat-d-flash: 2.2s;
     --chat-d-row-flash: 1.2s;
     --chat-d-roll: 220ms;
-    --chat-d-badge-in: 260ms;
     --chat-d-pop-remove: 130ms;
     --chat-d-tools-show: 90ms;
     --chat-d-tools-move: 140ms;
@@ -258,7 +256,6 @@
     /* How many rows of an entrance wait their turn; the rest rise with the last of them. */
     --chat-enter-cap: 8;
     --chat-d-row-collapse: 200ms;
-    --chat-d-fd-pop: 420ms;
     --chat-d-sent-hold: 2.2s;
     --chat-d-divider-fade: 600ms;
     --chat-d-read-fade: 400ms;
@@ -470,7 +467,6 @@
 @media (prefers-reduced-motion: reduce) {
     .chat-shell {
         --chat-rise: 0px;
-        --chat-drawer-shift: 0px;
         --chat-msg-scale: 1;
         --chat-pop-scale: 1;
         --chat-react-from: 1;
@@ -480,7 +476,6 @@
         --chat-d-tab-thumb: 0ms;
         --chat-d-stagger: 0ms;
         --chat-d-row-collapse: 0ms;
-        --chat-d-fd-pop: 0ms;
         --chat-d-img-in: 140ms;
         --chat-d-reveal: 140ms;
         --chat-rise-sm: 0px;
@@ -576,7 +571,7 @@
 @keyframes chat-feed-enter {
     from {
         opacity: 0;
-        transform: translateY(calc(var(--chat-rise-sm) * 1.5));
+        transform: translateY(var(--chat-rise));
     }
 
     to {
@@ -592,7 +587,7 @@
 @keyframes chat-meta-in {
     from {
         opacity: 0;
-        transform: translateY(calc(var(--chat-rise) * -.3));
+        transform: translateY(calc(var(--chat-rise-sm) * -1));
     }
 }
 
@@ -638,35 +633,11 @@
     }
 }
 
-/* A badge springing in from half size. */
-@keyframes chat-badge-in {
-    from {
-        opacity: 0;
-        transform: scale(.5);
-    }
-}
-
-/* "Joined" springing in on a channel's row. */
-@keyframes chat-joined-in {
-    from {
-        opacity: 0;
-        transform: scale(.7);
-    }
-}
-
 /* Count: a number rolls in from below. */
 @keyframes chat-roll {
     from {
         opacity: 0;
         transform: translateY(var(--chat-roll-from));
-    }
-}
-
-/* The tooltip, which moves by translate so the transform that places it is left alone. */
-@keyframes chat-tip-in {
-    from {
-        opacity: 0;
-        translate: 0 calc(var(--chat-rise) * .3);
     }
 }
 
@@ -749,7 +720,7 @@
 
     30% {
         opacity: 1;
-        transform: translateY(calc(var(--chat-rise) * -.2));
+        transform: translateY(calc(var(--chat-rise-sm) / -2));
     }
 }
 
@@ -1051,7 +1022,7 @@
 */
 .chat-badge.is-pop {
     will-change: transform;
-    animation: chat-badge-in var(--chat-d-badge-in) var(--chat-ease-spring);
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
 /* A muted room's count, there but not calling for attention: neutral, the church color absent, so it
@@ -1102,14 +1073,6 @@
 }
 
 
-
-/* Reduced motion: the badge fades in rather than springing. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-badge.is-pop {
-        animation-name: chat-crossfade;
-        animation-duration: var(--chat-t-fast);
-    }
-}
 
 /*
     The bottom sheet's frame, shared by what is drawn as one on a phone: the message actions and the
@@ -1434,7 +1397,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     pointer-events: none;
     background: var(--chat-tip-bg);
     border-radius: var(--chat-r-inset);
-    animation: chat-tip-in var(--chat-t-fast) var(--chat-ease-in);
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-in);
 }
 
 
@@ -1829,7 +1792,6 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     background: var(--chat-raised);
     border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
-    --chat-pop-from: calc(var(--chat-rise) * .6);
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
     scrollbar-width: thin;
 }

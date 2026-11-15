@@ -64,7 +64,6 @@
 }
 
 .chat-joinbar {
-    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
     display: flex;
     gap: 12px;
     align-items: center;
