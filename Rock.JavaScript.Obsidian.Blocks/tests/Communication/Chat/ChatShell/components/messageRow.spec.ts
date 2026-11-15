@@ -667,7 +667,7 @@ describe("Community, in a channel", () => {
         const rule = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
-        expect(rule).toMatch(/--chat-cm-radius:\s*10px/);
+        expect(rule).toMatch(/--chat-cm-radius:\s*var\(--chat-r-row\)/);
         expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
         expect(rule).toMatch(/margin-inline:\s*var\(--chat-cm-inset\)/);
         expect(rule).not.toMatch(/(^|[\s;])margin(-top|-bottom|-block)?:/);

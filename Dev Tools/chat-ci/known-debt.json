@@ -44,8 +44,7 @@
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 11
   },
   "S2": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2
   },
   "S3": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1,
@@ -100,7 +99,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1
   },
   "S9": {
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 15
+    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 11
   },
   "S12": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/addPeople.partial.obs": 2,

@@ -233,13 +233,12 @@ const tokens: Token[] = [
     { name: "tile-tsat", light: "45%", dark: "70%" },
     { name: "tile-tl", light: "30%", dark: "80%" },
 
-    // Radii.
-    { name: "r-xs", light: "4px", rock: "rounded-xsmall" },
-    { name: "r-sm", light: "6px", rock: "rounded-small" },
-    { name: "r-md", light: "8px", rock: "rounded-medium" },
-    { name: "r-lg", light: "12px", rock: "rounded-large" },
-    { name: "r-xl", light: "16px", rock: "rounded-xlarge" },
-    { name: "r-2xl", light: "20px" },
+    // Corner roles, on Rock's own steps.
+    { name: "r-inline", light: "4px", rock: "rounded-xsmall" },
+    { name: "r-inset", light: "6px", rock: "rounded-small" },
+    { name: "r-control", light: "8px", rock: "rounded-medium" },
+    { name: "r-field", light: "12px", rock: "rounded-large" },
+    { name: "r-surface", light: "12px", rock: "rounded-large" },
     { name: "r-full", light: "9999px", rock: "rounded-full" },
 
     // Type.
@@ -304,30 +303,11 @@ const reducedMotion: Array<[string, string]> = [
 type Named = { name: string, value: string, reduced?: string };
 
 const namedLiterals: Named[] = [
-    // Radii.
+    // Corner roles Rock has no step for, and the bubble's own corners.
+    { name: "r-row", value: "10px" },
     { name: "r-bubble", value: "20px" },
     { name: "r-tail", value: "6px" },
-    { name: "r-pop", value: "14px" },
-    { name: "r-item", value: "9px" },
-    { name: "r-dialog", value: "18px" },
-    { name: "r-sheet", value: "22px" },
-    { name: "r-composer", value: "22px" },
-    { name: "r-editor", value: "18px" },
-    { name: "r-quote-top", value: "14px" },
-    { name: "r-quote-bottom", value: "6px" },
-    { name: "r-quote-ghost", value: "16px" },
-    { name: "r-bar", value: "18px" },
-    { name: "r-tools", value: "10px" },
-    { name: "r-tool", value: "7px" },
-    { name: "r-room-ic", value: "11px" },
-    { name: "r-hdr-ic", value: "12px" },
-    { name: "r-org", value: "10px" },
-    { name: "r-search", value: "10px" },
-    { name: "r-option", value: "10px" },
-    { name: "r-intro", value: "12px" },
-    { name: "r-empty-sm", value: "14px" },
-    { name: "r-empty", value: "16px" },
-    { name: "r-tip", value: "8px" },
+    { name: "r-quote", value: "16px" },
 
     // Small shadows.
     { name: "shadow-day", value: "0 2px 10px -4px rgba(13,17,23,.18)" },
@@ -1141,18 +1121,18 @@ describe("the components' own styles", () => {
     describe("the sidebar's head and tiles", () => {
         const sidebarPath = resolve(components, "channelSidebar.partial.obs");
 
-        test("the search and compose are 38px with radius 10, in one 64px row", () => {
+        test("the search and compose are 38px with the field and control corners, in one 64px row", () => {
             expect(declarationOf(sidebarPath, ".chat-side-top", "height")).toBe("64px");
             expect(declarationOf(sidebarPath, ".chat-side-search", "height")).toBe("38px");
-            expect(declarationOf(sidebarPath, ".chat-side-search", "border-radius")).toBe(normalize("var(--chat-r-org)"));
+            expect(declarationOf(sidebarPath, ".chat-side-search", "border-radius")).toBe(normalize("var(--chat-r-field)"));
             expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("38px");
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-org)"));
+            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-control)"));
         });
 
-        test("a channel's tile is 32px with radius 9", () => {
+        test("a channel's tile is 32px with the control corner", () => {
             expect(declarationOf(sidebarPath, ".chat-ch-tile", "width")).toBe("32px");
             expect(declarationOf(sidebarPath, ".chat-ch-tile", "height")).toBe("32px");
-            expect(declarationOf(sidebarPath, ".chat-ch-tile", "border-radius")).toBe("9px");
+            expect(declarationOf(sidebarPath, ".chat-ch-tile", "border-radius")).toBe(normalize("var(--chat-r-control)"));
         });
 
         test("the empty state's solid button is the church fill with its text color, and its link the church ink", () => {

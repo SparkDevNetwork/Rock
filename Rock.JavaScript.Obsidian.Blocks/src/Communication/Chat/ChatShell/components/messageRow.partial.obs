@@ -177,7 +177,7 @@
     any row.
 */
 .chat-msg.is-community.is-mention-me {
-    --chat-cm-radius: 10px;
+    --chat-cm-radius: var(--chat-r-row);
     margin-inline: var(--chat-cm-inset);
     padding-block: 1px;
     padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));

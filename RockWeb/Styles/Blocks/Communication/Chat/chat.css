@@ -131,38 +131,6 @@
     --chat-badge-fill-mix: 80%;
     --chat-badge-ink-mix: 100%;
 
-    /* Radii, Rock's steps first, then the ones the design writes in a single place. */
-    --chat-r-xs: var(--rounded-xsmall, 4px);
-    --chat-r-sm: var(--rounded-small, 6px);
-    --chat-r-md: var(--rounded-medium, 8px);
-    --chat-r-lg: var(--rounded-large, 12px);
-    --chat-r-xl: var(--rounded-xlarge, 16px);
-    --chat-r-2xl: 20px;
-    --chat-r-full: var(--rounded-full, 9999px);
-    --chat-r-bubble: 20px;
-    --chat-r-tail: 6px;
-    --chat-r-pop: 14px;
-    --chat-r-item: 9px;
-    --chat-r-dialog: 18px;
-    --chat-r-sheet: 22px;
-    --chat-r-composer: 22px;
-    --chat-r-editor: 18px;
-    --chat-r-quote-top: 14px;
-    --chat-r-quote-bottom: 6px;
-    --chat-r-quote-ghost: 16px;
-    --chat-r-bar: 18px;
-    --chat-r-tools: 10px;
-    --chat-r-tool: 7px;
-    --chat-r-room-ic: 11px;
-    --chat-r-hdr-ic: 12px;
-    --chat-r-org: 10px;
-    --chat-r-search: 10px;
-    --chat-r-option: 10px;
-    --chat-r-intro: 12px;
-    --chat-r-empty-sm: 14px;
-    --chat-r-empty: 16px;
-    --chat-r-tip: 8px;
-
     /*
         Corner roles. A part takes the role of what it is, never a size, so one edit here reaches
         every part of that kind: a control (a button, a tile, a grid cell), a list row, a field a
@@ -176,6 +144,9 @@
     --chat-r-row: 10px;
     --chat-r-field: var(--rounded-large, 12px);
     --chat-r-surface: var(--rounded-large, 12px);
+    --chat-r-full: var(--rounded-full, 9999px);
+    --chat-r-bubble: 20px;
+    --chat-r-tail: 6px;
     /* A quoted message drawn inside a bubble, its corners the bubble's less its padding. */
     --chat-r-quote: 16px;
 
@@ -1167,7 +1138,7 @@
     z-index: var(--chat-z-sheet);
     padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
     background: var(--chat-raised);
-    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    border-radius: var(--chat-r-surface) var(--chat-r-surface) 0 0;
     box-shadow: var(--chat-shadow-pop);
     animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
 }
@@ -1182,7 +1153,7 @@
     height: 5px;
     margin: 2px auto 12px;
     background: var(--chat-line-strong);
-    border-radius: 3px;
+    border-radius: var(--chat-r-full);
 }
 
 /* A choice at a finger's size: 48px tall, 15px text. */
@@ -1198,7 +1169,7 @@
     text-align: left;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-item);
+    border-radius: var(--chat-r-inset);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -1320,7 +1291,7 @@ button.chat-icon-btn.chat-fail-btn {
     font: inherit;
     color: inherit;
     background: transparent;
-    border-radius: var(--chat-r-item, 6px);
+    border-radius: var(--chat-r-inset);
     --chat-ic-size: calc(var(--chat-fail-mark-s, 14px) * 5 / 7);
     --chat-ic-stroke: 3;
 }
@@ -1459,7 +1430,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     color: var(--chat-tip-fg);
     pointer-events: none;
     background: var(--chat-tip-bg);
-    border-radius: var(--chat-r-tip);
+    border-radius: var(--chat-r-inset);
     animation: chat-tip-in var(--chat-t-fast) var(--chat-ease-in);
 }
 
@@ -1686,7 +1657,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     margin-bottom: 6px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: 14px;
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-shell .chat-ls-empty b {
@@ -1853,7 +1824,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     padding: 6px;
     overflow-y: auto;
     background: var(--chat-raised);
-    border-radius: var(--chat-r-pop);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
     --chat-pop-from: calc(var(--chat-rise) * .6);
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
@@ -1867,7 +1838,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     align-items: center;
     padding: 7px 10px 7px 8px;
     cursor: pointer;
-    border-radius: var(--chat-r-option);
+    border-radius: var(--chat-r-inset);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -1912,7 +1883,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     padding: 0;
     color: inherit;
     background: var(--chat-brand-tint);
-    border-radius: 3px;
+    border-radius: var(--chat-r-inline);
     box-shadow: 0 0 0 1px var(--chat-brand-tint);
 }
 
