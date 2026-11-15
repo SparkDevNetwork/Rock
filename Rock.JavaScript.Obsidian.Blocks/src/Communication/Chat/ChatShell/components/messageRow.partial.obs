@@ -294,14 +294,6 @@
     font-size: 11.5px;
     font-variant-numeric: tabular-nums;
 }
-
-/* The row's own background is where the flash ends, so no last frame is named. */
-@keyframes chat-cm-flash {
-    0%,
-    45% {
-        background-color: var(--chat-flash);
-    }
-}
 </style>
 
 <script setup lang="ts">

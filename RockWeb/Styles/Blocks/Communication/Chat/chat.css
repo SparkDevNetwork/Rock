@@ -257,6 +257,10 @@
     --chat-roll-from: 70%;
     /* A small delight's spring, which under reduced motion is only a quick fade. */
     --chat-d-spring: var(--chat-t-base);
+    /* A sheet going, which under reduced motion is a quick fade. */
+    --chat-d-sheet-out: var(--chat-t-base);
+    /* An upload's progress bar gliding to its share, which under reduced motion steps. */
+    --chat-d-progress: var(--chat-t-fast);
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
@@ -514,6 +518,8 @@
         --chat-turn: 0deg;
         --chat-roll-from: 0%;
         --chat-d-spring: var(--chat-t-fast);
+        --chat-d-sheet-out: var(--chat-t-fast);
+        --chat-d-progress: 0ms;
     }
 
     .chat-shell .chat-skeleton,
@@ -596,7 +602,7 @@
 @keyframes chat-feed-enter {
     from {
         opacity: 0;
-        transform: translateY(6px);
+        transform: translateY(calc(var(--chat-rise-sm) * 1.5));
     }
 
     to {
@@ -631,14 +637,6 @@
     to {
         opacity: 0;
         transform: translateY(calc(var(--chat-pop-toward, 1) * var(--chat-pop-from, var(--chat-rise-sm)) / 2)) scale(var(--chat-pop-scale));
-    }
-}
-
-/* A notice going: it fades as it sinks. */
-@keyframes chat-sink {
-    to {
-        opacity: 0;
-        transform: translateY(var(--chat-sink-to, var(--chat-rise-sm)));
     }
 }
 
@@ -1176,7 +1174,7 @@
 
 .chat-sheet.is-leaving,
 .chat-sheet-scrim.is-leaving .chat-sheet {
-    animation: chat-slide-out var(--chat-t-base) var(--chat-ease-out) forwards;
+    animation: chat-slide-out var(--chat-d-sheet-out) var(--chat-ease-out) forwards;
 }
 
 .chat-sheet-grab {

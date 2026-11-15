@@ -856,7 +856,8 @@ describe("the components' own styles", () => {
         expect(keyframesBody(feedPath, name)).toBeNull();
         const frames = normalize(keyframesBody(sheetPath, name) ?? "");
         expect(frames).toContain("opacity:0");
-        expect(frames).toContain(normalize("transform: translateY(6px)"));
+        expect(frames).toContain(normalize("transform: translateY(calc(var(--chat-rise-sm) * 1.5))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise-sm")).toBe("4px");
 
         expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("none");
     });

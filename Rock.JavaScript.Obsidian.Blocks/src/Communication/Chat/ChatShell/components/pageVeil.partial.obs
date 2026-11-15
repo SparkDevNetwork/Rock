@@ -179,7 +179,7 @@
 }
 
 .chat-veil-status-words {
-    animation: chat-crossfade var(--chat-t-fast) var(--chat-ease-in) both;
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-in) both;
 }
 
 .chat-veil-feed {

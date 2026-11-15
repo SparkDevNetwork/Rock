@@ -341,7 +341,7 @@ img.chat-sheet-glyph {
         overlayHost.value = host;
         if (host) {
             enterMs.value = tokenDuration(host, "--chat-t-panel", fallbackEnterMs);
-            leaveMs.value = tokenDuration(host, "--chat-t-base", fallbackLeaveMs);
+            leaveMs.value = tokenDuration(host, "--chat-d-sheet-out", fallbackLeaveMs);
         }
     });
 

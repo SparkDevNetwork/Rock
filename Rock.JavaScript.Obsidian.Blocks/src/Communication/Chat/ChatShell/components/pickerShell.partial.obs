@@ -90,7 +90,7 @@
 }
 
 .chat-picker.is-sheet.is-leaving {
-    animation: chat-slide-out var(--chat-t-base) var(--chat-ease-out) forwards;
+    animation: chat-slide-out var(--chat-d-sheet-out) var(--chat-ease-out) forwards;
 }
 
 .chat-picker-scrim.is-leaving {
@@ -99,11 +99,6 @@
 }
 
 /* Reduced motion: the sheet's way out is a fade at the fast length, which the set's slide keeps at the base one. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-picker.is-sheet.is-leaving {
-        animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
-    }
-}
 </style>
 
 <script setup lang="ts">

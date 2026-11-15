@@ -58,12 +58,10 @@
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
   },
   "S4": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 2,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 2
   },
   "S5": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 4,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 4
   },
   "S6": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionBar.partial.obs": 7,
@@ -101,13 +99,11 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 1
   },
   "S8": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/attachments.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pickerShell.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1
   },
   "S9": {
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 15
