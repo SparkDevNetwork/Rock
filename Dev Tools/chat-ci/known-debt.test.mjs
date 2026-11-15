@@ -6,7 +6,20 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { debtTable, ratchet } from './known-debt.mjs';
+import { debtTable, editsChecks, ratchet } from './known-debt.mjs';
+
+test('only an edit to the style or parts check allows a raise, not their tests or the other gates', () => {
+  assert.equal(editsChecks(['Dev Tools/chat-ci/check-styles.mjs']), true);
+  assert.equal(editsChecks(['README.md', 'Dev Tools/chat-ci/check-parts.mjs']), true);
+  assert.equal(editsChecks([
+    'Dev Tools/chat-ci/check-styles.test.mjs',
+    'Dev Tools/chat-ci/check-parts.test.mjs',
+    'Dev Tools/chat-ci/check-references.mjs',
+    'Dev Tools/chat-ci/check-types.mjs',
+    'Dev Tools/chat-ci/check-contract.mjs',
+    'Dev Tools/chat-ci/known-debt.json',
+  ]), false);
+});
 
 const rules = [
   { id: 'S1', mode: 'ratchet', reason: 'a font size comes from the type scale' },

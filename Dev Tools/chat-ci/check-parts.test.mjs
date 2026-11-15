@@ -116,6 +116,8 @@ test('P5 refuses a live region outside the announcer, the roles that make one in
     '    <p class="chat-field-error" role=\'status\'>{{ error }}</p>',
     '    <div role="dialog" aria-modal="true"></div>',
     '    <div :role="isOpen ? \'menu\' : undefined"></div>',
+    '    <div :role="connectionBanner === \'warning\' ? \'alert\' : \'status\'">{{ banner }}</div>',
+    '    <div v-bind:role="\'status\'"></div>',
     '</template>',
     '<script setup lang="ts">',
     '    element.setAttribute("aria-live", "polite");',
@@ -123,7 +125,7 @@ test('P5 refuses a live region outside the announcer, the roles that make one in
     '</script>',
   ].join('\n');
 
-  assert.deepEqual(ruleLines(one(`${shell}/components/composer.partial.obs`, component), 'P5'), [2, 3, 5, 6, 11]);
+  assert.deepEqual(ruleLines(one(`${shell}/components/composer.partial.obs`, component), 'P5'), [2, 3, 5, 6, 9, 10, 13]);
   assert.deepEqual(ruleLines(one(`${shell}/ui/announcer.partial.obs`, component), 'P5'), []);
 });
 
@@ -166,9 +168,10 @@ test('P8 refuses Tab handling outside the focus trap, and passes the reviewed ex
     'if (event.key !== "Tab") return;',
     'if ("Tab" !== e.code) return;',
     'if (["Tab", "Enter"].includes(event.key)) pick();',
+    'if (new Set(["Tab"]).has(event.key)) trap();',
   ].join('\n');
 
-  assert.deepEqual(ruleLines(one(`${shell}/ui/menu.partial.ts`, script), 'P8'), [2, 3, 7, 8, 9]);
+  assert.deepEqual(ruleLines(one(`${shell}/ui/menu.partial.ts`, script), 'P8'), [2, 3, 7, 8, 9, 10]);
   for (const allowed of ['ui/focusTrap.partial.ts', 'components/mentionPicker.partial.ts', 'ui/tooltip.partial.ts', 'ui/peoplePicker.partial.ts']) {
     assert.deepEqual(ruleLines(one(`${shell}/${allowed}`, script), 'P8'), [], allowed);
   }
