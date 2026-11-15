@@ -259,7 +259,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/addPeople.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 4,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 1,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatSettings.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 2,

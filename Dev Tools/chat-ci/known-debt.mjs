@@ -122,7 +122,7 @@ export function baseDebt() {
   }
   let isRaiseAllowed = false;
   try {
-    isRaiseAllowed = git('diff', '--name-only', base, '--', 'Dev Tools/chat-ci/check-*.mjs') !== '';
+    isRaiseAllowed = editsChecks(git('diff', '--name-only', base).split('\n'));
   } catch {
     // A diff git cannot make allows nothing.
   }
@@ -131,6 +131,11 @@ export function baseDebt() {
   } catch {
     return { debt: null, note: `${base.slice(0, 10)} has no debt file yet` };
   }
+}
+
+/** Whether changed paths include one of the two checks the debt file counts for, their tests aside. */
+export function editsChecks(paths) {
+  return paths.some((path) => /^Dev Tools\/chat-ci\/check-(?:styles|parts)\.mjs$/.test(path.trim()));
 }
 
 /** CHAT_DEBT_LANDING says so outright; in the workflow it is a push to chat-platform; by hand, the checked-out branch. */

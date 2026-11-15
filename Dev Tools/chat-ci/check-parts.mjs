@@ -71,11 +71,12 @@ const PATTERNS = [
   { rule: 'P5', where: 'all', re: /(?<![\w-])aria-live(?![\w-])/g, what: 'a live region' },
   // role status and alert make a live region as surely as aria-live does.
   { rule: 'P5', where: 'template', re: /(?<![\w:-])role\s*=\s*(["'])(?:status|alert)\1/g, what: 'a live region' },
+  { rule: 'P5', where: 'template', re: /\s(?::|v-bind:)role\s*=\s*"[^"]*'(?:status|alert)'[^"]*"/g, what: 'a live region' },
   { rule: 'P5', where: 'script', re: /setAttribute\(\s*(["'])role\1\s*,\s*(["'])(?:status|alert)\2/g, what: 'a live region' },
   { rule: 'P6', where: 'script', re: /\bnew\s+IntersectionObserver\s*\(/g, what: 'an IntersectionObserver' },
   { rule: 'P7', where: 'script', re: /\b(?:let|var|const)\s+\w*[Gg]eneration\w*\s*(?::[^=]+)?=\s*(?:0\b|new\s+Map)|\b\w*[Gg]eneration\s*:\s*0\b/g, what: 'a generation counter' },
-  // Tab compared either way round, matched in a switch, or found in a list of keys.
-  { rule: 'P8', where: 'script', re: /\b(?:key|code)\s*[!=]==?\s*(["'])Tab\1|(["'])Tab\2\s*[!=]==?\s*[\w.]*\b(?:key|code)\b|\bcase\s+(["'])Tab\3\s*:|\[[^\]\n]*(["'])Tab\4[^\]\n]*\]\s*\.\s*includes\(/g, what: 'Tab handled' },
+  // Tab compared either way round, matched in a switch, or found in a list or set of keys.
+  { rule: 'P8', where: 'script', re: /\b(?:key|code)\s*[!=]==?\s*(["'])Tab\1|(["'])Tab\2\s*[!=]==?\s*[\w.]*\b(?:key|code)\b|\bcase\s+(["'])Tab\3\s*:|\[[^\]\n]*(["'])Tab\4[^\]\n]*\]\s*\)?\s*\.\s*(?:includes|has)\(/g, what: 'Tab handled' },
   { rule: 'P9', where: 'template', re: /\s(?::|v-bind:)(?:isPhone|is-phone|personAliasGuid|person-alias-guid)\s*=/g, what: 'passed down as a binding' },
   { rule: 'P9', where: 'obs-script', re: /\b(?:isPhone|personAliasGuid)\s*:\s*\{\s*type\s*:/g, what: 'declared as a prop' },
   { rule: 'P10', where: 'script', re: /\b(?:querySelector(?:All)?|closest)\s*\(\s*(["'`])[^"'`]*\[data-testid/g, what: 'an element found by its test id' },
