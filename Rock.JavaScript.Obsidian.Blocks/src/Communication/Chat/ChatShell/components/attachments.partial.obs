@@ -293,7 +293,7 @@
 }
 
 .chat-attach-chip-retry:focus-visible {
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-control);
     outline: 2px solid var(--chat-focus-line);
     outline-offset: 1px;
 }

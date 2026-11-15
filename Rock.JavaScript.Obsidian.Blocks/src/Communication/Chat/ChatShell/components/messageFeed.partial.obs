@@ -507,7 +507,7 @@
     white-space: nowrap;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-strip-jump b {

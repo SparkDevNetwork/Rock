@@ -201,7 +201,7 @@ button.chat-quote:active .chat-quote-body {
     text-align: left;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-quote-line b {

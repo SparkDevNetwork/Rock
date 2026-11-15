@@ -45,7 +45,7 @@
     padding: 8px;
     background: var(--chat-surface);
     border: 1px solid var(--chat-focus-line);
-    border-radius: var(--chat-r-editor);
+    border-radius: var(--chat-r-field);
     box-shadow: 0 0 0 3px var(--chat-brand-ring);
     scroll-margin: 12px 0 var(--chat-feed-bottom-mask, 14px);
     animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
