@@ -99,11 +99,11 @@
     cursor: pointer;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-xs);
+    border-radius: var(--chat-r-inline);
 }
 
 .chat-cm-name.chat-person-opener {
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     font-weight: 700;
 }
 
@@ -140,7 +140,7 @@
 
 .is-community .chat-notice {
     padding: 1px 0 0;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -247,7 +247,7 @@
 .chat-cm-name {
     max-width: 100%;
     overflow: hidden;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     font-weight: 700;
     color: var(--chat-text);
     white-space: nowrap;
@@ -255,7 +255,7 @@
 }
 
 .chat-cm-time {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
     white-space: nowrap;
@@ -298,7 +298,7 @@
 
 .chat-cm-text {
     max-width: 100%;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     line-height: 1.5;
     color: var(--chat-text);
     overflow-wrap: anywhere;
@@ -312,7 +312,7 @@
 }
 
 .chat-cm-text.is-jumbo {
-    font-size: 32px;
+    font-size: calc(var(--chat-emoji-jumbo) * .8);
     line-height: 1.25;
 }
 
@@ -328,7 +328,7 @@
 .chat-cm-edited,
 .chat-cm-state {
     margin-left: 6px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     line-height: 1;
     color: var(--chat-muted);
     white-space: nowrap;

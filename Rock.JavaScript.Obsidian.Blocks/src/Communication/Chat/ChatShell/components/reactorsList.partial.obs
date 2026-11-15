@@ -85,7 +85,7 @@
     align-items: center;
     height: 34px;
     padding: 0 10px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
@@ -117,7 +117,7 @@
 
 .chat-rl-e.is-end {
     margin-left: auto;
-    font-size: 16px;
+    font-size: var(--chat-fs-title);
 }
 
 /* Its own scroller, held to a height, so the next page is asked for as its end comes near. */
@@ -152,7 +152,7 @@
     flex: none;
     width: 28px;
     height: 28px;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-rl-sk-name {
@@ -165,7 +165,7 @@
     gap: 8px;
     align-items: center;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

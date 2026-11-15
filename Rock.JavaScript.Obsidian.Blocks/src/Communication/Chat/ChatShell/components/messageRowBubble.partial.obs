@@ -122,7 +122,7 @@
     content: "";
     background: var(--chat-flash);
     border-radius: inherit;
-    animation: chat-flash-fade var(--chat-d-flash) var(--chat-ease-state) forwards;
+    animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
 .is-crossfading {
@@ -150,7 +150,7 @@
     cursor: pointer;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-xs);
+    border-radius: var(--chat-r-inline);
 }
 
 .chat-msg-name .chat-person-opener:hover {
@@ -163,7 +163,7 @@
     bottom: 0;
     left: 0;
     line-height: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
@@ -227,7 +227,7 @@
     min-width: 0;
     max-width: 100%;
     padding: 6px 13px 7px;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
     line-height: 1.45;
     color: var(--chat-text);
     background: var(--chat-bubble);
@@ -290,7 +290,7 @@
 
 .chat-bubble.is-jumbo {
     padding: 0 4px;
-    font-size: 40px;
+    font-size: var(--chat-emoji-jumbo);
     line-height: 1.15;
     background: none;
     box-shadow: none;
@@ -387,7 +387,7 @@
 
 .chat-notice {
     padding: 1px 12px 0;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -455,17 +455,6 @@
 
 .is-conversational:not(.is-own) .chat-thread-label {
     margin-left: 42px;
-}
-
-@keyframes chat-flash-fade {
-    0%,
-    55% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0;
-    }
 }
 
 /* A message's files under its text, a little apart from it. */

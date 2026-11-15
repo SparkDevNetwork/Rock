@@ -270,12 +270,13 @@ describe("the typing bubble going", () => {
 describe("the typing bubble's look", () => {
     const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs"), "utf8");
     const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-    const reduced = style.slice(style.indexOf("@media (prefers-reduced-motion: reduce)"));
+    const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+    const reduced = sheet.slice(sheet.lastIndexOf("@keyframes chat-bob"));
 
-    test("draws no motion of its own: its Transition plays no class, and no keyframe but its dots' bob is its own", () => {
+    test("draws no motion of its own: its Transition plays no class, and no keyframe is its own, its dots playing the set's bob", () => {
         expect(source).toMatch(/<Transition :css="false" @leave="onLeave">/);
         expect(style).not.toMatch(/is-arriving|is-gone|is-replaced|chat-typing-in|transition:/);
-        expect(style.match(/@keyframes [\w-]+/g)).toEqual(["@keyframes chat-typing-bob"]);
+        expect(style.match(/@keyframes [\w-]+/g)).toBeNull();
     });
 
     // Going in her run, her last message takes the run's face back in the same draw; the tail hides
@@ -311,7 +312,8 @@ describe("the typing bubble's look", () => {
     });
 
     test("its dots bob, and under reduced motion stand still at full strength", () => {
-        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-typing-bob var\(--chat-d-pulse\)/);
-        expect(reduced).toMatch(/\.chat-typing-bubble i\s*\{[^}]*opacity: 1;[^}]*animation: none;/);
+        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-bob var\(--chat-d-pulse\)/);
+        expect(style).not.toMatch(/prefers-reduced-motion/);
+        expect(reduced).toMatch(/@keyframes chat-bob\s*\{\s*from,\s*to\s*\{\s*opacity: 1;/);
     });
 });

@@ -48,14 +48,14 @@
     border-radius: var(--chat-r-editor);
     box-shadow: 0 0 0 3px var(--chat-brand-ring);
     scroll-margin: 12px 0 var(--chat-feed-bottom-mask, 14px);
-    animation: chat-editor-in var(--chat-t-base) var(--chat-ease-state);
+    animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
 }
 
 /* A channel's editor fills the text column, squarer, as the channel's composer is. */
 .chat-editor.is-community {
     width: 100%;
     margin: 2px 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-field);
 }
 
 .chat-editor .chat-editor-input {
@@ -74,7 +74,7 @@
     gap: 6px;
     align-items: center;
     padding: 0 4px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-danger-ink);
 }
@@ -110,7 +110,7 @@
     align-items: center;
     height: 30px;
     padding: 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     border: 0;
     border-radius: var(--chat-r-full);
@@ -135,12 +135,6 @@
 .chat-editor-btn:disabled {
     cursor: default;
     opacity: .6;
-}
-
-@keyframes chat-editor-in {
-    from {
-        opacity: 0;
-    }
 }
 </style>
 

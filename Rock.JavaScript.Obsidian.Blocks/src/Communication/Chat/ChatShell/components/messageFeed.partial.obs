@@ -351,7 +351,7 @@
     top: var(--chat-day-top);
     right: var(--chat-feed-gutter);
     left: 0;
-    z-index: 2;
+    z-index: var(--chat-z-raised);
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -371,7 +371,7 @@
 .chat-day-pill span,
 .chat-day-float span {
     padding: 3px 12px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-muted);
     background: var(--chat-surface);
@@ -469,21 +469,21 @@
     top: 0;
     right: 0;
     left: 0;
-    z-index: 3;
+    z-index: var(--chat-z-sticky);
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     height: var(--chat-strip-height);
     padding: 0 8px 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 500;
     background: var(--chat-strip-bg);
     border-bottom: 1px solid var(--chat-strip-line);
     box-shadow: var(--chat-shadow-strip);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-4px);
+    transform: translateY(calc(var(--chat-rise-sm) * -1));
     transition: opacity var(--chat-t-base) var(--chat-ease-state), transform var(--chat-t-base) var(--chat-ease-in), visibility var(--chat-t-base) linear;
 }
 
@@ -553,13 +553,13 @@
     right: 0;
     width: fit-content;
     margin-inline: auto;
-    z-index: 3;
+    z-index: var(--chat-z-sticky);
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: 34px;
     padding: 0 14px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-raised);
@@ -692,12 +692,8 @@
     width: 46%;
 }
 
-/* Asked for less motion, the strip fades in and out where it stands, and a switch is not animated. */
+/* Asked for less motion, a switch is not animated; the strip's lift is a token, so it fades where it stands. */
 @media (prefers-reduced-motion: reduce) {
-    .chat-unread-strip {
-        transform: none;
-    }
-
     .chat-feed.is-entering {
         animation: none;
     }

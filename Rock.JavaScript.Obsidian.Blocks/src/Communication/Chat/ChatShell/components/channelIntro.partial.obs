@@ -45,7 +45,7 @@
     height: 40px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-intro);
+    border-radius: var(--chat-r-surface);
 }
 
 /* Rock's theme styles every heading, so this one states its whole face. */
@@ -82,7 +82,7 @@
     margin: 0 7px;
     content: "";
     background: currentColor;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     opacity: .55;
 }
 

@@ -194,14 +194,8 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
-    animation: chat-attach-strip-in var(--chat-t-base) var(--chat-ease-in);
-}
-
-@keyframes chat-attach-strip-in {
-    from {
-        opacity: 0;
-        transform: translateY(6px);
-    }
+    --chat-rise: calc(var(--chat-rise-sm) * 1.5);
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-attach-chip {
@@ -212,7 +206,7 @@
     padding: 6px 4px 6px 6px;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-attach-chip[data-status="failed"] {
@@ -229,7 +223,7 @@
     overflow: hidden;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-attach-chip-thumb img {
@@ -328,7 +322,7 @@
 
 .chat-attach-notice {
     flex-basis: 100%;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -344,7 +338,7 @@
     width: 320px;
     max-width: 100%;
     overflow: hidden;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-attach-grid[data-layout="1"] {
@@ -403,7 +397,7 @@
     max-width: 100%;
     overflow: hidden;
     background: var(--chat-bubble);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-attach-gif img,
@@ -431,7 +425,7 @@
     color: var(--chat-media-fg);
     letter-spacing: .05em;
     background: var(--chat-media-scrim);
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-attach-gif-play {
@@ -449,7 +443,7 @@
     cursor: pointer;
     background: var(--chat-media-scrim);
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-attach-gif-play:focus-visible {
@@ -463,7 +457,7 @@
     gap: 4px;
     place-content: center;
     place-items: center;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -474,7 +468,7 @@
     place-items: center;
     width: 100%;
     height: 100%;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -483,7 +477,7 @@
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: 20px;
+    font-size: var(--chat-fs-display);
     font-weight: 700;
     color: var(--chat-tip-fg);
     background: var(--chat-scrim);
@@ -501,7 +495,7 @@
     text-decoration: none;
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-surface);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -524,7 +518,7 @@ a.chat-attach-file:focus-visible {
     height: 36px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-attach-file-main {
@@ -544,7 +538,7 @@ a.chat-attach-file:focus-visible {
 }
 
 .chat-attach-file-size {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -569,7 +563,7 @@ a.chat-attach-file:focus-visible {
     width: 34px;
     height: 34px;
     color: var(--chat-icon);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -585,10 +579,6 @@ a.chat-attach-file:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .chat-attach-strip {
-        animation-name: chat-crossfade;
-    }
-
     .chat-attach-progress-fill {
         transition: none;
     }

@@ -80,7 +80,7 @@ button.chat-mn {
 }
 
 .chat-block-context {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -90,7 +90,7 @@ button.chat-mn {
 
 .chat-block-image img {
     max-width: 100%;
-    border-radius: 6px;
+    border-radius: var(--chat-r-inset);
 }
 
 /* A block's buttons: a wrapping row of small outlined buttons under the block before it. */

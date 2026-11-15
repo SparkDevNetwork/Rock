@@ -50,21 +50,7 @@
 
 /* A thread that starts while the reader watches pops in as a new reaction does. */
 .chat-tsum.is-popping {
-    animation: chat-tsum-pop var(--chat-t-base) var(--chat-ease-spring);
-}
-
-@keyframes chat-tsum-pop {
-    from {
-        opacity: .2;
-        transform: scale(var(--chat-react-from));
-    }
-}
-
-/* Reduced motion: the sheet holds the pop at full size, so what is left is a short fade. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-tsum.is-popping {
-        animation-duration: var(--chat-t-fast);
-    }
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
 .chat-tsum {
@@ -83,7 +69,7 @@
 .chat-tsum:hover {
     background: var(--chat-raised);
     border-color: var(--chat-line-strong);
-    transform: translateY(-1px);
+    transform: translateY(calc(var(--chat-nudge) * -1));
 }
 
 .chat-tsum.is-unread {
@@ -120,7 +106,7 @@
     width: 7px;
     height: 7px;
     background: var(--chat-brand-fill);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     /* Cuts the dot out of the pill's border it sits on; the pill itself draws no ring. */
     box-shadow: 0 0 0 2px var(--chat-surface);
 }

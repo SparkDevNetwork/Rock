@@ -120,7 +120,7 @@
 
 .chat-rx:hover {
     border-color: var(--chat-line-strong);
-    transform: translateY(-1px);
+    transform: translateY(calc(var(--chat-nudge) * -1));
 }
 
 .chat-rx[aria-pressed="true"] {
@@ -154,7 +154,7 @@
 
 /* The card's place in the chat's root, over the feed and its bars. */
 .chat-rx-card-place {
-    z-index: 1060;
+    z-index: var(--chat-z-tip);
 }
 
 .chat-rx-e {
@@ -174,28 +174,14 @@
     min-width: 1ch;
 }
 
-/* Your new reaction pops from small, springing past full size, the one place a chip moves on its own. */
+/* Your new reaction springs in from small, the one place a chip moves on its own. */
 .chat-rx.is-popping {
-    animation: chat-rx-pop var(--chat-t-base) var(--chat-ease-spring);
-}
-
-@keyframes chat-rx-pop {
-    from {
-        opacity: .2;
-        transform: scale(var(--chat-react-from));
-    }
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
 /* Your reaction joining others' rolls the count up into place. */
 .chat-rx-n.is-rolling {
-    animation: chat-rx-roll var(--chat-d-roll) var(--chat-ease-in);
-}
-
-@keyframes chat-rx-roll {
-    from {
-        opacity: 0;
-        transform: translateY(70%);
-    }
+    animation: chat-roll var(--chat-d-roll) var(--chat-ease-in);
 }
 
 /*
@@ -236,28 +222,6 @@
 
 .is-community .chat-rx.is-add {
     position: static;
-}
-
-/* Reduced motion: no lift, the pop held at full size by the sheet so it is a short fade, the roll a fade over its own time. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-rx:hover {
-        transform: none;
-    }
-
-    .chat-rx.is-popping {
-        animation-duration: var(--chat-t-fast);
-    }
-
-    .chat-rx-n.is-rolling {
-        animation-name: chat-rx-roll-fade;
-    }
-}
-
-/* The roll with its movement taken out, over its own time, for reduced motion. */
-@keyframes chat-rx-roll-fade {
-    from {
-        opacity: 0;
-    }
 }
 </style>
 

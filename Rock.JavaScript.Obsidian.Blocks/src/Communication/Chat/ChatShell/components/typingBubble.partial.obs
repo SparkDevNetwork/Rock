@@ -79,9 +79,9 @@
     width: 7px;
     height: 7px;
     background: currentColor;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     opacity: .45;
-    animation: chat-typing-bob var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: chat-bob var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 .chat-typing-bubble i:nth-child(2) {
@@ -90,28 +90,6 @@
 
 .chat-typing-bubble i:nth-child(3) {
     animation-delay: calc(var(--chat-d-pulse) * 2 / 5);
-}
-
-/* Asked for less motion, the dots stand still at full strength. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-typing-bubble i {
-        opacity: 1;
-        animation: none;
-    }
-}
-
-@keyframes chat-typing-bob {
-    0%,
-    60%,
-    100% {
-        opacity: .45;
-        transform: none;
-    }
-
-    30% {
-        opacity: 1;
-        transform: translateY(-2px);
-    }
 }
 </style>
 
