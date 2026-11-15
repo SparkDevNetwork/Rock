@@ -47,7 +47,7 @@
     padding: 10px 6px 6px;
     color: var(--chat-text);
     background: var(--chat-raised);
-    border-radius: var(--chat-r-pop);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
@@ -114,7 +114,7 @@
     text-align: left;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-item);
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-rx-card-name {
