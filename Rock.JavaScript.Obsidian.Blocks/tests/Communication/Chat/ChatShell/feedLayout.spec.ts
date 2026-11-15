@@ -26,8 +26,10 @@ import {
     groupWindowMs,
     jumpLabel,
     layoutFeed,
+    longestTimerMs,
     nearBottomPx,
     newMessagesText,
+    nextMidnight,
     sentHoldMs,
     skeletonDelayMs,
     timeLabel,
@@ -126,6 +128,24 @@ describe("the rules' constants", () => {
 // the newest message and the bubble's settling away never moves one counted as scrolled up.
 test("the near-bottom band is 72 px, a group's typing bubble rounded up", () => {
     expect(nearBottomPx).toBe(72);
+});
+
+describe("the clock", () => {
+    test("the next midnight is the start of the following calendar day, from any moment in the day", () => {
+        const start = new Date(2026, 2, 7, 0, 0, 0).getTime();
+        expect(nextMidnight(new Date(2026, 2, 6, 0, 0, 0))).toBe(start);
+        expect(nextMidnight(new Date(2026, 2, 6, 13, 45, 10))).toBe(start);
+        expect(nextMidnight(new Date(2026, 2, 6, 23, 59, 59, 999))).toBe(start);
+    });
+
+    test("the next midnight follows the calendar across a month's and a year's end", () => {
+        expect(nextMidnight(new Date(2026, 0, 31, 9))).toBe(new Date(2026, 1, 1).getTime());
+        expect(nextMidnight(new Date(2026, 11, 31, 9))).toBe(new Date(2027, 0, 1).getTime());
+    });
+
+    test("the longest timer a browser keeps is 2^31 - 1 ms; a longer wait fires at once", () => {
+        expect(longestTimerMs).toBe(2_147_483_647);
+    });
 });
 
 describe("grouping", () => {
