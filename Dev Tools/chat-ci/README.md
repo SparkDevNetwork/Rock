@@ -30,24 +30,21 @@ sheet and `brand.partial.ts`, which computes the church color's tokens, are the 
 It also refuses a rule outside the icon component, the token sheet included, that sets an icon's
 width, height or stroke width: such a rule weighs the same as the icon's own and wins or loses by the
 order the built styles load in, so a caller sets `--chat-ic-size` or `--chat-ic-stroke` on what holds the icon instead.
-Its rules S1 to S12 hold styles to their three homes (token sheet, a part's own file, a screen's
-layout): no literal font size, radius, layer or animation distance, no keyframes or reduced-motion
-query outside the sheet, no `:deep`, no `!important`, no unused token, no rule outside a part
-restyling it. The header of the script states each rule's reason.
+Its rules S1 to S12 hold styles to their three homes: the token sheet, a part's own file, a
+screen's layout.
 
-`check-parts.mjs` holds every behaviour to one home: floating-ui only in the popover part, a press
-outside only in the popover, scrim and dialog, media queries only in the viewport part, live
-regions only in the announcer, and so on for P1 to P15, each found by the call that gives it away.
-T1 refuses one type name defined in two files and T2 one set of allowed string values spelled out
-in two files. Its header states each rule's reason.
+`check-parts.mjs` holds every behaviour (P1 to P15), type (T1) and set of allowed values (T2) to
+one home. Each rule's reason sits once, in its script's rule list, and a failure prints it.
 
-Both read `known-debt.json`, the ratchet in `known-debt.mjs`: each rule may keep the count of
-findings recorded for a file and no more. A new file or a rule with no entries blocks at once.
-Fewer findings than recorded warns on a branch and fails on `chat-platform`, so the change that
-earned it lowers the count (`node check-styles.mjs --record` or `node check-parts.mjs --record`
-rewrites that script's counts). The file may only fall against the commit a run builds on, which
-the workflow names in `CHAT_DEBT_BASE`; by hand it is where the branch left `chat-platform`. Each
-run prints its table, and the workflow writes it to the step summary.
+Both are ratchets on `known-debt.json` (see `known-debt.mjs`): a file may keep its recorded count
+and no more, the change that removes a finding lowers the count (`--record` rewrites a script's
+counts), and the file may only fall against the commit a run builds on. Each run prints its table,
+and the workflow writes it to the step summary.
+
+Commits reach `chat-platform` by a direct push and a newer push cancels a running workflow, so the
+gate that counts is `node ci.mjs` run locally against `origin/chat-platform` before pushing: on
+`chat-platform` it compares the debt file with the remote's tip and requires every count to be
+exact.
 
 `check-types.mjs` runs the blocks package's own `vue-tsc` over Rock's Communication project,
 templates included, and fails on an error in a chat file; an error in any other file there is

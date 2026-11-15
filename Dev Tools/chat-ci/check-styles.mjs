@@ -27,33 +27,9 @@
 //
 // Styles have three homes: the token sheet holds the tokens, the one set of animations and the
 // rules screens share; a part's own file holds how that part looks; a screen's file holds only its
-// layout. The rules below hold the chat to that. Today's code breaks most of them, so they run
-// through the ratchet in known-debt.mjs: a file may keep the findings recorded for it, never more,
-// and the count only falls. The literals above stay blocking everywhere, as they always were.
-//
-//   S1  a literal font size, so the type scale changes in one place; inherit and 0 are not sizes
-//   S2  a literal radius, so buttons, fields and surfaces stay one family of corners
-//   S3  a literal layer other than auto, -1, 0 and 1, so what floats over what is decided once;
-//       those four only order siblings
-//   S4  a px distance inside keyframes or a script animation, so every rise and slide travels
-//       the same distance; zero, percentages and tokens are fine
-//   S5  keyframes outside the token sheet, so a motion is changed once for every screen
-//   S6  :deep, ::v-deep or :global, a component restyling the inside of another; a part that
-//       should look different changes itself, for every screen
-//   S7  !important anywhere, which ends the order styles are written in, so the next change has
-//       to win by force too
-//   S8  a reduced-motion query outside the token sheet, so no screen forgets it and none answers
-//       it differently
-//   S9  a token the sheet defines that nothing reads: a value a reader keeps in mind for nothing
-//   S10 a token read once, which may be a name with no second caller (report only)
-//   S11 a class the sheet styles that no chat file names, which may be a rule left behind
-//       (report only)
-//   S12 a rule outside a part naming a class only that part renders: a screen restyling the
-//       part, where the part should change for everyone
-//
-// S1 to S4 read style blocks, the token sheet's rules (its tokens are where literals belong),
-// inline styles and the style a script writes. A token is read when var() names it or a script
-// string is its whole name; a name a script builds from a prefix reads every token with it.
+// layout. Rules S1 to S12 hold the chat to that; each one's reason is in STYLE_RULES, and a failure
+// prints it. Today's code breaks most of them, so they run through the ratchet in known-debt.mjs.
+// The literals above stay blocking everywhere, as they always were.
 //
 //   node check-styles.mjs                checks the chat block, everything under its folder and the token sheet
 //   node check-styles.mjs --root <dir>   checks every component under a folder, which is how the
@@ -170,16 +146,8 @@ function isIconSelector(selector) {
 /** A style binding or attribute that sizes what it is on, in CSS's names or a style object's. */
 const SIZE_IN_STYLE = /(^|[\s{,;'"])((min-|max-)?(width|height|inline-size|block-size)|stroke-width)['"]?\s*:/;
 
-/**
- * The text with an exempt region's characters blanked and its line breaks kept, so the rest is
- * scanned as it is and every line number still holds. A region without both markers blanks nothing.
- */
-function withoutRegion(text, name) {
-  const open = text.indexOf(`// #region ${name}`);
-  const close = text.indexOf(`// #endregion ${name}`, open);
-  if (open < 0 || close < 0) return text;
-  return text.slice(0, open) + text.slice(open, close).replace(/[^\n]/g, ' ') + text.slice(close);
-}
+/** A template's style attribute, static or bound; either quote may wrap it, so it runs to the one that opened it. */
+const INLINE_STYLE = /(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g;
 
 // The CSS named colors. A word from this list standing alone in a style value is a color; the
 // same word inside a longer name, such as a token or a keyframe name, is not.
@@ -224,15 +192,6 @@ const READS_AS_CSS = new RegExp([
 ].join('|'), 'i');
 const WHOLE_NAMED = new RegExp(`^(${NAMED_COLORS.join('|')})$`, 'i');
 
-/** The line a character offset falls on, counting from one. */
-function lineAt(text, offset) {
-  let line = 1;
-  for (let i = 0; i < offset; i++) {
-    if (text[i] === '\n') line++;
-  }
-  return line;
-}
-
 /** What a CSS value holds that a component may not, or null when it is clean. */
 function cssLiteral(value) {
   if (HEX.test(value)) return `a hex color (${HEX.exec(value)[0]})`;
@@ -263,15 +222,13 @@ function scriptLiteral(content) {
  * Walks a style block's declarations, skipping selectors and at-rule preludes, so an id selector
  * that happens to read as hex is never taken for a color. Reports the line each literal is on.
  */
-function scanCss(file, text, start, end, hits, { isLiteralAllowed = false, isIconOwner = false } = {}) {
+function scanCss(hit, text, start, end, { isLiteralAllowed = false, isIconOwner = false } = {}) {
   walkCss(cssCode(text, start, end), start, end, {
     onDeclaration({ property, value, offset, selector }) {
       const found = isLiteralAllowed ? null : cssLiteral(value);
-      if (found) {
-        hits.push(`${file}:${lineAt(text, offset)}: ${found}`);
-      }
+      if (found) hit(offset, found);
       if (!isIconOwner && ICON_SIZE.test(property) && isIconSelector(selector)) {
-        hits.push(`${file}:${lineAt(text, offset)}: an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
+        hit(offset, `an icon's ${property} set against the icon's own rules; set --chat-ic-size or --chat-ic-stroke on what holds it`);
       }
     },
   });
@@ -282,24 +239,13 @@ function scanCss(file, text, start, end, hits, { isLiteralAllowed = false, isIco
  * duration or a curve. A number given as an animation's duration is refused too, since a script
  * animation reads its timing from the sheet like everything else.
  */
-function scanScript(file, text, start, end, hits) {
-  const reported = new Set();
-  const report = (offset, what) => {
-    const line = lineAt(text, offset);
-    if (!reported.has(line)) {
-      reported.add(line);
-      hits.push(`${file}:${line}: ${what}`);
-    }
-  };
-
+function scanScript(hit, text, start, end) {
   for (const string of scriptStrings(text, start, end)) {
     const found = scriptLiteral(string.value);
-    if (found) report(string.offset - 1, found);
+    if (found) hit(string.offset - 1, found, { isOncePerLine: true });
   }
-
-  const script = text.slice(start, end);
-  for (const match of script.matchAll(/animate\([^\n]*?\bduration\s*:\s*\d/g)) {
-    report(start + match.index, 'a duration given to a script animation');
+  for (const match of text.slice(start, end).matchAll(/animate\([^\n]*?\bduration\s*:\s*\d/g)) {
+    hit(start + match.index, 'a duration given to a script animation', { isOncePerLine: true });
   }
 }
 
@@ -307,14 +253,14 @@ function scanScript(file, text, start, end, hits) {
  * Reads a template's style attributes, a static one as CSS and a bound one as script, and the
  * comments the built block keeps where they change what renders.
  */
-function scanTemplate(file, text, start, end, hits) {
+function scanTemplate(hit, text, start, end) {
   const template = text.slice(start, end);
   // The root's own indent is the first element's; a comment at that indent sits beside it.
   const rootIndent = /\n([ \t]*)<(?!!--)/.exec(template)?.[1];
   if (rootIndent !== undefined) {
     for (const match of template.matchAll(/\n([ \t]*)<!--/g)) {
       if (match[1] === rootIndent) {
-        hits.push(`${file}:${lineAt(text, start + match.index + 1)}: a comment beside the template's root, which makes the built component a fragment; put it inside the root`);
+        hit(start + match.index + 1, "a comment beside the template's root, which makes the built component a fragment; put it inside the root");
       }
     }
   }
@@ -334,7 +280,6 @@ function scanTemplate(file, text, start, end, hits) {
   const indentOf = (line) => /^[ \t]*/.exec(line)[0].length;
   const openTagAt = (index) => template.slice(lineStarts[index], template.indexOf('>', lineStarts[index]) + 1);
   const isSlotTemplate = (index) => /^<template(?![\w-])/.test(lines[index].trimStart()) && SLOT_DIRECTIVE.test(openTagAt(index));
-  /** Whether the component opened on a line has `<template #name>` slots, which make its other comments dropped. */
   const hasSlotTemplates = (parent, childIndent) => {
     for (let down = parent + 1; down < lines.length; down++) {
       const indent = indentOf(lines[down]);
@@ -350,32 +295,30 @@ function scanTemplate(file, text, start, end, hits) {
       const above = lines[up].trimStart();
       if (indentOf(lines[up]) >= indent || !above.startsWith('<') || above.startsWith('</') || above.startsWith('<!--')) continue;
       if ((SLOT_OWNER.test(above) && !hasSlotTemplates(up, indent)) || isSlotTemplate(up)) {
-        hits.push(`${file}:${lineAt(text, start + lineStarts[index])}: a comment directly in slot content or a Teleport, which the production runtime cannot remove once patched; put it above the component or inside an element`);
+        hit(start + lineStarts[index], 'a comment directly in slot content or a Teleport, which the production runtime cannot remove once patched; put it above the component or inside an element');
       }
       return;
     }
   });
 
-  // Either quote may wrap an attribute, so the value runs to the quote that opened it.
-  for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+  for (const match of template.matchAll(INLINE_STYLE)) {
     const value = match[4];
     const valueStart = start + match.index + match[0].length - value.length - 1;
     if (match[2] === 'style') {
       const found = cssLiteral(value);
-      if (found) hits.push(`${file}:${lineAt(text, valueStart)}: ${found} in an inline style`);
+      if (found) hit(valueStart, `${found} in an inline style`);
     } else {
-      scanScript(file, text, valueStart, valueStart + value.length, hits);
+      scanScript(hit, text, valueStart, valueStart + value.length);
     }
   }
 
   // An inline style on an icon weighs more than the icon's own rules, so it sizes the icon past
   // them; a caller passes --chat-ic-size and --chat-ic-stroke there instead.
   for (const tag of template.matchAll(/<(Icon|svg)(?![\w-])([^>]*)>/g)) {
-    for (const match of tag[2].matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+    for (const match of tag[2].matchAll(INLINE_STYLE)) {
       const words = match[4].replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
       if (SIZE_IN_STYLE.test(words)) {
-        const valueStart = start + tag.index + tag[1].length + 1 + match.index + match[0].length - match[4].length - 1;
-        hits.push(`${file}:${lineAt(text, valueStart)}: an icon's size set in its inline style; set --chat-ic-size or --chat-ic-stroke on what holds it`);
+        hit(start + tag.index + tag[1].length + 1 + match.index + match[0].length - match[4].length - 1, "an icon's size set in its inline style; set --chat-ic-size or --chat-ic-stroke on what holds it");
       }
     }
   }
@@ -387,38 +330,33 @@ function scanTemplate(file, text, start, end, hits) {
  */
 export function scan(file, text) {
   const name = basename(file);
+  const region = exempt.get(name);
   // A file exempt whole may hold literals, but sizes an icon by the same rule as any other.
-  const isLiteralAllowed = exempt.has(name) && exempt.get(name) === null;
-  if (exempt.has(name) && !isLiteralAllowed) {
-    text = withoutRegion(text, exempt.get(name));
+  const isLiteralAllowed = exempt.has(name) && region === null;
+  if (region) {
+    const open = text.indexOf(`// #region ${region}`);
+    const close = text.indexOf(`// #endregion ${region}`, open);
+    if (open >= 0 && close >= 0) text = blank(text, open, close);
   }
-  const cssRules = { isLiteralAllowed, isIconOwner: name === iconOwner };
 
   const hits = [];
-  if (file.endsWith('.css')) {
-    scanCss(file, text, 0, text.length, hits, cssRules);
-    return hits;
-  }
+  const lineOf = lineFinder(text);
+  // A script string can trip several patterns; its line is reported once.
+  const scriptLines = new Set();
+  const hit = (offset, what, { isOncePerLine = false } = {}) => {
+    const line = lineOf(offset);
+    if (isOncePerLine) {
+      if (scriptLines.has(line)) return;
+      scriptLines.add(line);
+    }
+    hits.push(`${file}:${line}: ${what}`);
+  };
+
+  const { styles, scripts, template } = regionsOf(file, text);
+  for (const { start, end } of styles) scanCss(hit, text, start, end, { isLiteralAllowed, isIconOwner: name === iconOwner });
   if (isLiteralAllowed) return hits;
-  if (file.endsWith('.ts')) {
-    scanScript(file, text, 0, text.length, hits);
-    return hits;
-  }
-
-  for (const match of text.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)) {
-    const start = match.index + match[0].indexOf('>') + 1;
-    scanCss(file, text, start, start + match[1].length, hits, cssRules);
-  }
-  for (const match of text.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)) {
-    const start = match.index + match[0].indexOf('>') + 1;
-    scanScript(file, text, start, start + match[1].length, hits);
-  }
-  const templateStart = text.indexOf('<template');
-  const templateEnd = text.lastIndexOf('</template>');
-  if (templateStart >= 0 && templateEnd > templateStart) {
-    scanTemplate(file, text, templateStart, templateEnd, hits);
-  }
-
+  for (const { start, end } of scripts) scanScript(hit, text, start, end);
+  if (template) scanTemplate(hit, text, template.start, template.end);
   return hits;
 }
 
@@ -439,11 +377,12 @@ export function scanKeyframeNames(files) {
   const hits = [];
   for (const { file, text } of files) {
     if (!file.endsWith('.obs')) continue;
+    const lineOf = lineFinder(text);
     for (const style of text.matchAll(/<style[^>]*\bscoped\b[^>]*>([\s\S]*?)<\/style>/g)) {
       const start = style.index + style[0].indexOf('>') + 1;
       for (const keyframes of style[1].matchAll(/@keyframes\s+([\w-]+)/g)) {
         if (read.has(keyframes[1])) {
-          hits.push(`${file}:${lineAt(text, start + keyframes.index)}: keyframes ${keyframes[1]}, which a script finds by name, defined in a scoped block`);
+          hits.push(`${file}:${lineOf(start + keyframes.index)}: keyframes ${keyframes[1]}, which a script finds by name, defined in a scoped block`);
         }
       }
     }
@@ -773,7 +712,7 @@ function cssFindings(file, text, start, end, add, tokens) {
 /** What a template's inline styles hold: a static one read as CSS declarations, a bound one as script. */
 function templateFindings(file, text, start, end, add, tokens) {
   const template = text.slice(start, end);
-  for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
+  for (const match of template.matchAll(INLINE_STYLE)) {
     const valueStart = start + match.index + match[0].length - match[4].length - 1;
     if (match[2] !== 'style') {
       scriptStyleFindings(file, text, valueStart, valueStart + match[4].length, add, tokens);
