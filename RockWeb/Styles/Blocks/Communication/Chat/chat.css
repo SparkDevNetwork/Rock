@@ -215,8 +215,9 @@
 
     /*
         Motion distances: a popover or small part rises 4 px, a view or row by the rise above, a
-        sheet its whole height. A hover nudges a control by a pixel, grows a glyph and presses it back, or turns the
-        gear; a count rolls in from most of its own height. Each goes to nothing under reduced
+        sheet its whole height. A hover nudges a control by a pixel, grows a glyph and presses it
+        back (a small round control presses as deep), or turns the gear; a wide surface such as a
+        quote presses only a little; a count rolls in from most of its own height. Each goes to nothing under reduced
         motion below, so a part that moves by these needs no reduced-motion rule of its own.
     */
     --chat-rise-sm: 4px;
@@ -224,6 +225,7 @@
     --chat-nudge: 1px;
     --chat-glyph-grow: 1.15;
     --chat-glyph-press: .92;
+    --chat-press-scale: .99;
     --chat-turn: 30deg;
     --chat-roll-from: 70%;
     /* A small delight's spring, which under reduced motion is only a quick fade. */
@@ -486,6 +488,7 @@
         --chat-nudge: 0px;
         --chat-glyph-grow: 1;
         --chat-glyph-press: 1;
+        --chat-press-scale: 1;
         --chat-turn: 0deg;
         --chat-roll-from: 0%;
         --chat-d-spring: var(--chat-t-fast);

@@ -450,7 +450,7 @@
 }
 
 .chat-composer-send.is-ready:active {
-    transform: scale(.94);
+    transform: scale(var(--chat-glyph-press));
 }
 
 /*
@@ -622,12 +622,7 @@
     color: var(--chat-icon);
 }
 
-/* Reduced motion: the send button's press does not scale, which no token carries (its lift reads the nudge). */
 @media (prefers-reduced-motion: reduce) {
-    .chat-composer-send.is-ready:active {
-        transform: none;
-    }
-
     /* The strip only fades as it goes, and gives its space back once gone. */
     .chat-strip-leave-active {
         transition: opacity var(--chat-t-fast) var(--chat-ease-out);
