@@ -659,15 +659,33 @@ const SAFE_LAYER = /^(auto|-1|0|1|inherit|initial|unset|revert)$/i;
 const RADIUS = /^border(-(top|bottom)-(left|right)|-(start|end)-(start|end))?-radius$/;
 
 /** The ratchet rule a declaration breaks with its literal, or null. Shared by style blocks, inline styles and script. */
-function literalRule(property, rawValue) {
+function literalRule(property, rawValue, tokens = null) {
   const value = rawValue.replace(/\s*!important\s*$/i, '').trim();
   if (NOT_A_VALUE.test(value)) return null;
   const bare = withoutTokenNames(value);
-  if (property === 'font-size' && (LENGTH.test(bare) || SIZE_KEYWORD.test(bare))) return { rule: 'S1', what: `a literal font size (${value})` };
-  if (property === 'font' && LENGTH.test(bare)) return { rule: 'S1', what: `a literal font size in the font shorthand (${value})` };
-  if (RADIUS.test(property) && LENGTH.test(bare)) return { rule: 'S2', what: `a literal radius (${value})` };
-  if (property === 'z-index' && !SAFE_LAYER.test(value) && /-?\d+/.test(bare)) return { rule: 'S3', what: `a literal layer (${value})` };
+  // A token the sheet does not define is a component's own value under a name: still a literal.
+  const own = tokens ? [...value.matchAll(/var\(\s*(--[\w-]+)/g)].map((match) => match[1]).find((name) => !tokens.has(name)) : undefined;
+  const kind = own ? `a token the sheet does not define (${own})` : null;
+  if (property === 'font-size' && (own || LENGTH.test(bare) || SIZE_KEYWORD.test(bare))) return { rule: 'S1', what: kind ?? `a literal font size (${value})` };
+  if (property === 'font' && (own || LENGTH.test(bare))) return { rule: 'S1', what: kind ?? `a literal font size in the font shorthand (${value})` };
+  if (RADIUS.test(property) && (own || LENGTH.test(bare))) return { rule: 'S2', what: kind ?? `a literal radius (${value})` };
+  if (property === 'z-index' && !SAFE_LAYER.test(value) && (own || /-?\d+/.test(bare))) return { rule: 'S3', what: kind ?? `a literal layer (${value})` };
   return null;
+}
+
+/** The tokens the sheets among the files define, or null when none is among them. */
+function sheetTokens(files) {
+  const sheets = files.filter(({ file }) => isSheet(file));
+  if (sheets.length === 0) return null;
+  const tokens = new Set();
+  for (const { text } of sheets) {
+    walkCss(cssCode(text, 0, text.length), 0, text.length, {
+      onDeclaration({ property }) {
+        if (property.startsWith('--')) tokens.add(property);
+      },
+    });
+  }
+  return tokens;
 }
 
 /** A px distance other than zero, as keyframes or a script animation hold it, or null. */
@@ -692,17 +710,17 @@ const SCRIPT_STYLE = /(["'`]?)(fontSize|font-size|font|borderRadius|border-radiu
 const SET_PROPERTY = /setProperty\(\s*(["'])([\w-]+)\1\s*,\s*(["'`])((?:\\.|(?!\3)[^\\\n])*)\3(\s*,\s*["']important["'])?/g;
 
 /** What a stretch of script, or a bound style in the template, holds against the style rules. */
-function scriptStyleFindings(file, text, start, end, add) {
+function scriptStyleFindings(file, text, start, end, add, tokens) {
   const code = scriptCode(text, start, end).slice(start, end);
 
   for (const match of code.matchAll(SCRIPT_STYLE)) {
     if (/[\w$-]/.test(code[match.index - 1] ?? '')) continue;
     const value = match[4] !== undefined ? staticText(match[4]) : match[5];
-    const found = literalRule(cssName(match[2]), value);
+    const found = literalRule(cssName(match[2]), value, tokens);
     if (found) add(found.rule, start + match.index, found.what);
   }
   for (const match of code.matchAll(SET_PROPERTY)) {
-    const found = literalRule(match[2], staticText(match[4]));
+    const found = literalRule(match[2], staticText(match[4]), tokens);
     if (found) add(found.rule, start + match.index, found.what);
     if (match[5]) add('S7', start + match.index, 'an important priority set from script');
   }
@@ -730,7 +748,7 @@ function scriptStyleFindings(file, text, start, end, add) {
 }
 
 /** What a stretch of CSS holds against the style rules S1 to S8. */
-function cssFindings(file, text, start, end, add) {
+function cssFindings(file, text, start, end, add, tokens) {
   const sheet = isSheet(file);
 
   walkCss(cssCode(text, start, end), start, end, {
@@ -746,19 +764,19 @@ function cssFindings(file, text, start, end, add) {
         const px = nonZeroPx(value);
         if (px) add('S4', offset, `a ${px} distance inside keyframes`);
       }
-      const found = literalRule(property, value);
+      const found = literalRule(property, value, sheet ? null : tokens);
       if (found) add(found.rule, offset, found.what);
     },
   });
 }
 
 /** What a template's inline styles hold: a static one read as CSS declarations, a bound one as script. */
-function templateFindings(file, text, start, end, add) {
+function templateFindings(file, text, start, end, add, tokens) {
   const template = text.slice(start, end);
   for (const match of template.matchAll(/(^|\s)(:style|v-bind:style|style)\s*=\s*(["'])([\s\S]*?)\3/g)) {
     const valueStart = start + match.index + match[0].length - match[4].length - 1;
     if (match[2] !== 'style') {
-      scriptStyleFindings(file, text, valueStart, valueStart + match[4].length, add);
+      scriptStyleFindings(file, text, valueStart, valueStart + match[4].length, add, tokens);
       continue;
     }
     let at = valueStart;
@@ -768,7 +786,7 @@ function templateFindings(file, text, start, end, add) {
         const property = piece.slice(0, colon).trim().toLowerCase();
         const value = piece.slice(colon + 1);
         if (/!important/i.test(value)) add('S7', at, `!important on ${property} in an inline style`);
-        const found = literalRule(property, value);
+        const found = literalRule(property, value, tokens);
         if (found) add(found.rule, at, `${found.what} in an inline style`);
       }
       at += piece.length + 1;
@@ -902,13 +920,14 @@ function crossFileFindings(files, push) {
  */
 export function findStyleDebt(files) {
   const findings = [];
+  const tokens = sheetTokens(files);
   for (const { file, text } of files) {
     const lineOf = lineFinder(text);
     const add = (rule, offset, what) => findings.push({ rule, file, line: lineOf(offset), what });
     const { styles, scripts, template } = regionsOf(file, text);
-    for (const { start, end } of styles) cssFindings(file, text, start, end, add);
-    for (const { start, end } of scripts) scriptStyleFindings(file, text, start, end, add);
-    if (template) templateFindings(file, text, template.start, template.end, add);
+    for (const { start, end } of styles) cssFindings(file, text, start, end, add, tokens);
+    for (const { start, end } of scripts) scriptStyleFindings(file, text, start, end, add, tokens);
+    if (template) templateFindings(file, text, template.start, template.end, add, tokens);
   }
   crossFileFindings(files, (found) => findings.push(found));
   return findings;
