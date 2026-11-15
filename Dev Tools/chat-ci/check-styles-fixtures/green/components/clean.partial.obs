@@ -14,6 +14,14 @@
     fill: inherit;
     transition: opacity var(--chat-t-fast) var(--chat-ease-state);
 }
+
+/* Every token the sheet beside this folder defines is read, so none of them is unused. */
+.chat-row.is-busy {
+    background: var(--chat-surface);
+    border-color: var(--chat-hover);
+    animation: chat-spin var(--chat-spin) var(--chat-ease-in);
+    transition-duration: var(--chat-t-msg);
+}
 </style>
 
 <script setup lang="ts">

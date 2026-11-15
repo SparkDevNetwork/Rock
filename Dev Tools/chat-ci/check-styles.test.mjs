@@ -5,12 +5,13 @@
 // bites when it is run the way CI runs it.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-import { scan, scanKeyframeNames, styleFiles } from './check-styles.mjs';
+import { findStyleDebt, scan, scanKeyframeNames, styleFiles, STYLE_RULES } from './check-styles.mjs';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
@@ -23,6 +24,18 @@ function linesOf(hits) {
 
 function run(...args) {
   return spawnSync(process.execPath, ['check-styles.mjs', ...args], { cwd: here, encoding: 'utf8' });
+}
+
+const sheet = 'RockWeb/Styles/Blocks/Communication/Chat/chat.css';
+
+/** The lines one rule found, in one file when named, sorted. */
+function ruleLines(findings, rule, file) {
+  return findings.filter((found) => found.rule === rule && (!file || found.file === file)).map((found) => found.line).sort((a, b) => a - b);
+}
+
+/** The tokens or classes one rule named, sorted. */
+function ruleNames(findings, rule, pattern) {
+  return findings.filter((found) => found.rule === rule).map((found) => pattern.exec(found.what)?.[0]).sort();
 }
 
 test('it refuses each kind of color, duration and curve written into a component style block', () => {
@@ -495,4 +508,405 @@ test('the gate runs locally and in the workflow', () => {
   assert.match(ci, /check-styles\.mjs/);
   const runsByScript = /npm run check:styles/.test(workflow) && /check-styles\.mjs/.test(scripts['check:styles'] ?? '');
   assert.ok(runsByScript || /check-styles\.mjs/.test(workflow), 'the workflow should run the style gate');
+});
+
+// The rules below come from one conviction: styles have three homes, the token sheet, a part's own
+// file and a screen's layout. Each is held by the ratchet in known-debt.json, so today's code passes
+// while no file may gain a finding. Every cell plants the real spellings found in the chat today.
+
+test('every style rule carries its mode and its reason', () => {
+  const ids = STYLE_RULES.map((rule) => rule.id);
+
+  assert.deepEqual(ids, ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12']);
+  for (const rule of STYLE_RULES) {
+    assert.match(rule.mode, /^(ratchet|report)$/, rule.id);
+    assert.ok(rule.reason.length > 20, `${rule.id} states no reason`);
+  }
+  assert.deepEqual(STYLE_RULES.filter((rule) => rule.mode === 'report').map((rule) => rule.id), ['S10', 'S11']);
+});
+
+test('S1 refuses a literal font size in a style block, an inline style and script, and passes tokens', () => {
+  const component = [
+    '<template>',
+    '    <div class="chat-row" style="font-size: 12px"></div>',
+    '    <div class="chat-row" :style="{ fontSize: \'11px\' }"></div>',
+    '    <div class="chat-row" :style="{ fontSize: `${Math.round(size * 0.42 * 100) / 100}px` }"></div>',
+    '</template>',
+    '<style scoped>',
+    '.chat-row {',
+    '    font-size: 12.5px;',
+    '    font: 600 13px/1.4 inherit;',
+    '    font-size: var(--chat-fs-2, 12px);',
+    '    font-size: 9px !important;',
+    '    font-size: var(--chat-fs-3);',
+    '    font-size: inherit;',
+    '    font: inherit;',
+    '    font-size: 0;',
+    '    font-size: calc(var(--chat-fs-3) * 1.1);',
+    '}',
+    '</style>',
+    '<script setup lang="ts">',
+    '    element.style.fontSize = "13px";',
+    '    element.style.setProperty("font-size", "14px");',
+    '    const label = "font-size: 12px is what the old row used";',
+    '</script>',
+  ].join('\n');
+
+  const findings = findStyleDebt([{ file: `${shell}/components/example.partial.obs`, text: component }]);
+
+  assert.deepEqual(ruleLines(findings, 'S1'), [2, 3, 8, 9, 10, 11, 20, 21], JSON.stringify(findings));
+});
+
+test('S1 to S3 read the token sheet\'s rules but not its tokens', () => {
+  const css = [
+    ':root {',
+    '    --chat-fs-3: 13px;',
+    '    --chat-r-md: 12px;',
+    '    --chat-z-popover: 1050;',
+    '}',
+    '.chat-shell .chat-x {',
+    '    font-size: 13px;',
+    '    border-radius: 6px;',
+    '    z-index: 1060;',
+    '}',
+  ].join('\n');
+
+  const findings = findStyleDebt([{ file: sheet, text: css }]);
+
+  assert.deepEqual(ruleLines(findings, 'S1'), [7]);
+  assert.deepEqual(ruleLines(findings, 'S2'), [8]);
+  assert.deepEqual(ruleLines(findings, 'S3'), [9]);
+});
+
+test('S2 refuses a literal radius, a fallback included, and passes tokens, inherit and zero', () => {
+  const component = [
+    '<template><div class="chat-dot" :style="{ borderRadius: \'8px\' }"></div></template>',
+    '<style scoped>',
+    '.chat-dot {',
+    '    border-radius: 50%;',
+    '    border-top-left-radius: 6px;',
+    '    border-radius: var(--chat-r-item, 6px);',
+    '    border-radius: calc(var(--chat-r-md) - 1px);',
+    '    border-radius: var(--chat-r-full);',
+    '    border-radius: inherit;',
+    '    border-radius: 0;',
+    '    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;',
+    '    border-start-start-radius: var(--chat-r-sm);',
+    '}',
+    '</style>',
+  ].join('\n');
+
+  const findings = findStyleDebt([{ file: `${shell}/components/example.partial.obs`, text: component }]);
+
+  assert.deepEqual(ruleLines(findings, 'S2'), [1, 4, 5, 6, 7], JSON.stringify(findings));
+});
+
+test('S3 refuses a literal layer other than auto, -1, 0 and 1, in style and script', () => {
+  const component = [
+    '<template><div class="chat-pop" style="z-index: 1050"></div></template>',
+    '<style scoped>',
+    '.chat-pop {',
+    '    z-index: 1060;',
+    '    z-index: 6;',
+    '    z-index: var(--chat-z-popover, 50);',
+    '    z-index: auto;',
+    '    z-index: -1;',
+    '    z-index: 0;',
+    '    z-index: 1;',
+    '    z-index: var(--chat-z-popover);',
+    '}',
+    '</style>',
+    '<script setup lang="ts">',
+    '    const look = { zIndex: 60 };',
+    '    element.style.zIndex = "70";',
+    '    const place = { zIndex: 1 };',
+    '</script>',
+  ].join('\n');
+
+  const findings = findStyleDebt([{ file: `${shell}/components/example.partial.obs`, text: component }]);
+
+  assert.deepEqual(ruleLines(findings, 'S3'), [1, 4, 5, 6, 15, 16], JSON.stringify(findings));
+});
+
+test('S4 refuses a px distance inside keyframes, in a style block, the sheet or a script animation', () => {
+  const component = [
+    '<style scoped>',
+    '@keyframes chat-rise {',
+    '    from { transform: translateY(4px); opacity: 0; }',
+    '    50% { transform: translate(0, -2.5px) scale(1.02); }',
+    '    to { transform: translateY(0px); }',
+    '}',
+    '@keyframes chat-sheet-in {',
+    '    from { transform: translateY(100%); }',
+    '    to { transform: translateY(var(--chat-rise-sm)); }',
+    '}',
+    '.chat-row { margin-top: 4px; }',
+    '</style>',
+    '<script setup lang="ts">',
+    '    element.animate([{ transform: "translateY(8px)" }, { transform: "none" }], { duration: tokenDuration("--chat-t-msg") });',
+    '    element.animate([{ opacity: 0 }, { opacity: 1 }], { duration: tokenDuration("--chat-t-msg") });',
+    '</script>',
+  ].join('\n');
+  const css = [
+    '@keyframes chat-pop {',
+    '    from { transform: translateY(6px) scale(.96); }',
+    '}',
+    '.chat-row { margin-top: 4px; }',
+  ].join('\n');
+
+  const findings = findStyleDebt([
+    { file: `${shell}/components/example.partial.obs`, text: component },
+    { file: sheet, text: css },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S4', `${shell}/components/example.partial.obs`), [3, 4, 14], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S4', sheet), [2]);
+});
+
+test('S5 refuses keyframes outside the token sheet', () => {
+  const component = [
+    '<style scoped>',
+    '.chat-row { animation: chat-rise var(--chat-t-msg) var(--chat-ease-in); }',
+    '@keyframes chat-rise {',
+    '    from { opacity: 0; }',
+    '}',
+    '@-webkit-keyframes chat-old {',
+    '    from { opacity: 0; }',
+    '}',
+    '</style>',
+  ].join('\n');
+  const css = '@keyframes chat-spin {\n    to { transform: rotate(1turn); }\n}\n';
+
+  const findings = findStyleDebt([
+    { file: `${shell}/components/example.partial.obs`, text: component },
+    { file: sheet, text: css },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S5', `${shell}/components/example.partial.obs`), [3, 6]);
+  assert.deepEqual(ruleLines(findings, 'S5', sheet), []);
+});
+
+test('S6 refuses reaching into another component\'s styles, and passes a comment about it', () => {
+  const component = [
+    '<style scoped>',
+    '.chat-row :deep(.chat-avatar) { margin: 0; }',
+    '.chat-row ::v-deep .chat-x { margin: 0; }',
+    ':global(.chat-open) .chat-row { margin: 0; }',
+    '.chat-row >>> .chat-y { margin: 0; }',
+    '/* :deep() was here once */',
+    '.chat-row:hover { margin: 0; }',
+    '</style>',
+  ].join('\n');
+
+  const findings = findStyleDebt([{ file: `${shell}/components/example.partial.obs`, text: component }]);
+
+  assert.deepEqual(ruleLines(findings, 'S6'), [2, 3, 4, 5]);
+});
+
+test('S7 refuses !important anywhere, the token sheet and script included', () => {
+  const component = [
+    '<template><div class="chat-row" style="display: none !important"></div></template>',
+    '<style scoped>',
+    '.chat-row { width: 0 !important; }',
+    '/* never !important */',
+    '</style>',
+    '<script setup lang="ts">',
+    '    element.style.setProperty("display", "none", "important");',
+    '    element.style.cssText = "display: none !important";',
+    '    // not !important here',
+    '</script>',
+  ].join('\n');
+  const css = '.chat-x { color: var(--chat-text) !important; }\n';
+
+  const findings = findStyleDebt([
+    { file: `${shell}/components/example.partial.obs`, text: component },
+    { file: sheet, text: css },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S7', `${shell}/components/example.partial.obs`), [1, 3, 7, 8]);
+  assert.deepEqual(ruleLines(findings, 'S7', sheet), [1]);
+});
+
+test('S8 refuses a reduced-motion query in a component style block, not in the sheet', () => {
+  const component = [
+    '<style scoped>',
+    '@media (prefers-reduced-motion: reduce) {',
+    '    .chat-row { animation: none; }',
+    '}',
+    '</style>',
+    '<script setup lang="ts">',
+    '    const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;',
+    '</script>',
+  ].join('\n');
+  const css = '@media (prefers-reduced-motion: reduce) {\n    .chat-x { animation: none; }\n}\n';
+
+  const findings = findStyleDebt([
+    { file: `${shell}/components/example.partial.obs`, text: component },
+    { file: sheet, text: css },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S8', `${shell}/components/example.partial.obs`), [2]);
+  assert.deepEqual(ruleLines(findings, 'S8', sheet), []);
+});
+
+test('S9 refuses a token nothing reads; S10 reports a token read once', () => {
+  const css = [
+    ':root {',
+    '    --chat-used: 1px;',
+    '    --chat-unused: 2px;',
+    '    --chat-read-by-script: 200ms;',
+    '    --chat-tone-brand: var(--chat-brand);',
+    '    --chat-alias: var(--chat-base);',
+    '    --chat-base: 4px;',
+    '}',
+    '[data-theme="dark"] .chat-shell {',
+    '    --chat-unused: 3px;',
+    '}',
+    '.chat-a { margin: var(--chat-used); }',
+    '.chat-b { padding: var(--chat-used); }',
+  ].join('\n');
+  const component = '<style scoped>\n.chat-row { width: var(--chat-used); }\n</style>\n';
+  const script = [
+    'const fast = tokenDuration("--chat-read-by-script");',
+    'const tone = `var(--chat-tone-${kind})`;',
+    'element.style.setProperty("--chat-unused", "1px");',
+  ].join('\n');
+
+  const findings = findStyleDebt([
+    { file: sheet, text: css },
+    { file: `${shell}/components/example.partial.obs`, text: component },
+    { file: `${shell}/composables/example.partial.ts`, text: script },
+  ]);
+
+  assert.deepEqual(ruleNames(findings, 'S9', /--[\w-]+/), ['--chat-alias', '--chat-unused'], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S9', sheet), [3, 6]);
+  assert.deepEqual(ruleNames(findings, 'S10', /--[\w-]+/), ['--chat-base', '--chat-read-by-script'], JSON.stringify(findings));
+});
+
+test('S11 reports a chat class the sheet styles that no chat file uses', () => {
+  const css = [
+    '.chat-orphan { margin: 0; }',
+    '.panel-body .chat-used { margin: 0; }',
+  ].join('\n');
+  const component = '<template><div class="chat-used"></div></template>\n';
+
+  const findings = findStyleDebt([
+    { file: sheet, text: css },
+    { file: `${shell}/components/example.partial.obs`, text: component },
+  ]);
+
+  assert.deepEqual(ruleNames(findings, 'S11', /chat-[\w-]+/), ['chat-orphan']);
+});
+
+test('S12 refuses restyling a part from outside it, and passes layout around it and shared classes', () => {
+  const avatar = [
+    '<template>',
+    '    <span class="chat-avatar"><span class="chat-avatar-initials chat-sr-only">A</span></span>',
+    '</template>',
+    '<style scoped>',
+    '.chat-avatar { display: inline-flex; }',
+    '</style>',
+  ].join('\n');
+  const iconButton = [
+    '<template>',
+    '    <button class="chat-icon-btn" type="button"><slot /></button>',
+    '</template>',
+  ].join('\n');
+  const row = [
+    '<template>',
+    '    <div class="chat-row">',
+    '        <Avatar class="chat-row-face" />',
+    '        <span class="chat-sr-only">x</span>',
+    '    </div>',
+    '</template>',
+    '<style scoped>',
+    '.chat-row :deep(.chat-avatar) { margin: 0; }',
+    '.chat-row .chat-avatar-initials { margin: 0; }',
+    '.chat-avatar .chat-row-face { margin: 0; }',
+    '.chat-row-face { margin: 0; }',
+    '</style>',
+  ].join('\n');
+  const css = [
+    '.chat-avatar { width: 0; }',
+    '.chat-sr-only { position: absolute; }',
+    'button.chat-icon-btn.chat-fail-btn { margin: 0; }',
+  ].join('\n');
+
+  const findings = findStyleDebt([
+    { file: `${shell}/ui/avatar.partial.obs`, text: avatar },
+    { file: `${shell}/ui/iconButton.partial.obs`, text: iconButton },
+    { file: `${shell}/components/row.partial.obs`, text: row },
+    { file: sheet, text: css },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S12', `${shell}/components/row.partial.obs`), [8, 9], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S12', sheet), [1, 3], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S12', `${shell}/ui/avatar.partial.obs`), []);
+});
+
+/** Writes a debt file into a fresh folder and returns its path. */
+function debtFile(entries) {
+  const folder = mkdtempSync(join(tmpdir(), 'chat-debt-'));
+  const path = join(folder, 'known-debt.json');
+  writeFileSync(path, JSON.stringify(entries));
+  return path;
+}
+
+const ratchetRow = 'Dev Tools/chat-ci/check-styles-fixtures/ratchet/components/row.partial.obs';
+
+function runRatchet(debt, landing, ...extra) {
+  return spawnSync(process.execPath, ['check-styles.mjs', '--root', 'check-styles-fixtures/ratchet', '--debt', debt, ...extra], {
+    cwd: here,
+    encoding: 'utf8',
+    env: { ...process.env, CHAT_DEBT_LANDING: landing ? '1' : '0', GITHUB_STEP_SUMMARY: '' },
+  });
+}
+
+test('run on the ratchet fixture with its exact debt, it passes and prints the table', () => {
+  const result = runRatchet(debtFile({ S1: { [ratchetRow]: 1 }, S2: { [ratchetRow]: 1 } }), true);
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(result.stdout, /\|\s*S1\s*\|\s*ratchet\s*\|\s*1\s*\|\s*1\s*\|/);
+});
+
+test('run on the ratchet fixture with less debt recorded than found, it fails', () => {
+  const result = runRatchet(debtFile({ S1: { [ratchetRow]: 1 } }), false);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /S2/);
+});
+
+test('run on the ratchet fixture with more debt recorded than found, it warns on a branch and fails where it lands', () => {
+  const debt = debtFile({ S1: { [ratchetRow]: 3 }, S2: { [ratchetRow]: 1 } });
+
+  const branch = runRatchet(debt, false);
+  assert.equal(branch.status, 0, branch.stdout + branch.stderr);
+  assert.match(branch.stdout + branch.stderr, /lower/i);
+
+  const landing = runRatchet(debt, true);
+  assert.equal(landing.status, 1, landing.stdout + landing.stderr);
+});
+
+test('run on the ratchet fixture, it fails a debt file that grew against its base', () => {
+  const debt = debtFile({ S1: { [ratchetRow]: 1 }, S2: { [ratchetRow]: 1 } });
+  const base = debtFile({ S1: { [ratchetRow]: 1 } });
+
+  const result = runRatchet(debt, false, '--base-debt', base);
+
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stderr, /rose|grew/i);
+});
+
+test('the debt table is written to the step summary when the workflow gives one', () => {
+  const summary = join(mkdtempSync(join(tmpdir(), 'chat-summary-')), 'summary.md');
+  const debt = debtFile({ S1: { [ratchetRow]: 1 }, S2: { [ratchetRow]: 1 } });
+
+  const result = spawnSync(process.execPath, ['check-styles.mjs', '--root', 'check-styles-fixtures/ratchet', '--debt', debt], {
+    cwd: here,
+    encoding: 'utf8',
+    env: { ...process.env, CHAT_DEBT_LANDING: '0', GITHUB_STEP_SUMMARY: summary },
+  });
+
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.match(readFileSync(summary, 'utf8'), /\|\s*S2\s*\|\s*ratchet\s*\|\s*1\s*\|\s*1\s*\|/);
 });

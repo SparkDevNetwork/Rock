@@ -236,3 +236,28 @@ test('an install is skipped only when the cache holds every installed folder for
     assert.match(String(install.if ?? ''), new RegExp(`steps\\.${cache.id}\\.outputs\\.cache-hit != 'true'`), `${install.name} runs whatever the cache held`);
   }
 });
+
+test('the parts check runs locally and in the workflow, beside the style check', () => {
+  const local = readFileSync(resolve(repoRoot, 'Dev Tools/chat-ci/ci.mjs'), 'utf8');
+  const scripts = JSON.parse(readFileSync(resolve(repoRoot, 'Dev Tools/chat-ci/package.json'), 'utf8')).scripts ?? {};
+  const steps = unlabelled().steps ?? [];
+  const runs = (pattern) => steps.findIndex((step) => pattern.test(String(step.run ?? '')));
+
+  assert.match(scripts['check:parts'] ?? '', /check-parts\.mjs/, 'no check:parts script');
+  assert.ok(local.indexOf("'check-parts.mjs'") > local.indexOf("'check-styles.mjs'"), 'the local run does not run the parts check after the style check');
+  assert.ok(runs(/check:parts/) > runs(/check:styles/), 'the workflow does not run the parts check after the style check');
+});
+
+test('both ratchets can compare the debt file with the commit this run builds on', () => {
+  // The debt file may only fall. On a pull request the base is the branch it targets; on a push it
+  // is the tip before the push. A shallow checkout holds neither, so one is fetched before the checks.
+  const job = unlabelled();
+  const base = String(job.env?.CHAT_DEBT_BASE ?? '');
+  assert.match(base, /github\.event\.pull_request\.base\.sha/, 'no base for a pull request');
+  assert.match(base, /github\.event\.before/, 'no base for a push');
+
+  const steps = job.steps ?? [];
+  const fetch = steps.findIndex((step) => /git fetch/.test(String(step.run ?? '')) && /CHAT_DEBT_BASE/.test(String(step.run ?? '')));
+  const styles = steps.findIndex((step) => /check:styles/.test(String(step.run ?? '')));
+  assert.ok(fetch >= 0 && fetch < styles, 'the base commit is not fetched before the checks read it');
+});

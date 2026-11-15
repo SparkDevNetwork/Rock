@@ -1,0 +1,12 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-row">One literal font size and one literal radius, each recorded as debt.</div>
+</template>
+
+<style scoped>
+.chat-row {
+    font-size: 12px;
+    border-radius: 50%;
+    padding: var(--chat-gap);
+}
+</style>

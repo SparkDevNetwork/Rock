@@ -1,0 +1,24 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-mention-picker">
+        <div class="chat-sr-only" aria-live="polite">{{ said }}</div>
+        <button type="button" class="chat-mention-more" @click="more">More</button>
+        <MentionRow :isPhone="isPhone" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    // A screen that places, closes and announces for itself: each of these has a shared home.
+    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+
+    function onKeydown(event: KeyboardEvent): void {
+        // Completing a mention on Tab is this picker's own job, not a focus trap.
+        if (event.key === "Enter" || event.key === "Tab") {
+            pick();
+        }
+    }
+
+    onMounted(() => {
+        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+    });
+</script>

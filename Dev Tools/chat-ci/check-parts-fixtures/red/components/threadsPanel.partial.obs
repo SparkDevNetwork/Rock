@@ -1,0 +1,13 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-threads"></div>
+</template>
+
+<script setup lang="ts">
+    // A screen that redefines a shared type, and spells its values out again under another name.
+    type RoomKind = "channel" | "person" | "group";
+
+    type DrawnRow = { key: string };
+
+    export type HeaderKind = "group" | "person" | "channel";
+</script>

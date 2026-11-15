@@ -1,0 +1,9 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-sr-only" aria-live="polite">{{ said }}</div>
+</template>
+
+<script setup lang="ts">
+    // The announcer: the one live region every screen speaks through.
+    const said = ref("");
+</script>

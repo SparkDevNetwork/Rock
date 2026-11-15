@@ -1,0 +1,21 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-threads" data-testid="threads-panel">
+        <IconButton label="Close" @click="close" />
+    </div>
+</template>
+
+<script setup lang="ts">
+    // A screen that uses the shared parts: it names the shared type and reads context.
+    import { RoomKind } from "../types.partial";
+
+    const props = defineProps({
+        roomKind: {
+            type: String as PropType<RoomKind>,
+            required: true
+        }
+    });
+
+    const session = useChatSession();
+    const row = session.channels.rowOf(props.channelId);
+</script>

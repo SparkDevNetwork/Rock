@@ -1,0 +1,16 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-menu" role="menu" @keydown="onKeydown"><slot /></div>
+</template>
+
+<script setup lang="ts">
+    // A menu that keeps its own Tab trap, which the focus trap owns.
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape") {
+            close();
+        }
+        else if (event.key === "Tab") {
+            trap(event);
+        }
+    }
+</script>
