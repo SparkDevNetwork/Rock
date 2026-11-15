@@ -39,22 +39,17 @@
 </template>
 
 <style scoped>
+/* Over the reactions it names, it enters by the small rise as a popover does. */
 .chat-rx-card {
-    z-index: 1060;
+    --chat-rise: var(--chat-rise-sm);
+    z-index: var(--chat-z-tip);
     width: 248px;
     padding: 10px 6px 6px;
     color: var(--chat-text);
     background: var(--chat-raised);
     border-radius: var(--chat-r-pop);
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-rx-card-in var(--chat-t-base) var(--chat-ease-in);
-}
-
-@keyframes chat-rx-card-in {
-    from {
-        opacity: 0;
-        transform: translateY(4px);
-    }
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-rx-card-head {
@@ -75,13 +70,13 @@
 
 .chat-rx-card-e {
     flex: none;
-    font-size: 22px;
+    font-size: var(--chat-emoji-md);
     line-height: 1;
 }
 
 .chat-rx-card-e.is-image {
-    width: 22px;
-    height: 22px;
+    width: var(--chat-emoji-md);
+    height: var(--chat-emoji-md);
     object-fit: contain;
 }
 
@@ -93,7 +88,7 @@
 }
 
 .chat-rx-card-label {
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
 }
 
 /* A catalog's label is written in lower case; the card's title reads as a name. */
@@ -102,7 +97,7 @@
 }
 
 .chat-rx-card-count {
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
 }
 
@@ -154,7 +149,7 @@
     font-variant-numeric: tabular-nums;
     color: var(--chat-text-2);
     background: var(--chat-sidebar);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-rx-card-see {
@@ -166,13 +161,6 @@
     font-size: 12.5px;
     font-weight: 600;
     color: var(--chat-brand-ink);
-}
-
-/* Reduced motion: the card only fades in. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-rx-card {
-        animation-name: chat-crossfade;
-    }
 }
 </style>
 
