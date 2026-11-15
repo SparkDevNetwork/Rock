@@ -805,7 +805,8 @@ describe("the components' own styles", () => {
     });
 
     test("the unread strip comes from 4px above and Jump to latest from the rise below at the pop scale", () => {
-        expect(declarationOf(feedPath, ".chat-unread-strip", "transform")).toBe(normalize("translateY(-4px)"));
+        expect(declarationOf(feedPath, ".chat-unread-strip", "transform")).toBe(normalize("translateY(calc(var(--chat-rise-sm) * -1))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise-sm")).toBe("4px");
         expect(declarationOf(feedPath, ".chat-unread-strip.is-on", "transform")).toBe("none");
         expect(declarationOf(feedPath, ".chat-jump", "transform")).toBe(normalize("translateY(var(--chat-rise)) scale(var(--chat-pop-scale))"));
         expect(declarationOf(feedPath, ".chat-jump.is-on", "transform")).toBe("none");
@@ -838,8 +839,10 @@ describe("the components' own styles", () => {
         expect(fade - (pillBottom + pillHeight)).toBe(16);
     });
 
+    // The strip slides by the small rise, which the sheet takes to nothing under reduced motion.
     test("under reduced motion the unread strip fades in and out without sliding", () => {
-        expect(declarationOf(feedPath, ".chat-unread-strip", "transform", isReducedMotion)).toBe("none");
+        expect(declarationOf(feedPath, ".chat-unread-strip", "transform")).toContain("var(--chat-rise-sm)");
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise-sm", isReducedMotion)).toBe("0px");
     });
 
     // A conversation opened in place of another rises 6px into view over the view time on the
@@ -862,19 +865,20 @@ describe("the components' own styles", () => {
     // time on the entrance curve. Under reduced motion the same time and curve play as a fade
     // alone, under a name that still reads as the roll, so nothing moves and its length holds.
     test("a reaction count rolls up as it fades in, and only fades under reduced motion over the same time", () => {
+        // The roll is the set's, its distance a token the sheet takes to nothing under reduced motion.
         const reactionsPath = resolve(components, "messageReactions.partial.obs");
         const animation = declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation");
         expect(animation).toContain(normalize("var(--chat-d-roll) var(--chat-ease-in)"));
-        const frames = normalize(keyframesBody(reactionsPath, animation.split(/\s|var\(/)[0]) ?? "");
+        const name = animation.split(/\s|var\(/)[0];
+        expect(name).toMatch(/roll/);
+        const frames = normalize(keyframesBody(sheetPath, name) ?? "");
         expect(frames).toContain("opacity:0");
-        expect(frames).toContain(normalize("transform: translateY(70%)"));
+        expect(frames).toContain(normalize("transform: translateY(var(--chat-roll-from))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-roll-from")).toBe("70%");
 
-        const reducedName = declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation-name", isReducedMotion);
-        expect(reducedName).toMatch(/roll/);
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-roll-from", isReducedMotion)).toBe("0%");
         expect(declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation-duration", isReducedMotion)).toBe("");
-        const reducedFrames = normalize(keyframesBody(reactionsPath, reducedName) ?? "");
-        expect(reducedFrames).toContain("opacity:0");
-        expect(reducedFrames).not.toContain("transform");
+        expect(declarationOf(reactionsPath, ".chat-rx-n.is-rolling", "animation-name", isReducedMotion)).toBe("");
     });
 
     // A new chip or thread pill is a small delight, so it pops over the chips' own base time on the
@@ -883,8 +887,10 @@ describe("the components' own styles", () => {
         const reactionsPath = resolve(components, "messageReactions.partial.obs");
         const summaryPath = resolve(components, "threadSummary.partial.obs");
         for (const [path, selector] of [[reactionsPath, ".chat-rx.is-popping"], [summaryPath, ".chat-tsum.is-popping"]]) {
-            expect(declarationOf(path, selector, "animation")).toContain(normalize("var(--chat-t-base) var(--chat-ease-spring)"));
+            expect(declarationOf(path, selector, "animation")).toContain(normalize("var(--chat-d-spring) var(--chat-ease-spring)"));
         }
+        // the spring's time is the base time
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring")).toBe(normalize("var(--chat-t-base)"));
 
         expect(readFileSync(sheetPath, "utf8")).not.toContain("--chat-d-rx-pop");
     });

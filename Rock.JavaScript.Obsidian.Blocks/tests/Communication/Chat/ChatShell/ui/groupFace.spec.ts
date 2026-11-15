@@ -204,7 +204,9 @@ describe("a group's face ring", () => {
 
     test("follows a sidebar row's arrival flash, its fill registered as a color so it fades", () => {
         const text = readFileSync(join(shell, "components/channelSidebar.partial.obs"), "utf8");
-        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(text);
+        // the keyframes are the token sheet's, where every motion lives; the fill is registered beside the row
+        const sheet = readFileSync(join(shell, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(sheet);
         const registered = /@property --chat-row-fill\s*\{([^{}]*)\}/.exec(text);
 
         expect(flash).not.toBeNull();
