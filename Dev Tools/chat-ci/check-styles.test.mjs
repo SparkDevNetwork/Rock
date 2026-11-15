@@ -23,7 +23,8 @@ function linesOf(hits) {
 }
 
 function run(...args) {
-  return spawnSync(process.execPath, ['check-styles.mjs', ...args], { cwd: here, encoding: 'utf8' });
+  // The workflow's step summary is the gate's own to write; a test run of the gate leaves it alone.
+  return spawnSync(process.execPath, ['check-styles.mjs', ...args], { cwd: here, encoding: 'utf8', env: { ...process.env, GITHUB_STEP_SUMMARY: '' } });
 }
 
 const sheet = 'RockWeb/Styles/Blocks/Communication/Chat/chat.css';
