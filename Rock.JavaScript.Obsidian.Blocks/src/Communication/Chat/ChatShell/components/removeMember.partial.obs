@@ -120,7 +120,7 @@
     margin: 0;
     font-weight: 400;
     cursor: pointer;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-row);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 

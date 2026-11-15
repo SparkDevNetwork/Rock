@@ -453,7 +453,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-row);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -493,7 +493,7 @@
     text-align: left;
     background: none;
     border: 0;
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-row);
 }
 
 .chat-fd-open:focus-visible {
@@ -539,7 +539,7 @@
 .chat-fd-name mark {
     color: inherit;
     background: var(--chat-brand-tint);
-    border-radius: 3px;
+    border-radius: var(--chat-r-inline);
     box-shadow: 0 0 0 1px var(--chat-brand-tint);
 }
 
@@ -746,7 +746,7 @@
     margin-bottom: 6px;
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-empty);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-fd-empty b {

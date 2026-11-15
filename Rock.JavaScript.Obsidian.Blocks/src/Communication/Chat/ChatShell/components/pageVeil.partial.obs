@@ -235,7 +235,7 @@
     margin: 0 20px 14px;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-composer);
+    border-radius: var(--chat-r-field);
     box-shadow: var(--chat-shadow-composer);
 }
 

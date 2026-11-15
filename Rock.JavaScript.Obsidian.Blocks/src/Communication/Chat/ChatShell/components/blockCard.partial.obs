@@ -24,7 +24,7 @@
     font-size: var(--chat-fs-body);
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-xl);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-card);
 }
 

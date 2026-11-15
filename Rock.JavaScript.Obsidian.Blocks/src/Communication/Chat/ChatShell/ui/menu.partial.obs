@@ -74,7 +74,7 @@
     max-width: min(360px, calc(100vw - 16px));
     padding: 6px;
     background: var(--chat-raised);
-    border-radius: var(--chat-r-pop);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
 }
 
@@ -89,7 +89,7 @@
     text-align: left;
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-item);
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-menu-item :deep(.chat-ic) {

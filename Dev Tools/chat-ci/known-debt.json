@@ -44,7 +44,6 @@
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 11
   },
   "S2": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2,
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
   },

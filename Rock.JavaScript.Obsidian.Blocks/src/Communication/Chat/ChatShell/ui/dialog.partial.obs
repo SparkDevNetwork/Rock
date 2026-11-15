@@ -86,7 +86,7 @@
     width: min(420px, 100%);
     padding: 20px 20px 16px;
     background: var(--chat-raised);
-    border-radius: var(--chat-r-dialog);
+    border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
     animation: chat-pop-in var(--chat-d-dialog-in) var(--chat-ease-in);
 }
@@ -166,7 +166,7 @@
 .chat-modal.is-sheet .chat-dialog {
     width: 100%;
     max-height: 90%;
-    border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
+    border-radius: var(--chat-r-surface) var(--chat-r-surface) 0 0;
     --chat-rise: calc(var(--chat-rise-sm) * 10);
     animation: chat-enter var(--chat-t-panel) var(--chat-ease-in);
 }
