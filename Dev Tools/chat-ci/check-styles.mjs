@@ -25,9 +25,40 @@
 // --chat-ic-size and --chat-ic-stroke, which the icon reads. A rule is on an icon when the last
 // compound of its selector names one, by its class or as the svg every icon draws.
 //
+// Styles have three homes: the token sheet holds the tokens, the one set of animations and the
+// rules screens share; a part's own file holds how that part looks; a screen's file holds only its
+// layout. The rules below hold the chat to that. Today's code breaks most of them, so they run
+// through the ratchet in known-debt.mjs: a file may keep the findings recorded for it, never more,
+// and the count only falls. The literals above stay blocking everywhere, as they always were.
+//
+//   S1  a literal font size, so the type scale changes in one place; inherit and 0 are not sizes
+//   S2  a literal radius, so buttons, fields and surfaces stay one family of corners
+//   S3  a literal layer other than auto, -1, 0 and 1, so what floats over what is decided once;
+//       those four only order siblings
+//   S4  a px distance inside keyframes or a script animation, so every rise and slide travels
+//       the same distance; zero, percentages and tokens are fine
+//   S5  keyframes outside the token sheet, so a motion is changed once for every screen
+//   S6  :deep, ::v-deep or :global, a component restyling the inside of another; a part that
+//       should look different changes itself, for every screen
+//   S7  !important anywhere, which ends the order styles are written in, so the next change has
+//       to win by force too
+//   S8  a reduced-motion query outside the token sheet, so no screen forgets it and none answers
+//       it differently
+//   S9  a token the sheet defines that nothing reads: a value a reader keeps in mind for nothing
+//   S10 a token read once, which may be a name with no second caller (report only)
+//   S11 a class the sheet styles that no chat file names, which may be a rule left behind
+//       (report only)
+//   S12 a rule outside a part naming a class only that part renders: a screen restyling the
+//       part, where the part should change for everyone
+//
+// S1 to S4 read style blocks, the token sheet's rules (its tokens are where literals belong),
+// inline styles and the style a script writes. A token is read when var() names it or a script
+// string is its whole name; a name a script builds from a prefix reads every token with it.
+//
 //   node check-styles.mjs                checks the chat block, everything under its folder and the token sheet
 //   node check-styles.mjs --root <dir>   checks every component under a folder, which is how the
 //                                        test proves the gate bites on its fixtures
+//   node check-styles.mjs --record       records today's counts for S1 to S12 in known-debt.json
 import { readdirSync, readFileSync } from 'node:fs';
 import { basename, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';

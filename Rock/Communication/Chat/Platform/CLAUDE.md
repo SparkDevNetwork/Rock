@@ -83,6 +83,12 @@ weaken a failing test to make a run pass.
 Run `node ci.mjs` in `Dev Tools/chat-ci` before pushing. It runs the same gates as
 `.github/workflows/chat-ci.yml`, in the same order.
 
+The client is held to one owner per job by `check-styles.mjs` (styles live in the token sheet, a
+part's own file or a screen's layout) and `check-parts.mjs` (one home per behaviour, type and set
+of allowed values); each script's header states every rule's reason. Both ratchet on
+`known-debt.json`: a file may keep its recorded count, never more, and the change that removes a
+finding lowers the count. A new copy goes to the shared part instead, never into the debt file.
+
 ## Comments and commits
 
 Comments explain in place. No file here refers to a planning document, a decision number, a
