@@ -974,7 +974,7 @@
     color: hsl(var(--chat-av-hue) var(--chat-av-tsat) var(--chat-av-tl));
     user-select: none;
     background: hsl(var(--chat-av-hue) var(--chat-av-sat) var(--chat-av-l));
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 /* A channel's letter tile: its first letter on a tint of its name's hue, as an avatar's initials are. */
@@ -1029,12 +1029,12 @@
     gap: 4px;
     height: 18px;
     padding: 0 7px;
-    font-size: 11px;
+    font-size: var(--chat-fs-badge);
     font-weight: 600;
     color: var(--chat-text-2);
     white-space: nowrap;
     background: var(--chat-pill-bg);
-    border-radius: var(--chat-r-sm);
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-pill.is-announcement {
@@ -1058,7 +1058,7 @@
     min-width: 22px;
     height: 20px;
     padding: 0 7px 0 6px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 20px;
@@ -1094,7 +1094,7 @@
     width: 8px;
     height: 8px;
     background: var(--chat-brand-fill);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -1112,7 +1112,7 @@
     margin-right: 6px;
     vertical-align: 1px;
     background: var(--chat-warning);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
@@ -1145,7 +1145,7 @@
 .chat-sheet-scrim {
     position: absolute;
     inset: 0;
-    z-index: 70;
+    z-index: var(--chat-z-scrim);
     display: flex;
     align-items: flex-end;
     overflow: hidden;
@@ -1164,7 +1164,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 71;
+    z-index: var(--chat-z-sheet);
     padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
     background: var(--chat-raised);
     border-radius: var(--chat-r-sheet) var(--chat-r-sheet) 0 0;
@@ -1251,14 +1251,14 @@
     height: 14px;
     border: 2px solid currentColor;
     border-right-color: transparent;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     animation: chat-spin var(--chat-d-spin) linear infinite;
 }
 
 /* A placeholder the size of what loads into it, so nothing jumps when it arrives. */
 .chat-skeleton {
     background: var(--chat-bubble);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
     animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
@@ -1293,7 +1293,7 @@
     height: var(--chat-fail-mark-s, 14px);
     color: var(--chat-on-danger);
     background: var(--chat-danger);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     --chat-ic-size: calc(var(--chat-fail-mark-s, 14px) * 5 / 7);
     --chat-ic-stroke: 3;
 }
@@ -1351,7 +1351,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     padding: calc((var(--chat-fail-mark-s, 14px) - var(--chat-ic-size)) / 2);
     color: var(--chat-on-danger);
     background: var(--chat-danger);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 /*
@@ -1438,7 +1438,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     height: var(--chat-all-mark-s, 18px);
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     box-shadow: inset 0 0 0 1px var(--chat-brand-line);
     --chat-ic-size: calc(var(--chat-all-mark-s, 18px) * 11 / 18);
     --chat-ic-stroke: 2.3;
@@ -1450,10 +1450,10 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     owns the transform.
 */
 .chat-tip {
-    z-index: 1060;
+    z-index: var(--chat-z-tip);
     max-width: 260px;
     padding: 6px 10px;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 500;
     line-height: 1.35;
     color: var(--chat-tip-fg);
@@ -1498,7 +1498,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 .chat-shell .chat-ls-row {
     position: relative;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -1523,7 +1523,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 .chat-shell .chat-ls-hit:focus-visible {
     outline-offset: -2px;
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-shell .chat-ls-hit:active {
@@ -1556,7 +1556,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     gap: 6px;
     align-items: baseline;
     min-width: 0;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.35;
 }
 
@@ -1599,7 +1599,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     flex: none;
     padding-left: 8px;
     margin-left: auto;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
     transition: opacity var(--chat-t-fast) var(--chat-ease-state);
@@ -1629,7 +1629,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-md);
+    border-radius: var(--chat-r-control);
 }
 
 .chat-shell .chat-ls-err .chat-ls-btn {
@@ -1690,12 +1690,12 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 }
 
 .chat-shell .chat-ls-empty b {
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
 }
 
 .chat-shell .chat-ls-empty > span {
     max-width: 32ch;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -1713,13 +1713,13 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 /* The fill and pulse are the sheet's one skeleton, the history's; only the shape is the list's own. */
 .chat-shell .chat-ls-sk {
     display: block;
-    border-radius: 6px;
+    border-radius: var(--chat-r-inset);
 }
 
 .chat-shell .chat-ls-sk-av {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-shell .chat-ls-sk-lines i {
@@ -1750,7 +1750,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     cursor: text;
     background: var(--chat-surface);
     border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-lg);
+    border-radius: var(--chat-r-field);
 }
 
 .chat-shell .chat-pk-label {
@@ -1772,7 +1772,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     max-width: 100%;
     height: 30px;
     padding: 0 3px 0 4px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-brand-tint);
@@ -1802,7 +1802,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     color: var(--chat-text-2);
     background: none;
     border: 0;
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
@@ -1820,7 +1820,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     min-width: 120px;
     height: 30px;
     padding: 1px 2px;
-    font-size: 14.5px;
+    font-size: var(--chat-fs-body);
 }
 
 .chat-shell .chat-pk-input:disabled {
@@ -1848,7 +1848,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     top: calc(100% + 6px);
     right: 0;
     left: 0;
-    z-index: 6;
+    z-index: var(--chat-z-bar);
     max-height: 340px;
     padding: 6px;
     overflow-y: auto;
@@ -1902,7 +1902,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 /* The campus under the name, for a person who shows it. */
 .chat-shell .chat-pk-o-main span {
     overflow: hidden;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1923,7 +1923,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     width: 22px;
     height: 22px;
     color: var(--chat-brand-ink);
-    border-radius: 50%;
+    border-radius: var(--chat-r-full);
     opacity: 0;
     transition: opacity var(--chat-t-fast) var(--chat-ease-state);
 }
@@ -1938,7 +1938,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     gap: 6px;
     align-items: flex-start;
     padding: 10px;
-    font-size: 13px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-muted);
 }
@@ -1949,7 +1949,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 .chat-shell .chat-pk-note {
     padding: 6px 4px 0;
-    font-size: 12px;
+    font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-muted);
 }

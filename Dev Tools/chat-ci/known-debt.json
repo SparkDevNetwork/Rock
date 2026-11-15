@@ -41,7 +41,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/panelHost.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/settingGroup.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/settingRow.partial.obs": 1,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 23
+    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 11
   },
   "S2": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
@@ -50,12 +50,11 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/gifPicker.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 15
+    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
   },
   "S3": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pageVeil.partial.obs": 1,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 4
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pageVeil.partial.obs": 1
   },
   "S4": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 2

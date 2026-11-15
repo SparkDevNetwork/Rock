@@ -1081,7 +1081,8 @@ describe("the components' own styles", () => {
             expect(sheetRule(".chat-badge", "height")).toBe("20px");
             expect(sheetRule(".chat-badge", "line-height")).toBe("20px");
             expect(sheetRule(".chat-badge", "min-width")).toBe("22px");
-            expect(sheetRule(".chat-badge", "font-size")).toBe("12px");
+            expect(sheetRule(".chat-badge", "font-size")).toBe(normalize("var(--chat-fs-small)"));
+            expect(declarationOf(sheetPath, ".chat-shell", "--chat-fs-small")).toBe("12px");
         });
 
         test("a muted room's badge is neutral, drawn from tokens the loud badge does not use, in both themes", () => {
