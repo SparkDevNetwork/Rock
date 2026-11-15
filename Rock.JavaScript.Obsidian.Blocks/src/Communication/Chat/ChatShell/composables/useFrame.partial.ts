@@ -29,6 +29,7 @@ import { ChatShell } from "../shell.partial";
 import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/tooltip.partial";
+import { isMotionReduced } from "../ui/viewport.partial";
 import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
 import { OpenThreadState, ThreadPlace } from "./useThreads.partial";
 
@@ -651,8 +652,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
     /** How long a pane slides: none for a move the person did not make, or when they ask for reduced motion. */
     function paneSlideMs(): number {
-        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        if (!isPaneMotionOn.value || isReduced || !rootElement.value) {
+        if (!isPaneMotionOn.value || isMotionReduced() || !rootElement.value) {
             return 0;
         }
 
@@ -661,8 +661,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
 
     /** How long the panel column takes to close, which its content stays drawn through. */
     function panelSlideMs(): number {
-        const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        if (isReduced || !rootElement.value) {
+        if (isMotionReduced() || !rootElement.value) {
             return 0;
         }
 

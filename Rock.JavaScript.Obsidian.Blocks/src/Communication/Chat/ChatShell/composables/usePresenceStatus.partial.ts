@@ -38,7 +38,7 @@
 
 import { newGuid } from "@Obsidian/Utility/guid";
 import { inject, InjectionKey, onMounted, onUnmounted, shallowReactive, watch } from "vue";
-import { startOfDay } from "../feedLayout.partial";
+import { longestTimerMs, nextMidnight, startOfDay } from "../feedLayout.partial";
 import { FaceStatus, PersonStatus, RosterMember } from "../types.partial";
 import { ownStatusWords, statusWords } from "../ui/face.partial";
 import type { PageEventTargets } from "./useMarkRead.partial";
@@ -172,9 +172,6 @@ export const presenceStatusKey: InjectionKey<FaceStatusSource> = Symbol("chat-pr
 
 /** The most people one exchange asks about: the platform's own cap, past which it asks about nobody. */
 const watchedMax = 200;
-
-/** The longest a timer waits, past which a browser fires it at once. */
-const longestTimerMs = 2_147_483_647;
 
 /** An id the platform takes: one id not shaped as one would make it refuse the whole body, beat included. */
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -485,8 +482,7 @@ export function createPresenceStatus(dependencies: PresenceStatusDependencies): 
         // saving change holds.
         const midnightFor = (busyUntil: number): void => {
             if (startOfDay(new Date(busyUntil)) > today) {
-                const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
-                soonest = Math.min(soonest, midnight + offsetMs);
+                soonest = Math.min(soonest, nextMidnight(today) + offsetMs);
             }
         };
         for (const [key, entry] of entries) {

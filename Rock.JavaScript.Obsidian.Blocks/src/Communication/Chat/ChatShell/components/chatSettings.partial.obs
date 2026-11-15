@@ -258,7 +258,7 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { busyEndOf, MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
-    import { startOfDay } from "../feedLayout.partial";
+    import { longestTimerMs, nextMidnight } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
     import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
     import { ChatPerson } from "../types.partial";
@@ -396,9 +396,6 @@
     /** The one timer that moves it, set while the dialog is open and the line has a change ahead. */
     let statusTimer: ReturnType<typeof setTimeout> | null = null;
 
-    /** The longest a browser timer waits; a later change is waited for in steps. */
-    const longestTimerMs = 2_147_483_647;
-
     /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
     const unblocking = ref<Array<{ guid: string, name: string }>>([]);
 
@@ -484,11 +481,8 @@
         if (end === null || end === Infinity) {
             return null;
         }
-        const today = startOfDay(new Date(statusNow.value));
-        // the next day's start by the calendar, not 24 hours on, so a daylight saving change holds
-        const midnight = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).getTime();
         // the end on the page's clock, which the line's timer waits by
-        return Math.min(end - clockOffset(), midnight);
+        return Math.min(end - clockOffset(), nextMidnight(new Date(statusNow.value)));
     });
 
     /** The rows of blocked people, once the list is read and holds anyone. */

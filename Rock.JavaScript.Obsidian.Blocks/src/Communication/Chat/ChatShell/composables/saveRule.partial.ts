@@ -24,6 +24,7 @@
 // control back to the value last known saved, and its owner shows why, with Try again where
 // another try can pass. A save whose owner names a wait is asked again after it, the choice kept.
 import { failedWords } from "../errors.partial";
+import { longestTimerMs } from "../feedLayout.partial";
 import { FailureWords } from "../types.partial";
 import { Note } from "../ui/settingNote.partial.obs";
 
@@ -135,9 +136,6 @@ type SaveTrack = {
     notBefore: number;
     timer: ReturnType<typeof setTimeout> | null;
 };
-
-/** The longest timer a browser holds, past which it fires at once; a longer wait is kept by timers no longer than it. */
-const longestTimerMs = 2 ** 31 - 1;
 
 /**
  * Whether an owner's named wait is one the rule can keep: a finite number of milliseconds from

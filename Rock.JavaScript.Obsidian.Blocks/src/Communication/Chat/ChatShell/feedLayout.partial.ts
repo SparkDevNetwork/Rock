@@ -273,8 +273,7 @@ export function layoutFeed(options: FeedLayoutOptions): FeedLayoutResult {
         let endsAt: number | null = null;
         if (isInRun && group && previous) {
             group.rows[group.rows.length - 1].isTypingNext = true;
-            const midnight = new Date(options.now.getFullYear(), options.now.getMonth(), options.now.getDate() + 1).getTime();
-            endsAt = Math.min(previous.at.getTime() + groupWindowMs + 1, midnight);
+            endsAt = Math.min(previous.at.getTime() + groupWindowMs + 1, nextMidnight(options.now));
         }
         typing = { isInRun, groupKey: isInRun && group ? group.key : "typing", endsAt };
     }

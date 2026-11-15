@@ -362,6 +362,7 @@
     import PanelHost from "../ui/panelHost.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { isMotionReduced } from "../ui/viewport.partial";
     import { failureNote } from "../composables/saveRule.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
     import { AttachmentTray } from "../composables/useAttachments.partial";
@@ -933,8 +934,7 @@
             const box = row.getBoundingClientRect();
             reader.goingTo(element.scrollTop + box.top - element.getBoundingClientRect().top - (element.clientHeight - box.height) / 2);
         }
-        const isMotionReduced = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        row.scrollIntoView({ block: "center", behavior: isMotionReduced ? "auto" : "smooth" });
+        row.scrollIntoView({ block: "center", behavior: isMotionReduced() ? "auto" : "smooth" });
         row.focus({ preventScroll: true });
     }
 

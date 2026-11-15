@@ -663,7 +663,7 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { ChatPerson, DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
-    import { useIsMotionReduced } from "../ui/brand.partial";
+    import { useIsMotionReduced } from "../ui/viewport.partial";
     import { busyNoteWords } from "../ui/face.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";

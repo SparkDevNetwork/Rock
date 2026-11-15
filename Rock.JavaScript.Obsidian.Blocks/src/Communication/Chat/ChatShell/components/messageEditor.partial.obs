@@ -148,6 +148,7 @@
     import { computed, onMounted, PropType, ref } from "vue";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { isMotionReduced } from "../ui/viewport.partial";
     import { messageForError } from "../errors.partial";
     import { ChatError, DisplayPiece, TimelineMessage } from "../types.partial";
 
@@ -251,8 +252,7 @@
 
     onMounted(() => {
         placeCaretAtEnd();
-        const isMotionReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
-        rootElement.value?.scrollIntoView?.({ block: "nearest", behavior: isMotionReduced ? "auto" : "smooth" });
+        rootElement.value?.scrollIntoView?.({ block: "nearest", behavior: isMotionReduced() ? "auto" : "smooth" });
     });
 
     // #endregion Lifecycle Hooks

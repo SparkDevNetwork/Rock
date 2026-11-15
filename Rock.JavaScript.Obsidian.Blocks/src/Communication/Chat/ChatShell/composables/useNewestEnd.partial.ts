@@ -21,6 +21,7 @@
 // tail asks it whether the reader follows, so an arrival plays the same way in both views.
 
 import { onBeforeUnmount, onMounted, readonly, Ref, ref } from "vue";
+import { isMotionReduced } from "../ui/viewport.partial";
 import { nearBottomPx, endSlackPx } from "../feedLayout.partial";
 
 /**
@@ -167,8 +168,7 @@ export function useNewestEnd(scroller: () => HTMLElement | null, content: Ref<HT
             }
             const target = Math.min(Math.max(0, top), endOfScroller(element));
             goingTo(target);
-            const isReduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-            element.scrollTo?.({ top: target, behavior: isReduced ? "auto" : "smooth" });
+            element.scrollTo?.({ top: target, behavior: isMotionReduced() ? "auto" : "smooth" });
         }
     };
 }

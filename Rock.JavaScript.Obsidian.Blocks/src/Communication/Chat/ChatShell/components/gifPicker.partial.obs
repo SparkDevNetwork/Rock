@@ -340,6 +340,7 @@
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
     import Icon from "../ui/icon.partial.obs";
+    import { isHoverless } from "../ui/viewport.partial";
     import PickerShell from "./pickerShell.partial.obs";
     import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
     import { GifResult } from "../types.partial";
@@ -530,7 +531,7 @@
     // over the GIFs; the dialog takes it there and Escape still reaches it.
     onMounted(async () => {
         await nextTick();
-        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
+        const isTouch = isHoverless();
         (isTouch ? shell.value?.element : searchElement.value)?.focus({ preventScroll: true });
     });
 

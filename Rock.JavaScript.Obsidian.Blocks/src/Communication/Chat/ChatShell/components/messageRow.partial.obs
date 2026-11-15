@@ -312,6 +312,7 @@
     import MessageRowCommunity from "./messageRowCommunity.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { isHoverless } from "../ui/viewport.partial";
     import { MessageRowHandlers, MessageRowReactionsProps, MessageRowSurface, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
     import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
@@ -510,8 +511,7 @@
      * A screen with no hover, a tablet held in the hand, has no bar to show either, so it acts from
      * the sheet as a phone does. Read once: a screen does not gain a pointer while chat is open.
      */
-    const isHoverless = typeof window !== "undefined" && typeof window.matchMedia === "function"
-        && window.matchMedia("(hover: none)").matches;
+    const isScreenHoverless = isHoverless();
 
 
     /**
@@ -582,7 +582,7 @@
     const isActionable = computed((): boolean => state.value === "message" || state.value === "sent" || state.value === "unknown");
 
     /** A phone, or a screen with no hover, which acts from the sheet instead of the bar. */
-    const isTouchLayout = computed((): boolean => props.isPhone || isHoverless);
+    const isTouchLayout = computed((): boolean => props.isPhone || isScreenHoverless);
 
     /**
      * Whether the message can be acted on now, the one rule the bar and the sheet both follow: a

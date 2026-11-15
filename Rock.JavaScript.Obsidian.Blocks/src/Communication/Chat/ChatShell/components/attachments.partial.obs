@@ -598,7 +598,7 @@ a.chat-attach-file:focus-visible {
 <script setup lang="ts">
     import { computed, inject, nextTick, onBeforeUnmount, PropType, reactive, ref, watch } from "vue";
     import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
-    import { useIsMotionReduced } from "../ui/brand.partial";
+    import { useIsMotionReduced } from "../ui/viewport.partial";
     import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";

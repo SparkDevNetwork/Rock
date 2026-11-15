@@ -46,6 +46,8 @@
 
 import { inject, InjectionKey, nextTick, onBeforeUnmount, provide, Ref, watch } from "vue";
 import { ArrivalMotion, messageMotionKey } from "../messageMotion.partial";
+import { tokenDuration } from "../ui/brand.partial";
+import { isMotionReduced } from "../ui/viewport.partial";
 
 /** What a view hands its tail. */
 export type FeedTailOptions = {
@@ -127,32 +129,18 @@ const moveIds = ["chat-tail-move", "chat-tail-foot"];
 /** What the tail writes on a part it takes out of the flow, taken off again when a kept part is done. */
 const liftedStyles = ["position", "top", "left", "width", "margin", "visibility"];
 
-/** A token's milliseconds, as the sheet writes them ("260ms", ".26s"). */
-function ms(value: string, fallback: number): number {
-    const text = value.trim();
-    const parsed = parseFloat(text);
-    if (Number.isNaN(parsed)) {
-        return fallback;
-    }
-    return text.endsWith("ms") ? parsed : text.endsWith("s") ? parsed * 1000 : parsed;
-}
-
 /** The motion tokens as they apply to an element; where the sheet names none, nothing moves. */
 function tokensOf(element: Element): Tokens {
     const style = getComputedStyle(element);
     const read = (name: string): string => style.getPropertyValue(name);
     return {
-        msg: ms(read("--chat-t-msg"), 0),
-        base: ms(read("--chat-t-base"), 0),
-        fast: ms(read("--chat-t-fast"), 0),
+        msg: tokenDuration(element, "--chat-t-msg", 0),
+        base: tokenDuration(element, "--chat-t-base", 0),
+        fast: tokenDuration(element, "--chat-t-fast", 0),
         easeIn: read("--chat-ease-in").trim() || "linear",
         easeOut: read("--chat-ease-out").trim() || "linear",
         easeState: read("--chat-ease-state").trim() || "linear"
     };
-}
-
-function isMotionReduced(): boolean {
-    return typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
 /** Plays a motion where the browser can; one that cannot animates nothing and lands where it is. */

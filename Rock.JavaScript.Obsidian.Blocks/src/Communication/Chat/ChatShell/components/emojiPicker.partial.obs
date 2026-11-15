@@ -474,6 +474,7 @@ img.chat-picker-prev {
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref } from "vue";
     import Icon from "../ui/icon.partial.obs";
+    import { isHoverless } from "../ui/viewport.partial";
     import PickerShell from "./pickerShell.partial.obs";
     import { CatalogEmoji, EmojiGlyph } from "../types.partial";
 
@@ -1053,7 +1054,7 @@ img.chat-picker-prev {
      * grid, and Escape and the arrows still reach it.
      */
     function focusOnOpen(): void {
-        const isTouch = window.matchMedia?.("(hover: none)").matches ?? false;
+        const isTouch = isHoverless();
         const first = step.value === "tray" ? pickerElement.value?.querySelector<HTMLElement>("[role='toolbar'] button") : searchElement.value;
         (isTouch ? pickerElement.value : first)?.focus({ preventScroll: true });
     }
