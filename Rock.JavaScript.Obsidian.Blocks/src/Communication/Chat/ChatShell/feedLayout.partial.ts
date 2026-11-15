@@ -494,6 +494,21 @@ export function startOfDay(at: Date): Date {
     return new Date(at.getFullYear(), at.getMonth(), at.getDate());
 }
 
+/**
+ * The start of the reader's next calendar day after a moment, by their own clock: by the
+ * calendar, not 24 hours on, so a daylight saving change holds.
+ *
+ * @param at The moment.
+ *
+ * @returns The next midnight, in epoch milliseconds.
+ */
+export function nextMidnight(at: Date): number {
+    return new Date(at.getFullYear(), at.getMonth(), at.getDate() + 1).getTime();
+}
+
+/** The longest a browser timer waits, past which it fires at once; a later moment is waited for in steps. */
+export const longestTimerMs = 2_147_483_647;
+
 /** The reader's calendar day, which is what a day section is. */
 function localDayKey(at: Date): string {
     return `${at.getFullYear()}-${at.getMonth() + 1}-${at.getDate()}`;
