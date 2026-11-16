@@ -53,13 +53,17 @@
             required: true
         },
 
-        /** Asks for the next page; its promise settles once the page is in or its failure is the list's. */
+        /**
+         * Asks for the next page. Its promise settles once the page is in or its failure is the
+         * list's; a list that only says so through isLoading returns nothing, and the row asks
+         * again once that says the page is in.
+         */
         load: {
-            type: Function as PropType<() => Promise<void>>,
+            type: Function as PropType<() => Promise<void> | void>,
             required: true
         },
 
-        /** Whether the list says a page is already out, asked from elsewhere. */
+        /** Whether the list says a page is out, asked by this row or from elsewhere. */
         isLoading: {
             type: Boolean,
             default: false
@@ -95,14 +99,14 @@
 
     // #region Functions
 
-    /** Asks for a page and holds the row busy until it settles. */
-    async function ask(): Promise<void> {
-        isAsking.value = true;
-        try {
-            await props.load();
-        }
-        finally {
-            isAsking.value = false;
+    /** Asks for a page, holding the row busy until its promise settles. */
+    function ask(): Promise<void> | void {
+        const asked = props.load();
+        if (asked instanceof Promise) {
+            isAsking.value = true;
+            return asked.finally(() => {
+                isAsking.value = false;
+            });
         }
     }
 

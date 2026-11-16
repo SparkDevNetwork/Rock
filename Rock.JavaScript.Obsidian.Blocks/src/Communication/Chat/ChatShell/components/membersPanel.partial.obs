@@ -86,7 +86,7 @@
                             data-testid="member-row">
                             <ListRow interactive
                                      :label="labelOf(row)"
-                                     :hitAttrs="{ 'data-testid': 'member-who', 'data-person': row.guid }"
+                                     :hitAttrs="{ 'data-testid': 'member-who', 'data-person': row.guid, 'data-member': row.guid }"
                                      :actionsShown="row.isRemoving || isHot(row)"
                                      :instant="hover.isInstant.value"
                                      :dimmed="row.isRemoving"
@@ -133,14 +133,14 @@
 
                 <div v-if="isNoneShown" class="chat-mb-none" data-testid="members-none">No one in {{ channelName }} matches &ldquo;{{ query.trim() }}&rdquo;.</div>
 
-                <!-- Asks for the next page as it scrolls into view; pressed, it asks too, and after a failure only a press asks again. -->
-                <div v-if="isMoreShown" ref="moreElement" class="chat-mb-more">
-                    <span v-if="moreError" class="chat-mb-more-err" data-testid="members-more-error"><Icon name="alert" size="xs" />Couldn't load more.</span>
-                    <Button size="sm"
-                            data-testid="members-more"
-                            :busy="isLoadingMore"
-                            @click="emit('loadMore')">{{ isLoadingMore ? "Loading" : moreError ? "Try again" : "Load more" }}</Button>
-                </div>
+                <LoadMoreRow v-if="isMoreShown"
+                             ref="moreRow"
+                             name="members"
+                             label="Load more"
+                             :load="loadMore"
+                             :isLoading="isLoadingMore"
+                             :isFailed="!!moreError"
+                             failure="Couldn't load more." />
                 <div v-else-if="isEndShown" class="chat-mb-end" data-testid="members-end">That's everyone.</div>
             </div>
         </div>
@@ -338,23 +338,6 @@
     text-align: center;
 }
 
-.chat-mb-more {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 8px 4px;
-}
-
-.chat-mb-more-err {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-danger-ink);
-}
-
 .chat-mb-end {
     padding: 16px 0 4px;
     font-size: var(--chat-fs-small);
@@ -375,12 +358,12 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
     import { MemberRemoval } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatError, FaceStatus, RosterMember } from "../types.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
@@ -540,7 +523,7 @@
     const { announce } = useAnnouncer();
 
     const listElement = ref<HTMLElement>();
-    const moreElement = ref<HTMLElement>();
+    const moreRow = ref<InstanceType<typeof LoadMoreRow>>();
     const filterField = ref<InstanceType<typeof Field>>();
 
     // A row's actions show as the message action bar does: faded in once the pointer rests on a
@@ -669,6 +652,11 @@
         row.style.setProperty("--chat-mb-row-h", `${row.offsetHeight}px`);
     }
 
+    /** The next page, which the roster says is out through isLoadingMore until it lands. */
+    function loadMore(): void {
+        emit("loadMore");
+    }
+
     /** A full group's button is reached and heard, but asks for nothing. */
     function onAdd(): void {
         if (!isGroupFull.value) {
@@ -764,8 +752,9 @@
         return at < 0 ? null : order[at + 1] ?? order[at - 1] ?? null;
     }
 
+    /** A row's own button, found by the person it names. */
     function whoOf(personAliasGuid: string): HTMLElement | null {
-        return listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
+        return listElement.value?.querySelector<HTMLElement>(`[data-member='${personAliasGuid}']`) ?? null;
     }
 
     // #endregion Functions
@@ -793,11 +782,11 @@
         }
 
         const active = document.activeElement;
-        const wasOnMore = !active || active === document.body || !!active.closest("[data-testid='members-more']");
+        const wasOnMore = !active || active === document.body || !!moreRow.value?.hasFocus();
         announce(`${added.length} more ${added.length === 1 ? "member" : "members"} loaded`);
         await nextTick();
         if (wasOnMore) {
-            listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${added[0].person_alias_guid}']`)?.focus({ preventScroll: true });
+            whoOf(added[0].person_alias_guid)?.focus({ preventScroll: true });
         }
     });
 
@@ -845,10 +834,6 @@
             announce(props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`);
         }
     });
-
-    // The next page is asked as the Load more row scrolls into view, as every list pages; after a
-    // failed page only the press asks again.
-    usePagingTrigger(moreElement, () => emit("loadMore"), { enabled: () => isMoreShown.value && !props.isLoadingMore && !props.moreError });
 
     // #endregion Watchers
 
