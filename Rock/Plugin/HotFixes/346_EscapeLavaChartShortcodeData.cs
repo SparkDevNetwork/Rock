@@ -43,7 +43,13 @@ namespace Rock.Plugin.HotFixes
 
                 Reason: Prevent stored XSS through data bound into the Chart shortcode.
             */
-            Sql( @"
+            Sql( EscapeChartMarkupSql );
+        }
+
+        /// <summary>
+        /// The SQL that encodes the stored Chart shortcode markup, safe to run more than once.
+        /// </summary>
+        internal const string EscapeChartMarkupSql = @"
 DECLARE @ShortcodeGuid uniqueidentifier = '43819A34-4819-4507-8FEA-2E406B5474EA';
 DECLARE @Backslash nchar(1) = NCHAR(92);
 
@@ -143,8 +149,7 @@ UPDATE [LavaShortcode]
    SET [Markup] = @Helpers + [Markup]
  WHERE [Guid] = @ShortcodeGuid
    AND CHARINDEX( N'jsLt', [Markup] COLLATE Latin1_General_BIN2 ) > 0
-   AND CHARINDEX( N'{% capture jsLt %}', [Markup] COLLATE Latin1_General_BIN2 ) = 0;" );
-        }
+   AND CHARINDEX( N'{% capture jsLt %}', [Markup] COLLATE Latin1_General_BIN2 ) = 0;";
 
         /// <summary>
         /// Operations to be performed during the downgrade process.
