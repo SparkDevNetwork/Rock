@@ -857,6 +857,7 @@
     <Compile Include="Controllers\PeopleController.Partial.cs" />
     <Compile Include="Controllers\PersistedDatasetsController.Partial.cs" />
     <Compile Include="Controllers\PersonAliasController.Partial.cs" />
+    <Compile Include="Controllers\PersonTokensController.Partial.cs" />
     <Compile Include="Controllers\BadgesController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="Controllers\TaggedItemsController.Partial.cs" />
