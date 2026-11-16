@@ -31,6 +31,7 @@ import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconB
 import Menu from "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { FaceStatus } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 // #region Helpers
 
@@ -43,17 +44,18 @@ const reason = "Cedar Hill's chat is read only until 9.";
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the menu for Jordan Lee, signed in; `isPhone` is the session's width, the rest the menu's inputs. */
 function mountMenu(props: Record<string, unknown> = {}, statusOf: (guid: string) => FaceStatus | null = () => null, now: () => number = Date.now): VueWrapper {
+    const { isPhone, ...own } = props;
     wrapper = mount(StatusMenu, {
         props: {
             choice: automatic,
             trigger: "change",
-            personAliasGuid: "a0000001-0000-4000-8000-000000000000",
-            personName: "Jordan Lee",
-            ...props
+            ...own
         },
         global: {
             provide: {
+                ...providedSession({ isPhone: isPhone === true, me: { personAliasGuid: "a0000001-0000-4000-8000-000000000000", name: "Jordan Lee" } }),
                 [presenceStatusKey as symbol]: { statusOf, register: () => () => undefined, now }
             }
         },
@@ -543,9 +545,10 @@ describe("the sidebar foot's face", () => {
         expect(change.findComponent(Menu).props("placement")).toBe("bottom-end");
     });
 
-    test("opens as a sheet on a phone, as the chat's other menus do", () => {
+    test("opens as a sheet on a phone, as the chat's other menus do", async () => {
         const w = mountMenu({ trigger: "face", isPhone: true });
+        await openMenu(w);
 
-        expect(w.findComponent(Menu).props("isSheet")).toBe(true);
+        expect(menu()?.closest("[data-testid='sheet']")).not.toBeNull();
     });
 });

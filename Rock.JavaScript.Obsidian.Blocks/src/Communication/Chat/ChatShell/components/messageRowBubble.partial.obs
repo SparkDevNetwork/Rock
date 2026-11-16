@@ -4,7 +4,6 @@
                :text="view.text"
                :blocks="view.message?.blocks ?? null"
                :head="{ face: view.face, name: view.displayName, time: view.time }"
-               :personAliasGuid="view.personAliasGuid"
                isConversation
                :runAction="on.runBlockAction" />
     <template v-else>

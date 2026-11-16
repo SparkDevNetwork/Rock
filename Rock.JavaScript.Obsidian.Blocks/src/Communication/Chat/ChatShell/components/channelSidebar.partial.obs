@@ -160,20 +160,16 @@
                         :choice="statusChoice"
                         :closedReason="statusClosedReason"
                         :isRetrying="isStatusRetrying"
-                        :personAliasGuid="me.personAliasGuid"
-                        :personName="personName"
-                        :personPhotoUrl="personPhotoUrl"
-                        :isPhone="isPhone"
                         @choose="emit('status', $event)" />
             <button type="button"
                     class="chat-me-btn"
                     aria-haspopup="dialog"
-                    :aria-label="`Chat settings, ${personName}`"
+                    :aria-label="`Chat settings, ${me.name}`"
                     data-testid="sidebar-me"
                     @click="emit('settings')">
-                <Avatar v-if="!isStatusShown" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" />
+                <Avatar v-if="!isStatusShown" :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" />
                 <span class="chat-me-who">
-                    <b data-testid="sidebar-me-name">{{ personName }}</b>
+                    <b data-testid="sidebar-me-name">{{ me.name }}</b>
                     <span v-if="personCampusName" data-testid="sidebar-me-campus">{{ personCampusName }}</span>
                 </span>
                 <span class="chat-me-gear" aria-hidden="true"><Icon name="settings" /></span>
@@ -666,17 +662,7 @@
             default: false
         },
 
-        /** The person's own name, photo and campus by its name, drawn in the foot. */
-        personName: {
-            type: String,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
+        /** The person's campus by its name, drawn in the foot under the session's name and face. */
         personCampusName: {
             type: String as PropType<string | null>,
             default: null

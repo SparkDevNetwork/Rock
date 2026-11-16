@@ -10,7 +10,7 @@
                 <Badge v-if="isLeaderShown" tone="neutral" label="Leader" class="chat-cm-pill" data-testid="leader-pill" />
                 <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ view.time }}</span>
             </div>
-            <BlockCard :text="view.text" :blocks="view.message?.blocks ?? null" :personAliasGuid="view.personAliasGuid" :runAction="on.runBlockAction" />
+            <BlockCard :text="view.text" :blocks="view.message?.blocks ?? null" :runAction="on.runBlockAction" />
         </div>
     </template>
     <template v-else>

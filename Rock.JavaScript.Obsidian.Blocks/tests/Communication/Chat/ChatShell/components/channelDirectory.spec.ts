@@ -101,17 +101,16 @@ let wrapper: VueWrapper | null = null;
 
 /** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
-    const { isPhone = false, ...rest } = props;
+    const { isPhone = false, organizationName = "Cedar Hill Church", ...rest } = props;
     wrapper = mount(ChannelDirectory, {
         props: {
             directory: directory(),
             joins: {},
             campuses: [downtown, north],
             personCampusGuid: downtown.guid,
-            organizationName: "Cedar Hill Church",
             ...rest
         },
-        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, churchName: organizationName as string }) },
         attachTo: document.body
     });
     return wrapper;

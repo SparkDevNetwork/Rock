@@ -17,7 +17,7 @@
             <span class="chat-fd-hdr-ic" aria-hidden="true"><Icon name="hash" /></span>
             <div class="chat-fd-hdr-title">
                 <b :id="titleId" data-testid="directory-title">Browse channels</b>
-                <span class="chat-fd-hdr-sub" data-testid="directory-subtitle">Public channels at {{ organizationName }}</span>
+                <span class="chat-fd-hdr-sub" data-testid="directory-subtitle">Public channels at {{ church.name }}</span>
             </div>
             <IconButton v-if="!isPhone"
                         icon="x"
@@ -100,7 +100,7 @@
 
                 <EmptyState v-else-if="directory.emptyKind === 'none'"
                             title="No channels to browse yet"
-                            :text="`When ${organizationName || 'your church'} opens channels to everyone, they'll show up here.`"
+                            :text="`When ${church.name || 'your church'} opens channels to everyone, they'll show up here.`"
                             data-testid="directory-empty"
                             data-kind="none" />
 
@@ -766,11 +766,6 @@
         personCampusGuid: {
             type: String as PropType<string | null>,
             default: null
-        },
-
-        organizationName: {
-            type: String,
-            default: ""
         }
     });
 
@@ -808,8 +803,8 @@
 
     const announcer = useAnnouncer();
 
-    /** Drawn at a phone's width: Back in Close's place, and narrower gutters. */
-    const isPhone = useChatSession().isPhone;
+    /** Drawn at a phone's width: Back in Close's place, and narrower gutters; the church names the list. */
+    const { isPhone, church } = useChatSession();
 
     // The next page is asked about four rows before the list's end shows. The rooms drop a second
     // ask while one is out, and ask nothing once the list has ended or a page has failed.

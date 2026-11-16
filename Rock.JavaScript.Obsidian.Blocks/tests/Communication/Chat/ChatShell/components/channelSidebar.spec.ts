@@ -139,7 +139,7 @@ let wrapper: VueWrapper | null = null;
 
 function mountSidebar(given: Record<string, unknown> = {}): VueWrapper {
     // the reader and the phone flag are the session's, which the sidebar reads for itself
-    const { personAliasGuid = "", isPhone = false, ...props } = given;
+    const { personAliasGuid = "", personName = "", personPhotoUrl = null, isPhone = false, ...props } = given;
     wrapper = mount(ChannelSidebar, {
         props: {
             rows: allRows,
@@ -147,7 +147,7 @@ function mountSidebar(given: Record<string, unknown> = {}): VueWrapper {
             isNewMessageShown: true,
             ...props
         },
-        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string, name: personName as string, photoUrl: personPhotoUrl as string | null } }) },
         attachTo: document.body
     });
     return wrapper;
@@ -1192,7 +1192,6 @@ describe("the sidebar's foot with online status", () => {
         wrapper = mount(ChannelSidebar, {
             props: {
                 rows: allRows,
-                personName: "Jordan Lee",
                 personCampusName: "Downtown Campus",
                 isStatusShown: true,
                 statusChoice: { busy_until: "infinity", appear_offline: false },
@@ -1200,7 +1199,7 @@ describe("the sidebar's foot with online status", () => {
             },
             global: {
                 provide: {
-                    ...providedSession({ me: { personAliasGuid: self } }),
+                    ...providedSession({ me: { personAliasGuid: self, name: "Jordan Lee" } }),
                     [presenceStatusKey as symbol]: { statusOf: (guid: string) => guid === self ? busy : null, register: () => () => undefined, now: () => Date.now() }
                 }
             },

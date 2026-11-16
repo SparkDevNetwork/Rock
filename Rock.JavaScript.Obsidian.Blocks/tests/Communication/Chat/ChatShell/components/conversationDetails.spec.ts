@@ -27,12 +27,13 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { defineComponent, nextTick } from "vue";
 import ConversationDetails from "../../../../../src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { Politeness, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
 import { providedSession } from "../sessionShapes";
 import { busy, exchangeAnswer, online, toldEntry, watchAnswer } from "../statusShapes";
 import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
@@ -171,6 +172,16 @@ function plain(text: string): string {
     return text.replace(/\s+/g, " ").trim();
 }
 
+/** Says a sentence through the chat's one voice, as the rooms and the settings do from the shell. */
+function speak(text: string, politeness: Politeness = "polite"): void {
+    mount(defineComponent({
+        setup() {
+            useAnnouncer().announce(text, politeness);
+            return () => null;
+        }
+    })).unmount();
+}
+
 /** The announcer's live region of a politeness, which the dialog speaks from while it is open. */
 function region(w: VueWrapper, politeness: "polite" | "assertive"): { element: Element } {
     return w.get(`[role='dialog'] [data-testid='announcer-${politeness}']`);
@@ -260,17 +271,19 @@ describe("the dialog", () => {
         expect(document.querySelector("[role='tooltip']")).toBeNull();
     });
 
+    // The rooms' news is the shell's to say, through the chat's one voice, which speaks from inside
+    // the dialog while it is open.
     test("reads the rooms' news said while it is open in its own live region, the assertive apart", async () => {
-        const w = mountGroup({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 3 } });
+        const w = mountGroup();
         // open and drawn, its regions on the page before it says anything
         await settle();
         expect(spoken(region(w, "polite"))).toBe("");
 
-        await w.setProps({ announcement: { text: "Renamed to Trail crew.", isAssertive: false, count: 4 } });
+        speak("Renamed to Trail crew.");
         expect(region(w, "polite").element.getAttribute("aria-live")).toBe("polite");
         expect(spoken(region(w, "polite"))).toBe("Renamed to Trail crew.");
 
-        await w.setProps({ announcement: { text: "No.", isAssertive: true, count: 5 } });
+        speak("No.", "assertive");
         expect(spoken(region(w, "assertive"))).toBe("No.");
         expect(spoken(region(w, "polite"))).not.toBe("No.");
     });
@@ -987,13 +1000,13 @@ describe("saving the room's settings", () => {
     });
 
     test("reads the room's settings' news politely and a failed save at once", async () => {
-        const w = mountDetails({ prefsAnnouncement: null });
+        const w = mountDetails();
         await settle();
 
-        await w.setProps({ prefsAnnouncement: { text: "Starred", isAssertive: false, count: 4 } });
+        speak("Starred");
         expect(region(w, "polite").element.textContent).toBe("Starred");
 
-        await w.setProps({ prefsAnnouncement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 5 } });
+        speak("Not saved. Chat is read only tonight.", "assertive");
         expect(region(w, "assertive").element.textContent).toBe("Not saved. Chat is read only tonight.");
     });
 });

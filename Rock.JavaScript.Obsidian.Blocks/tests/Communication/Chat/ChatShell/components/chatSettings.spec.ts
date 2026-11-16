@@ -22,8 +22,9 @@
 // shows the server's sentence and Try again under its switch.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { defineComponent, nextTick } from "vue";
 import ChatSettings from "../../../../../src/Communication/Chat/ChatShell/components/chatSettings.partial.obs";
+import { Politeness, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { join } from "path";
 import { badgesIn, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
@@ -44,7 +45,6 @@ function mountSettings(props: Record<string, unknown> = {}): VueWrapper {
             organizationName: "Cedar Hill",
             me,
             notes: {},
-            announcement: null,
             push: "offered",
             ...props
         },
@@ -55,6 +55,21 @@ function mountSettings(props: Record<string, unknown> = {}): VueWrapper {
 
 function plain(text: string): string {
     return text.replace(/\s+/g, " ").trim();
+}
+
+/** What the chat's one voice last said, of a politeness, from inside the open dialog. */
+function said(politeness: Politeness = "polite"): string {
+    return plain(document.querySelector(`[role='dialog'] [data-testid='announcer-${politeness}']`)?.textContent ?? "");
+}
+
+/** Says a sentence through the chat's one voice, as the settings' saves do from the shell. */
+function speak(text: string, politeness: Politeness = "polite"): void {
+    mount(defineComponent({
+        setup() {
+            useAnnouncer().announce(text, politeness);
+            return () => null;
+        }
+    })).unmount();
 }
 
 function switchOf(w: VueWrapper, key: string): ReturnType<VueWrapper["get"]> {
@@ -215,16 +230,20 @@ describe("a save that lands", () => {
 });
 
 describe("what is said aloud", () => {
-    test("reads the settings' news in its polite live region, and a failed save in its assertive one", async () => {
+    // The settings' news is the shell's to say; the dialog draws no live region of its own and is
+    // where the chat's one voice speaks from while it is open.
+    test("reads the settings' news said while it is open politely, and a failed save assertively, from inside it", async () => {
         const w = mountSettings();
+        await settle();
+        expect(w.findAll("[aria-live]:not([data-testid^='announcer-'])")).toHaveLength(0);
 
-        await w.setProps({ announcement: { text: "Starred", isAssertive: false, count: 3 } });
-        expect(w.get("[data-testid='settings-announcement']").text()).toBe("Starred");
-        expect(w.get("[data-testid='settings-alert']").text()).toBe("");
+        speak("Starred");
+        expect(said()).toBe("Starred");
+        expect(said("assertive")).toBe("");
 
-        await w.setProps({ announcement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 4 } });
-        expect(w.get("[data-testid='settings-alert']").text()).toBe("Not saved. Chat is read only tonight.");
-        expect(w.get("[data-testid='settings-announcement']").text()).toBe("");
+        speak("Not saved. Chat is read only tonight.", "assertive");
+        expect(said("assertive")).toBe("Not saved. Chat is read only tonight.");
+        expect(said()).not.toBe("Not saved. Chat is read only tonight.");
     });
 });
 
@@ -337,7 +356,6 @@ describe("Blocked people", () => {
         const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
         // the dialog's own first focus, after its open
         await nextTick();
-        const said = (): string => plain(w.get("[data-testid='settings-announcement']").text());
         const unblock = async (index: number): Promise<void> => {
             const button = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']")[index];
             button.element.focus();
@@ -364,7 +382,6 @@ describe("Blocked people", () => {
         const ben = { person_alias_guid: "a0000008-0000-4000-8000-000000000000", nick_name: "Ben", last_name: "Okafor", avatar_url: null };
         const w = mountSettings({ blocked: list({ people: [sam, ben, gone] }) });
         await nextTick();
-        const said = (): string => plain(w.get("[data-testid='settings-announcement']").text());
         const buttons = w.findAll<HTMLButtonElement>("[data-testid='blocked-unblock']");
         buttons[0].element.focus();
         await buttons[0].trigger("click");
@@ -391,7 +408,7 @@ describe("Blocked people", () => {
 
         await w.setProps({ blocked: list({ people: [gone] }) });
 
-        expect(plain(w.get("[data-testid='settings-announcement']").text())).toBe("Unblocked Sam Ortiz. Unblocked Ben Okafor");
+        expect(said()).toBe("Unblocked Sam Ortiz. Unblocked Ben Okafor");
         expect(document.activeElement?.getAttribute("aria-label")).toBe("Unblock Someone no longer in chat");
     });
 
@@ -404,7 +421,7 @@ describe("Blocked people", () => {
 
         await w.setProps({ blocked: list({ notes: { [sam.person_alias_guid]: { kind: "error", text: "Couldn't save." } } }) });
 
-        expect(plain(w.get("[data-testid='settings-announcement']").text())).toBe("");
+        expect(said()).toBe("");
         expect(document.activeElement).toBe(button.element);
     });
 

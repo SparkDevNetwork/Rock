@@ -3,7 +3,7 @@
     <Dialog :isOpen="isOpen"
             title="Reactions"
             isPanel
-            :isPhone="isSheet"
+            :sheet="isSheet ? 'always' : 'never'"
             @close="emit('close')">
         <template #tools>
             <IconButton icon="x" label="Close" data-testid="reactors-close" @click="emit('close')" />

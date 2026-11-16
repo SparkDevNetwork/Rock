@@ -75,7 +75,7 @@
                             <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
                         </div>
                         <div class="chat-ls-text">
-                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="me.personAliasGuid" :isConversation="drawn.isConversation" />
+                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :isConversation="drawn.isConversation" />
                         </div>
                         <div class="chat-ls-foot">
                             <span class="chat-ls-faces">

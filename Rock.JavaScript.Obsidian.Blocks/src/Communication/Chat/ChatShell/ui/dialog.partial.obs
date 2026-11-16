@@ -3,7 +3,7 @@
     <Transition leave-active-class="is-leaving">
         <div v-if="isOpen"
              class="chat-modal"
-             :class="{ 'is-sheet': isPhone }"
+             :class="{ 'is-sheet': isSheet }"
              data-testid="dialog-scrim"
              @mousedown.self="onScrimDown"
              @click.self="onScrimClick">
@@ -206,8 +206,9 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { useChatSession } from "../chatSession.partial";
     import Button from "./button.partial.obs";
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
@@ -262,10 +263,13 @@
             default: false
         },
 
-        /** Whether the dialog rises from the bottom as a sheet, as one does on a phone. */
-        isPhone: {
-            type: Boolean,
-            default: false
+        /**
+         * When the dialog rises from the bottom as a sheet: never, on a phone as the session reads
+         * one, or always, for a caller that wants one wherever there is no hover either.
+         */
+        sheet: {
+            type: String as PropType<"never" | "phone" | "always">,
+            default: "never"
         },
 
         /**
@@ -289,6 +293,11 @@
     const dialogElement = ref<HTMLElement>();
     const cancelElement = ref<InstanceType<typeof Button>>();
     const titleId = `chat-dialog-${newGuid()}`;
+
+    const session = useChatSession();
+
+    /** Whether it is drawn as a sheet now. */
+    const isSheet = computed((): boolean => props.sheet === "always" || (props.sheet === "phone" && session.isPhone.value));
 
     /** Whether the press that ends in a click began on the scrim, so a drag out of the dialog does not close it. */
     let isScrimPress = false;

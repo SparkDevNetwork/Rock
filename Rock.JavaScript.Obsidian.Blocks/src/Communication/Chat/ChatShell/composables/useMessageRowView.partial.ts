@@ -394,7 +394,6 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
         message,
         isPending,
         isOwn,
-        personAliasGuid,
         state,
         text,
         pieces,

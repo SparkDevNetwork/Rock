@@ -9,10 +9,10 @@
                 <span class="chat-card-time" data-testid="message-time">{{ head.time }}</span>
             </div>
             <div class="chat-card-body">
-                <MessageBody :text="text" :blocks="blocks" :personAliasGuid="personAliasGuid" :isConversation="isConversation" :runAction="runAction" />
+                <MessageBody :text="text" :blocks="blocks" :isConversation="isConversation" :runAction="runAction" />
             </div>
         </template>
-        <MessageBody v-else :text="text" :blocks="blocks" :personAliasGuid="personAliasGuid" :isConversation="isConversation" :runAction="runAction" />
+        <MessageBody v-else :text="text" :blocks="blocks" :isConversation="isConversation" :runAction="runAction" />
     </div>
 </template>
 
@@ -118,12 +118,6 @@
         head: {
             type: Object as PropType<{ face: AvatarPerson, name: string, time: string } | null>,
             default: null
-        },
-
-        /** The reader's alias guid, so a mention of them draws as the "you" chip. */
-        personAliasGuid: {
-            type: String,
-            default: ""
         },
 
         /** A direct message or group, whose @all chip says "conversation" rather than "channel". */

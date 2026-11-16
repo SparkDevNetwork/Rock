@@ -3,7 +3,7 @@
     <Dialog :isOpen="isOpen"
             title="Chat settings"
             isPanel
-            :isPhone="isPhone"
+            sheet="phone"
             @close="emit('close')">
         <template #tools>
             <IconButton icon="x" label="Close" data-testid="settings-close" @click="emit('close')" />
@@ -29,7 +29,6 @@
                             :choice="statusChoice"
                             :closedReason="statusClosedReason"
                             :isRetrying="isStatusRetrying"
-                            :isPhone="isPhone"
                             @choose="emit('status', $event)" />
             </SettingRow>
         </SettingGroup>
@@ -109,14 +108,6 @@
                         @click="onUnblock(person)">Unblock</button>
             </SettingRow>
         </SettingGroup>
-
-        <span class="chat-sr-only" aria-live="polite" data-testid="settings-announcement">
-            <!-- The settings' news said while the dialog is open, keyed by count so the same words
-                 are read twice; a save that failed is said at once. -->
-            <span v-if="shownAnnouncement && !shownAnnouncement.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span>
-            <span v-if="unblockedSaid" :key="`unblocked-${unblockedSaid.count}`">{{ unblockedSaid.text }}</span>
-        </span>
-        <span class="chat-sr-only" aria-live="assertive" data-testid="settings-alert"><span v-if="shownAnnouncement?.isAssertive" :key="shownAnnouncement.count">{{ shownAnnouncement.text }}</span></span>
     </Dialog>
 </template>
 
@@ -258,13 +249,13 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { busyEndOf, MeKey, MeSettings, meTitles, StatusChoice } from "../composables/usePrefs.partial";
-    import { RoomAnnouncement } from "../composables/useRooms.partial";
     import { longestTimerMs, nextMidnight } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
     import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
     import { ChatPerson } from "../types.partial";
     import { ownStatusWords, personFace, personName as nameOf } from "../ui/face.partial";
     import { PushState } from "../composables/usePush.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -340,21 +331,10 @@
             default: () => ({})
         },
 
-        /** The settings' newest sentence for screen readers; only one said while open is read. */
-        announcement: {
-            type: Object as PropType<RoomAnnouncement | null>,
-            default: null
-        },
-
         /** This browser's push. */
         push: {
             type: String as PropType<PushState>,
             default: "unavailable"
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         },
 
         /** The people the person blocked, read as the dialog opens. */
@@ -385,9 +365,6 @@
 
     // #region Values
 
-    /** The settings' announcement count as the dialog opened, so only news said since is read. */
-    const announcedBefore = ref(props.isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY);
-
     /** The Blocked people group, whose rows focus moves along as one leaves. */
     const blockedGroup = ref<InstanceType<typeof SettingGroup>>();
 
@@ -400,8 +377,8 @@
     /** The rows whose Unblock was pressed, in the order pressed, each until it leaves the list or is refused. */
     const unblocking = ref<Array<{ guid: string, name: string }>>([]);
 
-    /** The last unblock that landed, said in the dialog's own words, keyed so the same words are read twice. */
-    const unblockedSaid = ref<{ text: string, count: number } | null>(null);
+    /** The chat's one voice, which speaks from inside the dialog while it is open. */
+    const { announce } = useAnnouncer();
 
     const statusOf = useFaceStatus(() => props.personAliasGuid ? [props.personAliasGuid] : [], 0);
 
@@ -489,8 +466,6 @@
     /** The rows of blocked people, once the list is read and holds anyone. */
     const shownBlocked = computed((): ChatPerson[] => props.blocked.listState === "loaded" ? props.blocked.people : []);
 
-    const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
-
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -514,11 +489,9 @@
 
     // #region Watchers
 
-    // Each opening reads only the news said from then on.
-    watch(() => props.isOpen, isOpen => {
-        announcedBefore.value = isOpen ? props.announcement?.count ?? 0 : Number.POSITIVE_INFINITY;
+    // Each opening starts with no unblock out.
+    watch(() => props.isOpen, () => {
         unblocking.value = [];
-        unblockedSaid.value = null;
     });
 
     // An unblock that lands takes its row, and the button focused with it, out of the list: it is
@@ -538,7 +511,7 @@
             return;
         }
 
-        unblockedSaid.value = { text: landed.map(pressed => `Unblocked ${pressed.name}`).join(". "), count: (unblockedSaid.value?.count ?? 0) + 1 };
+        announce(landed.map(pressed => `Unblocked ${pressed.name}`).join(". "));
         const active = document.activeElement;
         if (active && active !== document.body && active.isConnected) {
             return;

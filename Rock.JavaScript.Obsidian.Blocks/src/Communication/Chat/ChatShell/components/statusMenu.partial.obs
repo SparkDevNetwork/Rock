@@ -4,7 +4,6 @@
         <Menu :label="label"
               :items="items"
               :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
-              :isSheet="isPhone"
               :focusKey="focusKey"
               :note="note"
               :noteIcon="closedReason ? 'lock' : 'alert'"
@@ -12,7 +11,7 @@
               @openChange="onOpenChange"
               @select="onSelect">
             <template #anchor>
-                <Avatar v-if="trigger === 'face'" :people="[{ name: personName, photoUrl: personPhotoUrl }]" :size="36" :status="ownStatus" own :hasStatusTip="false" />
+                <Avatar v-if="trigger === 'face'" :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" :status="ownStatus" own :hasStatusTip="false" />
                 <template v-else>Change</template>
             </template>
         </Menu>
@@ -69,6 +68,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { untilWords } from "../ui/face.partial";
@@ -114,27 +114,6 @@
         isRetrying: {
             type: Boolean,
             default: false
-        },
-
-        /** Her primary alias, whose own status the face draws. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
-        personName: {
-            type: String,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -145,7 +124,10 @@
 
     // #region Values
 
-    const statusOf = useFaceStatus(() => props.trigger === "face" && props.personAliasGuid ? [props.personAliasGuid] : [], 0);
+    /** Who is signed in, whose own face the foot draws and whose status it reads. */
+    const me = useChatSession().me;
+
+    const statusOf = useFaceStatus(() => props.trigger === "face" && me.value.personAliasGuid ? [me.value.personAliasGuid] : [], 0);
 
     /** The server's time, which her Busy's end and its lengths are read by, as her face reads them. */
     const serverNow = useStatusClock();
@@ -163,7 +145,7 @@
     // #region Computed Values
 
     /** Her own face's status, which the foot's face draws and is named by. */
-    const ownStatus = computed(() => props.trigger === "face" && props.personAliasGuid ? statusOf(props.personAliasGuid) : null);
+    const ownStatus = computed(() => props.trigger === "face" && me.value.personAliasGuid ? statusOf(me.value.personAliasGuid) : null);
 
     /** The menu's note: read only's words, since then nothing in it can be chosen, or that her choice is not saved yet. */
     const note = computed((): string => props.closedReason ?? (props.isRetrying ? statusRetryingWords : ""));
