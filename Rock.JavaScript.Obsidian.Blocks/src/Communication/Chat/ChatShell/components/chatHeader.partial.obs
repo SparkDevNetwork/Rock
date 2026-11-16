@@ -30,10 +30,10 @@
                     <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
                 </span>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
-                    <span class="chat-live-dot" data-testid="connection-dot"></span>Reconnecting…
+                    <Dot class="chat-header-live" tone="warning" pulse data-testid="connection-dot" />Reconnecting…
                 </span>
                 <span v-else-if="isBehind" class="chat-header-sub" data-testid="catching-up-badge" data-tone="info">
-                    <span class="chat-live-dot is-info"></span>Catching up on new messages…
+                    <Dot class="chat-header-live" tone="info" pulse />Catching up on new messages…
                 </span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
@@ -296,6 +296,12 @@ button.chat-header-id:hover .chat-header-chev {
     display: inline-flex;
 }
 
+/* The connection's dot, a word's space before its words, sat on their line. */
+.chat-header-live {
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
 .chat-header-actions :deep(.chat-header-dotted) {
     position: relative;
 }
@@ -485,6 +491,7 @@ button.chat-header-id:hover .chat-header-chev {
     import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
+    import Dot from "../ui/dot.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { peopleCountWords, personFace } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
