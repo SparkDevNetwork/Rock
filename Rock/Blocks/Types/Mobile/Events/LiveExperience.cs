@@ -169,6 +169,28 @@ namespace Rock.Blocks.Types.Mobile.Events
                     return ActionBadRequest( "This Interactive Experience is not currently active." );
                 }
 
+                /*
+                    11/16/2026 - MSE
+
+                    The experience schedule can limit who may join to members of
+                    a group or data view. The token returned below is what lets
+                    the person join the experience over RealTime, so the
+                    requirement must be checked before it is issued. People who
+                    can edit the experience may join anyway, matching the web
+                    Live Experience block.
+
+                    Reason: Enforce the schedule group and data view requirement.
+                */
+                var currentPerson = RequestContext.CurrentPerson;
+
+                if ( !InteractiveExperienceScheduleService.AreRequirementsMetForPerson( occurrence.InteractiveExperienceScheduleId, currentPerson )
+                    && !occurrence.InteractiveExperienceSchedule.InteractiveExperience.IsAuthorized( Rock.Security.Authorization.EDIT, currentPerson ) )
+                {
+                    return ActionBadRequest( currentPerson == null
+                        ? "You must be logged in to join this experience."
+                        : "You do not meet the requirements to join this experience." );
+                }
+
                 int? personalDeviceId = null;
 
                 if ( personalDeviceGuid.HasValue )
