@@ -104,7 +104,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 }
 
                 // One projection call says which of these people chat still shows in the room.
-                var room = ReadRoom( rockContext, context.Configuration, channelGuid, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
+                var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, PeopleToReadForRemoval( caller.Id, targetId.Value, replacementId, leaders ) );
                 if ( room == null )
                 {
                     return Membership( "door.not_found", "That channel could not be found." );

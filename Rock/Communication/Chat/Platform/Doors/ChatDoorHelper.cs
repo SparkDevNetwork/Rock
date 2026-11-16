@@ -345,7 +345,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, Enumerable.Empty<int>() );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That channel could not be found." );
@@ -393,7 +393,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, Enumerable.Empty<int>() );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That channel could not be found." );
@@ -470,7 +470,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.bad_request", "You're already in it." );
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, others.Select( o => o.PersonId ).Concat( new[] { caller.Id } ) );
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, others.Select( o => o.PersonId ) );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That channel could not be found." );
@@ -572,7 +572,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 : new List<int>();
 
             // One projection call, the leaders asked about beside the caller.
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, leaderIds.Concat( new[] { caller.Id } ).ToList() );
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, leaderIds );
             if ( room == null )
             {
                 return new ChatMemberRightsBag();
@@ -609,7 +609,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( ChatSessionHelper.ToGateCode( gate.Gate ), "Chat is not available to you right now." );
             }
 
-            var room = ReadRoom( rockContext, context.Configuration, channelGuid, new[] { caller.Id } );
+            var room = ReadRoom( rockContext, context.Configuration, channelGuid, caller, Enumerable.Empty<int>() );
             if ( room == null )
             {
                 return Membership( "door.not_found", "That conversation could not be found." );
@@ -1091,29 +1091,51 @@ namespace Rock.Communication.Chat.Platform.Doors
             /// How many people a conversation holds; zero for a channel, which is never counted.
             /// </summary>
             public int PersonCount { get; set; }
+
+            /// <summary>
+            /// Whether the caller manages this shared channel's members, once asked; null until then.
+            /// </summary>
+            public bool? MayCallerManage { get; set; }
         }
 
         /// <summary>
         /// Reads a channel the browser named, and these people's memberships of it, through one
-        /// scoped projection call.
+        /// scoped projection call, but only a channel the caller may know of: one they are in or
+        /// banned from, a shared channel everyone can see, or a shared channel they manage.
         /// </summary>
         /// <param name="rockContext">The context read in.</param>
         /// <param name="configuration">The church's chat settings.</param>
         /// <param name="channelGuid">The channel.</param>
-        /// <param name="personIds">The people whose memberships matter, the caller included.</param>
-        /// <returns>The channel, or null when it is not a live chat channel.</returns>
-        private static RoomRead ReadRoom( RockContext rockContext, ChatPlatformConfiguration configuration, Guid channelGuid, IEnumerable<int> personIds )
+        /// <param name="caller">The person asking.</param>
+        /// <param name="otherPersonIds">The other people whose memberships matter.</param>
+        /// <returns>The channel, or null when it is not a live chat channel the caller may know of.</returns>
+        /// <remarks>
+        /// Any other room is answered exactly as a Guid that names nothing, so no door confirms that
+        /// a room exists, nor who shares a conversation, whose Guid anyone can work out from its
+        /// people. A conversation the caller holds no row in is refused from Rock's own rows before
+        /// the projection is read, so it takes as long as a Guid naming nothing; a private shared
+        /// channel still pays the projection call, which decides whether the caller manages it.
+        /// </remarks>
+        private static RoomRead ReadRoom( RockContext rockContext, ChatPlatformConfiguration configuration, Guid channelGuid, Person caller, IEnumerable<int> otherPersonIds )
         {
+            var directMessageTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() ) ?? 0;
+            // Any row of the caller's, archived or inactive included, as a ban kept on one makes the
+            // room theirs to know of; whether it still counts is the projection's answer below.
+            var callerRows = new GroupMemberService( rockContext ).AsNoFilter().Where( m => m.PersonId == caller.Id );
+
             // An ended group keeps its row on the platform for its history, but nobody joins or is
             // added to it.
             var groupId = new GroupService( rockContext ).Queryable()
                 .Where( g => g.Guid == channelGuid && g.IsActive )
+                .Where( g => g.GroupTypeId != directMessageTypeId || callerRows.Any( m => m.GroupId == g.Id ) )
                 .Select( g => ( int? ) g.Id )
                 .FirstOrDefault();
             if ( !groupId.HasValue )
             {
                 return null;
             }
+
+            var personIds = otherPersonIds.Concat( new[] { caller.Id } ).Distinct().ToList();
 
             // The channel's own row and these people's memberships of it, never its whole roster,
             // so a room of thousands costs what a room of two does. Whether it is a chat channel at
@@ -1151,6 +1173,16 @@ namespace Rock.Communication.Chat.Platform.Doors
                 {
                     room.UnlistedPersonIds.Add( personId );
                 }
+            }
+
+            // A room the caller may not know of is no room at all to them.
+            var isKnown = room.LivePersonIds.Contains( caller.Id )
+                || room.BannedPersonIds.Contains( caller.Id )
+                || ( channel.ChannelType == SharedChannelType
+                    && ( channel.IsPublic || channel.IsAlwaysShown || MayManageSharedChannel( rockContext, room, caller ) ) );
+            if ( !isKnown )
+            {
+                return null;
             }
 
             // A conversation's size decides what may be done to it; it holds nine at most, so
@@ -1192,25 +1224,35 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_allowed", channelRefusal );
             }
 
+            return MayManageSharedChannel( rockContext, room, caller ) ? null : Membership( "door.not_allowed", channelRefusal );
+        }
+
+        /// <summary>
+        /// Whether the caller manages a shared channel's members, asked once per read and kept on it,
+        /// since the room read itself asks it of a private room the caller is not in.
+        /// </summary>
+        /// <param name="rockContext">The context read in.</param>
+        /// <param name="room">The shared channel.</param>
+        /// <param name="caller">The person asking.</param>
+        /// <returns>True where they may add and remove its people.</returns>
+        private static bool MayManageSharedChannel( RockContext rockContext, RoomRead room, Person caller )
+        {
+            if ( room.MayCallerManage.HasValue )
+            {
+                return room.MayCallerManage.Value;
+            }
+
             // A Chat Administrator manages every shared channel, one they are banned from included,
-            // since that right is the church's and not the room's.
-            if ( ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ) )
-            {
-                return null;
-            }
+            // since that right is the church's and not the room's. Otherwise a ban in the room takes
+            // managing it away, whatever Rock lets the person do to the group; it is the
+            // projection's answer, the one the platform hides the room by. Past both, Rock's own
+            // rule for who manages a group's members: security, or a group role that may manage
+            // members or edit.
+            room.MayCallerManage = ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext )
+                || ( !room.BannedPersonIds.Contains( caller.Id )
+                    && new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller ) );
 
-            // A ban in the room takes managing it away, whatever Rock lets the person do to the
-            // group. It is the projection's answer, the one the platform hides the room by.
-            if ( room.BannedPersonIds.Contains( caller.Id ) )
-            {
-                return Membership( "door.not_allowed", channelRefusal );
-            }
-
-            // Otherwise Rock's own rule for who manages a group's members: security, or a group
-            // role that may manage members or edit.
-            var isManager = new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller );
-
-            return isManager ? null : Membership( "door.not_allowed", channelRefusal );
+            return room.MayCallerManage.Value;
         }
 
         /// <summary>
