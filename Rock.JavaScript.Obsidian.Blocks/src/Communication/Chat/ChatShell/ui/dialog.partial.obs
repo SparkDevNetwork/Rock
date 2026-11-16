@@ -286,9 +286,10 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, PropType, ref, watch } from "vue";
+    import { PropType, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { focusQuietly } from "./tooltip.partial";
+    import { useAnnouncerModal } from "./announcer.partial";
+    import { useFocusTrap } from "./focusTrap.partial";
 
     const props = defineProps({
         isOpen: {
@@ -368,13 +369,8 @@
     const cancelElement = ref<HTMLButtonElement>();
     const titleId = `chat-dialog-${newGuid()}`;
 
-    /** What had focus when the dialog opened, given it back on close. */
-    let opener: HTMLElement | null = null;
-
     /** Whether the press that ends in a click began on the scrim, so a drag out of the dialog does not close it. */
     let isScrimPress = false;
-
-    const focusableSelector = "button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true'], [tabindex='0']";
 
     // #endregion Values
 
@@ -385,9 +381,6 @@
             // The dialog's Escape is its own, never also the panel's or the menu's behind it.
             event.stopPropagation();
             emit("close");
-        }
-        else if (event.key === "Tab") {
-            trapTab(event);
         }
     }
 
@@ -406,78 +399,25 @@
 
     // #region Functions
 
-    /** Keeps Tab inside the dialog, wrapping from the last control to the first and back. */
-    function trapTab(event: KeyboardEvent): void {
-        const controls = focusables();
-        if (controls.length === 0) {
-            event.preventDefault();
-            return;
-        }
-
-        const first = controls[0];
-        const last = controls[controls.length - 1];
-        if (event.shiftKey && document.activeElement === first) {
-            event.preventDefault();
-            last.focus();
-        }
-        else if (!event.shiftKey && document.activeElement === last) {
-            event.preventDefault();
-            first.focus();
-        }
-    }
-
-    function focusables(): HTMLElement[] {
-        return Array.from(dialogElement.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
-    }
-
     /**
      * A destructive confirm starts on Cancel, so Enter never deletes by accident; any other on the
-     * control it marks, else its first. A panel's first control is the close button in its head,
-     * focused quietly so its tooltip does not show unasked.
+     * control it marks, else its first, else the dialog itself. A panel's first control is the
+     * close button in its head, which the trap focuses quietly so its tooltip does not show unasked.
      */
-    function focusFirst(): void {
-        const marked = dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]");
+    function firstFocus(controls: HTMLElement[]): HTMLElement | null {
         if (props.isDestructive && cancelElement.value) {
-            cancelElement.value.focus({ preventScroll: true });
+            return cancelElement.value;
         }
-        else if (marked) {
-            marked.focus({ preventScroll: true });
-        }
-        else if (props.isPanel && focusables()[0]) {
-            focusQuietly(focusables()[0]);
-        }
-        else {
-            (focusables()[0] ?? dialogElement.value)?.focus({ preventScroll: true });
-        }
-    }
 
-    /**
-     * Gives focus back to the opener, when it is still on the page, quietly: the person is
-     * leaving the dialog, not reaching for the opener, so its tooltip or card does not rise.
-     */
-    function returnFocus(): void {
-        const target = props.returnFocus?.() ?? opener;
-        if (target && target.isConnected) {
-            focusQuietly(target, { preventScroll: true });
-        }
-        opener = null;
+        return dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]") ?? controls[0] ?? dialogElement.value ?? null;
     }
 
     // #endregion Functions
 
-    // #region Watchers
-
-    watch(() => props.isOpen, async isOpen => {
-        if (isOpen) {
-            opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-            await nextTick();
-            focusFirst();
-        }
-        else {
-            // At once, not after the fade, so a keyboard user is never left on a vanishing control.
-            returnFocus();
-        }
-    }, { immediate: true });
-
-    // #endregion Watchers
+    // Focus is kept inside while open and goes back to what opened it the moment the dialog closes,
+    // not after its fade, so a keyboard user is never left on a vanishing control; quietly, since
+    // the person is leaving the dialog, not reaching for the opener, so its tooltip or card does not rise.
+    const trapped = (): HTMLElement | undefined => props.isOpen ? dialogElement.value : undefined;
+    useFocusTrap(trapped, { returnTo: () => props.returnFocus?.() ?? null, initialFocus: firstFocus });
+    useAnnouncerModal(trapped);
 </script>

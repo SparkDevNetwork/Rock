@@ -15,16 +15,17 @@
 // </copyright>
 //
 
-import { onBeforeUnmount, Ref, ref } from "vue";
-import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+import { ComputedRef, onBeforeUnmount, Ref, ref } from "vue";
 import { tokenDuration } from "./brand.partial";
+import { focusableSelector, focusQuietly, isDrawn, isFocusQuiet } from "./focusTrap.partial";
+import { usePopover } from "./popover.partial";
 
 /** A tooltip's state and the handlers its anchor binds, and an interactive tip's own. */
 export type ChatTooltip = {
     /** The drawn tip, for the placement to measure. */
     tipElement: Ref<HTMLElement | undefined>;
     isTipShown: Ref<boolean>;
-    floatingStyles: ReturnType<typeof useFloating>["floatingStyles"];
+    floatingStyles: ComputedRef<Record<string, string>>;
     hideTip: () => void;
     onPointerEnter: () => void;
     onPointerLeave: () => void;
@@ -69,32 +70,6 @@ const defaultTipDelay: TooltipDelay = { token: "--chat-d-tip-delay", fallbackMs:
 /** How long an interactive tip outlives the pointer leaving, so the pointer can cross the gap into it; shared with the action bar's. */
 const hoverGrace: TooltipDelay = { token: "--chat-d-hover-grace", fallbackMs: 220 };
 
-/** What the keyboard can reach, in the page's order. */
-const tabbableSelector = "button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [contenteditable='true'], [tabindex='0']";
-
-/**
- * Whether an element is drawn for the keyboard, though it still matches the keyboard's selector:
- * not one under display:none, or hidden itself, nor one in an inert part, as a phone's panes
- * behind the front one are, or in a part hidden from assistive technology.
- *
- * @param element The element.
- *
- * @returns Whether it is drawn.
- */
-function isDrawn(element: HTMLElement): boolean {
-    if (getComputedStyle(element).visibility === "hidden" || element.closest("[inert], [aria-hidden='true']")) {
-        return false;
-    }
-
-    for (let at: HTMLElement | null = element; at; at = at.parentElement) {
-        if (at.hidden || getComputedStyle(at).display === "none") {
-            return false;
-        }
-    }
-
-    return true;
-}
-
 /**
  * Whether the browser calls a focus a keyboard's. A focus the page moved, as a closing panel
  * returning to the button that opened it, is not, so it shows no tip or bar for a pointer that is
@@ -111,26 +86,6 @@ export function isKeyboardFocus(target: EventTarget | null | undefined): boolean
     }
     catch {
         return true;
-    }
-}
-
-/** Set only while focusQuietly moves focus, which a browser reports at once. */
-let isQuietFocus = false;
-
-/**
- * Focuses an element without showing its tooltip: a panel opening puts focus on its back chevron
- * or X only so the keyboard starts inside it, which is not the person reaching for that button.
- *
- * @param element The element to focus.
- * @param options How to focus it, such as without scrolling a panel that is still opening.
- */
-export function focusQuietly(element: HTMLElement, options?: FocusOptions): void {
-    isQuietFocus = true;
-    try {
-        element.focus(options);
-    }
-    finally {
-        isQuietFocus = false;
     }
 }
 
@@ -151,7 +106,6 @@ export function focusQuietly(element: HTMLElement, options?: FocusOptions): void
  */
 export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () => boolean = () => false, delay: TooltipDelay = defaultTipDelay, isInteractive: boolean = false): ChatTooltip {
     const tipElement = ref<HTMLElement>();
-    const isTipShown = ref(false);
 
     // One timer: the rest before showing, or an interactive tip's grace before hiding.
     let tipTimer: number | undefined;
@@ -160,12 +114,12 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
     let isPointerFocus = false;
 
     // Above the anchor, or below it when there is no room, kept 8px inside the window. An
-    // interactive tip hangs below, from the anchor's start, as a card opened from it does.
-    const { floatingStyles } = useFloating(anchor, tipElement, {
+    // interactive tip hangs below, from the anchor's start, as a card opened from it does. Placed
+    // as every popover is; shown and hidden by the tip's own timers, never by a press or a key.
+    const { isOpen: isTipShown, floatingStyles } = usePopover(anchor, tipElement, {
         placement: isInteractive ? "bottom-start" : "top",
-        strategy: "fixed",
-        middleware: [offset(isInteractive ? 6 : 8), flip(), shift({ padding: 8 })],
-        whileElementsMounted: autoUpdate
+        offset: isInteractive ? 6 : 8,
+        isDismissable: false
     });
 
     /** Shows the tip once the pointer has rested, so passing over a row of buttons does not flicker tips. */
@@ -207,7 +161,7 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
     }
 
     function tipControls(): HTMLElement[] {
-        return Array.from(tipElement.value?.querySelectorAll<HTMLElement>(tabbableSelector) ?? []);
+        return Array.from(tipElement.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? []);
     }
 
     /**
@@ -220,14 +174,14 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
             return;
         }
 
-        const next = Array.from(document.querySelectorAll<HTMLElement>(tabbableSelector))
+        const next = Array.from(document.querySelectorAll<HTMLElement>(focusableSelector))
             .find(element => !isInTip(element) && !!(from.compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING) && !from.contains(element) && isDrawn(element));
         next?.focus();
     }
 
     /** Only a keyboard focus shows the tip. */
     function onFocus(): void {
-        if (!isPointerFocus && !isQuietFocus && isKeyboardFocus(anchor.value)) {
+        if (!isPointerFocus && !isFocusQuiet() && isKeyboardFocus(anchor.value)) {
             scheduleTip();
         }
     }

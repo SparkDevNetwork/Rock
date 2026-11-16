@@ -28,7 +28,7 @@ import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef,
 import { ChatShell } from "../shell.partial";
 import { PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
-import { focusQuietly } from "../ui/tooltip.partial";
+import { focusQuietly } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 import { ReplyLanding, ThreadOrigin } from "./useJump.partial";
 import { OpenThreadState, ThreadPlace } from "./useThreads.partial";

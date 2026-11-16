@@ -233,7 +233,8 @@
     import ReactorsList from "./reactorsList.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { preloadPhotos } from "../ui/face.partial";
-    import { focusQuietly, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { focusQuietly } from "../ui/focusTrap.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { ReactionReader, whoReactedLine } from "../composables/useReactions.partial";
     import { Reaction, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
     import type { ReactionMotion } from "../messageMotion.partial";

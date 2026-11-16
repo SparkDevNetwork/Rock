@@ -78,8 +78,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionPicker.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pickerShell.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/tooltip.partial.ts": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1
   },
   "P3": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionPicker.partial.obs": 1,
@@ -119,7 +118,6 @@
   },
   "P8": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionSheet.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/dialog.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1
   },
   "P9": {
