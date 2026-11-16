@@ -6693,6 +6693,24 @@ namespace Rock.Rest.v2
                         return Ok();
                     }
 
+                    /*
+                        11/16/2026 - MSE
+
+                        Following an entity shows it in the person's followed items and sends
+                        following events about it, so the person must be able to view it. People
+                        can still follow other people, because person VIEW is allowed by default.
+                        Unfollow is not checked, so a person can always stop following.
+
+                        Reason: Do not follow records the caller cannot view.
+                    */
+                    var followEntityType = EntityTypeCache.Get( options.EntityTypeGuid );
+                    var followEntity = followEntityType != null ? Reflection.GetIEntityForEntityType( followEntityType.GetEntityType(), options.EntityKey, true, rockContext ) : null;
+
+                    if ( followEntity is ISecured followSecured && !followSecured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                    {
+                        return Unauthorized();
+                    }
+
                     var following = new Following
                     {
                         EntityTypeId = entityTypeId.Value,
@@ -11499,12 +11517,12 @@ namespace Rock.Rest.v2
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( ReminderButtonGetRemindersResultsBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
+        [ProducesResponse( HttpStatusCode.Unauthorized )]
         [Rock.SystemGuid.RestActionGuid( "4D015951-9B44-4E70-99AD-8D52728ADF3E" )]
         public IActionResult ReminderButtonGetReminders( [FromBody] ReminderButtonGetRemindersOptionsBag options )
         {
             using ( var rockContext = new RockContext() )
             {
-                var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
                 var currentPerson = GetPerson();
                 var currentPersonId = currentPerson?.Id;
 
@@ -11514,7 +11532,34 @@ namespace Rock.Rest.v2
                 }
 
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+                if ( entityType == null )
+                {
+                    return BadRequest();
+                }
+
                 var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
+
+                if ( contextEntity == null )
+                {
+                    return BadRequest();
+                }
+
+                /*
+                    11/16/2026 - MSE
+
+                    The response includes the entity's display name, so a caller must be able
+                    to view the entity. Entities without record security (such as person
+                    aliases) are not checked here, as before.
+
+                    Reason: Do not return the name of a record the caller cannot view.
+                */
+                if ( contextEntity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
+                var reminderViewModels = ReminderButtonGetReminders( options.EntityTypeGuid, options.EntityGuid, rockContext );
 
                 // Load reminder types for this context entity.
                 var reminderTypeService = new ReminderTypeService( rockContext );
@@ -11570,6 +11615,20 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "58DC4454-ED33-4871-9BD1-2AC9118340E2" )]
         public IActionResult ReminderButtonAddReminder( [FromBody] ReminderButtonAddReminderOptionsBag options )
         {
+            /*
+                11/16/2026 - MSE
+
+                The reminder button is only shown to signed in people, and a reminder is
+                always owned by a person. Without this check an anonymous caller could create
+                reminders assigned to any person whose Guid they hold.
+
+                Reason: Adding a reminder requires a signed in person.
+            */
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
             if ( options.EntityTypeGuid.IsEmpty() || options.EntityGuid.IsEmpty() || options.ReminderTypeGuid.IsEmpty() )
             {
                 return BadRequest();
@@ -11578,6 +11637,12 @@ namespace Rock.Rest.v2
             using ( var rockContext = new RockContext() )
             {
                 var entityType = EntityTypeCache.Get( options.EntityTypeGuid );
+
+                if ( entityType == null )
+                {
+                    return BadRequest();
+                }
+
                 var contextEntity = Rock.Reflection.GetIEntityForEntityType( entityType.GetEntityType(), options.EntityGuid );
 
                 var reminderTypeService = new ReminderTypeService( new RockContext() );
@@ -11589,6 +11654,30 @@ namespace Rock.Rest.v2
                 }
 
                 if ( !reminderType.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
+                {
+                    return Unauthorized();
+                }
+
+                if ( contextEntity == null )
+                {
+                    return BadRequest();
+                }
+
+                /*
+                    11/16/2026 - MSE
+
+                    A reminder type only applies to its own entity type, the same rule
+                    ReminderButtonGetReminders uses when it lists the types for the entity, and
+                    the caller must be able to view the entity the reminder is about.
+
+                    Reason: Do not add reminders to records the caller cannot view.
+                */
+                if ( reminderType.EntityTypeId != contextEntity.TypeId )
+                {
+                    return BadRequest();
+                }
+
+                if ( contextEntity is ISecured secured && !secured.IsAuthorized( Authorization.VIEW, RockRequestContext.CurrentPerson ) )
                 {
                     return Unauthorized();
                 }
@@ -11616,6 +11705,12 @@ namespace Rock.Rest.v2
                 if ( person == null && !options.AssignedToGuid.IsEmpty() )
                 {
                     personAlias = new PersonAliasService( rockContext ).Get( options.AssignedToGuid );
+                }
+
+                // An unknown assignee Guid matches neither a person nor an alias.
+                if ( personAlias == null && person?.PrimaryAliasId == null )
+                {
+                    return BadRequest();
                 }
 
                 if ( personAlias != null )
