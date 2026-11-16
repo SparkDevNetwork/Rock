@@ -7,7 +7,7 @@
         <div class="chat-cm-main">
             <div class="chat-cm-head" data-testid="message-head">
                 <span class="chat-cm-name" data-testid="sender-name">{{ view.displayName }}</span>
-                <Badge v-if="isLeaderShown" tone="neutral" label="Leader" class="chat-cm-pill" data-testid="leader-pill" />
+                <Badge v-if="isLeaderShown" tone="neutral" label="Leader" isSpoken class="chat-cm-pill" data-testid="leader-pill" />
                 <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ view.time }}</span>
             </div>
             <BlockCard :text="view.text" :blocks="view.message?.blocks ?? null" :runAction="on.runBlockAction" />
@@ -42,8 +42,8 @@
                            :class="{ 'chat-person-opener': !!view.authorGuid }"
                            data-testid="sender-name"
                            @click="view.authorGuid && on.author($event)">{{ view.displayName }}</component>
-                <Badge v-if="isLeaderShown" tone="neutral" label="Leader" class="chat-cm-pill" data-testid="leader-pill" />
-                <Badge v-if="view.isAnnouncement" tone="brand" icon="speaker" label="Announcement" class="chat-cm-pill" data-testid="announcement-pill" />
+                <Badge v-if="isLeaderShown" tone="neutral" label="Leader" isSpoken class="chat-cm-pill" data-testid="leader-pill" />
+                <Badge v-if="view.isAnnouncement" tone="brand" icon="speaker" label="Announcement" isSpoken class="chat-cm-pill" data-testid="announcement-pill" />
                 <span class="chat-cm-time" data-testid="message-time" :title="longTime">{{ view.time }}</span>
                 <span v-if="view.readerMention" class="chat-cm-mention" data-testid="mention-tag" aria-hidden="true"><Icon name="at" size="xs" /><span class="chat-cm-mention-words">Mentioned {{ view.readerMention }}</span></span>
             </div>

@@ -10,7 +10,7 @@
               'is-count': !label,
               'is-pop': isPopping
           }"
-          aria-hidden="true">
+:aria-hidden="isSpoken ? undefined : 'true'">
         <Icon v-if="icon" :name="icon" size="xs" />{{ shown }}
     </span>
 </template>
@@ -91,8 +91,9 @@
     import { computed, PropType } from "vue";
     import Icon from "./icon.partial.obs";
 
-    // A count or a label. What it says is read from the row or button that holds it, which names
-    // the count in words, so the badge is hidden from a screen reader.
+    // A count or a label. A count, or a mark such as GIF, is read from the row or button that holds
+    // it, which names it in words, so the badge is hidden from a screen reader; a role label such
+    // as Leader says what nothing else on its row does, so the caller asks for it to be read.
     const props = defineProps({
         /** The number to show; ignored when a label is given. */
         count: {
@@ -126,6 +127,12 @@
 
         /** Springs in as it appears, where something new arrives. */
         isPopping: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether a screen reader reads its words: a role label such as Leader or Announcement. */
+        isSpoken: {
             type: Boolean,
             default: false
         }

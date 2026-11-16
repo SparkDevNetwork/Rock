@@ -46,7 +46,7 @@
                      class="chat-bubble"
                      data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
                     <div v-if="view.isAnnouncement" class="chat-bubble-label">
-                        <Badge tone="brand" icon="speaker" label="Announcement" data-testid="announcement-pill" />
+                        <Badge tone="brand" icon="speaker" label="Announcement" isSpoken data-testid="announcement-pill" />
                     </div>
                     <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
                     <MessageBody :text="view.text" :pieces="view.pieces" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
