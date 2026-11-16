@@ -158,8 +158,9 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 } );
                 var conversation = scene.Start( bo, scene.Alias( cy ) ).ChannelGuid.Value;
 
-                Assert.AreEqual( "door.not_allowed", scene.Join( ada, room ).Code );
-                Assert.AreEqual( "door.not_allowed", scene.Join( ada, conversation ).Code );
+                // Neither is a room Ada may know of, so each is answered as one that does not exist.
+                Assert.AreEqual( "door.not_found", scene.Join( ada, room ).Code );
+                Assert.AreEqual( "door.not_found", scene.Join( ada, conversation ).Code );
                 Assert.AreEqual( 0, scene.ActiveMemberCount( room ) );
                 Assert.AreEqual( 2, scene.ActiveMemberCount( conversation ) );
                 Assert.AreEqual( 0, scene.Platform.Posts );
@@ -1217,7 +1218,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 Assert.AreEqual( "door.bad_request", scene.Rename( ada, group, new string( 'x', 101 ) ).Code );
                 Assert.AreEqual( "door.not_allowed", scene.Rename( ada, pair, "Us" ).Code, "a conversation of two is titled by the other person" );
                 Assert.AreEqual( "door.not_allowed", scene.Rename( lee, room, "Renamed" ).Code, "a channel's name is staff's, in Rock" );
-                Assert.AreEqual( "door.not_member", scene.Rename( dee, group, "Mine" ).Code );
+                Assert.AreEqual( "door.not_found", scene.Rename( dee, group, "Mine" ).Code, "a conversation Dee is not in is one she may not know of" );
                 Assert.AreEqual( "Team", scene.Group( room ).Name );
                 Assert.AreEqual( 0, scene.Platform.Posts );
             }
@@ -1293,6 +1294,132 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
                 Assert.AreEqual( 2, scene.ActiveMemberCount( notChat ), "nothing was written" );
                 Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void EveryDoorAnswersARoomTheCallerCannotSeeAsOneThatDoesNotExist()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+
+                // Bo and Cy's conversation is named by a Guid anyone can work out from the two of
+                // them, so its answer must not say it exists.
+                var pair = ChatDoorHelper.DirectMessageGuid( scene.TenantId, new[] { bo, cy } );
+                Assert.AreEqual( pair, scene.Start( bo, scene.Alias( cy ) ).ChannelGuid );
+                var group = scene.Start( bo, scene.Alias( cy ), scene.Alias( dee ) ).ChannelGuid.Value;
+                var hidden = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.IsChatChannelAlwaysShownOverride = false;
+                } );
+                scene.Fixture.AddMember( hidden, bo );
+                scene.WaitForPushes();
+
+                string Answer( Rock.ViewModels.Blocks.Communication.Chat.ChatShell.ChatMembershipResultBag result ) => result.Code + " | " + result.Message;
+                string[] EveryDoor( Guid room ) => new[]
+                {
+                    Answer( scene.Join( ada, room ) ),
+                    Answer( scene.Leave( ada, room ) ),
+                    Answer( scene.Add( ada, room, scene.Alias( dee ) ) ),
+                    Answer( scene.Remove( ada, room, scene.Alias( bo ) ) ),
+                    Answer( scene.Rename( ada, room, "Mine" ) )
+                };
+
+                var nothing = EveryDoor( Guid.NewGuid() );
+                Assert.IsTrue( nothing.All( a => a.StartsWith( "door.not_found | " ) ), "a Guid that names nothing finds nothing" );
+
+                foreach ( var room in new[] { pair, group, hidden } )
+                {
+                    CollectionAssert.AreEqual( nothing, EveryDoor( room ), "every door answers as it does for nothing, room " + room );
+
+                    var rights = scene.Rights( ada, room );
+                    Assert.IsFalse( rights.CanManageMembers || rights.CanRename, "and offers nothing, room " + room );
+                    Assert.IsNull( rights.LastLeaderPersonAliasGuid );
+                }
+
+                Assert.AreEqual( 2, scene.ActiveMemberCount( pair ), "nothing was written" );
+                Assert.AreEqual( 3, scene.ActiveMemberCount( group ) );
+                Assert.AreEqual( 1, scene.ActiveMemberCount( hidden ) );
+                Assert.AreEqual( "Chat Direct Message", scene.Group( group ).Name );
+                Assert.AreEqual( 0, scene.Platform.Posts );
+            }
+        }
+
+        [TestMethod]
+        public void AConversationTheCallerIsNotInIsRefusedBeforeTheProjectionIsRead()
+        {
+            // Refused from Rock's own rows, as a Guid naming nothing is, so the answer takes no
+            // longer for a conversation that exists.
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+                var group = scene.Start( bo, scene.Alias( cy ), scene.Alias( dee ) ).ChannelGuid.Value;
+                var hidden = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.IsChatChannelAlwaysShownOverride = false;
+                } );
+                scene.WaitForPushes();
+
+                var before = ProjectionReads();
+                scene.Join( ada, group );
+                scene.Leave( ada, group );
+                scene.Add( ada, group, scene.Alias( dee ) );
+                scene.Remove( ada, group, scene.Alias( cy ) );
+                scene.Rename( ada, group, "Mine" );
+                scene.Rights( ada, group );
+                Assert.AreEqual( before, ProjectionReads(), "no door read the projection for a conversation Ada is not in" );
+
+                // The count is live: a private shared room still pays the projection call, which
+                // decides whether she may manage it.
+                scene.Rights( ada, hidden );
+                Assert.IsTrue( ProjectionReads() > before, "a projection read is counted" );
+            }
+        }
+
+        [TestMethod]
+        public void ARoomTheCallerIsBannedFromOrManagesIsOneTheyKnowOf()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var admin = scene.AddChatPerson( "Admin" );
+                var dee = scene.AddChatPerson( "Dee" );
+                scene.MakeChatAdministrator( admin );
+                var hidden = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.IsChatChannelAlwaysShownOverride = false;
+                } );
+                scene.Fixture.AddMember( hidden, ada, m => { m.IsChatBanned = true; m.IsArchived = true; } );
+
+                Assert.AreEqual( "door.not_allowed", scene.Join( ada, hidden ).Code, "her ban, even on an archived row, is hers to know" );
+
+                Assert.IsTrue( scene.Rights( admin, hidden ).CanManageMembers, "a Chat Administrator manages a private room they are not in" );
+                Assert.AreEqual( "ok", scene.Add( admin, hidden, scene.Alias( dee ) ).Code );
+                CollectionAssert.Contains( scene.ActiveMembers( hidden ), dee );
+            }
+        }
+
+        /// <summary>
+        /// How many times this database has run the projection procedure, as SQL Server counts a
+        /// cached procedure's executions.
+        /// </summary>
+        private static long ProjectionReads()
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                return rockContext.Database.SqlQuery<long>(
+                    "SELECT ISNULL( SUM( [execution_count] ), 0 ) FROM sys.dm_exec_procedure_stats WHERE [database_id] = DB_ID() AND [object_id] = OBJECT_ID( 'dbo.spChat_SyncProjection' )" )
+                    .Single();
             }
         }
 
