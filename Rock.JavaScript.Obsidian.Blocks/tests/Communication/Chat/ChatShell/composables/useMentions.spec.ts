@@ -307,6 +307,7 @@ describe("the picker's search", () => {
         expect(typeof searches[0].args.p_limit).toBe("number");
     });
 
+    // The one pause every search box waits, 200 ms.
     test("asks for a later keystroke only once typing pauses, for the newest query", async () => {
         const h = setup();
         h.mentions.search(room, "");
@@ -315,7 +316,7 @@ describe("the picker's search", () => {
         h.mentions.search(room, "a");
         jest.advanceTimersByTime(100);
         h.mentions.search(room, "an");
-        jest.advanceTimersByTime(149);
+        jest.advanceTimersByTime(199);
         expect(h.callsTo("chat_search_mentionable")).toHaveLength(1);
 
         jest.advanceTimersByTime(1);
