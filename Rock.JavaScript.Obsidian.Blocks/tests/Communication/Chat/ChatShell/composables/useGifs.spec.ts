@@ -18,9 +18,10 @@
 // GIF search: the session's one way to ask the platform's search, the switch that hides GIFs the
 // moment the platform refuses them as off, and a picker's search, which waits for the person to
 // stop typing, asks once for each query that is long enough, drops an answer a newer query
-// overtook, and pages on. Laid out in two columns, each tile placed in the shorter.
+// overtook, and pages on. Laid out in two columns, each tile placed in the shorter. Before anything
+// is typed the picker shows the platform's topic words, each with a cover, asked once a page.
 import { computed, ref } from "vue";
-import { createGifs, createGifSearch, gifSuggestions, GifSearchAnswer, Gifs, masonry, nextInMasonry } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
+import { createGifs, createGifSearch, gifHeight, GifSearchAnswer, Gifs, masonry, nextInMasonry } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { createSession, ExchangeResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSession.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -49,6 +50,7 @@ function fakeGifs(): Gifs & { asked: Asked[] } {
         asked,
         isOn: () => on.value,
         search: (query, page, signal) => new Promise(resolve => asked.push({ query, page, signal, answer: resolve })),
+        covers: () => new Promise(() => undefined),
         turnOff: () => {
             on.value = false;
         }
@@ -113,6 +115,50 @@ describe("createGifs", () => {
     test("an answer of a shape this client cannot read is no results, never a failure", async () => {
         expect(await setup({ ok: true, data: null }).gifs.search("thanks", 1)).toEqual({ ok: true, items: [], hasNext: false });
     });
+
+    // The topic words live on the platform, each with one cover from its filtered search, shared
+    // by every church; the browser asks for them once a page and keeps the answer.
+    test("asks the platform's GIF search for the topic covers once, and every later ask is the same answer", async () => {
+        const words = [
+            { word: "Thanks", still: "https://static.klipy.com/ii/sm/t.webp", mp4: "https://static.klipy.com/ii/sm/t.mp4", w: 90, h: 51 },
+            { word: "Amen", still: null, mp4: null, w: null, h: null }
+        ];
+        const { gifs, calls } = setup({ ok: true, data: { words } });
+
+        const first = await gifs.covers();
+        const second = await gifs.covers();
+
+        expect(calls).toEqual([{ path: "gif-search", body: { covers: true }, signal: undefined }]);
+        expect(first).toEqual({
+            ok: true,
+            words: [
+                { word: "Thanks", still: "https://static.klipy.com/ii/sm/t.webp", width: 90, height: 51 },
+                // a word KLIPY gave no cover for is a plain plate
+                { word: "Amen", still: null, width: 0, height: 0 }
+            ]
+        });
+        expect(second).toBe(first);
+    });
+
+    test("a failed ask for the covers is not kept, so Try again asks again", async () => {
+        const answers: CallResult[] = [
+            { ok: false, status: 500, error: { code: "rpc.internal", severity: "failed" }, retryAfterSeconds: null },
+            { ok: true, data: { words: [{ word: "Yes", still: null, mp4: null, w: null, h: null }] } } as CallResult
+        ];
+        const calls: unknown[] = [];
+        const gifs = createGifs({ callFunction: async (_path, body) => (calls.push(body), answers.shift() as CallResult), isEnabled: () => true });
+
+        expect(await gifs.covers()).toEqual({ ok: false });
+        expect(await gifs.covers()).toEqual({ ok: true, words: [{ word: "Yes", still: null, width: 0, height: 0 }] });
+        expect(calls).toHaveLength(2);
+    });
+
+    test("a refusal of the covers as off hides GIFs, as a search's does", async () => {
+        const { gifs } = setup({ ok: false, status: 403, error: { code: "rpc.gifs_off", severity: "failed" }, retryAfterSeconds: null });
+
+        expect(await gifs.covers()).toEqual({ ok: false });
+        expect(gifs.isOn()).toBe(false);
+    });
 });
 
 describe("the church switch through a real session", () => {
@@ -150,7 +196,7 @@ describe("the church switch through a real session", () => {
 });
 
 describe("a picker's search", () => {
-    test("before two characters it asks nothing and offers the suggestions", async () => {
+    test("before two characters it asks nothing and goes back to the topics", async () => {
         const gifs = fakeGifs();
         const search = createGifSearch(gifs);
 
@@ -159,7 +205,6 @@ describe("a picker's search", () => {
 
         expect(gifs.asked).toHaveLength(0);
         expect(search.status).toBe("idle");
-        expect(gifSuggestions.length).toBeGreaterThanOrEqual(6);
     });
 
     test("asks once, the shared 200ms after the typing stops, for the query as it then reads", () => {
@@ -314,7 +359,7 @@ describe("the masonry", () => {
         // heights as a share of the width: 1, 0.5, 0.5, 1
         const items = [result("a", 100, 100), result("b", 100, 50), result("c", 100, 50), result("d", 100, 100)];
 
-        const columns = masonry(items);
+        const columns = masonry(items, gifHeight);
 
         expect(columns.map(column => column.map(tile => tile.item.slug))).toEqual([["a", "d"], ["b", "c"]]);
         expect(columns[1].map(tile => tile.index)).toEqual([1, 2]);
@@ -323,7 +368,7 @@ describe("the masonry", () => {
     test("Up and Down move within a column; Left and Right go to the tile beside it nearest by height", () => {
         // column one: a (0 to 1), d (1 to 2); column two: b (0 to .5), c (.5 to 1), e (1 to 1.5)
         const items = [result("a", 100, 100), result("b", 100, 50), result("c", 100, 50), result("d", 100, 100), result("e", 100, 50)];
-        const columns = masonry(items);
+        const columns = masonry(items, gifHeight);
 
         expect(nextInMasonry(columns, 0, "ArrowDown")).toBe(3);
         expect(nextInMasonry(columns, 3, "ArrowUp")).toBe(0);

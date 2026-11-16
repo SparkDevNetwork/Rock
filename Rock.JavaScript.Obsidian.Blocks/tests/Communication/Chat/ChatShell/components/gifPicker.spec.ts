@@ -16,14 +16,16 @@
 //
 
 // The GIF picker, mounted: a popover the emoji picker's size opened from the composer's "+", its
-// search reading "Search KLIPY", suggestions before anything is typed, two columns of GIFs as KLIPY
+// search reading "Search KLIPY", the topic tiles before anything is typed, two columns of GIFs as KLIPY
 // shapes them, each blurred until it loads, a state for loading, nothing found, a failure and a
 // busy search, and KLIPY named at its foot. A pick hands the GIF to the composer to stage; Escape
 // closes it and hands focus back. On a phone it is a bottom sheet.
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import GifPicker from "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs";
-import { GifSearchAnswer, Gifs, gifSuggestions } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
+import { readFileSync } from "fs";
+import { join } from "path";
+import { GifCovers, GifSearchAnswer, Gifs } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { providedSession } from "../sessionShapes";
 
@@ -43,14 +45,25 @@ function result(slug: string, width = 200, height = 112): GifResult {
 
 type Asked = { query: string, page: number, answer: (value: GifSearchAnswer) => void };
 
-function fakeGifs(): Gifs & { asked: Asked[] } {
+/** The platform's ten topic words, each with a cover of its own shape. */
+const words = ["Thanks", "Praying", "Amen", "Celebrate", "Welcome", "Haha", "Wow", "Love it", "Yes", "Coffee"];
+const coversOf = (list = words): GifCovers => ({ ok: true, words: list.map((word, index) => ({ word, still: `https://static.klipy.com/ii/sm/${index}.webp`, width: 90, height: 50 + index * 4 })) });
+
+/** A search whose asks the test answers by hand, and whose covers come as given, once asked. */
+function fakeGifs(covers: () => Promise<GifCovers> = async () => coversOf()): Gifs & { asked: Asked[], coversAsked: number } {
     const asked: Asked[] = [];
-    return {
+    const fake = {
         asked,
+        coversAsked: 0,
         isOn: () => true,
-        search: (query, page) => new Promise(resolve => asked.push({ query, page, answer: resolve })),
+        search: (query: string, page: number) => new Promise<GifSearchAnswer>(resolve => asked.push({ query, page, answer: resolve })),
+        covers: () => {
+            fake.coversAsked++;
+            return covers();
+        },
         turnOff: () => undefined
     };
+    return fake;
 }
 
 let wrapper: VueWrapper | null = null;
@@ -86,28 +99,89 @@ async function answered(gifs: ReturnType<typeof fakeGifs>, items: GifResult[], h
 }
 
 describe("the GIF picker", () => {
-    test("opens on its search, \"Search KLIPY\", with the suggestions before anything is typed, and KLIPY named at its foot", async () => {
+    test("opens on its search, \"Search KLIPY\", with the topic tiles before anything is typed, and KLIPY named at its foot", async () => {
         const gifs = fakeGifs();
         await open(gifs);
 
         expect(picker().getAttribute("role")).toBe("dialog");
         expect(search().getAttribute("placeholder")).toBe("Search KLIPY");
         expect(document.activeElement).toBe(search());
-        const chips = Array.from(picker().querySelectorAll("[data-testid='gif-suggestion']")).map(chip => chip.textContent?.trim());
-        expect(chips).toEqual(gifSuggestions);
+        // ten tiles in the results' two columns, each its cover still with its word on a plate
+        const columns = Array.from(picker().querySelectorAll("[data-testid='gif-topic-column']"));
+        expect(columns).toHaveLength(2);
+        const tiles = Array.from(picker().querySelectorAll<HTMLElement>("[data-testid='gif-topic']"));
+        expect(tiles.map(tile => tile.querySelector("[data-testid='gif-topic-plate']")?.textContent?.trim()).sort()).toEqual([...words].sort());
+        expect(tiles.every(tile => tile.querySelector("img")?.getAttribute("referrerpolicy") === "no-referrer")).toBe(true);
+        expect(tiles.find(tile => tile.textContent?.trim() === "Thanks")?.getAttribute("aria-label")).toBe("Search Thanks");
         expect(picker().querySelector("[data-testid='gif-foot']")?.textContent?.replace(/\s+/g, " ").trim()).toBe("Powered by KLIPY");
+        expect(gifs.coversAsked).toBe(1);
         expect(gifs.asked).toHaveLength(0);
     });
 
-    test("a suggestion searches at once", async () => {
+    test("a topic tile searches its word at once", async () => {
         const gifs = fakeGifs();
         await open(gifs);
 
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         await nextTick();
 
-        expect(gifs.asked.map(a => a.query)).toEqual([gifSuggestions[0]]);
-        expect(search().value).toBe(gifSuggestions[0]);
+        expect(gifs.asked.map(a => a.query)).toEqual(["Thanks"]);
+        expect(search().value).toBe("Thanks");
+    });
+
+    test("a word with no cover is a plain plate, still a tile that searches", async () => {
+        const gifs = fakeGifs(async () => ({ ok: true, words: [{ word: "Amen", still: null, width: 0, height: 0 }, ...(coversOf(["Yes"]) as { words: [] }).words] }));
+        await open(gifs);
+
+        const amen = Array.from(picker().querySelectorAll<HTMLElement>("[data-testid='gif-topic']")).find(tile => tile.textContent?.trim() === "Amen");
+        expect(amen?.querySelector("img")).toBeNull();
+        expect(amen?.querySelector("[data-testid='gif-topic-plate']")?.textContent?.trim()).toBe("Amen");
+        amen?.click();
+        await nextTick();
+        expect(gifs.asked.map(a => a.query)).toEqual(["Amen"]);
+    });
+
+    test("covers that could not load show the error with Try again, which asks for them again", async () => {
+        let isFailing = true;
+        const gifs = fakeGifs(async () => isFailing ? { ok: false } : coversOf());
+        await open(gifs);
+
+        expect(picker().querySelector("[data-testid='gif-topic']")).toBeNull();
+        expect(picker().querySelector("[data-testid='gif-error']")).not.toBeNull();
+        isFailing = false;
+        picker().querySelector<HTMLElement>("[data-testid='gif-retry']")?.click();
+        await flushPromises();
+
+        expect(gifs.coversAsked).toBe(2);
+        expect(picker().querySelectorAll("[data-testid='gif-topic']")).toHaveLength(10);
+        expect(gifs.asked).toHaveLength(0);
+    });
+
+    test("Down from the search goes to the first topic, the arrows move by the columns, and Enter searches it", async () => {
+        const gifs = fakeGifs();
+        await open(gifs);
+
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+        await nextTick();
+        expect(document.activeElement?.textContent?.trim()).toBe("Thanks");
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
+        await nextTick();
+        expect(document.activeElement?.textContent?.trim()).toBe("Praying");
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+        await nextTick();
+        expect(gifs.asked.map(a => a.query)).toEqual(["Praying"]);
+    });
+
+    // The topics give way to the results, and clearing the search brings them back, by the one
+    // entrance every view takes: a rise, which the token sheet takes to nothing under reduced motion.
+    test("each view comes in by the sheet's enter, a fade under reduced motion", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(/\.chat-gif-masonry\s*\{([^}]*)\}/.exec(style)?.[1]).toMatch(/animation:\s*chat-enter var\(--chat-t-base\) var\(--chat-ease-in\)/);
+        expect(style).not.toMatch(/prefers-reduced-motion/);
     });
 
     test("typing asks once after the person stops, and shows the loading tiles meanwhile", async () => {
@@ -128,7 +202,7 @@ describe("the GIF picker", () => {
     test("draws results in two columns, each GIF's preview with no referrer, blurred until it loads", async () => {
         const gifs = fakeGifs();
         await open(gifs);
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         await answered(gifs, [result("a", 100, 100), result("b", 100, 50), result("c", 100, 50)]);
 
         const columns = picker().querySelectorAll("[data-testid='gif-column']");
@@ -153,7 +227,7 @@ describe("the GIF picker", () => {
         const gifs = fakeGifs();
         await open(gifs);
 
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         await answered(gifs, []);
         expect(picker().querySelector("[data-testid='gif-empty']")?.textContent).toContain("No GIFs found");
 
@@ -176,7 +250,7 @@ describe("the GIF picker", () => {
         await open(gifs);
         const live = (): string => document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim() ?? "";
 
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });
         await flushPromises();
         expect(live()).toBe("GIFs can't load right now");
@@ -206,7 +280,7 @@ describe("the GIF picker", () => {
     test("a pick hands the GIF over and closes, giving focus back to what opened it", async () => {
         const gifs = fakeGifs();
         const w = await open(gifs);
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         await answered(gifs, [result("a")]);
 
         picker().querySelector<HTMLElement>("[data-slug='a']")?.click();
@@ -220,7 +294,7 @@ describe("the GIF picker", () => {
     test("Down from the search goes to the first GIF, the arrows move by the columns, and Enter picks", async () => {
         const gifs = fakeGifs();
         const w = await open(gifs);
-        picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
         await answered(gifs, [result("a", 100, 100), result("b", 100, 50), result("c", 100, 50)]);
 
         search().dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
@@ -282,7 +356,7 @@ describe("the GIF picker", () => {
         try {
             const gifs = fakeGifs();
             await open(gifs);
-            picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+            picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
             await answered(gifs, [result("a"), result("b")], true);
 
             const end = seen.find(observer => observer.watched.length > 0);
