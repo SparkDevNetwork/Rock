@@ -121,15 +121,16 @@ describe("the chat's text boxes", () => {
                 // The ring is drawn by a wrapper: a chat-field box, or the rename field's setting
                 // group, whose inner box the sheet rings by its own selector. A bare input has none.
                 const isRename = /\bchat-rn-in\b/.test(tag);
-                const isRinged = holders.some(classes => isRename ? /\bchat-rn-grp\b/.test(classes) : /\bchat-field\b/.test(classes));
-                if (!/\bchat-field-input\b/.test(tag) || !isRinged) {
+                const isRinged = holders.some(classes => isRename ? /\bchat-rn-grp\b/.test(classes) : /\bchat-field\b|\bchat-fld-box\b/.test(classes));
+                if (!/\bchat-field-input\b|\bchat-fld-input\b/.test(tag) || !isRinged) {
                     offenders.push(path);
                 }
             }
         }
 
-        // The sidebar's search, the directory's, the emoji picker's, the GIF picker's, the members
-        // filter, the leader search, the people picker's field and the rename field.
+        // The sidebar's search, the directory's, the emoji picker's, the members filter, the leader
+        // search, the people picker's field, the rename field and the shared field part's, which
+        // the GIF picker's search is drawn with.
         expect(found).toBe(8);
         // The rename field's ring is the sheet's second selector in the wrapper's rule.
         expect(ruleBody(sheet, ".chat-shell .chat-field:focus-within")).not.toBeNull();
@@ -143,7 +144,8 @@ describe("the chat's text boxes", () => {
         for (const path of obsFiles(shellFolder)) {
             const text = readFileSync(path, "utf8");
             const styleStart = text.indexOf("<style");
-            if (styleStart === -1) {
+            // The shared field part owns its ring and its input's reset, as the sheet does for the boxes not yet moved onto it.
+            if (styleStart === -1 || path.endsWith("field.partial.obs")) {
                 continue;
             }
             const styles = text.slice(styleStart, text.indexOf("</style>", styleStart));

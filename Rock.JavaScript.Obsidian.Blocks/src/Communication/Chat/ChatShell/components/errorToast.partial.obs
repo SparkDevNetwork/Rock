@@ -47,13 +47,14 @@
     let raised: string[] = [];
 
     // Failures first. A failure stays until it is let go; a notice passes after the toast life.
+    // Each mirrors the shell's own list, so it goes when the shell drops it, never before.
     watch(() => [props.errors, props.notices] as const, ([errors, notices]) => {
         const items: NoticeItem[] = [
             ...errors
                 .filter(e => e.severity !== "degraded")
-                .map((e): NoticeItem => ({ key: `error ${errorKey(e)}`, code: e.code, text: messageForError(e), tone: "failure", onDismiss: () => emit("dismiss", e) })),
+                .map((e): NoticeItem => ({ key: `error ${errorKey(e)}`, code: e.code, text: messageForError(e), tone: "failure", isOwned: true, onDismiss: () => emit("dismiss", e) })),
             ...notices
-                .map((n): NoticeItem => ({ key: `notice ${n.code}`, code: n.code, text: n.text, icon: n.icon, onDismiss: () => emit("dismissNotice", n) }))
+                .map((n): NoticeItem => ({ key: `notice ${n.code}`, code: n.code, text: n.text, icon: n.icon, isOwned: true, onDismiss: () => emit("dismissNotice", n) }))
         ];
         const keys = items.map(item => item.key);
 

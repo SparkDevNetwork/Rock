@@ -154,6 +154,23 @@ describe("the notices", () => {
         expect(notices.items.value).toEqual([]);
     });
 
+    test("a notice mirroring its owner's state only tells the owner when let go, and stays until taken back", async () => {
+        const onDismiss = jest.fn();
+        const { wrapper, notices } = drawHost();
+        drawn = wrapper;
+
+        notices.show({ key: "rate", text: "Slow down a little.", tone: "failure", isOwned: true, onDismiss });
+        await nextTick();
+        await pill(wrapper, "rate").get("button[aria-label='Dismiss']").trigger("click");
+
+        expect(onDismiss).toHaveBeenCalledTimes(1);
+        expect(pill(wrapper, "rate").exists()).toBe(true);
+
+        notices.withdraw("rate");
+        await nextTick();
+        expect(notices.items.value).toEqual([]);
+    });
+
     test("a notice its owner takes back goes quietly, and its timer with it", async () => {
         jest.useFakeTimers();
         const onDismiss = jest.fn();

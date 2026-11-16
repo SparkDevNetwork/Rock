@@ -53,6 +53,13 @@ export type NoticeItem = {
 
     /** Told once when the person lets it go or its life ends, never when its owner takes it back. */
     onDismiss?: () => void;
+
+    /**
+     * Mirrors its owner's own state, as the shell's failures do: letting it go or its life ending
+     * only tells the owner, and it goes when the owner takes it back, so it never disagrees with
+     * the state it shows.
+     */
+    isOwned?: boolean;
 };
 
 export type Notices = {
@@ -61,7 +68,7 @@ export type Notices = {
     /** Raises a notice, or replaces the one under its key where it stands. */
     show(item: NoticeItem): void;
 
-    /** The person let it go, or its life ended: its owner is told. */
+    /** The person let it go, or its life ended: its owner is told, and it goes unless its owner holds it. */
     dismiss(key: string): void;
 
     /** Its owner took it back: it goes quietly. */
@@ -100,7 +107,11 @@ export function createNotices(): Notices {
         },
 
         dismiss(key: string): void {
-            take(key)?.onDismiss?.();
+            const item = items.value.find(one => one.key === key);
+            if (item && !item.isOwned) {
+                take(key);
+            }
+            item?.onDismiss?.();
         },
 
         withdraw(key: string): void {
