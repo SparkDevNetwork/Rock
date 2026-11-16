@@ -1694,6 +1694,49 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #endregion A ban on the one managing
 
+        #region A group that grants a security role
+
+        [TestMethod]
+        public void ChatNeverChangesWhoHoldsASecurityRoleExceptByRocksOwnManageMembersRight()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var cy = scene.AddChatPerson( "Cy" );
+                var dee = scene.AddChatPerson( "Dee" );
+                var lee = scene.AddChatPerson( "Lee" );
+                var admin = scene.AddChatPerson( "Admin" );
+                scene.MakeChatAdministrator( admin );
+                var manager = scene.AddManagerRole();
+
+                // The fixture's type is public, pinned and leavable; the group grants a role.
+                var role = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Staff role", g => g.IsSecurityRole = true );
+                scene.Fixture.AddMember( role, bo );
+                scene.Fixture.AddMember( role, admin );
+                scene.Fixture.AddMember( role, lee, m => m.GroupRoleId = manager );
+
+                Assert.AreEqual( "door.not_found", scene.Join( ada, role ).Code, "a role is never public or pinned, so a stranger cannot know of it" );
+                Assert.AreEqual( 0, scene.Memberships( role, ada ).Count, "and no row was written" );
+
+                Assert.AreEqual( "door.not_allowed", scene.Leave( bo, role ).Code, "nor is it left from chat" );
+                CollectionAssert.Contains( scene.ActiveMembers( role ), bo );
+
+                // A Chat Administrator's right to manage every channel does not reach a role.
+                Assert.IsFalse( scene.Rights( admin, role ).CanManageMembers );
+                Assert.AreEqual( "door.not_allowed", scene.Add( admin, role, scene.Alias( cy ) ).Code );
+                Assert.AreEqual( "door.not_allowed", scene.Remove( admin, role, scene.Alias( bo ) ).Code );
+                CollectionAssert.DoesNotContain( scene.ActiveMembers( role ), cy );
+                CollectionAssert.Contains( scene.ActiveMembers( role ), bo );
+
+                // Rock's own Manage Members right still does.
+                Assert.IsTrue( scene.Rights( lee, role ).CanManageMembers );
+                Assert.AreEqual( "ok", scene.Add( lee, role, scene.Alias( dee ) ).Code );
+                CollectionAssert.Contains( scene.ActiveMembers( role ), dee );
+            }
+        }
+
+        #endregion A group that grants a security role
 
         #region An archived banned row
 

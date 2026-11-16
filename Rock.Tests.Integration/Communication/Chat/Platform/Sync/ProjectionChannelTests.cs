@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Data;
 using Rock.Model;
 using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Web.Cache;
 
 namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
 {
@@ -119,6 +120,60 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
         }
 
         #endregion Archived and deactivated
+
+        #region Security roles
+
+        [TestMethod]
+        public void AGroupThatGrantsASecurityRole_IsProjectedPrivateNotPinnedAndNotLeavable()
+        {
+            // Joining or leaving in chat writes Rock's group membership, so a group whose members
+            // hold a security role is never open to either; its sibling keeps its type's settings.
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var role = fixture.AddChannel( fixture.SharedGroupTypeId, "Staff role", group => group.IsSecurityRole = true );
+                var sibling = fixture.AddChannel( fixture.SharedGroupTypeId, "Staff chat" );
+
+                var payload = fixture.Project();
+
+                AssertReach( payload, role, false, "a group marked a security role" );
+                AssertReach( payload, sibling, true, "its plain sibling under the same public, pinned, leavable type" );
+            }
+        }
+
+        [TestMethod]
+        public void AGroupOfTheSecurityRoleType_IsProjectedPrivateNotPinnedAndNotLeavable()
+        {
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var securityRoleTypeId = GroupTypeCache.GetSecurityRoleGroupType().Id;
+                var role = fixture.AddChannel( securityRoleTypeId, "Role by its type", group =>
+                {
+                    group.IsChatChannelPublicOverride = true;
+                    group.IsChatChannelAlwaysShownOverride = true;
+                    group.IsLeavingChatChannelAllowedOverride = true;
+                } );
+                fixture.EnableChatForGroupTypeOf( role );
+
+                var payload = fixture.Project();
+
+                AssertReach( payload, role, false, "a group of the security role type, whatever its own settings say" );
+            }
+        }
+
+        /// <summary>
+        /// Asserts a channel was projected public, always shown and leavable, or none of the three.
+        /// </summary>
+        private static void AssertReach( ProjectedPayload payload, Guid channelGuid, bool expected, string what )
+        {
+            var row = payload.Row( "channels", "channel_id", channelGuid );
+
+            Assert.IsNotNull( row, $"{what} was not projected at all" );
+            Assert.AreEqual( expected, ( bool ) payload.Value( "channels", row, "is_public" ), $"{what}: is_public" );
+            Assert.AreEqual( expected, ( bool ) payload.Value( "channels", row, "always_shown" ), $"{what}: always_shown" );
+            Assert.AreEqual( expected, ( bool ) payload.Value( "channels", row, "leave_allowed" ), $"{what}: leave_allowed" );
+        }
+
+        #endregion Security roles
 
         #region Icon
 
