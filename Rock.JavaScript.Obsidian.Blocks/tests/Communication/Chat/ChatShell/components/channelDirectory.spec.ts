@@ -396,6 +396,10 @@ describe("a row", () => {
         const name = rowOf(w, worship.channel_id).get("[data-testid='directory-row-name']");
         expect(name.text()).toBe("Worship Team");
         expect(name.get("mark").text()).toBe("Team");
+        // the one shared mark, underlined, never a padded box that splits the word
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
+        expect(name.get("mark").classes()).toContain("chat-match");
+        expect(source.slice(source.indexOf("<style"), source.indexOf("</style>"))).not.toMatch(/mark/);
     });
 
     test("marks nothing without a search", () => {

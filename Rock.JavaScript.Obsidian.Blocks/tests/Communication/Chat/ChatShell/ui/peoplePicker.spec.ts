@@ -27,7 +27,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PeoplePicker from "../../../../../src/Communication/Chat/ChatShell/ui/peoplePicker.partial.obs";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, fillsAndRings, setsBothRings, shellFolder, StatusStore } from "../statusStore";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, fillsAndRings, setsBothRings, shellFolder, StatusStore, styleRules } from "../statusStore";
 
 /** One person as chat_search_people answers them, exactly its keys. */
 function person(n: number, nickName: string, lastName: string, inRoom?: boolean): PersonRow {
@@ -121,6 +121,20 @@ describe("over the page", () => {
         await answer(w, "par", [aaron]);
 
         expect(w.get("[data-testid='pp-option'] mark").text()).toBe("Par");
+    });
+
+    // The wash in the active row's own tint hid the match on the row Enter would pick; the one
+    // shared mark underlines it in the church's colour on every row, the active one included.
+    test("marks the match with the one shared mark on the active row too, with no look of its own", async () => {
+        const w = draw({ isMatchMarked: true });
+        input(w).focus();
+        await w.get("[data-testid='pp-input']").trigger("focus");
+        await answer(w, "a", [aaron, andre]);
+
+        const active = w.get("[data-testid='pp-option'].is-active");
+        expect(active.get("mark").classes()).toContain("chat-match");
+        expect(active.get("mark").text()).toBe("A");
+        expect(styleRules(pickerFile, /mark/)).toEqual([]);
     });
 });
 
