@@ -193,6 +193,25 @@ namespace Rock.Rest.Controllers
 
             SetProxyCreation( true );
 
+            /*
+                11/16/2026 - MSE
+
+                Following a record shows it in the person's followed items and sends them
+                following events about it, so the person must be able to view it. People can
+                still follow other people, because person VIEW is allowed by default and
+                followed people are stored as person aliases, which have no record security.
+                Unfollowing is not checked, so a person can always stop following. The Guid
+                overload calls this method, so it is covered too.
+
+                Reason: Do not create followings for records the caller cannot view.
+            */
+            var target = Reflection.GetIEntityForEntityType( entityTypeId, entityId, Service.Context );
+
+            if ( target is Rock.Security.ISecured securedTarget && !securedTarget.IsAuthorized( Rock.Security.Authorization.VIEW, person ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Forbidden );
+            }
+
             var following = new Following
             {
                 EntityTypeId = entityTypeId,
