@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Model.CMS.ContentChannelItem.Options;
+using Rock.Security;
 using Rock.Utility.ContentLibraryApi;
 using Rock.ViewModels.Blocks.Cms.LibraryViewer;
 using Rock.Web.Cache;
@@ -87,6 +88,7 @@ namespace Rock.Blocks.Cms
                     var contentChannelData = GetCurrentContentChannelQuery( rockContext )
                         .Select( c => new
                         {
+                            c.Id,
                             c.ContentLibraryConfigurationJson,
                             c.ContentChannelType.DateRangeType,
                             c.ContentChannelType.IncludeTime,
@@ -111,7 +113,18 @@ namespace Rock.Blocks.Cms
                     isDownloadDateShown = contentChannelData.DateRangeType != ContentChannelDateType.NoDates;
                     isDownloadDateShownAsDateRange = contentChannelData.DateRangeType == ContentChannelDateType.DateRange;
                     isDownloadDateShownWithTime = contentChannelData.IncludeTime;
-                    isDownloadStatusShown = !contentChannelData.DisableStatus;
+
+                    /*
+                        11/16/2026 - MSE
+
+                        Choosing the status of a downloaded item is an approval action. The
+                        download only honors the status for people with APPROVE on the channel,
+                        so only show the status picker to them.
+
+                        Reason: Do not offer a status choice the download will ignore.
+                    */
+                    isDownloadStatusShown = !contentChannelData.DisableStatus
+                        && ( ContentChannelCache.Get( contentChannelData.Id )?.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() ) ?? false );
 
                     validationResults = new LibraryViewerValidationResultsBag
                     {
@@ -153,6 +166,7 @@ namespace Rock.Blocks.Cms
                 var contentChannelData = GetCurrentContentChannelQuery( rockContext )
                     .Select( c => new
                     {
+                        c.Id,
                         c.Guid,
                         c.ContentLibraryConfigurationJson
                     } )
@@ -163,6 +177,23 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( $"{PageParameterKey.ContentChannelIdKey} is invalid." );
                 }
 
+                /*
+                    11/16/2026 - MSE
+
+                    Downloading creates a new item in the channel or overwrites the item
+                    that was already downloaded from the library, so it needs EDIT on the
+                    channel. The channel comes from the page parameter, which any person
+                    who can open this page can set.
+
+                    Reason: Prevent people without EDIT on a channel from adding or overwriting its items.
+                */
+                var contentChannelCache = ContentChannelCache.Get( contentChannelData.Id );
+
+                if ( contentChannelCache == null || !contentChannelCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    return ActionBadRequest( "You are not authorized to add items to this content channel." );
+                }
+
                 var contentLibraryConfiguration = contentChannelData.ContentLibraryConfigurationJson?.FromJsonOrNull<ContentLibraryConfiguration>();
 
                 if ( contentLibraryConfiguration?.IsEnabled != true )
@@ -170,16 +201,51 @@ namespace Rock.Blocks.Cms
                     return ActionBadRequest( "This channel is not configured to use the Content Library. Please update the configuration of this content channel." );
                 }
 
+                var contentChannelItemService = new ContentChannelItemService( rockContext );
+
+                /*
+                    11/16/2026 - MSE
+
+                    If this library item was already downloaded into the channel, the download
+                    overwrites that item, and the item can have its own security that is stricter
+                    than the channel's. Look it up the same way the service does, require EDIT on
+                    the item, and use APPROVE on the item (not the channel) to decide whether the
+                    posted status is honored.
+
+                    Reason: Prevent people with channel level rights from overwriting or approving an item whose own security denies it.
+                */
+                var existingContentChannelItem = contentChannelItemService.AsNoFilter()
+                    .Where( c => c.ContentChannelId == contentChannelData.Id && c.ContentLibrarySourceIdentifier == bag.ContentLibraryItemGuid )
+                    .FirstOrDefault();
+
+                if ( existingContentChannelItem != null && !existingContentChannelItem.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+                {
+                    return ActionBadRequest( "You are not authorized to edit the existing item in this content channel." );
+                }
+
+                var canApprove = existingContentChannelItem != null
+                    ? existingContentChannelItem.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() )
+                    : contentChannelCache.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() );
+
                 try
                 {
-                    var contentChannelItemService = new ContentChannelItemService( rockContext );
                     var contentLibraryApiItem = contentChannelItemService.AddFromContentLibrary(
                         new ContentLibraryItemDownloadOptions
                         {
                             ContentLibraryItemGuidToDownload = bag.ContentLibraryItemGuid,
                             DownloadIntoContentChannelGuid = contentChannelData.Guid,
                             CurrentPersonPerformingDownload = GetCurrentPerson(),
-                            ContentChannelItemStatusOverride = bag.Status,
+                            /*
+                                11/16/2026 - MSE
+
+                                Choosing the status of the item (for example Approved) is an
+                                approval action, so only honor the posted status for people with
+                                APPROVE on the existing item, or on the channel when the item is
+                                new. Otherwise the service applies the channel's own approval rule.
+
+                                Reason: Prevent people without APPROVE from skipping the channel's approval rule.
+                            */
+                            ContentChannelItemStatusOverride = canApprove ? bag.Status : null,
                             ContentChannelItemStartDateOverride = bag.StartDate,
                             ContentChannelItemEndDateOverride = bag.EndDate,
                         } );
