@@ -30,10 +30,11 @@
 //          roomTitles: Record<string, string> (each conversation's title by channel id, as the
 //          header shows it), roomKinds: Record<string, "channel" | "person" | "group">,
 //          publicRooms: Record<string, boolean> (whether each channel is public, which draws its
-//          hash rather than its lock, as the sidebar does); the reader and the phone flag come from
-//          the session
+//          hash rather than its lock, as the sidebar does), loadMore: () => Promise<void> (asks the
+//          next page, settling once it is in or its failure is the list's error); the reader and
+//          the phone flag come from the session
 //   emits: open(rootId: number, channelId: string), tab(tab: "channel" | "all"), refresh,
-//          follow(rootId: number, isFollowing: boolean), loadMore, close
+//          follow(rootId: number, isFollowing: boolean), close
 //   marks: thread-row (each row, class is-unread and is-off), thread-row-open (the row's button,
 //          labelled), thread-row-follow (aria-pressed, changed at once), thread-row-mentions,
 //          thread-row-status ("Following" or "Not following"), thread-row-error, thread-skeleton,
@@ -632,5 +633,71 @@ describe("the shared list row", () => {
         expect(sheet).not.toMatch(/\.chat-ls-(hit|in)\b/);
         expect(sheet).not.toMatch(/\.chat-ls-row:hover/);
         expect(source).not.toMatch(/:deep\(\.chat-ls-follow/);
+    });
+});
+
+// The next page is asked of the loader the panel is given, as the end of the list scrolls into
+// view; its promise lets the panel ask again after a page that leaves the end in view.
+describe("loading more", () => {
+    const original = window.IntersectionObserver;
+    let report: (isIntersecting: boolean) => void = () => undefined;
+
+    beforeEach(() => {
+        window.IntersectionObserver = class {
+            constructor(callback: IntersectionObserverCallback) {
+                report = isIntersecting => callback([{ isIntersecting } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+            }
+            observe(): void { /* reported by the test */ }
+            unobserve(): void { /* as above */ }
+            disconnect(): void { /* as above */ }
+            takeRecords(): IntersectionObserverEntry[] {
+                return [];
+            }
+        } as unknown as typeof IntersectionObserver;
+    });
+
+    afterEach(() => {
+        window.IntersectionObserver = original;
+    });
+
+    /** A loader whose pages wait unanswered, after the answers given for its first asks. */
+    function loader(...first: Array<() => Promise<void>>): jest.Mock<Promise<void>, []> {
+        const load = jest.fn((): Promise<void> => new Promise(() => undefined));
+        first.forEach(answer => load.mockImplementationOnce(answer));
+        return load;
+    }
+
+    async function landed(): Promise<void> {
+        for (let i = 0; i < 5; i++) {
+            await Promise.resolve();
+        }
+        await nextTick();
+    }
+
+    test("asks again at once when the page that landed leaves the end of the list in view", async () => {
+        const loadMore = loader(() => Promise.resolve());
+        draw({ hasMore: true, loadMore });
+        await nextTick();
+
+        report(true);
+        await landed();
+
+        expect(loadMore).toHaveBeenCalledTimes(2);
+    });
+
+    // A failed page says so in place, with its way to try again; asking again by itself would
+    // only fail again while the end stays in view.
+    test("asks nothing while the list's failure is shown, and asks once it is gone with the end still in view", async () => {
+        const loadMore = loader();
+        const w = draw({ hasMore: true, error: offline, loadMore });
+        await nextTick();
+
+        report(true);
+        await landed();
+        expect(loadMore).not.toHaveBeenCalled();
+
+        await w.setProps({ error: null });
+        await landed();
+        expect(loadMore).toHaveBeenCalledTimes(1);
     });
 });
