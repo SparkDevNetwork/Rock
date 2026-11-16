@@ -3,11 +3,16 @@
     <Popover :key="step"
              :popover="pop"
              :label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
-             role="dialog"
+             :role="pop.isSheet.value ? '' : 'dialog'"
              :isPill="step === 'tray'"
+             :sheetHeight="step === 'tray' ? 'content' : 'picker'"
+             tabindex="-1"
              @keydown="onKeydown">
-        <div class="chat-picker" :class="{ 'is-tray': step === 'tray' }">
-            <!-- The popover is drawn afresh for each step, so the full picker pops in where the tray was. -->
+        <div class="chat-picker" :class="{ 'is-tray': step === 'tray', 'is-sheet': pop.isSheet.value }">
+            <!--
+                The popover is drawn afresh for each step, so the full picker pops in where the tray
+                was. A sheet on a phone is the dialog itself, and on a touch screen it takes focus.
+            -->
             <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
                 <button v-for="(item, index) in trayItems"
                         :key="item.code"
@@ -192,6 +197,11 @@
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
+}
+
+/* In a sheet the body takes the sheet's height, whatever the section. */
+.chat-picker.is-sheet .chat-picker-body {
+    height: auto;
 }
 
 .chat-picker-label {
@@ -456,6 +466,7 @@ img.chat-picker-prev {
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { CatalogEmoji, EmojiGlyph } from "../types.partial";
 
     // #region Types
@@ -589,10 +600,13 @@ img.chat-picker-prev {
      * The popover the picker is drawn in. Placed on its anchor, it closes on a press outside the
      * control that opened it, which may be another, as a message's add chip opening it on the
      * bubble: the opener is its anchor, the bubble only where it is placed. Focus goes back to the
-     * opener, or to the message's row once a choice has taken the opener away.
+     * opener, or to the message's row once a choice has taken the opener away. On a phone it is a
+     * bottom sheet instead, as every picker there is.
      */
+    const session = useChatSession();
     const pop = usePopover(computed(() => (props.opener ?? props.anchor) ?? undefined), ref<HTMLElement>(), {
         placement,
+        isSheet: () => session.isPhone.value,
         virtualAnchor: () => props.opener && props.anchor ? props.anchor.getBoundingClientRect() : null,
         returnTo: () => props.opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") ?? null : props.opener ?? props.anchor
     });
