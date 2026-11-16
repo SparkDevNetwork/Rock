@@ -102,6 +102,39 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
             return bag;
         }
 
+        /// <inheritdoc/>
+        public override bool IsResponseValid( InteractiveExperienceAction action, string response )
+        {
+            /*
+                11/16/2026 - MSE
+
+                The participant sends the text of the answer they picked. Only
+                accept a response that is exactly one of the configured answers,
+                otherwise anybody could add their own text to the results.
+
+                The answers are parsed the same way as in GetRenderConfiguration()
+                so every choice that was offered to the participant stays valid.
+
+                Reason: Prevent unoffered poll choices from being recorded.
+            */
+            if ( response == null )
+            {
+                return false;
+            }
+
+            if ( action.Attributes == null )
+            {
+                LoadAttributes( action );
+            }
+
+            var rawAnswers = GetAttributeValue( action, AttributeKey.Answers );
+            var values = rawAnswers?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ) ?? new string[0];
+
+            return values
+                .Select( s => System.Net.WebUtility.UrlDecode( s ) )
+                .Contains( response, StringComparer.Ordinal );
+        }
+
         #endregion
     }
 }
