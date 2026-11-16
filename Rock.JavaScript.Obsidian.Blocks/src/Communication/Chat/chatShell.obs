@@ -729,11 +729,10 @@
     import { problemReportKey } from "./ChatShell/problemReport.partial";
     import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
-    import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
     import { useFrameView } from "./ChatShell/composables/useFrameView.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
-    import { useDialogs } from "./ChatShell/composables/useDialogs.partial";
+    import { useOverlaysView } from "./ChatShell/composables/useOverlaysView.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
     import { refusalMessage, startWaitMessage } from "./ChatShell/shellSession.partial";
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
@@ -971,16 +970,17 @@
         return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     });
 
-    /** The quotes, the editor and the delete confirm, and where a message's bar and menu send their actions. */
+    /**
+     * Everything drawn over the frame: the dialogs, the card, and the message actions' quotes,
+     * editor and confirms, with where a message's bar and menu send their actions.
+     */
     const {
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        onCardToggleDetails, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
-        askBlock, blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock
-    } = useMessageActionsView({
-        shell, activeChannelId, drawnThread, personAliasGuid, roomTitles, roomKinds, rootElement, panelElement, openReactionPicker,
-        // The card is the dialogs', made below since they take this view's askBlock in turn.
-        openCard: (...card) => openCard(...card)
-    });
+        blockTitle, blockReturnTarget, onCancelBlock, onConfirmBlock
+    } = useOverlaysView({ shell, activeChannelId, personAliasGuid, rootElement, frame, openReactionPicker, closeReactionPicker });
 
     const {
         conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
@@ -1002,13 +1002,6 @@
     // The chat's one voice for a screen reader, speaking from its root; the shell's rooms and
     // settings speak in it too.
     announcer = provideAnnouncer(rootElement);
-
-    const {
-        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, openCard, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
-        onCardToggleDetails, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers
-    } = useDialogs({
-        shell, activeChannelId, panelKind, mainView, rootElement, panelElement, isPhone, closePanel, openFromMainView, openMainView, onListPanel, closeReactionPicker, askBlock
-    });
 
     // #endregion Computed Values
 
