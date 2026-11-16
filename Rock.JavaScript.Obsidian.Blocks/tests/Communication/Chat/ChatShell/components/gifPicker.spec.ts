@@ -25,6 +25,7 @@ import { nextTick } from "vue";
 import GifPicker from "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs";
 import { GifSearchAnswer, Gifs, gifSuggestions } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 function result(slug: string, width = 200, height = 112): GifResult {
     return {
@@ -63,10 +64,10 @@ afterEach(() => {
     jest.useRealTimers();
 });
 
-async function open(gifs: Gifs, props: Record<string, unknown> = {}): Promise<VueWrapper> {
+async function open(gifs: Gifs, { isPhone = false }: { isPhone?: boolean } = {}): Promise<VueWrapper> {
     anchor = document.createElement("button");
     document.body.appendChild(anchor);
-    wrapper = mount(GifPicker, { props: { gifs, anchor, ...props }, attachTo: document.body });
+    wrapper = mount(GifPicker, { props: { gifs, anchor }, attachTo: document.body, global: { provide: providedSession({ isPhone }) } });
     await flushPromises();
     return wrapper;
 }
@@ -190,12 +191,12 @@ describe("the GIF picker", () => {
     test("the search ends as the picker starts to leave, so nothing is asked or written on its way out", async () => {
         jest.useFakeTimers();
         const gifs = fakeGifs();
-        const w = await open(gifs);
+        await open(gifs);
 
         search().value = "thanks";
         search().dispatchEvent(new Event("input"));
         await nextTick();
-        (w.findComponent({ ref: "shell" }).vm as unknown as { close: (isFocusReturned: boolean) => void }).close(true);
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
         await nextTick();
         jest.advanceTimersByTime(1000);
 
@@ -240,8 +241,8 @@ describe("the GIF picker", () => {
     });
 
     test("a sheet over a scrim is modal for a screen reader, a popover is not", async () => {
-        await open(fakeGifs(), { isSheet: true });
-        expect(picker().getAttribute("aria-modal")).toBe("true");
+        await open(fakeGifs(), { isPhone: true });
+        expect(picker().closest("[data-testid='sheet']")?.getAttribute("aria-modal")).toBe("true");
         wrapper?.unmount();
         wrapper = null;
 
@@ -263,9 +264,9 @@ describe("the GIF picker", () => {
 
     test("on a phone it is a bottom sheet over a scrim", async () => {
         const gifs = fakeGifs();
-        await open(gifs, { isSheet: true });
+        await open(gifs, { isPhone: true });
 
-        expect(picker().classList).toContain("is-sheet");
-        expect(document.querySelector("[data-testid='picker-scrim']")).not.toBeNull();
+        expect(picker().closest("[data-testid='sheet']")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
     });
 });

@@ -31,6 +31,7 @@ import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/c
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { ChatPerson, FaceStatus, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
+import { providedSession } from "../sessionShapes";
 import { busyNow, createStatusStore, onlineNow, StatusStore, told, viewer } from "../statusStore";
 
 /** The composer's own style block, for the rules jsdom cannot lay out. */
@@ -239,7 +240,7 @@ describe("the composer's key hint", () => {
     });
 
     test("is left out on a phone, which has no Enter key worth naming", () => {
-        const wrapper = mountComposer({ props: { title: "Anna Reyes", isPhone: true } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" }, global: { provide: providedSession({ isPhone: true }) } });
 
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
@@ -1260,9 +1261,9 @@ describe("the composer's GIFs", () => {
     test("on a phone the \"+\" opens as a bottom sheet, off a phone as a menu beside it", async () => {
         const tray = createAttachments(harness().dependencies).trayFor(place, place);
         const phone = mountComposer({
-            props: { title: "Anna Reyes", tray, isPhone: true },
+            props: { title: "Anna Reyes", tray },
             attachTo: document.body,
-            global: { provide: { [gifsKey as symbol]: fakeGifs() } }
+            global: { provide: { [gifsKey as symbol]: fakeGifs(), ...providedSession({ isPhone: true }) } }
         });
 
         await phone.get("[data-testid='composer-add']").trigger("click");

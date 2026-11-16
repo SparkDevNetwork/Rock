@@ -115,7 +115,6 @@
                           icon="plus"
                           label="Add a GIF or file"
                           placement="top-start"
-                          :isSheet="isPhone"
                           :items="addItems"
                           :anchorAttrs="{ disabled: isDisabled, 'data-testid': 'composer-add', class: { 'is-open': isGifOpen } }"
                           @select="onAddSelect" />
@@ -183,7 +182,6 @@
             <GifPicker v-if="isGifOpen && isGifOffered && gifs"
                        :gifs="gifs"
                        :anchor="addAnchor"
-                       :isSheet="isPhone"
                        @pick="onGifPick"
                        @close="onGifClose" />
 
@@ -629,6 +627,7 @@
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { gifsKey } from "../composables/useGifs.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { ChatPerson, DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
@@ -659,12 +658,6 @@
 
         /** Whether the open conversation is a channel, which draws the squarer box of its look. */
         isChannel: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the chat is in its phone layout, which has tighter padding and no key hint. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -831,6 +824,9 @@
 
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
     const isAlsoSent = ref(props.isAlsoSent);
+
+    /** Whether the chat is in its phone layout, which has tighter padding and no key hint. */
+    const isPhone = useChatSession().isPhone;
 
     const editor = ref<InstanceType<typeof ChipEditor>>();
     const emojiButton = ref<InstanceType<typeof IconButton>>();
