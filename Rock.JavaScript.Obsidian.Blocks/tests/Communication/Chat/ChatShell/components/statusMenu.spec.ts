@@ -27,6 +27,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import StatusMenu from "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs";
+import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
 import Menu from "../../../../../src/Communication/Chat/ChatShell/ui/menu.partial.obs";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
@@ -151,11 +152,11 @@ afterEach(() => {
 });
 
 describe("the items", () => {
-    test("are six radio items in one set: Automatic, Busy's four ends, Appear offline", async () => {
+    test("are six radio items in one set: Automatic, Busy's four ends short to long, Appear offline", async () => {
         const w = mountMenu();
         await openMenu(w);
 
-        expect(keys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+        expect(keys()).toEqual(["auto", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
         expect(menu()!.querySelectorAll("[role='menuitem']")).toHaveLength(0);
         // one set: nothing groups a part of them, so the separators and the heading make no sets of their own
         expect(menu()!.querySelector("[role='group']")).toBeNull();
@@ -180,13 +181,13 @@ describe("the items", () => {
         expect(plain(heading.textContent!)).toBe("Busy · notifications paused");
         // between Automatic and the first end
         expect(heading.compareDocumentPosition(itemOf("auto")) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
-        expect(heading.compareDocumentPosition(itemOf("busy-morning")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(heading.compareDocumentPosition(itemOf("busy-1h")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
         expect(items().map(titleOf)).toEqual([
-            "Automatic", "Until tomorrow, 8:00 AM", "For 1 hour", "For 2 hours", "Until I turn it off", "Appear offline"
+            "Automatic", "For 1 hour", "For 2 hours", "Until tomorrow, 8:00 AM", "Until I turn it off", "Appear offline"
         ]);
-        expect(["busy-morning", "busy-1h", "busy-2h", "busy-off"].map(key => nameOf(itemOf(key)))).toEqual([
-            "Busy until tomorrow, 8:00 AM", "Busy for 1 hour", "Busy for 2 hours", "Busy until I turn it off"
+        expect(["busy-1h", "busy-2h", "busy-morning", "busy-off"].map(key => nameOf(itemOf(key)))).toEqual([
+            "Busy for 1 hour", "Busy for 2 hours", "Busy until tomorrow, 8:00 AM", "Busy until I turn it off"
         ]);
     });
 
@@ -249,7 +250,7 @@ describe("the check", () => {
         const w = mountMenu({ choice: { busy_until: end, appear_offline: false } });
         await openMenu(w);
 
-        expect(keys()).toEqual(["auto", "busy-current", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+        expect(keys()).toEqual(["auto", "busy-current", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
         expect(checked()).toEqual(["busy-current"]);
         expect(titleOf(itemOf("busy-current"))).toBe("Until 3:00 PM");
         expect(nameOf(itemOf("busy-current"))).toBe("Busy until 3:00 PM");
@@ -351,20 +352,27 @@ describe("the keyboard", () => {
         expect(document.activeElement).toBe(itemOf("busy-off"));
     });
 
-    test("opens on the morning item while no Busy is chosen, the end a person most often takes", async () => {
+    // Opened on Busy, Enter, Enter from the face set Busy unasked; on what is checked, Enter keeps it.
+    test("opens on what is checked: Appear offline while she appears offline, Automatic while neither", async () => {
         const w = mountMenu({ choice: { busy_until: null, appear_offline: true } });
         await openMenu(w);
 
-        expect(document.activeElement).toBe(itemOf("busy-morning"));
+        expect(document.activeElement).toBe(itemOf("appear_offline"));
+
+        await press("Escape");
+        await w.setProps({ choice: { busy_until: null, appear_offline: false } });
+        await openMenu(w);
+
+        expect(document.activeElement).toBe(itemOf("auto"));
     });
 
     test("moves with the arrows, wraps, and Escape returns focus to the button", async () => {
         const w = mountMenu();
         await openMenu(w);
 
+        // open on Automatic, checked; the shortest Busy is next
         await press("ArrowDown");
         expect(document.activeElement).toBe(itemOf("busy-1h"));
-        await press("ArrowUp");
         await press("ArrowUp");
         expect(document.activeElement).toBe(itemOf("auto"));
         await press("ArrowUp");
@@ -431,7 +439,8 @@ describe("while the church is read only", () => {
         const button = trigger(w);
         // a live button, on a phone too, where no tooltip is ever shown
         expect(button.hasAttribute("aria-disabled")).toBe(false);
-        expect(w.findComponent(IconButton).props("tooltip")).toBe(kind === "face" ? "Set status" : "Change your status");
+        // the face names itself in its tooltip; Change says its words and is named in full
+        expect(kind === "face" ? w.findComponent(IconButton).props("tooltip") : button.getAttribute("aria-label")).toBe(kind === "face" ? "Set status" : "Change your status");
         await openMenu(w);
 
         expect(items().map(item => item.getAttribute("aria-disabled"))).toEqual(Array(6).fill("true"));
@@ -474,6 +483,29 @@ describe("while the church is read only", () => {
 
         expect(style).not.toMatch(/opacity/);
         expect(style).not.toMatch(/aria-disabled/);
+    });
+});
+
+describe("its triggers", () => {
+    // Change was an icon button restyled from outside into a pill; it is the one small line
+    // button every other row's words use, and the face a trigger the menu draws as its own.
+    test("draws Change as the shared small line button with its word", () => {
+        const w = mountMenu({ trigger: "change" });
+        const change = w.findComponent(Button);
+
+        expect(change.exists()).toBe(true);
+        expect(change.props("size")).toBe("sm");
+        expect(change.props("kind")).toBe("line");
+        expect(change.text()).toBe("Change");
+        expect(change.element).toBe(trigger(w));
+        expect(w.findComponent(IconButton).exists()).toBe(false);
+    });
+
+    test("styles its face and its Change itself, reaching into no other part", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/statusMenu.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+        expect(style).not.toMatch(/:deep\(/);
     });
 });
 
