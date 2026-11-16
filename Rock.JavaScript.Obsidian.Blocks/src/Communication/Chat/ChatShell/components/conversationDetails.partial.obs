@@ -371,7 +371,7 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { useChatSession } from "../chatSession.partial";
     import { failureNote } from "../composables/saveRule.partial";
-    import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs } from "../composables/usePrefs.partial";
+    import { NotifyMode, notifyOptionsFor, RoomPrefs } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { LeaveState, RenameState, RoomAnnouncement } from "../composables/useRooms.partial";
     import { failedWords, finalWords, offlineWords } from "../errors.partial";
@@ -490,7 +490,7 @@
 
         /** The settings' newest sentence for screen readers. */
         prefsAnnouncement: {
-            type: Object as PropType<PrefsState["announcement"]>,
+            type: Object as PropType<RoomAnnouncement | null>,
             default: null
         }
     });

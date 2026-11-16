@@ -25,19 +25,17 @@
                 :body="leaderBody"
                 isWide
                 @close="emit('close')">
-            <label class="chat-mb-search chat-rm-search chat-field">
-                <Icon name="search" size="sm" />
-                <input type="search"
-                       class="chat-field-input"
-                       placeholder="Find a member"
-                       aria-label="Find a member to lead"
-                       autocomplete="off"
-                       spellcheck="false"
-                       data-autofocus
-                       data-testid="leader-search"
-                       :value="query"
-                       @input="emit('query', ($event.target as HTMLInputElement).value)" />
-            </label>
+            <Field class="chat-rm-search"
+                   type="search"
+                   leadingIcon="search"
+                   placeholder="Find a member"
+                   aria-label="Find a member to lead"
+                   autocomplete="off"
+                   spellcheck="false"
+                   data-autofocus
+                   data-testid="leader-search"
+                   :modelValue="query"
+                   @update:modelValue="emit('query', $event)" />
 
             <div class="chat-rm-list" role="radiogroup" aria-label="New leader" data-testid="leader-choices">
                 <label v-for="choice in choices"
@@ -60,22 +58,18 @@
                 <div v-if="choices.length === 0 && query.trim()" class="chat-rm-none" data-testid="leader-none">No one in {{ channelName }} matches “{{ query.trim() }}”.</div>
             </div>
 
-            <div v-if="refusal" class="chat-rm-err" role="alert" data-testid="leader-refusal">
-                <Icon name="alert" size="sm" />
+            <div v-if="refusal" class="chat-rm-err" data-testid="leader-refusal">
+                <Icon class="chat-rm-err-ic" name="alert" size="sm" />
                 <span>{{ refusal }}</span>
             </div>
 
             <template #actions>
-                <button type="button" class="chat-dialog-btn is-line" data-testid="dialog-cancel" @click="emit('close')">Cancel</button>
-                <button type="button"
-                        class="chat-dialog-btn is-danger"
+                <Button kind="line" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
+                <Button kind="danger"
                         data-testid="leader-confirm"
-                        :disabled="!pick || undefined"
-                        :aria-busy="isRemoving ? 'true' : undefined"
-                        @click="onLeaderConfirm">
-                    <template v-if="isRemoving"><span class="chat-spinner" aria-hidden="true"></span>Removing</template>
-                    <template v-else>{{ leaderConfirmLabel }}</template>
-                </button>
+                        :disabled="!pick"
+                        :busy="isRemoving"
+                        @click="onLeaderConfirm">{{ isRemoving ? "Removing" : leaderConfirmLabel }}</Button>
             </template>
         </Dialog>
     </div>
@@ -98,8 +92,8 @@
     color: var(--chat-text);
 }
 
-/* The members panel's search pill, as the design reuses it for "Find a member", with room under it. */
-.chat-rm .chat-rm-search {
+/* "Find a member", with room under it before the choices. */
+.chat-rm-search {
     margin: 0 0 8px;
 }
 
@@ -198,7 +192,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-rm-err .chat-ic {
+.chat-rm-err-ic {
     flex: none;
     margin-top: 1px;
     color: var(--chat-danger-ink);
@@ -209,10 +203,13 @@
     import { computed, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
+    import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { RosterMember } from "../types.partial";
     import { useChatSession } from "../chatSession.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
 
     const props = defineProps({
         /** The person being removed; null while nobody is, which draws nothing. */
@@ -272,6 +269,9 @@
 
     /** The reader, who is "(you)" among the choices. */
     const { me } = useChatSession();
+
+    /** The chat's one voice, which speaks from inside the open dialog. */
+    const announcer = useAnnouncer();
 
     /** The person last asked about, kept while the dialog plays its close. */
     const shown = ref<RosterMember | null>(props.member);
@@ -344,6 +344,13 @@
         if (member) {
             shown.value = member;
             pick.value = null;
+        }
+    });
+
+    // The door's refusal is said at once and assertively as its box is drawn; the box is no live region.
+    watch(() => props.refusal, text => {
+        if (text) {
+            announcer.announce(text, "assertive");
         }
     });
 

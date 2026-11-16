@@ -38,6 +38,7 @@ import { reactive } from "vue";
 import { failureWords, finalWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { ChannelStore, RowPrefs } from "../stores/channelStore.partial";
 import { ChatError, FailureWords, SidebarRow } from "../types.partial";
+import type { Politeness } from "../ui/announcer.partial";
 import { Note } from "../ui/settingNote.partial.obs";
 import { ActionNotice } from "./useMessageActions.partial";
 import { createSaveRule, failureNote, SaveChange, saveFailed, SaveOutcome } from "./saveRule.partial";
@@ -114,9 +115,6 @@ export type PrefsState = {
 
     /** Each room's place, by its id; a room not here has saved nothing this visit. */
     rooms: Record<string, RoomPrefs>;
-
-    /** A sentence for screen readers; the count moves on with each, so the same words twice are read twice. */
-    announcement: { text: string, isAssertive: boolean, count: number } | null;
 };
 
 /**
@@ -144,6 +142,9 @@ export type PrefsDependencies = {
 
     /** Shows a toast for a change made from the header: what a notify mode means, or why a change failed. */
     notify: (notice: ActionNotice) => void;
+
+    /** Says a sentence to a screen reader in the chat's one voice; a refusal assertively. */
+    announce: (text: string, politeness?: Politeness) => void;
 
     /** Her status's own reach; without it a status choice is not saved. */
     status?: StatusDependencies;
@@ -294,19 +295,13 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         isMeRead: false,
         meNotes: {},
         ownInputAt: 0,
-        rooms: {},
-        announcement: null
+        rooms: {}
     }) as PrefsState;
 
     let isStopped = false;
-    let announcementCount = 0;
     const rule = createSaveRule(() => isStopped);
 
-    function announce(text: string, isAssertive = false): void {
-        state.announcement = { text, isAssertive, count: ++announcementCount };
-    }
-
-    const status = createStatusTabs(state, rule, dependencies, () => isStopped, announce);
+    const status = createStatusTabs(state, rule, dependencies, () => isStopped, (text, isAssertive) => dependencies.announce(text, isAssertive ? "assertive" : "polite"));
 
     function room(channelId: string): RoomPrefs {
         return state.rooms[channelId] ??= { notes: {} };
@@ -328,7 +323,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
             ...change,
             refused: failure => {
                 change.refused(failure);
-                announce(`Not saved. ${failure.alone}`, true);
+                dependencies.announce(`Not saved. ${failure.alone}`, "assertive");
             }
         });
     }
@@ -433,7 +428,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                     // A menu closes as it chooses, so the toast says what the choice means.
                     if (isFromMenu) {
                         dependencies.notify({ code: "notify-mode", text: notifyWords[mode].toast, icon: notifyWords[mode].icon });
-                        announce(notifyWords[mode].toast);
+                        dependencies.announce(notifyWords[mode].toast);
                     }
                 },
                 refused: failure => {

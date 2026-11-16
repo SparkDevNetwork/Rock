@@ -40,17 +40,11 @@
                     </div>
                     <div class="chat-dialog-actions">
                         <slot name="actions">
-                            <button ref="cancelElement"
-                                    type="button"
-                                    class="chat-dialog-btn is-line"
-                                    data-testid="dialog-cancel"
-                                    @click="emit('close')">Cancel</button>
-                            <button v-if="confirmLabel"
-                                    type="button"
-                                    class="chat-dialog-btn"
-                                    :class="isDestructive ? 'is-danger' : 'is-brand'"
+                            <Button ref="cancelElement" kind="line" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
+                            <Button v-if="confirmLabel"
+                                    :kind="isDestructive ? 'danger' : 'brand'"
                                     data-testid="dialog-confirm"
-                                    @click="emit('confirm')">{{ confirmLabel }}</button>
+                                    @click="emit('confirm')">{{ confirmLabel }}</Button>
                         </slot>
                     </div>
                 </template>
@@ -203,91 +197,18 @@
     border-radius: var(--chat-r-surface);
 }
 
+/* The actions are the button part's, its own or the caller's, lined up at the end. */
 .chat-dialog-actions {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-}
-
-/* The large button: Cancel outlined, the action in its color; a dialog's own actions use it too. */
-.chat-dialog-btn,
-:slotted(.chat-dialog-btn) {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    height: 38px;
-    padding: 0 18px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-/* The design's regular button, which Add people's Cancel and Add are, a size under the large one. */
-:slotted(.chat-dialog-btn.is-regular) {
-    height: 30px;
-    padding: 0 14px;
-    font-size: var(--chat-fs-ui);
-}
-
-.chat-dialog-btn.is-line,
-:slotted(.chat-dialog-btn.is-line) {
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-}
-
-.chat-dialog-btn.is-line:hover,
-:slotted(.chat-dialog-btn.is-line:hover) {
-    border-color: var(--chat-icon);
-}
-
-:slotted(.chat-dialog-btn.is-ghost) {
-    color: var(--chat-text-2);
-    background: none;
-}
-
-:slotted(.chat-dialog-btn.is-ghost:hover) {
-    background: var(--chat-hover);
-}
-
-.chat-dialog-btn.is-brand,
-:slotted(.chat-dialog-btn.is-brand) {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-.chat-dialog-btn.is-danger,
-:slotted(.chat-dialog-btn.is-danger) {
-    color: var(--chat-on-danger);
-    background: var(--chat-danger);
-}
-
-.chat-dialog-btn.is-danger:hover,
-:slotted(.chat-dialog-btn.is-danger:hover:not(:disabled)) {
-    background: var(--chat-danger-hover);
-}
-
-/* An action waiting for a choice, or for its answer, stays drawn but quiet. */
-:slotted(.chat-dialog-btn:disabled) {
-    cursor: default;
-    opacity: .5;
-}
-
-:slotted(.chat-dialog-btn[aria-busy="true"]) {
-    opacity: .75;
-}
-
-:slotted(.chat-dialog-btn .chat-spinner) {
-    width: 13px;
-    height: 13px;
 }
 </style>
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import Button from "./button.partial.obs";
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
 
@@ -366,7 +287,7 @@
     // #region Values
 
     const dialogElement = ref<HTMLElement>();
-    const cancelElement = ref<HTMLButtonElement>();
+    const cancelElement = ref<InstanceType<typeof Button>>();
     const titleId = `chat-dialog-${newGuid()}`;
 
     /** Whether the press that ends in a click began on the scrim, so a drag out of the dialog does not close it. */
@@ -405,8 +326,9 @@
      * close button in its head, which the trap focuses quietly so its tooltip does not show unasked.
      */
     function firstFocus(controls: HTMLElement[]): HTMLElement | null {
-        if (props.isDestructive && cancelElement.value) {
-            return cancelElement.value;
+        const cancel = cancelElement.value?.buttonElement;
+        if (props.isDestructive && cancel) {
+            return cancel;
         }
 
         return dialogElement.value?.querySelector<HTMLElement>("[data-autofocus]") ?? controls[0] ?? dialogElement.value ?? null;

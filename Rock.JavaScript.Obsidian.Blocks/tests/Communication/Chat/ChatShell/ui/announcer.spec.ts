@@ -133,4 +133,26 @@ describe("the announcer", () => {
         await settle();
         expect(spoken()).toEqual(["Saved"]);
     });
+
+    // The shell's own modules (the rooms, the settings) speak through the same voice the shell
+    // provides, so the one that provides it is handed it rather than injecting from itself.
+    it("hands the shell that provides it the same voice its parts speak in", async () => {
+        let provided: Announcer | null = null;
+        const Root = defineComponent({
+            setup() {
+                const root = ref<HTMLElement>();
+                provided = provideAnnouncer(root);
+                return () => h("div", { ref: root, "data-testid": "root" });
+            }
+        });
+        wrapper = mount(Root, { attachTo: document.body });
+        await settle();
+
+        expect(provided).not.toBeNull();
+        provided!.announce("You joined Volunteers");
+        await settle();
+
+        const root = document.querySelector("[data-testid='root']") as HTMLElement;
+        expect(root.querySelector("[aria-live='polite']")?.textContent).toBe("You joined Volunteers");
+    });
 });

@@ -36,6 +36,8 @@ import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { join } from "path";
 import { away } from "../statusShapes";
+import { providedSession } from "../sessionShapes";
+import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 // #region Fixtures
@@ -67,7 +69,9 @@ function draftFor(people: PersonRow[], overrides: Partial<DirectMessageDraft> = 
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountView(props: Record<string, unknown> = {}): VueWrapper {
+    const { isPhone = false, ...rest } = props;
     wrapper = mount(NewMessage, {
         props: {
             maxOthers: 8,
@@ -78,12 +82,20 @@ function mountView(props: Record<string, unknown> = {}): VueWrapper {
             draft: null,
             error: null,
             refused: null,
-            isPhone: false,
-            ...props
+            ...rest
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
         attachTo: document.body
     });
     return wrapper;
+}
+
+/**
+ * What the chat's one voice last said politely, or assertively. A view drawn without a shell
+ * speaks from the page's body, as the announcer does for any part drawn alone.
+ */
+function said(politeness: "polite" | "assertive" = "polite"): string {
+    return document.querySelector(`[data-testid='announcer-${politeness}']`)?.textContent ?? "";
 }
 
 function field(w: VueWrapper): HTMLInputElement {
@@ -120,7 +132,7 @@ async function typeName(w: VueWrapper, text: string): Promise<void> {
 
 /** Waits out the search's pause and lets its answer land. */
 async function afterPause(): Promise<void> {
-    jest.advanceTimersByTime(250);
+    jest.advanceTimersByTime(searchPause);
     await settle();
 }
 
@@ -238,19 +250,38 @@ describe("the suggestions", () => {
         jest.useFakeTimers();
     });
 
-    test("say Searching… at once, and search 250 ms after the last keystroke", async () => {
+    // The one pause every search box waits, so this box feels as the others do.
+    test("say Searching… at once, and search the shared pause after the last keystroke", async () => {
         const search = jest.fn(async () => [anna, andre]);
         const w = mountView({ search });
 
         await typeName(w, "a");
         await typeName(w, "an");
         expect(w.get("[data-testid='nd-searching']").text()).toBe("Searching…");
-        jest.advanceTimersByTime(249);
+        jest.advanceTimersByTime(searchPause - 1);
         expect(search).not.toHaveBeenCalled();
 
-        await afterPause();
+        jest.advanceTimersByTime(1);
+        await settle();
         expect(search).toHaveBeenCalledTimes(1);
         expect(search).toHaveBeenCalledWith("an");
+    });
+
+    test("draw only the newest name's answer, however late an older one lands", async () => {
+        const answers: Array<(rows: PersonRow[]) => void> = [];
+        const search = jest.fn(() => new Promise<PersonRow[]>(resolve => answers.push(resolve)));
+        const w = mountView({ search });
+
+        await typeName(w, "an");
+        await afterPause();
+        await typeName(w, "ca");
+        await afterPause();
+        answers[1]([caleb]);
+        await settle();
+        answers[0]([anna, andre]);
+        await settle();
+
+        expect(w.findAll("[data-testid='nd-option']").map(option => plain(option.text()))).toEqual([expect.stringContaining("Caleb Brooks")]);
     });
 
     test("name each person's campus under their name, from the church's campuses, where they show it", async () => {
@@ -325,9 +356,8 @@ describe("the suggestions", () => {
         await typeName(w, "an");
         await afterPause();
 
-        const live = w.get("[data-testid='nd-announcement']");
-        expect(live.attributes("aria-live")).toBe("polite");
-        expect(live.text()).toBe("2 people found");
+        expect(said()).toBe("2 people found");
+        expect(w.findAll("[aria-live], [role='status'], [role='alert']")).toHaveLength(0);
     });
 
     test("a click on an option chooses that person", async () => {
@@ -581,13 +611,13 @@ describe("the first message", () => {
             jest.advanceTimersByTime(999);
             await settle();
             expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
-            expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
+            expect(said()).toBe("");
 
             jest.advanceTimersByTime(1);
             await settle();
             const words = { asking: "Starting your conversation…", waiting: "Still setting it up…", trying: "Sending…" }[phase];
             expect(plain(w.get("[data-testid='nd-phase']").text())).toBe(words);
-            expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
+            expect(said()).toBe(words);
         });
 
         test("a phase change after the quiet second shows and is announced at once", async () => {
@@ -599,7 +629,7 @@ describe("the first message", () => {
             await settle();
 
             expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Still setting it up…");
-            expect(w.get("[data-testid='nd-announcement']").text()).toBe("Still setting it up…");
+            expect(said()).toBe("Still setting it up…");
         });
 
         test("a phase change inside the quiet second stays quiet, then says the current phase", async () => {
@@ -609,12 +639,12 @@ describe("the first message", () => {
             await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "starting", phase: "trying", startedAt }) });
             await settle();
             expect(w.find("[data-testid='nd-phase']").exists()).toBe(false);
-            expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
+            expect(said()).toBe("");
 
             jest.advanceTimersByTime(500);
             await settle();
             expect(plain(w.get("[data-testid='nd-phase']").text())).toBe("Sending…");
-            expect(w.get("[data-testid='nd-announcement']").text()).toBe("Sending…");
+            expect(said()).toBe("Sending…");
         });
 
         test("a failure inside the quiet second shows at once", async () => {
@@ -666,7 +696,9 @@ describe("the first message", () => {
         await settle();
 
         const strip = w.get("[data-testid='nd-refused']");
-        expect(strip.attributes("role")).toBe("alert");
+        // Said at once and assertively in the chat's one voice; the strip itself is no live region.
+        expect(strip.attributes("role")).toBeUndefined();
+        expect(said("assertive")).toBe("Luis Romero isn't taking new conversations right now.");
         expect(strip.text()).toContain("Luis Romero isn't taking new conversations right now.");
         expect(editor(w).textContent).toBe("hello");
 
@@ -694,9 +726,9 @@ describe("what a screen reader is told", () => {
         jest.useFakeTimers();
     });
 
-    /** The live regions in the view that hold these words right now. */
-    function regionsSaying(w: VueWrapper, words: string): Element[] {
-        return Array.from(w.element.querySelectorAll("[aria-live]")).filter(region => plain(region.textContent ?? "").includes(words));
+    /** The live regions on the page that hold these words right now, the chat's one voice among them. */
+    function regionsSaying(_w: VueWrapper, words: string): Element[] {
+        return Array.from(document.querySelectorAll("[aria-live]")).filter(region => plain(region.textContent ?? "").includes(words));
     }
 
     test("the first person chosen is one person chosen, though the list already holds them as the choice is told", async () => {
@@ -707,7 +739,7 @@ describe("what a screen reader is told", () => {
 
         await press(w, "Enter");
 
-        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Added Anna Reyes. 1 person chosen.");
+        expect(said()).toBe("Added Anna Reyes. 1 person chosen.");
     });
 
     test("Enter with no one found is said once, in one live region", async () => {
@@ -729,7 +761,7 @@ describe("what a screen reader is told", () => {
 
         await press(w, "Enter");
 
-        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Added Omar Faris. 8 people chosen. 8 people is the most for one conversation. Press Tab to write your message.");
+        expect(said()).toBe("Added Omar Faris. 8 people chosen. 8 people is the most for one conversation. Press Tab to write your message.");
     });
 
     test("a chip taken out says who was removed", async () => {
@@ -738,7 +770,7 @@ describe("what a screen reader is told", () => {
         await w.findAll("[data-testid='nd-chip-remove']")[0].trigger("click");
 
         expect(w.emitted("unchoose")).toEqual([[anna.person_alias_guid]]);
-        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Removed Anna Reyes.");
+        expect(said()).toBe("Removed Anna Reyes.");
     });
 
     test("Backspace on an empty field says who it took out", async () => {
@@ -748,7 +780,7 @@ describe("what a screen reader is told", () => {
         await press(w, "Backspace");
 
         expect(w.emitted("unchoose")).toEqual([[caleb.person_alias_guid]]);
-        expect(w.get("[data-testid='nd-announcement']").text()).toBe("Removed Caleb Brooks.");
+        expect(said()).toBe("Removed Caleb Brooks.");
     });
 
     test.each([
@@ -762,7 +794,7 @@ describe("what a screen reader is told", () => {
         await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "starting", phase, startedAt: Date.now() - 5000 }) });
         await settle();
 
-        expect(w.get("[data-testid='nd-announcement']").text()).toBe(words);
+        expect(said()).toBe(words);
     });
 });
 
@@ -775,8 +807,8 @@ test("a first message that fails is said by the composer's strip, not the view's
     await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
     await settle();
 
-    expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Your message wasn't sent.");
-    expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
+    expect(said("assertive")).toBe("Your message wasn't sent.");
+    expect(said()).toBe("");
 });
 
 describe("the conversation found", () => {
@@ -913,10 +945,8 @@ describe("online status", () => {
     test("the found strip is no live region: the find is said once as it lands, and a status changing after says nothing", async () => {
         const w = mountView({ chosen: [byAlias(statusAnna)], lookup: waiting, foundTitle: "Anna Reyes" });
         await w.setProps({ lookup: found });
-        const said = w.get("[data-testid='nd-announcement']");
-        const words = said.element.firstElementChild;
 
-        expect(plain(said.text())).toBe("You already have this conversation. Anna Reyes. What you send goes there.");
+        expect(plain(said())).toBe("You already have this conversation. Anna Reyes. What you send goes there.");
         const strip = w.get("[data-testid='nd-found']").element;
         expect(strip.closest("[role='status'], [role='alert'], [role='log'], [aria-live]:not([aria-live='off'])")).toBeNull();
         expect(strip.querySelector("[role='status'], [role='alert'], [role='log'], [aria-live]:not([aria-live='off'])")).toBeNull();
@@ -925,7 +955,8 @@ describe("online status", () => {
         await nextTick();
 
         expect(plain(w.get("[data-testid='nd-found'] .chat-nd-found-t span").text())).toBe("Anna Reyes, away. What you send goes there.");
-        expect(said.element.firstElementChild).toBe(words);
+        // nothing more is said: the voice still holds the find
+        expect(plain(said())).toBe("You already have this conversation. Anna Reyes. What you send goes there.");
     });
 
     test("a group chosen draws its mark with no badge", () => {

@@ -74,7 +74,7 @@ describe("the page veil", () => {
         const line = w.get("[data-testid='veil-status']");
         expect(line.attributes("aria-hidden")).toBe("true");
         expect(line.text()).toBe("Connecting to chat\u2026");
-        expect(line.find(".chat-live-dot").exists()).toBe(true);
+        expect(line.find(".chat-dot").exists()).toBe(true);
 
         await w.setProps({ statusLine: "Still connecting. Chat will open as soon as it can." });
         expect(w.get("[data-testid='veil-status']").text()).toBe("Still connecting. Chat will open as soon as it can.");

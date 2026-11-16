@@ -257,7 +257,8 @@
 
 <script setup lang="ts">
     import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
-    import { busyEndOf, MeKey, MeSettings, meTitles, PrefsState, StatusChoice } from "../composables/usePrefs.partial";
+    import { busyEndOf, MeKey, MeSettings, meTitles, StatusChoice } from "../composables/usePrefs.partial";
+    import { RoomAnnouncement } from "../composables/useRooms.partial";
     import { longestTimerMs, nextMidnight } from "../feedLayout.partial";
     import { BlocksState, unnamedBlocked } from "../composables/useBlocks.partial";
     import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
@@ -341,7 +342,7 @@
 
         /** The settings' newest sentence for screen readers; only one said while open is read. */
         announcement: {
-            type: Object as PropType<PrefsState["announcement"]>,
+            type: Object as PropType<RoomAnnouncement | null>,
             default: null
         },
 
@@ -488,7 +489,7 @@
     /** The rows of blocked people, once the list is read and holds anyone. */
     const shownBlocked = computed((): ChatPerson[] => props.blocked.listState === "loaded" ? props.blocked.people : []);
 
-    const shownAnnouncement = computed((): PrefsState["announcement"] => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
+    const shownAnnouncement = computed((): RoomAnnouncement | null => props.announcement && props.announcement.count > announcedBefore.value ? props.announcement : null);
 
     // #endregion Computed Values
 

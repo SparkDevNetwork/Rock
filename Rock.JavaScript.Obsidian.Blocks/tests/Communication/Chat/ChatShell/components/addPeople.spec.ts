@@ -278,7 +278,10 @@ describe("adding", () => {
         await w.setProps({ refusal: { text: "Luis Romero cannot be added. Remove Luis and try again.", personAliasGuid: luis.person_alias_guid } });
         const refusal = w.get("[data-testid='ap-refusal']");
         expect(read(refusal.element)).toBe("Luis Romero cannot be added. Remove Luis and try again.");
-        expect(refusal.attributes("role")).toBe("alert");
+        // Said at once in the chat's one voice, which speaks from inside the open dialog; the box itself is no live region.
+        await nextTick();
+        expect(refusal.attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='dialog'] [data-testid='announcer-assertive']")?.textContent).toBe("Luis Romero cannot be added. Remove Luis and try again.");
 
         await w.findAll("[data-testid='ap-chip-remove']")[1].trigger("click");
         expect(w.find("[data-testid='ap-refusal']").exists()).toBe(false);

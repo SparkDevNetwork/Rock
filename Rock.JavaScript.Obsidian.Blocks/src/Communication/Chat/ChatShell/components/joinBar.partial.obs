@@ -118,10 +118,9 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { useChatSession } from "../chatSession.partial";
-    import { useAnnouncer } from "../ui/announcer.partial";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
+    import { JoinState } from "../composables/useRooms.partial";
 
     const props = defineProps({
         /** The channel's name, written with no "#". */
@@ -134,12 +133,6 @@
         state: {
             type: Object as PropType<JoinState>,
             required: true
-        },
-
-        /** The rooms' latest sentence for screen readers, as Browse channels speaks it. */
-        announcement: {
-            type: Object as PropType<RoomAnnouncement | null>,
-            default: null
         }
     });
 
@@ -210,17 +203,6 @@
     // #endregion Event Handlers
 
     // #region Watchers
-
-    // What a join from here says is spoken from here, since Browse channels, which speaks it
-    // otherwise, is closed; a refusal assertively. Only news said while the bar is up: the rooms
-    // keep their last sentence, which may be another room's from before.
-    const { announce } = useAnnouncer();
-    watch(() => props.announcement?.count, () => {
-        const announcement = props.announcement;
-        if (announcement) {
-            announce(announcement.text, announcement.isAssertive ? "assertive" : "polite");
-        }
-    });
 
     // The button the person pressed leaves with a refusal or a pending join, so focus goes to the
     // way on from here, or to the bar saying the room is setting up, rather than falling to the

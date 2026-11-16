@@ -142,6 +142,9 @@ type Setup = {
     doorCalls: Array<{ setting: PersonSettingKey, value: boolean, answer: Deferred<PersonSettingResult> }>;
     toasts: Array<{ code: string, text: string, icon: string }>;
     offline: { value: boolean };
+
+    /** What the settings last said through the chat's announcer, numbered, or null before they said anything. */
+    lastSaid: () => { text: string, isAssertive: boolean, count: number } | null;
 };
 
 function setup(rows: SidebarRow[] = [sidebarRow(team), sidebarRow(prayer, { name: "Prayer" })]): Setup {
@@ -149,6 +152,7 @@ function setup(rows: SidebarRow[] = [sidebarRow(team), sidebarRow(prayer, { name
     const doorCalls: Setup["doorCalls"] = [];
     const toasts: Setup["toasts"] = [];
     const offline = { value: false };
+    const said: Array<{ text: string, isAssertive: boolean, count: number }> = [];
     const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
     channels.setSidebar(rows);
 
@@ -165,10 +169,13 @@ function setup(rows: SidebarRow[] = [sidebarRow(team), sidebarRow(prayer, { name
         },
         channels,
         isOffline: () => offline.value,
-        notify: notice => toasts.push(notice)
+        notify: notice => toasts.push(notice),
+        announce: (text, politeness) => said.push({ text, isAssertive: politeness === "assertive", count: said.length + 1 })
     });
 
-    return { prefs, channels, prefCalls, doorCalls, toasts, offline };
+    const lastSaid = (): { text: string, isAssertive: boolean, count: number } | null => said[said.length - 1] ?? null;
+
+    return { prefs, channels, prefCalls, doorCalls, toasts, offline, lastSaid };
 }
 
 function rowOf(s: Setup, channelId: string): SidebarRow | undefined {
@@ -192,7 +199,7 @@ describe("a room's notify mode", () => {
         // A save that lands says nothing: the control already shows it.
         expect(rowOf(s, team)?.notify_mode).toBe("mentions");
         expect(s.prefs.roomOf(team)).toEqual({ notes: {} });
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("asks nothing when the mode chosen is the one the room already has", async () => {
@@ -213,7 +220,7 @@ describe("a room's notify mode", () => {
 
         expect(rowOf(s, team)?.notify_mode).toBe("all");
         expect(s.prefs.roomOf(team).notes.notify).toEqual({ kind: "error", text: readOnlySentence });
-        expect(s.prefs.state.announcement).toEqual({ text: `Not saved. ${readOnlySentence}`, isAssertive: true, count: expect.any(Number) });
+        expect(s.lastSaid()).toEqual({ text: `Not saved. ${readOnlySentence}`, isAssertive: true, count: expect.any(Number) });
     });
 
     test("Try again asks the refused choice again, shown at once, and clears the note", async () => {
@@ -386,7 +393,7 @@ describe("star and hide", () => {
 
         expect(rowOf(s, prayer)?.is_favorite).toBe(true);
         expect(s.prefs.roomOf(prayer).notes).toEqual({});
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("hiding a starred room unstars it in the same one patch, and says so under Hide", async () => {
@@ -404,7 +411,7 @@ describe("star and hide", () => {
         await settle();
 
         expect(s.prefs.roomOf(team).notes.hide).toEqual({ kind: "info", text: "Hidden, and taken out of Starred. It leaves your list when you open another conversation." });
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("hiding a room that is not starred writes it hidden and still not starred", async () => {
@@ -474,7 +481,7 @@ describe("star and hide", () => {
         await settle();
 
         expect(s.toasts.map(t => [t.text, t.icon])).toEqual([[readOnlySentence, "alert"]]);
-        expect(s.prefs.state.announcement?.text).toBe(`Not saved. ${readOnlySentence}`);
+        expect(s.lastSaid()?.text).toBe(`Not saved. ${readOnlySentence}`);
         expect(rowOf(s, team)?.is_favorite).toBe(false);
     });
 
@@ -642,7 +649,7 @@ describe("the person's own switches", () => {
 
         expect(s.prefs.state.me.reaction_push).toBe(false);
         expect(s.prefs.state.meNotes).toEqual({});
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("one switch refused leaves another switch saved as the person set it", async () => {
@@ -699,7 +706,7 @@ describe("the person's own switches", () => {
         await settle();
 
         expect(s.prefs.state.me.is_open_dm_allowed).toBe(true);
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("a door that answers pending has saved, so it shows nothing more either", async () => {
@@ -712,7 +719,7 @@ describe("the person's own switches", () => {
 
         expect(s.prefs.state.me.show_profile_details).toBe(false);
         expect(s.prefs.state.meNotes).toEqual({});
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
     });
 
     test("goes back on the door's refusal with the door's own sentence", async () => {
@@ -725,7 +732,7 @@ describe("the person's own switches", () => {
 
         expect(s.prefs.state.me.show_profile_details).toBe(true);
         expect(s.prefs.state.meNotes.profile_details).toEqual({ kind: "error", text: "Chat is not available to you right now." });
-        expect(s.prefs.state.announcement?.text).toBe("Not saved. Chat is not available to you right now.");
+        expect(s.lastSaid()?.text).toBe("Not saved. Chat is not available to you right now.");
     });
 
     test("goes back when Rock answered without its door, saying to try again, or offline while the connection is lost", async () => {
@@ -749,7 +756,7 @@ describe("the person's own switches", () => {
 
     test("a page with no door refuses a privacy switch and leaves it as it was", async () => {
         const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
-        const prefs = createPrefs({ setPrefs: async () => writtenMe({}), channels, isOffline: () => false, notify: () => undefined });
+        const prefs = createPrefs({ setPrefs: async () => writtenMe({}), channels, isOffline: () => false, notify: () => undefined, announce: () => undefined });
         prefs.setMe({ show_profile_details: true, is_open_dm_allowed: false, reaction_push: true });
 
         await prefs.setPersonSetting("open_dm", true);
@@ -831,7 +838,7 @@ describe("once stopped", () => {
         expect(rowOf(s, team)?.notify_mode).toBe("silent");
         expect(s.prefs.roomOf(team).notes).toEqual({});
         expect(s.prefs.state.me.is_open_dm_allowed).toBe(true);
-        expect(s.prefs.state.announcement).toBeNull();
+        expect(s.lastSaid()).toBeNull();
         expect(s.toasts).toEqual([]);
 
         await s.prefs.setStarred(team, true, false);
@@ -1105,6 +1112,7 @@ function statusBrowser(options: { hasLocks?: boolean, locksRefuse?: boolean, pos
             channels: store,
             isOffline: () => false,
             notify: notice => toasts.push(notice),
+            announce: () => undefined,
             status: {
                 tenantId: church,
                 personAliasGuid: her,

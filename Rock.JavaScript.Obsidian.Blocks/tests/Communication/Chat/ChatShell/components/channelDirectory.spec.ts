@@ -27,8 +27,9 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
-import { DirectoryState, JoinState, RoomAnnouncement } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { DirectoryState, JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 
 /** The rules a component's styles give under reduced motion, selector and body, read from its source. */
@@ -98,18 +99,19 @@ function directory(overrides: Partial<DirectoryState> = {}): DirectoryState {
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
+    const { isPhone = false, ...rest } = props;
     wrapper = mount(ChannelDirectory, {
         props: {
             directory: directory(),
             joins: {},
-            announcement: null,
             campuses: [downtown, north],
             personCampusGuid: downtown.guid,
             organizationName: "Cedar Hill Church",
-            isPhone: false,
-            ...props
+            ...rest
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
         attachTo: document.body
     });
     return wrapper;
@@ -132,6 +134,38 @@ function scrollTo(w: VueWrapper, scrollTop: number, scrollHeight = 2000, clientH
     scroller.dispatchEvent(new Event("scroll"));
 }
 
+/** The observers the view made, so a test can say what came into view; jsdom computes none. */
+const observers: FakeObserver[] = [];
+
+class FakeObserver {
+    public watched: Element[] = [];
+    constructor(public callback: IntersectionObserverCallback, public options?: IntersectionObserverInit) {
+        observers.push(this);
+    }
+    observe(element: Element): void {
+        this.watched.push(element);
+    }
+    unobserve(element: Element): void {
+        this.watched = this.watched.filter(one => one !== element);
+    }
+    disconnect(): void {
+        this.watched = [];
+    }
+    takeRecords(): IntersectionObserverEntry[] {
+        return [];
+    }
+    see(isIntersecting: boolean): void {
+        this.callback(this.watched.map(target => ({ target, isIntersecting }) as IntersectionObserverEntry), this as unknown as IntersectionObserver);
+    }
+}
+
+/** The list's end comes into view, as a reader scrolling near it would bring it. */
+async function reachEnd(): Promise<void> {
+    await nextTick();
+    observers.filter(observer => observer.watched.length > 0).forEach(observer => observer.see(true));
+    await nextTick();
+}
+
 // #endregion Helpers
 
 beforeAll(() => {
@@ -145,10 +179,18 @@ beforeAll(() => {
     }
 });
 
+const originalObserver = window.IntersectionObserver;
+
+beforeEach(() => {
+    observers.length = 0;
+    window.IntersectionObserver = FakeObserver as unknown as typeof IntersectionObserver;
+});
+
 afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     document.body.innerHTML = "";
+    window.IntersectionObserver = originalObserver;
 });
 
 describe("the header", () => {
@@ -310,19 +352,23 @@ describe("the count line", () => {
         expect(w.get("[data-testid='directory-count']").text()).toBe("12 channels");
     });
 
-    test("carries All and Not joined, the one chosen pressed, each asking for its own set", async () => {
+    // All and Not joined are one choice of two, so they are the segmented part: a radio group
+    // whose chosen option is checked, rather than two pressed buttons.
+    test("carries All and Not joined, the one chosen checked, each asking for its own set", async () => {
         const w = mountDirectory({ directory: directory({ show: "notJoined" }) });
+        const option = (value: string): ReturnType<typeof w.get> => w.get(`[data-testid='directory-show-option'][data-value='${value}']`);
 
         const show = w.get("[data-testid='directory-show']");
-        expect(show.attributes("role")).toBe("group");
+        expect(show.attributes("role")).toBe("radiogroup");
         expect(show.attributes("aria-label")).toBe("Show");
-        expect(w.get("[data-testid='directory-show-all']").text()).toBe("All");
-        expect(w.get("[data-testid='directory-show-all']").attributes("aria-pressed")).toBe("false");
-        expect(w.get("[data-testid='directory-show-not-joined']").text()).toBe("Not joined");
-        expect(w.get("[data-testid='directory-show-not-joined']").attributes("aria-pressed")).toBe("true");
+        expect(option("all").text()).toBe("All");
+        expect(option("all").attributes("aria-checked")).toBe("false");
+        expect(option("notJoined").text()).toBe("Not joined");
+        expect(option("notJoined").attributes("aria-checked")).toBe("true");
 
-        await w.get("[data-testid='directory-show-all']").trigger("click");
-        await w.get("[data-testid='directory-show-not-joined']").trigger("click");
+        await option("all").trigger("click");
+        await w.setProps({ directory: directory({ show: "all" }) });
+        await option("notJoined").trigger("click");
         expect(w.emitted("show")).toEqual([["all"], ["notJoined"]]);
     });
 });
@@ -529,22 +575,26 @@ describe("loading", () => {
 });
 
 describe("the next page", () => {
-    test("is asked as the list nears its end, while there is more", () => {
+    // The list's end is watched against the list's own scroller, about four rows ahead of view.
+    test("is asked as the list nears its end, while there is more", async () => {
         const w = mountDirectory({ directory: directory({ hasMore: true }) });
-
-        scrollTo(w, 100);
+        await nextTick();
         expect(w.emitted("loadMore")).toBeUndefined();
 
-        scrollTo(w, 1350);
+        await reachEnd();
+
         expect(w.emitted("loadMore")).toHaveLength(1);
+        const watching = observers.find(observer => observer.watched.length > 0);
+        expect(watching?.options?.root).toBe(w.get("[data-testid='directory-scroll']").element);
+        expect(watching?.options?.rootMargin).toBe("360px");
     });
 
-    test("is never asked once the list has ended", () => {
-        const w = mountDirectory({ directory: directory({ hasMore: false }) });
+    test("is never asked once the list has ended", async () => {
+        mountDirectory({ directory: directory({ hasMore: false }) });
 
-        scrollTo(w, 1500);
+        await reachEnd();
 
-        expect(w.emitted("loadMore")).toBeUndefined();
+        expect(wrapper?.emitted("loadMore")).toBeUndefined();
     });
 
     test("shows that it is loading under the rows", () => {
@@ -583,7 +633,7 @@ describe("an empty answer", () => {
 
         const empty = w.get("[data-testid='directory-empty']");
         expect(empty.attributes("data-kind")).toBe("none");
-        expect(empty.get("b").text()).toBe("No channels to browse yet");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels to browse yet");
         expect(empty.text()).toContain("When Cedar Hill Church opens channels to everyone, they'll show up here.");
         expect(empty.find("button").exists()).toBe(false);
         expect(w.find("[data-testid='directory-count']").exists()).toBe(false);
@@ -593,7 +643,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ query: "zzz", rows: [], total: 0, emptyKind: "query" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels match “zzz”");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels match “zzz”");
         expect(empty.text()).toContain("Search looks at channel names. Private groups don't show here; a leader can add you.");
         expect(w.get("[data-testid='directory-count']").text()).toBe("0 channels match");
         const action = empty.get("[data-testid='directory-empty-action']");
@@ -606,7 +656,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ query: "zzz", campus: { kind: "campus", campusId: north.guid }, show: "notJoined", rows: [], total: 0, emptyKind: "filters" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels match “zzz”");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels match “zzz”");
         expect(empty.text()).toContain("You're only looking at North Campus, and channels you haven't joined. Clear the filters to search every public channel.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("Clear filters");
@@ -624,7 +674,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ show: "notJoined", rows: [], total: 0, emptyKind: "allJoined" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("You're in every channel here");
+        expect(empty.get(".chat-empty-title").text()).toBe("You're in every channel here");
         expect(empty.text()).toContain("Nothing left to join.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("Show all");
@@ -642,7 +692,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ campus: { kind: "campus", campusId: north.guid }, rows: [], total: 0, emptyKind: "campus" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels for this campus yet");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels for this campus yet");
         expect(empty.text()).toContain("Try another campus, or the whole church.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("All campuses");
@@ -716,42 +766,49 @@ describe("the keys", () => {
     });
 });
 
+// A search's count, a join and a refusal are the rooms' to say, through the chat's one voice, whose
+// own cells hold politeness and a sentence said twice; the view says only what it draws itself.
 describe("what is spoken", () => {
-    test("a search's count and a join are read politely", () => {
-        const announcement: RoomAnnouncement = { text: "2 channels found", isAssertive: false, count: 1 };
-        const w = mountDirectory({ announcement });
+    test("draws no live region of its own, so its words never talk over the chat's one voice", () => {
+        const w = mountDirectory({ directory: directory({ moreError: { code: "rpc.transport", severity: "failed" }, hasMore: true }) });
 
-        const polite = w.get("[data-testid='directory-announcement']");
-        expect(polite.attributes("aria-live")).toBe("polite");
-        expect(polite.text()).toBe("2 channels found");
-        expect(w.get("[data-testid='directory-alert']").text()).toBe("");
+        expect(w.findAll("[aria-live], [role='status'], [role='alert']")).toHaveLength(0);
     });
 
-    test("a refused join is read assertively", () => {
-        const announcement: RoomAnnouncement = { text: "Volunteers is full right now.", isAssertive: true, count: 2 };
-        const w = mountDirectory({ announcement });
+    test("a first page that did not come is said as it is drawn", async () => {
+        const state = directory({ rows: [], isLoading: true });
+        mountDirectory({ directory: state });
 
-        const alert = w.get("[data-testid='directory-alert']");
-        expect(alert.attributes("aria-live")).toBe("assertive");
-        expect(alert.text()).toBe("Volunteers is full right now.");
-        expect(w.get("[data-testid='directory-announcement']").text()).toBe("");
+        state.isLoading = false;
+        state.error = { code: "rpc.transport", severity: "failed" };
+        await nextTick();
+
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toContain("Couldn't load channels.");
     });
 
-    test("the same words again are put in afresh, so they are read again", async () => {
-        const w = mountDirectory({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 1 } });
-        const before = w.get("[data-testid='directory-announcement'] span").element;
+    test("a next page that did not come is said as it is drawn, the rows held", async () => {
+        const state = directory({ hasMore: true, isLoadingMore: true });
+        mountDirectory({ directory: state });
 
-        await w.setProps({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 2 } });
+        state.isLoadingMore = false;
+        state.moreError = { code: "rpc.transport", severity: "failed" };
+        await nextTick();
 
-        expect(w.get("[data-testid='directory-announcement'] span").element).not.toBe(before);
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toContain("Couldn't load more channels.");
     });
 });
 
 describe("under reduced motion", () => {
     const rules = (): Array<{ selector: string, body: string }> => reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs");
 
-    test("the church's campus note does not animate", () => {
-        expect(rules().some(r => /(^|,)\s*\.chat-fd-note\s*(,|$)/.test(r.selector) && /animation:\s*none/.test(r.body))).toBe(true);
+    // Reduced motion is honoured once, in the token sheet: the enter's rise is nothing there, so
+    // the note only fades, as every entrance does, and the view keeps no reduced rule of its own.
+    test("the church's campus note only fades in, by the one reduced-motion rule every entrance shares", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
+        const rule = /\n\.chat-fd-note\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+
+        expect(rule).toMatch(/animation:\s*chat-enter /);
+        expect(rules()).toEqual([]);
     });
 
     test("a row's refusal or failure only fades in", () => {

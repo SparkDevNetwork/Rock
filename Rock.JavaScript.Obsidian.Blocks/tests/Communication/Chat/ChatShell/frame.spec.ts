@@ -1104,7 +1104,7 @@ describe("with nothing open", () => {
         test("draws no marks while the wait runs, and draws them once it is spent", async () => {
             const w = await mountLoading();
 
-            expect(w.findAll("[data-testid='page-veil'] i.chat-skeleton")).toHaveLength(0);
+            expect(w.findAll("[data-testid='page-veil'] i.chat-skeleton, [data-testid='page-veil'] .chat-skel")).toHaveLength(0);
 
             revealOf().isSkeletonShown = true;
             await settle();
@@ -1120,15 +1120,15 @@ describe("with nothing open", () => {
 
             const main = (): ReturnType<typeof w.get> => w.get("[data-testid='frame-main'] [data-testid='page-veil']");
             expect(main().attributes("data-look")).toBe("channel");
-            expect(main().find(".chat-veil-text").exists()).toBe(true);
-            expect(main().find(".chat-veil-bubble").exists()).toBe(false);
+            expect(main().find(".chat-skel.is-group").exists()).toBe(true);
+            expect(main().find(".chat-skel.is-bubble").exists()).toBe(false);
 
             revealOf().kind = "direct";
             await settle();
 
             expect(main().attributes("data-look")).toBe("direct");
-            expect(main().find(".chat-veil-bubble").exists()).toBe(true);
-            expect(main().find(".chat-veil-text").exists()).toBe(false);
+            expect(main().find(".chat-skel.is-bubble").exists()).toBe(true);
+            expect(main().find(".chat-skel.is-group").exists()).toBe(false);
         });
 
         test("takes each veil away when its own region is revealed, the column's content then in reach", async () => {
@@ -3517,7 +3517,7 @@ describe("Browse channels", () => {
         await settle();
 
         await w.get("[data-testid='directory-search']").setValue("vol");
-        await w.get("[data-testid='directory-show-not-joined']").trigger("click");
+        await w.get("[data-testid='directory-show-option'][data-value='notJoined']").trigger("click");
         await w.get("[data-testid='directory-join']").trigger("click");
 
         expect(roomsOf().setQuery).toHaveBeenCalledWith("vol");
@@ -3619,11 +3619,12 @@ describe("a channel the person has not joined", () => {
         expect(document.activeElement).toBe(search);
     });
 
+    // The rooms speak through the shell's announce, which the block gives the chat's one voice.
     test("speaks what the rooms say about a join while Browse channels is closed", async () => {
         const w = await openVolunteers();
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
 
-        (roomsOf().state as unknown as { announcement: unknown }).announcement = { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 };
+        mockShellOptions?.announce?.("You're in Volunteers. It can take a few seconds to show up.");
         await settle();
 
         expect(w.get("[data-testid='announcer-polite']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
