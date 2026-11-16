@@ -2,7 +2,6 @@
 <template>
     <PanelHost title="Members"
                :subtitle="subtitle"
-               :isPhone="isPhone"
                :entranceKeys="entranceKeys"
                @close="emit('close')">
         <template v-if="!refusal" #top>

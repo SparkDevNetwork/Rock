@@ -2,17 +2,14 @@
 <template>
     <PanelHost :title="title"
                :subtitle="subtitle"
-               :isPhone="isPhone"
                :entranceKeys="entranceKeys"
                @close="emit('close')">
         <template #actions>
-            <IconButton class="chat-ls-refresh"
-                        icon="refresh"
-                        :label="`Refresh ${name}`"
+            <IconButton :label="`Refresh ${name}`"
                         :data-testid="`${name}-refresh`"
                         :aria-busy="isRefreshing ? 'true' : undefined"
                         :aria-disabled="isRefreshing ? 'true' : undefined"
-                        @click="onRefresh" />
+                        @click="onRefresh"><Icon class="chat-lp-refresh-ic" :class="{ 'is-turning': isRefreshing }" name="refresh" size="md" /></IconButton>
         </template>
 
         <template v-if="$slots.top" #top>
@@ -51,6 +48,11 @@
 </template>
 
 <style scoped>
+/* A refresh out: the arrows turn until it lands. */
+.chat-lp-refresh-ic.is-turning {
+    animation: chat-spin var(--chat-d-refresh-spin) linear infinite;
+}
+
 /* The failed refresh's Try again sits at the strip's end. */
 .chat-lp-retry {
     margin-left: auto;
@@ -72,7 +74,6 @@
     import PanelHost from "./panelHost.partial.obs";
     import Skeleton from "./skeleton.partial.obs";
     import { useAnnouncer } from "./announcer.partial";
-    import { useChatSession } from "../chatSession.partial";
 
     // The one frame the panel's lists are drawn in, the Mentions inbox and the Threads list: the
     // panel host and its Refresh, a failed refresh's strip over the rows it kept, skeleton rows
@@ -186,8 +187,6 @@
     /** The skeleton rows' line widths, in turn, so the stand-ins do not read as one row repeated. */
     const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70], [42, 78, 52]];
 
-    // On a phone the panel leaves by its back chevron, which the host draws.
-    const { isPhone } = useChatSession();
     const { announce } = useAnnouncer();
 
     const bodyElement = ref<HTMLElement>();
