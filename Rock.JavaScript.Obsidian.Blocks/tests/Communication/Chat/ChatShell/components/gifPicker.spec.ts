@@ -262,6 +262,45 @@ describe("the GIF picker", () => {
         expect(document.activeElement).toBe(anchor);
     });
 
+    // The shared paging trigger: a sentinel at the end of the GIFs asks the next page as it comes into view.
+    test("asks the next page as the end of the GIFs comes into view, and not while the last page is all there is", async () => {
+        const seen: Array<{ callback: IntersectionObserverCallback, watched: Element[] }> = [];
+        const original = window.IntersectionObserver;
+        window.IntersectionObserver = class {
+            public watched: Element[] = [];
+            constructor(public callback: IntersectionObserverCallback) {
+                seen.push(this);
+            }
+            observe(element: Element): void {
+                this.watched.push(element);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.watched = [];
+            }
+        } as unknown as typeof IntersectionObserver;
+        try {
+            const gifs = fakeGifs();
+            await open(gifs);
+            picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+            await answered(gifs, [result("a"), result("b")], true);
+
+            const end = seen.find(observer => observer.watched.length > 0);
+            end?.callback(end.watched.map(target => ({ target, isIntersecting: true }) as IntersectionObserverEntry), {} as IntersectionObserver);
+            await flushPromises();
+            expect(gifs.asked.map(a => a.page)).toEqual([1, 2]);
+
+            await answered(gifs, [result("c")], false);
+            const last = seen.filter(observer => observer.watched.length > 0).pop();
+            last?.callback(last.watched.map(target => ({ target, isIntersecting: true }) as IntersectionObserverEntry), {} as IntersectionObserver);
+            await flushPromises();
+            expect(gifs.asked.map(a => a.page)).toEqual([1, 2]);
+        }
+        finally {
+            window.IntersectionObserver = original;
+        }
+    });
+
     test("on a phone it is a bottom sheet over a scrim", async () => {
         const gifs = fakeGifs();
         await open(gifs, { isPhone: true });
