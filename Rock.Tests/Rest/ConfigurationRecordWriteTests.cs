@@ -204,5 +204,54 @@ namespace Rock.Tests.Rest
         }
 
         #endregion
+
+        #region Audit And Analytics Controllers
+
+        /// <summary>
+        /// The v1 controllers for audit rows and analytics tables. These rows are
+        /// written by Rock itself and the analytics ETL, never by REST callers.
+        /// </summary>
+        private static readonly Tuple<string, Type>[] _auditAndAnalyticsControllers = new[]
+        {
+            Tuple.Create( "AuditsController", typeof( Audit ) ),
+            Tuple.Create( "AuditDetailsController", typeof( AuditDetail ) ),
+            Tuple.Create( "AuthAuditLogsController", typeof( AuthAuditLog ) ),
+            Tuple.Create( "AnalyticsDimCampusController", typeof( AnalyticsDimCampus ) ),
+            Tuple.Create( "AnalyticsDimFamilyCurrentsController", typeof( AnalyticsDimFamilyCurrent ) ),
+            Tuple.Create( "AnalyticsDimFamilyHeadOfHouseholdsController", typeof( AnalyticsDimFamilyHeadOfHousehold ) ),
+            Tuple.Create( "AnalyticsDimFamilyHistoricalsController", typeof( AnalyticsDimFamilyHistorical ) ),
+            Tuple.Create( "AnalyticsDimFinancialAccountsController", typeof( AnalyticsDimFinancialAccount ) ),
+            Tuple.Create( "AnalyticsDimFinancialBatchesController", typeof( AnalyticsDimFinancialBatch ) ),
+            Tuple.Create( "AnalyticsDimPersonCurrentsController", typeof( AnalyticsDimPersonCurrent ) ),
+            Tuple.Create( "AnalyticsDimPersonHistoricalsController", typeof( AnalyticsDimPersonHistorical ) ),
+            Tuple.Create( "AnalyticsFactAttendancesController", typeof( AnalyticsFactAttendance ) ),
+            Tuple.Create( "AnalyticsFactFinancialTransactionsController", typeof( AnalyticsFactFinancialTransaction ) ),
+            Tuple.Create( "AnalyticsSourceAttendancesController", typeof( AnalyticsSourceAttendance ) ),
+            Tuple.Create( "AnalyticsSourceCampusController", typeof( AnalyticsSourceCampus ) ),
+            Tuple.Create( "AnalyticsSourceFamilyHistoricalsController", typeof( AnalyticsSourceFamilyHistorical ) ),
+            Tuple.Create( "AnalyticsSourceFinancialTransactionsController", typeof( AnalyticsSourceFinancialTransaction ) ),
+            Tuple.Create( "AnalyticsSourceGivingUnitsController", typeof( AnalyticsSourceGivingUnit ) ),
+            Tuple.Create( "AnalyticsSourcePersonHistoricalsController", typeof( AnalyticsSourcePersonHistorical ) )
+        };
+
+        [TestMethod]
+        public void AuditAndAnalyticsControllers_OverrideCheckCanEdit()
+        {
+            foreach ( var controller in _auditAndAnalyticsControllers )
+            {
+                AssertDeclaresProtectedOverride( controller.Item1, "CheckCanEdit", controller.Item2 );
+            }
+        }
+
+        [TestMethod]
+        public void AuditAndAnalyticsControllers_PublicActions_AreUnchanged()
+        {
+            foreach ( var controller in _auditAndAnalyticsControllers )
+            {
+                CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( controller.Item1 ) ), $"{controller.Item1} public actions changed." );
+            }
+        }
+
+        #endregion
     }
 }
