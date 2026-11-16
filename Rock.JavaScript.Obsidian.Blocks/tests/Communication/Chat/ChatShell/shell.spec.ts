@@ -911,6 +911,25 @@ describe("the page load", () => {
         expect(h.shell.state.errors).toEqual([]);
     });
 
+    // The toast says why; the feed that asked learns it failed, so it offers Try again rather than
+    // asking again by itself.
+    test("an older page that fails is told by the error toast and fails for the feed that asked", async () => {
+        const h = build();
+        const starting = h.shell.start();
+        await settle();
+        h.history[channelA]?.shift()?.resolve(fakeResponse(200, { ...page(10), has_more: true }));
+        await starting;
+        await settle();
+
+        const older = h.shell.loadOlder();
+        const outcome = older.then(() => "landed", () => "failed");
+        await settle();
+        h.history[channelA]?.shift()?.resolve(fakeResponse(500, { message: "down" }));
+
+        expect(await outcome).toBe("failed");
+        expect(h.shell.state.errors).toHaveLength(1);
+    });
+
     test("a reload that fails once the list is drawn is still told by the error toast, as nothing else shows it", async () => {
         const h = build({ linkedChannelId: null });
         await h.shell.start();
