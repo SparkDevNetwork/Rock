@@ -1207,10 +1207,9 @@
 
 
 /*
-    A panel's list of rows, shared by the threads list and the mentions inbox: one button under the
-    whole row, what is drawn sitting over it and letting every press through. Under the root, so
-    each rule outranks the base focus and the icon's own scoped size; a list's own states are in
-    its component.
+    A panel's list of rows, shared by the threads list and the mentions inbox. Each row is the list
+    row; what is here is the list's spacing and the words both lists draw in it. Under the root, so
+    each rule outranks the icon's own scoped size; a list's own states are in its component.
 */
 .chat-shell .chat-ls-list {
     padding: 2px 8px 4px;
@@ -1236,61 +1235,18 @@
     animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
 }
 
-
-
-.chat-shell .chat-ls-row {
-    position: relative;
-    border-radius: var(--chat-r-control);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
+/* A hairline of air between one row's fill and the next. */
 .chat-shell .chat-ls-row + .chat-ls-row {
     margin-top: 1px;
 }
 
-.chat-shell .chat-ls-row:hover {
-    background: var(--chat-hover);
-}
-
-.chat-shell .chat-ls-hit {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    width: 100%;
-    padding: 0;
-    background: none;
-    border: 0;
-    border-radius: inherit;
-}
-
-.chat-shell .chat-ls-hit:focus-visible {
-    outline-offset: -2px;
-    border-radius: var(--chat-r-control);
-}
-
-.chat-shell .chat-ls-hit:active {
-    background: var(--chat-press);
-}
-
-.chat-shell .chat-ls-in {
-    position: relative;
-    z-index: 1;
-    display: grid;
-    grid-template-columns: 32px minmax(0, 1fr);
-    column-gap: 10px;
-    padding: 10px 10px 11px;
-    pointer-events: none;
-}
-
+/* The author's face, which a mention marks at its corner. */
 .chat-shell .chat-ls-avw {
     position: relative;
+    display: block;
     width: 32px;
     height: 32px;
     margin-top: 1px;
-}
-
-.chat-shell .chat-ls-main {
-    min-width: 0;
 }
 
 .chat-shell .chat-ls-head {
@@ -1337,14 +1293,11 @@
     align-self: center;
 }
 
+/* The time, at the row's end beside the author's line. */
 .chat-shell .chat-ls-t {
-    flex: none;
-    padding-left: 8px;
-    margin-left: auto;
     font-size: var(--chat-fs-small);
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
-    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
 }
 
 /* Two lines of the message, its chips and links drawn as they are in the conversation. */

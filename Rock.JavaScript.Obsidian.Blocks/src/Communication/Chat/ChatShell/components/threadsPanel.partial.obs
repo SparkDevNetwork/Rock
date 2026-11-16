@@ -52,28 +52,39 @@
                 :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
                 :style="{ '--chat-enter-i': index }"
                 data-testid="thread-row">
-                <button type="button"
-                        class="chat-ls-hit"
-                        data-testid="thread-row-open"
-                        :data-root-id="drawn.rootId"
-                        :aria-label="drawn.label"
-                        :aria-describedby="`${uid}-hint`"
-                        v-bind="listKeys.itemAttrs(drawn.rootId)"
-                        :ref="listKeys.itemRef(drawn.rootId)"
-                        @click="emit('open', drawn.rootId, drawn.channelId)"></button>
-
-                <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
-                <div class="chat-ls-in" aria-hidden="true" inert>
-                    <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
-                    <div class="chat-ls-main">
-                        <div class="chat-ls-head">
-                            <b v-if="drawn.who">{{ drawn.who }}</b>
-                            <span v-if="tab === 'all'" class="chat-ls-sub">
-                                <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
-                                <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
-                            </span>
-                            <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
-                        </div>
+                <!--
+                    The thread is a list row named by its button alone, so what it draws is for the
+                    eye: its links and chips are never reached. Its follow toggle takes the time's
+                    place where the row is pointed at or focused, and stays out on a row unfollowed
+                    on the All tab, which is kept faded until the next fetch so taking it back is
+                    one press. A refused follow says so under the row.
+                -->
+                <ListRow interactive
+                         :label="drawn.label"
+                         :hitAttrs="{
+                             'data-testid': 'thread-row-open',
+                             'data-root-id': drawn.rootId,
+                             'aria-describedby': `${uid}-hint`,
+                             ...listKeys.itemAttrs(drawn.rootId)
+                         }"
+                         :hitRef="listKeys.itemRef(drawn.rootId)"
+                         :actionsShown="drawn.isOff ? true : null"
+                         :dimmed="drawn.isOff"
+                         @press="emit('open', drawn.rootId, drawn.channelId)">
+                    <template #lead>
+                        <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
+                    </template>
+                    <div class="chat-ls-head">
+                        <b v-if="drawn.who">{{ drawn.who }}</b>
+                        <span v-if="tab === 'all'" class="chat-ls-sub">
+                            <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                            <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
+                        </span>
+                    </div>
+                    <template #meta>
+                        <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
+                    </template>
+                    <template #detail>
                         <div class="chat-ls-text">
                             <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :isConversation="drawn.isConversation" />
                         </div>
@@ -91,17 +102,16 @@
                                 <Badge v-if="drawn.mentions" icon="at" :count="drawn.mentions" data-testid="thread-row-mentions" />
                             </span>
                         </div>
-                    </div>
-                </div>
-
-                <IconButton class="chat-ls-follow"
-                            :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
-                            :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
-                            data-testid="thread-row-follow"
-                            tabindex="-1"
-                            :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
-                            @click="onFollow(drawn)" />
-
+                    </template>
+                    <template #actions>
+                        <IconButton :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
+                                    :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
+                                    data-testid="thread-row-follow"
+                                    tabindex="-1"
+                                    :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
+                                    @click="onFollow(drawn)" />
+                    </template>
+                </ListRow>
                 <SettingNote v-if="drawn.error"
                              class="chat-ls-rowerr"
                              role="alert"
@@ -115,7 +125,7 @@
 </template>
 
 <style scoped>
-/* The list's frame and states are the list panel's, and its row the sheet's, shared with the mentions inbox; what is here is the threads list's own. */
+/* The list's frame and states are the list panel's, and its row the list row; what is here is the threads list's own. */
 
 /* The tabs' band under the header. */
 .chat-ls-top {
@@ -277,71 +287,8 @@
     color: var(--chat-text);
 }
 
-/* Unfollowed on the All tab: kept in place until the next fetch, so taking it back is one press. */
-.chat-ls-row.is-off .chat-ls-in {
-    opacity: .62;
-}
-
-/* The follow toggle takes the time's place where the row is pointed at, focused, off or busy. */
-.chat-ls-row :deep(.chat-ls-follow) {
-    --chat-ic-size: 16px;
-    position: absolute;
-    top: 5px;
-    right: 6px;
-    z-index: var(--chat-z-raised);
-    width: 30px;
-    height: 30px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity var(--chat-t-fast) var(--chat-ease-state), background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-ls-row:hover :deep(.chat-ls-follow),
-.chat-ls-row:focus-within :deep(.chat-ls-follow),
-.chat-ls-row.is-off :deep(.chat-ls-follow),
-.chat-ls-list.is-phone :deep(.chat-ls-follow) {
-    pointer-events: auto;
-    opacity: 1;
-}
-
-.chat-ls-row:hover .chat-ls-t,
-.chat-ls-row:focus-within .chat-ls-t,
-.chat-ls-row.is-off .chat-ls-t,
-.chat-ls-list.is-phone .chat-ls-t {
-    opacity: 0;
-}
-
-/* A touch screen has no hover to bring the toggle out, so it is always there. */
-@media (hover: none) {
-    .chat-ls-row :deep(.chat-ls-follow) {
-        pointer-events: auto;
-        opacity: 1;
-    }
-
-    .chat-ls-row .chat-ls-t {
-        opacity: 0;
-    }
-}
-
-/* Busy: the bell gives way to a spinner, drawn as the shared one is. */
-.chat-ls-row :deep(.chat-ls-follow[aria-busy="true"] .chat-ic) {
-    display: none;
-}
-
-.chat-ls-row :deep(.chat-ls-follow[aria-busy="true"])::after {
-    width: 13px;
-    height: 13px;
-    content: "";
-    border: 2px solid currentColor;
-    border-right-color: transparent;
-    border-radius: var(--chat-r-full);
-    animation: chat-spin var(--chat-d-spin) linear infinite;
-}
-
 /* A refused follow under its row, in line with the row's words. */
 .chat-ls-rowerr {
-    position: relative;
-    z-index: 1;
     padding-bottom: 10px;
     margin: -4px 10px 0 52px;
 }
@@ -358,6 +305,7 @@
     import Badge from "../ui/badge.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
     import ListPanel from "../ui/listPanel.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
@@ -595,7 +543,7 @@
     function onListKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement | null;
         const row = target?.closest<HTMLElement>(".chat-ls-row");
-        const hit = row?.querySelector<HTMLElement>(".chat-ls-hit");
+        const hit = row?.querySelector<HTMLElement>("[data-testid='thread-row-open']");
         if (!row || !hit) {
             return;
         }
