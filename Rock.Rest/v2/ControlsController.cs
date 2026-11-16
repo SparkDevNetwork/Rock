@@ -4824,7 +4824,12 @@ namespace Rock.Rest.v2
                     ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
                     : null;
 
-                if ( updateAttribute?.FieldType?.Guid == SystemGuid.FieldType.DEFINED_VALUE.AsGuid() )
+                // Only an attribute built on this defined type and open to adding values may be updated.
+                var isAttributeForDefinedType = updateAttribute?.FieldType?.Guid == SystemGuid.FieldType.DEFINED_VALUE.AsGuid()
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull() == definedType.Id
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "AllowAddingNewValues" ).AsBoolean();
+
+                if ( isAttributeForDefinedType )
                 {
                     var needSave = Field.Helper.AddDefinedValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
 
