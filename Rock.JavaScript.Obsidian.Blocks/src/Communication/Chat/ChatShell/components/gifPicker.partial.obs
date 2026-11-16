@@ -99,26 +99,6 @@
 </template>
 
 <style scoped>
-/* The picker's frame inside the popover, the emoji picker's size: its parts in a column, cut to the popover's corners. */
-.chat-picker {
-    display: flex;
-    flex-direction: column;
-    width: 328px;
-    max-width: calc(100vw - 16px);
-    max-height: 380px;
-    overflow: hidden;
-    border-radius: inherit;
-}
-
-/* In a sheet it fills the sheet's height instead. */
-.chat-picker.is-sheet {
-    flex: 1;
-    width: auto;
-    max-width: none;
-    min-height: 0;
-    max-height: none;
-}
-
 .chat-gif-head {
     flex: none;
     padding: 10px 10px 6px;

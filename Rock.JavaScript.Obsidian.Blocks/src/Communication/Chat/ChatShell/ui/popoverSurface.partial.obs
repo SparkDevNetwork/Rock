@@ -14,6 +14,7 @@
             <div v-if="popover.isOpen.value"
                  :ref="setFloating"
                  class="chat-popover"
+                 :class="{ 'is-pill': isPill }"
                  data-testid="popover"
                  :role="role || undefined"
                  :aria-label="label"
@@ -36,6 +37,11 @@
     outline: none;
     box-shadow: var(--chat-shadow-float);
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* A pill as wide as what it holds, as the emoji tray's quick reactions are. */
+.chat-popover.is-pill {
+    border-radius: var(--chat-r-full);
 }
 
 /* Leaves half as far and faster than it came, and takes no press on its way out. */
@@ -93,6 +99,12 @@
         sheetHeight: {
             type: String as PropType<SheetHeight>,
             default: "content"
+        },
+
+        /** Whether the surface beside its anchor is a pill rather than the surface's corners. */
+        isPill: {
+            type: Boolean,
+            default: false
         }
     });
 

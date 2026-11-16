@@ -129,18 +129,7 @@
 </template>
 
 <style scoped>
-/* The picker's frame inside the popover: one size, its parts in a column, cut to the popover's corners. */
-.chat-picker {
-    display: flex;
-    flex-direction: column;
-    width: 328px;
-    max-width: calc(100vw - 16px);
-    max-height: 380px;
-    overflow: hidden;
-    border-radius: inherit;
-}
-
-/* The tray is as wide as what it holds. */
+/* The picker's frame is the sheet's shared one; the tray is as wide as what it holds. */
 .chat-picker.is-tray {
     width: auto;
 }
