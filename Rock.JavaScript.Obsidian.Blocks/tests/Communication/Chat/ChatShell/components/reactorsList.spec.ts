@@ -36,6 +36,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ReactorsList from "../../../../../src/Communication/Chat/ChatShell/components/reactorsList.partial.obs";
+import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
 import { providedSession } from "../sessionShapes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -178,6 +179,10 @@ describe("the tab of every emoji", () => {
         await w.findAll("[data-testid='reactors-tab']")[0].trigger("click");
         expect(listReactors).toHaveBeenLastCalledWith(null, null);
         expect(w.findAll("[data-testid='reactors-reserved']")).toHaveLength(6);
+        // each held row is the shared skeleton in a reactor row's shape, so the list holds its place
+        const held = w.findAllComponents(Skeleton);
+        expect(held.map(row => row.props("shape"))).toEqual(Array(6).fill("reactor"));
+        expect(held.every(row => row.attributes("data-testid") === "reactors-reserved")).toBe(true);
 
         answer({ reactors: [{ ...person(cara, "Cara", "Lin", "2026-10-16T09:05:00Z"), code: "heart" }, { ...person(anna, "Anna", "Reyes", "2026-10-16T09:03:00Z"), code: "pray" }], has_more: true });
         await settle();

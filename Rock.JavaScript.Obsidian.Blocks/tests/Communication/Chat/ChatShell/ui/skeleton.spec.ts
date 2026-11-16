@@ -28,7 +28,7 @@ function bones(shape: string, extra: Record<string, unknown> = {}): HTMLElement[
 }
 
 describe("the skeleton", () => {
-    test.each(["channel", "person", "group", "bubble", "panel"])("a %s row is hidden from a screen reader and carries its shape", shape => {
+    test.each(["channel", "person", "group", "bubble", "panel", "reactor"])("a %s row is hidden from a screen reader and carries its shape", shape => {
         const row = mount(Skeleton, { props: { shape } });
 
         expect(row.attributes("aria-hidden")).toBe("true");
@@ -56,10 +56,19 @@ describe("the skeleton", () => {
         expect(drawn.length).toBeGreaterThanOrEqual(4);
     });
 
-    test("a bubble has a face beside it, and none when it is the reader's own", () => {
-        expect(bones("bubble").some(bone => bone.classList.contains("is-face"))).toBe(true);
+    // A two-person conversation draws no faces beside its bubbles, so neither does its skeleton.
+    test("a bubble has no face, the reader's own or the other person's", () => {
+        expect(bones("bubble").some(bone => bone.classList.contains("is-face"))).toBe(false);
         expect(bones("bubble", { isOwn: true }).some(bone => bone.classList.contains("is-face"))).toBe(false);
         expect(mount(Skeleton, { props: { shape: "bubble", isOwn: true } }).classes()).toContain("is-own");
+    });
+
+    test("a reactor row is a 28px face and a name, as the reactions list draws a person", () => {
+        const drawn = bones("reactor");
+
+        expect(drawn.map(bone => bone.classList.contains("is-face"))).toEqual([true, false]);
+        expect(drawn[0].style.width).toBe("28px");
+        expect(drawn[0].style.height).toBe("28px");
     });
 
     test("draws its lines at the widths it is given, so a column of rows reads as text rather than stripes", () => {
@@ -79,9 +88,10 @@ describe("the skeleton", () => {
 describe("the skeleton's look", () => {
     const style = styleOf("skeleton.partial.obs");
 
-    test("a channel row is 44px, a conversation row 52px", () => {
+    test("a channel row is 44px, a conversation row 52px, a reactor row 40px", () => {
         expect(ruleOf(style, ".chat-skel.is-channel")).toMatch(/height:\s*44px/);
         expect(ruleOf(style, ".chat-skel.is-person")).toMatch(/height:\s*52px/);
+        expect(ruleOf(style, ".chat-skel.is-reactor")).toMatch(/height:\s*40px/);
     });
 
     test("is drawn still, with no wait and no fade in: no animation at all", () => {
