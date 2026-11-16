@@ -228,7 +228,8 @@
     padding-left: 12px;
 }
 
-.chat-fd-hdr :deep(.chat-fd-back) {
+/* Back's hover disc stands out past the header's gutter, so its glyph lines up with the title's edge. */
+.chat-fd-hdr .chat-fd-back {
     margin-left: -8px;
 }
 
@@ -727,8 +728,8 @@
         campus: DirectoryCampus;
     };
 
-    /** A row as the list draws it, worked out once per answer. */
-    type DrawnRow = {
+    /** A channel as Browse lists it, worked out once per answer. */
+    type ListedChannel = {
         id: string;
         name: string;
         description: string | null;
@@ -849,7 +850,7 @@
         return `${count} ${total === 1 ? "channel" : "channels"}`;
     });
 
-    const drawnRows = computed((): DrawnRow[] => {
+    const drawnRows = computed((): ListedChannel[] => {
         return props.directory.rows.map(row => {
             const name = row.name ?? "";
             const join = props.joins[row.channel_id] ?? idle;
@@ -976,7 +977,7 @@
      */
     function onKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement;
-        const rows = Array.from(viewElement.value?.querySelectorAll<HTMLElement>("[data-testid='directory-row-open']") ?? []);
+        const rows = Array.from(viewElement.value?.querySelectorAll<HTMLElement>(".chat-fd-open") ?? []);
 
         if (event.key === "Escape") {
             event.stopPropagation();
@@ -1053,10 +1054,10 @@
         }
 
         const id = props.directory.rows[refusedIndex].channel_id;
-        const row = viewElement.value?.querySelector<HTMLElement>(`[data-testid='directory-row'][data-channel-id='${id}']`);
+        const row = viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id='${id}']`);
         if (row?.querySelector(".chat-fd-act")?.contains(active)) {
             await nextTick();
-            row.querySelector<HTMLElement>("[data-testid='directory-row-open']")?.focus();
+            row.querySelector<HTMLElement>(".chat-fd-open")?.focus();
         }
     }, { flush: "pre" });
 
