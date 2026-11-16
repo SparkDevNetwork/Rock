@@ -27,6 +27,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
+import ChannelMark from "../../../../../src/Communication/Chat/ChatShell/ui/channelMark.partial.obs";
 import { DirectoryState, JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { providedSession } from "../sessionShapes";
@@ -273,11 +274,12 @@ describe("the search", () => {
 });
 
 describe("the campus chips", () => {
-    test("offer every campus by its short name, else its name, between All campuses and Whole church", () => {
+    // The rest of the block says "Downtown Campus"; a short code here was a second name for it.
+    test("offer every campus by its name, between All campuses and Whole church", () => {
         const w = mountDirectory();
 
         const chips = w.findAll("[data-testid='directory-chip']");
-        expect(chips.map(chip => chip.text())).toEqual(["All campuses", "Downtown", "North Campus", "Whole church"]);
+        expect(chips.map(chip => chip.text())).toEqual(["All campuses", "Downtown Campus", "North Campus", "Whole church"]);
         expect(w.get("[data-testid='directory-chips']").attributes("role")).toBe("group");
         expect(w.get("[data-testid='directory-chips']").attributes("aria-label")).toBe("Campus");
     });
@@ -307,6 +309,31 @@ describe("the campus chips", () => {
         await chips[0].trigger("click");
 
         expect(w.emitted("campus")).toEqual([[{ kind: "campus", campusId: downtown.guid }], [{ kind: "wholeChurch" }], [{ kind: "all" }]]);
+    });
+
+    // On a phone the row ran off the edge with nothing to say more was there: it scrolls in one
+    // line, and the edge where chips are cut fades, at either end, wherever the row is cut.
+    test("fade the edge where the row cuts chips off, and not once it is scrolled to that end", async () => {
+        const w = mountDirectory({ isPhone: true });
+        const row = w.get("[data-testid='directory-chips']");
+        const element = row.element as HTMLElement;
+        let scrollLeft = 0;
+        Object.defineProperty(element, "scrollWidth", { configurable: true, get: () => 500 });
+        Object.defineProperty(element, "clientWidth", { configurable: true, get: () => 300 });
+        Object.defineProperty(element, "scrollLeft", { configurable: true, get: () => scrollLeft });
+
+        await row.trigger("scroll");
+        expect(row.classes()).toContain("is-cut-end");
+        expect(row.classes()).not.toContain("is-cut-start");
+
+        scrollLeft = 200;
+        await row.trigger("scroll");
+        expect(row.classes()).toContain("is-cut-start");
+        expect(row.classes()).not.toContain("is-cut-end");
+
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        expect(style).toMatch(/\.chat-fd-chips\.is-cut-end\s*\{[^}]*mask-image:[^}]*var\(--chat-mask-solid\)/);
     });
 
     test("give way to the church's note when it shows each person only their campus's rooms", () => {
@@ -373,12 +400,14 @@ describe("the count line", () => {
 });
 
 describe("a row", () => {
-    test("draws the room's name, its description and its group type and campus, with no member count", () => {
+    // Rock's group type ("Chat Shared Channel") said nothing a person picks a channel by.
+    test("draws the room's name, its description and its campus, with no group type and no member count", () => {
         const w = mountDirectory();
 
         const row = rowOf(w, outreach.channel_id);
         expect(row.get("[data-testid='directory-row-name']").text()).toBe("Local Outreach");
-        expect(row.findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Small Group", "Downtown Campus"]);
+        expect(row.findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Downtown Campus"]);
+        expect(row.text()).not.toContain("Small Group");
         expect(row.text()).not.toContain("members");
         expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-desc']").text()).toBe("Serve teams across the church");
     });
@@ -386,8 +415,23 @@ describe("a row", () => {
     test("says Whole church for a room with no campus, and draws no description line without one", () => {
         const w = mountDirectory();
 
-        expect(rowOf(w, volunteers.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Serving Team", "Whole church"]);
+        expect(rowOf(w, volunteers.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
         expect(rowOf(w, outreach.channel_id).find("[data-testid='directory-row-desc']").exists()).toBe(false);
+    });
+
+    // A channel with a photo showed it everywhere but here, where a plain hash stood in.
+    test("draws the channel's own photo through the channel mark, and its letter tile without one, as the sidebar does", () => {
+        const pictured = { ...volunteers, icon_url: "https://church.example/volunteers.jpg" };
+        const w = mountDirectory({ directory: directory({ rows: [pictured, outreach] }) });
+
+        const photo = rowOf(w, volunteers.channel_id).getComponent(ChannelMark);
+        expect(photo.props("imageUrl")).toBe("https://church.example/volunteers.jpg");
+        expect(photo.props("tileName")).toBe("Volunteers");
+        expect(photo.get("[data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/volunteers.jpg");
+
+        const letter = rowOf(w, outreach.channel_id).getComponent(ChannelMark);
+        expect(letter.props("imageUrl")).toBeNull();
+        expect(letter.get("[data-testid='channel-mark-letter']").text()).toBe("L");
     });
 
     test("marks the part of the name the search matched, in any letter case", () => {
@@ -419,8 +463,8 @@ describe("a row", () => {
     test("tells a screen reader the room, whether it is joined, its facts and what opening does", () => {
         const w = mountDirectory();
 
-        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Volunteers, Serving Team, Whole church. Preview channel");
-        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Worship Team, joined, Serving Team, Whole church. Open channel");
+        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Volunteers, Whole church. Preview channel");
+        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Worship Team, joined, Whole church. Open channel");
     });
 
     test("is a list of channels", () => {
@@ -475,7 +519,7 @@ describe("Join on a row", () => {
         expect(w.emitted("join")).toBeUndefined();
     });
 
-    test("pops a fresh Joined in, the row's icon turning member, once the door and the platform agree", () => {
+    test("pops a fresh Joined in, the row marked member, once the door and the platform agree", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joined", isFresh: true } };
         const w = mountDirectory({ joins });
 
