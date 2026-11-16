@@ -465,6 +465,19 @@ namespace Rock.Rest.Controllers
             // Related records (such as logins) would be inserted with the person without their own check.
             CheckNoUntrackedRelatedEntities( person );
 
+            /*
+                11/16/2026 - MSE
+
+                Rock sets the created and modified person and date from the signed-in person when
+                a record is saved, but keeps the values the client posted. This method does not
+                call the base POST, so it clears them itself, on the person and on the phone
+                numbers posted with the person. A client could otherwise store another person as
+                the author or last modifier of the new records, or back date them.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            ClearAuditValues( person, Service.Context );
+
             SetProxyCreation( true );
 
             CheckCanEdit( person );
@@ -522,6 +535,19 @@ namespace Rock.Rest.Controllers
 
             // Related records (such as logins) would be inserted with the person without their own check.
             CheckNoUntrackedRelatedEntities( person );
+
+            /*
+                11/16/2026 - MSE
+
+                Rock sets the created and modified person and date from the signed-in person when
+                a record is saved, but keeps the values the client posted. This method does not
+                call the base POST, so it clears them itself, on the person and on the phone
+                numbers posted with the person. A client could otherwise store another person as
+                the author or last modifier of the new records, or back date them.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            ClearAuditValues( person, Service.Context );
 
             SetProxyCreation( true );
 
