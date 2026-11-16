@@ -59,16 +59,14 @@
                     <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
                 </div>
                 <div v-else-if="campuses.length > 0" class="chat-fd-chips" role="group" aria-label="Campus" data-testid="directory-chips">
-                    <button v-for="chip in chips"
-                            :key="chip.key"
-                            type="button"
-                            class="chat-fd-chip"
-                            data-testid="directory-chip"
-                            :data-campus="chip.key"
-                            :aria-pressed="isChipPressed(chip.campus) ? 'true' : 'false'"
-                            @click="emit('campus', chip.campus)">
+                    <Pill v-for="chip in chips"
+                          :key="chip.key"
+                          data-testid="directory-chip"
+                          :data-campus="chip.key"
+                          :selected="isChipPressed(chip.campus)"
+                          @click="emit('campus', chip.campus)">
                         {{ chip.label }}
-                    </button>
+                    </Pill>
                 </div>
             </div>
         </div>
@@ -328,31 +326,6 @@
 
 .chat-fd-chips::-webkit-scrollbar {
     display: none;
-}
-
-.chat-fd-chip {
-    flex: none;
-    height: 30px;
-    padding: 0 13px;
-    font: inherit;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    white-space: nowrap;
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-fd-chip:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-fd-chip[aria-pressed="true"] {
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-color: var(--chat-brand-line);
 }
 
 .chat-fd-note {
@@ -838,6 +811,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Icon from "../ui/icon.partial.obs";
+    import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
