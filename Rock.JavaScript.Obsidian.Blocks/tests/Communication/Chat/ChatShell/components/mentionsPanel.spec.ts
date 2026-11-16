@@ -38,6 +38,7 @@
 //          failure, with Try again), mentions-more-error (an older page's failure), mentions-empty, mentions-refresh,
 //          mention-skeleton. The panel host's marks are threadDrawer.spec's.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 import MentionsPanel from "../../../../../src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -291,6 +292,26 @@ describe("paging", () => {
 
         expect(plain(w.get("[data-testid='mentions-end']").text())).toBe("That's every mention");
         expect(w.find("[data-testid='mentions-more']").exists()).toBe(false);
+    });
+
+    // Pressed, the row hands focus to the first older mention so the keyboard carries on; asked by
+    // scrolling, it leaves focus where the reader has it.
+    test("an older page asked from its button gives its first row focus; one asked by scrolling does not", async () => {
+        const pressed = draw({ hasMore: true, rows: [row(52), row(51)] });
+        (pressed.get("[data-testid='mentions-more']").element as HTMLElement).focus();
+        await pressed.setProps({ isLoadingOlder: true });
+        await pressed.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50)] });
+        await nextTick();
+        expect(document.activeElement).toBe(pressed.findAll("[data-testid='mention-row-open']")[2].element);
+        pressed.unmount();
+
+        const scrolled = draw({ hasMore: true, rows: [row(52), row(51)] });
+        const first = scrolled.findAll("[data-testid='mention-row-open']")[0].element as HTMLElement;
+        first.focus();
+        await scrolled.setProps({ isLoadingOlder: true });
+        await scrolled.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50)] });
+        await nextTick();
+        expect(document.activeElement).toBe(first);
     });
 
     test("says an older page failed offline, keeping the rows, its button now Try again", async () => {

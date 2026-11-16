@@ -77,16 +77,14 @@
             </section>
         </div>
 
-        <div v-if="hasMore" class="chat-ls-more">
-            <div v-if="olderError" class="chat-ls-err">
-                <Icon name="alert" size="sm" />
-                <span data-testid="mentions-older-error">{{ messageOrOffline(olderError, offlineOlder) }}</span>
-            </div>
-            <Button size="sm"
-                    data-testid="mentions-more"
-                    :busy="isLoadingOlder"
-                    @click="emit('loadOlder')">{{ isLoadingOlder ? "Loading" : "Load older mentions" }}</Button>
-        </div>
+        <LoadMoreRow v-if="hasMore"
+                     ref="moreRow"
+                     name="mentions"
+                     label="Load older mentions"
+                     :load="loadOlder"
+                     :isLoading="isLoadingOlder"
+                     :isFailed="!!olderError"
+                     :failure="olderError ? messageOrOffline(olderError, offlineOlder) : ''" />
         <div v-else class="chat-ls-more">
             <span class="chat-ls-endnote" data-testid="mentions-end"><Icon name="check" size="xs" />That's every mention</span>
         </div>
@@ -192,11 +190,6 @@
     padding: 10px 16px 8px;
 }
 
-.chat-ls-more .chat-ls-err {
-    align-self: stretch;
-    margin: 0;
-}
-
 .chat-ls-endnote {
     --chat-ic-size: 13px;
     display: inline-flex;
@@ -211,11 +204,11 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
-    import Button from "../ui/button.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import ListPanel from "../ui/listPanel.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
@@ -360,6 +353,7 @@
     const listKeys = useListKeys(() => days.value.flatMap(day => day.rows.map(row => row.messageId)));
 
     const listElement = ref<HTMLElement>();
+    const moreRow = ref<InstanceType<typeof LoadMoreRow>>();
 
     /** How many rows were drawn when an older page was asked for, until it lands or is dropped. */
     let olderFrom: number | null = null;
@@ -398,6 +392,11 @@
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /** The next older page, which the inbox says is out through isLoadingOlder until it lands. */
+    function loadOlder(): void {
+        emit("loadOlder");
+    }
 
     /** A reply opens its thread at the reply; anything else lands on the message in its conversation. */
     function onOpen(row: DrawnMention): void {
@@ -494,13 +493,18 @@
 
     // #region Watchers
 
+    /** Whether the older page in flight was asked from the load-more row while it held focus. */
+    let isOlderFromRow = false;
+
     watch(() => props.isLoadingOlder, isLoadingOlder => {
         if (isLoadingOlder) {
             olderFrom = props.rows.length;
+            isOlderFromRow = !!moreRow.value?.hasFocus();
         }
     });
 
-    // An older page's first row takes focus, so the keyboard carries on where the list grew.
+    // An older page asked from the row's button gives its first row focus, so the keyboard carries
+    // on where the list grew; one asked by scrolling leaves focus where it is.
     watch(() => props.isLoadingOlder, (isLoadingOlder, wasLoadingOlder) => {
         const from = olderFrom;
         if (!wasLoadingOlder || isLoadingOlder || from === null) {
@@ -518,8 +522,10 @@
         const added = props.rows.length - from;
         if (first) {
             announce(`${added} older ${added === 1 ? "mention" : "mentions"} loaded`);
-            listKeys.current.value = first.message.id;
-            listElement.value?.querySelector<HTMLElement>(`[data-testid='mention-row-open'][data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
+            if (isOlderFromRow) {
+                listKeys.current.value = first.message.id;
+                listElement.value?.querySelector<HTMLElement>(`[data-focus-stop='mentions-row'][data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
+            }
         }
     }, { flush: "post" });
 
