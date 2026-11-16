@@ -117,6 +117,29 @@ namespace Rock.Blocks.Event.InteractiveExperiences
                         return box;
                     }
 
+                    /*
+                        11/16/2026 - MSE
+
+                        The experience schedule can limit who may join to members of
+                        a group or data view. The token issued below is what lets the
+                        person join the experience over RealTime, so the requirement
+                        must be checked before it is issued. People who can edit the
+                        experience may join anyway, so staff can still open any
+                        occurrence from admin pages (the Show All option).
+
+                        Reason: Enforce the schedule group and data view requirement.
+                    */
+                    var currentPerson = RequestContext.CurrentPerson;
+
+                    if ( !InteractiveExperienceScheduleService.AreRequirementsMetForPerson( occurrence.InteractiveExperienceScheduleId, currentPerson )
+                        && !experienceCache.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                    {
+                        box.ErrorMessage = currentPerson == null
+                            ? "You must be logged in to join this experience."
+                            : "You do not meet the requirements to join this experience.";
+                        return box;
+                    }
+
                     int? personalDeviceId = null;
 
                     if ( personalDeviceIdKey.IsNotNullOrWhiteSpace() )
