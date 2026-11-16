@@ -102,6 +102,33 @@ namespace Rock.Follow.Suggestion
                                      } ).Distinct()
                                     .ToList();
 
+                    /*
+                        11/16/2026 - MSE
+
+                        A following only names a group. It does not prove the follower may still
+                        view that group, because the following may have been created without a
+                        view check or the follower may have lost access since. Keep only the
+                        followings whose group the follower can view today, so the members of a
+                        group are never suggested or auto-followed for someone who cannot view
+                        it. The queries are not AsNoTracking because Group.IsAuthorized lazy
+                        loads the parent group and group type.
+
+                        Reason: Do not read the members of groups the follower cannot view.
+                    */
+                    var followingPersonIds = followings.Select( f => f.PersonId ).Distinct().ToList();
+                    var followers = new PersonService( rockContext ).Queryable().Where( p => followingPersonIds.Contains( p.Id ) ).ToDictionary( p => p.Id );
+                    var followedGroupIds = followings.Select( f => f.EntityId ).Distinct().ToList();
+                    var viewableGroups = new GroupService( rockContext ).Queryable()
+                        .Where( g => followedGroupIds.Contains( g.Id ) &&
+                            g.IsActive && !g.IsArchived &&
+                            g.GroupType.Guid == groupTypeGuid.Value )
+                        .ToDictionary( g => g.Id );
+
+                    followings = followings.Where( f =>
+                        followers.TryGetValue( f.PersonId, out var follower ) &&
+                        viewableGroups.TryGetValue( f.EntityId, out var followedGroupEntity ) &&
+                        followedGroupEntity.IsAuthorized( Rock.Security.Authorization.VIEW, follower ) ).ToList();
+
                     var followedGroup = followings.Select( a => a.EntityId ).Distinct().ToList();
                     // Get all the groupmember records of Followed group
                     var followedGroupMembersQry = groupMemberService.Queryable().AsNoTracking()
