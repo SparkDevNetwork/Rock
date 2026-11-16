@@ -74,14 +74,17 @@
     border-top-left-radius: var(--chat-r-tail);
 }
 
-/* Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before. */
+/*
+    Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before, drawn as the
+    first frame while it waits, so under reduced motion every dot stands at full strength at once.
+*/
 .chat-typing-bubble i {
     width: 7px;
     height: 7px;
     background: currentColor;
     border-radius: var(--chat-r-full);
     opacity: .45;
-    animation: chat-bob var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: chat-bob var(--chat-d-pulse) var(--chat-ease-state) infinite backwards;
 }
 
 .chat-typing-bubble i:nth-child(2) {
