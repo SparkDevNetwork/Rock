@@ -26,6 +26,7 @@ import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, Ref, ref } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
+import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
@@ -849,7 +850,11 @@ describe("the composer's strip for a failed send", () => {
 
         expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
         expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
-        expect(strip(wrapper).find(".chat-fail-mark").exists()).toBe(true);
+        // the one inline notice, a failure: its mark, its words, Try again and Delete at its end
+        const notice = wrapper.findComponent(SettingNote);
+        expect(notice.attributes("data-testid")).toBe("composer-failed");
+        expect(notice.props("note").kind).toBe("error");
+        expect(strip(wrapper).get("[data-testid='note-retry']").text()).toBe("Try again");
         const buttons = strip(wrapper).findAll("button");
         expect(buttons.map(button => button.text())).toEqual(["Try again", "Delete"]);
         expect(buttons.every(button => button.attributes("type") === "button")).toBe(true);
@@ -890,7 +895,7 @@ describe("the composer's strip for a failed send", () => {
     test("Try again and Delete reach the owner, and focus goes back to the box", async () => {
         const wrapper = mountComposer({ props: { sendFailure: offline }, attachTo: document.body });
 
-        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
+        await strip(wrapper).get("[data-testid='note-retry']").trigger("click");
         await flushPromises();
         expect(wrapper.emitted("retryFailed")).toHaveLength(1);
         expect(document.activeElement).toBe(editorOf(wrapper));
@@ -942,7 +947,7 @@ describe("the composer's strip for a failed send", () => {
             attachTo: document.body
         });
 
-        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
+        await strip(wrapper).get("[data-testid='note-retry']").trigger("click");
         await flushPromises();
 
         expect(document.activeElement).toBe(editorOf(wrapper));
