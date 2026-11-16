@@ -112,7 +112,7 @@ button.chat-mn {
     height: 28px;
     padding: 0 14px;
     font: inherit;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-surface);

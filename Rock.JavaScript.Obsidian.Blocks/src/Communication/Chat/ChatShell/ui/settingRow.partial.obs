@@ -79,7 +79,7 @@
     flex: 1;
     flex-direction: column;
     min-width: 0;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
 }
 

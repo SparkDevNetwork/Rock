@@ -167,7 +167,7 @@
     "let your church know" is never cut on a narrow column or a phone; its words change in place.
 */
 .chat-veil-status {
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 17px;
     color: var(--chat-muted);
     animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;

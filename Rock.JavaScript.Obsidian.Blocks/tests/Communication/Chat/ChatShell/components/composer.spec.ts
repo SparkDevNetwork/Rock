@@ -1642,7 +1642,7 @@ describe("the composer's Busy note", () => {
             expect(note).toMatch(/position: absolute;/);
             expect(note).toMatch(/bottom: 100%;/);
             expect(note).toMatch(/height: 16px;/);
-            expect(note).toMatch(/font-size: 11\.5px;/);
+            expect(note).toMatch(/font-size: var\(--chat-fs-small\);/);
             expect(note).toMatch(/color: var\(--chat-muted\);/);
             expect(note).toMatch(/white-space: nowrap;/);
             expect(note).toMatch(/overflow: hidden;/);

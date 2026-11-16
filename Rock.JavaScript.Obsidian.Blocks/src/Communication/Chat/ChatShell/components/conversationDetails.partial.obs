@@ -247,7 +247,7 @@
 }
 
 .chat-rd-name {
-    font-size: 17px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: -.01em;
@@ -258,7 +258,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -277,7 +277,7 @@
 
 .chat-rd-desc {
     margin: 10px 0 0;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text-2);
     overflow-wrap: anywhere;
 }
@@ -319,7 +319,7 @@
 /* The line under a control: what the chosen mode means, or what a group's name does. */
 .chat-rd-cap {
     margin: 6px 0 0 2px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -424,7 +424,7 @@
     gap: 5px;
     height: 28px;
     padding: 0 11px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
 }
 
 .chat-rd-btn:disabled,
@@ -445,13 +445,13 @@
 /* Under .chat-rn so the size out-weighs the shared field's font: inherit, not by load order. */
 .chat-rn .chat-rn-in {
     height: 32px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
 }
 
 /* A note under a control outside a row: a refusal, or the name's character count. */
 .chat-rd-note {
     margin: 6px 0 0 2px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
 }
 
 .chat-set-err :deep(.chat-ic) {
@@ -485,7 +485,7 @@
     display: flex;
     gap: 6px;
     align-items: flex-start;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-danger-ink);
 }

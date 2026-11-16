@@ -278,13 +278,13 @@
 }
 
 .chat-gif-state b {
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
 }
 
 .chat-gif-state span {
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

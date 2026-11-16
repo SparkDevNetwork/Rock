@@ -140,7 +140,7 @@
 }
 
 .chat-ms-name {
-    font-size: 17px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     line-height: 1.25;
     letter-spacing: -.01em;
@@ -151,7 +151,7 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -188,7 +188,7 @@
     flex: none;
     gap: 5px;
     align-items: center;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     white-space: nowrap;
 }
@@ -217,7 +217,7 @@
     align-items: center;
     height: 28px;
     padding: 0 10px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: transparent;

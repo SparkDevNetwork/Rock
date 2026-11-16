@@ -257,7 +257,7 @@
 
 .chat-fd-hdr-sub {
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -288,7 +288,7 @@
 
 .chat-fd-search input {
     height: 100%;
-    font-size: 15px;
+    font-size: var(--chat-fs-title);
 }
 
 .chat-fd-search :deep(.chat-fd-clear) {
@@ -335,7 +335,7 @@
     height: 30px;
     padding: 0 13px;
     font: inherit;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text-2);
     white-space: nowrap;
@@ -405,7 +405,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 4px 12px 8px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-muted);
 }
@@ -613,7 +613,7 @@
     gap: 6px;
     align-items: flex-start;
     margin-top: 6px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-danger-ink);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
@@ -625,7 +625,7 @@
 
 .chat-fd-wait {
     margin-top: 4px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text-2);
 }
 
@@ -647,7 +647,7 @@
     height: 28px;
     padding: 0 11px;
     font: inherit;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-surface);
@@ -691,7 +691,7 @@
     align-items: center;
     justify-content: center;
     min-width: 76px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-muted);
 }
@@ -748,12 +748,12 @@
 }
 
 .chat-fd-empty b {
-    font-size: 15.5px;
+    font-size: var(--chat-fs-display);
 }
 
 .chat-fd-empty > span:not(.chat-fd-empty-ic) {
     max-width: 40ch;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

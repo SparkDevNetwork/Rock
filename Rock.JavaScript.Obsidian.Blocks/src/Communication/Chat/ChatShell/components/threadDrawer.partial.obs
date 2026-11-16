@@ -215,7 +215,7 @@
     align-items: center;
     height: 30px;
     padding: 0 12px 0 10px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text-2);
     background: none;
@@ -242,7 +242,7 @@
     align-items: center;
     padding: 8px 8px 8px 11px;
     margin: 8px 14px 6px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);

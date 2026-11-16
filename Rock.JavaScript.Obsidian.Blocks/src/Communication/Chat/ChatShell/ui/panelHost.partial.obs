@@ -88,7 +88,7 @@
 
 .chat-panel-title span {
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;

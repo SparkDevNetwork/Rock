@@ -43,7 +43,7 @@
     padding: 0 12px 1px 54px;
     margin-bottom: 2px;
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text-2);
     text-overflow: ellipsis;

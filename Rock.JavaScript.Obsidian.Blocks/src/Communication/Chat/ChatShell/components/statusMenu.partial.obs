@@ -53,7 +53,7 @@
     width: auto;
     height: 28px;
     padding: 0 10px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-surface);

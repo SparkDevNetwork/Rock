@@ -77,7 +77,7 @@
 
 .chat-ap-sub {
     margin: -4px 0 14px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

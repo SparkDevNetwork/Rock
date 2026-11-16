@@ -233,7 +233,7 @@
 
 .chat-mb-sec span {
     padding: 0 6px;
-    font-size: 10.5px;
+    font-size: var(--chat-fs-badge);
     font-variant-numeric: tabular-nums;
     letter-spacing: 0;
     background: var(--chat-sidebar);
@@ -301,7 +301,7 @@
     gap: 6px;
     align-items: center;
     min-width: 0;
-    font-size: 14px;
+    font-size: var(--chat-fs-body);
     color: var(--chat-text);
 }
 
@@ -359,7 +359,7 @@
     gap: 7px;
     align-items: center;
     padding: 0 8px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 
@@ -381,7 +381,7 @@
     align-items: flex-start;
     padding: 7px 6px 7px 10px;
     margin: 0 8px 8px 54px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);
@@ -438,7 +438,7 @@
     width: 100%;
     height: 36px;
     padding: 0 14px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-surface);
@@ -494,7 +494,7 @@
     align-items: center;
     height: 28px;
     padding: 0 11px 0 9px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text-2);
     background: var(--chat-surface);
@@ -560,7 +560,7 @@
     display: inline-flex;
     gap: 6px;
     align-items: center;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-danger-ink);
 }
 
@@ -595,7 +595,7 @@
 
 .chat-mb-state h4 {
     margin: 0;
-    font-size: 15px;
+    font-size: var(--chat-fs-display);
     font-weight: 700;
     color: var(--chat-text);
 }

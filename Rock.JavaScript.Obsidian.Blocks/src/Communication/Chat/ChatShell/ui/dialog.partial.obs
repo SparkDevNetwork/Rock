@@ -184,7 +184,7 @@
 
 .chat-dialog-title {
     margin: 0 0 6px;
-    font-size: 17px;
+    font-size: var(--chat-fs-title);
     font-weight: 700;
     color: var(--chat-text);
 }
@@ -197,7 +197,7 @@
 .chat-dialog-preview {
     padding: 10px 12px;
     margin-bottom: 16px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     background: var(--chat-sidebar);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-surface);
@@ -217,7 +217,7 @@
     align-items: center;
     height: 38px;
     padding: 0 18px;
-    font-size: 14px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     border: 0;
     border-radius: var(--chat-r-full);

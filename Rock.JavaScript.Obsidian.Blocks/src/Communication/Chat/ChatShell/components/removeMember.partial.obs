@@ -153,7 +153,7 @@
 }
 
 .chat-rm-n b {
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
 }

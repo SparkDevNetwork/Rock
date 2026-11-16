@@ -430,7 +430,7 @@ img.chat-picker-prev {
     flex-direction: column;
     min-width: 0;
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     line-height: 1.25;
     color: var(--chat-text-2);

@@ -229,7 +229,7 @@
     height: 38px;
     padding: 0 12px;
     margin: 0;
-    font-size: 14px;
+    font-size: var(--chat-fs-ui);
     /* Rock's theme bolds a label, and the field inside takes its face from this one. */
     font-weight: 400;
     color: var(--chat-muted);
@@ -335,7 +335,7 @@
 }
 
 .chat-me-who b {
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
 }
 
@@ -448,7 +448,7 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    font-size: 14px;
+    font-size: var(--chat-fs-body);
     font-weight: 450;
     line-height: 20px;
     color: var(--chat-row-name);
@@ -458,7 +458,7 @@
 
 .chat-row-time {
     flex: none;
-    font-size: 11.5px;
+    font-size: var(--chat-fs-small);
     line-height: 20px;
     font-variant-numeric: tabular-nums;
     color: var(--chat-muted);
@@ -475,7 +475,7 @@
     flex: 1;
     min-width: 0;
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 18px;
     color: var(--chat-muted);
     white-space: nowrap;
@@ -674,7 +674,7 @@
 }
 
 .chat-side-empty b {
-    font-size: 15px;
+    font-size: var(--chat-fs-display);
     font-weight: 650;
 }
 
@@ -699,7 +699,7 @@
     align-items: center;
     height: 28px;
     padding: 0 8px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-brand-ink);
     white-space: nowrap;

@@ -44,7 +44,7 @@
     align-items: center;
     gap: 8px;
     padding: 12px 14px 0;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
 }
 
@@ -62,7 +62,7 @@
 .chat-card :deep(.chat-block-context) {
     display: flex;
     gap: 6px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
 }
 

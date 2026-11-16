@@ -26,7 +26,7 @@
 .chat-sg-lbl {
     margin: 0 0 6px 2px;
     font-family: inherit;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     line-height: 1.4;
     color: var(--chat-muted);

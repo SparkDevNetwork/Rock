@@ -117,7 +117,7 @@
 
 .chat-rl-e.is-end {
     margin-left: auto;
-    font-size: var(--chat-fs-title);
+    font-size: var(--chat-emoji-sm);
 }
 
 /* Its own scroller, held to a height, so the next page is asked for as its end comes near. */
@@ -136,7 +136,7 @@
     align-items: center;
     height: 40px;
     padding: 0 12px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text);
     border-radius: var(--chat-r-inset);
 }

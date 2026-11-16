@@ -249,7 +249,7 @@ button.chat-header-id:hover .chat-header-chev {
 
 .chat-header-sub {
     overflow: hidden;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -278,7 +278,7 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-header-push.is-sm {
     height: 28px;
     padding: 0 11px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
 }
 
 .chat-header-push.is-brand {
@@ -365,7 +365,7 @@ button.chat-header-id:hover .chat-header-chev {
     height: 26px;
     padding: 0 5px;
     margin-left: -5px;
-    font-size: 10.5px;
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     letter-spacing: -.02em;

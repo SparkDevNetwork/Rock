@@ -38,7 +38,7 @@
     height: 26px;
     margin: 0;
     padding: 0 4px 0 8px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-variant-numeric: tabular-nums;
     line-height: 1;
     color: var(--chat-text-2);

@@ -289,7 +289,7 @@
         Rock theme sets on the page's body: names, times and system lines take their height from it.
     */
     font-family: var(--chat-font);
-    font-size: 14px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-text);
 }
@@ -1003,7 +1003,7 @@
     min-width: 22px;
     height: 20px;
     padding: 0 7px 0 6px;
-    font-size: var(--chat-fs-small);
+    font-size: var(--chat-fs-badge);
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     line-height: 20px;
@@ -1130,7 +1130,7 @@
     width: 100%;
     min-height: 48px;
     padding: 8px 10px;
-    font-size: 15px;
+    font-size: var(--chat-fs-title);
     color: var(--chat-text);
     text-align: left;
     background: transparent;
@@ -1513,7 +1513,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     gap: 2px;
     align-items: center;
     min-width: 0;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
     white-space: nowrap;
 }
@@ -1547,7 +1547,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     display: -webkit-box;
     margin-top: 2px;
     overflow: hidden;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-text-2);
     overflow-wrap: anywhere;
@@ -1562,7 +1562,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     align-items: center;
     padding: 8px 8px 8px 11px;
     margin: 8px 14px 6px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-danger-ink);
     background: var(--chat-danger-soft);
@@ -1592,7 +1592,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
     align-items: center;
     height: 28px;
     padding: 0 11px;
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-text);
     background: var(--chat-surface);
@@ -1692,7 +1692,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 .chat-shell .chat-pk-label {
     margin-right: 4px;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     color: var(--chat-muted);
 }
@@ -1829,7 +1829,7 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 
 .chat-shell .chat-pk-o-main b {
     overflow: hidden;
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -1961,5 +1961,5 @@ button.chat-icon-btn.chat-fail-btn:hover .chat-fail-btn-words {
 }
 
 .chat-shell .chat-mb-search input {
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
 }

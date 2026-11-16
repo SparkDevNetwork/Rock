@@ -110,7 +110,7 @@
 }
 
 .chat-mention-main b {
-    font-size: 13.5px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
 }
 

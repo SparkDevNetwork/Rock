@@ -87,11 +87,11 @@
 }
 
 .chat-joinbar-main b {
-    font-size: 14px;
+    font-size: var(--chat-fs-body);
 }
 
 .chat-joinbar-main > span {
-    font-size: 12.5px;
+    font-size: var(--chat-fs-ui);
     color: var(--chat-text-2);
 }
 
@@ -135,7 +135,7 @@
     height: 38px;
     padding: 0 18px;
     font: inherit;
-    font-size: 14px;
+    font-size: var(--chat-fs-ui);
     font-weight: 600;
     border-radius: var(--chat-r-full);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
