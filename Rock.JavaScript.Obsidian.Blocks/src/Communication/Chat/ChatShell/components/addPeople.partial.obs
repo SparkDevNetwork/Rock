@@ -42,12 +42,12 @@
                           @announce="announcer.announce($event)" />
 
             <div class="chat-ap-warn" data-testid="ap-warn">
-                <Icon name="history" size="sm" />
+                <Icon class="chat-ap-warn-ic" name="history" size="sm" />
                 <span>{{ isChannel ? `New members will see the history of ${channelName}.` : "New people will see this conversation's history, back to the first message." }}</span>
             </div>
 
             <div v-if="shownRefusal" class="chat-ap-err" data-testid="ap-refusal">
-                <Icon name="alert" size="sm" />
+                <Icon class="chat-ap-err-ic" name="alert" size="sm" />
                 <span>{{ shownRefusal }}</span>
             </div>
 
@@ -92,7 +92,7 @@
     background: var(--chat-warning-soft);
 }
 
-.chat-ap-warn .chat-ic {
+.chat-ap-warn-ic {
     flex: none;
     margin-top: 1px;
     color: var(--chat-warning-ink);
@@ -105,7 +105,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-ap-err .chat-ic {
+.chat-ap-err-ic {
     flex: none;
     margin-top: 1px;
     color: var(--chat-danger-ink);

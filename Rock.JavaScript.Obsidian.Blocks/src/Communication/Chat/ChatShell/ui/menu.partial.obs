@@ -45,7 +45,7 @@
             <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
             <template v-if="note">
                 <div class="chat-menu-sep" role="separator"></div>
-                <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon :name="noteIcon" size="xs" />{{ note }}</div>
+                <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon class="chat-menu-note-ic" :name="noteIcon" size="xs" />{{ note }}</div>
             </template>
         </div>
     </Popover>
@@ -153,7 +153,7 @@
     color: var(--chat-muted);
 }
 
-.chat-menu-note .chat-ic {
+.chat-menu-note-ic {
     flex: none;
     color: var(--chat-icon);
 }

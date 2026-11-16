@@ -59,7 +59,7 @@
             </div>
 
             <div v-if="refusal" class="chat-rm-err" data-testid="leader-refusal">
-                <Icon name="alert" size="sm" />
+                <Icon class="chat-rm-err-ic" name="alert" size="sm" />
                 <span>{{ refusal }}</span>
             </div>
 
@@ -192,7 +192,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-rm-err .chat-ic {
+.chat-rm-err-ic {
     flex: none;
     margin-top: 1px;
     color: var(--chat-danger-ink);
