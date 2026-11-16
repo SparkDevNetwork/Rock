@@ -57,7 +57,14 @@
                     <Icon class="chat-fd-note-ic" name="info" size="sm" />
                     <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
                 </div>
-                <div v-else-if="campuses.length > 0" class="chat-fd-chips" role="group" aria-label="Campus" data-testid="directory-chips">
+                <div v-else-if="campuses.length > 0"
+                     ref="chipsElement"
+                     class="chat-fd-chips"
+                     :class="{ 'is-cut-start': isChipsCutStart, 'is-cut-end': isChipsCutEnd }"
+                     role="group"
+                     aria-label="Campus"
+                     data-testid="directory-chips"
+                     @scroll="measureChips">
                     <Pill v-for="chip in chips"
                           :key="chip.key"
                           data-testid="directory-chip"
@@ -138,7 +145,7 @@
                                     data-testid="directory-row-open"
                                     :aria-label="row.label"
                                     @click="emit('open', row.id)">
-                                <span class="chat-fd-ic" aria-hidden="true"><Icon name="hash" /></span>
+                                <ChannelMark class="chat-fd-ic" isPublic :imageUrl="row.iconUrl" :tileName="row.name" />
                                 <span class="chat-fd-main">
                                     <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
                                     <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
@@ -324,6 +331,22 @@
     display: none;
 }
 
+/* The end where the row cuts chips off fades, so a phone shows there is more to scroll to. */
+.chat-fd-chips.is-cut-end {
+    -webkit-mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
+}
+
+.chat-fd-chips.is-cut-start {
+    -webkit-mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
+}
+
+.chat-fd-chips.is-cut-start.is-cut-end {
+    -webkit-mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
+}
+
 .chat-fd-note {
     display: flex;
     flex: 1;
@@ -441,23 +464,15 @@
     outline-offset: -2px;
 }
 
+/* The channel's mark as the sidebar draws it, its photo or its letter tile, in the row's 40px box. */
 .chat-fd-ic {
     display: grid;
     flex: none;
     place-items: center;
     width: 40px;
     height: 40px;
-    color: var(--chat-icon);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
+    overflow: hidden;
     border-radius: var(--chat-r-surface);
-    transition: background-color var(--chat-t-base) var(--chat-ease-state), color var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-fd-row.is-member .chat-fd-ic {
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-color: transparent;
 }
 
 .chat-fd-main {
@@ -686,11 +701,12 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { useAnnouncer } from "../ui/announcer.partial";
     import Button from "../ui/button.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import MatchText from "../ui/matchText.partial.obs";
@@ -716,6 +732,9 @@
         id: string;
         name: string;
         description: string | null;
+
+        /** The channel's own photo, or null for its letter tile. */
+        iconUrl: string | null;
         meta: string[];
         isMember: boolean;
         join: JoinState;
@@ -781,6 +800,11 @@
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
     const endElement = ref<HTMLElement>();
+    const chipsElement = ref<HTMLElement>();
+
+    /** Whether the campus chips run past the row's start or end, which fades that edge. */
+    const isChipsCutStart = ref(false);
+    const isChipsCutEnd = ref(false);
 
     /** Whether rows have passed under the tools, which draws the hairline. */
     const isScrolled = ref(false);
@@ -811,7 +835,7 @@
 
     const chips = computed((): Chip[] => [
         { key: "all", label: "All campuses", campus: { kind: "all" } },
-        ...props.campuses.map(campus => ({ key: campus.guid, label: campus.shortCode?.trim() || campus.name || "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
+        ...props.campuses.map(campus => ({ key: campus.guid, label: campus.name ?? "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
         { key: "whole-church", label: "Whole church", campus: { kind: "wholeChurch" } }
     ]);
 
@@ -831,12 +855,14 @@
             const join = props.joins[row.channel_id] ?? idle;
             // a join the door and the platform agree on shows as one before the row's own flag turns
             const isMember = row.is_member || join.kind === "joined";
-            const meta = [row.group_type_name ?? "", campusNameOf(row.campus_id) ?? "Whole church"].filter(part => part !== "");
+            // Its campus only: Rock's group type names nothing a person picks a channel by.
+            const meta = [campusNameOf(row.campus_id) ?? "Whole church"];
 
             return {
                 id: row.channel_id,
                 name,
                 description: row.description?.trim() || null,
+                iconUrl: row.icon_url,
                 meta,
                 isMember,
                 join,
@@ -925,6 +951,13 @@
         if (join.kind !== "joining" && join.kind !== "refused") {
             emit("join", channelId);
         }
+    }
+
+    /** Reads where the chip row cuts its chips off, as it scrolls or changes width. */
+    function measureChips(): void {
+        const row = chipsElement.value;
+        isChipsCutStart.value = !!row && row.scrollLeft > 1;
+        isChipsCutEnd.value = !!row && row.scrollLeft + row.clientWidth < row.scrollWidth - 1;
     }
 
     function onScroll(): void {
@@ -1027,5 +1060,26 @@
         }
     }, { flush: "pre" });
 
+    // The chip row's cut is read as the row is drawn and each time its width changes, since a
+    // narrower window cuts chips that fit before; a browser's observer reads it once on start.
+    const chipsObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureChips) : null;
+
+    watch(chipsElement, (element, before) => {
+        if (before) {
+            chipsObserver?.unobserve(before);
+        }
+        if (element) {
+            chipsObserver?.observe(element);
+        }
+    });
+
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        chipsObserver?.disconnect();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>
