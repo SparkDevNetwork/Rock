@@ -213,7 +213,11 @@ namespace Rock.Communication.Chat.Platform.Sync
                 bool? removed = null;
                 var body = new JObject { ["p_token"] = deviceToken }.ToString( Formatting.None );
 
-                // Safe to repeat: a second unregister of the same token removes nothing.
+                // Retried as a sign-out's other calls are. A retry that lands after the next person on
+                // this browser registered the same token removes their registration too, since the
+                // platform removes a token by holding it; that fails closed, a browser with no push
+                // until its next page load registers it again, and never sends one person's
+                // notifications to another.
                 SendWithRetry(
                     () => BuildDataRequest( UnregisterDevicePath, new StringContent( body, Encoding.UTF8, "application/json" ) ),
                     ( response, statusCode, answer ) =>
