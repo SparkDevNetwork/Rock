@@ -40,7 +40,7 @@
 import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef, ShallowRef, StyleValue, watch, watchEffect } from "vue";
 import { ToastNotice } from "../components/errorToast.partial.obs";
 import { ChatShell } from "../shell.partial";
-import { PersonRow } from "../types.partial";
+import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration } from "../ui/brand.partial";
 import { focusQuietly } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
@@ -70,6 +70,31 @@ export type ThreadOrigin = "threads" | "mentions" | null;
 
 /** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
 export type LandingCheck = "held" | "more" | "stop";
+
+/**
+ * A place focus can go, tried in its order: a stop by its mark, a stop narrowed where it repeats
+ * (a sidebar row by its conversation, a list's row by its root) or looked for inside one element,
+ * or an element already in hand, as what opened a view. Null is a place not drawn, skipped.
+ */
+export type FocusTarget = FocusStop | { stop: FocusStop, match?: string, within?: HTMLElement } | HTMLElement | null | undefined;
+
+/** Where the focus helper looks for its stops and how it puts focus there. */
+export type FocusStopOptions = {
+    /** The frame's column the stops are looked for in: the conversation's, the panel's, or the whole block's when not given. */
+    within?: "main" | "panel";
+
+    /** Leaves what holds the stop unscrolled, for a pane or column still sliding in. */
+    preventScroll?: boolean;
+
+    /** Without the tooltip a focused button shows, as a panel opening puts focus on its X only so the keyboard starts inside it. */
+    isQuiet?: boolean;
+
+    /**
+     * The person asked to type there, as a quote or a closed editor hands typing back, so a
+     * phone's keyboard rising is wanted and the composer is not skipped.
+     */
+    isTyping?: boolean;
+};
 
 /** What the frame reads from the block. */
 export type FrameViewDependencies = {
@@ -128,6 +153,12 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     shownPanel: Ref<PanelKind | null>;
 
     panelElement: Ref<HTMLElement | undefined>;
+
+    /** The conversation's column, which holds its header, feed and composer. */
+    mainElement: Ref<HTMLElement | undefined>;
+
+    /** The full view drawn in the conversation's place, while one is. */
+    mainViewElement: Ref<HTMLElement | undefined>;
 
     /** The thread the drawer draws, kept after the threads let it go so the drawer narrows over it. */
     drawnThread: ShallowRef<OpenThreadState | null>;
@@ -198,6 +229,13 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
      * is too far back; "held" once it landed; "stop" when it did not and is not still looking.
      */
     landInConversation: (channelId: string, messageId: number) => Promise<LandingCheck>;
+
+    /**
+     * Puts focus on the first place of an order that is drawn, each stop found by its mark. A
+     * phone skips the composer, whose focus would raise the keyboard over what the person came to
+     * read, unless they asked to type there.
+     */
+    focusStop: (order: FocusTarget[], options?: FocusStopOptions) => HTMLElement | null;
 };
 
 /** What the members panel, the remove confirm and Add people draw of the roster. */
@@ -251,6 +289,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const shownPanel = ref<PanelKind | null>(null);
 
     const panelElement = ref<HTMLElement>();
+
+    const mainElement = ref<HTMLElement>();
+
+    const mainViewElement = ref<HTMLElement>();
 
     const mainView = ref<MainViewKind | null>(null);
 
@@ -333,7 +375,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // the frame to it, which a browser that cannot clip the frame would do.
         if (isPhone.value) {
             await nextTick();
-            rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus({ preventScroll: true });
+            focusStop(["header"], { preventScroll: true });
         }
     }
 
@@ -348,15 +390,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // goes to what opened it.
         if (isPhone.value) {
             await nextTick();
-            if (mainView.value && mainViewOpener?.isConnected) {
-                mainViewOpener.focus();
-                return;
-            }
-
-            const row = leftChannelId
-                ? rootElement.value?.querySelector<HTMLElement>(`[data-testid='channel-row'][data-channel-id='${leftChannelId}']`)
-                : null;
-            (row ?? rootElement.value?.querySelector<HTMLElement>("[data-testid='new-message']"))?.focus();
+            focusStop([
+                mainView.value && mainViewOpener?.isConnected ? mainViewOpener : null,
+                leftChannelId ? { stop: "row", match: `[data-channel-id='${leftChannelId}']` } : null,
+                "new-message"
+            ]);
         }
     }
 
@@ -389,14 +427,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // column is still 0px wide here, so a focus that scrolled would scroll the column to the
         // control and drag the content in from its edge instead of letting it slide.
         await nextTick();
-        const panel = panelElement.value;
-        const first = panel?.querySelector<HTMLElement>("[data-autofocus]");
-        const exit = panel?.querySelector<HTMLElement>("[data-testid='panel-close'], [data-testid='panel-back']");
+        const first = panelElement.value?.querySelector<HTMLElement>("[data-autofocus]");
         if (first) {
             first.focus({ preventScroll: true });
         }
-        else if (exit) {
-            focusQuietly(exit, { preventScroll: true });
+        else {
+            // the back chevron is drawn before the X, so it is the one found first when both are
+            focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
         }
     }
 
@@ -432,9 +469,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         // The inbox marks the row opened as its current one.
         await nextTick();
-        panelElement.value?.querySelector<HTMLElement>(origin === "threads"
-            ? `[data-testid='thread-row-open'][data-root-id='${rootId}']`
-            : "[data-testid='mention-row-open'][aria-current='true']")?.focus();
+        focusStop([origin === "threads"
+            ? { stop: "threads-row", match: `[data-root-id='${rootId}']` }
+            : { stop: "mentions-row", match: "[aria-current='true']" }], { within: "panel" });
     }
 
     /**
@@ -495,7 +532,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // the focus leaves what holds it unscrolled; the first field is at the view's top.
         await nextTick();
         if (!isPhone.value || kind === "newdm") {
-            rootElement.value?.querySelector<HTMLElement>("[data-testid='main-view'] [data-autofocus]")?.focus({ preventScroll: true });
+            mainViewElement.value?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
         }
     }
 
@@ -514,12 +551,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         leaveMainView();
 
         void nextTick(() => {
-            const root = rootElement.value;
-            const composer = isPhone.value ? null : root?.querySelector<HTMLElement>("[data-testid='frame-main'] [data-testid='composer-input']");
             const isOpenerShown = !!opener?.isConnected && !(isPhone.value && pane.value !== "list");
-            (composer
-                ?? (isOpenerShown ? opener : null)
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+            focusStop(["composer", isOpenerShown ? opener : null, "header"], { within: "main" });
         });
     }
 
@@ -537,10 +570,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         await shell.value.selectChannel(channelId);
 
         await nextTick();
-        const main = rootElement.value?.querySelector<HTMLElement>("[data-testid='frame-main']");
-        (main?.querySelector<HTMLElement>("[data-testid='join-channel']")
-            ?? (isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']"))
-            ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+        focusStop(["join", "composer", "header"], { within: "main" });
     }
 
     /**
@@ -680,12 +710,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         panelKind.value = null;
         finishClosing();
 
-        void nextTick(() => {
-            const root = rootElement.value;
-            (root?.querySelector<HTMLElement>(`[data-testid='header-${closed}']`)
-                ?? root?.querySelector<HTMLElement>("[data-testid='header-more'] button")
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
-        });
+        // a thread is opened from a message or a list, never from a header button of its own
+        const button: FocusStop | null = closed === "thread" ? null : `${closed}-button`;
+        void nextTick(() => focusStop([button, "more", "header"]));
     }
 
     /**
@@ -736,11 +763,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         finishClosing();
 
         void nextTick(() => {
-            const root = rootElement.value;
-            const message = root?.querySelector<HTMLElement>(`[data-testid='frame-main'] [data-message-id='${rootId}']`);
-            (message?.querySelector<HTMLElement>("[data-testid='thread-summary']")
-                ?? message
-                ?? root?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
+            const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
+            focusStop([message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main" });
         });
     }
 
@@ -768,6 +792,60 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         return tokenDuration(rootElement.value, "--chat-t-panel", fallbackPaneSlideMs);
+    }
+
+    /**
+     * Puts focus on the first place of an order that is drawn. Each lookup keeps its own order,
+     * since what is the next best place differs by what just closed or opened.
+     *
+     * @param order The places to try, first to last.
+     * @param options Where the stops are looked for and how focus is put there.
+     *
+     * @returns The element focused, or null when nothing in the order is drawn.
+     */
+    function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
+        const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
+        for (const target of order) {
+            const element = target instanceof HTMLElement ? target : stopElement(target, place, options);
+            if (!element) {
+                continue;
+            }
+
+            // with no scroll to hold, the focus is the plain one every other part of the chat makes
+            const focusOptions = options.preventScroll ? { preventScroll: true } : undefined;
+            if (options.isQuiet) {
+                focusQuietly(element, focusOptions);
+            }
+            else {
+                element.focus(focusOptions);
+            }
+            return element;
+        }
+
+        return null;
+    }
+
+    /**
+     * The element a stop's mark is on, or the first button inside it when the mark is on what
+     * wraps a part that draws its own button, as More's menu does.
+     */
+    function stopElement(target: Exclude<FocusTarget, HTMLElement>, place: HTMLElement | undefined, options: FocusStopOptions): HTMLElement | null {
+        if (!target) {
+            return null;
+        }
+
+        const { stop, match, within } = typeof target === "string" ? { stop: target, match: undefined, within: undefined } : target;
+        if (stop === "composer" && isPhone.value && !options.isTyping) {
+            return null;
+        }
+
+        const mark = stop === "header" ? "[data-header-focus]" : `[data-focus-stop='${stop}']`;
+        const marked = (within ?? place)?.querySelector<HTMLElement>(`${mark}${match ?? ""}`) ?? null;
+        if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
+            return marked;
+        }
+
+        return marked.querySelector<HTMLElement>("button") ?? marked;
     }
 
     /**
@@ -926,7 +1004,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             finishClosing();
 
             if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
+                void nextTick(() => focusStop(["header"]));
             }
         }
     });
@@ -948,7 +1026,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             finishClosing();
 
             if (hadFocus) {
-                void nextTick(() => rootElement.value?.querySelector<HTMLElement>("[data-header-focus]")?.focus());
+                void nextTick(() => focusStop(["header"]));
             }
         }
     });
@@ -977,6 +1055,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         mainView,
         shownPanel,
         panelElement,
+        mainElement,
+        mainViewElement,
         drawnThread,
         threadOrigin,
         rooms,
@@ -1003,6 +1083,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         landOnReply,
         onJump,
         landInConversation,
+        focusStop,
         ...membersPanelViews(shell, rooms, dependencies.campuses),
         ...threadsPanelWiring(shell, activeChannelId, drawnThread, dependencies.showNotice)
     };

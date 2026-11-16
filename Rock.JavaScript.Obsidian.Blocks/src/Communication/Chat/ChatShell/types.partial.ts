@@ -27,9 +27,13 @@ export type RoomKind = "channel" | "person" | "group";
 
 /**
  * A place focus can be put by name: the element carrying the matching `data-focus-stop` mark, so
- * a lookup never depends on a test id or on which component draws it.
+ * a lookup never depends on a test id or on which component draws it. The header is the one stop
+ * the header marks itself, with `data-header-focus`, since which of its elements holds focus, the
+ * title or the details button around it, is the header's choice, and that button already carries
+ * a stop of its own.
  */
 export type FocusStop =
+    | "header"
     | "composer"
     | "join"
     | "row"

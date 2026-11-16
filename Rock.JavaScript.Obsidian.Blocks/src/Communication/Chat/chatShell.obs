@@ -65,7 +65,8 @@
                 </ChannelSidebar>
             </div>
 
-            <section class="chat-frame-main"
+            <section ref="mainElement"
+                     class="chat-frame-main"
                      data-testid="frame-main"
                      aria-label="Conversation"
                      :data-look="look ?? undefined"
@@ -174,6 +175,7 @@
 
                     <!-- A channel the person is previewing has the join bar in the composer's place. -->
                     <JoinBar v-if="isJoinBarShown && activeChannelId"
+                             ref="joinBar"
                              :name="activeTitle"
                              :state="shell.rooms.joinOf(activeChannelId)"
                              @join="onJoin"
@@ -214,7 +216,7 @@
                 </div>
 
                 <!-- A full view in the conversation's place, rising in as a conversation switch does. -->
-                <div v-if="mainView" class="chat-main-view" data-testid="main-view" :data-kind="mainView">
+                <div v-if="mainView" ref="mainViewElement" class="chat-main-view" data-testid="main-view" :data-kind="mainView">
                     <ChannelDirectory v-if="mainView === 'directory'"
                                       :directory="shell.rooms.state.directory"
                                       :joins="shell.rooms.state.joins"
@@ -875,6 +877,9 @@
     /** Whether the composer is rising into the join bar's place after a join settled. */
     const isComposerEntering = ref(false);
 
+    /** The join bar in the composer's place, whose focus goes to the composer once a join settles. */
+    const joinBar = ref<InstanceType<typeof JoinBar>>();
+
     /** The one reaction picker open at a time, and what every message row and emoji picker reads of the reactions. */
     const { reactionPicker, reactionHost, emojiSource, pickerMine, openReactionPicker, closeReactionPicker, onPickerReact } = useReactionPicker(shell, organizationName);
 
@@ -900,7 +905,7 @@
 
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, panelElement, drawnThread, threadOrigin,
+        panelKind, shownPanel, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
         onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
@@ -1155,7 +1160,7 @@
 
     /** Whether an element is inside a full view in the conversation's place or the room's details. */
     function isInViewOrDetails(element: Element): boolean {
-        return !!element.closest("[data-testid='main-view']") || !!element.closest("[role='dialog']")?.querySelector("[data-testid='details-identity']");
+        return !!mainViewElement.value?.contains(element) || !!element.closest("[role='dialog']")?.querySelector("[data-focus-stop='details-identity']");
     }
 
     /** A message id the worker posted as a string, or null when it is not one. */
@@ -1184,15 +1189,12 @@
     // keyboard unasked, to the conversation's title; focus anywhere else is the person's and stays.
     watch([isJoinBarShown, activeChannelId], ([isShown, channelId], [wasShown, wasChannelId]) => {
         isComposerEntering.value = wasShown && !isShown && channelId === wasChannelId;
-        const bar = rootElement.value?.querySelector("[data-testid='frame-main'] [data-testid='join-bar']");
+        const bar: Element | undefined = joinBar.value?.$el;
         if (!isComposerEntering.value || !bar?.contains(document.activeElement)) {
             return;
         }
 
-        void nextTick(() => {
-            const main = rootElement.value?.querySelector("[data-testid='frame-main']");
-            main?.querySelector<HTMLElement>(isPhone.value ? "[data-header-focus]" : "[data-testid='composer-input']")?.focus();
-        });
+        void nextTick(() => focusStop(["composer", "header"], { within: "main" }));
     });
 
     // From the first sidebar the page loads, a count of none included, so a badge a mention push
@@ -1230,11 +1232,7 @@
             return;
         }
 
-        void nextTick(() => {
-            const main = rootElement.value?.querySelector("[data-testid='frame-main']");
-            const composer = isPhone.value ? null : main?.querySelector<HTMLElement>("[data-testid='composer-input']");
-            (composer ?? main?.querySelector<HTMLElement>("[data-header-focus]"))?.focus();
-        });
+        void nextTick(() => focusStop(["composer", "header"], { within: "main" }));
     });
 
     // The details go with the room's row when a reload no longer lists it, which a leave's own
