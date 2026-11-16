@@ -181,6 +181,23 @@ describe("the load-more row", () => {
         expect(button().getAttribute("aria-busy")).toBe("true");
     });
 
+    // A list that says a page is out only through its own state hands over a loader that returns
+    // nothing; the row asks once per arrival and again once the list says the page is in.
+    it("with a loader that returns nothing, asks once, then again once the list's page is in", async () => {
+        const load = jest.fn();
+        const w = mount(LoadMoreRow, { props: { name: "members", label: "Load more", load }, attachTo: document.body });
+        wrapper = w;
+        await settle();
+        observers[0].see(true);
+        await settle();
+        expect(load).toHaveBeenCalledTimes(1);
+
+        await w.setProps({ isLoading: true });
+        await w.setProps({ isLoading: false });
+        await settle();
+        expect(load).toHaveBeenCalledTimes(2);
+    });
+
     it("says whether focus is on it, for the list to move focus to the rows it brought", async () => {
         const w = mountRow({ load: jest.fn(() => Promise.resolve()) });
         await settle();

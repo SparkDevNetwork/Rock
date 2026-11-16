@@ -35,7 +35,7 @@
 //          mention-row-open (the row's button, labelled), mention-row-new (a New row's dot),
 //          mention-row-thread (the reply tag), mentions-day (each day heading), mentions-more
 //          (Load older mentions), mentions-end (the end note), mentions-error (a refresh's
-//          failure, with Try again), mentions-older-error, mentions-empty, mentions-refresh,
+//          failure, with Try again), mentions-more-error (an older page's failure), mentions-empty, mentions-refresh,
 //          mention-skeleton. The panel host's marks are threadDrawer.spec's.
 import { mount, VueWrapper } from "@vue/test-utils";
 import MentionsPanel from "../../../../../src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs";
@@ -293,12 +293,15 @@ describe("paging", () => {
         expect(w.find("[data-testid='mentions-more']").exists()).toBe(false);
     });
 
-    test("says an older page failed offline, keeping the rows and the button", () => {
+    test("says an older page failed offline, keeping the rows, its button now Try again", async () => {
         const w = draw({ hasMore: true, olderError: offline });
 
-        expect(plain(w.get("[data-testid='mentions-older-error']").text())).toBe("Couldn't load older mentions. You're offline.");
+        expect(plain(w.get("[data-testid='mentions-more-error']").text())).toBe("Couldn't load older mentions. You're offline.");
         expect(rowsOf(w)).toHaveLength(1);
-        expect(w.find("[data-testid='mentions-more']").exists()).toBe(true);
+        const more = w.get("[data-testid='mentions-more']");
+        expect(plain(more.text())).toBe("Try again");
+        await more.trigger("click");
+        expect(w.emitted("loadOlder")).toHaveLength(1);
     });
 });
 
