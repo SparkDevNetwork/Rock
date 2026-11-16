@@ -35,11 +35,9 @@ import { failedWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { CallResult } from "../platformCall.partial";
 import { joinNames } from "../stores/channelStore.partial";
 import { ChatError, PersonRow, RosterMember, RosterPage } from "../types.partial";
+import { LatestSearch, useLatestSearch } from "./useLatestSearch.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { PlatformLimits } from "./useSession.partial";
-
-/** The people search's pause after the last keystroke before it asks the platform. */
-export const memberSearchPause = 250;
 
 /**
  * How long rights read ahead stand in for the open's own read, in milliseconds: long enough to
@@ -386,18 +384,21 @@ export function createMembers(dependencies: MembersDependencies): Members {
     // Each read in place moves this on, so of two quick changes the older read never lands last.
     let refreshGeneration = 0;
 
-    // The panel's filter and the last leader's dialog each search the room, each with its own
-    // pause; each query, close and stop moves its count on, so an answer to an older query is dropped.
-    const searches: Record<RoomSearchKey, { generation: number, timer: ReturnType<typeof setTimeout> | null }> = {
-        search: { generation: 0, timer: null },
-        successor: { generation: 0, timer: null }
-    };
-
-    // The Add people dialog: its search's pause and count, and a count every open, close and stop
-    // moves on, so an add answered after the dialog closed reaches nothing.
-    let addSearchGeneration = 0;
-    let addSearchTimer: ReturnType<typeof setTimeout> | null = null;
+    // The Add people dialog's count, which every open, close and stop moves on, so an add answered
+    // after the dialog closed reaches nothing.
     let addGeneration = 0;
+
+    // The panel's filter, the last leader's dialog's "Find a member" and Add people's name each
+    // search through the chat's search while typing: its one pause, and only the newest query's
+    // answer kept. Each one's ask still on its way, which Try again and Load more wait for.
+    const asking: Record<RoomSearchKey | "add", Promise<unknown>> = { search: Promise.resolve(), successor: Promise.resolve(), add: Promise.resolve() };
+    const roomSearches: Record<RoomSearchKey, LatestSearch<CallResult>> = { search: roomSearch("search"), successor: roomSearch("successor") };
+    const addSearch = useLatestSearch<CallResult>(query => track("add", dependencies.call("chat_search_people", {
+        p_query: query,
+        p_limit: dependencies.limits().people_search_size,
+        p_campus_only: dependencies.campusOnly ?? false,
+        p_channel_id: state.channelId
+    })), { onAnswer: answerAdd });
 
     // Rock's answer for each room asked this session, kept so a reopen draws its rights on the
     // first frame, with when it was asked and whether it was read ahead with no open drawing it
@@ -579,20 +580,38 @@ export function createMembers(dependencies: MembersDependencies): Members {
         return key === "search" ? state.query : state.successorQuery;
     }
 
-    /** Asks the platform for the whole room's matches to a query typed, if it is still the newest. */
-    async function runSearch(key: RoomSearchKey): Promise<void> {
-        const search = searches[key];
-        search.timer = null;
-        const channelId = state.channelId;
-        const query = typedQuery(key).trim();
-        if (isStopped || !channelId || !query) {
-            return;
-        }
+    /** Keeps a search's ask as the one on its way, for a caller that waits for its answer. */
+    function track(key: RoomSearchKey | "add", asked: Promise<CallResult>): Promise<CallResult> {
+        asking[key] = asked;
+        return asked;
+    }
 
-        const generation = search.generation;
-        state[key] = { query, rows: [], hasMore: false, isSearching: true, error: null };
-        const result = await fetchPage(channelId, undefined, query);
-        if (isStopped || generation !== search.generation) {
+    /**
+     * One of the room's searches. Its first page is drawn as searching from the moment it is asked;
+     * a further page follows the search's own keyset, after its last row.
+     */
+    function roomSearch(key: RoomSearchKey): LatestSearch<CallResult> {
+        return useLatestSearch<CallResult>((query, _signal, page) => {
+            if (page === 1) {
+                state[key] = { query, rows: [], hasMore: false, isSearching: true, error: null };
+            }
+
+            const rows = state[key].rows;
+            return track(key, fetchPage(state.channelId as string, page === 1 ? undefined : rows[rows.length - 1], query));
+        }, { onAnswer: (result, query, page) => answerRoom(key, result, query, page) });
+    }
+
+    /** Draws the newest answer of one of the room's searches: its first page, or one more under the filter. */
+    function answerRoom(key: RoomSearchKey, result: CallResult, query: string, page: number): void {
+        if (page > 1) {
+            state.isLoadingMore = false;
+            if (!result.ok) {
+                state.moreError = result.error;
+                return;
+            }
+
+            const more = membersOf(result);
+            state.search = { ...state.search, rows: [...state.search.rows, ...more], hasMore: more.length >= pageSize() };
             return;
         }
 
@@ -605,83 +624,34 @@ export function createMembers(dependencies: MembersDependencies): Members {
         state[key] = { query, rows: members, hasMore: members.length >= pageSize(), isSearching: false, error: null };
     }
 
-    /** Drops a search's answer still on its way and its pause still running. */
-    function cancelSearch(key: RoomSearchKey): void {
-        const search = searches[key];
-        search.generation++;
-        if (search.timer !== null) {
-            clearTimeout(search.timer);
-            search.timer = null;
-        }
-    }
-
-    /** Starts a search's pause for the query just typed, or empties it for a blank one. */
+    /** Searches the room for the query just typed, or empties the search for a blank one. */
     function typeQuery(key: RoomSearchKey): void {
-        cancelSearch(key);
+        const query = typedQuery(key).trim();
         // A query of only spaces is the plain roster, which is already loaded.
-        if (!typedQuery(key).trim() || !state.channelId) {
+        if (!query || !state.channelId) {
+            roomSearches[key].cancel();
             state[key] = noSearch();
             return;
         }
 
-        searches[key].timer = setTimeout(() => void runSearch(key), memberSearchPause);
+        roomSearches[key].set(query);
     }
 
     /** The next page of the search answered, after its last row. */
-    async function loadMoreMatches(channelId: string): Promise<void> {
+    async function loadMoreMatches(): Promise<void> {
         const search = state.search;
-        const query = search.query;
-        if (!query || !search.hasMore || search.isSearching || state.isLoadingMore) {
+        if (!search.query || !search.hasMore || search.isSearching || state.isLoadingMore || roomSearches.search.busy) {
             return;
         }
 
-        const generation = searches.search.generation;
         state.isLoadingMore = true;
         state.moreError = null;
-        const result = await fetchPage(channelId, search.rows[search.rows.length - 1], query);
-        if (isStopped || generation !== searches.search.generation) {
-            return;
-        }
-
-        state.isLoadingMore = false;
-        if (!result.ok) {
-            state.moreError = result.error;
-            return;
-        }
-
-        const members = membersOf(result);
-        state.search = { ...search, rows: [...search.rows, ...members], hasMore: members.length >= pageSize() };
+        roomSearches.search.more();
+        await asking.search;
     }
 
-    /** Drops the Add people search's answer still on its way and its pause still running. */
-    function cancelAddSearch(): void {
-        addSearchGeneration++;
-        if (addSearchTimer !== null) {
-            clearTimeout(addSearchTimer);
-            addSearchTimer = null;
-        }
-    }
-
-    /** Asks the people search for the name typed in Add people, naming the room so each person says whether they are in it. */
-    async function runAddSearch(): Promise<void> {
-        addSearchTimer = null;
-        const channelId = state.channelId;
-        const query = state.adding.query.trim();
-        if (isStopped || !channelId || !query) {
-            return;
-        }
-
-        const generation = addSearchGeneration;
-        const result = await dependencies.call("chat_search_people", {
-            p_query: query,
-            p_limit: dependencies.limits().people_search_size,
-            p_campus_only: dependencies.campusOnly ?? false,
-            p_channel_id: channelId
-        });
-        if (isStopped || generation !== addSearchGeneration) {
-            return;
-        }
-
+    /** Draws the people search's newest answer for the name typed in Add people. */
+    function answerAdd(result: CallResult): void {
         state.adding.isSearching = false;
         if (!result.ok) {
             state.adding.error = result.error;
@@ -692,6 +662,13 @@ export function createMembers(dependencies: MembersDependencies): Members {
         const people = (result.data as { people?: PersonRow[] } | null)?.people ?? [];
         dependencies.told?.(people);
         state.adding.people = people;
+    }
+
+    /** Drops every search's pause and ask still on its way. */
+    function cancelSearches(): void {
+        roomSearches.search.cancel();
+        roomSearches.successor.cancel();
+        addSearch.cancel();
     }
 
     /**
@@ -720,9 +697,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
     function reset(): void {
         rosterGeneration++;
         addGeneration++;
-        cancelSearch("search");
-        cancelSearch("successor");
-        cancelAddSearch();
+        cancelSearches();
         Object.assign(state, emptyState(), { isChatAdministrator });
     }
 
@@ -760,7 +735,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
 
             if (state.query.trim()) {
-                await loadMoreMatches(channelId);
+                await loadMoreMatches();
                 return;
             }
 
@@ -807,8 +782,13 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            cancelSearch("search");
-            await runSearch("search");
+            const query = state.query.trim();
+            if (!query || !state.channelId) {
+                return;
+            }
+
+            roomSearches.search.set(query, { isAtOnce: true });
+            await asking.search;
         },
 
         close: reset,
@@ -851,9 +831,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
             isStopped = true;
             rosterGeneration++;
             addGeneration++;
-            cancelSearch("search");
-            cancelSearch("successor");
-            cancelAddSearch();
+            roomSearches.search.stop();
+            roomSearches.successor.stop();
+            addSearch.stop();
         },
 
         askRemove: (personAliasGuid): void => {
@@ -862,7 +842,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            cancelSearch("successor");
+            roomSearches.successor.cancel();
             state.confirming = member;
             state.successorQuery = "";
             state.successor = noSearch();
@@ -871,7 +851,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
         },
 
         cancelRemove: (): void => {
-            cancelSearch("successor");
+            roomSearches.successor.cancel();
             state.confirming = null;
             state.successorQuery = "";
             state.successor = noSearch();
@@ -935,7 +915,7 @@ export function createMembers(dependencies: MembersDependencies): Members {
             // the last to Rock now: the confirm comes back as the dialog that asks who leads next.
             if (answer.code === "door.bad_request" && !replacement && target.is_leader) {
                 delete state.removals[personAliasGuid];
-                cancelSearch("successor");
+                roomSearches.successor.cancel();
                 state.confirming = target;
                 state.successorQuery = "";
                 state.successor = noSearch();
@@ -996,13 +976,13 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
 
             addGeneration++;
-            cancelAddSearch();
+            addSearch.cancel();
             state.adding = { ...noAdding(), isOpen: true };
         },
 
         closeAdd: (): void => {
             addGeneration++;
-            cancelAddSearch();
+            addSearch.cancel();
             state.adding = noAdding();
         },
 
@@ -1011,17 +991,18 @@ export function createMembers(dependencies: MembersDependencies): Members {
                 return;
             }
 
-            cancelAddSearch();
             state.adding.query = query;
             state.adding.error = null;
-            if (!query.trim() || !state.channelId) {
+            const trimmed = query.trim();
+            if (!trimmed || !state.channelId) {
+                addSearch.cancel();
                 state.adding.people = null;
                 state.adding.isSearching = false;
                 return;
             }
 
             state.adding.isSearching = true;
-            addSearchTimer = setTimeout(() => void runAddSearch(), memberSearchPause);
+            addSearch.set(trimmed);
         },
 
         add: async (people): Promise<void> => {
