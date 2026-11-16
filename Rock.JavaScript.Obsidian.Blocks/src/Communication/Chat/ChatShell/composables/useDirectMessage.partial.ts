@@ -898,8 +898,8 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         },
 
         search: async (query: string): Promise<PersonRow[]> => {
-            // A failed search is the list's to show, where the person is looking; the refused strip
-            // is for the conversation.
+            // A failed search is the list's to show, where the person is looking, beside its own
+            // Try again, so its words only name what failed; the refused strip is for the conversation.
             const result = await dependencies.search(query);
             if (!result.ok) {
                 throw new Error(result.error.text ?? failedWords("Couldn't search people.").besideRetry);

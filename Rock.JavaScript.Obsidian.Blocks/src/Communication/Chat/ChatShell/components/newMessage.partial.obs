@@ -186,7 +186,8 @@
     padding-left: 12px;
 }
 
-.chat-nd-hdr :deep(.chat-nd-back) {
+/* Back's hover disc stands out past the header's gutter, so its glyph lines up with the title's edge. */
+.chat-nd-hdr .chat-nd-back {
     margin-left: -8px;
 }
 
@@ -875,7 +876,7 @@
     }
 
     function editorElement(): HTMLElement | null {
-        return viewElement.value?.querySelector<HTMLElement>("[data-testid='composer-input']") ?? null;
+        return viewElement.value?.querySelector<HTMLElement>("[data-focus-stop='composer']") ?? null;
     }
 
     function focusEditor(): void {
