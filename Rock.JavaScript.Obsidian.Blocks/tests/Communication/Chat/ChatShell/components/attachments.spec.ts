@@ -21,6 +21,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import Attachments from "../../../../../src/Communication/Chat/ChatShell/components/attachments.partial.obs";
+import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
@@ -683,6 +684,17 @@ describe("the composer's strip", () => {
         expect(chip.get("[data-testid='attachment-tray-failure']").text()).toBe("Files can be up to 25 MB.");
         expect(chip.get("[data-testid='attachment-tray-failure']").attributes("title")).toBe("Files can be up to 25 MB.");
         expect(chip.find("[data-testid='attachment-tray-retry']").exists()).toBe(false);
+    });
+
+    test("what the tray could not take is said in the inline notice, a note, across the strip", async () => {
+        const tray = trayOf([{ name: "one.pdf" }]);
+        tray.notice = "A message can carry up to 10 files.";
+        const { wrapper } = await mountFiles([], harness(), { tray });
+
+        const notice = wrapper.getComponent(SettingNote);
+        expect(notice.attributes("data-testid")).toBe("attachment-tray-notice");
+        expect(notice.props("note")).toEqual({ kind: "info", text: "A message can carry up to 10 files." });
+        expect(ruleOf("components/attachments.partial.obs", ".chat-attach-notice")["flex-basis"]).toBe("100%");
     });
 });
 
