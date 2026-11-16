@@ -3,7 +3,7 @@
     <Transition leave-active-class="is-leaving">
         <div v-if="isOpen"
              class="chat-modal"
-             :class="{ 'is-sheet': isSheet }"
+             :class="{ 'is-sheet': isSheet, 'is-top': placement === 'top' && !isSheet }"
              data-testid="dialog-scrim"
              @mousedown.self="onScrimDown"
              @click.self="onScrimClick">
@@ -64,6 +64,15 @@
     padding: 16px;
     background: var(--chat-scrim);
     animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+/*
+    Anchored at the top, a header's height down: a body that grows or shrinks while open, as a
+    note coming and going, moves only the dialog's foot, never its title.
+*/
+.chat-modal.is-top {
+    place-items: start center;
+    padding-top: 64px;
 }
 
 .chat-modal.is-leaving {
@@ -246,6 +255,15 @@
         isWide: {
             type: Boolean,
             default: false
+        },
+
+        /**
+         * Where it stands in the frame: centred, as a question does, or anchored at the top, for
+         * a dialog whose body changes height while it is open. A sheet rises from the bottom either way.
+         */
+        placement: {
+            type: String as PropType<"center" | "top">,
+            default: "center"
         },
 
         /**
