@@ -738,4 +738,27 @@ describe("whose push this browser carries", () => {
 
         expect(calls).toEqual([]);
     });
+
+    test("a release that a Turn off overtakes keeps nothing of its own answer, so a failure arriving late puts no cookie back", async () => {
+        const released = deferred<CallResult>();
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice() });
+        let unregisters = 0;
+        deps.call = jest.fn(async (name, args) => {
+            calls.push({ name, args });
+            // the load's release waits; Turn off's own unregister answers at once
+            return ++unregisters === 1 ? released.promise : { ok: true, data: { token: args.p_token, removed: true } } as CallResult;
+        });
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        expect(await push.turnOff()).toBeNull();
+        expect(cookies[cookies.length - 1]).toBeNull();
+
+        released.resolve({ ok: false, status: 503, error: { code: "rpc.unavailable", severity: "degraded", text: null }, retryAfterSeconds: null });
+        await started;
+
+        expect(calls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_unregister_device"]);
+        expect(cookies[cookies.length - 1]).toBeNull();
+    });
 });
