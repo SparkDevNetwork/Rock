@@ -42,9 +42,12 @@
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
 
-        <!-- A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet over the whole chat. -->
+        <!--
+            A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet
+            over the whole chat. The phone has no hover bar, so the sheet carries the quick
+            reactions, first, at a finger's size.
+        -->
         <Sheet v-if="isSheetSurface" ref="sheet" :isOpen="isSheetOpen && !!message" label="Message actions" @dismiss="onSheetClose">
-            <!-- The phone has no hover bar, so the sheet carries the quick reactions, first, at a finger's size. -->
             <div class="chat-sheet-react" data-testid="action-sheet-reactions">
                 <button v-for="favorite in quickReactions"
                         :key="favorite.code"
