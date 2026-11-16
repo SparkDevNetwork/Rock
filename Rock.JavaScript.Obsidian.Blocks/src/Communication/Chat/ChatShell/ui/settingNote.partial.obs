@@ -20,7 +20,7 @@
     font-size: var(--chat-fs-small);
     font-weight: 600;
     color: var(--chat-muted);
-    --chat-rise: var(--chat-rise-sm);
+    --chat-enter-from: var(--chat-rise-sm);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 

@@ -538,11 +538,14 @@
     }
 }
 
-/* Enter: rises into place as it fades in, by the rise; a part that rises less sets --chat-rise to a smaller step. */
+/*
+    Enter: rises into place as it fades in, by the rise, or by --chat-enter-from where a part enters
+    by less. The panel host waits on this name's end to know a first page's rows have risen.
+*/
 @keyframes chat-enter {
     from {
         opacity: 0;
-        transform: translateY(var(--chat-rise));
+        transform: translateY(var(--chat-enter-from, var(--chat-rise)));
     }
 }
 

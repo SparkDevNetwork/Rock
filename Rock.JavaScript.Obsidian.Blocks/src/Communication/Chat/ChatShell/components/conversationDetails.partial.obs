@@ -461,7 +461,7 @@
 
 /* The leave confirm, asked in the Leave row's place in danger's soft color. */
 .chat-leave-box {
-    --chat-rise: var(--chat-rise-sm);
+    --chat-enter-from: var(--chat-rise-sm);
     padding: 14px 16px;
     background: var(--chat-danger-soft);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);

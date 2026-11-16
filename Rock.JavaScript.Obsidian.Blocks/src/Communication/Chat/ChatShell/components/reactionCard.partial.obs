@@ -39,9 +39,8 @@
 </template>
 
 <style scoped>
-/* Over the reactions it names, it enters by the small rise as a popover does. */
+/* Over the reactions it names, it pops in as every popover does. */
 .chat-rx-card {
-    --chat-rise: var(--chat-rise-sm);
     z-index: var(--chat-z-tip);
     width: 248px;
     padding: 10px 6px 6px;
@@ -49,7 +48,7 @@
     background: var(--chat-raised);
     border-radius: var(--chat-r-surface);
     box-shadow: var(--chat-shadow-pop);
-    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-rx-card-head {
