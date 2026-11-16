@@ -11,71 +11,60 @@
         <slot name="anchor"></slot>
     </IconButton>
 
-    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <Transition leave-active-class="is-leaving">
-            <div v-if="isOpen && isSheet" class="chat-sheet-scrim" data-testid="menu-scrim"></div>
-        </Transition>
-        <Transition :name="isSheet ? 'chat-sheet-menu' : 'chat-pop'" :leave-active-class="isSheet ? 'is-leaving' : undefined">
-            <div v-if="isOpen"
-                 ref="menuElement"
-                 :class="isSheet ? 'chat-sheet' : 'chat-menu'"
-                 role="menu"
-                 :aria-label="label"
-                 :aria-describedby="note ? noteId : undefined"
-                 :style="isSheet ? undefined : menuStyles"
-                 @keydown="onKeydown">
-                <!--
-                    Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
-                    a menu drawn inside it; left in place where there is no root, as when a part is drawn alone.
-                -->
-                <div v-if="isSheet" class="chat-sheet-grab" aria-hidden="true"></div>
-                <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
-                <template v-for="item in items" :key="item.key">
-                    <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
-                    <div v-if="item.heading" class="chat-menu-head" role="presentation">{{ item.heading }}</div>
-                    <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
-                    <button type="button"
-                            :class="[isSheet ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
-                            :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
-                            :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
-                            :data-key="item.key"
-                            :aria-label="item.ariaLabel"
-                            tabindex="-1"
-                            :aria-disabled="item.isDisabled || undefined"
-                            @click="choose(item)">
-                        <Icon v-if="item.icon" :name="item.icon" />
-                        <span v-if="item.description" class="chat-menu-label is-stacked">
-                            <span class="chat-menu-title">{{ item.label }}</span>
-                            <span class="chat-menu-desc">{{ item.description }}</span>
-                        </span>
-                        <span v-else class="chat-menu-label">{{ item.label }}</span>
-                        <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
-                        <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
-                        <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
-                    </button>
-                </template>
-                <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
-                <template v-if="note">
-                    <div class="chat-menu-sep" role="separator"></div>
-                    <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon :name="noteIcon" size="xs" />{{ note }}</div>
-                </template>
-            </div>
-        </Transition>
-    </Teleport>
+    <Popover :popover="pop"
+             :label="label"
+             role="menu"
+             :aria-describedby="note ? noteId : undefined"
+             @keydown="onKeydown">
+        <div :class="pop.isSheet.value ? 'chat-menu-rows' : 'chat-menu'">
+            <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
+            <template v-for="item in items" :key="item.key">
+                <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
+                <div v-if="item.heading" class="chat-menu-head" role="presentation">{{ item.heading }}</div>
+                <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
+                <button type="button"
+                        :class="[pop.isSheet.value ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
+                        :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
+                        :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
+                        :data-key="item.key"
+                        :aria-label="item.ariaLabel"
+                        tabindex="-1"
+                        :aria-disabled="item.isDisabled || undefined"
+                        @click="choose(item)">
+                    <Icon v-if="item.icon" :name="item.icon" />
+                    <span v-if="item.description" class="chat-menu-label is-stacked">
+                        <span class="chat-menu-title">{{ item.label }}</span>
+                        <span class="chat-menu-desc">{{ item.description }}</span>
+                    </span>
+                    <span v-else class="chat-menu-label">{{ item.label }}</span>
+                    <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
+                    <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
+                    <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
+                </button>
+            </template>
+            <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
+            <template v-if="note">
+                <div class="chat-menu-sep" role="separator"></div>
+                <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon :name="noteIcon" size="xs" />{{ note }}</div>
+            </template>
+        </div>
+    </Popover>
 </template>
 
 <style scoped>
-/* Fixed, so the chat's clipped frame cannot cut a menu near its edge. */
+/* The list on its surface: the popover's surface draws the box, the list its own width and spacing. */
 .chat-menu {
-    z-index: var(--chat-z-popover);
     display: flex;
     flex-direction: column;
     min-width: 200px;
     max-width: min(360px, calc(100vw - 16px));
     padding: 6px;
-    background: var(--chat-raised);
-    border-radius: var(--chat-r-surface);
-    box-shadow: var(--chat-shadow-pop);
+}
+
+/* On a phone's sheet the rows run the sheet's width, which sets their spacing. */
+.chat-menu-rows {
+    display: flex;
+    flex-direction: column;
 }
 
 .chat-menu-item {
@@ -185,36 +174,16 @@
     color: var(--chat-danger-ink);
 }
 
-/*
-    Enters from just toward its button and a touch small, and leaves the same way, half as far and
-    faster; toward the button is up when the menu opens below it and down when it flips above.
-*/
-.chat-pop-enter-active {
-    transition: opacity var(--chat-t-base) var(--chat-ease-in), transform var(--chat-t-base) var(--chat-ease-in);
-}
-
-.chat-pop-leave-active {
-    transition: opacity var(--chat-t-fast) var(--chat-ease-out), transform var(--chat-t-fast) var(--chat-ease-out);
-}
-
-.chat-pop-enter-from {
-    opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise-sm))) scale(var(--chat-pop-scale));
-}
-
-.chat-pop-leave-to {
-    opacity: 0;
-    transform: translateY(calc(var(--chat-pop-toward, -1) * var(--chat-rise-sm) / 2)) scale(var(--chat-pop-scale));
-}
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
-    import { overlayHostOf } from "./tooltip.partial";
+    import Popover from "./popoverSurface.partial.obs";
+    import { usePopover } from "./popover.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
@@ -310,10 +279,13 @@
             default: "bottom-end"
         },
 
-        /** Whether it opens as a bottom sheet over a scrim that a press closes, as on a phone, rather than beside its button. */
+        /**
+         * Whether it opens as a bottom sheet over a scrim, rather than beside its button; as the
+         * session says by default, a sheet on a phone.
+         */
         isSheet: {
             type: Boolean,
-            default: false
+            default: undefined
         },
 
         /** The item a press or Down opens the menu on, such as the choice a set of choices stands at; the first by default. */
@@ -330,56 +302,29 @@
 
     // #region Values
 
+    const session = useChatSession();
     const anchor = ref<InstanceType<typeof IconButton>>();
-    const anchorElement = ref<HTMLElement>();
-    const menuElement = ref<HTMLElement>();
-    const isOpen = ref(false);
+    const anchorElement = computed((): HTMLElement | undefined => anchor.value?.buttonElement ?? undefined);
+
+    // Beside its button, or a sheet on a phone. Escape, a press outside, Tab and the sheet's scrim
+    // close it, as every popover closes; a choice closes it here, with focus back on the button.
+    const pop = usePopover(anchorElement, ref<HTMLElement>(), {
+        placement: props.placement,
+        isSheet: () => props.isSheet ?? session.isPhone.value
+    });
+
+    const isOpen = pop.isOpen;
 
     /** The note's own element, which the open menu is described by. */
     const noteId = `chat-menu-note-${newGuid()}`;
 
-    /** The chat's root, which the open menu is drawn in; null where the menu is drawn alone. */
-    const overlayHost = ref<HTMLElement | null>(null);
-
-    // Below its button by default, above when it would leave the window, kept 8px inside it.
-    // Placed by left and top, since a transform here would override the pop motion's own and the
-    // menu would only fade in and out.
-    const { floatingStyles, placement, x } = useFloating(anchorElement, menuElement, {
-        placement: props.placement,
-        strategy: "fixed",
-        transform: false,
-        middleware: [offset(8), flip(), shift({ padding: 8 })],
-        whileElementsMounted: autoUpdate
-    });
-
     // #endregion Values
-
-    // #region Computed Values
-
-    /**
-     * The placement, with the pop motion grown from the button: from the button's middle along the
-     * menu's edge nearest it, and moving toward it, so a menu flipped above its button grows up
-     * from below rather than down from a corner it does not touch.
-     */
-    const menuStyles = computed((): Record<string, string> => {
-        const isAbove = placement.value.startsWith("top");
-        const button = anchorElement.value?.getBoundingClientRect();
-        const width = menuElement.value?.offsetWidth ?? 0;
-        const middle = button ? button.left + button.width / 2 - (x.value ?? 0) : width / 2;
-        return {
-            ...floatingStyles.value,
-            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
-            "--chat-pop-toward": isAbove ? "1" : "-1"
-        };
-    });
-
-    // #endregion Computed Values
 
     // #region Event Handlers
 
     async function onAnchorClick(): Promise<void> {
         if (isOpen.value) {
-            close(false);
+            pop.close();
             return;
         }
 
@@ -394,7 +339,7 @@
         }
     }
 
-    /** Up and Down cycle through the items; Escape closes and returns to the button; Tab leaves from the button. */
+    /** Up and Down cycle through the items, Home and End go to the ends, a letter to its item. */
     function onKeydown(event: KeyboardEvent): void {
         const items = menuItems();
         const current = items.indexOf(document.activeElement as HTMLElement);
@@ -407,25 +352,6 @@
         else if (event.key === "Home" || event.key === "End") {
             event.preventDefault();
             items[event.key === "Home" ? 0 : items.length - 1]?.focus();
-        }
-        else if (event.key === "Escape") {
-            event.preventDefault();
-            close(true);
-        }
-        else if (event.key === "Tab") {
-            if (props.isSheet) {
-                // A sheet is modal over the chat, so Tab stays among its rows.
-                event.preventDefault();
-                // with focus on no row, Shift+Tab starts from the end as Tab starts from the first row
-                const next = current < 0 ? (event.shiftKey ? items.length - 1 : 0) : (current + (event.shiftKey ? -1 : 1) + items.length) % items.length;
-                items[next]?.focus();
-            }
-            else {
-                // The menu is drawn at the chat's root, away from its button, so Tab would go on from
-                // there, out of a dialog the button sits in. Focus goes back to the button first, and
-                // the browser's own Tab moves on from it, as from a menu button.
-                close(true);
-            }
         }
         else if ((event.key === "Enter" || event.key === " ") && current >= 0) {
             // Handled here so the choice does not depend on the browser turning a key into a click.
@@ -441,33 +367,22 @@
         }
     }
 
-    /** A press anywhere outside the menu and its button closes it, leaving focus where the press put it. */
-    function onDocumentPointerDown(event: Event): void {
-        const target = event.target as Node;
-        if (menuElement.value?.contains(target) || anchor.value?.buttonElement?.contains(target)) {
-            return;
-        }
-
-        // A sheet's scrim is the whole chat, so a press on it is the way out and focus goes back to the button.
-        close(props.isSheet);
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
 
     async function open(at: "first" | "last"): Promise<void> {
-        // A sheet is placed by its own rules, so nothing is floated for it.
-        anchorElement.value = props.isSheet ? undefined : anchor.value?.buttonElement ?? undefined;
-        isOpen.value = true;
-        await nextTick();
+        if (!await pop.open()) {
+            return;
+        }
+
         const items = menuItems();
         const chosen = at === "first" && props.focusKey ? items.find(item => item.dataset.key === props.focusKey) : undefined;
         (chosen ?? items[at === "first" ? 0 : items.length - 1])?.focus();
     }
 
     function menuItems(): HTMLElement[] {
-        return Array.from(menuElement.value?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
+        return Array.from(pop.floating.value?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
     }
 
     function choose(item: MenuItem): void {
@@ -476,30 +391,14 @@
         }
 
         emit("select", item.key);
-        close(true);
-    }
-
-    function close(isFocusReturned: boolean): void {
-        isOpen.value = false;
-        if (isFocusReturned) {
-            anchor.value?.focus();
-        }
+        pop.close({ isFocusReturned: true });
     }
 
     // #endregion Functions
 
     // #region Watchers
 
-    // The outside press is listened for only while open, so a closed menu costs the page nothing.
-    watch(isOpen, open => {
-        emit("openChange", open);
-        if (open) {
-            document.addEventListener("pointerdown", onDocumentPointerDown, true);
-        }
-        else {
-            document.removeEventListener("pointerdown", onDocumentPointerDown, true);
-        }
-    });
+    watch(isOpen, open => emit("openChange", open));
 
     // #endregion Watchers
 
@@ -509,12 +408,10 @@
     // Vue drops an event at a listener attached in the same millisecond its first listener saw it,
     // so a toolbar holding the button, as a message's tools do, could miss its own arrows.
     onMounted(() => {
-        overlayHost.value = overlayHostOf(anchor.value?.buttonElement);
         anchor.value?.buttonElement?.addEventListener("keydown", onAnchorKeydown);
     });
 
     onBeforeUnmount(() => {
-        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
         anchor.value?.buttonElement?.removeEventListener("keydown", onAnchorKeydown);
     });
 

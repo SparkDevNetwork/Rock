@@ -260,9 +260,9 @@ describe("the menu as a sheet", () => {
     test("draws a scrim and a sheet with a grab bar and one sheet row for each item, and no floating placement", async () => {
         await openSheet();
 
-        expect(document.querySelector(".chat-sheet-scrim")).not.toBeNull();
-        expect(menu()?.classList.contains("chat-sheet")).toBe(true);
-        expect(menu()?.querySelector(".chat-sheet-grab")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
+        expect(menu()?.closest("[data-testid='sheet']")).not.toBeNull();
+        expect(menu()?.closest("[data-testid='sheet']")?.querySelector(".chat-sheet-handle")).not.toBeNull();
         expect(document.querySelectorAll("[role='menu'] .chat-sheet-item")).toHaveLength(3);
         expect(menu()?.style.left ?? "").toBe("");
         expect(menu()?.style.top ?? "").toBe("");
@@ -272,7 +272,10 @@ describe("the menu as a sheet", () => {
     test("a press on the scrim closes it with focus back on the button", async () => {
         const anchor = await openSheet();
 
-        document.querySelector(".chat-sheet-scrim")!.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        // the scrim takes the whole tap, so it closes on the click that ends the press
+        const scrim = document.querySelector<HTMLElement>("[data-testid='scrim']")!;
+        scrim.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        scrim.click();
         await settle();
 
         expect(menu()).toBeNull();

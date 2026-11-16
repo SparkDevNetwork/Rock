@@ -1268,16 +1268,16 @@ describe("the composer's GIFs", () => {
         await phone.get("[data-testid='composer-add']").trigger("click");
         await nextTick();
 
-        expect(document.querySelector(".chat-sheet-scrim")).not.toBeNull();
-        expect(document.querySelector("[role='menu'].chat-sheet")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
+        expect(document.querySelector("[data-testid='sheet'] [role='menu']")).not.toBeNull();
         phone.unmount();
         document.body.replaceChildren();
 
         const { wrapper } = gifTray();
         await wrapper.get("[data-testid='composer-add']").trigger("click");
         await nextTick();
-        expect(document.querySelector(".chat-sheet-scrim")).toBeNull();
-        expect(document.querySelector("[role='menu'].chat-menu")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).toBeNull();
+        expect(document.querySelector("[role='menu'] .chat-menu")).not.toBeNull();
     });
 
     test("Photo or file opens the file chooser", async () => {

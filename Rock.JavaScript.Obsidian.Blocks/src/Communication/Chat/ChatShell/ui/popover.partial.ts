@@ -61,7 +61,7 @@ export type PopoverControl = {
     floating: Ref<HTMLElement | undefined>;
 
     /** The element it opens beside. */
-    anchor: Ref<HTMLElement | undefined>;
+    anchor: Readonly<Ref<HTMLElement | undefined>>;
 
     /**
      * Opens it, resolving once the surface is drawn: true when it is still open then, false when
@@ -171,7 +171,7 @@ function pull(popover: OpenPopover): void {
  *
  * @returns The popover's state and what changes it.
  */
-export function usePopover(anchor: Ref<HTMLElement | undefined>, floating: Ref<HTMLElement | undefined>, options: PopoverOptions = {}): PopoverControl {
+export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, floating: Ref<HTMLElement | undefined>, options: PopoverOptions = {}): PopoverControl {
     const isOpen = ref(false);
     const isSheet = computed((): boolean => options.isSheet?.() ?? false);
     const isDismissable = options.isDismissable ?? true;

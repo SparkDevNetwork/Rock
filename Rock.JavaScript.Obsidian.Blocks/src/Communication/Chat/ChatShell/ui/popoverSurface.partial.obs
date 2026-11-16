@@ -5,14 +5,10 @@
            :label="label"
            :height="sheetHeight"
            @dismiss="popover.close({ isFocusReturned: true })">
-        <div :ref="setFloating" class="chat-popover-sheet" v-bind="$attrs">
+        <div :ref="setFloating" class="chat-popover-sheet" :role="role || undefined" :aria-label="label" v-bind="$attrs">
             <slot />
         </div>
     </Sheet>
-    <!--
-        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut a
-        surface drawn inside it; left in place where there is no root, as when a part is drawn alone.
-    -->
     <Teleport v-else :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving">
             <div v-if="popover.isOpen.value"
@@ -66,6 +62,10 @@
     // The surface every popover is drawn on: beside its anchor, grown from it, with the chat's
     // surface look; on a phone a bottom sheet instead. Its coming and going is the popover's
     // (usePopover); what it holds is the caller's, in the slot.
+    //
+    // Beside its anchor it is drawn in the chat's root when there is one, since a feed's faded edges
+    // would fade or cut a surface drawn inside it; in place where there is no root, as when a part
+    // is drawn alone.
 
     defineOptions({ inheritAttrs: false });
 
