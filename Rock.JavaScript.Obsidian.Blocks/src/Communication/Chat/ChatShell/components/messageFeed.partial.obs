@@ -48,7 +48,7 @@
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
                 <!-- Older messages are asked for as this comes into view at the top; pressed, it asks too, and after a failure only a press asks again. -->
-                <div v-if="timeline.hasMore && loadOlder" ref="olderElement" class="chat-feed-older" data-testid="feed-older">
+                <div v-if="isOlderShown" ref="olderElement" class="chat-feed-older" data-testid="feed-older">
                     <Button size="sm"
                             data-testid="feed-older-load"
                             :busy="isLoadingOlder"
@@ -804,7 +804,7 @@
          * the feed is only shown, as a found conversation's preview is, which pages nothing.
          */
         loadOlder: {
-            type: Function as PropType<(() => Promise<void>) | null>,
+            type: Function as PropType<() => Promise<void>>,
             default: null
         }
     });
@@ -854,13 +854,16 @@
     const isLoadingOlder = ref(false);
     const isOlderFailed = ref(false);
 
+    /** Whether older messages remain for this feed to load; a feed only shown loads none. */
+    const isOlderShown = computed((): boolean => !!props.loadOlder && props.timeline.hasMore);
+
     // A row counts as seen once any of it is on screen, which is what the read position is saved from.
     const seen = useSeenObserver(() => feed.value, row => emit("seen", Number(row.dataset.messageId)));
 
     // Scrolling up to the top asks for the page before it. Its promise lets the trigger ask again
     // at once after a page that leaves the top in view; after a failure only a press asks.
     usePagingTrigger(olderElement, loadOlderPage, {
-        enabled: () => !!props.loadOlder && props.timeline.isLoaded && props.timeline.hasMore && !isLoadingOlder.value && !isOlderFailed.value,
+        enabled: () => isOlderShown.value && props.timeline.isLoaded && !isLoadingOlder.value && !isOlderFailed.value,
         root: () => feed.value
     });
 
