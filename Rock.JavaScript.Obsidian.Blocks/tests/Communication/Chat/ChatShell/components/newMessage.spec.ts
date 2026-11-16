@@ -37,6 +37,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import { join } from "path";
 import { away } from "../statusShapes";
 import { providedSession } from "../sessionShapes";
+import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 // #region Fixtures
@@ -131,7 +132,7 @@ async function typeName(w: VueWrapper, text: string): Promise<void> {
 
 /** Waits out the search's pause and lets its answer land. */
 async function afterPause(): Promise<void> {
-    jest.advanceTimersByTime(250);
+    jest.advanceTimersByTime(searchPause);
     await settle();
 }
 
@@ -249,19 +250,38 @@ describe("the suggestions", () => {
         jest.useFakeTimers();
     });
 
-    test("say Searching… at once, and search 250 ms after the last keystroke", async () => {
+    // The one pause every search box waits, so this box feels as the others do.
+    test("say Searching… at once, and search the shared pause after the last keystroke", async () => {
         const search = jest.fn(async () => [anna, andre]);
         const w = mountView({ search });
 
         await typeName(w, "a");
         await typeName(w, "an");
         expect(w.get("[data-testid='nd-searching']").text()).toBe("Searching…");
-        jest.advanceTimersByTime(249);
+        jest.advanceTimersByTime(searchPause - 1);
         expect(search).not.toHaveBeenCalled();
 
-        await afterPause();
+        jest.advanceTimersByTime(1);
+        await settle();
         expect(search).toHaveBeenCalledTimes(1);
         expect(search).toHaveBeenCalledWith("an");
+    });
+
+    test("draw only the newest name's answer, however late an older one lands", async () => {
+        const answers: Array<(rows: PersonRow[]) => void> = [];
+        const search = jest.fn(() => new Promise<PersonRow[]>(resolve => answers.push(resolve)));
+        const w = mountView({ search });
+
+        await typeName(w, "an");
+        await afterPause();
+        await typeName(w, "ca");
+        await afterPause();
+        answers[1]([caleb]);
+        await settle();
+        answers[0]([anna, andre]);
+        await settle();
+
+        expect(w.findAll("[data-testid='nd-option']").map(option => plain(option.text()))).toEqual([expect.stringContaining("Caleb Brooks")]);
     });
 
     test("name each person's campus under their name, from the church's campuses, where they show it", async () => {
