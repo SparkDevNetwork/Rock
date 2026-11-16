@@ -32,6 +32,7 @@ import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/compon
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
+import { isEditableMessage, isSenderBlockable } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { createMessageMotion, MessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
@@ -1233,7 +1234,7 @@ describe("the phone's action sheet", () => {
     }
 
     function sheet(): HTMLElement | null {
-        return document.querySelector<HTMLElement>("[data-testid='action-sheet']");
+        return document.querySelector<HTMLElement>("[data-testid='sheet']");
     }
 
     function sheetItem(label: string): HTMLElement {
@@ -1316,6 +1317,217 @@ describe("the phone's action sheet", () => {
         expect(request.kind).toBe("openPicker");
         expect(request.anchor).toBe(isChannel ? root(w) : w.get(".chat-bubble").element);
         expect(request.opening).toEqual({ startsOn: "full" });
+    });
+
+    // The sheet's own cells, moved here when the row came to draw it on the shared sheet: a
+    // dialog from the bottom of the chat over a scrim, holding the same choices as a message's
+    // bar and menu as large items, each asking the way the bar does, under a row of the church's
+    // first six favorites and a plus for the full picker. It opens with focus on its first
+    // reaction, and Escape or a tap on the scrim closes it.
+    describe("as the sheet draws it", () => {
+        const approve = { id: "approve", label: "Approve request", call: "chat_action_approve" };
+
+        /** The church's favorites as the bootstrap carries them, in order; the sheet draws the first six. */
+        const favorites = [
+            { code: "thumbsup", label: "thumbs up", emoji: "👍", image_url: null },
+            { code: "heart", label: "red heart", emoji: "❤️", image_url: null },
+            { code: "joy", label: "face with tears of joy", emoji: "😂", image_url: null },
+            { code: "open_mouth", label: "face with open mouth", emoji: "😮", image_url: null },
+            { code: "cry", label: "crying face", emoji: "😢", image_url: null },
+            { code: "pray", label: "folded hands", emoji: "🙏", image_url: null },
+            { code: "tada", label: "party popper", emoji: "🎉", image_url: null },
+            { code: "raised_hands", label: "raising hands", emoji: "🙌", image_url: null }
+        ];
+
+        const own = (extra: Partial<TimelineMessage> = {}): TimelineMessage => message({ person_alias_guid: me, ...extra });
+
+        /** The row on a phone with its sheet opened by a tap on the message. */
+        async function openSheet(props: RowProps): Promise<VueWrapper> {
+            const w = onPhone({ reactionHost: host(favorites), ...props });
+            await w.trigger("click");
+            await nextTick();
+            await nextTick();
+            return w;
+        }
+
+        /** The sheet's items, below its row of reactions. */
+        function items(): HTMLElement[] {
+            return Array.from(sheet()?.querySelectorAll<HTMLElement>("button") ?? []).filter(button => !button.closest("[data-testid='action-sheet-reactions']"));
+        }
+
+        function itemLabels(): string[] {
+            return items().map(button => button.textContent?.trim() ?? "");
+        }
+
+        /** The row's buttons: the six reactions, then the plus. */
+        function reactions(): HTMLElement[] {
+            return Array.from(sheet()?.querySelectorAll<HTMLElement>("[data-testid='action-sheet-reactions'] button") ?? []);
+        }
+
+        test("for the person's own message: Reply in thread, Quote, Edit, Copy, the server's actions, then Delete", async () => {
+            await openSheet({ message: own({ actions: [approve] }), isOwn: true });
+
+            expect(itemLabels()).toEqual(["Reply in thread", "Quote", "Edit message", "Copy text", "Approve request", "Delete message"]);
+            expect(sheetItem("Delete message").classList).toContain("is-danger");
+        });
+
+        test("for another person's message: Reply in thread, Quote, Copy and Block", async () => {
+            await openSheet({ message: message() });
+
+            expect(itemLabels()).toEqual(["Reply in thread", "Quote", "Copy text", "Block"]);
+        });
+
+        test("Block asks for the sender as the bar's does, and is never offered on a system line or a post from the church", async () => {
+            const target = message();
+            const w = await openSheet({ message: target });
+
+            sheetItem("Block").click();
+            await nextTick();
+
+            expect(w.emitted("messageAction")).toEqual([[{ kind: "block", message: target }]]);
+            expect(isSenderBlockable(message({ message_type: "system" }), false)).toBe(false);
+            expect(isSenderBlockable(message({ person_alias_guid: null }), false)).toBe(false);
+            expect(isSenderBlockable(message(), true)).toBe(false);
+        });
+
+        test("leave out Reply in thread inside a thread", async () => {
+            await openSheet({ message: own({ parent_id: 40 }), isOwn: true, isInThread: true });
+
+            expect(itemLabels()).toEqual(["Quote", "Edit message", "Copy text", "Delete message"]);
+        });
+
+        // A block post draws as its card, with its own buttons, so a tap on it opens no sheet at
+        // all; the rule the sheet and the bar share still leaves Edit off it.
+        test("leave out Edit on the person's own block post, which cannot be edited", async () => {
+            const post = own({ blocks: [{ type: "text", text: "Card", fallback: { type: "text", text: "Card" } }] as TimelineMessage["blocks"] });
+            await openSheet({ message: post, isOwn: true });
+
+            expect(sheet()).toBeNull();
+            expect(isEditableMessage(post)).toBe(false);
+        });
+
+        test("each asks as the bar would, and closes the sheet", async () => {
+            const target = own({ actions: [approve] });
+            const w = await openSheet({ message: target, isOwn: true });
+
+            let closes = 0;
+            for (const label of ["Reply in thread", "Quote", "Edit message", "Copy text", "Approve request", "Delete message"]) {
+                if (!sheet()) {
+                    await w.trigger("click");
+                    await nextTick();
+                }
+                sheetItem(label).click();
+                await nextTick();
+                closes += sheet() ? 0 : 1;
+            }
+
+            expect(w.emitted("openThread")).toEqual([[{ rootId: 42, messageId: null }]]);
+            expect(w.emitted("messageAction")).toEqual([
+                [{ kind: "quote", message: target }],
+                [{ kind: "edit", message: target }],
+                [{ kind: "copy", message: target }],
+                [{ kind: "server", message: target, action: approve }],
+                [{ kind: "delete", message: target }]
+            ]);
+            expect(closes).toBe(6);
+        });
+
+        test("is a modal dialog named Message actions, with focus on its first reaction", async () => {
+            await openSheet({ message: message() });
+
+            expect(sheet()?.getAttribute("role")).toBe("dialog");
+            expect(sheet()?.getAttribute("aria-modal")).toBe("true");
+            expect(sheet()?.getAttribute("aria-label")).toBe("Message actions");
+            expect(document.activeElement).toBe(reactions()[0]);
+            expect(reactions()[0].getAttribute("aria-label")).toBe("React with thumbs up");
+        });
+
+        test("draws nothing while closed", async () => {
+            onPhone({ message: message(), reactionHost: host(favorites) });
+            await nextTick();
+
+            expect(sheet()).toBeNull();
+        });
+
+        test("Escape closes it", async () => {
+            await openSheet({ message: message() });
+
+            sheet()?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+            await nextTick();
+
+            expect(sheet()).toBeNull();
+        });
+
+        test("a tap on the scrim closes it; a tap inside the sheet off its items does not", async () => {
+            await openSheet({ message: message() });
+
+            sheet()?.click();
+            await nextTick();
+            expect(sheet()).not.toBeNull();
+
+            // the scrim takes the whole tap, the press and the click that ends it
+            const scrim = document.querySelector<HTMLElement>("[data-testid='scrim']") as HTMLElement;
+            scrim.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+            scrim.click();
+            await nextTick();
+            expect(sheet()).toBeNull();
+        });
+
+        test("Tab stays inside the sheet, from its last item back to its first reaction", async () => {
+            await openSheet({ message: message() });
+            // Block is the last item on another person's message
+            sheetItem("Block").focus();
+
+            document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
+
+            expect(document.activeElement).toBe(reactions()[0]);
+        });
+
+        // The phone has no hover bar, so the sheet carries the reactions: the church's first six
+        // favorites, each a toggle of the reader's own, and a plus for the full picker.
+        describe("its reactions", () => {
+            const yourPray = { code: "pray", count: 2, mine: true, emoji: "🙏", image_url: null, label: "folded hands" };
+
+            test("are the first six favorites, then a plus for the full picker", async () => {
+                await openSheet({ message: message({ reactions: [yourPray] } as Partial<TimelineMessage>) });
+
+                expect(reactions().map(b => b.textContent?.trim()).slice(0, 6)).toEqual(["👍", "❤️", "😂", "😮", "😢", "🙏"]);
+                expect(reactions().map(b => b.getAttribute("aria-label"))).toEqual([
+                    "React with thumbs up",
+                    "React with red heart",
+                    "React with face with tears of joy",
+                    "React with face with open mouth",
+                    "React with crying face",
+                    "Remove your folded hands",
+                    "More reactions"
+                ]);
+                expect(reactions().slice(0, 6).map(b => b.getAttribute("aria-pressed"))).toEqual(["false", "false", "false", "false", "false", "true"]);
+            });
+
+            test("a reaction asks to react to the message with it, and closes the sheet", async () => {
+                const target = message();
+                const w = await openSheet({ message: target });
+
+                reactions()[1].click();
+                await nextTick();
+
+                expect(w.emitted("messageAction")).toEqual([[{ kind: "react", message: target, code: "heart" }]]);
+                expect(sheet()).toBeNull();
+            });
+
+            // The sheet has already offered six quick reactions, so its plus skips the picker's quick tray.
+            test("the plus asks for the full picker for the message, past the quick tray", async () => {
+                const target = message();
+                const w = await openSheet({ message: target });
+
+                reactions()[6].click();
+                await nextTick();
+
+                const requests = (w.emitted("messageAction") ?? []).map(([request]) => request as { kind: string, message: TimelineMessage, opening?: unknown });
+                expect(requests.map(request => [request.kind, request.message, request.opening])).toEqual([["openPicker", target, { startsOn: "full" }]]);
+                expect(requests.some(request => request.kind === "react")).toBe(false);
+            });
+        });
     });
 });
 
@@ -1516,7 +1728,7 @@ describe("the profile card's openers", () => {
         await wrapper.get("[data-testid='sender-name']").trigger("click");
 
         expect(personRequests(wrapper)).toHaveLength(1);
-        expect(document.querySelector("[data-testid='action-sheet']")).toBeNull();
+        expect(document.querySelector("[data-testid='sheet']")).toBeNull();
         wrapper.unmount();
         document.body.innerHTML = "";
     });
