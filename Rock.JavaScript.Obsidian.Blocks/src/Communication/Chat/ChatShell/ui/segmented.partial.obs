@@ -20,6 +20,7 @@
                 :tabindex="index === stopIndex ? 0 : -1"
                 :data-autofocus="hasAutofocus && index === stopIndex ? '' : undefined"
                 :data-value="option.value"
+                :data-testid="optionTestId || undefined"
                 :aria-describedby="option.description ? `${uid}-${index}` : undefined"
                 @click="choose(index)">
             <span v-if="option.icon" class="chat-seg-ic"><Icon :name="option.icon" size="sm" /></span>{{ option.label }}
@@ -133,6 +134,12 @@
         modelValue: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /** The test id every option carries, which the screen's tests and the page's scripts find them by. */
+        optionTestId: {
+            type: String as PropType<string>,
+            default: ""
         },
 
         /** Marks the option Tab lands on for a dialog to put focus on as it opens. */

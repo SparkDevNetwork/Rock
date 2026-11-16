@@ -1015,8 +1015,8 @@ describe("the grouped list's measures", () => {
     });
 
     test("draws the notify segments 32px high, and 40px on a phone", () => {
-        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-seg-opt")).toMatch(/height:\s*32px;/);
-        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-modal.is-sheet .chat-seg-opt")).toMatch(/height:\s*40px;/);
+        expect(bodyOf("ui/segmented.partial.obs", ".chat-seg-opt")).toMatch(/height:\s*32px;/);
+        expect(bodyOf("ui/segmented.partial.obs", ".chat-seg.is-phone .chat-seg-opt")).toMatch(/height:\s*40px;/);
     });
 
     test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as pills", () => {

@@ -102,6 +102,15 @@ describe("the segmented control", () => {
         expect(wrapper!.emitted("update:modelValue")).toEqual([[to]]);
     });
 
+    test("gives every option the test id the screen asks for, and none unless asked", () => {
+        draw("all", { optionTestId: "x-option" });
+        expect(radios().map(r => r.dataset.testid)).toEqual(["x-option", "x-option", "x-option"]);
+        wrapper!.unmount();
+
+        draw("all");
+        expect(radios().some(r => r.hasAttribute("data-testid"))).toBe(false);
+    });
+
     test("leaves any other key alone", async () => {
         draw("all");
 

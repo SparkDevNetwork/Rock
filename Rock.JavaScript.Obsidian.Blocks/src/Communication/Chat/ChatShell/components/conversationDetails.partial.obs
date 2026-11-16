@@ -100,29 +100,15 @@
             <!-- The person's own settings for the room, each saved at once. -->
             <SettingGroup label="Notifications" isBare data-testid="details-notify">
                 <template #default="{ labelId }">
-                    <div class="chat-seg"
-                         role="radiogroup"
-                         :aria-labelledby="labelId"
-                         :aria-describedby="prefsNotes.notify ? `${renameId}-notify-err` : undefined"
-                         @keydown="onNotifyKeydown">
-                        <button v-for="option in notifyOptions"
-                                :key="option.value"
-                                ref="notifyElements"
-                                type="button"
-                                class="chat-seg-opt"
-                                role="radio"
-                                :aria-checked="option.value === notifyMode ? 'true' : 'false'"
-                                :tabindex="option.value === shownNotifyMode ? 0 : -1"
-                                :data-autofocus="option.value === shownNotifyMode ? '' : undefined"
-                                data-testid="notify-option"
-                                :data-value="option.value"
-                                :aria-describedby="`${renameId}-notify-${option.value}`"
-                                @click="onNotify(option.value)">
-                            <!-- Described by its mode's own line below, read as the arrows reach it, since arrowing chooses and saves at once. -->
-                            <Icon :name="option.icon" size="sm" />{{ option.label }}
-                        </button>
-                    </div>
-                    <span v-for="option in notifyOptions" :id="`${renameId}-notify-${option.value}`" :key="option.value" class="chat-sr-only">{{ option.caption }}</span>
+                    <!-- Each mode is described by its own line, read as the arrows reach it, since arrowing chooses and saves at once. -->
+                    <Segmented ref="notifySegmented"
+                               :options="notifySegments"
+                               :modelValue="notifyMode"
+                               optionTestId="notify-option"
+                               hasAutofocus
+                               :aria-labelledby="labelId"
+                               :aria-describedby="prefsNotes.notify ? `${renameId}-notify-err` : undefined"
+                               @update:modelValue="onNotify($event as NotifyMode)" />
                     <p class="chat-rd-cap" data-testid="notify-caption">{{ notifyCaption }}</p>
                     <SettingNote v-if="prefsNotes.notify"
                                  :id="`${renameId}-notify-err`"
@@ -323,57 +309,6 @@
     color: var(--chat-muted);
 }
 
-/* Notifications: All, Mentions and Off as one segmented control, the chosen one raised. */
-.chat-seg {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    padding: 3px;
-    background: var(--chat-tab-track);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-seg-opt {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    justify-content: center;
-    min-width: 0;
-    height: 32px;
-    padding: 0 6px;
-    font: inherit;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-muted);
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-control);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-/* A phone's settings sheet gives each segment a larger target. */
-.chat-modal.is-sheet .chat-seg-opt {
-    height: 40px;
-}
-
-.chat-seg-opt:hover:not([aria-checked="true"]) {
-    color: var(--chat-text-2);
-}
-
-.chat-seg-opt[aria-checked="true"] {
-    color: var(--chat-text);
-    background: var(--chat-raised);
-    box-shadow: var(--chat-shadow-thumb);
-}
-
-.chat-seg-opt[aria-checked="true"] :deep(.chat-ic) {
-    color: var(--chat-brand-ink);
-}
-
-.chat-seg-opt:focus-visible {
-    outline-offset: 0;
-}
-
 /* The dialog's small buttons: outlined, in the church's color, or in danger. */
 .chat-rd-btn {
     display: inline-flex;
@@ -520,6 +455,7 @@
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import SettingGroup from "../ui/settingGroup.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import SettingRow from "../ui/settingRow.partial.obs";
@@ -706,7 +642,7 @@
     /** The newest sentence said while the dialog is open, the rooms' or the settings'. */
     const said = ref<{ text: string, isAssertive: boolean, key: string } | null>(null);
 
-    const notifyElements = ref<HTMLButtonElement[]>([]);
+    const notifySegmented = ref<InstanceType<typeof Segmented>>();
 
     /** The count shows from this many characters short of the most a name may hold. */
     const countShortOf = 10;
@@ -810,6 +746,9 @@
     /** The three modes, in words chosen by the room's kind. */
     const notifyOptions = computed(() => notifyOptionsFor(props.kind));
 
+    /** The modes as the segmented control draws them, each described by its caption. */
+    const notifySegments = computed((): SegmentedOption[] => notifyOptions.value.map(option => ({ value: option.value, label: option.label, icon: option.icon, description: option.caption })));
+
     /** The mode Tab lands on: the room's own, or the first where it has none. */
     const shownNotifyMode = computed((): string => notifyOptions.value.some(option => option.value === props.notifyMode) ? props.notifyMode ?? "all" : "all");
 
@@ -886,21 +825,7 @@
     /** Try again takes its button away, so the mode it chose again takes focus. */
     async function onNotifyRetry(): Promise<void> {
         await nextTick();
-        notifyElements.value.find(element => element.getAttribute("aria-checked") === "true")?.focus();
-    }
-
-    /** The arrows move between the modes and choose as they go, wrapping round, as a radio group does. */
-    function onNotifyKeydown(event: KeyboardEvent): void {
-        const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 0;
-        const at = notifyElements.value.indexOf(event.target as HTMLButtonElement);
-        if (step === 0 || at < 0) {
-            return;
-        }
-
-        event.preventDefault();
-        const next = (at + step + notifyOptions.value.length) % notifyOptions.value.length;
-        notifyElements.value[next]?.focus();
-        onNotify(notifyOptions.value[next].value);
+        notifySegmented.value?.focus();
     }
 
     /** Try again takes its button away, so the name it asked again takes focus. */
