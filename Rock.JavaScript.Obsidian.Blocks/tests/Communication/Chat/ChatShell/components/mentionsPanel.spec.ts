@@ -28,7 +28,7 @@
 //          isLoadingOlder: boolean, error: ChatError | null (a refresh's), olderError: ChatError |
 //          null (an older page's), newIds: number[] (the messages New for this visit), currentId:
 //          number | null (the row just opened), roomTitles, roomKinds, publicRooms (as the threads
-//          panel takes them), isPhone: boolean, personAliasGuid: string
+//          panel takes them); the reader and the phone flag come from the session
 //   emits: jump(messageId: number, channelId: string), openThread(rootId: number, channelId: string,
 //          messageId: number), refresh, loadOlder, close
 //   marks: mentions-panel (the panel), mention-row (each row, class is-new and is-current),
@@ -42,6 +42,7 @@ import MentionsPanel from "../../../../../src/Communication/Chat/ChatShell/compo
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { ChatError, MentionRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
 
@@ -104,7 +105,9 @@ function row(id: number, extra: { channel_id?: string, parent_id?: number | null
 
 let wrapper: VueWrapper | null = null;
 
-function draw(props: Record<string, unknown> = {}): VueWrapper {
+function draw(given: Record<string, unknown> = {}): VueWrapper {
+    // the reader and the phone flag are the session's, which the panel reads for itself
+    const { personAliasGuid = me, isPhone = false, ...props } = given;
     wrapper = mount(MentionsPanel, {
         props: {
             rows: [row(50)],
@@ -119,10 +122,9 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             roomTitles,
             roomKinds,
             publicRooms: { [channel]: true, [worship]: false },
-            isPhone: false,
-            personAliasGuid: me,
             ...props
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },
         attachTo: document.body
     });
     return wrapper;

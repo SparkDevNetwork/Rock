@@ -1,0 +1,252 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PanelHost :title="title"
+               :subtitle="subtitle"
+               :isPhone="isPhone"
+               :entranceKeys="entranceKeys"
+               @close="emit('close')">
+        <template #actions>
+            <IconButton class="chat-ls-refresh"
+                        icon="refresh"
+                        :label="`Refresh ${name}`"
+                        :data-testid="`${name}-refresh`"
+                        :aria-busy="isRefreshing ? 'true' : undefined"
+                        :aria-disabled="isRefreshing ? 'true' : undefined"
+                        @click="onRefresh" />
+        </template>
+
+        <template v-if="$slots.top" #top>
+            <slot name="top"></slot>
+        </template>
+
+        <div ref="bodyElement" v-bind="bodyAttrs" :aria-busy="isLoading ? 'true' : 'false'">
+            <div v-if="error" class="chat-ls-err" :data-testid="`${name}-error`">
+                <Icon name="alert" size="sm" />
+                <span>{{ error }}</span>
+                <Button class="chat-lp-retry" size="sm" @click="emit('refresh')">Try again</Button>
+            </div>
+
+            <template v-if="isLoading">
+                <span class="chat-sr-only">Loading {{ name }}</span>
+                <ul class="chat-lp-skeleton" aria-hidden="true">
+                    <Skeleton v-for="index in skeletonCount"
+                              :key="index"
+                              shape="panel"
+                              as="li"
+                              :widths="skeletonWidths[(index - 1) % skeletonWidths.length]"
+                              :data-testid="`${itemName}-skeleton`" />
+                </ul>
+            </template>
+
+            <EmptyState v-else-if="isEmpty"
+                        :title="emptyTitle"
+                        :text="emptyText"
+                        :actionLabel="emptyActionLabel"
+                        :data-testid="`${name}-empty`"
+                        @action="emit('emptyAction')" />
+
+            <slot v-else></slot>
+        </div>
+    </PanelHost>
+</template>
+
+<style scoped>
+/* The failed refresh's Try again sits at the strip's end. */
+.chat-lp-retry {
+    margin-left: auto;
+}
+
+.chat-lp-skeleton {
+    padding: 4px 8px;
+    margin: 0;
+    list-style: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import Button from "./button.partial.obs";
+    import EmptyState from "./emptyState.partial.obs";
+    import Icon from "./icon.partial.obs";
+    import IconButton from "./iconButton.partial.obs";
+    import PanelHost from "./panelHost.partial.obs";
+    import Skeleton from "./skeleton.partial.obs";
+    import { useAnnouncer } from "./announcer.partial";
+    import { useChatSession } from "../chatSession.partial";
+
+    // The one frame the panel's lists are drawn in, the Mentions inbox and the Threads list: the
+    // panel host and its Refresh, a failed refresh's strip over the rows it kept, skeleton rows
+    // while a first page loads, the empty state, what a screen reader hears as the list changes
+    // under it, and the drawn rows' links kept out of the tab order. A list draws only its rows.
+
+    const props = defineProps({
+        /** The panel's name, in its header. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The line under the title; null for none. */
+        subtitle: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** What the list holds, plural, as its words and marks say it: "mentions". */
+        name: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** One of what the list holds, as its skeleton rows are marked: "mention". */
+        itemName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The drawn rows' keys in order, for the host's entrance; null while a first page loads. */
+        entranceKeys: {
+            type: Array as PropType<readonly string[] | null>,
+            default: null
+        },
+
+        /** A first page is on its way with nothing of it on screen yet. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The rows on screen are being fetched again. */
+        isRefreshing: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Why the last fetch failed, as a sentence; null for none. */
+        error: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** How many skeleton rows stand in for a first page. */
+        skeletonCount: {
+            type: Number as PropType<number>,
+            default: 3
+        },
+
+        /** Whether the list has no rows, which draws the empty state. */
+        isEmpty: {
+            type: Boolean,
+            default: false
+        },
+
+        emptyTitle: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        emptyText: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The empty state's button; none when empty. */
+        emptyActionLabel: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** What a screen reader hears as a first page lands, since the rows change under it without a word. */
+        loadedSentence: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** What it hears once a refresh ends. */
+        upToDateSentence: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** What the list names its body by: its test id, or a tab panel's role and ties. */
+        bodyAttrs: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "refresh"): void;
+        (e: "close"): void;
+        (e: "emptyAction"): void;
+    }>();
+
+    // #region Values
+
+    /** The skeleton rows' line widths, in turn, so the stand-ins do not read as one row repeated. */
+    const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70], [42, 78, 52]];
+
+    // On a phone the panel leaves by its back chevron, which the host draws.
+    const { isPhone } = useChatSession();
+    const { announce } = useAnnouncer();
+
+    const bodyElement = ref<HTMLElement>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onRefresh(): void {
+        // a refresh already out answers for this press too
+        if (!props.isRefreshing) {
+            emit("refresh");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /**
+     * Takes the drawn rows' links out of the tab order. A row's drawn copy is inert, which a
+     * browser that knows inert honours; the oldest Safari Rock supports does not, and would stop on
+     * each link.
+     */
+    function quietLinks(): void {
+        bodyElement.value?.querySelectorAll<HTMLElement>("[inert] a").forEach(link => {
+            link.tabIndex = -1;
+        });
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.isLoading, (isLoading, wasLoading) => {
+        if (wasLoading && !isLoading && !props.error && props.loadedSentence) {
+            announce(props.loadedSentence);
+        }
+    });
+
+    watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
+        if (wasRefreshing && !isRefreshing && !props.error && props.upToDateSentence) {
+            announce(props.upToDateSentence);
+        }
+    });
+
+    // The strip is seen; a screen reader hears it as it comes.
+    watch(() => props.error, error => {
+        if (error) {
+            announce(error);
+        }
+    });
+
+    // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onMounted(quietLinks);
+    onUpdated(quietLinks);
+
+    // #endregion Lifecycle Hooks
+</script>

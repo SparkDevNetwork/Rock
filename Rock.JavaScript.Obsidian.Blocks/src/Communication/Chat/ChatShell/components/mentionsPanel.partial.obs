@@ -1,122 +1,90 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PanelHost title="Mentions"
+    <ListPanel title="Mentions"
                subtitle="Where people @mentioned you"
-               :isPhone="isPhone"
+               name="mentions"
+               itemName="mention"
                :entranceKeys="entranceKeys"
+               :isLoading="isLoading"
+               :isRefreshing="isRefreshing"
+               :error="error ? messageOrOffline(error, offlineRefresh) : null"
+               :skeletonCount="4"
+               :isEmpty="rows.length === 0"
+               emptyTitle="No mentions yet"
+               emptyText="When someone @mentions you or uses @all, it shows up here so you can jump straight to it."
+               :loadedSentence="loadedSentence"
+               upToDateSentence="Mentions are up to date"
+               :bodyAttrs="{ 'data-testid': 'mentions-panel' }"
+               @refresh="emit('refresh')"
                @close="emit('close')">
-        <template #actions>
-            <IconButton class="chat-ls-refresh"
-                        icon="refresh"
-                        label="Refresh mentions"
-                        data-testid="mentions-refresh"
-                        :aria-busy="isRefreshing ? 'true' : undefined"
-                        :aria-disabled="isRefreshing ? 'true' : undefined"
-                        @click="onRefresh" />
-        </template>
+        <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between mentions.</span>
+        <div ref="listElement">
+            <section v-for="day in days" :key="day.label" :aria-label="day.label">
+                <h3 class="chat-ls-day" data-testid="mentions-day">{{ day.label }}</h3>
+                <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
+                    <li v-for="drawn in day.rows"
+                        :key="drawn.messageId"
+                        class="chat-ls-row chat-ls-mn chat-enter"
+                        :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
+                        :style="{ '--chat-enter-i': drawn.index }"
+                        data-testid="mention-row">
+                        <button type="button"
+                                class="chat-ls-hit"
+                                data-testid="mention-row-open"
+                                :data-message-id="drawn.messageId"
+                                :aria-label="drawn.label"
+                                :aria-describedby="`${uid}-hint`"
+                                :aria-current="drawn.isCurrent ? 'true' : undefined"
+                                :data-autofocus="drawn.isCurrent ? '' : undefined"
+                                v-bind="listKeys.itemAttrs(drawn.messageId)"
+                                :ref="listKeys.itemRef(drawn.messageId)"
+                                @click="onOpen(drawn)"></button>
+                        <Dot v-if="drawn.isNew" class="chat-ls-new" data-testid="mention-row-new" />
 
-        <div data-testid="mentions-panel" :aria-busy="isLoading ? 'true' : 'false'">
-            <div v-if="error" class="chat-ls-err" role="status" data-testid="mentions-error">
-                <Icon name="alert" size="sm" />
-                <span>{{ messageOrOffline(error, offlineRefresh) }}</span>
-                <button type="button" class="chat-ls-btn" @click="emit('refresh')">Try again</button>
-            </div>
-
-            <template v-if="isLoading">
-                <span class="chat-sr-only">Loading mentions</span>
-                <ul class="chat-ls-list" aria-hidden="true">
-                    <li v-for="(widths, index) in skeletonWidths" :key="index" class="chat-ls-skel" data-testid="mention-skeleton">
-                        <span class="chat-skeleton chat-ls-sk chat-ls-sk-av"></span>
-                        <span class="chat-ls-sk-lines">
-                            <i v-for="(width, line) in widths" :key="line" class="chat-skeleton chat-ls-sk" :style="{ width: `${width}%` }"></i>
-                        </span>
+                        <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
+                        <div class="chat-ls-in" aria-hidden="true" inert>
+                            <span class="chat-ls-avw">
+                                <Avatar :people="[drawn.author]" :size="32" />
+                                <span class="chat-ls-at"><Icon name="at" /></span>
+                            </span>
+                            <div class="chat-ls-main">
+                                <div class="chat-ls-head">
+                                    <b>{{ drawn.who }}</b>
+                                    <span class="chat-ls-sub">
+                                        <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                                        <span>{{ drawn.room }}</span>
+                                    </span>
+                                    <time class="chat-ls-t">{{ drawn.time }}</time>
+                                </div>
+                                <div class="chat-ls-text">
+                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="me.personAliasGuid" :isConversation="drawn.isConversation" />
+                                </div>
+                                <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
+                            </div>
+                        </div>
                     </li>
                 </ul>
-            </template>
-
-            <div v-else-if="rows.length === 0" class="chat-ls-empty" data-testid="mentions-empty">
-                <span class="chat-ls-empty-ic" aria-hidden="true"><Icon name="at" /></span>
-                <b>No mentions yet</b>
-                <span>When someone @mentions you or uses @all, it shows up here so you can jump straight to it.</span>
-            </div>
-
-            <template v-else>
-                <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between mentions.</span>
-                <div ref="listElement">
-                    <section v-for="day in days" :key="day.label" :aria-label="day.label">
-                        <h3 class="chat-ls-day" data-testid="mentions-day">{{ day.label }}</h3>
-                        <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
-                            <li v-for="drawn in day.rows"
-                                :key="drawn.messageId"
-                                class="chat-ls-row chat-ls-mn chat-enter"
-                                :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
-                                :style="{ '--chat-enter-i': drawn.index }"
-                                data-testid="mention-row">
-                                <button type="button"
-                                        class="chat-ls-hit"
-                                        data-testid="mention-row-open"
-                                        :data-message-id="drawn.messageId"
-                                        :aria-label="drawn.label"
-                                        :aria-describedby="`${uid}-hint`"
-                                        :aria-current="drawn.isCurrent ? 'true' : undefined"
-                                        :data-autofocus="drawn.isCurrent ? '' : undefined"
-                                        v-bind="listKeys.itemAttrs(drawn.messageId)"
-                                        :ref="listKeys.itemRef(drawn.messageId)"
-                                        @click="onOpen(drawn)"></button>
-                                <span v-if="drawn.isNew" class="chat-ls-new" aria-hidden="true" data-testid="mention-row-new"></span>
-
-                                <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
-                                <div class="chat-ls-in" aria-hidden="true" inert>
-                                    <span class="chat-ls-avw">
-                                        <Avatar :people="[drawn.author]" :size="32" />
-                                        <span class="chat-ls-at"><Icon name="at" /></span>
-                                    </span>
-                                    <div class="chat-ls-main">
-                                        <div class="chat-ls-head">
-                                            <b>{{ drawn.who }}</b>
-                                            <span class="chat-ls-sub">
-                                                <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
-                                                <span>{{ drawn.room }}</span>
-                                            </span>
-                                            <time class="chat-ls-t">{{ drawn.time }}</time>
-                                        </div>
-                                        <div class="chat-ls-text">
-                                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" :isConversation="drawn.isConversation" />
-                                        </div>
-                                        <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
-                                    </div>
-                                </div>
-                            </li>
-                        </ul>
-                    </section>
-                </div>
-
-                <div v-if="hasMore" class="chat-ls-more">
-                    <div v-if="olderError" class="chat-ls-err" role="status">
-                        <Icon name="alert" size="sm" />
-                        <span data-testid="mentions-older-error">{{ messageOrOffline(olderError, offlineOlder) }}</span>
-                    </div>
-                    <button type="button"
-                            class="chat-ls-btn"
-                            data-testid="mentions-more"
-                            :aria-busy="isLoadingOlder ? 'true' : undefined"
-                            :aria-disabled="isLoadingOlder ? 'true' : undefined"
-                            @click="onLoadOlder">
-                        <template v-if="isLoadingOlder"><span class="chat-spinner" aria-hidden="true"></span>Loading</template>
-                        <template v-else>Load older mentions</template>
-                    </button>
-                </div>
-                <div v-else class="chat-ls-more">
-                    <span class="chat-ls-endnote" data-testid="mentions-end"><Icon name="check" size="xs" />That's every mention</span>
-                </div>
-            </template>
-
+            </section>
         </div>
-    </PanelHost>
+
+        <div v-if="hasMore" class="chat-ls-more">
+            <div v-if="olderError" class="chat-ls-err">
+                <Icon name="alert" size="sm" />
+                <span data-testid="mentions-older-error">{{ messageOrOffline(olderError, offlineOlder) }}</span>
+            </div>
+            <Button size="sm"
+                    data-testid="mentions-more"
+                    :busy="isLoadingOlder"
+                    @click="emit('loadOlder')">{{ isLoadingOlder ? "Loading" : "Load older mentions" }}</Button>
+        </div>
+        <div v-else class="chat-ls-more">
+            <span class="chat-ls-endnote" data-testid="mentions-end"><Icon name="check" size="xs" />That's every mention</span>
+        </div>
+    </ListPanel>
 </template>
 
 <style scoped>
-/* The list's row, the failure strip, the empty state and the skeleton are the sheet's, shared with the threads list; what is here is the inbox's own. */
+/* The list's frame and states are the list panel's, and its row the sheet's, shared with the threads list; what is here is the inbox's own. */
 
 /* A mention row leaves room on its left for the New dot. */
 .chat-ls-mn .chat-ls-in {
@@ -128,16 +96,13 @@
     background: var(--chat-brand-wash);
 }
 
+/* The New dot, at the row's left edge, beside the author's line. */
 .chat-ls-new {
     position: absolute;
     top: 23px;
     left: 6px;
     z-index: 1;
-    width: 6px;
-    height: 6px;
     pointer-events: none;
-    background: var(--chat-brand-ink);
-    border-radius: var(--chat-r-full);
 }
 
 .chat-ls-row.is-new .chat-ls-head b {
@@ -229,11 +194,6 @@
     margin: 0;
 }
 
-.chat-ls-more .chat-ls-btn[aria-busy="true"] {
-    color: var(--chat-muted);
-    pointer-events: none;
-}
-
 .chat-ls-endnote {
     --chat-ic-size: 13px;
     display: inline-flex;
@@ -246,23 +206,23 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
+    import Dot from "../ui/dot.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import IconButton from "../ui/iconButton.partial.obs";
-    import PanelHost from "../ui/panelHost.partial.obs";
+    import ListPanel from "../ui/listPanel.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../heldMessage.partial";
-    import { ChatError, DisplayPiece, MentionRow, MessageBlock, TimelineMessage } from "../types.partial";
+    import { ChatError, DisplayPiece, MentionRow, MessageBlock, RoomKind, TimelineMessage } from "../types.partial";
     import { useListKeys } from "../composables/useListKeys.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
-
-    type RoomKind = "channel" | "person" | "group";
 
     /** One row as it is drawn and read. */
     type DrawnRow = {
@@ -369,18 +329,6 @@
         publicRooms: {
             type: Object as PropType<Record<string, boolean>>,
             default: () => ({})
-        },
-
-        /** Whether the chat is in its one-pane phone layout. */
-        isPhone: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The reader, whose own chip a message body draws as theirs. */
-        personAliasGuid: {
-            type: String,
-            default: ""
         }
     });
 
@@ -397,13 +345,11 @@
     /** Ties the rows to their hint, unique per panel drawn. */
     const uid = `chat-ls-${newGuid()}`;
 
-    const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70], [42, 78, 52]];
-
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
     const offlineOlder = "Couldn't load older mentions. You're offline.";
 
-    /** The row that holds the list's one tab stop, once one has been focused. */
-
+    // The reader's own chip a message body draws as theirs; on a phone a row's own actions always show.
+    const { isPhone, me } = useChatSession();
     const { announce } = useAnnouncer();
 
     // The list is one tab stop, and the arrows move between rows across the day headings.
@@ -435,25 +381,19 @@
         return drawn;
     });
 
+    /** What a screen reader hears as the first page lands: how many, and how many of them are new. */
+    const loadedSentence = computed((): string => {
+        const count = props.rows.length;
+        const newCount = props.newIds.length;
+        return `${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`;
+    });
+
     /** The inbox's rows for the panel's entrance, none while its first page loads. */
     const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.message.id)));
 
     // #endregion Computed Values
 
     // #region Event Handlers
-
-    function onRefresh(): void {
-        // a refresh already out answers for this press too
-        if (!props.isRefreshing) {
-            emit("refresh");
-        }
-    }
-
-    function onLoadOlder(): void {
-        if (!props.isLoadingOlder) {
-            emit("loadOlder");
-        }
-    }
 
     /** A reply opens its thread at the reply; anything else lands on the message in its conversation. */
     function onOpen(row: DrawnRow): void {
@@ -546,16 +486,6 @@
         };
     }
 
-    /**
-     * Takes the messages' links out of the tab order. The drawn row is inert, which a browser that
-     * knows inert honours; the oldest Safari Rock supports does not, and would stop on each link.
-     */
-    function quietLinks(): void {
-        listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-in a").forEach(link => {
-            link.tabIndex = -1;
-        });
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -563,21 +493,6 @@
     watch(() => props.isLoadingOlder, isLoadingOlder => {
         if (isLoadingOlder) {
             olderFrom = props.rows.length;
-        }
-    });
-
-    // A screen reader hears what a fetch brought, since the rows change under it without a word.
-    watch(() => props.isLoading, (isLoading, wasLoading) => {
-        if (wasLoading && !isLoading && !props.error) {
-            const count = props.rows.length;
-            const newCount = props.newIds.length;
-            announce(`${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`);
-        }
-    });
-
-    watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
-        if (wasRefreshing && !isRefreshing && !props.error) {
-            announce("Mentions are up to date");
         }
     });
 
@@ -605,11 +520,4 @@
     }, { flush: "post" });
 
     // #endregion Watchers
-
-    // #region Lifecycle Hooks
-
-    onMounted(quietLinks);
-    onUpdated(quietLinks);
-
-    // #endregion Lifecycle Hooks
 </script>
