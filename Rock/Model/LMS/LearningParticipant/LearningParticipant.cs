@@ -46,7 +46,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningParticipant" )]
     [DataContract]
-    [CodeGenerateRest]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_PARTICIPANT )]
     public partial class LearningParticipant : GroupMember
     {
