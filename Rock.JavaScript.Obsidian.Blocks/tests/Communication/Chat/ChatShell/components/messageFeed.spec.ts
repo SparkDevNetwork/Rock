@@ -201,6 +201,7 @@ type FeedProps = {
     isCovered?: boolean;
     typing?: Typing | null;
     readCursor?: number | null;
+    loadOlder?: () => Promise<void>;
 };
 
 /** Anna typing, as the presence gives it. */
@@ -2194,8 +2195,23 @@ describe("the history skeleton", () => {
 // Older messages load as the reader scrolls up to the top, as a thread's do, with no button to
 // press; the page lands above without moving what the reader is looking at.
 describe("loading older messages", () => {
+    /** A loader whose pages wait unanswered, after the answers given for its first asks. */
+    function loader(...first: Array<() => Promise<void>>): jest.Mock<Promise<void>, []> {
+        const load = jest.fn((): Promise<void> => new Promise(() => undefined));
+        first.forEach(answer => load.mockImplementationOnce(answer));
+        return load;
+    }
+
+    async function landed(): Promise<void> {
+        for (let i = 0; i < 5; i++) {
+            await Promise.resolve();
+        }
+        await nextTick();
+    }
+
     test("asks for them once as the top of the feed comes into view, with no button to press", async () => {
-        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }) });
+        const loadOlder = loader();
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
         await nextTick();
 
         expect(wrapper.text()).not.toContain("Show older messages");
@@ -2203,7 +2219,62 @@ describe("loading older messages", () => {
         FakeIntersectionObserver.report(top, true);
         FakeIntersectionObserver.report(top, true);
 
-        expect(wrapper.emitted("loadOlder")).toHaveLength(1);
+        expect(loadOlder).toHaveBeenCalledTimes(1);
+    });
+
+    // A page that lands short leaves the top still in view, which the observer never reports again.
+    test("asks again at once when the page that landed leaves the top still in view", async () => {
+        const loadOlder = loader(() => Promise.resolve());
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
+        await nextTick();
+
+        FakeIntersectionObserver.report(wrapper.get("[data-testid='feed-older']").element, true);
+        await landed();
+
+        expect(loadOlder).toHaveBeenCalledTimes(2);
+    });
+
+    // A failed page is not asked again by itself, which would only fail again while the top stays
+    // in view; the control at the top says so and asks again when pressed.
+    test("after a failed page asks nothing more by itself, and Try again asks again", async () => {
+        const loadOlder = loader(() => Promise.reject(new Error("offline")));
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
+        await nextTick();
+
+        const top = wrapper.get("[data-testid='feed-older']").element;
+        FakeIntersectionObserver.report(top, true);
+        await landed();
+        FakeIntersectionObserver.report(top, false);
+        FakeIntersectionObserver.report(top, true);
+        await landed();
+        expect(loadOlder).toHaveBeenCalledTimes(1);
+
+        const again = wrapper.get("[data-testid='feed-older-load']");
+        expect(again.text()).toBe("Try again");
+        await again.trigger("click");
+        expect(loadOlder).toHaveBeenCalledTimes(2);
+    });
+
+    // Scrolling asks for older messages; a keyboard, which moves by message, asks with a control.
+    test("keeps a control at the top that asks for older messages when pressed, and says while they load", async () => {
+        const loadOlder = loader();
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }), loadOlder });
+        await nextTick();
+
+        const load = wrapper.get("[data-testid='feed-older-load']");
+        expect(load.text()).toBe("Load older messages");
+        expect(wrapper.get("[data-testid='feed-older']").element.contains(load.element)).toBe(true);
+        await load.trigger("click");
+        expect(loadOlder).toHaveBeenCalledTimes(1);
+        expect(wrapper.get("[data-testid='feed-older-load']").text()).toBe("Loading");
+    });
+
+    // A found conversation's preview is drawn with nothing to act on, so it pages nothing.
+    test("draws no control and asks nothing where it is given no way to load older messages", async () => {
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }) });
+        await nextTick();
+
+        expect(wrapper.find("[data-testid='feed-older-load']").exists()).toBe(false);
     });
 
     test("an older page landing above keeps the reader where they were", async () => {
