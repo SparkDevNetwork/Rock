@@ -640,12 +640,15 @@
      */
     const { arrives } = useViewArrivals(() => blockedRuns.value);
 
-    /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
-    let isPlaced = false;
+    /**
+     * Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing
+     * before; reactive, so a mark already in view as the thread is placed asks then.
+     */
+    const isPlaced = ref(false);
 
     // Scrolling up to the top mark asks for older replies, once the thread has been placed.
     usePagingTrigger(topElement, () => emit("loadOlder"), {
-        enabled: () => isPlaced && props.hasMore,
+        enabled: () => isPlaced.value && props.hasMore,
         root: scroller
     });
 
@@ -739,7 +742,7 @@
         // a reply can land mid-scroll, before the scroll event for where the reader now is has run
         isFollowing: () => {
             reader.read();
-            return isPlaced && reader.isAtNewest.value;
+            return isPlaced.value && reader.isAtNewest.value;
         },
         follow: reader.toNewest,
         arrives,
@@ -845,14 +848,14 @@
 
     /** Opens at the newest reply, once the root is there to open at. */
     async function place(): Promise<void> {
-        if (!props.root || isPlaced) {
+        if (!props.root || isPlaced.value) {
             return;
         }
 
         await nextTick();
         reader.toNewest();
         observeRows();
-        isPlaced = true;
+        isPlaced.value = true;
         void land();
     }
 
@@ -864,7 +867,7 @@
      */
     async function land(): Promise<void> {
         const id = props.landOnId;
-        if (!isPlaced || id === null || id === landedId) {
+        if (!isPlaced.value || id === null || id === landedId) {
             return;
         }
 
@@ -924,7 +927,7 @@
 
         await nextTick();
         observeRows();
-        if (!isPlaced || !element) {
+        if (!isPlaced.value || !element) {
             return;
         }
 
