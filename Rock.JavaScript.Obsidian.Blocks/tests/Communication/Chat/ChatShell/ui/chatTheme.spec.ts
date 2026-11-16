@@ -890,6 +890,23 @@ describe("the components' own styles", () => {
     // The one list entrance, written once in the sheet: a row the panel host marks rises from the
     // rise over t-msg on the entrance curve, 26ms after the row above, the ninth and later with the
     // eighth, and only while its panel is entering. No panel keeps a rise of its own beside it.
+    // The rise is the sheet's, inherited by everything under a part, so a part that enters by less
+    // names the entrance's own distance instead of changing the rise for its whole subtree; the
+    // reaction card is a popover and pops as one.
+    test("no part changes the sheet's rise; a part that enters by less names the entrance's own distance", () => {
+        const shell = resolve(components, "..");
+        const parts = [...readdirSync(components).map(n => resolve(components, n)), ...readdirSync(resolve(shell, "ui")).map(n => resolve(shell, "ui", n)), resolve(shell, "../chatShell.obs")]
+            .filter(path => path.endsWith(".obs"));
+        for (const path of parts) {
+            expect({ part: basename(path), setsRise: /--chat-rise:/.test(readFileSync(path, "utf8")) }).toEqual({ part: basename(path), setsRise: false });
+        }
+
+        expect(normalize(keyframesBody(sheetPath, "chat-enter") ?? "")).toContain(normalize("transform: translateY(var(--chat-enter-from, var(--chat-rise)))"));
+        expect(declarationOf(resolve(components, "reactionCard.partial.obs"), ".chat-rx-card", "animation")).toBe(normalize("chat-pop-in var(--chat-t-base) var(--chat-ease-in)"));
+        expect(declarationOf(resolve(shell, "ui/settingNote.partial.obs"), ".chat-set-note", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
+        expect(declarationOf(resolve(components, "conversationDetails.partial.obs"), ".chat-leave-box", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
+    });
+
     test("panel rows rise in by the sheet's one staggered entrance, and by nothing else", () => {
         const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled])";
         expect(declarationOf(sheetPath, selector, "animation")).toBe(normalize("chat-enter var(--chat-t-msg) var(--chat-ease-in) both"));
@@ -898,7 +915,8 @@ describe("the components' own styles", () => {
 
         const frames = normalize(keyframesBody(sheetPath, "chat-enter") ?? "");
         expect(frames).toContain("opacity:0");
-        expect(frames).toContain(normalize("transform: translateY(var(--chat-rise))"));
+        // a row names no distance of its own, so it rises by the sheet's rise
+        expect(frames).toContain(normalize("transform: translateY(var(--chat-enter-from, var(--chat-rise)))"));
 
         expect(declarationOf(sheetPath, ".chat-shell .chat-ls-row", "animation")).toBe("");
         const membersPath = resolve(components, "membersPanel.partial.obs");
