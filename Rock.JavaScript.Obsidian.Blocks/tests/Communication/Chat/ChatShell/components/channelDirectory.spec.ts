@@ -801,8 +801,14 @@ describe("what is spoken", () => {
 describe("under reduced motion", () => {
     const rules = (): Array<{ selector: string, body: string }> => reducedMotionRules("../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs");
 
-    test("the church's campus note does not animate", () => {
-        expect(rules().some(r => /(^|,)\s*\.chat-fd-note\s*(,|$)/.test(r.selector) && /animation:\s*none/.test(r.body))).toBe(true);
+    // Reduced motion is honoured once, in the token sheet: the enter's rise is nothing there, so
+    // the note only fades, as every entrance does, and the view keeps no reduced rule of its own.
+    test("the church's campus note only fades in, by the one reduced-motion rule every entrance shares", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
+        const rule = /\n\.chat-fd-note\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+
+        expect(rule).toMatch(/animation:\s*chat-enter /);
+        expect(rules()).toEqual([]);
     });
 
     test("a row's refusal or failure only fades in", () => {
