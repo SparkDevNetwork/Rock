@@ -45,10 +45,8 @@
     padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
     overflow: hidden;
     background: var(--chat-raised);
-    border: 1px solid var(--chat-line);
-    border-bottom: 0;
     border-radius: var(--chat-r-surface) var(--chat-r-surface) 0 0;
-    box-shadow: var(--chat-shadow-float);
+    box-shadow: var(--chat-shadow-pop);
     animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
 }
 
