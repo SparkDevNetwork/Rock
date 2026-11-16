@@ -100,7 +100,6 @@
             <!-- The person's own settings for the room, each saved at once. -->
             <SettingGroup label="Notifications" isBare data-testid="details-notify">
                 <template #default="{ labelId }">
-                    <!-- Each mode is described by its own line, read as the arrows reach it, since arrowing chooses and saves at once. -->
                     <Segmented ref="notifySegmented"
                                :options="notifySegments"
                                :modelValue="notifyMode"
@@ -746,7 +745,7 @@
     /** The three modes, in words chosen by the room's kind. */
     const notifyOptions = computed(() => notifyOptionsFor(props.kind));
 
-    /** The modes as the segmented control draws them, each described by its caption. */
+    /** The modes as the segmented control draws them, each described by its caption, read as the arrows reach it, since arrowing chooses and saves at once. */
     const notifySegments = computed((): SegmentedOption[] => notifyOptions.value.map(option => ({ value: option.value, label: option.label, icon: option.icon, description: option.caption })));
 
     /** The mode Tab lands on: the room's own, or the first where it has none. */
