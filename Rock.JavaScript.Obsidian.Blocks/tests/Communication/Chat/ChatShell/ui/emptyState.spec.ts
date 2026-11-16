@@ -64,12 +64,19 @@ describe("the empty state", () => {
 describe("the empty state's look", () => {
     const style = styleOf("emptyState.partial.obs");
 
-    test("is centred words: the title in the text colour at the list's type size, its line muted in the interface's", () => {
+    test("is centred words: the title in the text colour at the display size, its line muted in the interface's", () => {
         expect(ruleOf(style, ".chat-empty")).toMatch(/text-align:\s*center/);
-        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-body\)/);
+        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-display\)/);
         expect(ruleOf(style, ".chat-empty-title")).toMatch(/color:\s*var\(--chat-text\)/);
         expect(ruleOf(style, ".chat-empty-text")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
         expect(ruleOf(style, ".chat-empty-text")).toMatch(/color:\s*var\(--chat-muted\)/);
+    });
+
+    // The type scale's display size is an empty state's; a failure was always one line in the
+    // interface's size, so an error's title keeps it.
+    test("an empty state's title draws at the display size, and an error's at the interface's", () => {
+        expect(ruleOf(style, ".chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-display\)/);
+        expect(ruleOf(style, ".chat-empty.is-error .chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
