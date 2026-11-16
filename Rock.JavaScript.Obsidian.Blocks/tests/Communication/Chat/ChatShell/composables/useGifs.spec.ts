@@ -162,14 +162,14 @@ describe("a picker's search", () => {
         expect(gifSuggestions.length).toBeGreaterThanOrEqual(6);
     });
 
-    test("asks once, 300ms after the typing stops, for the query as it then reads", () => {
+    test("asks once, the shared 200ms after the typing stops, for the query as it then reads", () => {
         const gifs = fakeGifs();
         const search = createGifSearch(gifs);
 
         search.setQuery("th");
-        jest.advanceTimersByTime(200);
+        jest.advanceTimersByTime(150);
         search.setQuery("tha");
-        jest.advanceTimersByTime(299);
+        jest.advanceTimersByTime(199);
         expect(gifs.asked).toHaveLength(0);
         expect(search.status).toBe("loading");
 

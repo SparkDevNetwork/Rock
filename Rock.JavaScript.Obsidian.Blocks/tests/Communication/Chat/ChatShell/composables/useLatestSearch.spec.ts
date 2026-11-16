@@ -92,7 +92,7 @@ describe("search while typing", () => {
         await flush();
         expect(search.results).toEqual(["Ann"]);
         expect(onAnswer).toHaveBeenCalledTimes(1);
-        expect(onAnswer).toHaveBeenCalledWith(["Ann"], "ann");
+        expect(onAnswer).toHaveBeenCalledWith(["Ann"], "ann", 1);
     });
 
     it("cancels the ask a newer query replaces", () => {
@@ -179,5 +179,40 @@ describe("search while typing", () => {
         jest.advanceTimersByTime(searchPause);
         expect(asks).toHaveLength(0);
         expect(search.busy).toBe(false);
+    });
+
+    it("asks the next page of the query it holds, told which page each answer is", async () => {
+        const pages: number[] = [];
+        const onAnswer = jest.fn();
+        const asks: Array<(value: string[]) => void> = [];
+        const search = useLatestSearch((_query: string, _signal: AbortSignal, page: number) => {
+            pages.push(page);
+            return new Promise<string[]>(resolve => asks.push(resolve));
+        }, { onAnswer });
+        search.set("cats", { isAtOnce: true });
+        asks[0](["a"]);
+        await flush();
+        search.more();
+        expect(pages).toEqual([1, 2]);
+        asks[1](["b"]);
+        await flush();
+        expect(onAnswer).toHaveBeenLastCalledWith(["b"], "cats", 2);
+    });
+
+    it("asks no next page while an ask is out, and drops a next page a newer query replaced", async () => {
+        const onAnswer = jest.fn();
+        const asks: Array<{ page: number, signal: AbortSignal, answer: (value: string[]) => void }> = [];
+        const search = useLatestSearch((_query: string, signal: AbortSignal, page: number) => new Promise<string[]>(resolve => asks.push({ page, signal, answer: resolve })), { onAnswer });
+        search.set("cats", { isAtOnce: true });
+        search.more();
+        expect(asks).toHaveLength(1);
+        asks[0].answer(["a"]);
+        await flush();
+        search.more();
+        search.set("dogs", { isAtOnce: true });
+        expect(asks[1].signal.aborted).toBe(true);
+        asks[1].answer(["late"]);
+        await flush();
+        expect(onAnswer).not.toHaveBeenCalledWith(["late"], "cats", 2);
     });
 });
