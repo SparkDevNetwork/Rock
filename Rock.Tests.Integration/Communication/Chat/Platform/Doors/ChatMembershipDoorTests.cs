@@ -913,6 +913,42 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             }
         }
 
+        [TestMethod]
+        [Timeout( 30000 )]
+        public void ARemovalFromARoomTheCallerCannotKnowOfAnswersNotFoundWithoutWaitingOnItsLock()
+        {
+            // The room's lock is taken only once the room is one the caller may know of, so a held
+            // lock never tells a stranger the Guid names a room.
+            using ( var scene = new ChatDoorScene() )
+            using ( var holder = new RockContext() )
+            {
+                var ada = scene.AddChatPerson( "Ada" );
+                var bo = scene.AddChatPerson( "Bo" );
+                var hidden = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Private room", g =>
+                {
+                    g.IsChatChannelPublicOverride = false;
+                    g.IsChatChannelAlwaysShownOverride = false;
+                } );
+                scene.Fixture.AddMember( hidden, bo );
+                var nothing = Guid.NewGuid();
+                scene.WaitForPushes();
+
+                holder.Database.Connection.Open();
+                foreach ( var guid in new[] { hidden, nothing } )
+                {
+                    var acquired = holder.Database.SqlQuery<int>(
+                        "DECLARE @result int; EXEC @result = sys.sp_getapplock @Resource = @p0,"
+                        + " @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = 0; SELECT @result;",
+                        typeof( ChatDoorHelper ).FullName + ":" + guid.ToString( "N" ) ).Single();
+                    Assert.IsTrue( acquired >= 0, "another server holds the lock on " + guid );
+                }
+
+                Assert.AreEqual( "door.not_found", scene.Remove( ada, hidden, scene.Alias( bo ) ).Code, "a private room Ada is not in" );
+                Assert.AreEqual( "door.not_found", scene.Remove( ada, nothing, scene.Alias( bo ) ).Code, "a Guid naming nothing" );
+                CollectionAssert.Contains( scene.ActiveMembers( hidden ), bo );
+            }
+        }
+
         /// <summary>
         /// Owns an EF command interceptor that pauses one request immediately before its first
         /// membership write, after its leader and projection reads have completed.
