@@ -183,6 +183,8 @@ describe("the last leader", () => {
         await nextTick();
         const refusal = w.get("[data-testid='leader-refusal']");
         expect(read(refusal.element)).toBe("Choose who leads this channel next before removing its last leader.");
-        expect(refusal.attributes("role")).toBe("alert");
+        // Said at once in the chat's one voice, which speaks from inside the open dialog; the box itself is no live region.
+        expect(refusal.attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='dialog'] [data-testid='announcer-assertive']")?.textContent).toBe("Choose who leads this channel next before removing its last leader.");
     });
 });
