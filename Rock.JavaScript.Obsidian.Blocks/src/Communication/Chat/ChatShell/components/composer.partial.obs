@@ -19,6 +19,7 @@
                     <span class="chat-composer-failed-acts">
                         <Button v-if="isRetryOffered"
                                 kind="line"
+                                tone="danger"
                                 size="sm"
                                 icon="refresh"
                                 data-testid="composer-failed-retry"

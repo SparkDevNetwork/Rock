@@ -3,7 +3,7 @@
     <button ref="buttonElement"
             type="button"
             class="chat-btn"
-            :class="[`is-${kind}`, `is-${size}`, { 'is-block': block }]"
+            :class="[`is-${kind}`, `is-${size}`, { 'is-block': block, 'is-tone-danger': tone === 'danger' }]"
             :disabled="disabled || undefined"
             :aria-disabled="busy ? 'true' : undefined"
             :aria-busy="busy ? 'true' : undefined"
@@ -69,6 +69,11 @@
     background: var(--chat-danger);
 }
 
+/* The way forward from a failure: its kind's look, in the danger ink. */
+.chat-btn.is-tone-danger {
+    color: var(--chat-danger-ink);
+}
+
 /* Hover and press, never on a button that cannot be pressed now. */
 .chat-btn:not(:disabled, [aria-disabled="true"]):hover {
     box-shadow: inset 0 0 0 999px var(--chat-hover);
@@ -119,6 +124,16 @@
         kind: {
             type: String as PropType<"brand" | "line" | "ghost" | "danger">,
             default: "line"
+        },
+
+        /**
+         * The danger tone draws a line or ghost button's words in the danger ink, for the way
+         * forward from a failure, such as a failed send's Try again; the danger kind is for one
+         * that destroys.
+         */
+        tone: {
+            type: String as PropType<"default" | "danger">,
+            default: "default"
         },
 
         /** Small sits in a row of a list or a strip; the middle size everywhere else. */
