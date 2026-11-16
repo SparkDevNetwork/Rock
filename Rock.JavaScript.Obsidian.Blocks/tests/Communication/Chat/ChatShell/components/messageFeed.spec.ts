@@ -18,7 +18,7 @@
 // the stored messages, and the furniture around them. The New divider marks where reading stopped;
 // the unread strip points to it only while it is off screen, and Mark as read saves the read
 // position at the newest message. Jump to latest appears once the reader has scrolled up and
-// counts what arrived meanwhile. A slow first page shows the skeleton, a quick one never does.
+// counts what arrived meanwhile. A room with no page yet shows the skeleton at once, with no wait.
 //
 // jsdom lays nothing out, so the tests stand in for the browser twice: an IntersectionObserver
 // that the test reports through, and the feed's scroll sizes set by hand.
@@ -31,6 +31,7 @@ import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/compone
 import { providedSession } from "../sessionShapes";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
+import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
 import { createMessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { createSender, SendResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
@@ -875,7 +876,7 @@ describe("day sections", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const pill = /\.chat-day-pill\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         const float = /\.chat-day-float\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
-        const mask = /\.chat-feed-skeleton\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const mask = /\.chat-feed-loading\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(pill).not.toMatch(/position:\s*sticky/);
         expect(float).toMatch(/top:\s*var\(--chat-day-top\)/);
@@ -2135,58 +2136,44 @@ describe("a block post's buttons", () => {
 });
 
 describe("the history skeleton", () => {
-    test("shows only once the first page has taken more than a second, and goes when it lands", async () => {
+    // The skeleton is the final frame for a room still loading: drawn on the first render, still,
+    // and gone the moment the first page lands, with no wait before it and no fade after it.
+    test("shows on the first render of a room with no page yet, with no wait, and is gone at once when the page lands", async () => {
         const state = timeline([], { isLoaded: false });
         const wrapper = draw({ timeline: state });
 
-        jest.advanceTimersByTime(999);
-        await nextTick();
-        expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
-
-        jest.advanceTimersByTime(1);
-        await nextTick();
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(true);
 
         state.isLoaded = true;
         state.messages.push(message(1, anna, at(14, 0)));
         await nextTick();
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
+        // no exit of its own: nothing in the feed's styles fades it out
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        expect(source).not.toMatch(/skeletonDelayMs|chat-feed-skeleton|chat-skeleton/);
     });
 
-    test("stands over the feed rather than in it, so it can fade out over the first page as that page rises in", async () => {
+    test("stands over the feed rather than in it, so the first page lands under it in place", async () => {
         const wrapper = draw({ timeline: timeline([], { isLoaded: false }) });
-
-        jest.advanceTimersByTime(1000);
-        await nextTick();
 
         const skeleton = wrapper.get("[data-testid='history-skeleton']").element;
         expect(wrapper.get("[data-testid='message-feed']").element.contains(skeleton)).toBe(false);
         expect(wrapper.element.contains(skeleton)).toBe(true);
     });
 
-    test("draws a channel's flat rows with 36px faces and a direct message's bubbles", async () => {
+    test("draws a channel's rows as the shared skeleton's feed groups and a direct message's as its bubbles", () => {
         const channel = draw({ timeline: timeline([], { isLoaded: false }), isChannel: true });
         const direct = draw({ timeline: timeline([], { isLoaded: false }), isDirectMessage: true });
 
-        jest.advanceTimersByTime(1000);
-        await nextTick();
-
+        const shapes = (wrapper: VueWrapper): string[] => wrapper.findAllComponents(Skeleton).map(row => row.props("shape"));
+        expect(shapes(channel)).toEqual(Array(5).fill("group"));
+        expect(shapes(direct)).toEqual(Array(5).fill("bubble"));
         expect(channel.findAll("[data-testid='skeleton-row']")).toHaveLength(5);
-        expect(channel.findAll("[data-testid='skeleton-face']")).toHaveLength(5);
-        expect(channel.find("[data-testid='skeleton-bubble']").exists()).toBe(false);
-        expect(direct.findAll("[data-testid='skeleton-bubble']")).toHaveLength(5);
-        expect(direct.find("[data-testid='skeleton-face']").exists()).toBe(false);
+        expect(direct.findAll("[data-testid='skeleton-row']")).toHaveLength(5);
     });
 
-    test("never shows for a page that lands within the second", async () => {
-        const state = timeline([], { isLoaded: false });
-        const wrapper = draw({ timeline: state });
-
-        jest.advanceTimersByTime(500);
-        state.isLoaded = true;
-        await nextTick();
-        jest.advanceTimersByTime(2000);
-        await nextTick();
+    test("never shows for a room whose first page is already there", () => {
+        const wrapper = draw({ timeline: timeline([message(1, anna, at(14, 0))]) });
 
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
     });
