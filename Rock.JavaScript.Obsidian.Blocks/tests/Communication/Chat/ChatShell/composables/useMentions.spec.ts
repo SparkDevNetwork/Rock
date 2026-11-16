@@ -67,13 +67,14 @@
 //       stop(): void
 //   }
 //
-//   mentionSearchPause: 150, the pause in milliseconds.
+//   searchPause: 200, the shared pause in milliseconds, from the shared search while typing.
 //   mentionHeldConversations: how many conversations' opening people are held.
 //   mentionHeldAge: how long, in milliseconds, held people may still be drawn after they were asked.
 //   mentionAskShared: how long, in milliseconds, an ask still out is shared before an open asks afresh.
 //   warm(channel): asks a conversation's opening people ahead of its first @.
 //   forgetPeople(): forgets every conversation's held people, as a resync does.
-import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations, mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
+import { createMentions, mentionAskShared, mentionHeldAge, mentionHeldConversations } from "../../../../../src/Communication/Chat/ChatShell/composables/useMentions.partial";
+import { searchPause as mentionSearchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { platformMask } from "../../../../../src/Communication/Chat/ChatShell/heldMessage.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { MentionRow, TimelineMessage, UnreadMention } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
