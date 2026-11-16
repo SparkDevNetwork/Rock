@@ -25,19 +25,17 @@
                 :body="leaderBody"
                 isWide
                 @close="emit('close')">
-            <label class="chat-mb-search chat-rm-search chat-field">
-                <Icon name="search" size="sm" />
-                <input type="search"
-                       class="chat-field-input"
-                       placeholder="Find a member"
-                       aria-label="Find a member to lead"
-                       autocomplete="off"
-                       spellcheck="false"
-                       data-autofocus
-                       data-testid="leader-search"
-                       :value="query"
-                       @input="emit('query', ($event.target as HTMLInputElement).value)" />
-            </label>
+            <Field class="chat-rm-search"
+                   type="search"
+                   leadingIcon="search"
+                   placeholder="Find a member"
+                   aria-label="Find a member to lead"
+                   autocomplete="off"
+                   spellcheck="false"
+                   data-autofocus
+                   data-testid="leader-search"
+                   :modelValue="query"
+                   @update:modelValue="emit('query', $event)" />
 
             <div class="chat-rm-list" role="radiogroup" aria-label="New leader" data-testid="leader-choices">
                 <label v-for="choice in choices"
@@ -66,16 +64,12 @@
             </div>
 
             <template #actions>
-                <button type="button" class="chat-dialog-btn is-line" data-testid="dialog-cancel" @click="emit('close')">Cancel</button>
-                <button type="button"
-                        class="chat-dialog-btn is-danger"
+                <Button kind="line" data-testid="dialog-cancel" @click="emit('close')">Cancel</Button>
+                <Button kind="danger"
                         data-testid="leader-confirm"
-                        :disabled="!pick || undefined"
-                        :aria-busy="isRemoving ? 'true' : undefined"
-                        @click="onLeaderConfirm">
-                    <template v-if="isRemoving"><span class="chat-spinner" aria-hidden="true"></span>Removing</template>
-                    <template v-else>{{ leaderConfirmLabel }}</template>
-                </button>
+                        :disabled="!pick"
+                        :busy="isRemoving"
+                        @click="onLeaderConfirm">{{ isRemoving ? "Removing" : leaderConfirmLabel }}</Button>
             </template>
         </Dialog>
     </div>
@@ -98,8 +92,8 @@
     color: var(--chat-text);
 }
 
-/* The members panel's search pill, as the design reuses it for "Find a member", with room under it. */
-.chat-rm .chat-rm-search {
+/* "Find a member", with room under it before the choices. */
+.chat-rm-search {
     margin: 0 0 8px;
 }
 
@@ -209,7 +203,9 @@
     import { computed, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
+    import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { RosterMember } from "../types.partial";
     import { useChatSession } from "../chatSession.partial";

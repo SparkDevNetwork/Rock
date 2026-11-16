@@ -54,16 +54,12 @@
             <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
 
             <template #actions>
-                <button type="button" class="chat-dialog-btn is-regular is-ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</button>
-                <button type="button"
-                        class="chat-dialog-btn is-regular is-brand"
+                <Button kind="ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</Button>
+                <Button kind="brand"
                         data-testid="ap-add"
-                        :disabled="chosen.length === 0 || isAdding || undefined"
-                        :aria-busy="isAdding ? 'true' : undefined"
-                        @click="onAdd">
-                    <template v-if="isAdding"><span class="chat-spinner" aria-hidden="true"></span>Adding</template>
-                    <template v-else>{{ addLabel }}</template>
-                </button>
+                        :disabled="chosen.length === 0"
+                        :busy="isAdding"
+                        @click="onAdd">{{ isAdding ? "Adding" : addLabel }}</Button>
             </template>
         </Dialog>
     </div>
@@ -120,6 +116,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
