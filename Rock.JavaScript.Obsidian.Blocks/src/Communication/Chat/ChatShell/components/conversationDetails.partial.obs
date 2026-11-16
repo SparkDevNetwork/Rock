@@ -9,7 +9,7 @@
             <IconButton icon="x" label="Close" data-testid="details-close" @click="emit('close')" />
         </template>
 
-        <div class="chat-rd-id" data-testid="details-identity">
+        <div class="chat-rd-id" data-testid="details-identity" data-focus-stop="details-identity">
             <ChannelMark v-if="kind === 'channel'" class="chat-rd-mark" data-testid="details-mark" :isPublic="facts.is_public" :imageUrl="facts.icon_url" />
             <Avatar v-else-if="kind === 'person'" :key="otherAlias ?? undefined" :people="[otherFace]" :size="44" :status="otherStatus" />
             <GroupFace v-else :people="groupFaces" :count="facts.member_count - 1" :size="44" />

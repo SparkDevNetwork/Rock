@@ -25,6 +25,27 @@
  */
 export type RoomKind = "channel" | "person" | "group";
 
+/**
+ * A place focus can be put by name: the element carrying the matching `data-focus-stop` mark, so
+ * a lookup never depends on a test id or on which component draws it.
+ */
+export type FocusStop =
+    | "composer"
+    | "join"
+    | "row"
+    | "new-message"
+    | "members-button"
+    | "threads-button"
+    | "mentions-button"
+    | "details-button"
+    | "more"
+    | "panel-close"
+    | "panel-back"
+    | "threads-row"
+    | "mentions-row"
+    | "thread-summary"
+    | "details-identity";
+
 /** A bottom sheet's height: as tall as its content, or the one taller height a picker takes. */
 export type SheetHeight = "content" | "picker";
 

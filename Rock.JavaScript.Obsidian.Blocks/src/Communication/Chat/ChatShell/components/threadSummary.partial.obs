@@ -5,6 +5,7 @@
             class="chat-tsum"
             :class="{ 'is-unread': isUnread, 'is-popping': isPopping }"
             data-testid="thread-summary"
+            data-focus-stop="thread-summary"
             :aria-label="ariaLabel"
             @mouseenter="onPointerEnter"
             @mouseleave="onPointerLeave"

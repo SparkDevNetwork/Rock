@@ -63,6 +63,7 @@
                          :label="drawn.label"
                          :hitAttrs="{
                              'data-testid': 'thread-row-open',
+                             'data-focus-stop': 'threads-row',
                              'data-root-id': drawn.rootId,
                              'aria-describedby': `${uid}-hint`,
                              ...listKeys.itemAttrs(drawn.rootId)

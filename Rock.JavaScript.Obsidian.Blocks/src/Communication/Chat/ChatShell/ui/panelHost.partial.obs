@@ -10,6 +10,7 @@
                         icon="left"
                         :label="backLabel ?? 'Back'"
                         data-testid="panel-back"
+                        data-focus-stop="panel-back"
                         @click="leave" />
 
             <span class="chat-panel-title">
@@ -23,6 +24,7 @@
                         icon="x"
                         :label="closeLabel"
                         data-testid="panel-close"
+                        data-focus-stop="panel-close"
                         @click="emit('close')" />
         </div>
 

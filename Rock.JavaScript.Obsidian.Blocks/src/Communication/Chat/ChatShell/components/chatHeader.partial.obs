@@ -45,6 +45,7 @@
                     type="button"
                     class="chat-header-pile"
                     data-testid="header-members"
+                    data-focus-stop="members-button"
                     :aria-label="membersButton.label"
                     :aria-expanded="isMembersOpen ? 'true' : 'false'"
                     @pointerenter="emit('membersIntent')"
@@ -60,6 +61,7 @@
                         icon="thread"
                         label="Threads"
                         data-testid="header-threads"
+                        data-focus-stop="threads-button"
                         :aria-expanded="isThreadsOpen ? 'true' : 'false'"
                         @click="emit('threads')" />
 
@@ -69,6 +71,7 @@
                         :label="hasMentionDot ? 'Mentions, new mentions' : 'Mentions'"
                         tooltip="Mentions"
                         data-testid="header-mentions"
+                        data-focus-stop="mentions-button"
                         :aria-expanded="isMentionsOpen ? 'true' : 'false'"
                         @click="emit('mentions')">
                 <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-mentions-dot" />
@@ -98,7 +101,7 @@
                         data-testid="header-star"
                         @click="emit('star')" />
 
-            <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
+            <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more" data-focus-stop="more">
                 <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" @openChange="onMoreOpenChange" />
                 <!-- Over the menu's button, which draws no mark of its own. -->
                 <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-more-dot" />
@@ -754,6 +757,7 @@ button.chat-header-id:hover .chat-header-chev {
             "aria-haspopup": "dialog",
             "aria-label": `${props.title}${otherStatus.value?.label ?? ""}, ${props.kind === "channel" ? "channel" : "conversation"} details`,
             "data-testid": "header-details",
+            "data-focus-stop": "details-button",
             "data-header-focus": ""
         }
         : {});

@@ -27,6 +27,7 @@
                     kind="brand"
                     :busy="drawn === 'joining'"
                     data-testid="join-channel"
+                    data-focus-stop="join"
                     @click="onJoin">{{ drawn === 'joining' ? 'Joining' : 'Join channel' }}</Button>
         </div>
     </div>

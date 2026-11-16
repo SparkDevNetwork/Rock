@@ -143,6 +143,7 @@
                             :conversationKey="conversationKey"
                             :aria-describedby="busyNote ? busyNoteId : undefined"
                             data-testid="composer-input"
+                            data-focus-stop="composer"
                             @update:text="emit('update:text', $event)"
                             @mention="emit('mention', $event)"
                             @send="onSubmit"

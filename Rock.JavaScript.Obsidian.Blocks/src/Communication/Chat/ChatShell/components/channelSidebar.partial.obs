@@ -16,6 +16,7 @@
                         icon="compose"
                         label="New message"
                         data-testid="new-message"
+                        data-focus-stop="new-message"
                         :inert="isNewMessageInert || undefined"
                         :aria-pressed="isNewMessageOpen ? 'true' : 'false'"
                         @click="emit('newMessage')" />
@@ -84,6 +85,7 @@
                             class="chat-row"
                             :class="rowClasses(row)"
                             data-testid="channel-row"
+                            data-focus-stop="row"
                             :data-channel-id="row.channel_id"
                             :data-layout="lookOf(row)"
                             :data-unread="isUnread(row) ? 'true' : 'false'"

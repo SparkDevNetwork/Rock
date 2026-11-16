@@ -39,6 +39,7 @@
                              :label="drawn.label"
                              :hitAttrs="{
                                  'data-testid': 'mention-row-open',
+                                 'data-focus-stop': 'mentions-row',
                                  'data-message-id': drawn.messageId,
                                  'aria-describedby': `${uid}-hint`,
                                  'data-autofocus': drawn.isCurrent ? '' : undefined,
