@@ -15,10 +15,12 @@
 // </copyright>
 //
 // Web push on this browser. The browser asks for permission only from a click, and the church's
-// setting decides when the button shows; a browser that already said yes registers again on every
-// load without asking. The token goes to the platform under the person's token and into a cookie,
-// so a sign-out anywhere in Rock can take this browser out of push.
-import { createPushRegistration, PushDependencies } from "../../../../../src/Communication/Chat/ChatShell/composables/usePush.partial";
+// setting decides when the button shows. A browser's permission belongs to whoever granted it, so
+// only this person's own yes on this browser registers on load, and never for a sign-in that ends
+// with the browser session; any other load lets go the token the browser holds, so the last
+// person's notifications stop arriving here. The token goes to the platform under the person's
+// token and into a cookie, so a sign-out anywhere in Rock can take this browser out of push.
+import { createPushRegistration, PushChoice, PushDependencies } from "../../../../../src/Communication/Chat/ChatShell/composables/usePush.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 
 const web = { apiKey: "k", projectId: "p", messagingSenderId: "1", appId: "1:1:web:1" };
@@ -82,6 +84,21 @@ function fakeRegistration(state: ServiceWorkerState): { registration: FakeRegist
 /** The answer createPlatformCall gives for a register the platform accepted. */
 const registered: CallResult = { ok: true, data: { token: "fcm-token-1", platform: "web", notifications_enabled: true } };
 
+/** This person's choice on this browser, as local storage holds it, shared by every load given it. */
+function choice(initial: PushChoice | null = null): { read: () => PushChoice | null, write: jest.Mock, set: (value: PushChoice | null) => void } {
+    let current = initial;
+    return {
+        read: () => current,
+        write: jest.fn((value: PushChoice) => {
+            current = value;
+        }),
+        // another tab of this person's writes the same key
+        set: (value: PushChoice | null) => {
+            current = value;
+        }
+    };
+}
+
 /** Dependencies with every outside call recorded, overridable per test. */
 function dependencies(overrides: Partial<PushDependencies> & { prompt?: string, permission?: string } = {}) {
     const calls: Array<{ name: string, args: Record<string, unknown> }> = [];
@@ -90,6 +107,7 @@ function dependencies(overrides: Partial<PushDependencies> & { prompt?: string, 
 
     const base: PushDependencies = {
         settings: () => ({ web, vapid_key: "vapid", prompt: overrides.prompt ?? "after_send" }),
+        isSignInKept: true,
         pagePath: "/chat",
         permission: () => permission,
         requestPermission: jest.fn(async () => {
@@ -156,8 +174,8 @@ describe("web push on this browser", () => {
         expect(push.isOffered()).toBe(true);
     });
 
-    test("a browser that already said yes registers on load without asking, through the one call path, and keeps the token in the cookie", async () => {
-        const { deps, calls, cookies } = dependencies({ permission: "granted", prompt: "off" });
+    test("a browser this person said yes on registers on load without asking, through the one call path, and keeps the token in the cookie", async () => {
+        const { deps, calls, cookies } = dependencies({ permission: "granted", prompt: "off", choice: choice("on") });
         const push = createPushRegistration(deps);
 
         await push.start();
@@ -209,7 +227,7 @@ describe("web push on this browser", () => {
 
     test("a worker still installing, as in a browser's first visit, is waited for: no token is asked for until it is active", async () => {
         const { registration, become } = fakeRegistration("installing");
-        const { deps, calls, cookies } = dependencies({ permission: "granted" });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         deps.registerWorker = jest.fn(async () => registration);
         const push = createPushRegistration(deps);
 
@@ -235,7 +253,7 @@ describe("web push on this browser", () => {
         jest.useFakeTimers();
         try {
             const { registration } = fakeRegistration("installing");
-            const { deps, calls, cookies } = dependencies({ permission: "granted" });
+            const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
             deps.registerWorker = jest.fn(async () => registration);
             const push = createPushRegistration(deps);
 
@@ -254,7 +272,7 @@ describe("web push on this browser", () => {
 
     test("a worker the browser throws away while installing ends this load with nothing registered", async () => {
         const { registration, become } = fakeRegistration("installing");
-        const { deps, calls } = dependencies({ permission: "granted" });
+        const { deps, calls } = dependencies({ permission: "granted", choice: choice("on") });
         deps.registerWorker = jest.fn(async () => registration);
         const push = createPushRegistration(deps);
 
@@ -268,7 +286,7 @@ describe("web push on this browser", () => {
     });
 
     test("a token that cannot be had registers nothing and throws nothing", async () => {
-        const { deps, calls, cookies } = dependencies({ permission: "granted" });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         deps.getToken = jest.fn(async () => {
             throw new Error("messaging/permission-blocked");
         });
@@ -282,7 +300,7 @@ describe("web push on this browser", () => {
 
     test("a register the platform refuses leaves no cookie", async () => {
         const refused: CallResult = { ok: false, status: 503, error: { code: "rpc.read_only", severity: "degraded", text: "Read only tonight." }, retryAfterSeconds: null };
-        const { deps, cookies } = dependencies({ permission: "granted" });
+        const { deps, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         deps.call = jest.fn(async () => refused);
         const push = createPushRegistration(deps);
 
@@ -293,7 +311,7 @@ describe("web push on this browser", () => {
 
     test("a stop while the token is on its way registers nothing once it arrives", async () => {
         const token = deferred<string>();
-        const { deps, calls, cookies } = dependencies({ permission: "granted" });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         deps.getToken = jest.fn(() => token.promise);
         const push = createPushRegistration(deps);
 
@@ -309,7 +327,7 @@ describe("web push on this browser", () => {
 
     test("a stop while the worker is registering asks for no token", async () => {
         const worker = deferred<unknown>();
-        const { deps } = dependencies({ permission: "granted" });
+        const { deps } = dependencies({ permission: "granted", choice: choice("on") });
         deps.registerWorker = jest.fn(() => worker.promise);
         const push = createPushRegistration(deps);
 
@@ -324,7 +342,7 @@ describe("web push on this browser", () => {
 
     test("a stop while the register is on its way writes no cookie when it answers", async () => {
         const answer = deferred<CallResult>();
-        const { deps, cookies } = dependencies({ permission: "granted" });
+        const { deps, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         deps.call = jest.fn(() => answer.promise);
         const push = createPushRegistration(deps);
 
@@ -352,23 +370,13 @@ describe("web push on this browser", () => {
 });
 
 // Chat settings' browser row reads push's state for this browser: offered, asking while the
-// browser's own box is up, on, blocked once the browser said no, or not set up where the platform
-// sent no Firebase values. The row offers Turn on whatever the church's prompt timing, since the
-// person came to the setting themselves. Turn off takes this browser's device out of push and
-// clears the sign-out cookie, and is remembered on this browser, so the next load does not
-// register it again while the browser still allows notifications; Turn on then needs no ask.
+// browser's own box is up, on, blocked once the browser said no, not set up where the platform
+// sent no Firebase values, or not kept for a sign-in that ends with the browser session. The row
+// offers Turn on whatever the church's prompt timing, since the person came to the setting
+// themselves. Turn off takes this browser's device out of push and clears the sign-out cookie, and
+// is remembered on this browser as this person's choice, so the next load does not register it
+// again while the browser still allows notifications; Turn on then needs no ask.
 describe("the browser row's state", () => {
-    /** The browser's remembered Turn off, as local storage holds it. */
-    function offFlag(initial = false): { read: () => boolean, write: jest.Mock } {
-        let isOff = initial;
-        return {
-            read: () => isOff,
-            write: jest.fn((value: boolean) => {
-                isOff = value;
-            })
-        };
-    }
-
     test("is not set up with no Firebase values, and blocked once the browser said no", async () => {
         const none = createPushRegistration(dependencies({ settings: () => ({ web: null, vapid_key: null, prompt: "offer" }) }).deps);
         await none.start();
@@ -388,7 +396,7 @@ describe("the browser row's state", () => {
 
     test.each(["startup", "Turn on"])("%s shows on only after its delayed register succeeds", async (mode) => {
         const answer = deferred<CallResult>();
-        const { deps } = dependencies({ permission: "granted" });
+        const { deps } = dependencies({ permission: "granted", choice: choice("on") });
         deps.call = jest.fn(() => answer.promise);
         const push = createPushRegistration(deps);
 
@@ -408,7 +416,7 @@ describe("the browser row's state", () => {
     ])("%s remains retryable after %s refuses registration", async (mode, failure) => {
         const token = deferred<string>();
         const answer = deferred<CallResult>();
-        const { deps } = dependencies({ permission: "granted" });
+        const { deps } = dependencies({ permission: "granted", choice: choice("on") });
         deps.getToken = jest.fn(() => token.promise);
         deps.call = jest.fn(() => answer.promise);
         const push = createPushRegistration(deps);
@@ -465,8 +473,8 @@ describe("the browser row's state", () => {
     });
 
     test("Turn off takes the device out, clears the cookie and is remembered", async () => {
-        const flag = offFlag();
-        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: flag });
+        const flag = choice("on");
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: flag });
         const push = createPushRegistration(deps);
         await push.start();
         expect(push.state()).toBe("on");
@@ -478,24 +486,26 @@ describe("the browser row's state", () => {
             ["chat_unregister_device", { p_token: "fcm-token-1" }]
         ]);
         expect(cookies).toEqual(["fcm-token-1", null]);
-        expect(flag.write).toHaveBeenCalledWith(true);
+        expect(flag.write).toHaveBeenCalledWith("off");
         expect(push.state()).toBe("offered");
     });
 
-    test("Turn off on a load that registered nothing takes out the device the cookie keeps", async () => {
-        const { deps, calls, cookies } = dependencies({ permission: "default", readCookie: () => "fcm-earlier" });
+    test("Turn off after a load that registered nothing has nothing left to take out", async () => {
+        // The load itself let go the device the cookie kept, since this person never chose push here.
+        const { deps, calls, cookies } = dependencies({ permission: "default" });
+        cookies.push("fcm-earlier");
         const push = createPushRegistration(deps);
         await push.start();
 
         expect(await push.turnOff()).toBeNull();
 
         expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-earlier" } }]);
-        expect(cookies).toEqual([null]);
+        expect(cookies).toEqual(["fcm-earlier", null]);
     });
 
     test("Turn off overtakes a startup token and leaves the earlier device removed", async () => {
         const token = deferred<string>();
-        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: offFlag() });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         cookies.push("fcm-earlier");
         deps.getToken = jest.fn(() => token.promise);
         const push = createPushRegistration(deps);
@@ -515,7 +525,7 @@ describe("the browser row's state", () => {
     test("Turn off waits for a sent register and removes its device after it succeeds", async () => {
         const answer = deferred<CallResult>();
         const enabled = new Set(["fcm-earlier"]);
-        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: offFlag() });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice("on") });
         cookies.push("fcm-earlier");
         deps.getToken = jest.fn(async () => "fcm-new");
         deps.call = jest.fn(async (name, args) => {
@@ -554,21 +564,23 @@ describe("the browser row's state", () => {
     });
 
     test("Turn off with no cookie takes out the browser's own token", async () => {
-        const { deps, calls } = dependencies({ permission: "granted", offFlag: offFlag(true) });
+        // allowed only after the load, so the load had no token of its own to let go
+        const { deps, calls, setPermission } = dependencies({ permission: "default", choice: choice("off") });
         const push = createPushRegistration(deps);
         await push.start();
         expect(calls).toEqual([]);
 
+        setPermission("granted");
         await push.turnOff();
 
         expect(deps.getToken).toHaveBeenCalledTimes(1);
         expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-token-1" } }]);
     });
 
-    test("an unregister that fails keeps the cookie and the off flag, answers a refusal, and the next load asks again", async () => {
-        const flag = offFlag();
+    test("an unregister that fails keeps the cookie and the choice of off, answers a refusal, and the next load asks again", async () => {
+        const flag = choice("on");
         let isRefused = true;
-        const { deps, calls, cookies } = dependencies({ permission: "granted", offFlag: flag });
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: flag });
         deps.call = jest.fn(async (name: string, args: Record<string, unknown>) => {
             calls.push({ name, args });
             return name === "chat_unregister_device" && isRefused
@@ -583,7 +595,7 @@ describe("the browser row's state", () => {
         expect(refusal?.code).toBe("push.unregister_failed");
         expect(refusal?.text).toBe("Notifications couldn't be turned off on this browser. Try again in a moment.");
         expect(cookies[cookies.length - 1]).toBe("fcm-token-1");
-        expect(flag.write).not.toHaveBeenCalledWith(false);
+        expect(flag.read()).toBe("off");
         expect(push.state()).toBe("offered");
 
         isRefused = false;
@@ -595,19 +607,135 @@ describe("the browser row's state", () => {
     });
 
     test("a browser turned off here does not register on the next load, and Turn on registers it without asking", async () => {
-        const flag = offFlag(true);
-        const { deps, calls } = dependencies({ permission: "granted", offFlag: flag });
+        const flag = choice("off");
+        const { deps, calls } = dependencies({ permission: "granted", choice: flag });
         const push = createPushRegistration(deps);
 
+        // the load lets go the browser's own token, which an earlier person may have left registered
         await push.start();
-        expect(calls).toEqual([]);
+        expect(calls.map(c => c.name)).toEqual(["chat_unregister_device"]);
         expect(push.state()).toBe("offered");
 
         await push.turnOn();
 
         expect(deps.requestPermission).not.toHaveBeenCalled();
-        expect(flag.write).toHaveBeenCalledWith(false);
-        expect(calls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(flag.write).toHaveBeenCalledWith("on");
+        expect(calls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_register_device"]);
         expect(push.state()).toBe("on");
+    });
+});
+
+// A browser's permission belongs to whoever granted it, so a load registers only on this person's
+// own yes here, and never for a sign-in that ends with the browser session: a phone-number sign-in,
+// an impersonation, or a password sign-in without Keep me logged in. Every other load lets go the
+// token the browser holds, so whoever used this browser before stops getting notifications on it.
+describe("whose push this browser carries", () => {
+    test("a sign-in that is not kept never registers, offers nothing, and its Turn on does nothing", async () => {
+        const { deps, calls } = dependencies({ permission: "granted", prompt: "offer", isSignInKept: false, choice: choice("on") });
+        const push = createPushRegistration(deps);
+
+        await push.start();
+        push.noteSend();
+        expect(calls.filter(c => c.name === "chat_register_device")).toEqual([]);
+        expect(push.state()).toBe("not_kept");
+        expect(push.isOffered()).toBe(false);
+
+        await push.turnOn();
+
+        expect(deps.requestPermission).not.toHaveBeenCalled();
+        expect(calls.filter(c => c.name === "chat_register_device")).toEqual([]);
+        expect(push.state()).toBe("not_kept");
+    });
+
+    test("a sign-in that is not kept lets go the token an earlier sign-in left in the cookie", async () => {
+        const { deps, calls, cookies } = dependencies({ permission: "granted", isSignInKept: false });
+        cookies.push("tok-a");
+        const push = createPushRegistration(deps);
+
+        await push.start();
+
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "tok-a" } }]);
+        expect(cookies[cookies.length - 1]).toBeNull();
+    });
+
+    test("a browser someone else allowed, where this person never chose, registers nothing, lets go the browser's own token and offers Turn on", async () => {
+        const { deps, calls } = dependencies({ permission: "granted", prompt: "offer", choice: choice() });
+        const push = createPushRegistration(deps);
+
+        await push.start();
+
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-token-1" } }]);
+        expect(push.state()).toBe("offered");
+        expect(push.isOffered()).toBe(true);
+    });
+
+    test("Turn on is this person's yes on this browser: it is remembered, and the next load registers without asking", async () => {
+        const flag = choice();
+        const first = dependencies({ permission: "granted", choice: flag });
+        const push = createPushRegistration(first.deps);
+        await push.start();
+
+        await push.turnOn();
+
+        expect(flag.read()).toBe("on");
+        expect(push.state()).toBe("on");
+        expect(push.isOffered()).toBe(false);
+
+        const next = dependencies({ permission: "granted", choice: flag });
+        const nextLoad = createPushRegistration(next.deps);
+        await nextLoad.start();
+
+        expect(next.deps.requestPermission).not.toHaveBeenCalled();
+        expect(next.calls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(nextLoad.state()).toBe("on");
+    });
+
+    test("a Turn on during the load's release waits for it, so the device it registers stays and keeps its cookie", async () => {
+        const released = deferred<CallResult>();
+        const enabled = new Set(["fcm-token-1"]);
+        const { deps, calls, cookies } = dependencies({ permission: "granted", prompt: "offer", choice: choice() });
+        deps.call = jest.fn(async (name, args) => {
+            calls.push({ name, args });
+            if (name === "chat_unregister_device") {
+                // the release lands on the platform only when its answer comes back
+                const result = await released.promise;
+                enabled.delete(args.p_token as string);
+                return result;
+            }
+            enabled.add(args.p_token as string);
+            return registered;
+        });
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        expect(calls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+
+        const turning = push.turnOn();
+        await settle();
+        released.resolve({ ok: true, data: { token: "fcm-token-1", removed: true } });
+        await started;
+        await turning;
+
+        expect(calls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_register_device"]);
+        expect(enabled.has("fcm-token-1")).toBe(true);
+        expect(cookies[cookies.length - 1]).toBe("fcm-token-1");
+        expect(push.state()).toBe("on");
+    });
+
+    test("a release reads the choice again before it sends, so a Turn on in another tab is not undone", async () => {
+        const token = deferred<string>();
+        const flag = choice();
+        const { deps, calls } = dependencies({ permission: "granted", choice: flag });
+        deps.getToken = jest.fn(() => token.promise);
+        const push = createPushRegistration(deps);
+
+        const started = push.start();
+        await settle();
+        flag.set("on");
+        token.resolve("fcm-token-1");
+        await started;
+
+        expect(calls).toEqual([]);
     });
 });

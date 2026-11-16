@@ -254,6 +254,9 @@ describe("this browser's notifications", () => {
         ["asking", null, "Choose Allow in your browser", "Turn on"],
         ["on", "On", null, "Turn off"],
         ["blocked", "Blocked", "Allow it in browser settings, then reload", null],
+        // A sign-in that ends with the browser session gets none, and nothing to click: a phone-number
+        // sign-in has no Keep me logged in box to point at.
+        ["not_kept", "Off", "Not sent to a sign-in that ends when the browser closes", null],
         ["unavailable", "Not available", "Not set up for Cedar Hill yet", null]
     ];
 

@@ -15,10 +15,17 @@
 // </copyright>
 //
 // The sign-in mark as the browser keeps it: a cookie Rock's sign-out expires by name, read among
-// the page's other cookies, and written to last no longer than the sign-in it marks.
+// the page's other cookies, and written to last no longer than the sign-in it marks. And the
+// browser's push as the block hands it to the shell, told whether the sign-in is kept.
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { browserSignInMark, signInMarkCookieName } from "../../../../src/Communication/Chat/ChatShell/browserShell.partial";
+import { browserSignInMark, createBrowserShellBuilder, signInMarkCookieName } from "../../../../src/Communication/Chat/ChatShell/browserShell.partial";
+import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
+
+// The shell the builder makes is the options it was handed, so a test reads what the block passes.
+jest.mock("../../../../src/Communication/Chat/ChatShell/shell.partial", () => ({
+    createChatShell: (options: unknown) => options
+}));
 
 /** Every cookie the page writes, as written, while the test runs. */
 let written: string[] = [];
@@ -79,5 +86,42 @@ describe("the sign-in mark", () => {
         expect(written[0]).toMatch(new RegExp(`^${signInMarkCookieName}=1; path=/; SameSite=Lax`));
         expect(written[0]).not.toContain("max-age");
         expect(written[0]).not.toContain("expires");
+    });
+});
+
+describe("the browser's push", () => {
+    /** A browser with web push: a service worker container, notifications and a push manager. */
+    function withWebPush(): () => void {
+        const host = window as unknown as Record<string, unknown>;
+        Object.defineProperty(navigator, "serviceWorker", { configurable: true, value: {} });
+        host.Notification = { permission: "granted", requestPermission: jest.fn() };
+        host.PushManager = function PushManager(): void { /* present is all push asks */ };
+        return () => {
+            delete (navigator as unknown as { serviceWorker?: unknown }).serviceWorker;
+            delete host.Notification;
+            delete host.PushManager;
+        };
+    }
+
+    test.each([true, false])("is told whether the sign-in is kept (%s), which alone decides whether it may register", isSignInPersisted => {
+        const restore = withWebPush();
+        try {
+            const build = createBrowserShellBuilder({
+                linkedChannelId: null,
+                areSharedChannelsFilteredByCampus: false,
+                isSignInPersisted,
+                notify: jest.fn(),
+                invokeBlockAction: jest.fn(),
+                mentionViews: {} as never
+            });
+
+            const options = build({} as never) as unknown as ShellOptions;
+
+            expect(options.push).toBeDefined();
+            expect(options.push?.isSignInKept).toBe(isSignInPersisted);
+        }
+        finally {
+            restore();
+        }
     });
 });

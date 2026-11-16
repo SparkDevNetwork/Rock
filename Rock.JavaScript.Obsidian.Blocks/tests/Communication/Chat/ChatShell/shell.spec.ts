@@ -3746,6 +3746,7 @@ function fakeBrowserPush(permission: { value: string }, token: () => Promise<str
     const worker = { state: "activated", addEventListener: () => undefined, removeEventListener: () => undefined } as unknown as ServiceWorker;
     return {
         pagePath: "/chat",
+        isSignInKept: true,
         permission: () => permission.value,
         requestPermission: async () => {
             permission.value = "granted";
@@ -3767,7 +3768,10 @@ function pushSettings(prompt: string): Record<string, unknown> {
     return { web: firebaseWeb, vapid_key: "v", prompt };
 }
 
-/** The key a person's Turn off is kept under on this browser. */
+/**
+ * The key a person's choice of push is kept under on this browser: "false" for their yes, as a Turn
+ * on has always written it, "true" for their Turn off, and nothing where they never chose.
+ */
 function pushOffKey(personAliasGuid: string): string {
     return `rock-chat:push-off:${tenant}:${personAliasGuid}`;
 }
@@ -3783,7 +3787,11 @@ describe("the browser row", () => {
 
     test("is drawn before a slow first registration settles, never as not set up", async () => {
         const token = deferred<string>();
-        const h = build({ push: fakeBrowserPush({ value: "granted" }, () => token.promise), pushSettings: pushSettings("off") });
+        const h = build({
+            stored: { [pushOffKey(person)]: "false" },
+            push: fakeBrowserPush({ value: "granted" }, () => token.promise),
+            pushSettings: pushSettings("off")
+        });
         const starting = h.shell.start();
         await settle();
         answerHistory(h, channelA, 10);
@@ -3800,40 +3808,55 @@ describe("the browser row", () => {
     });
 
     test("Turn on with the browser already allowing shows on only once the register settles", async () => {
-        const token = deferred<string>();
+        // the load's own release has the browser's token at once; the Turn on's waits
+        let token: () => Promise<string> = async () => "fcm-1";
         const h = await started({
             stored: { [pushOffKey(person)]: "true" },
-            push: fakeBrowserPush({ value: "granted" }, () => token.promise),
+            push: fakeBrowserPush({ value: "granted" }, () => token()),
             pushSettings: pushSettings("off")
         });
         expect(h.shell.state.push).toBe("offered");
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
 
+        const held = deferred<string>();
+        token = () => held.promise;
         const turning = h.shell.turnOnPush();
         await settle();
         expect(h.shell.state.push).toBe("offered");
 
-        token.resolve("fcm-1");
+        held.resolve("fcm-1");
         await turning;
         expect(h.shell.state.push).toBe("on");
+        expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_register_device"]);
     });
 
-    test("Turn off is kept per church and person, so another person on the browser still registers", async () => {
-        const stored: Record<string, string> = {};
+    test("a choice is kept per church and person, so another person on the browser registers only on their own yes", async () => {
+        const stored: Record<string, string> = { [pushOffKey(person)]: "false" };
         const ada = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(ada.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
         await ada.shell.turnOffPush();
         expect(ada.shell.state.push).toBe("offered");
         ada.shell.stop();
 
-        const other = "a0000009-0000-4000-8000-000000000000";
-        const ben = await started({ stored, personAliasGuid: other, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        // Ben said yes on this browser before; Cy never chose here, so her load lets the token go
+        const ben = "a0000009-0000-4000-8000-000000000000";
+        stored[pushOffKey(ben)] = "false";
+        const benLoad = await started({ stored, personAliasGuid: ben, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(benLoad.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
+        expect(benLoad.shell.state.push).toBe("on");
+        benLoad.shell.stop();
 
-        expect(ben.deviceCalls.map(c => c.name)).toEqual(["chat_register_device"]);
-        expect(ben.shell.state.push).toBe("on");
+        const cy = "a000000e-0000-4000-8000-000000000000";
+        const cyLoad = await started({ stored, personAliasGuid: cy, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(cyLoad.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+        expect(cyLoad.shell.state.push).toBe("offered");
+
         expect(stored[pushOffKey(person)]).toBe("true");
+        expect(stored[pushOffKey(cy)]).toBeUndefined();
     });
 
     test("an unregister the platform refuses is told, and the browser stays turned off", async () => {
-        const h = await started({ push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        const h = await started({ stored: { [pushOffKey(person)]: "false" }, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
         h.deviceAnswer.value = { status: 500, body: { code: "rpc.unavailable", message: "x" } };
 
         await h.shell.turnOffPush();
