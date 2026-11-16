@@ -40,7 +40,6 @@
     --chat-tip-bg: #1B2029;
     --chat-tip-fg: #F8F8FC;
     /* The hover behind a toast's close button, a lift of the toast's own text color. */
-    --chat-toast-close-hover: rgba(248, 248, 252, .16);
     --chat-scrim: rgba(13, 17, 23, .38);
     /* What is drawn over a photo or GIF, a badge or a play button: one dark veil and white in either theme. */
     --chat-media-scrim: rgba(13, 17, 23, .55);
@@ -337,7 +336,6 @@
     --chat-press: rgba(248, 248, 252, .09);
     --chat-tip-bg: #F8F8FC;
     --chat-tip-fg: #0D1117;
-    --chat-toast-close-hover: rgba(13, 17, 23, .08);
     --chat-scrim: rgba(0, 0, 0, .55);
     --chat-pill-bg: #1D2127;
     --chat-tab-track: #1B1F25;
@@ -416,7 +414,6 @@
         --chat-press: rgba(248, 248, 252, .09);
         --chat-tip-bg: #F8F8FC;
         --chat-tip-fg: #0D1117;
-        --chat-toast-close-hover: rgba(13, 17, 23, .08);
         --chat-scrim: rgba(0, 0, 0, .55);
         --chat-pill-bg: #1D2127;
         --chat-tab-track: #1B1F25;
