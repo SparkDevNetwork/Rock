@@ -10,7 +10,7 @@
         -->
         <Transition name="chat-strip" :key="conversationKey">
             <div v-if="sendFailure" ref="stripElement" class="chat-composer-failed-wrap">
-                <SettingNote class="chat-composer-failed" :note="failedNote" data-testid="composer-failed">
+                <SettingNote class="chat-composer-failed" :note="failedNote" :retryAttrs="{ 'data-testid': 'composer-failed-retry' }" data-testid="composer-failed">
                     <b data-testid="composer-failed-lead">{{ failedLead }}</b>
                     <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
                     <template #end>

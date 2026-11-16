@@ -11,10 +11,10 @@
         <template v-if="note.retry || $slots.end">{{ " " }}</template>
         <span v-if="note.retry || $slots.end" class="chat-set-note-end">
             <Button v-if="note.retry"
+                    v-bind="retryAttrs"
                     kind="ghost"
                     size="sm"
                     icon="refresh"
-                    data-testid="note-retry"
                     @click="onRetry">Try again</Button>
             <slot name="end"></slot>
         </span>
@@ -87,6 +87,12 @@
         note: {
             type: Object as PropType<Note>,
             required: true
+        },
+
+        /** Attributes for Try again, such as the test id a screen's tests find it by. */
+        retryAttrs: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({ "data-testid": "note-retry" })
         }
     });
 
