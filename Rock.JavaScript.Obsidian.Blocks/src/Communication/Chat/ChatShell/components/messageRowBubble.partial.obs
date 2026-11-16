@@ -22,7 +22,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
             <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. It hangs straight in its line, which carries it when its row steps: a wrapper here would change what carries it. -->
             <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">
@@ -50,7 +50,7 @@
                         <Badge tone="brand" icon="speaker" label="Announcement" data-testid="announcement-pill" />
                     </div>
                     <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
+                    <MessageBody :text="view.text" :pieces="view.pieces" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
                 </div>
                 <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :data-tail="isBubbleShown ? undefined : 'box'" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
                 <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>

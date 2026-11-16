@@ -56,8 +56,7 @@
                               :campuses="campuses"
                               :notifyMode="notifyMode"
                               :isEmpty="timeline.messages.length === 0 && pending.length === 0"
-                              :isJoinRefused="isJoinRefused"
-                              :isPhone="isPhone" />
+                              :isJoinRefused="isJoinRefused" />
 
                 <!--
                     The room above the messages, so a short conversation sits at the bottom by the composer
@@ -82,12 +81,7 @@
                         <MessageRow v-else-if="item.kind === 'blocked'"
                                     :message="item.messages[item.messages.length - 1]"
                                     :blockedRun="item.messages"
-                                    :personAliasGuid="personAliasGuid"
-                                    :personName="personName"
-                                    :personPhotoUrl="personPhotoUrl"
-                                    :organizationName="organizationName"
                                     :isChannel="isChannel"
-                                    :isPhone="isPhone"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
@@ -96,12 +90,7 @@
 
                         <MessageRow v-else-if="item.kind !== 'group'"
                                     :message="item.message"
-                                    :personAliasGuid="personAliasGuid"
-                                    :personName="personName"
-                                    :personPhotoUrl="personPhotoUrl"
-                                    :organizationName="organizationName"
                                     :isChannel="isChannel"
-                                    :isPhone="isPhone"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
@@ -115,15 +104,10 @@
                                         :message="row.message"
                                         :pending="row.pending"
                                         :isOwn="item.isOwn"
-                                        :personAliasGuid="personAliasGuid"
-                                        :personName="personName"
-                                        :personPhotoUrl="personPhotoUrl"
                                         :isPersonLeader="isPersonLeader"
-                                        :organizationName="organizationName"
                                         :isChannel="isChannel"
                                         :position="row.position"
                                         :isTypingNext="row.isTypingNext"
-                                        :isPhone="isPhone"
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                         :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
@@ -694,6 +678,7 @@
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { pageRevealKey } from "../pageLoad.partial";
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
@@ -720,22 +705,6 @@
             required: true
         },
 
-        personAliasGuid: {
-            type: String,
-            required: true
-        },
-
-        /** The reader's own name and photo, for their messages the platform sent none with. */
-        personName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
@@ -748,12 +717,6 @@
             default: null
         },
 
-        /** The church's name, the sender of a block post nobody signed. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
         /** A channel draws Community's flat rows; a direct message, Conversational's bubbles. */
         isChannel: {
             type: Boolean,
@@ -761,12 +724,6 @@
         },
 
         isDirectMessage: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the chat is in its one-pane phone layout, where the feed's edges come in. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -873,6 +830,10 @@
     // #region Values
 
     const feed = ref<HTMLElement | null>(null);
+
+    /** The reader, whose own messages are never news to them, and the phone flag, where the feed's edges come in. */
+    const session = useChatSession();
+    const isPhone = session.isPhone;
 
     /** The box around everything the feed draws, watched for growth. */
     const content = ref<HTMLElement | null>(null);
@@ -1016,7 +977,7 @@
         return layoutFeed({
             messages: props.timeline.messages,
             pending: channelPending.value,
-            personAliasGuid: props.personAliasGuid,
+            personAliasGuid: session.me.value.personAliasGuid,
             newDividerBeforeId: dividerBeforeId.value,
             layout: layout.value,
             now: new Date(),
@@ -1252,7 +1213,7 @@
             return;
         }
 
-        const me = props.personAliasGuid.toLowerCase();
+        const me = session.me.value.personAliasGuid.toLowerCase();
         // a message by someone the reader blocked is not news to them
         const arrived = props.timeline.messages.filter(m => m.id > previous && !m.blocked);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);

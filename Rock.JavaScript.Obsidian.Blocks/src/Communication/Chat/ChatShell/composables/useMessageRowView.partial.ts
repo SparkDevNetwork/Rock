@@ -23,9 +23,10 @@
 import { ComponentPublicInstance, computed, inject, Ref, UnwrapNestedRefs, watch } from "vue";
 import { isRoomMention, MessageDisplay, messageDisplay, pendingPieces } from "../heldMessage.partial";
 import { MessageRowRequests } from "./useMessageActions.partial";
-import { ReactionReader } from "./useReactions.partial";
 import type { ReactionMotion } from "../messageMotion.partial";
 import { RowPosition, timeLabel } from "../feedLayout.partial";
+import { ReactionReader } from "./useReactions.partial";
+import { useChatSession } from "../chatSession.partial";
 import { problemReportKey } from "../problemReport.partial";
 import { AttachmentItem, ChatError, DisplayPiece, PendingMessage, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
 
@@ -44,18 +45,6 @@ export type MessageRowViewSource = {
     pending: PendingMessage | null;
 
     isOwn: boolean;
-
-    /** The reader's alias guid, for the "you" mention chip. */
-    personAliasGuid: string;
-
-    /** The reader's own name, for their messages the platform sent no name with. */
-    personName: string;
-
-    /** The reader's own photo, for their face. */
-    personPhotoUrl: string | null;
-
-    /** The church's name, the sender of a block post nobody signed. */
-    organizationName: string;
 
     /** A channel's message is a flat Community row; a direct message's is a Conversational bubble. */
     isChannel: boolean;
@@ -83,7 +72,6 @@ export type MessageRowViewSource = {
 export type MessageRowReactionsProps = {
     message: TimelineMessage;
     isPreviewing: boolean;
-    isPhone: boolean;
     reader: ReactionReader;
     listReactors: (code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>;
     isCardDisabled: boolean;
@@ -166,13 +154,16 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
     /** When a pending row was first drawn, the time it shows until the platform gives it one. */
     const drawnAt = new Date();
 
+    // The reader and the church, whose own rows and unsigned posts the facts name.
+    const session = useChatSession();
+
     const message = computed((): TimelineMessage | null => props.message);
 
     const isPending = computed((): boolean => !!props.pending);
 
     const isOwn = computed((): boolean => props.isOwn);
 
-    const personAliasGuid = computed((): string => props.personAliasGuid);
+    const personAliasGuid = computed((): string => session.me.value.personAliasGuid);
 
     /** What the server decided the message shows; a pending send is its own text. */
     const display = computed((): MessageDisplay => props.message
@@ -277,11 +268,11 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
         // The reader's own row, a send not stored yet above all, carries no sender of its own and
         // is never the church's, whatever the session left out.
         if (props.isOwn) {
-            return props.personName || "You";
+            return session.me.value.name || "You";
         }
 
-        if (!message?.person_alias_guid && props.organizationName) {
-            return props.organizationName;
+        if (!message?.person_alias_guid && session.church.name) {
+            return session.church.name;
         }
 
         return "Someone";
@@ -298,7 +289,7 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
 
     const face = computed((): Face => ({
         name: displayName.value,
-        photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? props.personPhotoUrl : null)
+        photoUrl: props.message?.sender_avatar_url ?? (props.isOwn ? session.me.value.photoUrl : null)
     }));
 
     /**
@@ -319,7 +310,7 @@ export function useMessageRowView(props: Readonly<MessageRowViewSource>) {
      * only previewing the room, who is not among them until they join.
      */
     const mentionOfReader = computed((): "you" | "everyone" | null => {
-        const me = props.personAliasGuid.toLowerCase();
+        const me = personAliasGuid.value.toLowerCase();
         if (props.isOwn || isTomb.value) {
             return null;
         }

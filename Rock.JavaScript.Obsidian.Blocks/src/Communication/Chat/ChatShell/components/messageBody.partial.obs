@@ -112,6 +112,7 @@ button.chat-mn {
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
     import { isActionCall } from "../composables/useMessageActions.partial";
     import { isRoomMention } from "../heldMessage.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { problemReportKey } from "../problemReport.partial";
     import { MessageAction } from "../types.partial";
 
@@ -178,12 +179,6 @@ button.chat-mn {
             default: null
         },
 
-        /** The reader's alias guid, so a mention of them draws as the "you" chip. */
-        personAliasGuid: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
         /** A direct message or group, whose @all chip says "conversation" rather than "channel". */
         isConversation: {
             type: Boolean,
@@ -212,6 +207,8 @@ button.chat-mn {
     }>();
 
     // #region Values
+
+    const session = useChatSession();
 
     // The mention chips' photos are faces, so they arrive with the others drawn in the same frame.
     const reveal = useImageReveal({ isShared: true });
@@ -335,7 +332,8 @@ button.chat-mn {
             return { kind: "mention", text, mention: "all", name: "all", label: `@all, everyone in this ${props.isConversation ? "conversation" : "channel"}` };
         }
 
-        const isReader = !!guid && guid === props.personAliasGuid.toLowerCase();
+        // a mention of the signed-in reader draws as the "you" chip
+        const isReader = !!guid && guid === session.me.value.personAliasGuid.toLowerCase();
         return {
             kind: "mention",
             text,

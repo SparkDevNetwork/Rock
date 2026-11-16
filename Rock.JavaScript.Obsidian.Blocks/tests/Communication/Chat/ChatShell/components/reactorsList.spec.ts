@@ -36,6 +36,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ReactorsList from "../../../../../src/Communication/Chat/ChatShell/components/reactorsList.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -89,7 +90,13 @@ afterEach(() => {
 let wrapper: VueWrapper | null = null;
 
 function draw(props: Record<string, unknown>): VueWrapper {
-    wrapper = mount(ReactorsList, { props: { isOpen: true, reactions: chips, code: "pray", reader, listReactors: jest.fn(async () => ({ reactors: [], has_more: false })), ...props } as never, attachTo: document.body });
+    // the phone flag is the session's, provided as the shell provides it
+    const { isPhone = false, ...rest } = props;
+    wrapper = mount(ReactorsList, {
+        props: { isOpen: true, reactions: chips, code: "pray", reader, listReactors: jest.fn(async () => ({ reactors: [], has_more: false })), ...rest } as never,
+        attachTo: document.body,
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) }
+    });
     return wrapper;
 }
 

@@ -25,6 +25,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, nextTick, reactive } from "vue";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
+import { providedSession } from "../sessionShapes";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import BlockCard from "../../../../../src/Communication/Chat/ChatShell/components/blockCard.partial.obs";
@@ -34,6 +35,20 @@ import { PendingMessage, TimelineMessage } from "../../../../../src/Communicatio
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 import { isEditableMessage, isSenderBlockable } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { createMessageMotion, MessageMotion, messageMotionKey } from "../../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
+
+/**
+ * A mount with the reader, the phone flag and the church in the session, as the shell provides
+ * them: a spec names them with the rest of a mount's props, and they move into the session here.
+ */
+function inSession(options: { props?: Record<string, unknown>, global?: { provide?: Record<string | symbol, unknown> } } & Record<string, unknown>): never {
+    const { isPhone, personAliasGuid, personName, personPhotoUrl, organizationName, ...props } = options.props ?? {};
+    const session = providedSession({
+        isPhone: !!isPhone,
+        me: { personAliasGuid: (personAliasGuid as string | undefined) ?? "", name: (personName as string | undefined) ?? "", photoUrl: (personPhotoUrl as string | null | undefined) ?? null },
+        churchName: (organizationName as string | undefined) ?? ""
+    });
+    return { ...options, props, global: { ...options.global, provide: { ...session, ...options.global?.provide } } } as never;
+}
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -97,7 +112,7 @@ type RowProps = {
 };
 
 function draw(props: RowProps, motion?: MessageMotion): VueWrapper {
-    return mount(MessageRow, { props: { personAliasGuid: me, ...props }, global: motion ? { provide: { [messageMotionKey as symbol]: motion } } : {} });
+    return mount(MessageRow, inSession({ props: { personAliasGuid: me, ...props }, global: motion ? { provide: { [messageMotionKey as symbol]: motion } } : {} }));
 }
 
 /** Text as a person reads it; some ICU builds put a narrow no-break space before AM and PM. */
@@ -292,10 +307,10 @@ describe("the states, in Conversational", () => {
     // the body drawn in its place.
     test("a type this client does not know is reported by its type, and a known one is not", async () => {
         const report = jest.fn();
-        const wrapper = mount(MessageRow, {
+        const wrapper = mount(MessageRow, inSession({
             props: { personAliasGuid: me, message: message({ message_type: "announcement", body: "Doors open at 6" }) },
             global: { provide: { [problemReportKey as symbol]: { report } } }
-        });
+        }));
         expect(report).not.toHaveBeenCalled();
 
         await wrapper.setProps({ message: message({ message_type: "poll", body: "Can't be shown here." }) });
@@ -455,7 +470,7 @@ describe("Community, in a channel", () => {
     });
 
     test.each(["sending", "failed"] as const)("the reader's own %s row that starts a group is headed with their name and photo", status => {
-        const wrapper = mount(MessageRow, {
+        const wrapper = mount(MessageRow, inSession({
             props: {
                 personAliasGuid: me,
                 pending: pendingRow({ status }),
@@ -466,16 +481,16 @@ describe("Community, in a channel", () => {
                 personPhotoUrl: "/GetImage.ashx?id=7",
                 organizationName: "Cedar Hill Church"
             }
-        });
+        }));
 
         expect(wrapper.get("[data-testid='sender-name']").text()).toBe("Jordan Lee");
         expect(wrapper.findComponent(Avatar).props("people")).toEqual([{ name: "Jordan Lee", photoUrl: "/GetImage.ashx?id=7" }]);
     });
 
     test("an own row with no name from the session is still the reader's, never the church's", () => {
-        const wrapper = mount(MessageRow, {
+        const wrapper = mount(MessageRow, inSession({
             props: { personAliasGuid: me, pending: pendingRow(), isOwn: true, isChannel: true, position: "single", organizationName: "Cedar Hill Church" }
-        });
+        }));
 
         expect(wrapper.get("[data-testid='sender-name']").text()).toBe("You");
         expect(wrapper.findComponent(Avatar).props("people")).toEqual([{ name: "You", photoUrl: null }]);
@@ -1032,7 +1047,8 @@ describe("a message that quotes another", () => {
         const quote = wrapper.findComponent(MessageQuote);
         expect(quote.exists()).toBe(true);
         expect(quote.props("isCommunity")).toBe(isChannel);
-        expect(quote.props("personAliasGuid")).toBe(me);
+        // the reader reaches the quote through the session the row is drawn in, never handed down by the row
+        expect(quote.props()).not.toHaveProperty("personAliasGuid");
     });
 
     test.each([["its head row", "single"], ["a grouped continuation row", "middle"]] as const)("in a channel, on %s, the quote is a reply line with an arrow and no connector to the face", (_row, position) => {
@@ -1069,7 +1085,7 @@ describe("edit in place", () => {
     const lineup = ownConfirmed({ body: `Thanks <@${lee}>`, pieces: [{ type: "text", text: "Thanks " }, mentionLee] as TimelineMessage["pieces"] });
 
     function editing(props: RowProps): VueWrapper {
-        mounted = mount(MessageRow, { props: { personAliasGuid: me, isOwn: true, isEditing: true, position: "single", ...props }, attachTo: document.body });
+        mounted = mount(MessageRow, inSession({ props: { personAliasGuid: me, isOwn: true, isEditing: true, position: "single", ...props }, attachTo: document.body }));
         return mounted;
     }
 
@@ -1229,7 +1245,7 @@ describe("the phone's action sheet", () => {
     });
 
     function onPhone(props: RowProps): VueWrapper {
-        mounted = mount(MessageRow, { props: { personAliasGuid: me, isPhone: true, position: "single", ...props }, attachTo: document.body });
+        mounted = mount(MessageRow, inSession({ props: { personAliasGuid: me, isPhone: true, position: "single", ...props }, attachTo: document.body }));
         return mounted;
     }
 
@@ -1701,9 +1717,9 @@ describe("the profile card's openers", () => {
         expect(requests[1].anchor).toBe(face.element);
 
         // a row still sending is not stored yet, so it names no one to open
-        const sending = mount(MessageRow, {
+        const sending = mount(MessageRow, inSession({
             props: { personAliasGuid: me, pending: pendingRow(), isOwn: true, isChannel: true, position: "single", personName: "Jordan Lee" }
-        });
+        }));
         expect(sending.get("[data-testid='sender-name']").element.tagName).not.toBe("BUTTON");
         expect(sending.find("[data-testid='sender-avatar']").exists()).toBe(false);
     });
@@ -1723,7 +1739,7 @@ describe("the profile card's openers", () => {
     });
 
     test("a tap on the author on a phone asks for the card and never opens the action sheet", async () => {
-        const wrapper = mount(MessageRow, { props: { personAliasGuid: me, message: message(), isChannel: true, position: "first", isPhone: true }, attachTo: document.body });
+        const wrapper = mount(MessageRow, inSession({ props: { personAliasGuid: me, message: message(), isChannel: true, position: "first", isPhone: true }, attachTo: document.body }));
 
         await wrapper.get("[data-testid='sender-name']").trigger("click");
 
@@ -1886,7 +1902,7 @@ describe("a failed send's own choices", () => {
     const failed = (extra: Partial<PendingMessage> = {}): PendingMessage => pendingRow({ status: "failed", errorCode: "rpc.transport", ...extra });
 
     function drawAttached(props: RowProps): VueWrapper {
-        return mount(MessageRow, { props: { personAliasGuid: me, ...props }, attachTo: document.body });
+        return mount(MessageRow, inSession({ props: { personAliasGuid: me, ...props }, attachTo: document.body }));
     }
 
     async function press(wrapper: VueWrapper): Promise<void> {

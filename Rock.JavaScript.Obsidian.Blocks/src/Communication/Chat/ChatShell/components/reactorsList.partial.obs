@@ -3,7 +3,7 @@
     <Dialog :isOpen="isOpen"
             title="Reactions"
             isPanel
-            :isPhone="isPhone"
+            :isPhone="isSheet"
             @close="emit('close')">
         <template #tools>
             <IconButton icon="x" label="Close" data-testid="reactors-close" @click="emit('close')" />
@@ -177,7 +177,9 @@
     import ListRow from "../ui/listRow.partial.obs";
     import { personFace, personName } from "../ui/face.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
+    import { isHoverless } from "../ui/viewport.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { ReactionReader } from "../composables/useReactions.partial";
     import { EmojiGlyph, Reaction, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
 
@@ -236,12 +238,6 @@
         listReactors: {
             type: Function as PropType<(code: string | null, after: ReactorsCursor | null) => Promise<ReactorsPage | null>>,
             required: true
-        },
-
-        /** A phone, where the list rises as a sheet. */
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -252,6 +248,14 @@
     // #region Values
 
     const uid = `chat-rl-${newGuid()}`;
+
+    /**
+     * A phone, or a screen with no hover, where the list rises as a sheet, as the reactions it
+     * opens from have no hover card there either. Hover is read once.
+     */
+    const session = useChatSession();
+    const isScreenHoverless = isHoverless();
+    const isSheet = computed((): boolean => session.isPhone.value || isScreenHoverless);
 
     /** The key of the tab of every emoji, which no code can be. */
     const allTab = "*";

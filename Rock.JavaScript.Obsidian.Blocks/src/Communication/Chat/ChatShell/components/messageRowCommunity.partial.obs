@@ -21,7 +21,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" isCommunity @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" isCommunity @jump="on.jump" />
         <div class="chat-cm-gutter">
             <template v-if="view.isHead">
                 <button v-if="view.authorGuid"
@@ -55,7 +55,7 @@
                            v-on="on.editor" />
             <div v-else class="chat-cm-text" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading }">
                 <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
-                <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" :isPersonOpenable="!!view.message" @person="on.person" />
+                <MessageBody :text="view.text" :pieces="view.pieces" :isPersonOpenable="!!view.message" @person="on.person" />
                 <span v-if="view.isEdited" class="chat-cm-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">(edited)</span>
                 <span v-if="view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                 <span v-else-if="view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
@@ -382,6 +382,7 @@
     import FailedMarker from "./failedMarker.partial.obs";
     import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";
     import { dayLabel, gutterTimeLabel } from "../feedLayout.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     const props = defineProps({
         /** What the message shows and what can be done to it, as the row worked them out. */
@@ -396,12 +397,6 @@
             required: true
         },
 
-        /** Whether the chat is in its one-pane phone layout, where the gutter and faces are smaller. */
-        isPhone: {
-            type: Boolean,
-            default: false
-        },
-
         /** Whether the reader leads this channel, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
@@ -412,7 +407,9 @@
     // #region Computed Values
 
     /** The face fills the gutter, which is narrower on a phone. */
-    const faceSize = computed((): number => props.isPhone ? 32 : 36);
+    // The gutter and faces are smaller in the phone's one-pane layout.
+    const { isPhone } = useChatSession();
+    const faceSize = computed((): number => isPhone.value ? 32 : 36);
 
     const gutterTime = computed((): string => gutterTimeLabel(props.view.at));
 

@@ -19,7 +19,7 @@
         <template v-if="state === 'system'">
             <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
-                <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" />
+                <MessageBody :text="text" :pieces="pieces" :isConversation="!isChannel" />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
         </template>
@@ -37,7 +37,7 @@
         </template>
 
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
-        <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
+        <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
@@ -370,6 +370,7 @@ img.chat-sheet-glyph {
     import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
     import { rowKey, sendKey } from "../heldMessage.partial";
     import { useRowMotion } from "../messageMotion.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { ChatError, PendingMessage, ReactionFavorite, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -397,34 +398,10 @@ img.chat-sheet-glyph {
             default: false
         },
 
-        /** The reader's alias guid, for the "you" mention chip. */
-        personAliasGuid: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        /** The reader's own name, for their messages the platform sent no name with. */
-        personName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        /** The reader's own photo, for their face in Community. */
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
             default: false
-        },
-
-        /** The church's name, the sender of a block post nobody signed. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
         },
 
         /** A channel's message is a flat Community row; a direct message's is a Conversational bubble. */
@@ -449,12 +426,6 @@ img.chat-sheet-glyph {
         groupKey: {
             type: String,
             default: ""
-        },
-
-        /** Whether the chat is in its one-pane phone layout, where Community's gutter and faces are smaller. */
-        isPhone: {
-            type: Boolean,
-            default: false
         },
 
         /** A direct message names nobody over a bubble: the header already says who it is with. */
@@ -561,6 +532,9 @@ img.chat-sheet-glyph {
 
     const columnBar = useColumnActionBar();
 
+    /** Whether the chat is in its one-pane phone layout, as the session says. */
+    const session = useChatSession();
+
     const isSheetOpen = ref(false);
     const sheet = ref<InstanceType<typeof Sheet>>();
 
@@ -639,7 +613,7 @@ img.chat-sheet-glyph {
     const isActionable = computed((): boolean => state.value === "message" || state.value === "sent" || state.value === "unknown");
 
     /** A phone, or a screen with no hover, which acts from the sheet instead of the bar. */
-    const isTouchLayout = computed((): boolean => props.isPhone || isScreenHoverless);
+    const isTouchLayout = computed((): boolean => session.isPhone.value || isScreenHoverless);
 
     /**
      * Whether the message can be acted on now, the one rule the bar and the sheet both follow: a
@@ -718,8 +692,7 @@ img.chat-sheet-glyph {
     const reactionsProps = computed((): MessageRowReactionsProps => ({
         message: props.message as TimelineMessage,
         isPreviewing: props.isPreviewing,
-        isPhone: isTouchLayout.value,
-        reader: { personAliasGuid: props.personAliasGuid, name: props.personName, photoUrl: props.personPhotoUrl },
+        reader: session.me.value,
         listReactors,
         isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id),
         motion: reaction.value
@@ -729,7 +702,7 @@ img.chat-sheet-glyph {
         [`is-${layout.value}`]: true,
         [`is-${state.value}`]: true,
         "is-own": props.isOwn,
-        "is-phone": props.isPhone,
+        "is-phone": session.isPhone.value,
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,

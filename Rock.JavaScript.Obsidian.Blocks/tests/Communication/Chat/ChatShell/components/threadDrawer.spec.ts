@@ -53,6 +53,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadDrawer from "../../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
+import { providedSession } from "../sessionShapes";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { unfollowNotice } from "../../../../../src/Communication/Chat/ChatShell/composables/useThreads.partial";
@@ -62,6 +63,20 @@ import type { Typing } from "../../../../../src/Communication/Chat/ChatShell/com
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 import { playAnimations } from "../tailStage";
 import { busyNow, createStatusStore, told } from "../statusStore";
+
+/**
+ * A mount with the reader, the phone flag and the church in the session, as the shell provides
+ * them: a spec names them with the rest of a mount's props, and they move into the session here.
+ */
+function inSession(options: { props?: Record<string, unknown>, global?: { provide?: Record<string | symbol, unknown> } } & Record<string, unknown>): never {
+    const { isPhone, personAliasGuid, personName, personPhotoUrl, organizationName, ...props } = options.props ?? {};
+    const session = providedSession({
+        isPhone: !!isPhone,
+        me: { personAliasGuid: (personAliasGuid as string | undefined) ?? "", name: (personName as string | undefined) ?? "", photoUrl: (personPhotoUrl as string | null | undefined) ?? null },
+        churchName: (organizationName as string | undefined) ?? ""
+    });
+    return { ...options, props, global: { ...options.global, provide: { ...session, ...options.global?.provide } } } as never;
+}
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -118,7 +133,7 @@ let wrapper: VueWrapper | null = null;
  * browser plays it; one about status provides the store its faces read.
  */
 function draw(props: Record<string, unknown> = {}, isTransitionKept = false, motion = createMessageMotion(), provide: Record<symbol, unknown> = {}): VueWrapper {
-    const drawn: VueWrapper = mount(ThreadDrawer, {
+    const drawn: VueWrapper = mount(ThreadDrawer, inSession({
         global: { provide: { [messageMotionKey as symbol]: motion, ...provide }, ...(isTransitionKept ? { stubs: { transition: false } } : {}) },
         props: {
             draft: { text: "", mentions: [] },
@@ -136,7 +151,7 @@ function draw(props: Record<string, unknown> = {}, isTransitionKept = false, mot
             ...props
         },
         attachTo: document.body
-    });
+    }));
     wrapper = drawn;
     return wrapper;
 }

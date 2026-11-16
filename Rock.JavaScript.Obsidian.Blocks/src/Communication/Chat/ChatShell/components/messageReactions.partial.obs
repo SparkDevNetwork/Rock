@@ -86,7 +86,6 @@
                               :code="listOpenedOn"
                               :reader="reader"
                               :listReactors="listReactors"
-                              :isPhone="isPhone"
                               @close="listCode = null" />
             </Teleport>
         </template>
@@ -235,7 +234,9 @@
     import { preloadPhotos } from "../ui/face.partial";
     import { focusQuietly } from "../ui/focusTrap.partial";
     import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { isHoverless } from "../ui/viewport.partial";
     import { ReactionReader, whoReactedLine } from "../composables/useReactions.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { Reaction, ReactorsCursor, ReactorsPage, TimelineMessage } from "../types.partial";
     import type { ReactionMotion } from "../messageMotion.partial";
 
@@ -254,12 +255,6 @@
 
         /** A channel's flat look. */
         isCommunity: {
-            type: Boolean,
-            default: false
-        },
-
-        /** A phone, where the action sheet reacts, there is no add chip, and the full list is a sheet. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -297,6 +292,15 @@
     const slots = useSlots();
 
     // #region Values
+
+    const session = useChatSession();
+
+    /**
+     * A phone, or a screen with no hover, where the action sheet reacts and there is no add chip.
+     * Hover is read once: a screen does not gain a pointer while chat is open.
+     */
+    const isScreenHoverless = isHoverless();
+    const isTouch = computed((): boolean => session.isPhone.value || isScreenHoverless);
 
     const uid = `chat-rx-${newGuid()}`;
 
@@ -348,7 +352,7 @@
     const reactions = computed((): Reaction[] => props.message.reactions ?? []);
 
     // The add chip only follows chips; a message with none is reacted to from its action bar.
-    const isAddDrawn = computed((): boolean => !props.isPreviewing && !props.isPhone && reactions.value.length > 0);
+    const isAddDrawn = computed((): boolean => !props.isPreviewing && !isTouch.value && reactions.value.length > 0);
 
     const tipReaction = computed((): Reaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
 

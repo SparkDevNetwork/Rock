@@ -22,6 +22,7 @@
 // for someone else.
 import { mount, VueWrapper } from "@vue/test-utils";
 import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
+import { providedSession } from "../sessionShapes";
 import { ChannelFacts } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -60,8 +61,10 @@ function leader(nickName: string, lastName: string, index: number): ChannelFacts
 let wrapper: VueWrapper | null = null;
 
 function mountIntro(props: Record<string, unknown> = {}): VueWrapper {
+    const { isPhone = false, ...rest } = props;
     wrapper = mount(ChannelIntro, {
-        props: { facts: facts(), campuses: [downtown], notifyMode: "all", isEmpty: false, isPhone: false, ...props }
+        props: { facts: facts(), campuses: [downtown], notifyMode: "all", isEmpty: false, ...rest },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) }
     });
     return wrapper;
 }

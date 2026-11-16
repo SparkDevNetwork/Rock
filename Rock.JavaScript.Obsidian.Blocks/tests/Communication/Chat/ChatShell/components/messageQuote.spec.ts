@@ -37,6 +37,7 @@
 import { readFileSync } from "fs";
 import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
+import { providedSession } from "../sessionShapes";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -83,7 +84,7 @@ function reply(from: string, quote: Record<string, unknown> | null | typeof nobo
 }
 
 function draw(message: TimelineMessage, extra: { isOwn?: boolean, isCommunity?: boolean } = {}): VueWrapper {
-    return mount(MessageQuote, { props: { message, personAliasGuid: me, isOwn: message.person_alias_guid === me, isCommunity: false, ...extra } });
+    return mount(MessageQuote, { props: { message, isOwn: message.person_alias_guid === me, isCommunity: false, ...extra }, global: { provide: providedSession({ me: { personAliasGuid: me } }) } });
 }
 
 function quote(w: VueWrapper): ReturnType<VueWrapper["get"]> {
