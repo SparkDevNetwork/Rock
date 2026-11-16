@@ -4951,7 +4951,21 @@ Sys.Application.add_load(function () {
                 context.Response.SuppressContent = true;
                 context.ApplicationInstance.CompleteRequest();
 
-                return null;
+                /*
+                    11/16/2026 - KH
+
+                    ASP.NET requires a non-null IAsyncResult from BeginProcessRequest
+                    and throws a NullReferenceException when it gets null. Returning
+                    a result that has already completed synchronously makes ASP.NET
+                    call EndProcessRequest right away, the same way it does when the
+                    page itself finishes without any async work.
+
+                    Reason: Avoid an exception for every country-restricted request.
+                */
+                var forbiddenResult = new CompletedAsyncResult( extraData );
+                cb?.Invoke( forbiddenResult );
+
+                return forbiddenResult;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );
@@ -4960,7 +4974,11 @@ Sys.Application.add_load(function () {
         /// <inheritdoc/>
         public void EndProcessRequest( IAsyncResult result )
         {
-            AsyncPageEndProcessRequest( result );
+            // The page was never processed when the request was forbidden.
+            if ( !( result is CompletedAsyncResult ) )
+            {
+                AsyncPageEndProcessRequest( result );
+            }
 
             if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
@@ -4969,6 +4987,36 @@ Sys.Application.add_load(function () {
                     internalAccessor.RockRequestContext = null;
                 }
             }
+        }
+
+        /// <summary>
+        /// An <see cref="IAsyncResult"/> for a request that was fully handled
+        /// before the page started processing.
+        /// </summary>
+        private sealed class CompletedAsyncResult : IAsyncResult
+        {
+            private System.Threading.WaitHandle _asyncWaitHandle;
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CompletedAsyncResult"/> class.
+            /// </summary>
+            /// <param name="asyncState">The state object passed to <see cref="BeginProcessRequest"/>.</param>
+            public CompletedAsyncResult( object asyncState )
+            {
+                AsyncState = asyncState;
+            }
+
+            /// <inheritdoc/>
+            public object AsyncState { get; }
+
+            /// <inheritdoc/>
+            public System.Threading.WaitHandle AsyncWaitHandle => _asyncWaitHandle ?? ( _asyncWaitHandle = new System.Threading.ManualResetEvent( true ) );
+
+            /// <inheritdoc/>
+            public bool CompletedSynchronously => true;
+
+            /// <inheritdoc/>
+            public bool IsCompleted => true;
         }
 
         #endregion
