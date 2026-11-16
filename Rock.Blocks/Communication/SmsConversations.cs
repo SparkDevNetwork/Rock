@@ -887,6 +887,11 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "A System Phone Number must be selected." );
             }
 
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() )
+            {
+                return ActionBadRequest( "Sending new messages is not enabled." );
+            }
+
             var recipientPerson = FindRecipientFromPersonKey( bag.RecipientPersonAliasIdKey );
             if ( recipientPerson == null )
             {
@@ -929,6 +934,13 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Could not find the Recipient Person." );
             }
 
+            // With sending disabled, replies in an existing conversation are still
+            // allowed. A message to anyone else would start a new conversation.
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() && !HasConversationWithRecipient( recipientPerson.Id, smsSystemPhoneNumber.Id ) )
+            {
+                return ActionBadRequest( "Sending new messages is not enabled." );
+            }
+
             var sendMessageResult = SendMessage( recipientPerson, bag );
 
             if ( sendMessageResult.IsNotNullOrWhiteSpace() )
@@ -936,6 +948,29 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( sendMessageResult );
             }
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Determines whether the person has a conversation on the system phone number.
+        /// </summary>
+        /// <param name="personId">The identifier of the person.</param>
+        /// <param name="smsSystemPhoneNumberId">The identifier of the system phone number.</param>
+        /// <returns><c>true</c> if the person has sent a message to the number or been sent one from it; otherwise <c>false</c>.</returns>
+        /// <remarks>Outbound messages count when they are SMS, pending or delivered, and on an approved communication.</remarks>
+        private bool HasConversationWithRecipient( int personId, int smsSystemPhoneNumberId )
+        {
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
+            return new CommunicationResponseService( RockContext )
+                    .Queryable()
+                    .Any( r => r.FromPersonAlias.PersonId == personId && r.RelatedSmsFromSystemPhoneNumberId == smsSystemPhoneNumberId )
+                || new CommunicationRecipientService( RockContext )
+                    .Queryable()
+                    .Any( r => r.PersonAlias.PersonId == personId
+                        && r.MediumEntityTypeId == smsMediumEntityTypeId
+                        && r.Communication.SmsFromSystemPhoneNumberId == smsSystemPhoneNumberId
+                        && r.Communication.Status == CommunicationStatus.Approved
+                        && ( r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending ) );
         }
 
         /// <summary>
