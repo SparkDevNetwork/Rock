@@ -939,8 +939,9 @@ describe("the components' own styles", () => {
             expect(declarationOf(resolve(components, file), selector, "box-shadow")).toBe("");
         }
 
-        // The unread dot keeps its ring: it cuts the dot out of the pill's border it sits on.
-        expect(declarationOf(resolve(components, "threadSummary.partial.obs"), ".chat-tsum-dot", "box-shadow")).toBe(normalize("0 0 0 2px var(--chat-surface)"));
+        // The unread dot keeps its ring, the shared dot's: it cuts the dot out of the pill's border it sits on.
+        expect(readFileSync(resolve(components, "threadSummary.partial.obs"), "utf8")).toMatch(/<Dot [^>]*\bringed\b[^>]*data-testid="thread-unread-dot"/);
+        expect(declarationOf(resolve(components, "../ui/dot.partial.obs"), ".chat-dot.is-ringed", "box-shadow")).toBe(normalize("0 0 0 2px var(--chat-av-ring, var(--chat-surface))"));
     });
 
     // The Full Worksurface page pads its zone, keeps an empty Feature row and shows a margined

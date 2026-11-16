@@ -22,7 +22,7 @@
 
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "brand-line" | "reaction-mine-line" | "flash" | "own-hairline"
-    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
+    | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-ring" | "thread-unread-line" | "row-announcement"
     | "focus-line" | "composer-line" | "composer-glow", string>;
 
 /** The variable only Rock's newer themes define; the older themes have no dark mode. */
@@ -216,14 +216,13 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
     // Your reaction chip's border, a little stronger, so a pressed chip reads on a tinted bubble.
     const reactionLine = withAlpha(church, 0.55);
 
-    // The message row's tints. The chips and the pill are the church color over whatever lies
-    // under them, a bubble or a tinted row, so they stay alpha; the rest sit on a known background.
+    // The message row's tints. The chips are the church color over whatever lies under them, a
+    // bubble or a tinted row, so they stay alpha; the rest sit on a known background.
     // An unread thread's border is drawn a little stronger than the announcement ring, 45% over the line.
-    const row = (surface: string, line: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"> => ({
+    const row = (surface: string, line: string): Pick<BrandTokenSet, "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-ring" | "thread-unread-line" | "row-announcement"> => ({
         "mn-bg": withAlpha(church, 0.11),
         "mn-bg-hover": withAlpha(church, 0.18),
         "mn-bg-own": withAlpha(church, 0.16),
-        "announcement-pill": withAlpha(church, 0.13),
         "announcement-ring": toHex(mixSrgb(church, parseColor(line)!, 0.40)),
         "thread-unread-line": toHex(mixSrgb(church, parseColor(line)!, 0.45)),
         "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06))

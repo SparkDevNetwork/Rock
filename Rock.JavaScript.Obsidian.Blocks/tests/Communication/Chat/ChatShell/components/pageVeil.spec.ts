@@ -95,8 +95,9 @@ describe("the page veil", () => {
         // each block runs to the brace at the line's start that closes it
         const reduced = Array.from(sheet.matchAll(/@media \(prefers-reduced-motion: reduce\)\s*\{([\s\S]*?)\r?\n\}/g)).map(m => m[1]);
 
-        // the dot pulses through the loop stop, which reduced motion sets to none, so the pulse never runs
-        expect(sheet).toMatch(/\n\.chat-live-dot\s*\{[^}]*animation: var\(--chat-loop-stop, chat-pulse\) /);
+        // the shared dot pulses through the loop stop, which reduced motion sets to none, so the pulse never runs
+        const dot = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/dot.partial.obs"), "utf8");
+        expect(dot).toMatch(/\n\.chat-dot\.is-pulse\s*\{[^}]*animation: var\(--chat-loop-stop, chat-pulse\) /);
         expect(reduced.some(block => /\.chat-shell\s*\{[^}]*--chat-loop-stop:\s*none;/.test(block))).toBe(true);
     });
 

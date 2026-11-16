@@ -82,7 +82,6 @@
     --chat-mn-bg: var(--chat-mn-bg-light, rgba(255, 121, 29, .11));
     --chat-mn-bg-hover: var(--chat-mn-bg-hover-light, rgba(255, 121, 29, .18));
     --chat-mn-bg-own: var(--chat-mn-bg-own-light, rgba(255, 121, 29, .16));
-    --chat-announcement-pill: var(--chat-announcement-pill-light, rgba(255, 121, 29, .13));
     --chat-announcement-ring: var(--chat-announcement-ring-light, #EFB999);
     --chat-row-announcement: var(--chat-row-announcement-light, #FDF5F0);
     /* An unread thread's border, the church color 45 percent over the line. */
@@ -152,15 +151,14 @@
 
     /*
         The type scale, by job: a badge's count, a timestamp or secondary line, the interface's own
-        labels, a message's text, a title, an empty state's line. A face's initials are not on it;
-        they are sized from the face. Emoji drawn as pictures have their own steps.
+        labels, a message's text and an empty state's line, a title. A face's initials are not on
+        it; they are sized from the face. Emoji drawn as pictures have their own steps.
     */
     --chat-fs-badge: 11px;
     --chat-fs-small: 12px;
     --chat-fs-ui: 13px;
     --chat-fs-body: 14.5px;
     --chat-fs-title: 16px;
-    --chat-fs-display: 20px;
     --chat-emoji-sm: 16px;
     --chat-emoji-md: 22px;
     --chat-emoji-lg: 28px;
@@ -314,7 +312,6 @@
     --chat-mn-bg: var(--chat-mn-bg-dark, rgba(255, 121, 29, .11));
     --chat-mn-bg-hover: var(--chat-mn-bg-hover-dark, rgba(255, 121, 29, .18));
     --chat-mn-bg-own: var(--chat-mn-bg-own-dark, rgba(255, 121, 29, .16));
-    --chat-announcement-pill: var(--chat-announcement-pill-dark, rgba(255, 121, 29, .13));
     --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
     --chat-thread-unread-line: var(--chat-thread-unread-line-dark, #854C27);
     --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
@@ -393,7 +390,6 @@
         --chat-mn-bg: var(--chat-mn-bg-dark, rgba(255, 121, 29, .11));
         --chat-mn-bg-hover: var(--chat-mn-bg-hover-dark, rgba(255, 121, 29, .18));
         --chat-mn-bg-own: var(--chat-mn-bg-own-dark, rgba(255, 121, 29, .16));
-        --chat-announcement-pill: var(--chat-announcement-pill-dark, rgba(255, 121, 29, .13));
         --chat-announcement-ring: var(--chat-announcement-ring-dark, #7A4828);
         --chat-thread-unread-line: var(--chat-thread-unread-line-dark, #854C27);
         --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
@@ -945,96 +941,6 @@
     box-shadow: 0 0 0 2px var(--chat-av-ring, var(--chat-surface));
 }
 
-/* A label pill, such as Leader. */
-.chat-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    height: 18px;
-    padding: 0 7px;
-    font-size: var(--chat-fs-badge);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    white-space: nowrap;
-    background: var(--chat-pill-bg);
-    border-radius: var(--chat-r-inset);
-}
-
-.chat-pill.is-announcement {
-    color: var(--chat-brand-ink);
-    background: var(--chat-announcement-pill);
-}
-
-/*
-    The live dot, which pulses while a connection's state is being worked out: the header's
-    "Reconnecting…" and "Catching up…", and a start's status line on the first load's veil. Warning
-    by default, info where nothing is wrong yet. One rule for every place it is drawn.
-*/
-.chat-live-dot {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 6px;
-    vertical-align: 1px;
-    background: var(--chat-warning);
-    border-radius: var(--chat-r-full);
-    animation: var(--chat-loop-stop, chat-pulse) var(--chat-d-pulse) var(--chat-ease-state) infinite;
-}
-
-.chat-live-dot.is-info {
-    background: var(--chat-info);
-}
-
-
-
-/*
-    The bottom sheet's frame, shared by what is drawn as one on a phone: the message actions and the
-    message box's add menu. A scrim over the whole chat, the sheet held to its bottom edge and clipped
-    there as it slides, its rows a finger's size.
-*/
-.chat-sheet-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: var(--chat-z-scrim);
-    display: flex;
-    align-items: flex-end;
-    overflow: hidden;
-    background: var(--chat-scrim);
-    animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-sheet-scrim.is-leaving {
-    pointer-events: none;
-    animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
-}
-
-/* Slides up from below the edge, and back down faster as it goes; the safe area keeps it off a phone's home bar. */
-.chat-sheet {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    z-index: var(--chat-z-sheet);
-    padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
-    background: var(--chat-raised);
-    border-radius: var(--chat-r-surface) var(--chat-r-surface) 0 0;
-    box-shadow: var(--chat-shadow-pop);
-    animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
-}
-
-.chat-sheet.is-leaving,
-.chat-sheet-scrim.is-leaving .chat-sheet {
-    animation: chat-slide-out var(--chat-d-sheet-out) var(--chat-ease-out) forwards;
-}
-
-.chat-sheet-grab {
-    width: 40px;
-    height: 5px;
-    margin: 2px auto 12px;
-    background: var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-}
-
 /* A choice at a finger's size: 48px tall, in the title size. */
 .chat-sheet-item {
     display: flex;
@@ -1426,96 +1332,6 @@
     border-radius: var(--chat-r-control);
 }
 
-.chat-shell .chat-ls-err .chat-ls-btn {
-    flex: none;
-    height: 26px;
-    margin-left: auto;
-    color: var(--chat-text);
-}
-
-/* A small outlined button. */
-.chat-shell .chat-ls-btn {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    height: 28px;
-    padding: 0 11px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-shell .chat-ls-btn:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-shell .chat-ls-empty {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    padding: 52px 28px 24px;
-    text-align: center;
-}
-
-.chat-shell .chat-ls-empty-ic {
-    --chat-ic-size: 22px;
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-bottom: 6px;
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-shell .chat-ls-empty b {
-    font-size: var(--chat-fs-body);
-}
-
-.chat-shell .chat-ls-empty > span {
-    max-width: 32ch;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-shell .chat-ls-empty .chat-ls-btn {
-    margin-top: 10px;
-}
-
-.chat-shell .chat-ls-skel {
-    display: grid;
-    grid-template-columns: 32px minmax(0, 1fr);
-    column-gap: 10px;
-    padding: 11px 10px;
-}
-
-/* The fill and pulse are the sheet's one skeleton, the history's; only the shape is the list's own. */
-.chat-shell .chat-ls-sk {
-    display: block;
-    border-radius: var(--chat-r-inset);
-}
-
-.chat-shell .chat-ls-sk-av {
-    width: 32px;
-    height: 32px;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-shell .chat-ls-sk-lines i {
-    height: 9px;
-    margin: 4px 0 9px;
-}
-
-.chat-shell .chat-ls-sk-lines i:last-child {
-    margin-bottom: 0;
-}
-
 /*
     The people picker, shared by New message's To field and Add people's inline search: chips for
     the people chosen, a field to type in, and a list of who matches. Under the root, so each rule
@@ -1788,26 +1604,4 @@
     .chat-shell .chat-pk-list {
         animation: none;
     }
-}
-
-/*
-    The members panel's search pill: its filter, and the last leader's "Find a member" in the
-    remove dialog. Under the root, so each rule outranks the base focus.
-*/
-.chat-shell .chat-mb-search {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    height: 36px;
-    padding: 0 12px;
-    margin: 0;
-    font-weight: 400;
-    color: var(--chat-muted);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-}
-
-.chat-shell .chat-mb-search input {
-    font-size: var(--chat-fs-ui);
 }

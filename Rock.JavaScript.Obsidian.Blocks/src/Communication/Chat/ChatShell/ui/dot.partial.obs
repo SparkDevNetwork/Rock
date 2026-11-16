@@ -30,9 +30,9 @@
     background: var(--chat-info);
 }
 
-/* Waiting on something; under reduced motion the set's pulse is drawn still, the words beside it saying what is happening. */
+/* Waiting on something: a pulse through the loop stop, so under reduced motion it does not run and the words beside it say what is happening. */
 .chat-dot.is-pulse {
-    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: var(--chat-loop-stop, chat-pulse) var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 /* Over a button or a pill: cut out of what it sits on, by the ring every host of a face sets. */
