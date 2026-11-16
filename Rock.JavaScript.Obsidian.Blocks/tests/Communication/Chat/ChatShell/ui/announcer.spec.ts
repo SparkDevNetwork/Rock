@@ -19,7 +19,7 @@
 // talk over each other, and it speaks from inside an open modal surface, which a screen reader
 // would otherwise keep it out of.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { defineComponent, h, nextTick, ref } from "vue";
+import { defineComponent, h, nextTick, Ref, ref } from "vue";
 import { Announcer, provideAnnouncer, useAnnouncer, useAnnouncerModal } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
 
 async function settle(): Promise<void> {
@@ -41,8 +41,8 @@ describe("the announcer", () => {
         document.body.innerHTML = "";
     });
 
-    /** A shell root that provides the announcer, and a part under it that reads it. */
-    function shell(withModal = false): void {
+    /** A shell root that provides the announcer, and a part under it that reads it; returns whether its modal is open. */
+    function shell(withModal = false): Ref<boolean> {
         const isModalOpen = ref(withModal);
         const Part = defineComponent({
             setup() {
@@ -60,6 +60,11 @@ describe("the announcer", () => {
             }
         });
         wrapper = mount(Root, { attachTo: document.body });
+        return isModalOpen;
+    }
+
+    function rootSays(politeness: "polite" | "assertive" = "polite"): string {
+        return document.querySelector(`[data-testid='root'] > [aria-live='${politeness}']`)?.textContent ?? "";
     }
 
     it("speaks politely from one region in the chat's root", async () => {
@@ -109,6 +114,55 @@ describe("the announcer", () => {
         expect(spoken()).toEqual([]);
         await settle();
         expect(spoken()).toEqual(["No matches"]);
+    });
+
+    // The same words again are written a moment after they are cleared; anything newer said in
+    // that moment is what the region ends on.
+    it("never lets the same words, waiting to be said again, overwrite newer words said meanwhile", async () => {
+        shell();
+        await settle();
+        announcer.announce("No matches");
+        await settle();
+        announcer.announce("No matches");
+        announcer.announce("3 matches");
+        await settle();
+        expect(spoken()).toEqual(["3 matches"]);
+    });
+
+    // A choice that closes a dialog, as Leave does, is said as the dialog goes: its words would go
+    // with the dialog's regions unheard, so they are said again in the voice beneath.
+    it("says again in the voice beneath what a modal surface was given to say as it closed", async () => {
+        const isModalOpen = shell(true);
+        await settle();
+        announcer.announce("You left Volunteers");
+        announcer.announce("Couldn't save", "assertive");
+        isModalOpen.value = false;
+        await settle();
+        expect(rootSays()).toBe("You left Volunteers");
+        expect(rootSays("assertive")).toBe("Couldn't save");
+    });
+
+    it("says again in the voice beneath the same words a modal surface was about to say again as it closed", async () => {
+        const isModalOpen = shell(true);
+        await settle();
+        announcer.announce("2 people found");
+        await settle();
+        announcer.announce("2 people found");
+        isModalOpen.value = false;
+        await settle();
+        expect(rootSays()).toBe("2 people found");
+    });
+
+    // Words a screen reader was already given are not repeated as the surface goes, which would
+    // say a search's count again over every close.
+    it("does not say again, as a modal surface closes, words it said before", async () => {
+        const isModalOpen = shell(true);
+        await settle();
+        announcer.announce("2 people found");
+        await settle();
+        isModalOpen.value = false;
+        await settle();
+        expect(rootSays()).toBe("");
     });
 
     it("speaks from inside an open modal surface, and from the root again once it closes", async () => {
