@@ -876,7 +876,7 @@ describe("day sections", () => {
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const pill = /\.chat-day-pill\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
         const float = /\.chat-day-float\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
-        const mask = /\.chat-feed-loading\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const mask = /\.chat-feed-skeleton\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(pill).not.toMatch(/position:\s*sticky/);
         expect(float).toMatch(/top:\s*var\(--chat-day-top\)/);
@@ -2150,7 +2150,7 @@ describe("the history skeleton", () => {
         expect(wrapper.find("[data-testid='history-skeleton']").exists()).toBe(false);
         // no exit of its own: nothing in the feed's styles fades it out
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
-        expect(source).not.toMatch(/skeletonDelayMs|chat-feed-skeleton|chat-skeleton/);
+        expect(source).not.toMatch(/skeletonDelayMs|chat-skeleton-|is-leaving|is-gone/);
     });
 
     test("stands over the feed rather than in it, so the first page lands under it in place", async () => {

@@ -164,7 +164,7 @@
             jumps when the page lands: the final frame of a room still loading, drawn at once and
             still. Over the feed rather than in it, so the first page lands under it in place.
         -->
-        <div v-if="isSkeletonShown" class="chat-feed-loading" data-testid="history-skeleton" aria-hidden="true">
+        <div v-if="isSkeletonShown" class="chat-feed-skeleton" data-testid="history-skeleton" aria-hidden="true">
             <template v-if="layout === 'community'">
                 <!-- Every other row shorter, so the column reads as messages rather than stripes. -->
                 <Skeleton v-for="index in 5" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" data-testid="skeleton-row" />
@@ -258,7 +258,7 @@
     rather than into them; the history skeleton drawn over the feed fades at the same edges.
 */
 .chat-feed,
-.chat-feed-loading {
+.chat-feed-skeleton {
     -webkit-mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
     mask-image: linear-gradient(to bottom, transparent 0, transparent var(--chat-day-bottom), var(--chat-mask-solid) var(--chat-feed-top-mask), var(--chat-mask-solid) calc(100% - var(--chat-feed-bottom-mask)), transparent 100%);
 }
@@ -547,7 +547,7 @@
     feed's own padding; on a feed too short for them, the top rows are cut off rather than drawn
     over the header.
 */
-.chat-feed-loading {
+.chat-feed-skeleton {
     position: absolute;
     inset: 0;
     z-index: 1;
@@ -560,7 +560,7 @@
     pointer-events: none;
 }
 
-.is-community .chat-feed-loading {
+.is-community .chat-feed-skeleton {
     gap: 18px;
 }
 
