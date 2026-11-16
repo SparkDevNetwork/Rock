@@ -2176,6 +2176,39 @@ describe("the history skeleton", () => {
     });
 });
 
+// Older messages load as the reader scrolls up to the top, as a thread's do, with no button to
+// press; the page lands above without moving what the reader is looking at.
+describe("loading older messages", () => {
+    test("asks for them once as the top of the feed comes into view, with no button to press", async () => {
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }) });
+        await nextTick();
+
+        expect(wrapper.text()).not.toContain("Show older messages");
+        const top = wrapper.get("[data-testid='feed-older']").element;
+        FakeIntersectionObserver.report(top, true);
+        FakeIntersectionObserver.report(top, true);
+
+        expect(wrapper.emitted("loadOlder")).toHaveLength(1);
+    });
+
+    test("an older page landing above keeps the reader where they were", async () => {
+        const state = timeline([message(5, anna, at(14, 50)), message(6, anna, at(14, 51))], { hasMore: true });
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 0, 2000, 500);
+        let height = 2000;
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => height });
+        layContent(wrapper, () => height);
+
+        state.messages.unshift(message(3, anna, at(14, 40)), message(4, anna, at(14, 45)));
+        height = 2600;
+        await nextTick();
+        await nextTick();
+
+        expect(scroller.scrollTop).toBe(600);
+    });
+});
+
 describe("the channel intro", () => {
     const volunteers: ChannelFacts = {
         channel_id: "c1",
