@@ -28,6 +28,7 @@ using Rock.Data;
 using Rock.Enums.Cms;
 using Rock.Lava;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
 using Rock.Transactions;
 using Rock.Utility;
@@ -1221,8 +1222,34 @@ Guid - ContentChannelItem Guid";
                 .ToList();
         }
 
+        /// <summary>
+        /// Determines if the content channel item is approved to be displayed.
+        /// This checks that the current person is allowed to view the item, the
+        /// approval state of the item and that it is part of the configured
+        /// channel (if there is one).
+        /// </summary>
+        /// <param name="contentChannelItem">The item to be checked.</param>
+        /// <returns><c>true</c> if the item is okay to display; otherwise <c>false</c>.</returns>
         private bool ItemIsApprovedToDisplay( ContentChannelItem contentChannelItem )
         {
+            /*
+                11/16/2026 - MSE
+
+                The item must be viewable by the current person. Without this check an anonymous
+                visitor could read any approved item, including its title, page title and interaction
+                token, even when the item or its channel denies View. GetBreadCrumbs calls this method
+                on a block that was created without a request context, so RequestContext is null there
+                and the ambient request context is used instead. The output and page title caches are
+                read after this check, so one check here also protects the cached output.
+
+                Reason: Require View permission on the content channel item before it is shown.
+            */
+            var currentPerson = RequestContext?.CurrentPerson ?? RockRequestContextAccessor.Current?.CurrentPerson;
+            if ( !contentChannelItem.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
             if ( contentChannelItem.ContentChannel.RequiresApproval && !GetApprovedStatuses().Contains( contentChannelItem.Status ) )
             {
                 return false;
