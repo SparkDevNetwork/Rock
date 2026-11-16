@@ -187,8 +187,10 @@ export type ProfileCardState = {
 export const profileDetailsWait = 150;
 
 /**
- * A sentence for screen readers as a room's details last drew it. The rooms speak through the
- * chat's announcer now; this stays only while the details still take one, and goes with that input.
+ * A sentence for screen readers as a room's details and the person's settings last drew one. The
+ * rooms and the settings speak through the chat's announcer now, which speaks from inside an open
+ * dialog, so the block passes neither view one; this stays only while those views still take the
+ * input, and goes with it.
  */
 export type RoomAnnouncement = {
     text: string;
