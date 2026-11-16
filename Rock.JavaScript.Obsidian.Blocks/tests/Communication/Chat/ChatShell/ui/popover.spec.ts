@@ -23,6 +23,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, PropType, ref } from "vue";
 import { PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
 import Popover from "../../../../../src/Communication/Chat/ChatShell/ui/popoverSurface.partial.obs";
+import { ruleOf, styleOf } from "./partStyle";
 
 /** A button that opens a popover holding two buttons, or none, and a button outside it. */
 const Host = defineComponent({
@@ -299,7 +300,7 @@ describe("the popover surface", () => {
     });
 
     const SurfaceHost = defineComponent({
-        props: { isSheet: { type: Boolean, default: false } },
+        props: { isSheet: { type: Boolean, default: false }, isPill: { type: Boolean, default: false } },
         setup(props, { expose }) {
             const anchor = ref<HTMLElement>();
             const floating = ref<HTMLElement>();
@@ -307,9 +308,24 @@ describe("the popover surface", () => {
             expose({ pop });
             return () => [
                 h("button", { ref: anchor, "data-testid": "anchor" }, "open"),
-                h(Popover, { popover: pop, label: "Things" }, () => h("button", { "data-testid": "inside" }, "inside"))
+                h(Popover, { popover: pop, label: "Things", isPill: props.isPill }, () => h("button", { "data-testid": "inside" }, "inside"))
             ];
         }
+    });
+
+    // The emoji tray's quick reactions sit on a pill as wide as they are, the surface's own shape.
+    it("draws a pill when asked, with the pill's corners, and the surface's own corners otherwise", async () => {
+        const wrapper = mount(SurfaceHost, { props: { isPill: true }, attachTo: document.body });
+        const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;
+        await pop.open();
+        const surface = find("popover");
+
+        expect(surface.classList.contains("is-pill")).toBe(true);
+        expect(surface.hasAttribute("ispill")).toBe(false);
+        expect(ruleOf(styleOf("popoverSurface.partial.obs"), ".chat-popover.is-pill")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
+        await wrapper.setProps({ isPill: false });
+        expect(surface.classList.contains("is-pill")).toBe(false);
+        wrapper.unmount();
     });
 
     it("draws the surface beside its anchor, named for a screen reader, only while open", async () => {
