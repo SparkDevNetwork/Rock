@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- A trigger of the screen's own, such as a face or a button with words, in the icon button's place. -->
     <span v-if="$slots.trigger" ref="triggerHost" class="chat-menu-trigger">
+        <!-- A trigger of the screen's own, such as a face or a button with words, in the icon button's place. -->
         <slot name="trigger" :attrs="triggerAttrs" :isOpen="isOpen"></slot>
     </span>
     <IconButton v-else

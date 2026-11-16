@@ -42,15 +42,15 @@ describe("the dialog's place", () => {
     test("stands centred unless told otherwise", () => {
         const scrim = draw().get("[data-testid='dialog-scrim']");
 
-        expect(scrim.classes()).not.toContain("is-top");
+        expect(scrim.classes()).not.toContain("is-placed-top");
         expect(ruleOf(styleOf("dialog.partial.obs"), ".chat-modal")).toMatch(/place-items:\s*center/);
     });
 
     test("anchored at the top, keeps its top edge where it opened however tall its body grows", () => {
         const scrim = draw({ placement: "top" }).get("[data-testid='dialog-scrim']");
 
-        expect(scrim.classes()).toContain("is-top");
-        expect(ruleOf(styleOf("dialog.partial.obs"), ".chat-modal.is-top")).toMatch(/place-items:\s*start center/);
+        expect(scrim.classes()).toContain("is-placed-top");
+        expect(ruleOf(styleOf("dialog.partial.obs"), ".chat-modal.is-placed-top")).toMatch(/place-items:\s*start center/);
     });
 
     test("rises from the bottom as a sheet on a phone wherever it would stand on a wider screen", () => {
@@ -62,6 +62,6 @@ describe("the dialog's place", () => {
         const scrim = wrapper.get("[data-testid='dialog-scrim']");
 
         expect(scrim.classes()).toContain("is-sheet");
-        expect(scrim.classes()).not.toContain("is-top");
+        expect(scrim.classes()).not.toContain("is-placed-top");
     });
 });

@@ -3,7 +3,7 @@
     <Transition leave-active-class="is-leaving">
         <div v-if="isOpen"
              class="chat-modal"
-             :class="{ 'is-sheet': isSheet, 'is-top': placement === 'top' && !isSheet }"
+             :class="{ 'is-sheet': isSheet, 'is-placed-top': placement === 'top' && !isSheet }"
              data-testid="dialog-scrim"
              @mousedown.self="onScrimDown"
              @click.self="onScrimClick">
@@ -70,7 +70,7 @@
     Anchored at the top, a header's height down: a body that grows or shrinks while open, as a
     note coming and going, moves only the dialog's foot, never its title.
 */
-.chat-modal.is-top {
+.chat-modal.is-placed-top {
     place-items: start center;
     padding-top: 64px;
 }
