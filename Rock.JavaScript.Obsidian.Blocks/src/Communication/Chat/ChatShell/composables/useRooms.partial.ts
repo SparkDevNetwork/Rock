@@ -17,8 +17,8 @@
 // Rooms: Browse channels, the facts of each room opened, Join, and the row a previewed room keeps
 // in the sidebar.
 //
-// The directory's search waits for a pause in typing and drops an answer older than the newest
-// query, so a slow answer never overwrites a newer one; a filter asks again at once. A room's
+// The directory's search is the shared search while typing: one pause after the last keystroke,
+// the newest ask's answer alone drawn, its next pages included; a filter asks again at once. A room's
 // facts are read on every open and again on that room's membership change, and only the newest
 // read is kept. Join goes through Rock's door. A join Rock made that the platform has not taken
 // yet is pending until a sidebar reload shows the room as a member, since that reload is the
@@ -36,13 +36,12 @@ import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication
 import { failedWords, isOfflineFailure, offlineWords } from "../errors.partial";
 import { ChannelStore, startedTitle } from "../stores/channelStore.partial";
 import { ChannelFacts, ChatError, ChatPerson, DirectoryPage, DirectoryRow, PersonProfile, SidebarRow } from "../types.partial";
+import type { Politeness } from "../ui/announcer.partial";
+import { useLatestSearch } from "./useLatestSearch.partial";
 import type { MemberRights } from "./useMembers.partial";
 import { ActionNotice } from "./useMessageActions.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { JoinResult } from "./useSend.partial";
-
-/** How long the directory waits after the last keystroke before it searches, as the design sets it. */
-export const directorySearchPause = 200;
 
 /** The sentence a refusal shows when the door gave none of its own, as the door words its refusal. */
 const refusedSentence = "You can't join this channel.";
@@ -83,6 +82,9 @@ export type DirectoryRequest = {
 
 /** A directory page, or the refusal. */
 export type DirectoryPageResult = { ok: true, page: DirectoryPage } | { ok: false, error: ChatError };
+
+/** A directory page with the request it answers, so each answer is read against its own ask. */
+type DirectoryAnswer = { asked: DirectoryRequest, result: DirectoryPageResult };
 
 /** A room's facts, or the refusal. */
 export type ChannelFactsResult = { ok: true, facts: ChannelFacts } | { ok: false, error: ChatError };
@@ -184,7 +186,10 @@ export type ProfileCardState = {
  */
 export const profileDetailsWait = 150;
 
-/** A sentence for screen readers; the count moves on with each, so the same words twice are read twice. */
+/**
+ * A sentence for screen readers as a room's details last drew it. The rooms speak through the
+ * chat's announcer now; this stays only while the details still take one, and goes with that input.
+ */
 export type RoomAnnouncement = {
     text: string;
     isAssertive: boolean;
@@ -212,7 +217,6 @@ export type RoomsState = {
 
     /** The profile card open now, or null; drawn only once its person is read. */
     card: ProfileCardState | null;
-    announcement: RoomAnnouncement | null;
 };
 
 /** What the rooms reach outside themselves. */
@@ -245,7 +249,7 @@ export type RoomsDependencies = {
     openChannel: (channelId: string) => void;
 
     /** The sidebar, which a previewed room's stand-in row joins. */
-    channels: Pick<ChannelStore, "rows" | "listed" | "previewChannelId" | "setPreview">;
+    channels: Pick<ChannelStore, "rowOf" | "listed" | "previewChannelId" | "setPreview">;
 
     /** Fetches the sidebar again, for a title only the platform writes. */
     reloadSidebar: () => void;
@@ -264,6 +268,9 @@ export type RoomsDependencies = {
 
     /** Shows a toast that is not a failure. */
     notify: (notice: ActionNotice) => void;
+
+    /** Says a sentence to a screen reader in the chat's one voice; a refusal assertively. */
+    announce: (text: string, politeness?: Politeness) => void;
 };
 
 /** The rooms a shell holds. */
@@ -471,16 +478,20 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         leaves: {},
         renames: {},
         canRename: {},
-        card: null,
-        announcement: null
+        card: null
     }) as RoomsState;
 
     let isStopped = false;
 
-    // Each query, filter, open, close and stop moves this on, so a page asked for an older
-    // directory never lands in the one on screen.
-    let directoryGeneration = 0;
-    let searchTimer: ReturnType<typeof setTimeout> | null = null;
+    // The directory's search and its pages: the shared pause after typing, a filter or an open
+    // asked at once, and an answer to any but the newest ask dropped, so a page asked for an older
+    // directory never lands in the one on screen. Its query is read from the directory itself.
+    const search = useLatestSearch<DirectoryAnswer>((_query, _signal, page) => askDirectory(page), {
+        onAnswer: (answer, _query, page) => land(answer, page)
+    });
+
+    // The newest directory ask, which a retry or a next page waits on before it is done.
+    let lastAsk: Promise<unknown> = Promise.resolve();
 
     // Each room's newest facts read, so an older read answering last is dropped.
     const factsGeneration = new Map<string, number>();
@@ -489,8 +500,6 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     // changed: Rock pushes a name on after its door answers, so until then a sidebar load or a
     // facts read brings the old name back.
     const savedNames = new Map<string, string>();
-
-    let announcements = 0;
 
     // Each card opened or closed moves this on, so a person read for a card no longer open never lands.
     let cardGeneration = 0;
@@ -507,11 +516,6 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     // Each ask of Rock moves this on, so only the newest is drawn or kept: after quick changes of
     // the person's own switch, an older answer arriving last would show what they no longer chose.
     let rockAsk = 0;
-
-    /** Puts a sentence in the live region. */
-    function announce(text: string, isAssertive = false): void {
-        state.announcement = { text, isAssertive, count: ++announcements };
-    }
 
     /** The card and a member's Message share the platform's current profile and messaging rights. */
     async function readPerson(personAliasGuid: string, channelId: string): Promise<PersonProfile | null> {
@@ -588,24 +592,38 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         return asked.notJoined ? "allJoined" : "none";
     }
 
-    /** Drops a pause still running, so no search is asked for a query already replaced. */
-    function cancelPause(): void {
-        if (searchTimer !== null) {
-            clearTimeout(searchTimer);
-            searchTimer = null;
-        }
+    /**
+     * Asks a page of what the directory shows now: the first, or the one after the last row held.
+     * A call that throws is answered as a failure, so the directory never waits for it forever.
+     */
+    function askDirectory(page: number): Promise<DirectoryAnswer> {
+        const last = state.directory.rows[state.directory.rows.length - 1];
+        const asked = request(page > 1 && last ? last.channel_id : null);
+        const answer = dependencies.listDirectory(asked)
+            .catch((): DirectoryPageResult => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }))
+            .then((result): DirectoryAnswer => ({ asked, result }));
+        lastAsk = answer;
+        return answer;
     }
 
-    /** Asks the first page for what the directory shows now, if it is still the newest. */
-    async function fetchFirst(generation: number): Promise<void> {
-        searchTimer = null;
-        const asked = request(null);
-        const result = await dependencies.listDirectory(asked);
-        if (isStopped || generation !== directoryGeneration) {
+    /** Draws the newest ask's answer: a first page in place of the rows, a next page after them. */
+    function land({ asked, result }: DirectoryAnswer, page: number): void {
+        const directory = state.directory;
+        if (page > 1) {
+            directory.isLoadingMore = false;
+            if (!result.ok) {
+                directory.moreError = result.error;
+                return;
+            }
+
+            // a row already held, as one renamed between the pages, is not drawn twice
+            const held = new Set(directory.rows.map(row => row.channel_id));
+            directory.rows.push(...result.page.channels.filter(row => !held.has(row.channel_id)));
+            directory.total = result.page.total;
+            directory.hasMore = result.page.channels.length >= asked.limit;
             return;
         }
 
-        const directory = state.directory;
         directory.isLoading = false;
         directory.isSearching = false;
         if (!result.ok) {
@@ -623,7 +641,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         if (asked.query !== null) {
             const count = result.page.total;
-            announce(count === 0 ? "No channels found" : `${count} ${count === 1 ? "channel" : "channels"} found`);
+            dependencies.announce(count === 0 ? "No channels found" : `${count} ${count === 1 ? "channel" : "channels"} found`);
         }
     }
 
@@ -633,41 +651,23 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             return;
         }
 
-        cancelPause();
         state.directory.isSearching = true;
         state.directory.isLoadingMore = false;
-        void fetchFirst(++directoryGeneration);
+        search.set(state.directory.query, { isAtOnce: true });
     }
 
     /** Asks the page after the last row held, unless the list has ended or another ask is on its way. */
     async function fetchMore(): Promise<void> {
         const directory = state.directory;
-        const last = directory.rows[directory.rows.length - 1];
-        if (isStopped || !directory.isOpen || !directory.hasMore || !last
-            || directory.isLoadingMore || directory.isLoading || directory.isSearching) {
+        if (isStopped || !directory.isOpen || !directory.hasMore || directory.rows.length === 0
+            || directory.isLoadingMore || search.busy) {
             return;
         }
 
         directory.isLoadingMore = true;
         directory.moreError = null;
-        const generation = directoryGeneration;
-        const asked = request(last.channel_id);
-        const result = await dependencies.listDirectory(asked);
-        if (isStopped || generation !== directoryGeneration) {
-            return;
-        }
-
-        directory.isLoadingMore = false;
-        if (!result.ok) {
-            directory.moreError = result.error;
-            return;
-        }
-
-        // a row already held, as one renamed between the pages, is not drawn twice
-        const held = new Set(directory.rows.map(row => row.channel_id));
-        directory.rows.push(...result.page.channels.filter(row => !held.has(row.channel_id)));
-        directory.total = result.page.total;
-        directory.hasMore = result.page.channels.length >= asked.limit;
+        search.more();
+        await lastAsk;
     }
 
     // #endregion The directory
@@ -693,7 +693,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         // Only the room still on screen is previewed; one left meanwhile is not the person's to see
         // in the sidebar. A direct message with no row is one nobody has written in yet.
-        const held = channels.rows.find(row => row.channel_id === channelId);
+        const held = channels.rowOf(channelId);
         const isPreview = channels.previewChannelId === channelId;
         const isDirect = result.facts.channel_type === "dm";
         if (dependencies.activeChannelId() === channelId && (isPreview || (!held && (!result.facts.is_member || isDirect)))) {
@@ -709,14 +709,13 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     function nameOf(channelId: string): string {
         return state.facts[channelId]?.name
             ?? state.directory.rows.find(row => row.channel_id === channelId)?.name
-            ?? channels.rows.find(row => row.channel_id === channelId)?.name
+            ?? channels.rowOf(channelId)?.name
             ?? "this channel";
     }
 
     /** Whether the person is in a room as far as this client knows. */
     function isMember(channelId: string): boolean {
-        const row = channels.rows.find(r => r.channel_id === channelId);
-        return state.facts[channelId]?.is_member === true || (!!row && row.is_member);
+        return state.facts[channelId]?.is_member === true || channels.rowOf(channelId)?.is_member === true;
     }
 
     /**
@@ -726,7 +725,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
     function failJoin(channelId: string, kind: "offline" | "failed"): void {
         const text = kind === "offline" ? offlineWords.alone : joinFailed.alone;
         state.joins[channelId] = { kind: "failed", text };
-        announce(text);
+        dependencies.announce(text);
     }
 
     /** The room is joined and the platform holds it: every copy of it here says so. */
@@ -744,14 +743,14 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         }
 
         // The stand-in turns member, so the composer enters before the reload brings the real row.
-        const preview = channels.previewChannelId === channelId ? channels.rows.find(r => r.channel_id === channelId) : undefined;
+        const preview = channels.previewChannelId === channelId ? channels.rowOf(channelId) : undefined;
         if (preview) {
             channels.setPreview({ ...preview, is_member: true });
         }
 
         const name = nameOf(channelId);
         dependencies.notify({ code: "room.joined", text: `Joined ${name}`, icon: "check" });
-        announce(`You joined ${name}`);
+        dependencies.announce(`You joined ${name}`);
     }
 
     // #endregion Join
@@ -760,8 +759,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
     /** The room's title as the sidebar shows it, a group with no name by its people. */
     function titleOf(channelId: string): string {
-        const row = channels.rows.find(r => r.channel_id === channelId);
-        return row ? row.title : nameOf(channelId);
+        return channels.rowOf(channelId)?.title ?? nameOf(channelId);
     }
 
     /**
@@ -786,7 +784,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
      */
     function showName(channelId: string, name: string, isOnPlatform: boolean): void {
         const facts = state.facts[channelId];
-        const row = channels.rows.find(r => r.channel_id === channelId);
+        const row = channels.rowOf(channelId);
         if (row) {
             row.name = name || null;
             if (name) {
@@ -865,7 +863,6 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 }
             }
 
-            cancelPause();
             Object.assign(state.directory, {
                 isOpen: true,
                 query: "",
@@ -881,12 +878,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 moreError: null,
                 emptyKind: null
             });
-            void fetchFirst(++directoryGeneration);
+            search.set("", { isAtOnce: true });
         },
 
         closeDirectory: (): void => {
-            cancelPause();
-            directoryGeneration++;
+            search.cancel();
             Object.assign(state.directory, { isOpen: false, isLoading: false, isSearching: false, isLoadingMore: false });
         },
 
@@ -895,14 +891,11 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
 
-            // Moved on as the person types, so an answer already on its way for the words before
-            // is dropped even while this pause runs.
+            // An answer already on its way for the words before is dropped even while the pause runs.
             state.directory.query = query;
             state.directory.isSearching = true;
             state.directory.isLoadingMore = false;
-            cancelPause();
-            const generation = ++directoryGeneration;
-            searchTimer = setTimeout(() => void fetchFirst(generation), directorySearchPause);
+            search.set(query);
         },
 
         clearQuery: (): void => {
@@ -937,10 +930,10 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
 
             if (state.directory.error) {
-                cancelPause();
                 state.directory.isLoading = state.directory.rows.length === 0;
                 state.directory.error = null;
-                await fetchFirst(++directoryGeneration);
+                search.set(state.directory.query, { isAtOnce: true });
+                await lastAsk;
             }
             else if (state.directory.moreError) {
                 await fetchMore();
@@ -968,13 +961,13 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             if (answer.code !== "ok") {
                 const text = answer.message || refusedSentence;
                 state.joins[channelId] = { kind: "refused", text };
-                announce(text, true);
+                dependencies.announce(text, "assertive");
                 return;
             }
 
             if (answer.isPending) {
                 state.joins[channelId] = { kind: "pending" };
-                announce(`You're in ${nameOf(channelId)}. It can take a few seconds to show up.`);
+                dependencies.announce(`You're in ${nameOf(channelId)}. It can take a few seconds to show up.`);
                 return;
             }
 
@@ -1013,7 +1006,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             if (answer.code !== "ok") {
                 const text = answer.message || leaveRefusedSentence;
                 state.leaves[channelId] = { kind: "refused", text };
-                announce(text, true);
+                dependencies.announce(text, "assertive");
                 return;
             }
 
@@ -1021,7 +1014,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // signal takes the room out of the sidebar when it follows.
             state.leaves[channelId] = { kind: "left" };
             dependencies.notify({ code: "room.left", text: `You left ${title}`, icon: "door" });
-            announce(`You left ${title}.`);
+            dependencies.announce(`You left ${title}.`);
 
             // Unless the person has gone to another conversation meanwhile.
             const now = dependencies.activeChannelId();
@@ -1056,7 +1049,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             if (answer.code !== "ok") {
                 const text = answer.message || renameRefusedSentence;
                 state.renames[channelId] = { kind: "refused", text };
-                announce(text, true);
+                dependencies.announce(text, "assertive");
                 return;
             }
 
@@ -1065,7 +1058,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             state.renames[channelId] = { kind: "idle" };
             savedNames.set(channelId, trimmed);
             showName(channelId, trimmed, !answer.isPending);
-            announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
+            dependencies.announce(trimmed === "" ? "Name removed. Showing everyone's names." : `Renamed to ${trimmed}.`);
         },
 
         renameOf: (channelId: string): RenameState => state.renames[channelId] ?? { kind: "idle" },
@@ -1204,7 +1197,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         previewRoom: (channelId: string): void => {
             const row = state.directory.rows.find(r => r.channel_id === channelId);
             // a room the person is in has its own row coming, and one with a row needs none
-            if (isStopped || !row || row.is_member || channels.rows.some(r => r.channel_id === channelId)) {
+            if (isStopped || !row || row.is_member || channels.rowOf(channelId)) {
                 return;
             }
 
@@ -1214,7 +1207,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         channelOpened: (channelId: string): Promise<void> => readFacts(channelId),
 
         conversationStarted: (channelId: string, people: ChatPerson[]): void => {
-            if (!isStopped && !channels.rows.some(row => row.channel_id === channelId)) {
+            if (!isStopped && !channels.rowOf(channelId)) {
                 channels.setPreview(startedRow(channelId, people));
             }
         },
@@ -1240,7 +1233,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             }
 
             for (const [channelId, join] of Object.entries(state.joins)) {
-                const row = channels.rows.find(r => r.channel_id === channelId);
+                const row = channels.rowOf(channelId);
                 if (join.kind === "pending" && row && row.is_member && channels.previewChannelId !== channelId) {
                     finishJoin(channelId);
                 }
@@ -1251,8 +1244,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
 
         stop: (): void => {
             isStopped = true;
-            cancelPause();
-            directoryGeneration++;
+            search.stop();
             cardGeneration++;
             cancelCardWait();
         }

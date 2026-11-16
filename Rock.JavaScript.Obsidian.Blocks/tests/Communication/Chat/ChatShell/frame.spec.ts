@@ -3503,7 +3503,7 @@ describe("Browse channels", () => {
         await settle();
 
         await w.get("[data-testid='directory-search']").setValue("vol");
-        await w.get("[data-testid='directory-show-not-joined']").trigger("click");
+        await w.get("[data-testid='directory-show-option'][data-value='notJoined']").trigger("click");
         await w.get("[data-testid='directory-join']").trigger("click");
 
         expect(roomsOf().setQuery).toHaveBeenCalledWith("vol");
@@ -3605,14 +3605,15 @@ describe("a channel the person has not joined", () => {
         expect(document.activeElement).toBe(search);
     });
 
+    // The rooms speak through the shell's announce, which the block gives the chat's one voice.
     test("speaks what the rooms say about a join while Browse channels is closed", async () => {
         const w = await openVolunteers();
         expect(w.find("[data-testid='main-view']").exists()).toBe(false);
 
-        (roomsOf().state as unknown as { announcement: unknown }).announcement = { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 };
+        mockShellOptions?.announce?.("You're in Volunteers. It can take a few seconds to show up.");
         await settle();
 
-        expect(w.get("[data-testid='frame-main'] [data-testid='join-bar-announcement']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
+        expect(w.get("[data-testid='announcer-polite']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
     });
 
     test("the composer's re-entry only fades in under reduced motion", () => {

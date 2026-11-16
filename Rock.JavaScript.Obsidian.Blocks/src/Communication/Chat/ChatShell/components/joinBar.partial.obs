@@ -29,13 +29,6 @@
                     data-testid="join-channel"
                     @click="onJoin">{{ drawn === 'joining' ? 'Joining' : 'Join channel' }}</Button>
         </div>
-
-        <!--
-            What a join from here says is spoken from here, since Browse channels, which speaks it
-            otherwise, is closed; a refusal assertively. Keyed by count, so the same words are read twice.
-        -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="join-bar-announcement"><span v-if="announcement && !announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
-        <span class="chat-sr-only" aria-live="assertive" data-testid="join-bar-alert"><span v-if="announcement && announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
     </div>
 </template>
 
@@ -124,7 +117,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
+    import { JoinState } from "../composables/useRooms.partial";
 
     const props = defineProps({
         /** The channel's name, written with no "#". */
@@ -137,12 +130,6 @@
         state: {
             type: Object as PropType<JoinState>,
             required: true
-        },
-
-        /** The rooms' latest sentence for screen readers, as Browse channels speaks it. */
-        announcement: {
-            type: Object as PropType<RoomAnnouncement | null>,
-            default: null
         },
 
         /** Whether the block is drawn one pane at a time, where the composer sits tighter. */

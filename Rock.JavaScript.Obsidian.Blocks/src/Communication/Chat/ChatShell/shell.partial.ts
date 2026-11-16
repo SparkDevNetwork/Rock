@@ -49,6 +49,7 @@ import { createPresence, Presence } from "./composables/usePresence.partial";
 import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rememberedChannelKey } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
+import type { Politeness } from "./ui/announcer.partial";
 import { createShellLive } from "./shellLive.partial";
 import { createShellSession, MintActionResult, tokenPerson } from "./shellSession.partial";
 import { createProblemReport, ProblemReporter } from "./problemReport.partial";
@@ -147,6 +148,9 @@ export type ShellOptions = {
 
     /** Shows a toast that is not a failure, such as a message deleted or text copied. */
     notify?: (notice: ActionNotice) => void;
+
+    /** Says a sentence to a screen reader in the chat's one voice; a shell with none says nothing aloud. */
+    announce?: (text: string, politeness?: Politeness) => void;
 
     /**
      * How a jump from the mentions inbox reaches the frame's views, which the shell cannot see:
@@ -782,7 +786,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         // a lost connection is told by its banner, and a door asked then would not be reached
         isOffline: () => state.connection !== null,
         isCampusLimited: options.areSharedChannelsFilteredByCampus ?? false,
-        notify: notice => options.notify?.(notice)
+        notify: notice => options.notify?.(notice),
+        announce: (text, politeness) => options.announce?.(text, politeness)
     });
     const members = createMembers({
         call,

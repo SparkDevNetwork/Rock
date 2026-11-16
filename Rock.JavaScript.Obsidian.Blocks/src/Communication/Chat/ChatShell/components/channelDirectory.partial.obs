@@ -192,10 +192,6 @@
                 </template>
             </div>
         </div>
-
-        <!-- Results and joins out of sight are spoken; a refused join assertively. Keyed by count, so the same words are read twice. -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="directory-announcement"><span v-if="announcement && !announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
-        <span class="chat-sr-only" aria-live="assertive" data-testid="directory-alert"><span v-if="announcement && announcement.isAssertive" :key="announcement.count">{{ announcement.text }}</span></span>
     </div>
 </template>
 
@@ -716,7 +712,7 @@
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
-    import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
+    import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState } from "../composables/useRooms.partial";
 
     // #region Types
 
@@ -764,12 +760,6 @@
         joins: {
             type: Object as PropType<Record<string, JoinState>>,
             default: () => ({})
-        },
-
-        /** The newest sentence for screen readers, or null. */
-        announcement: {
-            type: Object as PropType<RoomAnnouncement | null>,
-            default: null
         },
 
         /** The church's campuses, for the chips and for naming each room's campus. */

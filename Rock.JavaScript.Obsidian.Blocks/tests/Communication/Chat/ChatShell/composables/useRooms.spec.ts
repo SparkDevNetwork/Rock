@@ -33,7 +33,8 @@
 // ChatMembershipResultBag's {code, message, isPending, personAliasGuid}.
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
-import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, directorySearchPause, PersonProfileResult, profileDetailsWait } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { ChannelFactsResult, createRooms, DirectoryPageResult, DirectoryRequest, PersonProfileResult, profileDetailsWait } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { MemberRights } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
 import { JoinResult } from "../../../../../src/Communication/Chat/ChatShell/composables/useSend.partial";
 import { createChannelStore } from "../../../../../src/Communication/Chat/ChatShell/stores/channelStore.partial";
@@ -178,6 +179,12 @@ type Setup = {
     toasts: Array<{ code: string, text: string, icon: string }>;
     active: { value: string | null };
     offline: { value: boolean };
+
+    /** What the rooms said through the chat's announcer, in order. */
+    said: Array<{ text: string, isAssertive: boolean }>;
+
+    /** What the rooms last said through the chat's announcer, or null before they said anything. */
+    lastSaid: () => { text: string, isAssertive: boolean } | null;
 };
 
 function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } = {}): Setup {
@@ -194,6 +201,7 @@ function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } 
     const toasts: Setup["toasts"] = [];
     const active = { value: null as string | null };
     const offline = { value: false };
+    const said: Array<{ text: string, isAssertive: boolean }> = [];
     const channels = createChannelStore({ reloadSidebar: () => undefined, retryFirstLoad: () => undefined });
 
     const rooms = createRooms({
@@ -250,10 +258,13 @@ function setup(options: { isCampusLimited?: boolean, hasDetailsDoor?: boolean } 
         activeChannelId: () => active.value,
         isOffline: () => offline.value,
         isCampusLimited: options.isCampusLimited ?? false,
-        notify: notice => toasts.push(notice)
+        notify: notice => toasts.push(notice),
+        announce: (text, politeness) => said.push({ text, isAssertive: politeness === "assertive" })
     });
 
-    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, rightsCalls, detailsCalls, reloads, opened, toasts, active, offline };
+    const lastSaid = (): { text: string, isAssertive: boolean } | null => said[said.length - 1] ?? null;
+
+    return { rooms, channels, directoryCalls, channelCalls, joinCalls, leaveCalls, renameCalls, personCalls, rightsCalls, detailsCalls, reloads, opened, toasts, active, offline, said, lastSaid };
 }
 
 /** Opens Browse channels and answers its first page. */
@@ -296,18 +307,18 @@ describe("the directory", () => {
         await opened(s, rows(3));
 
         s.rooms.setQuery("vol");
-        jest.advanceTimersByTime(directorySearchPause - 1);
+        jest.advanceTimersByTime(searchPause - 1);
         expect(s.directoryCalls).toHaveLength(1);
         expect(s.rooms.state.directory.isSearching).toBe(true);
 
         s.rooms.setQuery("volu");
-        jest.advanceTimersByTime(directorySearchPause - 1);
+        jest.advanceTimersByTime(searchPause - 1);
         expect(s.directoryCalls).toHaveLength(1);
 
         jest.advanceTimersByTime(1);
         expect(s.directoryCalls).toHaveLength(2);
         expect(s.directoryCalls[1].request).toEqual(expect.objectContaining({ query: "volu", after: null }));
-        expect(directorySearchPause).toBe(200);
+        expect(searchPause).toBe(200);
     });
 
     test("an answer older than the newest query is dropped, whichever lands first", async () => {
@@ -315,9 +326,9 @@ describe("the directory", () => {
         await opened(s, rows(3));
 
         s.rooms.setQuery("v");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         s.rooms.setQuery("vo");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         const [, older, newer] = s.directoryCalls;
 
         // the older answer lands first and changes nothing
@@ -337,9 +348,9 @@ describe("the directory", () => {
         await opened(s, rows(3));
 
         s.rooms.setQuery("v");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         s.rooms.setQuery("vo");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         const [, older, newer] = s.directoryCalls;
 
         newer.answer.resolve(page([directoryRow(volunteers, "Volunteers")]));
@@ -355,7 +366,7 @@ describe("the directory", () => {
         await opened(s, rows(3));
 
         s.rooms.setQuery("v");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         s.rooms.setQuery("vx");
         s.directoryCalls[1].answer.resolve(page([directoryRow(volunteers, "Volunteers")]));
         await settle();
@@ -369,16 +380,16 @@ describe("the directory", () => {
         await opened(s, rows(3));
 
         s.rooms.setQuery("room");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         s.directoryCalls[1].answer.resolve(page(rows(2), 2));
         await settle();
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "2 channels found", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "2 channels found", isAssertive: false }));
 
         s.rooms.setQuery("zzz");
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         s.directoryCalls[2].answer.resolve(page([], 0));
         await settle();
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "No channels found" }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "No channels found" }));
     });
 
     test("clearing the search asks again at once, without the pause", async () => {
@@ -391,7 +402,7 @@ describe("the directory", () => {
         expect(s.rooms.state.directory.query).toBe("");
         expect(s.directoryCalls).toHaveLength(2);
         expect(s.directoryCalls[1].request.query).toBeNull();
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         expect(s.directoryCalls).toHaveLength(2);
     });
 
@@ -495,12 +506,12 @@ describe("the directory", () => {
         ["a search alone", (s: Setup): void => s.rooms.clearQuery(), "none"],
         ["a search", (s: Setup): void => {
             s.rooms.setQuery("zzz");
-            jest.advanceTimersByTime(directorySearchPause);
+            jest.advanceTimersByTime(searchPause);
         }, "query"],
         ["a search under a campus", (s: Setup): void => {
             s.rooms.setCampus({ kind: "campus", campusId: north });
             s.rooms.setQuery("zzz");
-            jest.advanceTimersByTime(directorySearchPause);
+            jest.advanceTimersByTime(searchPause);
         }, "filters"],
         ["not joined", (s: Setup): void => s.rooms.setShow("notJoined"), "allJoined"],
         ["a campus", (s: Setup): void => s.rooms.setCampus({ kind: "campus", campusId: north }), "campus"]
@@ -533,7 +544,7 @@ describe("the directory", () => {
         expect(s.rooms.state.directory).toEqual(expect.objectContaining({ query: "", campus: { kind: "all" }, show: "all", isLoading: true, rows: [] }));
         expect(s.directoryCalls[s.directoryCalls.length - 1].request).toEqual(expect.objectContaining({ query: null, campusId: null, wholeChurch: false, notJoined: false }));
         // the search typed before closing never goes out
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         expect(s.directoryCalls.filter(c => c.request.query === "vol")).toHaveLength(0);
     });
 
@@ -807,7 +818,7 @@ describe("Join", () => {
 
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joined", isFresh: true });
         expect(s.toasts).toEqual([{ code: "room.joined", text: "Joined Volunteers", icon: "check" }]);
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You joined Volunteers", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You joined Volunteers", isAssertive: false }));
         expect(s.rooms.state.directory.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(true);
         expect(s.channels.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(true);
         expect(s.rooms.factsOf(volunteers)?.is_member).toBe(true);
@@ -832,7 +843,7 @@ describe("Join", () => {
         await settle();
 
         expect(s.rooms.joinOf(outreach)).toEqual({ kind: "pending" });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You're in Local Outreach. It can take a few seconds to show up." }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You're in Local Outreach. It can take a few seconds to show up." }));
         expect(s.toasts).toEqual([]);
 
         // a reload that does not hold the room yet leaves it pending
@@ -871,7 +882,7 @@ describe("Join", () => {
         await settle();
 
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "refused", text: "Tech Team is full right now. Ask Nathan Hughes about joining." });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Tech Team is full right now. Ask Nathan Hughes about joining.", isAssertive: true }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "Tech Team is full right now. Ask Nathan Hughes about joining.", isAssertive: true }));
         expect(s.channels.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(false);
 
         void s.rooms.join(volunteers);
@@ -895,7 +906,7 @@ describe("Join", () => {
 
         expect(s.joinCalls).toEqual([]);
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "You're offline. Try again when you're back." });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You're offline. Try again when you're back.", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You're offline. Try again when you're back.", isAssertive: false }));
 
         s.offline.value = false;
         void s.rooms.join(volunteers);
@@ -919,10 +930,23 @@ describe("Join", () => {
         await settle();
 
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "failed", text: "Couldn't join. Try again in a moment." });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Couldn't join. Try again in a moment.", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "Couldn't join. Try again in a moment.", isAssertive: false }));
 
         void s.rooms.join(volunteers);
         expect(s.joinCalls).toHaveLength(2);
+    });
+
+    // Moved from the join bar, which spoke a join's news itself before the chat had one voice.
+    test("the same failure again is said again, each time it happens, whichever view is open", async () => {
+        const s = await previewing();
+        void s.rooms.join(volunteers);
+        s.joinCalls[0].answer.resolve(door("door.unavailable", "An error occurred."));
+        await settle();
+        void s.rooms.join(volunteers);
+        s.joinCalls[1].answer.resolve(door("door.unavailable", "An error occurred."));
+        await settle();
+
+        expect(s.said.map(one => one.text)).toEqual(["Couldn't join. Try again in a moment.", "Couldn't join. Try again in a moment."]);
     });
 
     test("a door that throws while online says to try again, not that the person is offline", async () => {
@@ -961,7 +985,7 @@ describe("once stopped", () => {
         void s.rooms.join(volunteers);
 
         s.rooms.stop();
-        jest.advanceTimersByTime(directorySearchPause);
+        jest.advanceTimersByTime(searchPause);
         jest.useRealTimers();
 
         s.directoryCalls[0].answer.resolve(page(rows(3)));
@@ -1018,7 +1042,7 @@ describe("Leave", () => {
 
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
         expect(s.toasts).toEqual([{ code: "room.left", text: "You left Volunteers", icon: "door" }]);
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "You left Volunteers.", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You left Volunteers.", isAssertive: false }));
         expect(s.opened).toEqual([group]);
     });
 
@@ -1110,7 +1134,7 @@ describe("Leave", () => {
         await settle();
 
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "refused", text: "Leaving Volunteers is turned off. A leader can remove you if you need to step away." });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ isAssertive: true }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ isAssertive: true }));
         expect(s.toasts).toEqual([]);
         expect(s.opened).toEqual([]);
 
@@ -1193,7 +1217,7 @@ describe("Rename", () => {
         await settle();
 
         expect(s.rooms.renameOf(group)).toEqual({ kind: "idle" });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
     });
 
     test("saved names the group at once in the sidebar row and the facts, which the header and the dialog draw", async () => {
@@ -1316,7 +1340,7 @@ describe("Rename", () => {
         s.renameCalls[0].answer.resolve(door("ok"));
         await settle();
 
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Name removed. Showing everyone's names." }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "Name removed. Showing everyone's names." }));
     });
 
     test("pending shows nothing more than a save that landed", async () => {
@@ -1328,7 +1352,7 @@ describe("Rename", () => {
         await settle();
 
         expect(s.rooms.renameOf(group)).toEqual({ kind: "idle" });
-        expect(s.rooms.state.announcement).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
+        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "Renamed to Trail crew.", isAssertive: false }));
     });
 
     test("refused keeps the door's own sentence", async () => {

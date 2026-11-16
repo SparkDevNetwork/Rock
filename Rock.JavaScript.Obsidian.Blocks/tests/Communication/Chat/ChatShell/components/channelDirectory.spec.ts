@@ -27,7 +27,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
-import { DirectoryState, JoinState, RoomAnnouncement } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import { DirectoryState, JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 
@@ -103,7 +103,6 @@ function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
         props: {
             directory: directory(),
             joins: {},
-            announcement: null,
             campuses: [downtown, north],
             personCampusGuid: downtown.guid,
             organizationName: "Cedar Hill Church",
@@ -764,34 +763,35 @@ describe("the keys", () => {
     });
 });
 
+// A search's count, a join and a refusal are the rooms' to say, through the chat's one voice, whose
+// own cells hold politeness and a sentence said twice; the view says only what it draws itself.
 describe("what is spoken", () => {
-    test("a search's count and a join are read politely", () => {
-        const announcement: RoomAnnouncement = { text: "2 channels found", isAssertive: false, count: 1 };
-        const w = mountDirectory({ announcement });
+    test("draws no live region of its own, so its words never talk over the chat's one voice", () => {
+        const w = mountDirectory({ directory: directory({ moreError: { code: "rpc.transport", severity: "failed" }, hasMore: true }) });
 
-        const polite = w.get("[data-testid='directory-announcement']");
-        expect(polite.attributes("aria-live")).toBe("polite");
-        expect(polite.text()).toBe("2 channels found");
-        expect(w.get("[data-testid='directory-alert']").text()).toBe("");
+        expect(w.findAll("[aria-live], [role='status'], [role='alert']")).toHaveLength(0);
     });
 
-    test("a refused join is read assertively", () => {
-        const announcement: RoomAnnouncement = { text: "Volunteers is full right now.", isAssertive: true, count: 2 };
-        const w = mountDirectory({ announcement });
+    test("a first page that did not come is said as it is drawn", async () => {
+        const state = directory({ rows: [], isLoading: true });
+        mountDirectory({ directory: state });
 
-        const alert = w.get("[data-testid='directory-alert']");
-        expect(alert.attributes("aria-live")).toBe("assertive");
-        expect(alert.text()).toBe("Volunteers is full right now.");
-        expect(w.get("[data-testid='directory-announcement']").text()).toBe("");
+        state.isLoading = false;
+        state.error = { code: "rpc.transport", severity: "failed" };
+        await nextTick();
+
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toContain("Couldn't load channels.");
     });
 
-    test("the same words again are put in afresh, so they are read again", async () => {
-        const w = mountDirectory({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 1 } });
-        const before = w.get("[data-testid='directory-announcement'] span").element;
+    test("a next page that did not come is said as it is drawn, the rows held", async () => {
+        const state = directory({ hasMore: true, isLoadingMore: true });
+        mountDirectory({ directory: state });
 
-        await w.setProps({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 2 } });
+        state.isLoadingMore = false;
+        state.moreError = { code: "rpc.transport", severity: "failed" };
+        await nextTick();
 
-        expect(w.get("[data-testid='directory-announcement'] span").element).not.toBe(before);
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toContain("Couldn't load more channels.");
     });
 });
 
