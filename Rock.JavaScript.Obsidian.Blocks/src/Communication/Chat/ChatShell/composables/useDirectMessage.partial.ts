@@ -654,7 +654,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
         // there; one who left it is told in the toast, and the text waits for their next draft.
         if (!channelId) {
             setPhase(message, "refused");
-            const reason = answer.message ?? failedWords("The conversation could not be started.").alone;
+            const reason = answer.message ?? failedWords("Couldn't start the conversation.").alone;
             if (isOnScreen(message)) {
                 draft.status = "draft";
                 state.error = reason;
@@ -826,7 +826,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             if (!result.ok) {
                 // Nothing is known, so nothing can be sent until the people change or are chosen again.
                 state.lookup = { status: "waiting", channelId: null, isSlow: false };
-                state.error = result.error.text ?? failedWords("The conversation could not be looked up.").alone;
+                state.error = result.error.text ?? failedWords("Couldn't look up the conversation.").alone;
                 return;
             }
 
@@ -902,7 +902,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             // is for the conversation.
             const result = await dependencies.search(query);
             if (!result.ok) {
-                throw new Error(result.error.text ?? failedWords("People could not be searched.").alone);
+                throw new Error(result.error.text ?? failedWords("Couldn't search people.").besideRetry);
             }
 
             return result.people;
@@ -942,7 +942,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             state.error = null;
             const result = await dependencies.findConversation(people.map(p => p.person_alias_guid));
             if (!result.ok) {
-                state.error = result.error.text ?? failedWords("The conversation could not be opened.").alone;
+                state.error = result.error.text ?? failedWords("Couldn't open the conversation.").alone;
                 return;
             }
 
