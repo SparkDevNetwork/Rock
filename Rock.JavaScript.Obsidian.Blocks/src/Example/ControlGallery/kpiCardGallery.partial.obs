@@ -140,7 +140,6 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { alert } from "@Obsidian/Utility/dialogs";
-    import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
     import {
         KpiAccent,
         KpiAction,
@@ -149,6 +148,7 @@
         KpiContentDisplay,
         KpiContentItem,
         KpiHelpSection,
+        KpiLabelType,
         KpiLayout,
         KpiTrend,
         KpiTrendDirection,
@@ -173,7 +173,7 @@
 
     const valueSizeItems: ListItemBag[] = Object.values(KpiValueSize).map(value => ({ value, text: value }));
 
-    const labelTypeItems: ListItemBag[] = Object.values(BadgeType).map(value => ({ value, text: value }));
+    const labelTypeItems: ListItemBag[] = Object.values(KpiLabelType).map(value => ({ value, text: value }));
 
     const trendDisplayItems: ListItemBag[] = Object.values(KpiTrendDisplay).map(value => ({ value, text: value }));
 
@@ -221,7 +221,7 @@
     const valueSize = ref<KpiValueSize | "">("");
     const valueDescription = ref("Previous Period: 820");
     const labelText = ref("");
-    const labelType = ref<BadgeType>(BadgeType.Info);
+    const labelType = ref<KpiLabelType>(KpiLabelType.Info);
     const trendText = ref("28");
     const valueTrendDisplay = ref<KpiTrendDisplay>(KpiTrendDisplay.Full);
     const valueTrendTooltip = ref("");

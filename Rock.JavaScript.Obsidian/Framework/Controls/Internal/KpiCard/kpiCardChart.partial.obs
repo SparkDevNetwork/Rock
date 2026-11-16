@@ -45,18 +45,6 @@
     </div>
 </template>
 
-<style scoped>
-.kpi-v2-card-chart-centered {
-    display: flex;
-    align-items: center;
-    height: 100%;
-}
-
-.kpi-v2-card-chart-centered > * {
-    flex: 1;
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import BarChart from "@Obsidian/Controls/barChart.obs";

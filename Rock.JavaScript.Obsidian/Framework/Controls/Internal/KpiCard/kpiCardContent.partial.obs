@@ -18,12 +18,14 @@
 
                 <span class="kpi-v2-micro-grid-item-value" v-tooltip="item.help ?? ''">{{ formatItemValue(item) }}</span>
 
-                <KpiTrend v-if="isItemTrendShown(item)"
-                          class="kpi-v2-micro-item-trend"
-                          :trend="item.valueTrend"
-                          :tooltip="item.valueTrendTooltip"
-                          :isLowerBetter="isLowerBetter"
-                          isCompact />
+                <span v-if="isAnyItemTrendShown" class="kpi-v2-micro-grid-item-trend">
+                    <KpiTrend v-if="isItemTrendShown(item)"
+                              class="kpi-v2-micro-item-trend"
+                              :trend="item.valueTrend"
+                              :tooltip="item.valueTrendTooltip"
+                              :isLowerBetter="isLowerBetter"
+                              isCompact />
+                </span>
             </div>
         </div>
 
@@ -54,157 +56,6 @@
         </div>
     </div>
 </template>
-
-<style scoped>
-.kpi-v2-card-content {
-    /* The micro-card columns react to the width of the card, not the browser window. */
-    container-type: inline-size;
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-small);
-    padding: var(--spacing-small);
-}
-
-.kpi-v2-card-content-title {
-    font-size: var(--font-size-xsmall);
-    font-weight: var(--font-weight-semibold);
-    line-height: var(--line-height-normal);
-    color: var(--color-interface-strong);
-}
-
-.kpi-v2-micro-grid {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xsmall);
-}
-
-.kpi-v2-micro-grid-item {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    padding: var(--spacing-xsmall);
-    border-radius: var(--rounded-xsmall);
-    background-color: var(--color-interface-softest);
-    box-shadow: var(--box-shadow);
-    font-size: var(--font-size-xsmall);
-    line-height: var(--line-height-normal);
-}
-
-.kpi-v2-micro-grid-item-position {
-    color: var(--color-interface-medium);
-}
-
-.kpi-v2-micro-grid-item-label {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    padding-right: var(--spacing-small);
-    color: var(--color-interface-strong);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-a.kpi-v2-micro-grid-item-label {
-    color: var(--color-primary);
-}
-
-/* A fixed minimum width keeps the value column from shifting row to row. */
-.kpi-v2-micro-grid-item-value {
-    min-width: var(--spacing-xlarge);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-stronger);
-    text-align: right;
-    white-space: nowrap;
-}
-
-.kpi-v2-micro-grid-item-muted .kpi-v2-micro-grid-item-label,
-.kpi-v2-micro-grid-item-muted .kpi-v2-micro-grid-item-value {
-    color: var(--color-interface-medium);
-}
-
-.kpi-v2-micro-cards {
-    display: grid;
-    gap: var(--spacing-xsmall);
-}
-
-.kpi-v2-micro-cards-columns-2 {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-.kpi-v2-micro-cards-columns-3 {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.kpi-v2-micro-cards-columns-4 {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-}
-
-/*
-    The columns setting is a maximum. Each breakpoint is the width where tiles would drop below
-    100px (columns x 100px plus the 8px gaps), so a label always has room beside its trend.
-*/
-@container (max-width: 423px) {
-    .kpi-v2-micro-cards-columns-4 {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-}
-
-@container (max-width: 315px) {
-    .kpi-v2-micro-cards-columns-3,
-    .kpi-v2-micro-cards-columns-4 {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-}
-
-@container (max-width: 207px) {
-    .kpi-v2-micro-cards {
-        grid-template-columns: minmax(0, 1fr);
-    }
-}
-
-.kpi-v2-micro-cards-item {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-tiny);
-    padding: var(--spacing-xsmall);
-    border-radius: var(--rounded-xsmall);
-    background-color: var(--color-interface-softest);
-    box-shadow: var(--box-shadow);
-    font-size: var(--font-size-xsmall);
-    line-height: var(--line-height-normal);
-}
-
-.kpi-v2-micro-cards-item-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--spacing-tiny);
-}
-
-.kpi-v2-micro-cards-item-label {
-    min-width: 0;
-    overflow: hidden;
-    color: var(--color-interface-strong);
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.kpi-v2-micro-cards-item-value {
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-stronger);
-}
-
-.kpi-v2-micro-cards-item-muted .kpi-v2-micro-cards-item-label,
-.kpi-v2-micro-cards-item-muted .kpi-v2-micro-cards-item-value {
-    color: var(--color-interface-medium);
-}
-
-/* A muted item keeps its trend but fades it to match the greyed label and value. */
-.kpi-v2-micro-grid-item-muted .kpi-v2-micro-item-trend,
-.kpi-v2-micro-cards-item-muted .kpi-v2-micro-item-trend {
-    opacity: 0.5;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
@@ -237,6 +88,11 @@ a.kpi-v2-micro-grid-item-label {
 
     const displayItems = computed((): KpiContentItem[] => {
         return getKpiDisplayItems(props.content.items);
+    });
+
+    // The micro-grid only reserves a trend column when at least one row has a trend.
+    const isAnyItemTrendShown = computed((): boolean => {
+        return displayItems.value.some(item => isItemTrendShown(item));
     });
 
     // Columns outside 2 to 4 have no CSS class, so they are clamped into range. A missing or invalid value uses 3.

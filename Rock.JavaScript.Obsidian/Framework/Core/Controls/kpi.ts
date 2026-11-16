@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
 import { BarSeries, LinearGaugeSeries, LineSeries, PieSeries } from "@Obsidian/Core/Controls/chart";
 import { asFormattedString, toCurrencyOrNull } from "@Obsidian/Utility/numberUtils";
 import { CurrencyInfoBag } from "@Obsidian/ViewModels/Rest/Utilities/currencyInfoBag";
@@ -67,13 +66,25 @@ export type KpiHelpSection = {
     text: string;
 };
 
-/** A badge that qualifies the headline value, such as "Needs Review". */
+/** The style of a KPI card label. Matches the HighlightLabel label types. */
+export const KpiLabelType = {
+    Default: "default",
+    Primary: "primary",
+    Success: "success",
+    Info: "info",
+    Warning: "warning",
+    Danger: "danger"
+} as const;
+
+export type KpiLabelType = typeof KpiLabelType[keyof typeof KpiLabelType];
+
+/** A label that qualifies the headline value, such as "Needs Review". */
 export type KpiLabel = {
-    /** The badge text. Two to three words. */
+    /** The label text. Two to three words. */
     text: string;
 
-    /** The badge style. */
-    type: BadgeType;
+    /** The label style. */
+    type: KpiLabelType;
 };
 
 /** The single footer action of a KPI card. */
@@ -247,7 +258,7 @@ export type KpiContentItem = {
     /** The item trend. */
     valueTrend?: KpiItemTrend | null;
 
-    /** An optional tooltip for the trend when only its icon is shown. */
+    /** An optional tooltip for the trend. */
     valueTrendTooltip?: string | null;
 
     /** When true the item is shown last, with muted colors and a faded trend. Used for "Unknown" or "Other". */
