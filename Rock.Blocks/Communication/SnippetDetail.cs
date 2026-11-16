@@ -83,6 +83,11 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private SnippetType _snippetType;
 
+        /// <summary>
+        /// Whether the last call to <see cref="UpdateEntityFromBox(Snippet, ValidPropertiesBox{SnippetBag})"/> refused the posted owner.
+        /// </summary>
+        private bool _isOwnerChangeRefused;
+
         #endregion
 
         #region Methods
@@ -301,8 +306,30 @@ namespace Rock.Blocks.Communication
                 return false;
             }
 
+            var isCategoryAllowed = true;
+
             box.IfValidProperty( nameof( box.Bag.Category ),
-                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
+                () =>
+                {
+                    var newCategoryId = box.Bag.Category.GetEntityId<Category>( RockContext );
+
+                    // The picker only offers snippet categories this person may view,
+                    // so a changed category has to pass the same test.
+                    if ( newCategoryId.HasValue && newCategoryId != entity.CategoryId )
+                    {
+                        var category = CategoryCache.Get( newCategoryId.Value );
+
+                        if ( category == null
+                            || category.EntityTypeId != EntityTypeCache.Get<Snippet>().Id
+                            || !category.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                        {
+                            isCategoryAllowed = false;
+                            return;
+                        }
+                    }
+
+                    entity.CategoryId = newCategoryId;
+                } );
 
             box.IfValidProperty( nameof( box.Bag.Description ),
                 () => entity.Description = box.Bag.Description );
@@ -319,8 +346,44 @@ namespace Rock.Blocks.Communication
             box.IfValidProperty( nameof( box.Bag.Order ),
                 () => entity.Order = box.Bag.Order );
 
+            _isOwnerChangeRefused = false;
+
             box.IfValidProperty( nameof( box.Bag.OwnerPersonAlias ),
-                () => entity.OwnerPersonAliasId = box.Bag.OwnerPersonAlias.GetEntityId<PersonAlias>( RockContext ) );
+                () =>
+                {
+                    var newOwnerId = box.Bag.OwnerPersonAlias.GetEntityId<PersonAlias>( RockContext );
+
+                    if ( newOwnerId == entity.OwnerPersonAliasId )
+                    {
+                        return;
+                    }
+
+                    // Sharing a snippet or giving it to someone else is reserved for
+                    // snippet type editors. Anyone else may only own the snippet they are adding.
+                    var currentPerson = RequestContext.CurrentPerson;
+                    var isOwnNewSnippet = entity.Id == 0 && newOwnerId.HasValue && newOwnerId == currentPerson?.PrimaryAliasId;
+
+                    // A merged person can own the snippet through an older alias,
+                    // so picking themselves again posts a different alias for the same owner.
+                    var isSameOwner = newOwnerId.HasValue
+                        && entity.OwnerPersonAliasId.HasValue
+                        && new PersonAliasService( RockContext ).GetPersonId( newOwnerId.Value ) == entity.OwnerPersonAlias?.PersonId;
+
+                    if ( !isOwnNewSnippet && !isSameOwner && GetSnippetType()?.IsAuthorized( Authorization.EDIT, currentPerson ) != true )
+                    {
+                        _isOwnerChangeRefused = true;
+                        return;
+                    }
+
+                    entity.OwnerPersonAliasId = newOwnerId;
+                } );
+
+            // A snippet with no owner is shared, so adding one takes the same access as sharing one,
+            // whether the owner was posted empty or not posted at all.
+            if ( entity.Id == 0 && !entity.OwnerPersonAliasId.HasValue && GetSnippetType()?.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) != true )
+            {
+                _isOwnerChangeRefused = true;
+            }
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -336,7 +399,7 @@ namespace Rock.Blocks.Communication
                 entity.SnippetTypeId = snippetType.Id;
             }
 
-            return true;
+            return isCategoryAllowed && !_isOwnerChangeRefused;
         }
 
         /// <summary>
@@ -474,7 +537,9 @@ namespace Rock.Blocks.Communication
             // Update the entity instance from the information in the bag.
             if ( !UpdateEntityFromBox( entity, box ) )
             {
-                return ActionBadRequest( "Invalid data." );
+                // The page offers the owner picker to people who may not change the owner,
+                // so they need to know why the save failed.
+                return ActionBadRequest( _isOwnerChangeRefused ? "Not authorized to change the owner of this snippet." : "Invalid data." );
             }
 
             // Ensure everything is valid before saving.
