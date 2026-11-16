@@ -80,6 +80,15 @@ namespace Rock.Blocks.Communication
                 };
             }
 
+            if ( isNew && !CanCreateSystemCommunication() )
+            {
+                return new CustomBlockBox<SystemCommunicationBag, SystemCommunicationDetailOptionsBag>
+                {
+                    ErrorMessage = "You are not authorized to add a system communication.",
+                    NavigationUrls = GetBoxNavigationUrls()
+                };
+            }
+
             var bag = isNew
                 ? new SystemCommunicationBag
                 {
@@ -283,6 +292,63 @@ namespace Rock.Blocks.Communication
                     || BlockCache.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) );
         }
 
+        /// <summary>
+        /// Determines whether the current person may add a system communication.
+        /// </summary>
+        /// <returns><c>true</c> if the person has Edit or Administrate on the block; otherwise <c>false</c>.</returns>
+        private bool CanCreateSystemCommunication()
+        {
+            return IsAssetManagerEditAuthorized();
+        }
+
+        /// <summary>
+        /// Determines whether the current person may save a newly selected category.
+        /// </summary>
+        /// <param name="category">The selected category.</param>
+        /// <returns><c>true</c> if it is a system communication category the person may view; otherwise <c>false</c>.</returns>
+        private bool IsSelectableCategory( CategoryCache category )
+        {
+            return category != null
+                && category.EntityTypeId == EntityTypeCache.Get<SystemCommunication>().Id
+                && category.IsAuthorized( Authorization.VIEW, GetCurrentPerson() );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may save a newly selected SMS from number.
+        /// </summary>
+        /// <param name="systemPhoneNumber">The selected system phone number.</param>
+        /// <returns><c>true</c> if it is an active number the person may view; otherwise <c>false</c>.</returns>
+        private bool IsSelectableSystemPhoneNumber( SystemPhoneNumberCache systemPhoneNumber )
+        {
+            return systemPhoneNumber != null
+                && systemPhoneNumber.IsActive
+                && systemPhoneNumber.IsAuthorized( Authorization.VIEW, GetCurrentPerson() );
+        }
+
+        /// <summary>
+        /// Determines whether a newly selected push application may be saved.
+        /// </summary>
+        /// <param name="site">The selected site.</param>
+        /// <returns><c>true</c> if it is an active mobile application; otherwise <c>false</c>.</returns>
+        private bool IsSelectableMobileApplication( SiteCache site )
+        {
+            return site != null
+                && site.IsActive
+                && site.SiteType == SiteType.Mobile;
+        }
+
+        /// <summary>
+        /// Determines whether the current person may save a newly selected push page.
+        /// </summary>
+        /// <param name="page">The selected page.</param>
+        /// <returns><c>true</c> if it is a page of a mobile application that the person may view; otherwise <c>false</c>.</returns>
+        private bool IsSelectableMobilePage( PageCache page )
+        {
+            return page != null
+                && SiteCache.Get( page.SiteId )?.SiteType == SiteType.Mobile
+                && page.IsAuthorized( Authorization.VIEW, GetCurrentPerson() );
+        }
+
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
@@ -338,6 +404,12 @@ namespace Rock.Blocks.Communication
             var isNew = systemCommunication == null;
             if ( isNew )
             {
+                // View on the block is enough to load this page, so adding a record needs its own check.
+                if ( !CanCreateSystemCommunication() )
+                {
+                    return ActionForbidden( "You do not have permission to add a system communication." );
+                }
+
                 systemCommunication = new SystemCommunication();
                 new SystemCommunicationService( this.RockContext ).Add( systemCommunication );
             }
@@ -346,6 +418,17 @@ namespace Rock.Blocks.Communication
             {
                 return ActionForbidden( "You do not have permission to edit this system communication." );
             }
+
+            /*
+                11/16/26 - JMH
+
+                The page only offers categories, SMS numbers, push applications and push pages
+                that this person may use, but the posted values can be changed. A changed value
+                must pass the same tests, while a value already on the record is kept as is.
+
+                Reason: Keep saved values to the ones the page offers.
+            */
+            const string unavailableSelectionMessage = "The selected category, phone number, application or page is not available.";
 
             // Core fields.
             systemCommunication.IsActive = bag.IsActive;
@@ -356,6 +439,11 @@ namespace Rock.Blocks.Communication
             {
                 if ( newCategoryGuid.HasValue )
                 {
+                    if ( !IsSelectableCategory( CategoryCache.Get( newCategoryGuid.Value ) ) )
+                    {
+                        return ActionBadRequest( unavailableSelectionMessage );
+                    }
+
                     systemCommunication.Category = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
                     systemCommunication.CategoryId = systemCommunication.Category?.Id;
                 }
@@ -383,6 +471,11 @@ namespace Rock.Blocks.Communication
             {
                 if ( newSmsFromPhoneNumberGuid.HasValue )
                 {
+                    if ( !IsSelectableSystemPhoneNumber( SystemPhoneNumberCache.Get( newSmsFromPhoneNumberGuid.Value ) ) )
+                    {
+                        return ActionBadRequest( unavailableSelectionMessage );
+                    }
+
                     systemCommunication.SmsFromSystemPhoneNumber = new SystemPhoneNumberService( this.RockContext ).Get( newSmsFromPhoneNumberGuid.Value );
                     systemCommunication.SmsFromSystemPhoneNumberId = systemCommunication.SmsFromSystemPhoneNumber?.Id;
                 }
@@ -400,6 +493,9 @@ namespace Rock.Blocks.Communication
             systemCommunication.PushMessage = bag.PushMessage;
             systemCommunication.PushOpenAction = ( Rock.Utility.PushOpenAction ) ( int ) bag.PushOpenAction;
 
+            var currentPushData = systemCommunication.PushData.IsNotNullOrWhiteSpace()
+                ? systemCommunication.PushData.FromJsonOrNull<PushData>()
+                : null;
             var pushData = new PushData();
             var newPushOpenMessageJson = default( string );
             var newPushOpenMessage = default( string );
@@ -419,7 +515,14 @@ namespace Rock.Blocks.Communication
                 var newMobileApplicationGuid = bag.PushMobileApplication?.Value?.AsGuidOrNull();
                 if ( newMobileApplicationGuid.HasValue )
                 {
-                    pushData.MobileApplicationId = SiteCache.GetId( newMobileApplicationGuid.Value );
+                    var newMobileApplication = SiteCache.Get( newMobileApplicationGuid.Value );
+
+                    if ( newMobileApplication?.Id != currentPushData?.MobileApplicationId && !IsSelectableMobileApplication( newMobileApplication ) )
+                    {
+                        return ActionBadRequest( unavailableSelectionMessage );
+                    }
+
+                    pushData.MobileApplicationId = newMobileApplication?.Id;
                 }
                 else
                 {
@@ -434,6 +537,12 @@ namespace Rock.Blocks.Communication
                 if ( newMobilePageGuid.HasValue )
                 {
                     var newMobilePage = PageCache.Get( newMobilePageGuid.Value );
+
+                    if ( newMobilePage?.Id != currentPushData?.MobilePageId && !IsSelectableMobilePage( newMobilePage ) )
+                    {
+                        return ActionBadRequest( unavailableSelectionMessage );
+                    }
+
                     pushData.MobilePageId = newMobilePage?.Id;
                     pushData.MobileApplicationId = newMobilePage?.SiteId;
                 }
@@ -485,6 +594,12 @@ namespace Rock.Blocks.Communication
             if ( systemCommunication != null && !systemCommunication.IsAuthorized( Authorization.VIEW, currentPerson ) )
             {
                 return ActionForbidden( "You do not have permission to view this system communication." );
+            }
+
+            // A new record's preview renders whatever is posted, so it is limited to people who may add one.
+            if ( systemCommunication == null && !CanCreateSystemCommunication() )
+            {
+                return ActionForbidden( "You do not have permission to add a system communication." );
             }
 
             /*
