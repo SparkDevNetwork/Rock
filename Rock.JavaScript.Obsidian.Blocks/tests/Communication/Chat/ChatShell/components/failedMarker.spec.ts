@@ -25,7 +25,7 @@ import FailedMarker from "../../../../../src/Communication/Chat/ChatShell/compon
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
 import { isPhoneKey } from "../../../../../src/Communication/Chat/ChatShell/ui/viewport.partial";
 
-const css = readFileSync(`${__dirname}/../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css`, "utf8");
+const css = readFileSync(`${__dirname}/../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs`, "utf8");
 
 function draw(props: { canRetry?: boolean, reason?: string | null } = {}, isPhone = false): VueWrapper {
     return mount(FailedMarker, { props, attachTo: document.body, global: { provide: { [isPhoneKey as symbol]: ref(isPhone) } } });
@@ -109,7 +109,7 @@ describe("the Not sent marker", () => {
     // button takes the height and a matching negative margin keeps the line from growing.
     test("is at least 24 pixels tall, with a margin that leaves its line as it was", () => {
         const rule = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/([^{}]+)\{([^}]*)\}/g)]
-            .filter(match => match[1].trim() === "button.chat-icon-btn.chat-fail-btn")
+            .filter(match => match[1].trim() === ".chat-icon-btn.is-failure")
             .map(match => match[2])
             .join("");
 

@@ -1226,6 +1226,7 @@ describe("the components' own styles", () => {
         const rowPath = resolve(components, "messageRow.partial.obs");
         const communityPath = resolve(components, "messageRowCommunity.partial.obs");
         const failedPath = resolve(components, "failedMarker.partial.obs");
+        const iconButtonPath = resolve(components, "../ui/iconButton.partial.obs");
 
         test("the mention tag's words set its baseline and its icon is centred on them, on a head row and a continuation row alike", () => {
             const source = readFileSync(communityPath, "utf8");
@@ -1255,12 +1256,12 @@ describe("the components' own styles", () => {
         });
 
         test("the Not sent marker's words set its baseline, with its 24px target centred on its line", () => {
-            const rule = (property: string): string => normalize(readSheet(sheetPath).rules
-                .filter(r => r.media === "" && r.selector.split(",").map(x => x.trim()).includes("button.chat-icon-btn.chat-fail-btn"))
+            const rule = (property: string): string => normalize(readSheet(iconButtonPath).rules
+                .filter(r => r.media === "" && r.selector.split(",").map(x => x.trim()).includes(".chat-icon-btn.is-failure"))
                 .map(r => r.declarations.get(property) ?? "").filter(v => v !== "").pop() ?? "");
 
-            expect(declarationOf(sheetPath, ".chat-fail-btn-words", "align-self")).toBe("baseline");
-            expect(declarationOf(sheetPath, ".chat-fail-btn-words", "line-height")).toBe(normalize("var(--chat-fail-mark-s, 14px)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn.is-failure :slotted(*)", "align-self")).toBe("baseline");
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn.is-failure :slotted(*)", "line-height")).toBe(normalize("var(--chat-fail-mark-s, 14px)"));
             // A single line only has align-content when it may wrap; this centres the line in the 24px target.
             expect(rule("flex-wrap")).toBe("wrap");
             expect(rule("align-content")).toBe("center");

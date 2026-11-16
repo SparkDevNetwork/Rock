@@ -55,11 +55,12 @@
     const label = computed((): string => props.canRetry ? "Not sent. Try again or delete" : "Not sent. Delete");
 
     /**
-     * The button's attributes: the class and test id the styles and tests find it by, the reason as
-     * its one tooltip (so no title doubles it) and as its description, where there is one.
+     * The button's attributes: the icon button's failure tone, which draws the red mark and the
+     * words with no button look, the test id, the reason as its one tooltip (so no title doubles
+     * it) and as its description, where there is one.
      */
     const anchorAttrs = computed((): Record<string, unknown> => ({
-        class: "chat-fail-btn",
+        tone: "failure",
         "data-testid": "message-failed-actions",
         ...(props.reason ? { tooltip: props.reason, "aria-describedby": reasonId } : {})
     }));
