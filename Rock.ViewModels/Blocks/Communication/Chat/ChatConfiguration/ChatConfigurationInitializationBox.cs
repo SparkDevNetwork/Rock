@@ -26,5 +26,10 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration
         /// Gets or sets the chat configuration bag.
         /// </summary>
         public ChatConfigurationBag ChatConfigurationBag { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the current person can edit the chat configuration.
+        /// </summary>
+        public bool IsEditable { get; set; }
     }
 }
