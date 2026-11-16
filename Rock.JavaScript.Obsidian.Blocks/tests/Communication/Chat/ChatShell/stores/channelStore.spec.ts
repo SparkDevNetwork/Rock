@@ -742,3 +742,25 @@ describe("dm.preview's sender", () => {
         expect(s.rows[0].last_sender_avatar_url).toBe("https://photos.example/ben.jpg");
     });
 });
+
+// Finding a room's row has one home: every module that needs a room's row or kind asks the store,
+// rather than searching the rows itself and answering a room opened from outside the list its own way.
+describe("a room's row and kind", () => {
+    test("rowOf finds a room's row by its id, and nothing for a room the list does not hold", () => {
+        const { store: s } = store();
+        expect(s.rowOf(two)?.channel_id).toBe(two);
+        expect(s.rowOf(hidden)).toBeUndefined();
+    });
+
+    test("roomKindOf answers from the row, then from the room's facts for a room opened from outside the list", () => {
+        const s = createChannelStore({
+            reloadSidebar: () => undefined,
+            retryFirstLoad: () => undefined,
+            factsKindOf: channelId => channelId === hidden ? "group" : null
+        });
+        s.setSidebar([row(one, { room_kind: "person" })]);
+        expect(s.roomKindOf(one)).toBe("person");
+        expect(s.roomKindOf(hidden)).toBe("group");
+        expect(s.roomKindOf(two)).toBeNull();
+    });
+});
