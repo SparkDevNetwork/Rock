@@ -20,7 +20,7 @@
 // name, "(you)" for the reader, the Leader pill in a channel, never a campus, and "Message" where
 // they can be messaged. The filter searches the whole room: a line
 // says it is searching, then how many it found, or that no one matches. Paging is "Load more",
-// "Loading" while busy, "Couldn't load more." with Try again, and "That's everyone." at the end of
+// "Loading" while busy, asked too as that row scrolls into view, "Couldn't load more." with Try again, and "That's everyone." at the end of
 // a channel. A room the reader has not joined, one that keeps its list from them, a failed first
 // page and the first load each draw a state of their own. A channel is named with no "#".
 //
@@ -231,6 +231,37 @@ describe("paging", () => {
         expect(w.get("[data-testid='members-more']").text()).toBe("Try again");
         await w.get("[data-testid='members-more']").trigger("click");
         expect(w.emitted("loadMore")).toHaveLength(1);
+    });
+
+    // The Load more row is the list's sentinel: it asks as it scrolls into view, once for one
+    // arrival, and after a failed page waits for the press.
+    test("the Load more row asks for the next page as it scrolls into view, and not after a failure", async () => {
+        const original = window.IntersectionObserver;
+        const seen: Array<(isIntersecting: boolean) => void> = [];
+        window.IntersectionObserver = class {
+            constructor(private callback: IntersectionObserverCallback) {}
+            observe(target: Element): void {
+                seen.push(isIntersecting => this.callback([{ target, isIntersecting } as IntersectionObserverEntry], this as unknown as IntersectionObserver));
+            }
+            unobserve(): void { /* nothing watched apart */ }
+            disconnect(): void { /* nothing to let go */ }
+        } as unknown as typeof IntersectionObserver;
+        try {
+            const w = draw({ hasMore: true });
+            await nextTick();
+            seen[seen.length - 1](true);
+            expect(w.emitted("loadMore")).toHaveLength(1);
+
+            await w.setProps({ isLoadingMore: true });
+            await w.setProps({ isLoadingMore: false, moreError: { code: "rpc.transport", severity: "failed" } });
+            await nextTick();
+            seen[seen.length - 1](false);
+            seen[seen.length - 1](true);
+            expect(w.emitted("loadMore")).toHaveLength(1);
+        }
+        finally {
+            window.IntersectionObserver = original;
+        }
     });
 
     test("the end of a channel is That's everyone.", () => {
