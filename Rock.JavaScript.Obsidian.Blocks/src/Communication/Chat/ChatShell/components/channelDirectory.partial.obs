@@ -54,7 +54,7 @@
 
             <div class="chat-fd-filters">
                 <div v-if="directory.isCampusLimited" class="chat-fd-note" data-testid="directory-campus-note">
-                    <Icon name="info" size="sm" />
+                    <Icon class="chat-fd-note-ic" name="info" size="sm" />
                     <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
                 </div>
                 <div v-else-if="campuses.length > 0" class="chat-fd-chips" role="group" aria-label="Campus" data-testid="directory-chips">
@@ -146,10 +146,10 @@
                                         <span v-for="part in row.meta" :key="part">{{ part }}</span>
                                     </span>
                                     <span v-if="row.join.kind === 'refused'" class="chat-fd-err" role="note" data-testid="directory-row-refused">
-                                        <Icon name="alert" size="xs" /><span>{{ row.join.text }}</span>
+                                        <Icon class="chat-fd-err-ic" name="alert" size="xs" /><span>{{ row.join.text }}</span>
                                     </span>
                                     <span v-else-if="row.join.kind === 'failed'" class="chat-fd-err" role="note" data-testid="directory-row-failed">
-                                        <Icon name="alert" size="xs" /><span>{{ row.join.text }}</span>
+                                        <Icon class="chat-fd-err-ic" name="alert" size="xs" /><span>{{ row.join.text }}</span>
                                     </span>
                                     <span v-else-if="row.join.kind === 'pending'" class="chat-fd-wait" data-testid="directory-row-wait">Setting up, a few seconds</span>
                                 </span>
@@ -163,7 +163,7 @@
                                       class="chat-fd-joined"
                                       :class="{ 'is-fresh': row.join.kind === 'joined' && row.join.isFresh }"
                                       data-testid="directory-joined">
-                                    <Icon name="check" size="xs" />Joined
+                                    <Icon class="chat-fd-joined-ic" name="check" size="xs" />Joined
                                 </span>
                                 <!-- One button through Join, Joining and a refusal, so focus stays on it while the door is out. -->
                                 <Button v-else
@@ -185,7 +185,7 @@
                         <span class="chat-spinner"></span>Loading more channels…
                     </div>
                     <div v-else-if="directory.moreError" class="chat-fd-error" data-testid="directory-more-error">
-                        <Icon name="alert" size="sm" />
+                        <Icon class="chat-fd-error-ic" name="alert" size="sm" />
                         <span>{{ moreFailure }}</span>
                         <Button size="sm" @click="emit('retry')">Try again</Button>
                     </div>
@@ -338,7 +338,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-fd-note :deep(.chat-ic) {
+.chat-fd-note-ic {
     color: var(--chat-info-ink);
 }
 
@@ -561,7 +561,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-fd-err :deep(.chat-ic) {
+.chat-fd-err-ic {
     margin-top: 2px;
 }
 
@@ -596,7 +596,7 @@
     color: var(--chat-muted);
 }
 
-.chat-fd-joined :deep(.chat-ic) {
+.chat-fd-joined-ic {
     color: var(--chat-success);
 }
 
@@ -615,7 +615,7 @@
     animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
-.chat-fd-joined.is-fresh :deep(.chat-ic) {
+.chat-fd-joined.is-fresh .chat-fd-joined-ic {
     color: var(--chat-brand-ink);
 }
 
@@ -632,7 +632,7 @@
     border-radius: var(--chat-r-control);
 }
 
-.chat-fd-error :deep(.chat-ic) {
+.chat-fd-error-ic {
     flex: none;
     color: var(--chat-danger-ink);
 }

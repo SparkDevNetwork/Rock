@@ -118,7 +118,7 @@
 
                 <div v-if="refusedText" class="chat-nd-refused-wrap">
                     <div class="chat-nd-refused" data-testid="nd-refused">
-                        <Icon name="alert" size="sm" />
+                        <Icon class="chat-nd-refused-ic" name="alert" size="sm" />
                         <span class="chat-nd-refused-t">{{ refusedText }}</span>
                         <Button v-if="refused"
                                 size="sm"
@@ -460,7 +460,7 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-nd-refused :deep(.chat-ic) {
+.chat-nd-refused-ic {
     flex: none;
     color: var(--chat-danger-ink);
 }

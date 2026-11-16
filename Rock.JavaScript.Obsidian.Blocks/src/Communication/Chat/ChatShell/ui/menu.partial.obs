@@ -31,7 +31,7 @@
                         tabindex="-1"
                         :aria-disabled="item.isDisabled || undefined"
                         @click="choose(item)">
-                    <Icon v-if="item.icon" :name="item.icon" />
+                    <Icon v-if="item.icon" class="chat-menu-ic" :name="item.icon" />
                     <span v-if="item.description" class="chat-menu-label is-stacked">
                         <span class="chat-menu-title">{{ item.label }}</span>
                         <span class="chat-menu-desc">{{ item.description }}</span>
@@ -39,7 +39,7 @@
                     <span v-else class="chat-menu-label">{{ item.label }}</span>
                     <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
                     <span v-if="item.hasDot" class="chat-menu-dot"><Dot /><span class="chat-sr-only">new</span></span>
-                    <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
+                    <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon class="chat-menu-check-ic" name="check" size="sm" /></span>
                 </button>
             </template>
             <!-- Why an action is missing or cannot be taken, read in its place after the others and said as the menu opens. -->
@@ -81,7 +81,7 @@
     border-radius: var(--chat-r-inset);
 }
 
-.chat-menu-item :deep(.chat-ic) {
+.chat-menu-item .chat-menu-ic {
     color: var(--chat-icon);
 }
 
@@ -108,7 +108,7 @@
     color: var(--chat-brand-ink);
 }
 
-.chat-menu-item .chat-menu-check :deep(.chat-ic) {
+.chat-menu-item .chat-menu-check-ic {
     color: inherit;
 }
 
@@ -168,7 +168,7 @@
 }
 
 .chat-menu-item.is-danger,
-.chat-menu-item.is-danger :deep(.chat-ic) {
+.chat-menu-item.is-danger .chat-menu-ic {
     color: var(--chat-danger-ink);
 }
 

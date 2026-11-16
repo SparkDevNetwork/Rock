@@ -4,7 +4,7 @@
         <!-- A line under a setting: what a change means, or why its save failed and Try again. A
              save that lands has no line, since the control already shows it. Kept inside the root,
              since a comment beside it makes a fragment that drops the caller's attributes. -->
-        <Icon :name="note.kind === 'error' ? 'alert' : 'info'" size="xs" />
+        <Icon class="chat-set-note-ic" :name="note.kind === 'error' ? 'alert' : 'info'" size="xs" />
         <span>{{ note.text }}<template v-if="note.retry">{{ " " }}<Button class="chat-set-retry" size="sm" data-testid="note-retry" @click="onRetry">Try again</Button></template></span>
     </span>
 </template>
@@ -25,7 +25,7 @@
     color: var(--chat-danger-ink);
 }
 
-.chat-set-note :deep(.chat-ic) {
+.chat-set-note-ic {
     flex: none;
     margin-top: 2px;
 }
