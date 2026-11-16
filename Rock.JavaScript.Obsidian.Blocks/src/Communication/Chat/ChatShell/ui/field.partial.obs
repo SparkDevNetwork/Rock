@@ -62,8 +62,11 @@
     min-height: 44px;
 }
 
-.chat-fld-box:hover {
-    border-color: var(--chat-icon);
+/* Only where a pointer can hover: a touch screen keeps :hover on what was tapped until the next tap. */
+@media (hover: hover) {
+    .chat-fld-box:hover {
+        border-color: var(--chat-icon);
+    }
 }
 
 .chat-fld-box:focus-within {

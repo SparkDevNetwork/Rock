@@ -40,9 +40,14 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-/* One hover tint, only on a row that opens something. */
-.chat-lrow.is-interactive:hover {
-    --chat-lrow-fill: var(--chat-hover);
+/*
+    One hover tint, only on a row that opens something, and only where a pointer can hover: a touch
+    screen keeps :hover on the row tapped until the next tap.
+*/
+@media (hover: hover) {
+    .chat-lrow.is-interactive:hover {
+        --chat-lrow-fill: var(--chat-hover);
+    }
 }
 
 .chat-lrow.is-selected {
