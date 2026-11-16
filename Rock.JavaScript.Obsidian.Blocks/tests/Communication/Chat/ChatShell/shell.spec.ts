@@ -3565,6 +3565,40 @@ describe("the live sidebar", () => {
             expect(h.shell.members.state.rows).toEqual([]);
         });
 
+        // Rock answers a room the person may no longer know of as one that does not exist, in a
+        // channel's words since it says nothing of the room; here, a group conversation the person
+        // was taken out of while its panel was open.
+        test("a door's not found in a conversation is said in a conversation's words, and a stale remove's row leaves once read", async () => {
+            const notFound = { code: "door.not_found", message: "That channel could not be found.", isPending: false } as never;
+            const h = await startedLive({
+                getMemberRights: async () => ({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null }),
+                removeMember: async () => notFound,
+                addMembers: async () => notFound,
+                leaveChannel: async () => notFound
+            });
+            const annaRow = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_leader: false, details: null, can_message: true };
+
+            void h.shell.members.open(dmD);
+            await settle();
+            h.shell.members.state.rows = [annaRow];
+            h.shell.members.askRemove(anna);
+            await h.shell.members.remove();
+            expect(h.shell.members.state.removals[anna]).toEqual({ kind: "refused", text: "That conversation could not be found.", isStale: true });
+            h.shell.members.dismissRemoval(anna);
+            expect(h.shell.members.state.rows).toEqual([]);
+
+            h.shell.members.openAdd();
+            await h.shell.members.add([annaRow as never]);
+            expect(h.shell.members.state.adding.refusal).toEqual({ text: "That conversation could not be found.", personAliasGuid: null });
+
+            await h.shell.rooms.leave(dmD);
+            expect(h.shell.rooms.leaveOf(dmD)).toEqual({ kind: "refused", text: "That conversation could not be found." });
+
+            // a channel keeps a channel's words
+            await h.shell.rooms.leave(channelA);
+            expect(h.shell.rooms.leaveOf(channelA)).toEqual({ kind: "refused", text: "That channel could not be found." });
+        });
+
         test("without the doors, Leave and Rename are refused with a sentence and nothing else changes", async () => {
             const h = await startedLive();
 
@@ -3821,13 +3855,28 @@ describe("the browser row", () => {
         const held = deferred<string>();
         token = () => held.promise;
         const turning = h.shell.turnOnPush();
+        // busy from the click, before anything settles
+        expect(h.shell.state.push).toBe("turning_on");
         await settle();
-        expect(h.shell.state.push).toBe("offered");
+        expect(h.shell.state.push).toBe("turning_on");
 
         held.resolve("fcm-1");
         await turning;
         expect(h.shell.state.push).toBe("on");
         expect(h.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_register_device"]);
+    });
+
+    test("a Turn on takes the header's offer away at the click, and one that fails is told and Off again", async () => {
+        const h = await started({ push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("offer") });
+        expect(h.shell.state.isPushOffered).toBe(true);
+        h.deviceAnswer.value = { status: 500, body: { code: "rpc.unavailable", message: "x" } };
+
+        const turning = h.shell.turnOnPush();
+        expect(h.shell.state.isPushOffered).toBe(false);
+        await turning;
+
+        expect(h.shell.state.errors.map(e => e.code)).toContain("push.register_failed");
+        expect(h.shell.state.push).toBe("offered");
     });
 
     test("a choice is kept per church and person, so another person on the browser registers only on their own yes", async () => {

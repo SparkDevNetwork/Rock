@@ -403,7 +403,8 @@ describe("the browser row's state", () => {
         const registering = mode === "startup" ? push.start() : push.turnOn();
         await settle();
         expect(deps.call).toHaveBeenCalledWith("chat_register_device", expect.anything());
-        expect(push.state()).toBe("offered");
+        // a click is answered at once by its own busy state; a load's register shows nothing
+        expect(push.state()).toBe(mode === "startup" ? "offered" : "turning_on");
 
         answer.resolve(registered);
         await registering;
@@ -431,8 +432,20 @@ describe("the browser row's state", () => {
             await settle();
             answer.resolve({ ok: false, status: 503, error: { code: "rpc.read_only", severity: "degraded", text: "Read only tonight." }, retryAfterSeconds: null });
         }
-        await registering;
+        const refusal = await registering;
         expect(push.state()).toBe("offered");
+        // a click that fails says so, in the platform's words where it gave some; a load that
+        // fails tries again on the next one, unsaid
+        if (mode === "Turn on") {
+            expect(refusal).toEqual({
+                code: "push.register_failed",
+                severity: "failed",
+                text: failure === "platform" ? "Read only tonight." : "Notifications couldn't be turned on for this browser. Try again in a moment."
+            });
+        }
+        else {
+            expect(refusal).toBeUndefined();
+        }
 
         deps.getToken = jest.fn(async () => "fcm-token-1");
         deps.call = jest.fn(async () => registered);
@@ -760,5 +773,133 @@ describe("whose push this browser carries", () => {
 
         expect(calls.map(c => c.name)).toEqual(["chat_unregister_device", "chat_unregister_device"]);
         expect(cookies[cookies.length - 1]).toBeNull();
+    });
+});
+
+// Turn on is one busy state from the click until the register settles: the header's offer goes
+// at once, a second click does nothing, the browser's own box reads as asking only while it is
+// open, and a failure is said rather than falling back to Off unsaid.
+describe("a Turn on in progress", () => {
+    test("a one-click Turn on is busy from the click, takes the header's offer away at once, and a second click does nothing", async () => {
+        const answer = deferred<CallResult>();
+        const { deps, calls } = dependencies({ permission: "granted", prompt: "offer", choice: choice() });
+        const push = createPushRegistration(deps);
+        await push.start();
+        expect(push.isOffered()).toBe(true);
+        deps.call = jest.fn(async (name: string, args: Record<string, unknown>) => {
+            calls.push({ name, args });
+            return answer.promise;
+        });
+
+        const turning = push.turnOn();
+        expect(push.state()).toBe("turning_on");
+        expect(push.isOffered()).toBe(false);
+
+        const again = push.turnOn();
+        await settle();
+        expect(calls.filter(c => c.name === "chat_register_device")).toHaveLength(1);
+
+        answer.resolve(registered);
+        expect(await turning).toBeNull();
+        await again;
+        expect(push.state()).toBe("on");
+    });
+
+    test("reads as asking only while the browser's box is open, then busy until the register settles", async () => {
+        const allowed = deferred<string>();
+        const answer = deferred<CallResult>();
+        const { deps, setPermission } = dependencies({ choice: choice() });
+        deps.requestPermission = jest.fn(() => allowed.promise);
+        const push = createPushRegistration(deps);
+        await push.start();
+        deps.call = jest.fn(() => answer.promise);
+
+        const turning = push.turnOn();
+        expect(push.state()).toBe("asking");
+
+        setPermission("granted");
+        allowed.resolve("granted");
+        await settle();
+        expect(push.state()).toBe("turning_on");
+
+        answer.resolve(registered);
+        await turning;
+        expect(push.state()).toBe("on");
+    });
+
+    test("a box closed with no answer is Off again with nothing to say", async () => {
+        const { deps } = dependencies({ prompt: "offer", choice: choice() });
+        deps.requestPermission = jest.fn(async () => "default");
+        const push = createPushRegistration(deps);
+        await push.start();
+
+        expect(await push.turnOn()).toBeNull();
+
+        expect(push.state()).toBe("offered");
+        expect(push.isOffered()).toBe(true);
+    });
+});
+
+// A load that lets go the browser's token remembers it for this church on this browser, so the
+// next load that will not register neither loads Firebase nor calls the platform again; any
+// register here forgets it, so the load after a sign-out that failed to reach the platform still
+// lets go what that person left.
+describe("a release remembered", () => {
+    function mark(initial = false): { read: () => boolean, write: jest.Mock } {
+        let isReleased = initial;
+        return {
+            read: () => isReleased,
+            write: jest.fn((value: boolean) => {
+                isReleased = value;
+            })
+        };
+    }
+
+    test("a load that let go the browser's token is remembered, and the next such load asks nothing", async () => {
+        const released = mark();
+        const first = dependencies({ permission: "granted", choice: choice(), released });
+        await createPushRegistration(first.deps).start();
+        expect(first.calls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+        expect(released.read()).toBe(true);
+
+        const next = dependencies({ permission: "granted", choice: choice(), released });
+        await createPushRegistration(next.deps).start();
+
+        expect(next.deps.getToken).not.toHaveBeenCalled();
+        expect(next.calls).toEqual([]);
+    });
+
+    test("a register forgets it, so the next load that will not register lets go again", async () => {
+        const released = mark(true);
+        const flag = choice("on");
+        const kept = dependencies({ permission: "granted", choice: flag, released });
+        await createPushRegistration(kept.deps).start();
+        expect(released.read()).toBe(false);
+
+        // the next person's load, after a sign-out that expired the cookie but never reached the platform
+        const next = dependencies({ permission: "granted", choice: choice(), released });
+        await createPushRegistration(next.deps).start();
+
+        expect(next.calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "fcm-token-1" } }]);
+    });
+
+    test("a cookie still holding a token is let go whatever was remembered", async () => {
+        const released = mark(true);
+        const { deps, calls, cookies } = dependencies({ permission: "granted", choice: choice(), released });
+        cookies.push("tok-left");
+
+        await createPushRegistration(deps).start();
+
+        expect(calls).toEqual([{ name: "chat_unregister_device", args: { p_token: "tok-left" } }]);
+    });
+
+    test("a release that fails is not remembered", async () => {
+        const released = mark();
+        const { deps } = dependencies({ permission: "granted", choice: choice(), released });
+        deps.call = jest.fn(async () => ({ ok: false, status: 503, error: { code: "rpc.unavailable", severity: "degraded", text: null }, retryAfterSeconds: null }) as CallResult);
+
+        await createPushRegistration(deps).start();
+
+        expect(released.read()).toBe(false);
     });
 });

@@ -252,11 +252,13 @@ describe("this browser's notifications", () => {
     const rows: Array<[string, string | null, string | null, string | null]> = [
         ["offered", "Off", null, "Turn on"],
         ["asking", null, "Choose Allow in your browser", "Turn on"],
+        // from the click until the register settles, with the browser's box closed or never shown
+        ["turning_on", null, null, "Turn on"],
         ["on", "On", null, "Turn off"],
         ["blocked", "Blocked", "Allow it in browser settings, then reload", null],
         // A sign-in that ends with the browser session gets none, and nothing to click: a phone-number
         // sign-in has no Keep me logged in box to point at.
-        ["not_kept", "Off", "Not sent to a sign-in that ends when the browser closes", null],
+        ["not_kept", "Off", "Your sign-in here ends when the browser closes", null],
         ["unavailable", "Not available", "Not set up for Cedar Hill yet", null]
     ];
 
@@ -301,6 +303,12 @@ describe("this browser's notifications", () => {
 
         await w.setProps({ push: "asking" });
         expect(w.get("[data-testid='push-row'] button").attributes("disabled")).toBeDefined();
+        expect(w.find("[data-testid='push-row'] .chat-spinner").exists()).toBe(true);
+
+        // and held, with its spinner, until the register settles, whether or not the browser asked
+        await w.setProps({ push: "turning_on" });
+        expect(w.get("[data-testid='push-row'] button").attributes("disabled")).toBeDefined();
+        expect(w.find("[data-testid='push-row'] .chat-spinner").exists()).toBe(true);
     });
 
     test("Turn off asks the block", async () => {
