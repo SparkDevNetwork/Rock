@@ -1313,3 +1313,39 @@ describe("a failed reply's own choices", () => {
         expect(w.emitted("discard")).toEqual([["a"]]);
     });
 });
+
+// Older replies are asked for only once the thread is placed at its newest, so the top mark in
+// view while it opens asks for nothing; once placed with the mark still in view, it asks.
+describe("loading older replies", () => {
+    const original = window.IntersectionObserver;
+    let report: (isIntersecting: boolean) => void = () => undefined;
+
+    beforeEach(() => {
+        window.IntersectionObserver = class {
+            constructor(callback: IntersectionObserverCallback) {
+                report = isIntersecting => callback([{ isIntersecting } as IntersectionObserverEntry], this as unknown as IntersectionObserver);
+            }
+            observe(): void { /* reported by the test */ }
+            unobserve(): void { /* as above */ }
+            disconnect(): void { /* as above */ }
+            takeRecords(): IntersectionObserverEntry[] {
+                return [];
+            }
+        } as unknown as typeof IntersectionObserver;
+    });
+
+    afterEach(() => {
+        window.IntersectionObserver = original;
+    });
+
+    test("asks for nothing before the thread is placed, and asks once it is placed with the top still in view", async () => {
+        const w = draw({ root: null, replies: [], hasMore: true });
+        await afterOpen();
+        report(true);
+        expect(w.emitted("loadOlder")).toBeUndefined();
+
+        await w.setProps({ root: rootWith(3), replies: replies(3) });
+        await afterOpen();
+        expect(w.emitted("loadOlder")).toHaveLength(1);
+    });
+});
