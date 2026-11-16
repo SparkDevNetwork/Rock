@@ -168,7 +168,8 @@
         isFailed: boolean;
     };
 
-    type Tab = {
+    /** One tab of the list: every emoji, or one chip's. */
+    type ReactionTab = {
         key: string;
         code: string | null;
         emoji: string | null;
@@ -258,9 +259,9 @@
 
     // #region Computed Values
 
-    const tabs = computed((): Tab[] => [
+    const tabs = computed((): ReactionTab[] => [
         { key: allTab, code: null, emoji: null, imageUrl: null, count: props.reactions.reduce((sum, reaction) => sum + reaction.count, 0), label: "All" },
-        ...props.reactions.map((reaction): Tab => ({ key: reaction.code, code: reaction.code, emoji: reaction.emoji, imageUrl: reaction.image_url, count: reaction.count, label: reaction.label }))
+        ...props.reactions.map((reaction): ReactionTab => ({ key: reaction.code, code: reaction.code, emoji: reaction.emoji, imageUrl: reaction.image_url, count: reaction.count, label: reaction.label }))
     ].map(option => ({ ...option, label: `${option.label}, ${option.count}` })));
 
     const shown = computed((): TabList => lists.get(tab.value) ?? { reactors: [], hasMore: false, isLoading: false, isFailed: false });
