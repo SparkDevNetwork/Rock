@@ -178,6 +178,9 @@
                         </li>
                     </ul>
 
+                    <!-- The list's end, which asks for the next page as it nears the scroller's view. -->
+                    <div v-if="!empty" ref="endElement" aria-hidden="true"></div>
+
                     <div v-if="directory.isLoadingMore" class="chat-fd-more" data-testid="directory-more">
                         <span class="chat-spinner"></span>Loading more channels…
                     </div>
@@ -712,6 +715,7 @@
     import IconButton from "../ui/iconButton.partial.obs";
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import { messageOrOffline } from "../errors.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
 
     // #region Types
@@ -813,6 +817,7 @@
     const viewElement = ref<HTMLElement>();
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
+    const endElement = ref<HTMLElement>();
 
     /** Whether rows have passed under the tools, which draws the hairline. */
     const isScrolled = ref(false);
@@ -820,12 +825,17 @@
     /** The skeleton rows' widths, as the design draws them, so five rows do not look stamped out. */
     const skeletonWidths = [62, 48, 70, 54, 40];
 
-    /** How near the list's end, in pixels, the next page is asked for: about four rows ahead. */
-    const loadMoreDistance = 360;
-
     const idle: JoinState = { kind: "idle" };
 
     const announcer = useAnnouncer();
+
+    // The next page is asked about four rows before the list's end shows. The rooms drop a second
+    // ask while one is out, and ask nothing once the list has ended or a page has failed.
+    usePagingTrigger(endElement, () => emit("loadMore"), {
+        enabled: () => props.directory.hasMore && !props.directory.isLoadingMore && !props.directory.moreError,
+        root: () => scrollElement.value ?? null,
+        margin: "360px"
+    });
 
     // #endregion Values
 
@@ -963,12 +973,6 @@
         }
 
         isScrolled.value = scroller.scrollTop > 2;
-
-        // The rooms drop a second ask while one is out, and ask nothing once the list has ended.
-        const isNearEnd = scroller.scrollHeight - scroller.scrollTop - scroller.clientHeight < loadMoreDistance;
-        if (isNearEnd && props.directory.hasMore && !props.directory.isLoadingMore && !props.directory.moreError) {
-            emit("loadMore");
-        }
     }
 
     /**
