@@ -112,7 +112,7 @@
     }
 
     function onHoverNode(node: SankeyDiagramLevelNode, e: MouseEvent): void {
-        emit("showTooltip", `<strong>${escapeHtml(node.name ?? "")}</strong>${props.nodeTooltipActionLabel ? `<br>${props.nodeTooltipActionLabel}` : ""}: ${node.totalUnits}`, e);
+        emit("showTooltip", `<strong>${escapeHtml(node.name ?? "")}</strong>${props.nodeTooltipActionLabel ? `<br>${escapeHtml(props.nodeTooltipActionLabel)}` : ""}: ${node.totalUnits}`, e);
     }
 
     function onUnHover(): void {
