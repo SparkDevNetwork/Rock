@@ -17,7 +17,7 @@
         <Icon name="thread" size="sm" />
         <b data-testid="thread-count">{{ count }}</b>
         <span class="chat-tsum-faces" data-testid="thread-faces">
-            <Avatar v-for="(face, index) in faces" :key="index" :people="[face]" :size="18" />
+            <Avatar v-if="faces.length > 0" :people="faces" :size="18" isOneLetter />
         </span>
         <span v-if="isUnread" class="chat-tsum-dot" data-testid="thread-unread-dot"></span>
         <!-- Inside the pill, so the pill stays one element; fixed, so it is placed against the window. -->
@@ -31,6 +31,9 @@
 
 <style scoped>
 .chat-tsum {
+    /* The faces' pile rings each face in the pill's own fill, so an initial is never cut. */
+    --chat-av-ring: var(--chat-raised);
+
     position: relative;
     display: inline-flex;
     gap: 6px;
@@ -83,19 +86,6 @@
 
 .chat-tsum-faces {
     display: inline-flex;
-}
-
-/*
-    The pill's faces overlap a fixed 4px, ringed in the pill's own fill so an initial is never cut.
-    One letter at 18px reads at 9px; the avatar's own 0.37 ratio is set inline, so this must win over it.
-*/
-.chat-tsum-faces :deep(.chat-av) {
-    font-size: 9px !important;
-    box-shadow: 0 0 0 1.5px var(--chat-raised);
-}
-
-.chat-tsum-faces > :deep(.chat-pile + .chat-pile) {
-    margin-left: -4px;
 }
 
 /* At the outer top corner: the right for another person's message, the left for the reader's own. */
