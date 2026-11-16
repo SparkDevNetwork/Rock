@@ -221,7 +221,8 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
         [TestMethod]
         public void IsSignInPersisted_ReadsTheSignInTicket()
         {
-            var kept = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "ted.decker", true, 30 ) ), null );
+            // Keep me logged in, as Rock's forms timeout of thirty days writes it.
+            var kept = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "ted.decker", true, 43200 ) ), null );
             var forTheSession = new GenericPrincipal( new FormsIdentity( new FormsAuthenticationTicket( "ted.decker", false, 30 ) ), null );
             var notTheSignInCookie = new GenericPrincipal( new GenericIdentity( "ted.decker" ), null );
 
@@ -229,6 +230,20 @@ namespace Rock.Tests.Communication.Chat.Platform.Session
             Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( forTheSession ) );
             Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( notTheSignInCookie ) );
             Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( null ) );
+        }
+
+        [TestMethod]
+        public void IsSignInPersisted_APersistedTicketThatEndsWithinADayIsNotKept()
+        {
+            // A passwordless code sign-in writes a persisted cookie that lives two hours by default,
+            // and ends on its own with no sign-out Rock sees, as a session sign-in does.
+            var issued = new DateTime( 2026, 11, 16, 9, 0, 0 );
+            IPrincipal SignedIn( TimeSpan life ) => new GenericPrincipal(
+                new FormsIdentity( new FormsAuthenticationTicket( 1, "ted.decker", issued, issued.Add( life ), true, string.Empty ) ), null );
+
+            Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( SignedIn( TimeSpan.FromMinutes( 120 ) ) ), "a code sign-in" );
+            Assert.IsFalse( ChatSessionHelper.IsSignInPersisted( SignedIn( TimeSpan.FromDays( 1 ).Subtract( TimeSpan.FromMinutes( 1 ) ) ) ), "just under a day" );
+            Assert.IsTrue( ChatSessionHelper.IsSignInPersisted( SignedIn( TimeSpan.FromDays( 1 ) ) ), "a day" );
         }
 
         [TestMethod]
