@@ -86,7 +86,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
             rows: [
                 { channel_id: team, channel_type: "shared", name: "Team", dm_people: null, dm_other_count: null, room_kind: "channel", title: "Team" },
                 { channel_id: pairWithAnna, channel_type: "dm", name: null, dm_people: [{ person_alias_guid: "anna-reyes", nick_name: "Anna", last_name: "Reyes", avatar_url: null }], dm_other_count: 1, room_kind: "person", title: "Anna Reyes" }
-            ]
+            ],
+            roomKindOf: (channelId: string) => channelId === team ? "channel" : channelId === pairWithAnna ? "person" : null
         },
         members: {
             open: jest.fn(async (channelId: string) => {

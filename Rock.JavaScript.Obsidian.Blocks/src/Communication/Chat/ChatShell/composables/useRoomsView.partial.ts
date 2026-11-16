@@ -53,7 +53,10 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     const { shell, activeChannelId, drawnThread } = dependencies;
 
     /** The sidebar row of the open conversation, which carries everything the header draws. */
-    const activeRow = computed((): SidebarRow | null => shell.value.channels.rows.find(r => r.channel_id === shell.value.state.activeChannelId) ?? null);
+    const activeRow = computed((): SidebarRow | null => {
+        const channelId = shell.value.state.activeChannelId;
+        return channelId ? shell.value.channels.rowOf(channelId) ?? null : null;
+    });
 
     /** What chat_get_channel last answered about the open conversation, or null before it lands. */
     const activeFacts = computed((): ChannelFacts | null => activeChannelId.value ? shell.value.rooms.factsOf(activeChannelId.value) : null);
@@ -132,7 +135,7 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
 
         // the open room may be one the list holds no row for, which only its facts place
         const open = shell.value.state.activeChannelId;
-        const openKind = open && !kinds[open] ? shell.value.roomKindOf(open) : null;
+        const openKind = open && !kinds[open] ? shell.value.channels.roomKindOf(open) : null;
         if (open && openKind) {
             kinds[open] = openKind;
         }
@@ -151,7 +154,7 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     });
 
     /** The sidebar row of the open thread's conversation, which says whether its composer offers the @ picker. */
-    const threadRow = computed((): SidebarRow | null => drawnThread.value ? shell.value.channels.rows.find(r => r.channel_id === drawnThread.value?.channelId) ?? null : null);
+    const threadRow = computed((): SidebarRow | null => drawnThread.value ? shell.value.channels.rowOf(drawnThread.value.channelId) ?? null : null);
 
     /** The open thread's conversation kind, which picks its look and its composer's foot. */
     const threadKind = computed((): HeaderRoomKind | null => drawnThread.value ? roomKinds.value[drawnThread.value.channelId] ?? null : null);
@@ -172,7 +175,7 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
     /** The sidebar row of the conversation New message found, which says how its feed is drawn. */
     const foundRow = computed((): SidebarRow | null => {
         const channelId = shell.value.directMessages.lookup.channelId;
-        return channelId ? shell.value.channels.rows.find(r => r.channel_id === channelId) ?? null : null;
+        return channelId ? shell.value.channels.rowOf(channelId) ?? null : null;
     });
 
     /** The found conversation's last few messages as a feed draws a timeline: all of it read, nothing unread. */
@@ -187,7 +190,7 @@ export function useRoomsView(dependencies: RoomsViewDependencies) {
 
     /** Whether the person is reading a channel they have not joined, where they cannot act on its messages. */
     function isPreviewingRoom(channelId: string): boolean {
-        const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
+        const row = shell.value.channels.rowOf(channelId);
         return !!row && !row.is_member;
     }
 

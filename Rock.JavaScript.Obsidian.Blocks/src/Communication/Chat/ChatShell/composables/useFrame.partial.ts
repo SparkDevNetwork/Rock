@@ -481,8 +481,7 @@ export function useFrame(dependencies: FrameDependencies): Frame {
      * whatever asks.
      */
     function openAddPeople(channelId: string): void {
-        const row = shell.value.channels.rows.find(r => r.channel_id === channelId);
-        if (row?.room_kind === "person") {
+        if (shell.value.channels.roomKindOf(channelId) === "person") {
             return;
         }
 
