@@ -76,7 +76,7 @@ const self = member("Jordan", "Lee", { person_alias_guid: me });
 
 import { join } from "path";
 import { away, online } from "../statusShapes";
-import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, viewer } from "../statusStore";
+import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, shellFolder, StatusStore, styleRules, viewer } from "../statusStore";
 
 let wrapper: VueWrapper | null = null;
 
@@ -549,7 +549,7 @@ describe("removing a row", () => {
         const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "removing" } } });
 
         const row = w.findAll("[data-testid='member-row']")[2];
-        expect(row.classes()).toContain("is-busy");
+        expect(row.get(".chat-lrow").classes()).toContain("is-dimmed");
         expect(read(row.get("[data-testid='member-removing']").element)).toBe("Removing");
         expect(row.find("[data-testid='member-more']").exists()).toBe(false);
         expect(row.find("[data-testid='member-message']").exists()).toBe(false);
@@ -658,8 +658,8 @@ describe("a row's actions follow the pointer as the message action bar does", ()
         jest.useRealTimers();
     });
 
-    const hotRows = (w: VueWrapper): number[] => w.findAll("[data-testid='member-row']").flatMap((r, i) => r.classes().includes("is-hot") ? [i] : []);
-    const isInstant = (w: VueWrapper): boolean => w.get("[data-testid='members-panel']").classes().includes("is-instant");
+    const hotRows = (w: VueWrapper): number[] => w.findAll("[data-testid='member-row'] .chat-lrow").flatMap((r, i) => r.classes().includes("is-held") ? [i] : []);
+    const isInstant = (w: VueWrapper): boolean => w.get("[data-testid='member-row'] .chat-lrow").classes().includes("is-instant");
 
     async function over(w: VueWrapper, index: number): Promise<void> {
         await w.findAll("[data-testid='member-who']")[index].element.dispatchEvent(new Event("pointerover", { bubbles: true }));
@@ -814,11 +814,13 @@ describe("online status", () => {
     });
 
     test("rings its badge in the panel's fill and a row's hover", () => {
-        expect(setsBothRings(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-row(\[|:|$)/)).toBe(true);
+        // The panel's fill is the members' item, and the hover over it the list row's own.
+        expect(styleRules(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-row$/).join(";")).toMatch(/--chat-av-ring:\s*var\(--chat-surface\)/);
+        expect(styleRules(join(shellFolder, "ui/listRow.partial.obs"), /^\.chat-lrow$/).join(";")).toMatch(/--chat-av-ring-over:\s*var\(--chat-lrow-fill\)/);
     });
 
     test("rings its badge in a row's hover as the row draws it", () => {
-        const states = fillsAndRings(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-row:(hover|focus-within)$/);
+        const states = fillsAndRings(join(shellFolder, "ui/listRow.partial.obs"), /^\.chat-lrow$/);
 
         expect(states.length).toBeGreaterThan(0);
         expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));

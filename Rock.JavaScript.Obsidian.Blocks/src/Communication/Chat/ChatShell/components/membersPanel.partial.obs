@@ -25,7 +25,6 @@
 
         <div ref="listElement"
              data-testid="members-panel"
-             :class="{ 'is-instant': hover.isInstant.value }"
              :aria-busy="isLoading ? 'true' : 'false'"
              @pointerover="onPointerOver"
              @pointerleave="onPointerLeave">
@@ -69,54 +68,56 @@
 
                 <section v-for="section in sections" :key="section.title" :aria-label="section.title">
                     <h4 class="chat-mb-sec" data-testid="members-section">{{ section.title }}<span v-if="section.count !== null" data-testid="members-section-count">{{ section.count }}</span></h4>
-                    <!-- A removed row collapses as it leaves. -->
+                    <!--
+                        A removed row collapses as it leaves. Each item is the person's list row, a
+                        refused removal's sentence under it; the row's actions follow the pointer
+                        as the message action bar does, and stay out while a removal runs.
+                    -->
                     <TransitionGroup tag="ul"
                                      class="chat-mb-rows"
-                                     :class="{ 'is-phone': isPhone }"
                                      role="list"
                                      leave-active-class="is-leaving"
                                      @beforeLeave="onRowBeforeLeave">
                         <li v-for="row in section.rows"
                             :key="row.guid"
                             class="chat-mb-row chat-enter"
-                            :class="{ 'is-busy': row.isRemoving, 'is-hot': hover.isShown.value && hover.shownKey.value === row.guid }"
                             :data-hot-id="row.guid"
                             :style="{ '--chat-enter-i': entranceOrder.get(row.guid) }"
                             data-testid="member-row">
-                            <button type="button"
-                                    class="chat-mb-who"
-                                    data-testid="member-who"
-                                    :data-person="row.guid"
-                                    :aria-label="labelOf(row)"
-                                    @click="emit('person', row.guid)">
-                                <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" :status="statusOf(row.guid)" />
-                                <span class="chat-mb-txt">
-                                    <span class="chat-mb-name">
-                                        <b>{{ row.name }}</b>
-                                        <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
-                                        <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
-                                    </span>
-                                </span>
-                            </button>
-                            <!-- Drawn on every row, empty where there is nothing to do, so each row ends with its inset. -->
-                            <span class="chat-mb-acts">
-                                <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
-                                <template v-else>
-                                    <Button v-if="row.canMessage"
-                                            size="sm"
-                                            icon="message"
-                                            data-testid="member-message"
-                                            :aria-label="`Message ${row.name}`"
-                                            @click="emit('message', row.guid)">Message</Button>
-                                    <Menu v-if="row.menu"
-                                          icon="dots"
-                                          :label="`More for ${row.name}`"
-                                          :items="row.menu.items"
-                                          :note="row.menu.note"
-                                          :anchorAttrs="{ class: 'chat-mb-more', 'data-testid': 'member-more', 'data-person': row.guid }"
-                                          @select="onMenuSelect(row.guid, $event)" />
+                            <ListRow interactive
+                                     :label="labelOf(row)"
+                                     :hitAttrs="{ 'data-testid': 'member-who', 'data-person': row.guid }"
+                                     :actionsShown="row.isRemoving || isHot(row)"
+                                     :instant="hover.isInstant.value"
+                                     :dimmed="row.isRemoving"
+                                     @press="onWho(row)">
+                                <template #lead>
+                                    <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" :status="statusOf(row.guid)" />
                                 </template>
-                            </span>
+                                <span class="chat-mb-name">
+                                    <b>{{ row.name }}</b>
+                                    <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
+                                    <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
+                                </span>
+                                <template #actions>
+                                    <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
+                                    <template v-else>
+                                        <Button v-if="row.canMessage"
+                                                size="sm"
+                                                icon="message"
+                                                data-testid="member-message"
+                                                :aria-label="`Message ${row.name}`"
+                                                @click="emit('message', row.guid)">Message</Button>
+                                        <Menu v-if="row.menu"
+                                              icon="dots"
+                                              :label="`More for ${row.name}`"
+                                              :items="row.menu.items"
+                                              :note="row.menu.note"
+                                              :anchorAttrs="{ 'data-testid': 'member-more', 'data-person': row.guid }"
+                                              @select="onMenuSelect(row.guid, $event)" />
+                                    </template>
+                                </template>
+                            </ListRow>
                             <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
                                 <Icon name="alert" size="xs" />
                                 <span>{{ row.refusal }}</span>
@@ -205,53 +206,9 @@
     list-style: none;
 }
 
-/* A badge rings in the panel's fill, under the row's hover as the row draws it. */
+/* A badge rings in the panel's fill; the list row rings it in its own hover over that. */
 .chat-mb-row {
     --chat-av-ring: var(--chat-surface);
-    --chat-av-ring-over: transparent;
-
-    position: relative;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    border-radius: var(--chat-r-row);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-row:hover,
-.chat-mb-row:focus-within {
-    --chat-av-ring-over: var(--chat-hover);
-
-    background: var(--chat-hover);
-}
-
-.chat-mb-who {
-    display: flex;
-    flex: 1;
-    gap: 10px;
-    align-items: center;
-    min-width: 0;
-    padding: 6px 8px;
-    color: inherit;
-    text-align: left;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-row);
-}
-
-.chat-mb-who :deep(.chat-av) {
-    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-who:hover :deep(.chat-av) {
-    box-shadow: 0 0 0 2px var(--chat-surface), 0 0 0 3.5px var(--chat-line-strong);
-}
-
-.chat-mb-txt {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    line-height: 1.3;
 }
 
 .chat-mb-name {
@@ -277,37 +234,6 @@
     color: var(--chat-muted);
 }
 
-/*
-    A row's actions show on the row the pointer rests on, or on focus, and always where there is no
-    hover, as on a phone. They fade in and out as the pointer arrives and leaves, but pass from row
-    to row at once, which the panel marks as is-instant.
-*/
-.chat-mb-acts {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-    padding-right: 6px;
-    opacity: 0;
-    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.is-instant .chat-mb-acts {
-    transition: none;
-}
-
-.chat-mb-row.is-hot .chat-mb-acts,
-.chat-mb-row:focus-within .chat-mb-acts,
-.chat-mb-row.is-busy .chat-mb-acts,
-.chat-mb-row:has([aria-expanded="true"]) .chat-mb-acts,
-.chat-mb-rows.is-phone .chat-mb-acts {
-    opacity: 1;
-}
-
-.chat-mb-acts :deep(.chat-mb-more) {
-    width: 30px;
-    height: 30px;
-}
-
 .chat-mb-busy {
     display: inline-flex;
     gap: 7px;
@@ -322,19 +248,13 @@
     height: 12px;
 }
 
-/* A row the door is working on dims and takes no presses until it answers. */
-.chat-mb-row.is-busy .chat-mb-who {
-    pointer-events: none;
-    opacity: .55;
-}
-
+/* Under the row, in line with the name. */
 .chat-mb-err {
     display: flex;
-    flex-basis: 100%;
     gap: 7px;
     align-items: flex-start;
     padding: 7px 6px 7px 10px;
-    margin: 0 8px 8px 54px;
+    margin: 0 8px 8px 56px;
     font-size: var(--chat-fs-ui);
     line-height: 1.4;
     color: var(--chat-danger-ink);
@@ -381,12 +301,6 @@
     font-size: var(--chat-fs-small);
     color: var(--chat-muted);
     text-align: center;
-}
-
-@media (hover: none) {
-    .chat-mb-acts {
-        opacity: 1;
-    }
 }
 
 .chat-mb-hint {
@@ -460,6 +374,7 @@
     import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
@@ -774,6 +689,13 @@
         hover.follow(null);
     }
 
+    /** The row's own press opens the profile; a row the door is working on takes none until it answers. */
+    function onWho(row: DrawnMember): void {
+        if (!row.isRemoving) {
+            emit("person", row.guid);
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
@@ -781,6 +703,11 @@
     /** What a row's face shows: her own row is a face others see too, so it shows nothing of her Appear offline. */
     function statusOf(guid: string): FaceStatus | null {
         return shownStatus(faceStatusOf(guid), false);
+    }
+
+    /** Whether the pointer's actions are on this row: it has rested here, or passed here from a row that had them. */
+    function isHot(row: DrawnMember): boolean {
+        return hover.isShown.value && hover.shownKey.value === row.guid;
     }
 
     /** The row's name as a screen reader hears it: the name, the person's status, then who they are here. */
