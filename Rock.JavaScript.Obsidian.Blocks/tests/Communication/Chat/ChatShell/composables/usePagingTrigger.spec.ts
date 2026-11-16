@@ -141,6 +141,24 @@ describe("loading more as the reader scrolls", () => {
         expect(loadMore).toHaveBeenCalledTimes(2);
     });
 
+    // A failed page is the list's to show, with a control that asks again; asking again at once
+    // would only repeat the failure, over and over, while the sentinel stays in view.
+    it("lets a page that failed go without asking again at once, and asks on the sentinel's next arrival", async () => {
+        // fails once; an ask after it waits, so an ask repeated at once is counted, not run forever
+        const loadMore = jest.fn((): Promise<void> => new Promise(() => undefined));
+        loadMore.mockImplementationOnce(() => Promise.reject(new Error("offline")));
+        list(loadMore);
+        await settle();
+        observers[0].see(true);
+        await settle();
+        expect(loadMore).toHaveBeenCalledTimes(1);
+
+        observers[0].see(false);
+        observers[0].see(true);
+        await settle();
+        expect(loadMore).toHaveBeenCalledTimes(2);
+    });
+
     it("stops watching when the list goes", async () => {
         list(jest.fn());
         await settle();
