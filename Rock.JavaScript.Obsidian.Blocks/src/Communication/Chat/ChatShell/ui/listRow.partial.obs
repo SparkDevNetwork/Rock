@@ -1,0 +1,163 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="as"
+               class="chat-lrow"
+               :class="{ 'is-interactive': interactive, 'is-selected': selected }">
+        <button v-if="interactive"
+                type="button"
+                class="chat-lrow-hit"
+                :aria-label="label || undefined"
+                :aria-labelledby="label ? undefined : mainId"
+                :aria-current="selected ? 'true' : undefined"
+                @click="emit('press', $event)"></button>
+        <span v-if="$slots.lead" class="chat-lrow-lead"><slot name="lead"></slot></span>
+        <span :id="mainId" class="chat-lrow-main"><slot></slot></span>
+        <span v-if="$slots.meta" class="chat-lrow-meta"><slot name="meta"></slot></span>
+        <span v-if="$slots.actions" class="chat-lrow-actions"><slot name="actions"></slot></span>
+    </component>
+</template>
+
+<style scoped>
+/*
+    A row's fill is set by its state alone, and a face in it rings itself in that fill over the
+    list, so the ring always matches what is behind it.
+*/
+.chat-lrow {
+    --chat-lrow-fill: transparent;
+    --chat-av-ring-over: var(--chat-lrow-fill);
+
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 10px;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-text);
+    background: var(--chat-lrow-fill);
+    border-radius: var(--chat-r-row);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* One hover tint, only on a row that opens something. */
+.chat-lrow.is-interactive:hover {
+    --chat-lrow-fill: var(--chat-hover);
+}
+
+.chat-lrow.is-selected {
+    --chat-lrow-fill: var(--chat-brand-wash);
+}
+
+.chat-lrow-hit {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    padding: 0;
+    background: none;
+    border: 0;
+    border-radius: inherit;
+}
+
+.chat-lrow-hit:focus-visible {
+    outline-offset: -2px;
+}
+
+.chat-lrow-hit:active {
+    background: var(--chat-press);
+}
+
+/* Over the button, letting a press through to it. */
+.chat-lrow.is-interactive > .chat-lrow-lead,
+.chat-lrow.is-interactive > .chat-lrow-main,
+.chat-lrow.is-interactive > .chat-lrow-meta {
+    position: relative;
+    pointer-events: none;
+}
+
+.chat-lrow-lead {
+    display: grid;
+    flex: none;
+    place-items: center;
+}
+
+.chat-lrow-main {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-lrow-meta {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    color: var(--chat-muted);
+}
+
+/* The row's own buttons, over the row's, shown while the row is hovered or holds focus. */
+.chat-lrow-actions {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-lrow:hover .chat-lrow-actions,
+.chat-lrow:focus-within .chat-lrow-actions {
+    opacity: 1;
+}
+
+/* A finger cannot hover, so its actions are always there. */
+@media (hover: none) {
+    .chat-lrow-actions {
+        opacity: 1;
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { RowElement } from "../types.partial";
+
+    // One row of a list: a lead (a face or a mark), what it says, a meta at its end and actions.
+    // A row that opens something is one button under the whole row, so its actions stay buttons of
+    // their own rather than buttons inside a button.
+    defineProps({
+        /** Opens something when pressed: a button under the row, and the hover tint. */
+        interactive: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The current one of the list: the church's wash, and its button says so. */
+        selected: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The button's name where what the row says is not the whole of it; what it says by default. */
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The element drawn, li inside a list. */
+        as: {
+            type: String as PropType<RowElement>,
+            default: "div"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "press", event: MouseEvent): void;
+    }>();
+
+    const mainId = `chat-lrow-${newGuid()}`;
+</script>

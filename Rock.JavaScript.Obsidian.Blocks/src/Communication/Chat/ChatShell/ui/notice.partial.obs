@@ -1,0 +1,141 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="hostElement" class="chat-notices" role="status">
+        <!-- Always on the page, so a screen reader is already listening when a notice is added to it. -->
+        <TransitionGroup name="chat-notice">
+            <div v-for="item in notices.items.value"
+                 :key="item.key"
+                 class="chat-notice"
+                 :class="{ 'is-failure': item.tone === 'failure', 'has-end': !!item.action || isDismissible(item) }"
+                 :data-key="item.key"
+                 :data-code="item.code">
+                <span class="chat-notice-ic"><Icon :name="iconOf(item)" size="sm" /></span>{{ item.text }}
+                <Button v-if="item.action" kind="ghost" size="sm" @click="item.action.onPress()">{{ item.action.label }}</Button>
+                <IconButton v-if="isDismissible(item)"
+                            icon="x"
+                            size="sm"
+                            label="Dismiss"
+                            @click="notices.dismiss(item.key)" />
+            </div>
+        </TransitionGroup>
+    </div>
+</template>
+
+<style scoped>
+/*
+    One place for every floating notice: centred, 14px above the foot of the place the frame gives
+    it, which is the composer's top edge, so nothing covers the conversation's first lines.
+*/
+.chat-notices {
+    position: absolute;
+    right: 0;
+    bottom: 14px;
+    left: 0;
+    z-index: var(--chat-z-notice);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    pointer-events: none;
+}
+
+/* A raised pill, the same in both themes; only its icon carries a status colour. */
+.chat-notice {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    height: 34px;
+    padding: 0 14px;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--chat-text);
+    white-space: nowrap;
+    pointer-events: auto;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-pop);
+}
+
+.chat-notice-ic {
+    display: inline-grid;
+    color: var(--chat-icon);
+}
+
+.chat-notice.is-failure .chat-notice-ic {
+    color: var(--chat-danger-ink);
+}
+
+/* A pill that ends in a button sits its button tight to the edge. */
+.chat-notice.has-end {
+    padding-right: 6px;
+}
+
+/* Rises toward where it rests and sinks as it goes; under reduced motion, a fade where it stands. */
+.chat-notice-enter-active {
+    --chat-pop-from: var(--chat-rise);
+    animation: chat-pop-in var(--chat-d-toast-in) var(--chat-ease-in);
+}
+
+.chat-notice-leave-active {
+    --chat-pop-from: var(--chat-rise);
+    animation: chat-pop-out var(--chat-d-toast-out) var(--chat-ease-out) forwards;
+}
+</style>
+
+<script setup lang="ts">
+    import { onBeforeUnmount, ref, watch } from "vue";
+    import Button from "./button.partial.obs";
+    import Icon from "./icon.partial.obs";
+    import IconButton from "./iconButton.partial.obs";
+    import { tokenDuration } from "./brand.partial";
+    import { isDismissible, isPassing, NoticeItem, useNotices } from "./notices.partial";
+
+    // The one host of the session's notices. A passing notice's life starts when it is first
+    // drawn; one let go some other way takes its timer with it. A failure has no timer: the person
+    // may need to act on it, so it stays until they let it go.
+
+    const notices = useNotices();
+
+    /** The design's toast life, used where the sheet is not on the page. */
+    const fallbackLifeMs = 2600;
+
+    const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+    const hostElement = ref<HTMLElement>();
+
+    function iconOf(item: NoticeItem): string {
+        return item.icon ?? (item.tone === "failure" ? "alert" : "info");
+    }
+
+    /** How long a passing notice stays, as the sheet names it. */
+    function lifeMs(): number {
+        return hostElement.value ? tokenDuration(hostElement.value, "--chat-d-toast-life", fallbackLifeMs) : fallbackLifeMs;
+    }
+
+    // Maps and sets are walked with forEach: the chat's build does not iterate them with for-of.
+    watch(notices.items, all => {
+        const passing = all.filter(isPassing).map(item => item.key);
+
+        timers.forEach((timer, key) => {
+            if (!passing.includes(key)) {
+                clearTimeout(timer);
+                timers.delete(key);
+            }
+        });
+
+        for (const key of passing) {
+            if (!timers.has(key)) {
+                timers.set(key, setTimeout(() => {
+                    timers.delete(key);
+                    notices.dismiss(key);
+                }, lifeMs()));
+            }
+        }
+    }, { immediate: true });
+
+    onBeforeUnmount(() => {
+        timers.forEach(timer => clearTimeout(timer));
+        timers.clear();
+    });
+</script>

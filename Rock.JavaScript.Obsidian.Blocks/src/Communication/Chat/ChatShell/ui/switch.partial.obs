@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
     import { PropType, ref } from "vue";
+    import { ControlSize } from "../types.partial";
 
     defineProps({
         isOn: {
@@ -80,7 +81,7 @@
 
         /** A settings row's 36px track, or the small 28px one a foot line holds. */
         size: {
-            type: String as PropType<"md" | "sm">,
+            type: String as PropType<ControlSize>,
             default: "md"
         }
     });

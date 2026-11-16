@@ -41,14 +41,14 @@
 */
 .chat-status {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: var(--chat-status-s);
+    height: var(--chat-status-s);
     color: var(--chat-media-fg);
     background: var(--chat-presence-online);
     border-radius: var(--chat-r-full);
     box-shadow:
-        0 0 0 2px var(--chat-av-ring-over, transparent),
-        0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+        0 0 0 var(--chat-status-ring) var(--chat-av-ring-over, transparent),
+        0 0 0 var(--chat-status-ring) var(--chat-av-ring, var(--chat-surface));
 }
 
 .chat-status[data-state="away"] {
@@ -64,8 +64,8 @@
     background: linear-gradient(var(--chat-av-ring-over, transparent), var(--chat-av-ring-over, transparent)), var(--chat-av-ring, var(--chat-surface));
     box-shadow:
         inset 0 0 0 1.5px var(--chat-icon),
-        0 0 0 2px var(--chat-av-ring-over, transparent),
-        0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+        0 0 0 var(--chat-status-ring) var(--chat-av-ring-over, transparent),
+        0 0 0 var(--chat-status-ring) var(--chat-av-ring, var(--chat-surface));
 }
 
 /* All three glyphs are drawn, so a change of state crossfades one into the next. */
@@ -161,12 +161,15 @@
     const isChanging = computed(() => props.status.revision > mountedRevision);
 
     /**
-     * Centred on the rim at 45 degrees: the circle's edge sits 0.146 of the face in from its
-     * corner, less half the badge.
+     * Sized with the face: 12px on a 44px face, never under 12px, so it reads as one mark on a
+     * sidebar row and on a profile's large face. Its ring is 2px, and 3px from a 64px face up,
+     * where 2px reads as a hairline. Centred on the rim at 45 degrees: the circle's edge sits
+     * 0.146 of the face in from its corner, less half the badge.
      */
     const place = computed(() => {
-        const offset = `${Math.round((props.faceSize * 0.146 - 6) * 10) / 10}px`;
-        return { right: offset, bottom: offset };
+        const size = Math.max(12, Math.round(props.faceSize * 12 / 44));
+        const offset = `${Math.round((props.faceSize * 0.146 - size / 2) * 10) / 10}px`;
+        return { right: offset, bottom: offset, "--chat-status-s": `${size}px`, "--chat-status-ring": props.faceSize >= 64 ? "3px" : "2px" };
     });
 
     // #endregion Values

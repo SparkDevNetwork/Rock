@@ -1,0 +1,179 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button ref="buttonElement"
+            type="button"
+            class="chat-btn"
+            :class="[`is-${kind}`, `is-${size}`, { 'is-block': block }]"
+            :disabled="disabled || undefined"
+            :aria-disabled="busy ? 'true' : undefined"
+            :aria-busy="busy ? 'true' : undefined"
+            @click="onClick">
+        <span v-if="busy" class="chat-spinner" aria-hidden="true"></span>
+        <Icon v-else-if="icon" :name="icon" size="sm" />
+        <slot></slot>
+    </button>
+</template>
+
+<style scoped>
+/*
+    Every button with words: one height per size, 8px corners, the interface's type. A kind changes
+    colours only, so two buttons side by side always line up. The border is always drawn, clear
+    where a kind has no line, so every kind is the same size.
+*/
+.chat-btn {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    height: 32px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--chat-text);
+    white-space: nowrap;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--chat-r-control);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-btn.is-sm {
+    height: 28px;
+    padding: 0 10px;
+}
+
+.chat-btn.is-block {
+    width: 100%;
+}
+
+/* A filled kind darkens by a layer over its fill, so any church's colour darkens the same way. */
+.chat-btn.is-brand {
+    color: var(--chat-on-brand);
+    background: var(--chat-brand-fill);
+}
+
+.chat-btn.is-line {
+    background: var(--chat-surface);
+    border-color: var(--chat-line-strong);
+}
+
+.chat-btn.is-ghost {
+    color: var(--chat-text-2);
+}
+
+.chat-btn.is-danger {
+    color: var(--chat-on-danger);
+    background: var(--chat-danger);
+}
+
+/* Hover and press, never on a button that cannot be pressed now. */
+.chat-btn:not(:disabled, [aria-disabled="true"]):hover {
+    box-shadow: inset 0 0 0 999px var(--chat-hover);
+}
+
+.chat-btn:not(:disabled, [aria-disabled="true"]):active {
+    box-shadow: inset 0 0 0 999px var(--chat-press);
+}
+
+.chat-btn.is-line:not(:disabled, [aria-disabled="true"]):hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-btn.is-ghost:not(:disabled, [aria-disabled="true"]):hover {
+    color: var(--chat-text);
+}
+
+.chat-btn.is-danger:not(:disabled, [aria-disabled="true"]):hover {
+    background: var(--chat-danger-hover);
+}
+
+.chat-btn:disabled {
+    opacity: .5;
+}
+
+/* Busy keeps its look and its focus; only the pointer says it will not act yet. */
+.chat-btn[aria-busy="true"] {
+    cursor: progress;
+}
+
+/* The spinner stands where an icon would, at an icon's small size. */
+.chat-btn .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import Icon from "./icon.partial.obs";
+    import { ControlSize } from "../types.partial";
+
+    // The one button with words. A screen passes its words in the slot, in sentence case, and the
+    // kind that says what the button does: the church's fill for the one main action, a line for
+    // the others beside it, a ghost for a quiet one, danger for one that destroys.
+    const props = defineProps({
+        /** What the button does, in colour only. */
+        kind: {
+            type: String as PropType<"brand" | "line" | "ghost" | "danger">,
+            default: "line"
+        },
+
+        /** Small sits in a row of a list or a strip; the middle size everywhere else. */
+        size: {
+            type: String as PropType<ControlSize>,
+            default: "md"
+        },
+
+        /**
+         * Working on what it was pressed for: it keeps its focus and says so, rather than being
+         * disabled, since a browser drops focus from a disabled button, and passes no click on.
+         */
+        busy: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Cannot be pressed now. */
+        disabled: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Fills the width of what holds it, as a phone's sheet's actions do. */
+        block: {
+            type: Boolean,
+            default: false
+        },
+
+        /** An icon before the words, by its name in the chat's icon set; none by default. */
+        icon: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", event: MouseEvent): void;
+    }>();
+
+    const buttonElement = ref<HTMLButtonElement>();
+
+    function onClick(event: MouseEvent): void {
+        if (props.busy) {
+            event.preventDefault();
+            return;
+        }
+
+        emit("click", event);
+    }
+
+    /** Focuses the button, for a dialog landing on it or a flow returning to it. */
+    function focus(): void {
+        buttonElement.value?.focus();
+    }
+
+    defineExpose({ buttonElement, focus });
+</script>

@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-empty" :class="`is-${tone}`">
+        <p class="chat-empty-title">{{ title }}</p>
+        <p v-if="text" class="chat-empty-text">{{ text }}</p>
+        <Button v-if="actionLabel"
+                v-bind="actionAttrs"
+                class="chat-empty-action"
+                size="sm"
+                :icon="actionIcon"
+                @click="emit('action')">{{ actionLabel }}</Button>
+    </div>
+</template>
+
+<style scoped>
+/* A few words, centred in what holds them, with no tile; an error is the same words with its action. */
+.chat-empty {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+    padding: 48px 32px 24px;
+    text-align: center;
+}
+
+.chat-empty-title {
+    margin: 0;
+    font-size: var(--chat-fs-body);
+    font-weight: 650;
+    color: var(--chat-text);
+}
+
+.chat-empty-text {
+    max-width: 30ch;
+    margin: 0;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.45;
+    color: var(--chat-muted);
+}
+
+.chat-empty-action {
+    margin-top: 12px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Button from "./button.partial.obs";
+
+    // What a list or a panel says when it has nothing to show, or could not load: words only, one
+    // look and one place for both, so an error never sits above a list that says the opposite.
+    defineProps({
+        /** The one line that says what is so, in sentence case. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** A muted line under it, saying what to do; none by default. */
+        text: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Empty, or an error, which offers its Try again. */
+        tone: {
+            type: String as PropType<"empty" | "error">,
+            default: "empty"
+        },
+
+        /** The action's words, such as Try again; no button without them. */
+        actionLabel: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        actionIcon: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Attributes for the action's button, such as the test id a screen's tests find it by. */
+        actionAttrs: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({})
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "action"): void;
+    }>();
+</script>

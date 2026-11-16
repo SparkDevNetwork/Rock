@@ -1103,3 +1103,16 @@ export type FailureWords = {
     /** Whether asking the same again can pass, which is when a Try again is offered at all. */
     canRetry: boolean;
 };
+
+// #region Sizes the shared parts take
+
+/** A control's two heights: small in a list row or a strip, the middle size everywhere else. */
+export type ControlSize = "sm" | "md";
+
+/** The sizes an icon is drawn at. */
+export type IconSize = "md" | "sm" | "xs";
+
+/** The element a list's row is drawn as: li inside a list. */
+export type RowElement = "div" | "li";
+
+// #endregion Sizes the shared parts take

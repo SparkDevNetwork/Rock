@@ -216,7 +216,7 @@ describe("the icon button's look", () => {
         expect(failure).toMatch(/margin-block:\s*-4px/);
         expect(failure).toMatch(/flex-wrap:\s*wrap/);
         expect(failure).toMatch(/align-content:\s*center/);
-        expect(ruleOf(style, ".chat-icon-btn.is-failure > .chat-ic")).toMatch(/background:\s*var\(--chat-danger\)/);
+        expect(ruleOf(style, ".chat-icon-btn-mark")).toMatch(/background:\s*var\(--chat-danger\)/);
         expect(ruleOf(style, ".chat-icon-btn.is-failure :slotted(*)")).toMatch(/align-self:\s*baseline/);
         expect(ruleOf(style, ".chat-icon-btn.is-failure :slotted(*)")).toMatch(/line-height:\s*var\(--chat-fail-mark-s, 14px\)/);
     });

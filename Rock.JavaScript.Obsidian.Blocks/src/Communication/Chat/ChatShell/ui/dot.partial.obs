@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-dot"
+          :class="[`is-${tone}`, { 'is-pulse': pulse, 'is-ringed': ringed }]"
+          aria-hidden="true"></span>
+</template>
+
+<style scoped>
+/* One 8px mark; where it stands is the screen's layout, set by a class on it. */
+.chat-dot {
+    display: inline-block;
+    flex: none;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--chat-r-full);
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* Something new for you: the church's colour; red is kept for failure. */
+.chat-dot.is-brand {
+    background: var(--chat-brand-fill);
+}
+
+/* A connection being worked out: the warning colour, or the info colour while nothing is wrong yet. */
+.chat-dot.is-warning {
+    background: var(--chat-warning);
+}
+
+.chat-dot.is-info {
+    background: var(--chat-info);
+}
+
+/* Waiting on something; under reduced motion the set's pulse is drawn still, the words beside it saying what is happening. */
+.chat-dot.is-pulse {
+    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+}
+
+/* Over a button or a pill: cut out of what it sits on, by the ring every host of a face sets. */
+.chat-dot.is-ringed {
+    box-shadow: 0 0 0 2px var(--chat-av-ring, var(--chat-surface));
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    // A dot says something is new or waiting. The words beside it, or the name of the button that
+    // holds it, say what, so the dot itself is hidden from a screen reader.
+    defineProps({
+        tone: {
+            type: String as PropType<"brand" | "warning" | "info">,
+            default: "brand"
+        },
+
+        /** Pulses while what it marks is still being worked out. */
+        pulse: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Ringed in what it sits on, for a dot over a button's corner or a pill's edge. */
+        ringed: {
+            type: Boolean,
+            default: false
+        }
+    });
+</script>

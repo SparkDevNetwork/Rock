@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { IconSize } from "../types.partial";
 
     // #region Types
 
@@ -67,7 +68,7 @@
 
         /** The drawn size: 18px, 15px or 13px, unless what holds the icon sets --chat-ic-size. */
         size: {
-            type: String as PropType<"md" | "sm" | "xs">,
+            type: String as PropType<IconSize>,
             default: "md"
         }
     });

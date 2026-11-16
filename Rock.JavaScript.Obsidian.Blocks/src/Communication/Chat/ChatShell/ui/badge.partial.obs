@@ -1,0 +1,135 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span class="chat-badge"
+          :class="{
+              'is-brand': tone === 'brand',
+              'is-neutral': tone === 'neutral',
+              'is-muted': tone === 'muted',
+              'is-media': tone === 'media',
+              'is-label': !!label,
+              'is-count': !label,
+              'is-pop': isPopping
+          }"
+          aria-hidden="true">
+        <Icon v-if="icon" :name="icon" size="xs" />{{ shown }}
+    </span>
+</template>
+
+<style scoped>
+/*
+    A count or a short label on a pill. No text sits on the church's own fill, so no church colour
+    can make it unreadable; every edge is a whole pixel. A badge that does not pop is drawn with its
+    row, no layer of its own: a layer is rasterized wherever the badge was when the layer was made,
+    which can be part way through a panel's slide, and the badge then draws a fraction of a pixel
+    off from one load to the next.
+*/
+.chat-badge {
+    display: inline-flex;
+    flex: none;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--chat-fs-badge);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    border-radius: var(--chat-r-full);
+    --chat-ic-size: 12px;
+    --chat-ic-stroke: 2.3;
+}
+
+/* A count: its line is its height, so the digits sit on a whole pixel. */
+.chat-badge.is-count {
+    min-width: 22px;
+    height: 20px;
+    padding: 0 7px 0 6px;
+    line-height: 20px;
+}
+
+.chat-badge.is-label {
+    height: 18px;
+    padding: 0 7px;
+    line-height: 18px;
+}
+
+/* What is yours: a mention of you. */
+.chat-badge.is-brand {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+}
+
+/* A "+N" or a label such as Leader: one neutral fill wherever it sits. */
+.chat-badge.is-neutral {
+    color: var(--chat-text-2);
+    background: var(--chat-line-strong);
+}
+
+/* A muted room's count: there, but never mistaken for a live mention's tint in either theme. */
+.chat-badge.is-muted {
+    color: var(--chat-muted);
+    background: var(--chat-hover);
+}
+
+/* A label over a photo, such as GIF, on the photo's own scrim. */
+.chat-badge.is-media {
+    color: var(--chat-media-fg);
+    background: var(--chat-media-scrim);
+}
+
+/*
+    A badge that springs in as it appears, where a new mention arrives. The spring is a transform,
+    which puts the badge in a layer while it runs; a layer dropped when it ends repaints the text
+    snapped to the pixel grid and the digit visibly shifts, so a badge that pops keeps its layer.
+*/
+.chat-badge.is-pop {
+    will-change: transform;
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Icon from "./icon.partial.obs";
+
+    // A count or a label. What it says is read from the row or button that holds it, which names
+    // the count in words, so the badge is hidden from a screen reader.
+    const props = defineProps({
+        /** The number to show; ignored when a label is given. */
+        count: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        /** The most shown as a number; more shows as this number and a plus. */
+        max: {
+            type: Number as PropType<number>,
+            default: 99
+        },
+
+        /** Words in place of a count, such as GIF or Leader, in sentence case as written. */
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The church's tint for what is yours, neutral for a "+N" or a label, muted for a quiet room, media over a photo. */
+        tone: {
+            type: String as PropType<"brand" | "neutral" | "muted" | "media">,
+            default: "brand"
+        },
+
+        /** An icon before what it says, such as the mentions mark; none by default. */
+        icon: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Springs in as it appears, where something new arrives. */
+        isPopping: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const shown = computed((): string => props.label || (props.count > props.max ? `${props.max}+` : String(props.count)));
+</script>

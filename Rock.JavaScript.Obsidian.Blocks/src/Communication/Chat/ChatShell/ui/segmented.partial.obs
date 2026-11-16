@@ -1,0 +1,195 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-seg"
+         :class="{ 'is-phone': isPhone }"
+         role="radiogroup"
+         :style="{ '--chat-seg-n': String(options.length) }"
+         @keydown="onKeydown">
+        <!-- The one raised pill, under the chosen option, sliding as the choice moves. -->
+        <span v-if="checkedIndex >= 0"
+              class="chat-seg-pill"
+              aria-hidden="true"
+              :style="{ '--chat-seg-i': String(checkedIndex) }"></span>
+        <button v-for="(option, index) in options"
+                :key="option.value"
+                ref="optionElements"
+                type="button"
+                class="chat-seg-opt"
+                role="radio"
+                :aria-checked="index === checkedIndex ? 'true' : 'false'"
+                :tabindex="index === stopIndex ? 0 : -1"
+                :data-autofocus="hasAutofocus && index === stopIndex ? '' : undefined"
+                :data-value="option.value"
+                :aria-describedby="option.description ? `${uid}-${index}` : undefined"
+                @click="choose(index)">
+            <span v-if="option.icon" class="chat-seg-ic"><Icon :name="option.icon" size="sm" /></span>{{ option.label }}
+        </button>
+        <template v-for="(option, index) in options" :key="`${option.value}-line`">
+            <span v-if="option.description" :id="`${uid}-${index}`" class="chat-sr-only">{{ option.description }}</span>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+/* A pill track; the options share it equally, so the pill is one option wide. */
+.chat-seg {
+    position: relative;
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    padding: 3px;
+    background: var(--chat-tab-track);
+    border-radius: var(--chat-r-full);
+}
+
+/* Slides on the thumb's time, which reduced motion makes nothing. */
+.chat-seg-pill {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / var(--chat-seg-n));
+    pointer-events: none;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-shadow-thumb);
+    transform: translateX(calc(var(--chat-seg-i) * 100%));
+    transition: transform var(--chat-d-tab-thumb) var(--chat-ease-in);
+}
+
+.chat-seg-opt {
+    position: relative;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    height: 32px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    color: var(--chat-muted);
+    white-space: nowrap;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* A finger's larger target on a phone. */
+.chat-seg.is-phone .chat-seg-opt {
+    height: 40px;
+}
+
+.chat-seg-opt:hover:not([aria-checked="true"]) {
+    color: var(--chat-text-2);
+}
+
+.chat-seg-opt[aria-checked="true"] {
+    color: var(--chat-text);
+}
+
+.chat-seg-ic {
+    display: inline-grid;
+}
+
+.chat-seg-opt[aria-checked="true"] .chat-seg-ic {
+    color: var(--chat-brand-ink);
+}
+
+.chat-seg-opt:focus-visible {
+    outline-offset: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, inject, PropType, ref } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Icon from "./icon.partial.obs";
+    import { isPhoneKey } from "./viewport.partial";
+
+    // #region Types
+
+    /** One choice: its value, its words, an icon, and a line saying what it means, heard as the arrows reach it. */
+    export type SegmentedOption = {
+        value: string;
+        label: string;
+        icon?: string;
+        description?: string;
+    };
+
+    // #endregion Types
+
+    // One choice of a few, as a radio group: Tab lands once, the arrows move and choose as they go,
+    // wrapping round. The group's name comes from where it is drawn (aria-label or labelledby).
+    const props = defineProps({
+        options: {
+            type: Array as PropType<SegmentedOption[]>,
+            required: true
+        },
+
+        /** The chosen value, or null where nothing is chosen yet. */
+        modelValue: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
+        /** Marks the option Tab lands on for a dialog to put focus on as it opens. */
+        hasAutofocus: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    // #region Values
+
+    const isPhone = inject(isPhoneKey, ref(false));
+
+    const optionElements = ref<HTMLButtonElement[]>([]);
+
+    const uid = `chat-seg-${newGuid()}`;
+
+    const checkedIndex = computed((): number => props.options.findIndex(option => option.value === props.modelValue));
+
+    /** The option Tab lands on: the chosen one, or the first where none is. */
+    const stopIndex = computed((): number => Math.max(checkedIndex.value, 0));
+
+    // #endregion Values
+
+    // #region Functions
+
+    function choose(index: number): void {
+        const option = props.options[index];
+        if (option && option.value !== props.modelValue) {
+            emit("update:modelValue", option.value);
+        }
+    }
+
+    /** The arrows move between the options and choose as they go, wrapping round, as a radio group does. */
+    function onKeydown(event: KeyboardEvent): void {
+        const step = event.key === "ArrowDown" || event.key === "ArrowRight" ? 1 : event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 0;
+        const at = optionElements.value.indexOf(event.target as HTMLButtonElement);
+        if (step === 0 || at < 0) {
+            return;
+        }
+
+        event.preventDefault();
+        const next = (at + step + props.options.length) % props.options.length;
+        optionElements.value[next]?.focus();
+        choose(next);
+    }
+
+    /** Focuses the option Tab lands on, for a flow returning to the control. */
+    function focus(): void {
+        optionElements.value[stopIndex.value]?.focus();
+    }
+
+    // #endregion Functions
+
+    defineExpose({ focus });
+</script>

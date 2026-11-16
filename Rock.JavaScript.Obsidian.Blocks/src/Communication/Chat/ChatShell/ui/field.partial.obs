@@ -1,0 +1,226 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="chat-fld" :class="[`is-${size}`, { 'is-invalid': invalid }, $attrs.class]" :style="$attrs.style as StyleValue">
+        <!-- A label around a plain input, so a press anywhere in the box puts focus in it; a box holding its own controls is not one. -->
+        <component :is="$slots.content ? 'div' : 'label'" class="chat-fld-box">
+            <Icon v-if="leadingIcon" :name="leadingIcon" size="sm" />
+            <slot name="content">
+                <input ref="inputElement"
+                       v-bind="inputAttrs"
+                       class="chat-fld-input"
+                       :type="type"
+                       :value="modelValue"
+                       :placeholder="placeholder"
+                       :aria-invalid="invalid ? 'true' : undefined"
+                       :aria-describedby="describedBy"
+                       @input="onInput" />
+            </slot>
+            <IconButton v-if="clearable && modelValue"
+                        icon="x"
+                        size="sm"
+                        :label="clearLabel"
+                        @click="onClear" />
+        </component>
+        <p v-if="helper" :id="helperId" class="chat-fld-helper">{{ helper }}</p>
+    </div>
+</template>
+
+<style scoped>
+/*
+    The one text box: bordered, 12px corners, the interface's type. Rock's page styles give a
+    focused text input a border and glow of their own, as input[type="text"]:focus; the input's own
+    focus rule below outweighs it, so the input stays bare and the box's ring is the focus mark,
+    riding a clear outline that forced colours keep drawing.
+*/
+.chat-fld {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.chat-fld-box {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 6px 0 12px;
+    margin: 0;
+    font-size: var(--chat-fs-ui);
+    /* Rock's theme bolds a label, and the input inside takes its face from this one. */
+    font-weight: 400;
+    color: var(--chat-muted);
+    cursor: text;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-field);
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-fld.is-lg .chat-fld-box {
+    min-height: 44px;
+}
+
+.chat-fld-box:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-fld-box:focus-within {
+    border-color: var(--chat-focus-line);
+    outline: 2px solid transparent;
+    box-shadow: 0 0 0 3px var(--chat-brand-ring);
+}
+
+.chat-fld.is-invalid .chat-fld-box {
+    border-color: var(--chat-danger);
+}
+
+.chat-fld-input {
+    flex: 1;
+    min-width: 0;
+    height: 34px;
+    padding: 0;
+    font: inherit;
+    color: var(--chat-text);
+    background: none;
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.chat-fld-input:focus {
+    border: 0;
+    outline: 0;
+    box-shadow: none;
+}
+
+.chat-fld-input::placeholder {
+    color: var(--chat-muted);
+    opacity: 1;
+}
+
+/* The box draws its own clear; a search field never draws the browser's. */
+.chat-fld-input::-webkit-search-cancel-button,
+.chat-fld-input::-webkit-search-decoration {
+    display: none;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.chat-fld-helper {
+    margin: 0 0 0 2px;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-muted);
+}
+
+.chat-fld.is-invalid .chat-fld-helper {
+    color: var(--chat-danger-ink);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, StyleValue, useAttrs } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import Icon from "./icon.partial.obs";
+    import IconButton from "./iconButton.partial.obs";
+
+    // Every search box and name field. What a screen hands the field (its name for a screen
+    // reader, a test id, key handlers, autocomplete) lands on the input, where it means something;
+    // a class and a style land on the field's outer box, for where the screen lays it out.
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        type: {
+            type: String as PropType<"text" | "search">,
+            default: "text"
+        },
+
+        placeholder: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** An icon before the words, such as search; none by default. */
+        leadingIcon: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** Draws a close at the box's end while it holds words, which empties it and keeps focus in it. */
+        clearable: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The close's name for a screen reader and its tooltip. */
+        clearLabel: {
+            type: String as PropType<string>,
+            default: "Clear"
+        },
+
+        /** What it holds cannot be used as it is; the helper line, if any, says why. */
+        invalid: {
+            type: Boolean,
+            default: false
+        },
+
+        /** One line under the box, heard with the input. */
+        helper: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The middle size, or the large one for a field that is a dialog's main control. */
+        size: {
+            type: String as PropType<"md" | "lg">,
+            default: "md"
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+        (e: "clear"): void;
+    }>();
+
+    const attrs = useAttrs();
+
+    const inputElement = ref<HTMLInputElement>();
+
+    const helperId = `chat-fld-helper-${newGuid()}`;
+
+    /** What the screen handed the field, less what belongs on the outer box. */
+    const inputAttrs = computed((): Record<string, unknown> => {
+        const { class: _class, style: _style, "aria-describedby": _describedBy, ...rest } = attrs;
+        return rest;
+    });
+
+    /** The screen's own description first, then the helper line's. */
+    const describedBy = computed((): string | undefined => {
+        const ids = [attrs["aria-describedby"] as string | undefined, props.helper ? helperId : undefined].filter(id => !!id);
+        return ids.length > 0 ? ids.join(" ") : undefined;
+    });
+
+    function onInput(event: Event): void {
+        emit("update:modelValue", (event.target as HTMLInputElement).value);
+    }
+
+    /** Focus moves to the input first, since the close it was on goes with the words. */
+    function onClear(): void {
+        inputElement.value?.focus();
+        emit("update:modelValue", "");
+        emit("clear");
+    }
+
+    /** Focuses the input, for a picker opening on its search. */
+    function focus(): void {
+        inputElement.value?.focus();
+    }
+
+    defineExpose({ inputElement, focus });
+</script>

@@ -226,7 +226,7 @@ describe("the notices' look", () => {
         expect(notice).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
         expect(notice).toMatch(/box-shadow:\s*var\(--chat-shadow-pop\)/);
         expect(notice).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
-        expect(ruleOf(style, ".chat-notice.is-failure > .chat-ic")).toMatch(/color:\s*var\(--chat-danger-ink\)/);
+        expect(ruleOf(style, ".chat-notice.is-failure .chat-notice-ic")).toMatch(/color:\s*var\(--chat-danger-ink\)/);
     });
 
     test("rises in and sinks out with the set's pop, which reduced motion leaves a fade", () => {

@@ -4,6 +4,7 @@
             v-bind="$attrs"
             type="button"
             class="chat-icon-btn"
+            :class="[`is-${size}`, { 'is-failure': tone === 'failure' }]"
             :aria-label="label"
             @mouseenter="onPointerEnter"
             @mouseleave="hideTip"
@@ -11,8 +12,10 @@
             @focus="onFocus"
             @blur="onBlur"
             @click="onClick">
-        <Icon v-if="icon" :name="icon" :size="iconSize" />
-        <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it. -->
+        <!-- A failure's icon is its mark: the glyph on the danger disc. -->
+        <span v-if="icon && tone === 'failure'" class="chat-icon-btn-mark"><Icon :name="icon" :size="drawnIconSize" /></span>
+        <Icon v-else-if="icon" :name="icon" :size="drawnIconSize" />
+        <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it; a failure's words. -->
         <slot></slot>
     </button>
 
@@ -28,18 +31,26 @@
 </template>
 
 <style scoped>
+/* A 32px square with the text button's 8px corners, so a bar of icons and a row of words line up. */
 .chat-icon-btn {
     display: inline-grid;
     flex: none;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
     padding: 0;
     color: var(--chat-icon);
     background: transparent;
     border: 0;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The close inside a pill, a notice or a field: round, as what holds it is. */
+.chat-icon-btn.is-sm {
+    width: 22px;
+    height: 22px;
+    border-radius: var(--chat-r-full);
 }
 
 .chat-icon-btn:hover {
@@ -61,12 +72,67 @@
     background: var(--chat-brand-wash);
 }
 
+/*
+    A failure: the Not sent marker that opens a failed message's choices. The red mark and the
+    words beside it, on the line of the text around it, with no button look of its own. It is the
+    only control for one message, so it is 24px tall at the least, with the negative margin taking
+    back what that adds to its line. The words alone set its baseline, so it sits on the text's
+    baseline and the mark is centred on them by the box; a flex box left to its first item takes
+    the mark's bottom edge for a baseline and sits the words above the line. The line wraps (a
+    single line) so the box centres it in the 24px target.
+*/
+.chat-icon-btn.is-failure {
+    display: inline-flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    align-content: center;
+    align-items: center;
+    width: auto;
+    height: auto;
+    min-height: 24px;
+    margin-block: -4px;
+    align-self: baseline;
+    font: inherit;
+    color: inherit;
+    border-radius: var(--chat-r-inset);
+    --chat-ic-size: calc(var(--chat-fail-mark-s, 14px) * 5 / 7);
+    --chat-ic-stroke: 3;
+}
+
+.chat-icon-btn.is-failure:hover,
+.chat-icon-btn.is-failure[aria-expanded="true"] {
+    color: inherit;
+    background: transparent;
+}
+
+/* The words are as tall as the mark, so their centres are one. */
+.chat-icon-btn.is-failure :slotted(*) {
+    align-self: baseline;
+    line-height: var(--chat-fail-mark-s, 14px);
+}
+
+.chat-icon-btn.is-failure:hover :slotted(*) {
+    text-decoration: underline;
+}
+
+.chat-icon-btn-mark {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: var(--chat-fail-mark-s, 14px);
+    height: var(--chat-fail-mark-s, 14px);
+    color: var(--chat-on-danger);
+    background: var(--chat-danger);
+    border-radius: var(--chat-r-full);
+}
+
 /* The tip's look is the sheet's chat-tip, shared with every other tooltip. */
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref } from "vue";
     import Icon from "./icon.partial.obs";
+    import { ControlSize, IconSize } from "../types.partial";
     import { overlayHostOf, useTooltip } from "./tooltip.partial";
 
     defineOptions({ inheritAttrs: false });
@@ -78,10 +144,26 @@
             default: ""
         },
 
-        /** The icon's drawn size; a small button, such as a section's plus, takes the smaller icon. */
+        /**
+         * The icon's drawn size, where it differs from the button's own: a section's plus takes
+         * the smaller icon in a middle-sized button. The middle icon, or the smallest in the
+         * small close, by default.
+         */
         iconSize: {
-            type: String as PropType<"md" | "sm" | "xs">,
+            type: String as PropType<IconSize | "">,
+            default: ""
+        },
+
+        /** The 32px button of every bar and panel, or the 22px close inside a pill, a notice or a field. */
+        size: {
+            type: String as PropType<ControlSize>,
             default: "md"
+        },
+
+        /** A failure is the Not sent marker: the red mark and its words in the slot, with no button look. */
+        tone: {
+            type: String as PropType<"default" | "failure">,
+            default: "default"
         },
 
         /** What the button does, read by a screen reader and shown as its tooltip. The chrome has no words of its own, so this is required. */
@@ -114,6 +196,8 @@
     // #region Values
 
     const buttonElement = ref<HTMLButtonElement>();
+
+    const drawnIconSize = computed((): IconSize => props.iconSize || (props.size === "sm" ? "xs" : "md"));
 
     const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerDown, onFocus, onBlur } = useTooltip(buttonElement, () => props.isTooltipDisabled);
 

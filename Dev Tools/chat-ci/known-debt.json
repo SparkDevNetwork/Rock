@@ -193,9 +193,6 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial.ts": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/useReactions.partial.ts": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/useThreads.partial.ts": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/types.partial.ts": 3,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/channelMark.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/icon.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/iconButton.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/types.partial.ts": 3
   }
 }

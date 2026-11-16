@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <button type="button"
+            class="chat-chip"
+            :class="{ 'is-selected': selected }"
+            :aria-pressed="selected === undefined ? undefined : selected ? 'true' : 'false'"
+            @click="emit('click', $event)">
+        <slot></slot>
+    </button>
+</template>
+
+<style scoped>
+/* A 30px pill, outlined while off and tinted in the church's colour while on. */
+.chat-chip {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    height: 30px;
+    padding: 0 13px;
+    font: inherit;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--chat-text-2);
+    white-space: nowrap;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-chip:hover {
+    border-color: var(--chat-icon);
+}
+
+.chat-chip.is-selected {
+    color: var(--chat-brand-ink);
+    background: var(--chat-brand-tint);
+    border-color: var(--chat-brand-line);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    // The chip. One that filters says whether it is pressed; one that only acts, such as a
+    // suggested word, leaves selected out and so carries no pressed state at all.
+    defineProps({
+        /** Whether the filter it stands for is on; left out for a chip that only acts. */
+        selected: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "click", event: MouseEvent): void;
+    }>();
+</script>

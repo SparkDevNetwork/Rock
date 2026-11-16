@@ -1,0 +1,191 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <component :is="as" class="chat-skel" :class="{
+                   'is-channel': shape === 'channel',
+                   'is-person': shape === 'person',
+                   'is-group': shape === 'group',
+                   'is-bubble': shape === 'bubble',
+                   'is-panel': shape === 'panel',
+                   'is-own': isOwn
+               }" aria-hidden="true">
+        <i v-if="plan.lead" class="chat-skel-bone" :class="`is-${plan.lead}`" :style="{ width: `${plan.leadSize}px`, height: `${plan.leadSize}px` }"></i>
+        <span class="chat-skel-lines">
+            <i v-for="(line, index) in plan.lines"
+               :key="index"
+               class="chat-skel-bone"
+               :class="{ 'is-bubble': shape === 'bubble' }"
+               :style="{ width: line.width, height: `${line.height}px` }"></i>
+        </span>
+        <i v-if="plan.trail" class="chat-skel-bone" :style="{ width: plan.trail.width, height: `${plan.trail.height}px` }"></i>
+    </component>
+</template>
+
+<style scoped>
+/*
+    Still, with no wait and no fade in: the first frame is the final one, so the skeleton holds the
+    real row's place and size and nothing about it moves.
+*/
+.chat-skel {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    min-width: 0;
+    padding: 0 8px;
+}
+
+.chat-skel.is-channel {
+    height: 44px;
+}
+
+.chat-skel.is-person {
+    height: 52px;
+}
+
+.chat-skel.is-panel {
+    align-items: flex-start;
+    padding: 10px;
+}
+
+.chat-skel.is-group {
+    align-items: flex-start;
+    padding: 6px 20px;
+}
+
+.chat-skel.is-bubble {
+    align-items: flex-end;
+    padding: 2px 20px;
+}
+
+.chat-skel.is-bubble.is-own {
+    justify-content: flex-end;
+}
+
+.chat-skel-lines {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+}
+
+.chat-skel.is-bubble .chat-skel-lines {
+    flex: 0 1 60%;
+}
+
+.chat-skel.is-bubble.is-own .chat-skel-lines {
+    align-items: flex-end;
+}
+
+.chat-skel-bone {
+    display: block;
+    flex: none;
+    max-width: 100%;
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-inset);
+}
+
+.chat-skel-bone.is-face {
+    border-radius: var(--chat-r-full);
+}
+
+.chat-skel-bone.is-tile {
+    border-radius: var(--chat-r-control);
+}
+
+.chat-skel-bone.is-bubble {
+    border-radius: var(--chat-r-bubble);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { RowElement } from "../types.partial";
+
+    // #region Types
+
+    /** The row a skeleton stands in for. */
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel";
+
+    type Bone = { width: string, height: number };
+
+    type Plan = {
+        lead: "face" | "tile" | null;
+        leadSize: number;
+        lines: Bone[];
+        trail: Bone | null;
+    };
+
+    // #endregion Types
+
+    // One row of the shape the real row will have, so nothing jumps when the real row lands. It
+    // is decoration, hidden from a screen reader; what holds it says that it is loading.
+    const props = defineProps({
+        /**
+         * A channel row (44px, a tile and its name), a conversation row (52px, a face, a name, a
+         * line and a time), a feed group (a face, a name and lines), a bubble of a two-person
+         * conversation, or a panel row (a face over three lines).
+         */
+        shape: {
+            type: String as PropType<SkeletonShape>,
+            required: true
+        },
+
+        /** The text lines' widths, in percent, so a column of rows reads as text rather than stripes. */
+        widths: {
+            type: Array as PropType<number[]>,
+            default: () => []
+        },
+
+        /** A bubble the reader sent: at the far side, with no face. */
+        isOwn: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The element drawn, li inside a list. */
+        as: {
+            type: String as PropType<RowElement>,
+            default: "div"
+        }
+    });
+
+    /** The width given for a line, or the shape's own. */
+    function widthAt(index: number, fallback: number): string {
+        return `${props.widths[index] ?? fallback}%`;
+    }
+
+    /** The bones of each shape, measured from the real rows. */
+    const plan = computed((): Plan => {
+        switch (props.shape) {
+            case "channel":
+                return { lead: "tile", leadSize: 32, lines: [{ width: widthAt(0, 60), height: 10 }], trail: null };
+
+            case "person":
+                return {
+                    lead: "face",
+                    leadSize: 36,
+                    lines: [{ width: widthAt(0, 56), height: 10 }, { width: widthAt(1, 32), height: 8 }],
+                    trail: { width: "26px", height: 8 }
+                };
+
+            case "group":
+                return {
+                    lead: "face",
+                    leadSize: 36,
+                    lines: [{ width: "96px", height: 10 }, { width: widthAt(0, 92), height: 9 }, { width: widthAt(1, 60), height: 9 }],
+                    trail: null
+                };
+
+            case "bubble":
+                return { lead: props.isOwn ? null : "face", leadSize: 28, lines: [{ width: widthAt(0, 100), height: 40 }], trail: null };
+
+            default:
+                return {
+                    lead: "face",
+                    leadSize: 32,
+                    lines: [{ width: widthAt(0, 46), height: 10 }, { width: widthAt(1, 92), height: 9 }, { width: widthAt(2, 60), height: 9 }],
+                    trail: null
+                };
+        }
+    });
+</script>

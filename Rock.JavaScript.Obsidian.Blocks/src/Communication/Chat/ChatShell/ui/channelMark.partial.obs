@@ -46,6 +46,7 @@
     import { avatarHue } from "./brand.partial";
     import Icon from "./icon.partial.obs";
     import { useImageReveal, vReveal } from "./imageReveal.partial";
+    import { IconSize } from "../types.partial";
 
     const props = defineProps({
         /** Whether the channel is open to anyone who may join, which draws a hash rather than a lock. */
@@ -62,7 +63,7 @@
 
         /** The glyph's drawn size when there is no image. */
         iconSize: {
-            type: String as PropType<"md" | "sm" | "xs">,
+            type: String as PropType<IconSize>,
             default: "md"
         },
 
