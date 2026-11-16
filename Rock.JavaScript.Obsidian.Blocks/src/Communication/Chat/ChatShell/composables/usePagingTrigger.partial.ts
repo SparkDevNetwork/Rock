@@ -20,30 +20,23 @@
 
 import { onScopeDispose, Ref, watch } from "vue";
 
-/** When a list may ask, and against what it scrolls. */
 export type PagingTriggerOptions = {
-    /** Whether a next page may be asked for now: one is left and none is out. */
     enabled?: () => boolean;
 
-    /** The list's scroller, which the sentinel is watched against; the window when none is given. */
+    /** The list's scroller; the window when none is given. */
     root?: () => HTMLElement | null;
 
-    /** How far ahead of the sentinel coming into view the page is asked for, as a CSS margin. */
     margin?: string;
 };
 
 /**
- * Asks for a list's next page as its sentinel comes into view: once for one arrival, never while
- * the list says no, and again at once when a page lands and leaves the sentinel still in view, as
- * a short page does, which the observer alone would never report.
- *
- * Called in a component's setup; it stops watching as the component goes. A browser with no
- * observer pages nothing by scrolling.
+ * Asks once for one arrival, never while the list says no, and again at once when a page lands
+ * and leaves the sentinel in view, as a short page does, which the observer would never report.
  *
  * @param sentinel The element at the list's end, while drawn.
- * @param loadMore Asks for the next page. A promise holds the next ask until it settles, and lets
- *     a list whose `enabled` does not change around each page ask again after a short one; a page
- *     that failed is asked again only on the sentinel's next arrival.
+ * @param loadMore Asks for the next page. Its promise holds the next ask and lets a list whose
+ *     `enabled` does not change around each page ask again after a short one; a failed page is
+ *     asked again only on a new arrival, since at once it would only fail again.
  * @param options When the list may ask, and against what it scrolls.
  */
 export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMore: () => unknown, options: PagingTriggerOptions = {}): void {
@@ -51,9 +44,7 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
     let observer: IntersectionObserver | null = null;
     let isInView = false;
 
-    // Set from an ask until the list lets go of it: its promise settles, it says no and then yes
-    // again, or the sentinel leaves view. Two reports of one arrival so ask once. An ask that
-    // gave a promise is held until it settles, wherever the sentinel goes meanwhile.
+    // Held from an ask until the list lets go of it, as the observer reports one arrival twice.
     let isAsking = false;
     let isPromised = false;
 
@@ -71,7 +62,6 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
                 isAsking = false;
                 ask();
             }, () => {
-                // the list shows the failure and its way to ask again; asking at once would only fail again
                 isPromised = false;
                 isAsking = isInView;
             });
