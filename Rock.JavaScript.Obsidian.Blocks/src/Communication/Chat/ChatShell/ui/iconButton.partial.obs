@@ -4,7 +4,7 @@
             v-bind="$attrs"
             type="button"
             class="chat-icon-btn"
-            :class="[`is-${size}`, { 'is-failure': tone === 'failure', 'is-open': isOpen }]"
+            :class="[`is-${size}`, { 'is-failure': tone === 'failure', 'is-open': isOpen, 'is-outlined': isOutlined }]"
             :aria-label="label"
             @mouseenter="onPointerEnter"
             @mouseleave="hideTip"
@@ -31,13 +31,19 @@
 </template>
 
 <style scoped>
-/* A 32px square with the text button's 8px corners, so a bar of icons and a row of words line up. */
+/*
+    A 32px square with the text button's 8px corners, so a bar of icons and a row of words line up.
+    A row that sets its buttons beside a taller field sets --chat-icon-btn-s on what holds them, so
+    the squares take the field's height. Positioned, so a mark the caller draws over the icon, as a
+    dot, sits on the button's corner.
+*/
 .chat-icon-btn {
+    position: relative;
     display: inline-grid;
     flex: none;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: var(--chat-icon-btn-s, 32px);
+    height: var(--chat-icon-btn-s, 32px);
     padding: 0;
     color: var(--chat-icon);
     background: transparent;
@@ -60,6 +66,19 @@
 
 .chat-icon-btn:active {
     background: var(--chat-press);
+}
+
+/* Outlined in the field's line on the surface's fill, as the sidebar's compose beside its search; its fill holds on hover. */
+.chat-icon-btn.is-outlined {
+    color: var(--chat-text-2);
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line);
+}
+
+.chat-icon-btn.is-outlined:hover {
+    color: var(--chat-text-2);
+    background: var(--chat-surface);
+    border-color: var(--chat-line-strong);
 }
 
 .chat-icon-btn[aria-pressed="true"] {
@@ -188,6 +207,12 @@
 
         /** Keeps the tooltip away, such as while the menu this button opened covers it. */
         isTooltipDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Draws the button outlined on the surface's fill, as a square beside a field. */
+        isOutlined: {
             type: Boolean as PropType<boolean>,
             default: false
         },

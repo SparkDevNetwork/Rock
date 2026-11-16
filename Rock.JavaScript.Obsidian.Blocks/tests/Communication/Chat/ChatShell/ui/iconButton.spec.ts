@@ -206,9 +206,10 @@ describe("the icon button's look", () => {
     const style = styleOf("iconButton.partial.obs");
     const sheet = readFileSync(resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
 
+    // 32px unless what holds it sets the size hook, as the sidebar's head does beside its field.
     test("is a 32px square with 8px corners, and its small size a 22px round close", () => {
-        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/width:\s*32px/);
-        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/height:\s*32px/);
+        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/width:\s*var\(--chat-icon-btn-s, 32px\)/);
+        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/height:\s*var\(--chat-icon-btn-s, 32px\)/);
         expect(ruleOf(style, ".chat-icon-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\)/);
         expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/width:\s*22px/);
         expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/height:\s*22px/);

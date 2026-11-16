@@ -1213,11 +1213,14 @@ describe("the components' own styles", () => {
             expect(declarationOf(fieldPath, ".chat-fld-box", "min-height")).toBe("36px");
             expect(declarationOf(fieldPath, ".chat-fld.is-lg .chat-fld-box", "min-height")).toBe("44px");
             expect(declarationOf(fieldPath, ".chat-fld-box", "border-radius")).toBe(normalize("var(--chat-r-field)"));
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("36px");
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "height")).toBe("36px");
-            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "width")).toBe("44px");
-            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "height")).toBe("44px");
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-control)"));
+            // the squares take their size from the hook the icon button reads, set by what holds them
+            const iconButtonPath = resolve(components, "../ui/iconButton.partial.obs");
+            expect(declarationOf(sidebarPath, ".chat-side-acts", "--chat-icon-btn-s")).toBe("36px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-side-acts", "--chat-icon-btn-s")).toBe("44px");
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "width")).toBe(normalize("var(--chat-icon-btn-s, 32px)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "height")).toBe(normalize("var(--chat-icon-btn-s, 32px)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "border-radius")).toBe(normalize("var(--chat-r-control)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn.is-outlined", "border")).toBe(normalize("1px solid var(--chat-line)"));
         });
 
         test("a channel's tile is 32px with the control corner", () => {

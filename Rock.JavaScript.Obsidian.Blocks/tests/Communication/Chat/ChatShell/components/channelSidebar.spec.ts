@@ -790,13 +790,16 @@ describe("the loading sidebar", () => {
 
 // A search that matches nothing says so, rather than leaving bare headings with their plus buttons.
 describe("the search", () => {
-    test("says No results when nothing matches, with no headings", async () => {
+    test("says No results when nothing matches, with no bare headings, Browse channels kept", async () => {
         const w = mountSidebar();
 
-        await w.get("[data-testid='sidebar-search'] input").setValue("zzzz");
+        await w.get("[data-testid='sidebar-search']").setValue("zzzz");
 
         expect(w.get("[data-testid='sidebar-no-results']").text()).toContain("No results");
-        expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
+        expect(w.findAll("[data-testid='section-heading']")).toHaveLength(0);
+        expect(w.find("[data-testid='section-browse']").exists()).toBe(false);
+        expect(w.find("[data-testid='section-new-message']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-browse']").exists()).toBe(true);
     });
 
     // A name cut short by the column's width shows whole in a tooltip on a resting pointer.
