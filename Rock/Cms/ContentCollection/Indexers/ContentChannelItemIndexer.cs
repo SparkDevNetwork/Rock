@@ -154,15 +154,31 @@ namespace Rock.Cms.ContentCollection.Indexers
                 var itemEntity = new ContentChannelItemService( rockContext ).GetInclude( id, ci => ci.ContentChannelItemSlugs );
                 var now = RockDateTime.Now;
 
+                /*
+                    11/16/2026 - MSE
+
+                    An item that is missing, not started yet or already expired must not
+                    stay in the content collection index. Delete any existing documents
+                    for it instead of leaving them searchable until the next full index
+                    job. The delete does not use the open RockContext so it is safe to
+                    await here.
+
+                    Reason: Remove expired and future-dated items from search as soon as they are saved.
+                */
+
                 // If entity wasn't found or isn't visible yet then don't index.
                 if ( itemEntity == null || itemEntity.StartDateTime > now )
                 {
+                    await DeleteContentCollectionDocumentAsync( id );
+
                     return 0;
                 }
 
                 // If it has already expired, do not index.
                 if ( itemEntity.ExpireDateTime.HasValue && itemEntity.ExpireDateTime.Value < now )
                 {
+                    await DeleteContentCollectionDocumentAsync( id );
+
                     return 0;
                 }
 
