@@ -151,14 +151,15 @@
 
     /*
         The type scale, by job: a badge's count, a timestamp or secondary line, the interface's own
-        labels, a message's text and an empty state's line, a title. A face's initials are not on
-        it; they are sized from the face. Emoji drawn as pictures have their own steps.
+        labels, a message's text, a title, an empty state's line. A face's initials are not on it;
+        they are sized from the face. Emoji drawn as pictures have their own steps.
     */
     --chat-fs-badge: 11px;
     --chat-fs-small: 12px;
     --chat-fs-ui: 13px;
     --chat-fs-body: 14.5px;
     --chat-fs-title: 16px;
+    --chat-fs-display: 20px;
     --chat-emoji-sm: 16px;
     --chat-emoji-md: 22px;
     --chat-emoji-lg: 28px;

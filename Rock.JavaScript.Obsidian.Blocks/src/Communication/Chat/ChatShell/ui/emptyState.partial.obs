@@ -25,7 +25,7 @@
 
 .chat-empty-title {
     margin: 0;
-    font-size: var(--chat-fs-body);
+    font-size: var(--chat-fs-display);
     font-weight: 650;
     color: var(--chat-text);
 }
@@ -36,6 +36,11 @@
     font-size: var(--chat-fs-ui);
     line-height: 1.45;
     color: var(--chat-muted);
+}
+
+/* A failure is one line in the interface's size, as it always drew. */
+.chat-empty.is-error .chat-empty-title {
+    font-size: var(--chat-fs-ui);
 }
 
 .chat-empty-action {
