@@ -86,6 +86,12 @@
     /** At this size and below two letters do not fit, so one is drawn. */
     const largestOneInitialSize = 22;
 
+    /**
+     * Initials follow the face's size down to this and no further, where a letter stops reading;
+     * a small face's letters hold here, as the 18px faces of a thread's pill always drew them.
+     */
+    const smallestInitialsSize = 9;
+
     /** Below this a status badge would cover too much of the face to read either. */
     const smallestStatusSize = 32;
 
@@ -126,14 +132,15 @@
         return props.isOneLetter || props.size <= largestOneInitialSize || isCovered ? first : first + last;
     }
 
-    /** The face's size and hue, and its overlap with the face before it in a pile. */
+    /** The face's size and hue, its initials' size, and its overlap with the face before it in a pile. */
     function faceStyle(person: AvatarPerson, index: number): Record<string, string> {
         const size = props.size;
+        const initialsSize = Math.max(smallestInitialsSize, Math.round(size * (props.isOneLetter ? 0.42 : 0.37) * 100) / 100);
         const style: Record<string, string> = {
             "--chat-av-hue": String(avatarHue(person.name)),
             width: `${size}px`,
             height: `${size}px`,
-            fontSize: `${Math.round(size * (props.isOneLetter ? 0.42 : 0.37) * 100) / 100}px`
+            fontSize: `${initialsSize}px`
         };
 
         if (index > 0) {
