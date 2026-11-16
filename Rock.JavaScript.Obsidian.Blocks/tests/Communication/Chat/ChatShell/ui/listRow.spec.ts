@@ -21,6 +21,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import { mediaOf, outsideMedia, partRuleBreaks, ruleOf, styleOf } from "./partStyle";
+import { providedSession } from "../sessionShapes";
 
 const slots = {
     lead: "<span data-testid='lead'>A</span>",
@@ -103,6 +104,80 @@ describe("the list row", () => {
         expect(wrapper.element.tagName).toBe("LI");
         expect(wrapper.attributes("data-testid")).toBe("x-row");
     });
+
+    // What a list's rows need of the row: their button's marks and the list's keys on it, words
+    // that run on under the first line, the list leading when the actions show, a row kept faded,
+    // and a phone, where the actions are always there.
+    test("puts on its button what the list hands it, its keys among them, and hands the list the button", async () => {
+        const onFocus = jest.fn();
+        const hitRef = jest.fn();
+        wrapper = mount(ListRow, {
+            props: { interactive: true, hitAttrs: { "data-testid": "x-open", "aria-describedby": "x-hint", tabindex: -1, onFocus }, hitRef },
+            slots,
+            attachTo: document.body
+        });
+        const hit = wrapper.get(".chat-lrow-hit");
+
+        expect(hit.attributes("data-testid")).toBe("x-open");
+        expect(hit.attributes("aria-describedby")).toBe("x-hint");
+        expect(hit.attributes("tabindex")).toBe("-1");
+        (hit.element as HTMLElement).focus();
+        expect(onFocus).toHaveBeenCalledTimes(1);
+        expect(hitRef).toHaveBeenCalledWith(hit.element);
+    });
+
+    test("draws the lines that run on under its first line beneath it, and is marked stacked", () => {
+        wrapper = mount(ListRow, { slots: { ...slots, detail: "<p data-testid='detail'>Two lines of the message</p>" } });
+
+        expect(wrapper.get("[data-testid='detail']").element.closest(".chat-lrow-detail")).not.toBeNull();
+        expect(wrapper.classes()).toContain("is-stacked");
+        expect(wrapper.classes()).toContain("has-actions");
+    });
+
+    test("a row its button names is drawn for the eye alone: nothing drawn is read or reached", () => {
+        wrapper = mount(ListRow, { props: { interactive: true, label: "Anna Lee, 2m" }, slots: { ...slots, detail: "<a href='#x'>a link</a>" } });
+
+        for (const place of [".chat-lrow-lead", ".chat-lrow-main", ".chat-lrow-meta", ".chat-lrow-detail"]) {
+            expect(wrapper.get(place).attributes("aria-hidden")).toBe("true");
+            expect(wrapper.get(place).attributes("inert")).toBeDefined();
+        }
+        expect(wrapper.get(".chat-lrow-actions").attributes("aria-hidden")).toBeUndefined();
+    });
+
+    test("a row named by what it says keeps it readable", () => {
+        wrapper = mount(ListRow, { props: { interactive: true }, slots });
+
+        expect(wrapper.get(".chat-lrow-main").attributes("aria-hidden")).toBeUndefined();
+        expect(wrapper.get(".chat-lrow-main").attributes("inert")).toBeUndefined();
+    });
+
+    test.each([
+        [null, []],
+        [true, ["is-led", "is-held"]],
+        [false, ["is-led"]]
+    ])("with its actions held out as %s, leaves them to its own hover or follows the list", (actionsShown, marks) => {
+        wrapper = mount(ListRow, { props: { actionsShown }, slots });
+
+        expect(wrapper.classes().filter(name => ["is-led", "is-held"].includes(name))).toEqual(marks);
+    });
+
+    test("its actions come and go at once while the list passes them from row to row", () => {
+        wrapper = mount(ListRow, { props: { actionsShown: true, instant: true }, slots });
+
+        expect(wrapper.classes()).toContain("is-instant");
+    });
+
+    test("a row kept in place while it is off or on its way out is drawn faded", () => {
+        wrapper = mount(ListRow, { props: { dimmed: true }, slots });
+
+        expect(wrapper.classes()).toContain("is-dimmed");
+    });
+
+    test.each([true, false])("on a phone (%s) its actions are always there", isPhone => {
+        wrapper = mount(ListRow, { slots, global: { provide: providedSession({ isPhone }) } });
+
+        expect(wrapper.classes().includes("is-phone")).toBe(isPhone);
+    });
 });
 
 describe("the list row's look", () => {
@@ -126,9 +201,45 @@ describe("the list row's look", () => {
 
     test("its actions show while it is hovered or holds focus, and always where nothing can hover", () => {
         expect(ruleOf(style, ".chat-lrow-actions")).toMatch(/opacity:\s*0/);
-        expect(ruleOf(style, ".chat-lrow:hover .chat-lrow-actions")).toMatch(/opacity:\s*1/);
+        expect(ruleOf(style, ".chat-lrow:not(.is-led):hover .chat-lrow-actions")).toMatch(/opacity:\s*1/);
         expect(ruleOf(style, ".chat-lrow:focus-within .chat-lrow-actions")).toMatch(/opacity:\s*1/);
         expect(style).toMatch(/@media \(hover: none\)\s*\{\s*\.chat-lrow-actions\s*\{\s*opacity:\s*1;?\s*\}/);
+    });
+
+    test("its actions show on its own hover only where a pointer can hover and the list leaves them to it", () => {
+        expect(ruleOf(mediaOf(style, "(hover: hover)"), ".chat-lrow:not(.is-led):hover .chat-lrow-actions")).toMatch(/opacity:\s*1/);
+        expect(ruleOf(outsideMedia(style), ".chat-lrow:not(.is-led):hover .chat-lrow-actions")).toBe("");
+    });
+
+    test("its actions show while the list holds them out, a menu of the row is open, or on a phone, and pass at once when asked", () => {
+        expect(ruleOf(style, ".chat-lrow.is-held .chat-lrow-actions")).toMatch(/opacity:\s*1/);
+        expect(ruleOf(style, ".chat-lrow:has([aria-expanded=\"true\"]) .chat-lrow-actions")).toMatch(/opacity:\s*1/);
+        expect(ruleOf(style, ".chat-lrow.is-phone .chat-lrow-actions")).toMatch(/opacity:\s*1/);
+        expect(ruleOf(style, ".chat-lrow.is-instant .chat-lrow-actions")).toMatch(/transition:\s*none/);
+    });
+
+    test("the current row keeps the church's wash under the pointer", () => {
+        expect(ruleOf(style, ".chat-lrow.is-selected:hover")).toMatch(/--chat-lrow-fill:\s*var\(--chat-brand-wash\)/);
+    });
+
+    test("a stacked row lays its lead beside every line, its meta beside the first and its lines under it as wide as both", () => {
+        expect(ruleOf(style, ".chat-lrow.is-stacked")).toMatch(/display:\s*grid/);
+        expect(ruleOf(style, ".chat-lrow.is-stacked > .chat-lrow-lead")).toMatch(/grid-row:\s*1 \/ span 2/);
+        expect(ruleOf(style, ".chat-lrow.is-stacked > .chat-lrow-detail")).toMatch(/grid-column:\s*2 \/ -1/);
+    });
+
+    test("a stacked row's actions sit over its meta, which gives way while they show", () => {
+        expect(ruleOf(style, ".chat-lrow.is-stacked > .chat-lrow-actions")).toMatch(/position:\s*absolute/);
+        for (const shown of [".chat-lrow.is-stacked.has-actions:focus-within > .chat-lrow-meta", ".chat-lrow.is-stacked.has-actions.is-held > .chat-lrow-meta", ".chat-lrow.is-stacked.has-actions.is-phone > .chat-lrow-meta"]) {
+            expect(ruleOf(style, shown)).toMatch(/opacity:\s*0/);
+        }
+        expect(ruleOf(mediaOf(style, "(hover: hover)"), ".chat-lrow.is-stacked.has-actions:not(.is-led):hover > .chat-lrow-meta")).toMatch(/opacity:\s*0/);
+        expect(ruleOf(mediaOf(style, "(hover: none)"), ".chat-lrow.is-stacked.has-actions > .chat-lrow-meta")).toMatch(/opacity:\s*0/);
+    });
+
+    test("a faded row fades what it shows and keeps its actions whole", () => {
+        expect(ruleOf(style, ".chat-lrow.is-dimmed > .chat-lrow-main")).toMatch(/opacity:\s*\.55/);
+        expect(ruleOf(style, ".chat-lrow.is-dimmed > .chat-lrow-actions")).toBe("");
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
