@@ -1055,6 +1055,43 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void WithoutDirectMessageAccessAMemberCannotChangeWhoIsInAGroupConversation()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var dee = scene.AddChatPerson( "Dee", isOpenDmAllowed: true );
+                var eve = scene.AddChatPerson( "Eve", isOpenDmAllowed: true );
+                scene.AdmitToDirectMessages( bo );
+                var group = scene.Start( bo, scene.Alias( ada ), scene.Alias( cy ) ).ChannelGuid.Value;
+
+                // Removing would let her turn a group into a one-to-one she could not start.
+                var added = scene.Add( ada, group, scene.Alias( dee ) );
+                Assert.AreEqual( "door.not_allowed", added.Code );
+                Assert.AreEqual( "You can't change who is in conversations.", added.Message );
+                Assert.AreEqual( "door.not_allowed", scene.Remove( ada, group, scene.Alias( cy ) ).Code );
+                Assert.IsFalse( scene.Rights( ada, group ).CanManageMembers, "the screen offers neither" );
+                CollectionAssert.AreEquivalent( new[] { ada, bo, cy }, scene.ActiveMembers( group ) );
+
+                // She still renames and leaves, and Bo, who has access, still adds.
+                Assert.IsTrue( scene.Rights( ada, group ).CanRename );
+                Assert.IsTrue( scene.Rights( bo, group ).CanManageMembers );
+                Assert.AreEqual( "ok", scene.Add( bo, group, scene.Alias( dee ) ).Code );
+
+                // A channel's managing is Rock's right, not direct messaging's.
+                var lee = scene.AddChatPerson( "Lee" );
+                var manager = scene.AddManagerRole();
+                var room = scene.Fixture.AddChannel( scene.Fixture.SharedGroupTypeId, "Team" );
+                scene.Fixture.AddMember( room, lee, m => m.GroupRoleId = manager );
+                Assert.AreEqual( "ok", scene.Add( lee, room, scene.Alias( eve ) ).Code, "a manager without access still adds to a channel" );
+
+                Assert.AreEqual( "ok", scene.Leave( ada, group ).Code );
+            }
+        }
+
+        [TestMethod]
         public void TheRenameRightFollowsTheRenameDoorsRule()
         {
             using ( var scene = new ChatDoorScene() )
@@ -1656,6 +1693,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         #endregion A ban on the one managing
+
 
         #region An archived banned row
 

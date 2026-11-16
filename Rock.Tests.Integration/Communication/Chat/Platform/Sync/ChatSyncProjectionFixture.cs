@@ -620,6 +620,41 @@ DROP TABLE #Seeded;",
         }
 
         /// <summary>
+        /// Adds a person Data View, persisted and refreshed to hold exactly these people, for a
+        /// setting that names one, such as the church's Direct Message Access. Not a badge.
+        /// </summary>
+        /// <param name="personIds">The people it holds.</param>
+        /// <returns>The Data View's guid.</returns>
+        public Guid AddPersonDataView( params int[] personIds )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var dataView = new DataView
+                {
+                    Guid = Guid.NewGuid(),
+                    Name = "People " + Guid.NewGuid().ToString( "N" ).Substring( 0, 8 ),
+                    EntityTypeId = EntityTypeCache.GetId<Person>().Value,
+                    PersistedScheduleIntervalMinutes = 60,
+                    PersistedLastRefreshDateTime = RockDateTime.Now,
+                    ForeignKey = ForeignKey
+                };
+
+                rockContext.Set<DataView>().Add( dataView );
+                rockContext.SaveChanges();
+
+                foreach ( var personId in personIds )
+                {
+                    rockContext.Database.ExecuteSqlCommand(
+                        "INSERT INTO [DataViewPersistedValue] ( [DataViewId], [EntityId] ) VALUES ( @p0, @p1 )",
+                        dataView.Id,
+                        personId );
+                }
+
+                return dataView.Guid;
+            }
+        }
+
+        /// <summary>
         /// Writes a badge Data View's name past Rock's own validation, for the states a row can
         /// only reach from outside Rock.
         /// </summary>
