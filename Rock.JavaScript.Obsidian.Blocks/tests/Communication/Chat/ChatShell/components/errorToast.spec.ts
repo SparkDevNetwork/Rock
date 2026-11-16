@@ -17,6 +17,7 @@
 // The error toast, mounted: two failures can share a code with different sentences, so closing
 // one has to say which one it was.
 import { mount } from "@vue/test-utils";
+import { nextTick, reactive } from "vue";
 import ErrorToast from "../../../../../src/Communication/Chat/ChatShell/components/errorToast.partial.obs";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -45,6 +46,25 @@ describe("the error toast", () => {
         expect(wrapper.text()).toContain("You no longer have access to this channel.");
         expect(wrapper.text()).toContain("You no longer have access to this conversation.");
         expect(wrapper.emitted("dismiss")).toEqual([[errors[1]]]);
+    });
+
+    // The shell keeps one list of failures and one of notices and grows and shrinks them in place,
+    // as a ban, a removal or being back online does; the toast draws each as it arrives and goes.
+    test("draws a failure and a notice the shell adds to its own lists, and lets one go when the shell takes it back", async () => {
+        const errors = reactive<ChatError[]>([]);
+        const notices = reactive<Array<{ code: string, text: string, icon: string }>>([]);
+        const wrapper = mount(ErrorToast, { props: { errors, notices } });
+
+        errors.push({ code: "rt.read_revoked", severity: "permission", roomKind: "channel" });
+        notices.push({ code: "back-online", text: "You're back online", icon: "check" });
+        await nextTick();
+
+        expect(wrapper.find("[data-code='rt.read_revoked']").exists()).toBe(true);
+        expect(wrapper.get("[data-code='back-online']").text()).toBe("You're back online");
+
+        errors.splice(0, 1);
+        await nextTick();
+        expect(wrapper.find("[data-code='rt.read_revoked']").exists()).toBe(false);
     });
 });
 
