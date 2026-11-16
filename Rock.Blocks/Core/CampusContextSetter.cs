@@ -276,6 +276,7 @@ namespace Rock.Blocks.Core
                 {
                     { "CampusName", currentCampus.Name }
                 };
+                mergeObjects.AddRockRequestContext( RequestContext );
 
                 options.CurrentSelectionText = GetAttributeValue( AttributeKey.CurrentItemTemplate ).ResolveMergeFields( mergeObjects );
             }
@@ -290,12 +291,12 @@ namespace Rock.Blocks.Core
             var dropdownItemTemplate = GetAttributeValue( AttributeKey.DropdownItemTemplate );
             if ( dropdownItemTemplate.IsNotNullOrWhiteSpace() )
             {
+                var mergeObjects = new Dictionary<string, object>();
+                mergeObjects.AddRockRequestContext( RequestContext );
+
                 foreach ( var campus in campusList )
                 {
-                    var mergeObjects = new Dictionary<string, object>
-                    {
-                        { "CampusName", campus.Text }
-                    };
+                    mergeObjects["CampusName"] = campus.Text;
                     campus.Text = dropdownItemTemplate.ResolveMergeFields( mergeObjects );
                 }
             }

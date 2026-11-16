@@ -517,12 +517,25 @@ namespace Rock
                     enabledLavaCommands = GlobalAttributesCache.Value( "DefaultEnabledLavaCommands" );
                 }
 
-                var context = LavaService.NewRenderContext();
+                /*
+                    11/16/26 - CLAUDE
 
-                context.SetEnabledCommands( enabledLavaCommands, "," );
+                    Build the context from the dictionary instead of copying it in with
+                    SetMergeFields. Keys starting with "$_" (such as the request context
+                    added by GetCommonMergeFields) must become internal fields, and
+                    SetMergeField rejects them. The override is only set when the
+                    dictionary has no CurrentPerson, because it used to be set first
+                    and then replaced by the dictionary's value.
 
-                context.SetMergeField( "CurrentPerson", currentPersonOverride );
-                context.SetMergeFields( mergeObjects );
+                    Reason: Allow merge fields that carry internal fields.
+                */
+                var enabledCommands = enabledLavaCommands.SplitDelimitedValues( ",", StringSplitOptions.RemoveEmptyEntries );
+                var context = LavaService.NewRenderContext( mergeObjects, enabledCommands );
+
+                if ( mergeObjects == null || !mergeObjects.ContainsKey( "CurrentPerson" ) )
+                {
+                    context.SetMergeField( "CurrentPerson", currentPersonOverride );
+                }
 
                 var result = LavaService.RenderTemplate( content, LavaRenderParameters.WithContext( context ) );
 

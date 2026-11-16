@@ -666,6 +666,7 @@ namespace Rock.Blocks.Group
             }
 
             var mergeFields = BuildInfoWindowMergeFields( group, request.LocationId );
+            mergeFields.AddRockRequestContext( RequestContext );
 
             return ActionOk( template.ResolveMergeFields( mergeFields ) );
         }

@@ -214,10 +214,14 @@ namespace Rock.Lava
                 mergeFields.Add( "Campuses", CampusCache.All() );
             }
 
-            // Add client information 
+            // Add client information
             if ( rockPage != null )
             {
                 mergeFields.Add( "Geolocation", rockPage.RequestContext?.ClientInformation?.Geolocation );
+
+                // Carry the request context so Lava filters and commands can
+                // read it without falling back to HttpContext or RockPage.
+                mergeFields.AddRockRequestContext( rockPage.RequestContext );
             }
 
             mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
@@ -595,6 +599,7 @@ namespace Rock.Lava
             }
 
             var mergeFields = context.GetMergeFields();
+            mergeFields.AddInternalFieldsFrom( context );
 
             // Resolve merge fields.
             var resolvedMarkup = markup.ResolveMergeFields( mergeFields );

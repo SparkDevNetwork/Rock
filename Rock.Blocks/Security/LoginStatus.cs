@@ -293,6 +293,7 @@ namespace Rock.Blocks.Security
             {
                 { "CurrentPerson", currentPerson }
             };
+            mergeFields.AddRockRequestContext( RequestContext );
 
             return navPagesString
                 .TrimEnd( '|' )

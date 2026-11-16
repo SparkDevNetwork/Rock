@@ -958,14 +958,17 @@ namespace Rock.Blocks.Engagement
                 avgDaysToComplete = ( int ) avgQuery.Average();
             }
 
-            return template.ResolveMergeFields( new Dictionary<string, object>
+            var mergeFields = new Dictionary<string, object>
             {
                 { "IndividualsCompleting", individualsCompleting },
                 { "AvgDaysToComplete", avgDaysToComplete },
                 { "StepsStarted", stepsStarted },
                 { "StepsCompleted", stepsCompleted },
                 { "StepType", stepType }
-            } );
+            };
+            mergeFields.AddRockRequestContext( RequestContext );
+
+            return template.ResolveMergeFields( mergeFields );
         }
 
         /// <summary>

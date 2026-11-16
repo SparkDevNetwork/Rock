@@ -146,6 +146,7 @@ namespace Rock.Lava
 
             // Apply the merge fields in the block context.
             var internalMergeFields = context.GetMergeFields();
+            internalMergeFields.AddInternalFieldsFrom( context );
 
             foreach ( var item in parms )
             {

@@ -126,6 +126,7 @@ namespace Rock.Blocks.Security
                     {
                         { "CurrentPerson", currentPerson }
                     };
+                    mergeFields.AddRockRequestContext( RequestContext );
 
                     bag.Message = message.ResolveMergeFields( mergeFields );
                 }

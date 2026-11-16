@@ -164,6 +164,7 @@ namespace Rock.Blocks.Types.Mobile.Events
                 { "Event", eventItemOccurrence?.EventItem },
                 { "CurrentPerson", RequestContext.CurrentPerson }
             };
+            mergeFields.AddRockRequestContext( RequestContext );
 
             //var campusEntityType = EntityTypeCache.Get( "Rock.Model.Campus" );
             var contextCampus = RequestContext.GetContextEntity<Campus>();

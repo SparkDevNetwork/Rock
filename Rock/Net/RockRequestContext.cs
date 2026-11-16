@@ -43,6 +43,13 @@ namespace Rock.Net
         #region Fields
 
         /// <summary>
+        /// The key of the Lava internal field that holds the request context.
+        /// Lava filters and commands read it with
+        /// <see cref="ExtensionMethods.GetRockRequestContext(ILavaRenderContext)"/>.
+        /// </summary>
+        internal const string LavaInternalFieldKey = "RockRequestContext";
+
+        /// <summary>
         /// The cache object for the site this request is related to. This
         /// may be <c>null</c> if no page is associated with this request.
         /// </summary>
@@ -796,6 +803,12 @@ namespace Rock.Net
         /// <returns>The text string representation of the page parameter or an empty string if no matching parameter was found.</returns>
         public virtual string GetPageParameter( string name )
         {
+            // Match RockPage.PageParameter, which returns an empty string for a null name.
+            if ( name == null )
+            {
+                return string.Empty;
+            }
+
             if ( PageParameters.ContainsKey( name ) )
             {
                 return PageParameters[name];
@@ -1113,7 +1126,7 @@ namespace Rock.Net
 
             mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
             mergeFields.Add( "ExperienceMode", Rock.Web.SystemSettings.GetValue( SystemKey.SystemSetting.TRAILBLAZER_MODE ).AsBoolean() ? "Trailblazer" : "Essentials" );
-            mergeFields.Add( $"{LavaRenderContextBase.InternalMergeFieldPrefix}RockRequestContext", this );
+            mergeFields.AddRockRequestContext( this );
 
             return mergeFields;
         }

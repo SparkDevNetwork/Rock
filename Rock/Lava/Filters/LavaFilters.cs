@@ -2099,6 +2099,7 @@ namespace Rock.Lava
                             return "## Lava Error: Recursive reference ##";
                         }
 
+                        mergeFields.AddInternalFieldsFrom( context );
                         rawValue = theValue.ResolveMergeFields( mergeFields );
                     }
                     else
@@ -2130,6 +2131,7 @@ namespace Rock.Lava
                         return "## Lava Error: Recursive reference ##";
                     }
 
+                    mergeFields.AddInternalFieldsFrom( context );
                     rawValue = theValue.ResolveMergeFields( mergeFields );
                 }
                 else
@@ -5588,7 +5590,8 @@ namespace Rock.Lava
             }
 
             // Next check the RockRequestContext in the lava context.
-            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            var currentRequest = context.GetRockRequestContext();
+            if ( currentRequest != null )
             {
                 return currentRequest.CurrentPerson;
             }
