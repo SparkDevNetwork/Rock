@@ -1096,6 +1096,11 @@ namespace Rock.Communication.Chat.Platform.Doors
             /// Whether the caller manages this shared channel's members, once asked; null until then.
             /// </summary>
             public bool? MayCallerManage { get; set; }
+
+            /// <summary>
+            /// Whether the group's members hold a Rock security role, by Rock's own test.
+            /// </summary>
+            public bool IsSecurityRole { get; set; }
         }
 
         /// <summary>
@@ -1124,16 +1129,20 @@ namespace Rock.Communication.Chat.Platform.Doors
             var callerRows = new GroupMemberService( rockContext ).AsNoFilter().Where( m => m.PersonId == caller.Id );
 
             // An ended group keeps its row on the platform for its history, but nobody joins or is
-            // added to it.
-            var groupId = new GroupService( rockContext ).Queryable()
+            // added to it. Whether it grants a security role is Rock's own test, read in the same query.
+            var groups = new GroupService( rockContext ).Queryable()
                 .Where( g => g.Guid == channelGuid && g.IsActive )
-                .Where( g => g.GroupTypeId != directMessageTypeId || callerRows.Any( m => m.GroupId == g.Id ) )
-                .Select( g => ( int? ) g.Id )
+                .Where( g => g.GroupTypeId != directMessageTypeId || callerRows.Any( m => m.GroupId == g.Id ) );
+            var securityRoleIds = groups.IsSecurityRoleOrSecurityRoleGroupType().Select( g => g.Id );
+            var found = groups
+                .Select( g => new { g.Id, IsSecurityRole = securityRoleIds.Contains( g.Id ) } )
                 .FirstOrDefault();
-            if ( !groupId.HasValue )
+            if ( found == null )
             {
                 return null;
             }
+
+            var groupId = ( int? ) found.Id;
 
             var personIds = otherPersonIds.Concat( new[] { caller.Id } ).Distinct().ToList();
 
@@ -1154,7 +1163,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return null;
             }
 
-            var room = new RoomRead { GroupId = groupId.Value, Channel = channel };
+            var room = new RoomRead { GroupId = groupId.Value, Channel = channel, IsSecurityRole = found.IsSecurityRole };
             foreach ( var member in projection.Members.Where( m => m.ChannelGuid == channelGuid && m.PersonId.HasValue ) )
             {
                 if ( member.IsBanned )
@@ -1252,12 +1261,13 @@ namespace Rock.Communication.Chat.Platform.Doors
             }
 
             // A Chat Administrator manages every shared channel, one they are banned from included,
-            // since that right is the church's and not the room's. Otherwise a ban in the room takes
-            // managing it away, whatever Rock lets the person do to the group; it is the
-            // projection's answer, the one the platform hides the room by. Past both, Rock's own
-            // rule for who manages a group's members: security, or a group role that may manage
-            // members or edit.
-            room.MayCallerManage = ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext )
+            // since that right is the church's and not the room's; but not a group whose members
+            // hold a Rock security role, since chat's own grants never change Rock permissions.
+            // Otherwise a ban in the room takes managing it away, whatever Rock lets the person do
+            // to the group; it is the projection's answer, the one the platform hides the room by.
+            // Past both, Rock's own rule for who manages a group's members: security, or a group
+            // role that may manage members or edit.
+            room.MayCallerManage = ( !room.IsSecurityRole && ChatSessionHelper.IsChatAdministrator( caller.Id, rockContext ) )
                 || ( !room.BannedPersonIds.Contains( caller.Id )
                     && new GroupService( rockContext ).Get( room.GroupId ).IsAuthorized( Rock.Security.Authorization.MANAGE_MEMBERS, caller ) );
 

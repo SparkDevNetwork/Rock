@@ -832,6 +832,7 @@ namespace Rock.Communication.Chat.Platform.Sync
                 { "@ChatAdministratorsGroupGuid", Rock.SystemGuid.Group.GROUP_CHAT_ADMINISTRATORS.AsGuid() },
                 { "@ChatSystemAuthorGuid", Rock.SystemGuid.Person.CHAT_SYSTEM_AUTHOR.AsGuid() },
                 { "@DirectMessageGroupTypeGuid", Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() },
+                { "@SecurityRoleGroupTypeGuid", Rock.SystemGuid.GroupType.GROUPTYPE_SECURITY_ROLE.AsGuid() },
                 { "@BadgeDataViewGuidsJson", new JArray( badgeGuids.Select( g => g.ToString() ) ).ToString( Formatting.None ) },
                 { "@PersonEntityTypeId", EntityTypeCache.GetId<Rock.Model.Person>() },
                 { "@ActiveRecordStatusValueId", activeStatus == null ? ( object ) DBNull.Value : activeStatus.Id },

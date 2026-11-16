@@ -2309,6 +2309,15 @@ namespace Rock.Migrations.Migrations {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to the [spChat_SyncProjection] stored procedure sending a security role group as a private, not pinned, not leavable channel..
+        /// </summary>
+        public static string _202611161200000_SyncSecurityRolesAsPrivateChatChannels_spChat_SyncProjection {
+            get {
+                return ResourceManager.GetString("_202611161200000_SyncSecurityRolesAsPrivateChatChannels_spChat_SyncProjection", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
         public static byte[] lms_header_min {
