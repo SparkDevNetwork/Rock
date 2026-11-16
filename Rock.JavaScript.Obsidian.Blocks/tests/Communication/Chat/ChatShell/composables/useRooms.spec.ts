@@ -806,7 +806,8 @@ describe("Join", () => {
         return s;
     }
 
-    test("joining, then joined: the toast and the announcement name the room, and the room's rows turn member", async () => {
+    // The notice is said by the notices' host as it is drawn, so the rooms say nothing beside it.
+    test("joining, then joined: the toast names the room, said once by the notice alone, and the room's rows turn member", async () => {
         const s = await previewing();
 
         void s.rooms.join(volunteers);
@@ -818,7 +819,7 @@ describe("Join", () => {
 
         expect(s.rooms.joinOf(volunteers)).toEqual({ kind: "joined", isFresh: true });
         expect(s.toasts).toEqual([{ code: "room.joined", text: "Joined Volunteers", icon: "check" }]);
-        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You joined Volunteers", isAssertive: false }));
+        expect(s.said).toEqual([]);
         expect(s.rooms.state.directory.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(true);
         expect(s.channels.rows.find(r => r.channel_id === volunteers)?.is_member).toBe(true);
         expect(s.rooms.factsOf(volunteers)?.is_member).toBe(true);
@@ -1028,7 +1029,7 @@ function sidebarOfThree(s: Setup): void {
 }
 
 describe("Leave", () => {
-    test("leaving, then left: the toast and the announcement name the room, and the next conversation opens", async () => {
+    test("leaving, then left: the toast names the room, said once by the notice alone, and the next conversation opens", async () => {
         const s = setup();
         sidebarOfThree(s);
         s.active.value = volunteers;
@@ -1042,7 +1043,7 @@ describe("Leave", () => {
 
         expect(s.rooms.leaveOf(volunteers)).toEqual({ kind: "left" });
         expect(s.toasts).toEqual([{ code: "room.left", text: "You left Volunteers", icon: "door" }]);
-        expect(s.lastSaid()).toEqual(expect.objectContaining({ text: "You left Volunteers.", isAssertive: false }));
+        expect(s.said).toEqual([]);
         expect(s.opened).toEqual([group]);
     });
 
