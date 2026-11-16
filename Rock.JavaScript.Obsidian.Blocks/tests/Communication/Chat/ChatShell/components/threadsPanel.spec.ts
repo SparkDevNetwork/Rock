@@ -126,6 +126,7 @@ function draw(given: Record<string, unknown> = {}): VueWrapper {
             channelId: channel,
             kind: "channel",
             roomTitles,
+            loadMore: (): Promise<void> => new Promise(() => undefined),
             ...props
         },
         global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },

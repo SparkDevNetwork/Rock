@@ -301,11 +301,11 @@
                                   :roomTitles="roomTitles"
                                   :roomKinds="roomKinds"
                                   :publicRooms="publicRooms"
+                                  :loadMore="loadMoreThreads"
                                   @open="openThreadFromList"
                                   @tab="onThreadsTab"
                                   @refresh="onThreadsRefresh"
                                   @follow="onFollowFromList"
-                                  @loadMore="onThreadsLoadMore"
                                   @close="closePanel" />
 
                     <MentionsPanel v-else-if="shownPanel === 'mentions'"
@@ -992,7 +992,7 @@
     });
 
     const {
-        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, onThreadsLoadMore, onFollowFromList, onFollowThread, onLoadOlderReplies
+        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
     } = useThreadsPanel({ shell, activeChannelId, drawnThread, showNotice });
 
     const {

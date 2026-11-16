@@ -431,6 +431,12 @@
         publicRooms: {
             type: Object as PropType<Record<string, boolean>>,
             default: () => ({})
+        },
+
+        /** Fetches the next page, settling once it is in or its failure is the list's error. */
+        loadMore: {
+            type: Function as PropType<() => Promise<void>>,
+            required: true
         }
     });
 
@@ -439,7 +445,6 @@
         (e: "tab", tab: Tab): void,
         (e: "refresh"): void,
         (e: "follow", rootId: number, isFollowing: boolean): void,
-        (e: "loadMore"): void,
         (e: "close"): void
     }>();
 
@@ -460,8 +465,10 @@
     const endElement = ref<HTMLElement>();
     const tabElements: Partial<Record<Tab, HTMLElement>> = {};
 
-    // Scrolling to the end of the list asks for the next page, while one is left.
-    usePagingTrigger(endElement, () => emit("loadMore"), { enabled: () => props.hasMore });
+    // Scrolling to the end of the list asks for the next page, while one is left; its promise lets
+    // the trigger ask again after a page that leaves the end in view. A failure shown in place
+    // holds it until the list is fetched again.
+    usePagingTrigger(endElement, () => props.loadMore(), { enabled: () => props.hasMore && !props.error });
 
     // #endregion Values
 

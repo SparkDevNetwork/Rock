@@ -75,8 +75,9 @@ export function useThreadsPanel(dependencies: ThreadsPanelDependencies) {
         void shell.value.threads.refresh();
     }
 
-    function onThreadsLoadMore(): void {
-        void shell.value.threads.loadMore();
+    /** The list's loader, whose promise the list's paging waits on. */
+    function loadMoreThreads(): Promise<void> {
+        return shell.value.threads.loadMore();
     }
 
     /**
@@ -102,5 +103,5 @@ export function useThreadsPanel(dependencies: ThreadsPanelDependencies) {
         void shell.value.threads.loadOlderReplies();
     }
 
-    return { threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, onThreadsLoadMore, onFollowFromList, onFollowThread, onLoadOlderReplies };
+    return { threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies };
 }
