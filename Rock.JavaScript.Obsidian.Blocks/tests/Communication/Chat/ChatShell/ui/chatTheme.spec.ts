@@ -273,14 +273,14 @@ const tokens: Token[] = [
     { name: "t-panel", light: "300ms" },
     { name: "rise", light: "8px" },
     { name: "pop-scale", light: ".96" },
-    { name: "react-from", light: ".55" }
+    { name: "spring-from", light: ".55" }
 ];
 
 /** What reduced motion changes: no lift, no scale, no slide, and shorter entrances. */
 const reducedMotion: Array<[string, string]> = [
     ["rise", "0px"],
     ["pop-scale", "1"],
-    ["react-from", "1"],
+    ["spring-from", "1"],
     ["t-msg", "140ms"],
     ["t-panel", "160ms"]
 ];
@@ -1046,7 +1046,7 @@ describe("the components' own styles", () => {
             expect(sheetRule(".chat-badge", "will-change")).toBe("");
             expect(sheetRule(".chat-badge", "animation")).toBe("");
             // under reduced motion the spring has no scale and the quick time, so it only fades in
-            expect(declarationOf(sheetPath, ".chat-shell", "--chat-react-from", isReducedMotion)).toBe("1");
+            expect(declarationOf(sheetPath, ".chat-shell", "--chat-spring-from", isReducedMotion)).toBe("1");
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring", isReducedMotion)).toBe(normalize("var(--chat-t-fast)"));
         });
 

@@ -278,7 +278,7 @@ img.chat-picker-glyph {
 }
 
 .chat-picker-cell:active .chat-picker-glyph {
-    transform: scale(var(--chat-glyph-press));
+    transform: scale(var(--chat-press-deep));
     transition-duration: var(--chat-d-glyph-press);
 }
 

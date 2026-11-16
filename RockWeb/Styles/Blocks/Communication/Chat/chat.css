@@ -166,15 +166,23 @@
     --chat-emoji-md: 22px;
     --chat-emoji-lg: 28px;
     --chat-emoji-jumbo: 40px;
+    /* Emoji at the sizes their own parts are drawn: a reaction chip and a reactor's row, a tool in the message bar, the phone sheet's reactions. */
+    --chat-emoji-chip: 15px;
+    --chat-emoji-tool: 19px;
+    --chat-emoji-tray: 24px;
 
     /*
-        Layers, lowest first. Raised and sticky lift a part over its own scrolling neighbours; a bar
+        Layers, lowest first. Raised and sticky lift a part over its own scrolling neighbours; a
+        chooser (New message's To field) drops its suggestions over them; the first load's veil
+        covers the frame under the bars; a bar
         floats over the feed (the message tools, the connection bar); the phone's panel slides over
         the conversation and a full view covers it; then a notice, a dialog, a sheet's scrim and
         the sheet, a popover, and over everything the tooltip and the reaction card.
     */
     --chat-z-raised: 2;
     --chat-z-sticky: 3;
+    --chat-z-chooser: 4;
+    --chat-z-veil: 5;
     --chat-z-bar: 6;
     --chat-z-panel: 8;
     --chat-z-view: 20;
@@ -206,21 +214,21 @@
     --chat-t-panel: 300ms;
     --chat-rise: 8px;
     --chat-pop-scale: .96;
-    --chat-react-from: .55;
+    --chat-spring-from: .55;
 
     /*
         Motion distances: a popover or small part rises 4 px, a view or row by the rise above, a
-        sheet its whole height. A hover nudges a control by a pixel, grows a glyph and presses it
-        back (a small round control presses as deep), or turns the gear; a wide surface such as a
-        quote presses only a little; a count rolls in from most of its own height. Each goes to nothing under reduced
+        sheet its whole height. A hover nudges a control by a pixel, grows a glyph, or turns the gear.
+        A press is deep for a glyph or small round control and shallow for a wide surface such as a
+        quote. A count rolls in from most of its own height. Each goes to nothing under reduced
         motion below, so a part that moves by these needs no reduced-motion rule of its own.
     */
     --chat-rise-sm: 4px;
     --chat-rise-sheet: 100%;
     --chat-nudge: 1px;
     --chat-glyph-grow: 1.15;
-    --chat-glyph-press: .92;
-    --chat-press-scale: .99;
+    --chat-press-deep: .92;
+    --chat-press-shallow: .99;
     --chat-turn: 30deg;
     --chat-roll-from: 70%;
     /* A small delight's spring, which under reduced motion is only a quick fade. */
@@ -453,7 +461,7 @@
     .chat-shell {
         --chat-rise: 0px;
         --chat-pop-scale: 1;
-        --chat-react-from: 1;
+        --chat-spring-from: 1;
         --chat-t-msg: 140ms;
         --chat-t-panel: 160ms;
         --chat-d-view: 0ms;
@@ -466,8 +474,8 @@
         --chat-rise-sheet: 0%;
         --chat-nudge: 0px;
         --chat-glyph-grow: 1;
-        --chat-glyph-press: 1;
-        --chat-press-scale: 1;
+        --chat-press-deep: 1;
+        --chat-press-shallow: 1;
         --chat-turn: 0deg;
         --chat-roll-from: 0%;
         --chat-d-spring: var(--chat-t-fast);
@@ -616,7 +624,7 @@
 @keyframes chat-spring {
     from {
         opacity: .2;
-        transform: scale(var(--chat-react-from));
+        transform: scale(var(--chat-spring-from));
     }
 }
 

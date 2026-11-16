@@ -447,7 +447,7 @@
 }
 
 .chat-composer-send.is-ready:active {
-    transform: scale(var(--chat-glyph-press));
+    transform: scale(var(--chat-press-deep));
 }
 
 /*

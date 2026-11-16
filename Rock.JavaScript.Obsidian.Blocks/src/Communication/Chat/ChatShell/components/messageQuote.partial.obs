@@ -141,7 +141,7 @@ button.chat-quote:hover .chat-quote-body::after {
 }
 
 button.chat-quote:active .chat-quote-body {
-    transform: scale(var(--chat-press-scale));
+    transform: scale(var(--chat-press-shallow));
 }
 
 .chat-quote:focus-visible {

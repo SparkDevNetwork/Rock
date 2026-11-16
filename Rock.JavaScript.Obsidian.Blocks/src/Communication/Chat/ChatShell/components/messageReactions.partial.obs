@@ -158,7 +158,7 @@
 }
 
 .chat-rx-e {
-    font-size: 15px;
+    font-size: var(--chat-emoji-chip);
     line-height: 1;
 }
 

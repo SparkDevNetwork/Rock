@@ -207,7 +207,7 @@
     place-items: center;
     width: 32px;
     padding: 0;
-    font-size: 19px;
+    font-size: var(--chat-emoji-tool);
     line-height: 1;
     background: transparent;
     border: 0;
@@ -231,7 +231,7 @@ img.chat-tool-glyph {
 }
 
 .chat-tool.is-glyph:active .chat-tool-glyph {
-    transform: scale(var(--chat-glyph-press));
+    transform: scale(var(--chat-press-deep));
     transition-duration: var(--chat-d-glyph-press);
 }
 
@@ -280,7 +280,7 @@ img.chat-tool-glyph {
 }
 
 /*
-    Shows by fading in and rising 3px home; hides by fading out faster, out of the pointer's way.
+    Shows by fading in and rising home by the small rise; hides by fading out faster, out of the pointer's way.
     Moving from message to message plays neither, since the same bar is only moved. Animations
     rather than transitions, so each starts the moment the rest or the grace runs out: a transition
     waits two frames for its starting class to be swapped, and the bar came late.

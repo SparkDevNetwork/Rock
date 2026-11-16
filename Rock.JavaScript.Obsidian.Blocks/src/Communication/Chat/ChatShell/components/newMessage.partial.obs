@@ -244,7 +244,7 @@
 /* Above the body, so the suggestions it drops over the start block stay on top. */
 .chat-nd-to {
     position: relative;
-    z-index: calc(var(--chat-z-sticky) + 1);
+    z-index: var(--chat-z-chooser);
     flex: none;
     width: 100%;
     max-width: 780px;
