@@ -686,6 +686,22 @@ describe("loading more", () => {
         expect(loadMore).toHaveBeenCalledTimes(2);
     });
 
+    // The keyboard reaches the end of the list without scrolling it, so the end is also a button:
+    // Load older threads, and Try again while the list's failure strip shows.
+    test("ends in a Load older threads button while more wait, Try again while the list's failure shows", async () => {
+        const loadMore = loader();
+        const w = draw({ hasMore: true, loadMore });
+
+        const more = w.get("[data-testid='threads-more']");
+        expect(more.text()).toBe("Load older threads");
+        await more.trigger("click");
+        expect(loadMore).toHaveBeenCalledTimes(1);
+        w.unmount();
+
+        const failed = draw({ hasMore: true, error: offline, loadMore: loader() });
+        expect(failed.get("[data-testid='threads-more']").text()).toBe("Try again");
+    });
+
     // A failed page says so in place, with its way to try again; asking again by itself would
     // only fail again while the end stays in view.
     test("asks nothing while the list's failure is shown, and asks once it is gone with the end still in view", async () => {
