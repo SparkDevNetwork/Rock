@@ -106,6 +106,22 @@ describe("the popover", () => {
         expect(document.querySelector("[data-testid='a-floating']")).not.toBeNull();
     });
 
+    // A surface whose own size changes, as the @ picker's when its rows do, is placed again before
+    // the frame is painted, rather than drawing one frame where the old size put it.
+    it("is placed again at once when asked, from where its anchor is now", async () => {
+        const pop = host({ options: { placement: "bottom-start", offset: 0 } });
+        await pop.open();
+        await settle();
+        const anchor = find("a-anchor");
+        anchor.getBoundingClientRect = (): DOMRect => ({ x: 120, y: 40, left: 120, top: 40, right: 160, bottom: 60, width: 40, height: 20, toJSON: () => ({}) }) as DOMRect;
+
+        pop.update();
+        await settle();
+
+        expect(pop.floatingStyles.value.left).toBe("120px");
+        expect(pop.floatingStyles.value.top).toBe("60px");
+    });
+
     it("closed while it was still opening, stays closed and says the open did not land", async () => {
         const pop = host();
         const opening = pop.open();
