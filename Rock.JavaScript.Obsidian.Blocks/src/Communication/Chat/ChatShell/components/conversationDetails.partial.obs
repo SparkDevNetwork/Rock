@@ -367,6 +367,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { useChatSession } from "../chatSession.partial";
     import { failureNote } from "../composables/saveRule.partial";
     import { NotifyMode, notifyOptionsFor, PrefsState, RoomPrefs } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
@@ -438,29 +439,6 @@
             default: () => []
         },
 
-        /** The church's name, which the leave confirm says the group is at. */
-        organizationName: {
-            type: String,
-            default: ""
-        },
-
-        /** The person's primary alias, whose own row in a group draws her own status. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
-        /** The person's own name and photo, for their chip in a group. */
-        personName: {
-            type: String,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Where this room's Leave is, as the rooms keep it. */
         leave: {
             type: Object as PropType<LeaveState>,
@@ -483,11 +461,6 @@
         announcement: {
             type: Object as PropType<RoomAnnouncement | null>,
             default: null
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         },
 
         /** The room's notify mode for the person, as their sidebar row holds it. */
@@ -541,6 +514,12 @@
     }>();
 
     // #region Values
+
+    /**
+     * The session: the phone flag the dialog is drawn by, the person, whose own chip and status a
+     * group draws, and the church, which the leave confirm says a group is at.
+     */
+    const { isPhone, me, church } = useChatSession();
 
     /** Ties the name field to its label and notes, and the leave box to its question, once per dialog. */
     const renameId = `chat-rd-${newGuid()}`;
@@ -635,7 +614,7 @@
 
     /** Everyone in a group, the person first and marked as them. */
     const groupChips = computed((): Array<AvatarPerson & { key: string, alias: string, label: string }> => [
-        { key: "you", alias: props.personAliasGuid.toLowerCase(), name: props.personName, photoUrl: props.personPhotoUrl, label: `${props.personName} (you)` },
+        { key: "you", alias: me.value.personAliasGuid.toLowerCase(), name: me.value.name, photoUrl: me.value.photoUrl, label: `${me.value.name} (you)` },
         ...props.facts.people.map(person => ({ key: person.person_alias_guid, alias: person.person_alias_guid.toLowerCase(), name: fullName(person), photoUrl: person.avatar_url, label: fullName(person) }))
     ]);
 
@@ -712,7 +691,7 @@
             return "The others will see that you left. To come back, someone in the conversation will need to add you.";
         }
 
-        const leaving = `You'll stop getting its messages and leave the group at ${props.organizationName}.`;
+        const leaving = `You'll stop getting its messages and leave the group at ${church.name}.`;
         return props.facts.is_public ? `${leaving} You can join again from Browse channels.` : `${leaving} To come back, a leader will need to add you.`;
     });
 

@@ -33,6 +33,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 import { busy, exchangeAnswer, online, toldEntry, watchAnswer } from "../statusShapes";
 import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
@@ -124,6 +125,8 @@ const renameIdle: RenameState = { kind: "idle" };
 let wrapper: VueWrapper | null = null;
 
 function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
+    // The person, the church and the phone flag are the session's, provided as the shell provides them.
+    const { organizationName = "Cedar Hill Church", personName = "Jordan Ellis", personPhotoUrl = null, personAliasGuid = "", isPhone = false, ...rest } = props;
     wrapper = mount(ConversationDetails, {
         props: {
             kind: "channel",
@@ -131,16 +134,20 @@ function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
             facts: channelFacts(),
             groupName: null,
             campuses: [downtown],
-            organizationName: "Cedar Hill Church",
-            personName: "Jordan Ellis",
-            personPhotoUrl: null,
             leave: idle,
             rename: renameIdle,
             canRename: false,
             nameMaxLength: 100,
-            ...props
+            ...rest
         },
-        attachTo: document.body
+        attachTo: document.body,
+        global: {
+            provide: providedSession({
+                isPhone: isPhone as boolean,
+                churchName: organizationName as string,
+                me: { personAliasGuid: personAliasGuid as string, name: personName as string, photoUrl: personPhotoUrl as string | null }
+            })
+        }
     });
     return wrapper;
 }

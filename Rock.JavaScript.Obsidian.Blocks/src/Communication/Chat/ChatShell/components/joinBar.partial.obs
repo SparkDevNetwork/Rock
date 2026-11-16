@@ -115,6 +115,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -137,12 +138,6 @@
         announcement: {
             type: Object as PropType<RoomAnnouncement | null>,
             default: null
-        },
-
-        /** Whether the block is drawn one pane at a time, where the composer sits tighter. */
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -152,6 +147,9 @@
     }>();
 
     // #region Values
+
+    /** Whether the block is drawn one pane at a time, where the composer sits tighter. */
+    const isPhone = useChatSession().isPhone;
 
     const barElement = ref<HTMLElement>();
     const browseButton = ref<InstanceType<typeof Button>>();
