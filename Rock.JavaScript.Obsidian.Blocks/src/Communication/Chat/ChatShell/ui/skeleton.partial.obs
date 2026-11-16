@@ -6,6 +6,7 @@
                    'is-group': shape === 'group',
                    'is-bubble': shape === 'bubble',
                    'is-panel': shape === 'panel',
+                   'is-reactor': shape === 'reactor',
                    'is-own': isOwn
                }" aria-hidden="true">
         <i v-if="plan.lead" class="chat-skel-bone" :class="`is-${plan.lead}`" :style="{ width: `${plan.leadSize}px`, height: `${plan.leadSize}px` }"></i>
@@ -39,6 +40,11 @@
 
 .chat-skel.is-person {
     height: 52px;
+}
+
+.chat-skel.is-reactor {
+    height: 40px;
+    padding: 0 10px;
 }
 
 .chat-skel.is-panel {
@@ -104,7 +110,7 @@
     // #region Types
 
     /** The row a skeleton stands in for. */
-    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel";
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor";
 
     type Bone = { width: string, height: number };
 
@@ -123,7 +129,8 @@
         /**
          * A channel row (44px, a tile and its name), a conversation row (52px, a face, a name, a
          * line and a time), a feed group (a face, a name and lines), a bubble of a two-person
-         * conversation, or a panel row (a face over three lines).
+         * conversation (no face, as its rows have none), a panel row (a face over three lines), or
+         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person).
          */
         shape: {
             type: String as PropType<SkeletonShape>,
@@ -136,7 +143,7 @@
             default: () => []
         },
 
-        /** A bubble the reader sent: at the far side, with no face. */
+        /** A bubble the reader sent: at the far side. */
         isOwn: {
             type: Boolean,
             default: false
@@ -177,7 +184,10 @@
                 };
 
             case "bubble":
-                return { lead: props.isOwn ? null : "face", leadSize: 28, lines: [{ width: widthAt(0, 100), height: 40 }], trail: null };
+                return { lead: null, leadSize: 0, lines: [{ width: widthAt(0, 100), height: 40 }], trail: null };
+
+            case "reactor":
+                return { lead: "face", leadSize: 28, lines: [{ width: widthAt(0, 44), height: 10 }], trail: null };
 
             default:
                 return {
