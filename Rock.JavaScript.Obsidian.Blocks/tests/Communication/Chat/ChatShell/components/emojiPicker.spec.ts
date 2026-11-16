@@ -54,6 +54,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import EmojiPicker from "../../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
 
@@ -148,7 +149,7 @@ const fullCatalog: Emoji[] = fullSizes.flatMap(([category, size]) => Array.from(
 let wrapper: VueWrapper | null = null;
 let anchor: HTMLButtonElement;
 
-type PickerProps = { mode?: "react" | "insert", startsOn?: "tray" | "full", offered?: string[], recents?: string[], catalog?: Emoji[] | null, mine?: string[] };
+type PickerProps = { mode?: "react" | "insert", startsOn?: "tray" | "full", offered?: string[], recents?: string[], catalog?: Emoji[] | null, mine?: string[], isPhone?: boolean };
 
 async function settle(): Promise<void> {
     for (let i = 0; i < 3; i++) {
@@ -172,7 +173,8 @@ async function open(props: PickerProps = {}): Promise<VueWrapper> {
             mine: props.mine ?? [],
             anchor
         },
-        attachTo: document.body
+        attachTo: document.body,
+        global: { provide: providedSession({ isPhone: props.isPhone ?? false }) }
     });
     await settle();
     return wrapper;
@@ -726,6 +728,40 @@ describe("where it is placed", () => {
         const picker = await openAt({ left: 300, top: 500, width: 28, height: 28 });
 
         expect(picker.style.left).toBe("300px");
+    });
+});
+
+// On a phone every picker is a bottom sheet over a scrim, the sheet itself the dialog, as the GIF
+// picker is: the full picker at the picker's height, its grid scrolling inside it; the quick tray
+// as tall as what it holds. Beside its anchor on a wider screen it stays a popover.
+describe("on a phone", () => {
+    function sheet(): HTMLElement | null {
+        return document.querySelector<HTMLElement>("[data-testid='sheet']");
+    }
+
+    test("the full picker is a sheet of the picker's height, and the dialog is the sheet", async () => {
+        await open({ mode: "insert", isPhone: true });
+
+        expect(search().closest("[data-testid='sheet']")).toBe(sheet());
+        expect(sheet()?.classList.contains("is-picker")).toBe(true);
+        expect(sheet()?.getAttribute("aria-label")).toBe("Add emoji");
+        expect(document.querySelectorAll("[role='dialog']")).toHaveLength(1);
+        expect(document.querySelector(".chat-popover")).toBeNull();
+    });
+
+    test("the reaction picker's tray is a sheet as tall as what it holds", async () => {
+        await open({ isPhone: true });
+
+        expect(trayGlyphs()[0].closest("[data-testid='sheet']")).toBe(sheet());
+        expect(sheet()?.classList.contains("is-picker")).toBe(false);
+        expect(sheet()?.getAttribute("aria-label")).toBe("Add reaction");
+    });
+
+    test("beside its anchor on a wider screen it stays a popover", async () => {
+        await open({ mode: "insert" });
+
+        expect(sheet()).toBeNull();
+        expect(search().closest(".chat-popover")).not.toBeNull();
     });
 });
 
