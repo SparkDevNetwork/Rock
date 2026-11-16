@@ -47,6 +47,25 @@ namespace Rock.Rest.Controllers
             var block = new BlockService( ( RockContext ) Service.Context ).Get( blockId );
             if ( block != null && block.IsAuthorized( Rock.Security.Authorization.EDIT, person ) )
             {
+                block.LoadAttributes( ( RockContext ) Service.Context );
+
+                // Shared content may only be written through a block that uses the same context name.
+                var contextName = block.GetAttributeValue( "ContextName" );
+                var isSharedContent = htmlContents.EntityValue != null && htmlContents.EntityValue.Contains( "&ContextName=" );
+
+                if ( isSharedContent && ( contextName.IsNullOrWhiteSpace() || !htmlContents.EntityValue.EndsWith( "&ContextName=" + contextName ) ) )
+                {
+                    throw new HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+                }
+
+                var isApprovalRequired = block.GetAttributeValue( "SupportVersions" ).AsBoolean()
+                    && block.GetAttributeValue( "RequireApproval" ).AsBoolean();
+
+                if ( isApprovalRequired && !block.IsAuthorized( Rock.Security.Authorization.APPROVE, person ) )
+                {
+                    throw new HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+                }
+
                 var htmlContentService = ( HtmlContentService ) Service;
                 var htmlContent = htmlContentService.GetActiveContentQueryable( blockId, htmlContents.EntityValue ).FirstOrDefault();
                 if ( htmlContent != null )

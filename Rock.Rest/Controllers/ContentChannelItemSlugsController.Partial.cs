@@ -44,6 +44,21 @@ namespace Rock.Rest.Controllers
             {
                 var contentChannelItemSlugService = new ContentChannelItemSlugService( rockContext );
 
+                var item = new ContentChannelItemService( rockContext ).Get( contentChannelItemId );
+                if ( item == null || !item.IsAuthorized( Rock.Security.Authorization.EDIT, GetPerson() ) )
+                {
+                    throw new HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+                }
+
+                if ( contentChannelItemSlugId.HasValue )
+                {
+                    var existingSlug = contentChannelItemSlugService.Get( contentChannelItemSlugId.Value );
+                    if ( existingSlug == null || existingSlug.ContentChannelItemId != item.Id )
+                    {
+                        throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+                    }
+                }
+
                 var contentChannelItemSlug = contentChannelItemSlugService.SaveSlug( contentChannelItemId, slug, contentChannelItemSlugId );
                 if ( contentChannelItemSlug != null )
                 {
