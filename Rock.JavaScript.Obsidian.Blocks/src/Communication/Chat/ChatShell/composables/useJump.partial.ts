@@ -180,7 +180,7 @@ export function useJump(dependencies: JumpDependencies): Jump {
             const isStuck = oldest === oldestSeen || oldest < messageId;
             oldestSeen = oldest;
             return isStuck || !timeline.hasMore ? "stop" : "more";
-        }, () => shell.value.loadOlder());
+        }, () => shell.value.loadOlder().catch(() => undefined)); // the shell has said why; the look above stops on it
     }
 
     /**

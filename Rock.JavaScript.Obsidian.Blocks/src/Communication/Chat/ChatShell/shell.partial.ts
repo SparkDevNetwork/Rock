@@ -331,7 +331,7 @@ export type ChatShell = {
     /** The app icon's count: each unread conversation between people, and each channel's mentions by name. */
     appBadge: () => number;
 
-    /** Fetches older messages of the open channel. */
+    /** Fetches older messages of the open channel; a failure is reported, and fails for the caller too. */
     loadOlder: () => Promise<void>;
 
     /** Dismisses the failure the person closed. */
@@ -1316,9 +1316,14 @@ export function createChatShell(options: ShellOptions): ChatShell {
             return sum + (row.room_kind === "channel" ? row.mention_count ?? 0 : row.is_unread ? 1 : 0);
         }, 0),
 
+        // The toast says why; the caller learns it failed, so the feed offers it again rather than
+        // asking again by itself.
         loadOlder: async (): Promise<void> => {
             if (state.activeChannelId) {
-                await timelines.loadOlder(state.activeChannelId).catch(error => report(classifyPlatformError(error)));
+                await timelines.loadOlder(state.activeChannelId).catch(error => {
+                    report(classifyPlatformError(error));
+                    throw error;
+                });
             }
         },
 
