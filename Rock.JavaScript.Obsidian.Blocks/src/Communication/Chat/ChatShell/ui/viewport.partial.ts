@@ -18,15 +18,7 @@
 // What the device tells the page about itself, read in one place: its width as the shell
 // measures it, whether the person asked for less motion, and whether the pointer can hover.
 
-import { InjectionKey, onScopeDispose, Ref, ref } from "vue";
-
-/**
- * Whether the chat is drawn at a phone's width, provided once by the shell for a part that sits
- * several layers below it, such as a message's marker, to open its menu as a sheet the way the
- * composer's menus do without every layer between carrying the flag. A part drawn alone reads it
- * as false.
- */
-export const isPhoneKey: InjectionKey<Ref<boolean>> = Symbol("chat-is-phone");
+import { onScopeDispose, Ref, ref } from "vue";
 
 // #region The device's media answers
 

@@ -212,6 +212,7 @@
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { RosterMember } from "../types.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     const props = defineProps({
         /** The person being removed; null while nobody is, which draws nothing. */
@@ -258,12 +259,6 @@
         isRemoving: {
             type: Boolean,
             default: false
-        },
-
-        /** The reader, who is "(you)" among the choices. */
-        personAliasGuid: {
-            type: String,
-            default: ""
         }
     });
 
@@ -274,6 +269,9 @@
     }>();
 
     // #region Values
+
+    /** The reader, who is "(you)" among the choices. */
+    const { me } = useChatSession();
 
     /** The person last asked about, kept while the dialog plays its close. */
     const shown = ref<RosterMember | null>(props.member);
@@ -334,7 +332,7 @@
     }
 
     function isSelf(person: RosterMember): boolean {
-        return person.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
+        return person.person_alias_guid.toLowerCase() === me.value.personAliasGuid.toLowerCase();
     }
 
     // #endregion Functions

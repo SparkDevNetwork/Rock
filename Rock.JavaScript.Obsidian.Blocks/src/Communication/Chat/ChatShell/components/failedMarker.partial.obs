@@ -4,7 +4,6 @@
           :label="label"
           :items="items"
           :anchorAttrs="anchorAttrs"
-          :isSheet="isPhone"
           @select="onSelect">
         <template #anchor><span class="chat-fail-btn-words" data-testid="message-state">Not sent</span></template>
     </Menu>
@@ -12,10 +11,9 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, inject, PropType, ref } from "vue";
+    import { computed, PropType } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
-    import { isPhoneKey } from "../ui/viewport.partial";
 
     // The Not sent marker of a failed message: a red mark and the words, which open that
     // message's own choices, Try again unless it was refused for good, and Delete. One part draws
@@ -41,8 +39,6 @@
         (e: "retry"): void;
         (e: "discard"): void;
     }>();
-
-    const isPhone = inject(isPhoneKey, ref(false));
 
     const reasonId = `chat-fail-reason-${newGuid()}`;
 

@@ -20,15 +20,15 @@
 // opens as a sheet on a phone as the composer's menus do.
 import { readFileSync } from "fs";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { nextTick, ref } from "vue";
+import { nextTick } from "vue";
 import FailedMarker from "../../../../../src/Communication/Chat/ChatShell/components/failedMarker.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
-import { isPhoneKey } from "../../../../../src/Communication/Chat/ChatShell/ui/viewport.partial";
+import { providedSession } from "../sessionShapes";
 
 const css = readFileSync(`${__dirname}/../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs`, "utf8");
 
 function draw(props: { canRetry?: boolean, reason?: string | null } = {}, isPhone = false): VueWrapper {
-    return mount(FailedMarker, { props, attachTo: document.body, global: { provide: { [isPhoneKey as symbol]: ref(isPhone) } } });
+    return mount(FailedMarker, { props, attachTo: document.body, global: { provide: providedSession({ isPhone }) } });
 }
 
 const button = (wrapper: VueWrapper): HTMLElement => wrapper.get("[data-testid='message-failed-actions']").element as HTMLElement;
@@ -96,13 +96,13 @@ describe("the Not sent marker", () => {
         const wide = draw();
         await open(wide);
         expect(document.querySelector(".chat-menu")).not.toBeNull();
-        expect(document.querySelector("[data-testid='menu-scrim']")).toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).toBeNull();
         document.body.innerHTML = "";
 
         const phone = draw({}, true);
         await open(phone);
-        expect(document.querySelector(".chat-sheet")).not.toBeNull();
-        expect(document.querySelector("[data-testid='menu-scrim']")).not.toBeNull();
+        expect(document.querySelector("[data-testid='sheet']")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
     });
 
     // A finger or a pointer needs 24 by 24 CSS pixels, and the words are one short line, so the

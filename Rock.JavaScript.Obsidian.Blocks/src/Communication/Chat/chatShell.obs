@@ -450,7 +450,7 @@
                     @confirm="onConfirmBlock" />
 
             <!-- Changing who is in the room, asked from the members panel and drawn over the frame. -->
-            <RemoveMember v-bind="removeView" :personAliasGuid="personAliasGuid" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
+            <RemoveMember v-bind="removeView" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
             <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @add="shell.members.add" />
 
             <!-- The reaction picker, one at a time, placed beside what opened it and drawn in the chat's root. -->
@@ -784,7 +784,8 @@
     import { blockSentence } from "./ChatShell/composables/useBlocks.partial";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
-    import { isPhoneKey } from "./ChatShell/ui/viewport.partial";
+    import { provideChatSession } from "./ChatShell/chatSession.partial";
+    import { provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
@@ -948,10 +949,6 @@
         }
     });
 
-    // A message's Not sent marker sits deep in the feed, a thread and a draft, and opens its menu as
-    // a sheet on a phone as the composer's menus do, so it reads the flag from here.
-    provide(isPhoneKey, isPhone);
-
     const { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation } = useJump({
         shell,
         activeChannelId,
@@ -1041,6 +1038,20 @@
         onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     } = useComposers({ shell, activeChannelId, activeRow, isJoinBarShown, drawnThread, panelKind, isPanelHidden, conversationQuoteKey, threadQuoteKey });
+
+    // What the whole session shares, read by any part however deep: whether the chat is at a
+    // phone's width, who is signed in (replaced when a birthdate answer lets a new session in), the
+    // church, and the emoji and mention sources.
+    provideChatSession({
+        isPhone,
+        me: computed(() => ({ personAliasGuid: personAliasGuid.value, name: personName.value, photoUrl: personPhotoUrl.value })),
+        church: { name: organizationName },
+        emojiSource,
+        mentionSource: mentionSourceFor
+    });
+
+    // The chat's one voice for a screen reader, speaking from its root.
+    provideAnnouncer(rootElement);
 
     const {
         isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, openCard, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,

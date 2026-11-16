@@ -50,7 +50,8 @@ export type SessionContext = {
     mentionSource: (row: SidebarRow | null) => MentionPickerSource | null;
 };
 
-const chatSessionKey: InjectionKey<SessionContext> = Symbol("chat-session");
+/** Where the session is provided; a spec mounts a part under a session through it. */
+export const chatSessionKey: InjectionKey<SessionContext> = Symbol("chat-session");
 
 /**
  * Provides the session to every part below the caller. Called once, by the shell.

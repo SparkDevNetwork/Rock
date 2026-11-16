@@ -24,7 +24,7 @@
 //
 //   props: member: RosterMember | null (who is being removed; null draws nothing), isChannel,
 //          channelName, isLastLeader: boolean, choices: RosterMember[] (who may lead next),
-//          query: string, refusal: string | null, isRemoving: boolean, personAliasGuid: string
+//          query: string, refusal: string | null, isRemoving: boolean; the reader from the session
 //   emits: close, confirm(replacementPersonAliasGuid: string | null), query(text)
 //   marks: the dialog's own (dialog, dialog-cancel, dialog-confirm, dialog-preview), remove-preview,
 //          leader-search, leader-choices, leader-choice, leader-radio, leader-none,
@@ -33,6 +33,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import RemoveMember from "../../../../../src/Communication/Chat/ChatShell/components/removeMember.partial.obs";
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 
@@ -68,10 +69,10 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             query: "",
             refusal: null,
             isRemoving: false,
-            personAliasGuid: me,
             ...props
         },
-        attachTo: document.body
+        attachTo: document.body,
+        global: { provide: providedSession({ me: { personAliasGuid: me } }) }
     });
     return wrapper;
 }
