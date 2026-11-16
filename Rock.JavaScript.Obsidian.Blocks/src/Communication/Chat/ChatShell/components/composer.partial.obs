@@ -17,15 +17,17 @@
                         <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
                     </span>
                     <span class="chat-composer-failed-acts">
-                        <button v-if="isRetryOffered"
-                                type="button"
-                                class="chat-ls-btn is-retry"
+                        <Button v-if="isRetryOffered"
+                                kind="line"
+                                size="sm"
+                                icon="refresh"
                                 data-testid="composer-failed-retry"
-                                @click="onRetryFailed"><Icon name="refresh" size="xs" />Try again</button>
-                        <button type="button"
-                                class="chat-ls-btn"
+                                @click="onRetryFailed">Try again</Button>
+                        <Button kind="line"
+                                size="sm"
+                                icon="trash"
                                 data-testid="composer-failed-discard"
-                                @click="onDiscardFailed"><Icon name="trash" size="xs" />{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</button>
+                                @click="onDiscardFailed">{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</Button>
                     </span>
                 </div>
             </div>
@@ -288,11 +290,6 @@
     flex: none;
     gap: 6px;
     margin-left: auto;
-}
-
-/* Try again is the way forward, in the danger ink; Delete stays the plain outline. */
-.chat-composer-failed-acts .chat-ls-btn.is-retry {
-    color: var(--chat-danger-ink);
 }
 
 /* The message being quoted, above the box, rising into place as it appears. */
@@ -636,6 +633,7 @@
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { ChatPerson, DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import { useIsMotionReduced } from "../ui/viewport.partial";
     import { busyNoteWords } from "../ui/face.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";

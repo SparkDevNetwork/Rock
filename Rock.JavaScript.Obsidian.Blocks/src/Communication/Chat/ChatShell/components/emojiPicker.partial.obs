@@ -36,20 +36,16 @@
 
         <template v-else>
             <div class="chat-picker-head">
-                <label class="chat-picker-search chat-field">
-                    <Icon name="search" size="sm" />
-                    <input ref="searchElement"
-                           class="chat-field-input"
-                           type="text"
-                           placeholder="Search emoji"
-                           autocomplete="off"
-                           spellcheck="false"
-                           aria-label="Search emoji"
-                           :aria-controls="gridId"
-                           :value="query"
-                           @input="onSearchInput"
-                           @keydown="onSearchKeydown" />
-                </label>
+                <Field ref="searchField"
+                       leadingIcon="search"
+                       placeholder="Search emoji"
+                       autocomplete="off"
+                       spellcheck="false"
+                       aria-label="Search emoji"
+                       :aria-controls="gridId"
+                       :modelValue="query"
+                       @update:modelValue="onSearchInput"
+                       @keydown="onSearchKeydown" />
             </div>
 
             <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
@@ -136,10 +132,6 @@
 </template>
 
 <style scoped>
-.chat-picker [hidden] {
-    display: none !important;
-}
-
 .chat-picker-tray {
     display: flex;
     gap: 2px;
@@ -183,20 +175,6 @@
 .chat-picker-head {
     flex: none;
     padding: 10px 10px 4px;
-}
-
-.chat-picker-search {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    height: 34px;
-    padding: 0 10px;
-    margin: 0;
-    font-weight: 400;
-    color: var(--chat-muted);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-field);
 }
 
 /*
@@ -338,6 +316,11 @@ img.chat-picker-glyph {
     border-bottom: 1px solid var(--chat-line);
 }
 
+/* Hidden while a search draws its results; stated here, since the strip's own display would keep it drawn. */
+.chat-picker-tabs[hidden] {
+    display: none;
+}
+
 .chat-picker-tabs button {
     position: relative;
     display: grid;
@@ -465,6 +448,7 @@ img.chat-picker-prev {
 
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref } from "vue";
+    import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
     import PickerShell from "./pickerShell.partial.obs";
@@ -599,7 +583,10 @@ img.chat-picker-prev {
     // afresh for each step, so the full picker pops in where the tray was.
     const shell = ref<InstanceType<typeof PickerShell>>();
     const pickerElement = computed((): HTMLElement | undefined => shell.value?.element ?? undefined);
-    const searchElement = ref<HTMLInputElement>();
+    const searchField = ref<InstanceType<typeof Field>>();
+
+    /** The search's input, which the full picker opens on and Up from the grid's top returns to. */
+    const searchElement = computed((): HTMLInputElement | undefined => searchField.value?.inputElement);
     const bodyElement = ref<HTMLElement>();
 
     /** The step on screen; inserting has no tray, since the composer's button offers no quick reactions. */
@@ -769,8 +756,8 @@ img.chat-picker-prev {
 
     // #region Event Handlers
 
-    function onSearchInput(event: Event): void {
-        query.value = (event.target as HTMLInputElement).value;
+    function onSearchInput(value: string): void {
+        query.value = value;
         chosenStop.value = null;
         if (bodyElement.value) {
             bodyElement.value.scrollTop = 0;

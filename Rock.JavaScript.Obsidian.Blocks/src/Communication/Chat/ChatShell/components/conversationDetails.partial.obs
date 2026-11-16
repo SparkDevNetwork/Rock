@@ -76,11 +76,11 @@
                        :aria-describedby="`${renameId}-help ${renameId}-note`"
                        @input="isEditedSinceAnswer = true"
                        @keydown.enter.prevent="onRename" />
-                <button type="button"
-                        class="chat-rd-btn is-brand is-sm"
+                <Button kind="brand"
+                        size="sm"
                         data-testid="rename-save"
                         :disabled="!canSaveName"
-                        @click="onRename">Save</button>
+                        @click="onRename">Save</Button>
             </div>
         </SettingGroup>
         <template v-if="canRename">
@@ -150,21 +150,16 @@
                     </template>
                     <!-- Held while leaving, not disabled, since a disabled button drops the focus it holds to the page. -->
                     <div class="chat-rd-actions">
-                        <button ref="leaveCancelElement"
-                                type="button"
-                                class="chat-rd-btn is-line"
+                        <Button ref="leaveCancelButton"
+                                kind="line"
                                 data-testid="leave-cancel"
                                 :aria-disabled="isLeaving ? 'true' : undefined"
-                                @click="onLeaveCancel">{{ leaveError ? "OK" : "Cancel" }}</button>
-                        <button v-if="!leaveError"
-                                type="button"
-                                class="chat-rd-btn is-danger"
+                                @click="onLeaveCancel">{{ leaveError ? "OK" : "Cancel" }}</Button>
+                        <Button v-if="!leaveError"
+                                kind="danger"
+                                :busy="isLeaving"
                                 data-testid="leave-go"
-                                :aria-disabled="isLeaving ? 'true' : undefined"
-                                @click="onLeaveGo">
-                            <template v-if="isLeaving"><span class="chat-spinner"></span>Leaving</template>
-                            <template v-else>Leave</template>
-                        </button>
+                                @click="onLeaveGo">{{ isLeaving ? "Leaving" : "Leave" }}</Button>
                     </div>
                 </div>
                 <SettingRow v-else
@@ -308,65 +303,6 @@
     color: var(--chat-muted);
 }
 
-/* The dialog's small buttons: outlined, in the church's color, or in danger. */
-.chat-rd-btn {
-    display: inline-flex;
-    flex: none;
-    gap: 6px;
-    align-items: center;
-    height: 30px;
-    padding: 0 14px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-rd-btn .chat-spinner {
-    width: 12px;
-    height: 12px;
-}
-
-.chat-rd-btn.is-line {
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-}
-
-.chat-rd-btn.is-line:hover:not(:disabled, [aria-disabled="true"]) {
-    border-color: var(--chat-icon);
-}
-
-.chat-rd-btn.is-brand {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-.chat-rd-btn.is-danger {
-    color: var(--chat-on-danger);
-    background: var(--chat-danger);
-}
-
-.chat-rd-btn.is-danger:hover:not(:disabled, [aria-disabled="true"]) {
-    background: var(--chat-danger-hover);
-}
-
-/* The small button, as Rename's Save. */
-.chat-rd-btn.is-sm {
-    gap: 5px;
-    height: 28px;
-    padding: 0 11px;
-    font-size: var(--chat-fs-ui);
-}
-
-.chat-rd-btn:disabled,
-.chat-rd-btn[aria-disabled="true"] {
-    cursor: default;
-    opacity: .5;
-}
-
 /* The name field fills its row of the group, Save at its end, the row as tall as the group's others. */
 .chat-rn {
     display: flex;
@@ -411,10 +347,6 @@
     color: var(--chat-text-2);
 }
 
-.chat-leave-box .chat-rd-btn {
-    height: 34px;
-}
-
 .chat-set-err {
     display: flex;
     gap: 6px;
@@ -448,6 +380,7 @@
     import { failedWords, finalWords, offlineWords } from "../errors.partial";
     import { ChannelFacts, ChannelLeader, FaceStatus } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
     import { peopleCountWords, shownStatus } from "../ui/face.partial";
     import GroupFace from "../ui/groupFace.partial.obs";
@@ -632,7 +565,7 @@
 
     /** The Leave row, whose own element takes focus back when the confirm is cancelled. */
     const leaveRow = ref<{ $el: HTMLElement } | null>(null);
-    const leaveCancelElement = ref<HTMLButtonElement>();
+    const leaveCancelButton = ref<InstanceType<typeof Button>>();
     const renameElement = ref<HTMLInputElement>();
 
     /** The rooms' announcement count as the dialog opened, so only news said since is read here. */
@@ -844,7 +777,7 @@
         isConfirmingLeave.value = true;
         await nextTick();
         // Cancel first, so Enter never leaves by accident.
-        leaveCancelElement.value?.focus();
+        leaveCancelButton.value?.focus();
     }
 
     async function onLeaveCancel(): Promise<void> {
@@ -874,7 +807,7 @@
     watch(leaveError, async error => {
         if (error && isConfirmingLeave.value) {
             await nextTick();
-            leaveCancelElement.value?.focus();
+            leaveCancelButton.value?.focus();
         }
     });
 

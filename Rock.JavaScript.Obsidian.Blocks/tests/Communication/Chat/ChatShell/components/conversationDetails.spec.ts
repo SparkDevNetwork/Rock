@@ -1019,8 +1019,8 @@ describe("the grouped list's measures", () => {
         expect(bodyOf("ui/segmented.partial.obs", ".chat-seg.is-phone .chat-seg-opt")).toMatch(/height:\s*40px;/);
     });
 
-    test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as pills", () => {
-        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rd-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
+    test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as the shared button rounds every button", () => {
+        expect(bodyOf("ui/button.partial.obs", ".chat-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\);/);
     });
 
     test("rounds Chat settings' Turn on and Turn off as pills too", () => {

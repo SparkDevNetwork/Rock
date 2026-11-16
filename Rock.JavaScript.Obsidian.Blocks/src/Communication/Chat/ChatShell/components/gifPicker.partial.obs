@@ -32,12 +32,10 @@
             <template v-if="search.status === 'idle'">
                 <p class="chat-gif-label">Try a search</p>
                 <div class="chat-gif-chips">
-                    <button v-for="word in gifSuggestions"
-                            :key="word"
-                            type="button"
-                            class="chat-gif-chip"
-                            data-testid="gif-suggestion"
-                            @click="onSuggestion(word)">{{ word }}</button>
+                    <Pill v-for="word in gifSuggestions"
+                          :key="word"
+                          data-testid="gif-suggestion"
+                          @click="onSuggestion(word)">{{ word }}</Pill>
                 </div>
             </template>
 
@@ -70,23 +68,21 @@
                 </div>
             </div>
 
-            <div v-else-if="search.status === 'empty'" class="chat-gif-state" data-testid="gif-empty">
-                <span class="chat-gif-state-icon"><Icon name="search" /></span>
-                <b>No GIFs found</b>
-                <span>Try another word, like Thanks or Amen.</span>
-            </div>
+            <EmptyState v-else-if="search.status === 'empty'"
+                        title="No GIFs found"
+                        text="Try another word, like Thanks or Amen."
+                        data-testid="gif-empty" />
 
-            <div v-else class="chat-gif-state" data-testid="gif-error">
-                <span class="chat-gif-state-icon"><Icon name="alert" /></span>
-                <template v-if="search.status === 'busy'">
-                    <b>{{ search.busyText }}</b>
-                </template>
-                <template v-else>
-                    <b>GIFs can't load right now</b>
-                    <span>Check your connection, then try again.</span>
-                </template>
-                <button type="button" class="chat-ls-btn chat-gif-retry" data-testid="gif-retry" @click="search.retry()"><Icon name="refresh" size="xs" />Try again</button>
-            </div>
+            <!-- A busy search says KLIPY's own sentence; any other failure says why in general. -->
+            <EmptyState v-else
+                        tone="error"
+                        :title="search.status === 'busy' ? search.busyText ?? '' : failedTitle"
+                        :text="search.status === 'busy' ? '' : 'Check your connection, then try again.'"
+                        actionLabel="Try again"
+                        actionIcon="refresh"
+                        :actionAttrs="{ 'data-testid': 'gif-retry' }"
+                        data-testid="gif-error"
+                        @action="search.retry()" />
         </div>
 
         <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
@@ -137,28 +133,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-}
-
-.chat-gif-chip {
-    display: inline-flex;
-    align-items: center;
-    height: 30px;
-    padding: 0 12px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    white-space: nowrap;
-    cursor: pointer;
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-gif-chip:hover {
-    color: var(--chat-text);
-    background: var(--chat-hover);
-    border-color: var(--chat-line-strong);
 }
 
 /* Two columns, each GIF whole at its own shape, the next one going in the shorter column. */
@@ -226,43 +200,6 @@
     outline: none;
 }
 
-/* Nothing found, a failure and busy: a word or two and what to do, in the body's middle. */
-.chat-gif-state {
-    display: grid;
-    gap: 6px;
-    place-items: center;
-    align-content: center;
-    height: 100%;
-    padding: 0 24px;
-    text-align: center;
-}
-
-.chat-gif-state b {
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-}
-
-.chat-gif-state span {
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-gif-state .chat-gif-state-icon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-bottom: 4px;
-    color: var(--chat-icon);
-    background: var(--chat-bubble);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-gif-retry {
-    margin-top: 6px;
-}
-
 /* KLIPY named at the foot, as its terms ask. */
 .chat-gif-foot {
     display: flex;
@@ -293,7 +230,8 @@
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
     import Field from "../ui/field.partial.obs";
-    import Icon from "../ui/icon.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
+    import Pill from "../ui/pill.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
     import PickerShell from "./pickerShell.partial.obs";
     import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
@@ -329,6 +267,9 @@
 
     /** How near the body's end a scroll asks the next page, in pixels. */
     const loadMoreWithinPx = 200;
+
+    /** What a failed search says, drawn and heard alike. */
+    const failedTitle = "GIFs can't load right now";
 
     /** The shapes the loading tiles take, two columns of GIF-like sizes, so the wait looks like what comes. */
     const loadingColumns = [["16 / 9", "1 / 1", "4 / 3"], ["3 / 4", "16 / 10", "1 / 1"]];
@@ -370,7 +311,7 @@
             case "busy":
                 return search.busyText ?? "";
             case "error":
-                return "GIFs can't load right now";
+                return failedTitle;
             default:
                 return "";
         }
