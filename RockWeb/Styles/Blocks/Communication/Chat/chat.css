@@ -1119,7 +1119,7 @@
     border-radius: var(--chat-r-full);
 }
 
-/* A choice at a finger's size: 48px tall, 15px text. */
+/* A choice at a finger's size: 48px tall, in the title size. */
 .chat-sheet-item {
     display: flex;
     gap: 10px;
