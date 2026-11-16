@@ -92,8 +92,6 @@
             </div>
 
             <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
-
-            <div class="chat-sr-only" aria-live="polite">{{ liveLine }}</div>
         </div>
     </Popover>
 </template>
@@ -258,6 +256,7 @@
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
     import { useChatSession } from "../chatSession.partial";
     import Field from "../ui/field.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import { usePopover } from "../ui/popover.partial";
@@ -463,6 +462,14 @@
     onMounted(async () => {
         if (await pop.open()) {
             (isTouch ? pop.floating.value : searchElement.value)?.focus({ preventScroll: true });
+        }
+    });
+
+    // What a search came to is said as it settles, from inside the sheet while it is one.
+    const { announce } = useAnnouncer();
+    watch(liveLine, line => {
+        if (line) {
+            announce(line);
         }
     });
 

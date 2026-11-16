@@ -187,31 +187,42 @@ describe("refused", () => {
 });
 
 describe("what is spoken", () => {
-    test("a pending join is read politely, with Browse channels closed", () => {
-        const w = mountBar({ kind: "pending" }, { announcement: { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 } });
+    // The rooms keep their last sentence, so the bar says only what is said while it is up.
+    function region(politeness: "polite" | "assertive"): { getAttribute: (name: string) => string | null, textContent: string } {
+        const element = document.querySelector(`[data-testid='announcer-${politeness}']`);
+        return { getAttribute: name => element?.getAttribute(name) ?? null, textContent: element?.textContent ?? "" };
+    }
 
-        const polite = w.get("[data-testid='join-bar-announcement']");
-        expect(polite.attributes("aria-live")).toBe("polite");
-        expect(polite.text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
-        expect(w.get("[data-testid='join-bar-alert']").text()).toBe("");
+    test("a pending join is read politely, with Browse channels closed", async () => {
+        const w = mountBar({ kind: "pending" });
+        await w.setProps({ announcement: { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 } });
+
+        const polite = region("polite");
+        expect(polite.getAttribute("aria-live")).toBe("polite");
+        expect(polite.textContent).toBe("You're in Volunteers. It can take a few seconds to show up.");
+        expect(region("assertive").textContent).toBe("");
     });
 
-    test("a refused join is read assertively", () => {
-        const w = mountBar({ kind: "refused", text: "Volunteers is full right now." }, { announcement: { text: "Volunteers is full right now.", isAssertive: true, count: 2 } });
+    test("a refused join is read assertively", async () => {
+        const w = mountBar({ kind: "refused", text: "Volunteers is full right now." });
+        await w.setProps({ announcement: { text: "Volunteers is full right now.", isAssertive: true, count: 2 } });
 
-        const alert = w.get("[data-testid='join-bar-alert']");
-        expect(alert.attributes("aria-live")).toBe("assertive");
-        expect(alert.text()).toBe("Volunteers is full right now.");
-        expect(w.get("[data-testid='join-bar-announcement']").text()).toBe("");
+        const alert = region("assertive");
+        expect(alert.getAttribute("aria-live")).toBe("assertive");
+        expect(alert.textContent).toBe("Volunteers is full right now.");
+        expect(region("polite").textContent).toBe("");
     });
 
     test("the same words again are put in afresh, so they are read again", async () => {
-        const w = mountBar({ kind: "failed", text: "Couldn't join." }, { announcement: { text: "Couldn't join.", isAssertive: false, count: 1 } });
-        const before = w.get("[data-testid='join-bar-announcement'] span").element;
+        const w = mountBar({ kind: "failed", text: "Couldn't join." });
+        await w.setProps({ announcement: { text: "Couldn't join.", isAssertive: false, count: 1 } });
 
         await w.setProps({ announcement: { text: "Couldn't join.", isAssertive: false, count: 2 } });
 
-        expect(w.get("[data-testid='join-bar-announcement'] span").element).not.toBe(before);
+        // emptied and written again a moment later
+        expect(region("polite").textContent).toBe("");
+        await new Promise(resolve => setTimeout(resolve, 0));
+        expect(region("polite").textContent).toBe("Couldn't join.");
     });
 });
 

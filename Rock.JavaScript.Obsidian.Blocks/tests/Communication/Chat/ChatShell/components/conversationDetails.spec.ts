@@ -164,6 +164,11 @@ function plain(text: string): string {
     return text.replace(/\s+/g, " ").trim();
 }
 
+/** The announcer's live region of a politeness, which the dialog speaks from while it is open. */
+function region(w: VueWrapper, politeness: "polite" | "assertive"): { element: Element } {
+    return w.get(`[role='dialog'] [data-testid='announcer-${politeness}']`);
+}
+
 /** An element's words as a screen reader reads them: an avatar's letters are hidden decoration. */
 function spoken(inside: { element: Element }): string {
     const copy = inside.element.cloneNode(true) as Element;
@@ -250,15 +255,17 @@ describe("the dialog", () => {
 
     test("reads the rooms' news said while it is open in its own live region, the assertive apart", async () => {
         const w = mountGroup({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 3 } });
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+        // open and drawn, its regions on the page before it says anything
+        await settle();
+        expect(spoken(region(w, "polite"))).toBe("");
 
         await w.setProps({ announcement: { text: "Renamed to Trail crew.", isAssertive: false, count: 4 } });
-        expect(w.get("[data-testid='details-announcement']").attributes("aria-live")).toBe("polite");
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("Renamed to Trail crew.");
+        expect(region(w, "polite").element.getAttribute("aria-live")).toBe("polite");
+        expect(spoken(region(w, "polite"))).toBe("Renamed to Trail crew.");
 
         await w.setProps({ announcement: { text: "No.", isAssertive: true, count: 5 } });
-        expect(spoken(w.get("[data-testid='details-alert']"))).toBe("No.");
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+        expect(spoken(region(w, "assertive"))).toBe("No.");
+        expect(spoken(region(w, "polite"))).not.toBe("No.");
     });
 
     test("writes no sentence with a hash, whatever the room", async () => {
@@ -974,12 +981,13 @@ describe("saving the room's settings", () => {
 
     test("reads the room's settings' news politely and a failed save at once", async () => {
         const w = mountDetails({ prefsAnnouncement: null });
+        await settle();
 
         await w.setProps({ prefsAnnouncement: { text: "Starred", isAssertive: false, count: 4 } });
-        expect(w.get("[data-testid='details-announcement']").text()).toBe("Starred");
+        expect(region(w, "polite").element.textContent).toBe("Starred");
 
         await w.setProps({ prefsAnnouncement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 5 } });
-        expect(w.get("[data-testid='details-alert']").text()).toBe("Not saved. Chat is read only tonight.");
+        expect(region(w, "assertive").element.textContent).toBe("Not saved. Chat is read only tonight.");
     });
 });
 

@@ -829,9 +829,14 @@ describe("the composer's strip for a failed send", () => {
         return wrapper.get("[data-testid='composer-failed']");
     }
 
-    function announced(wrapper: VueWrapper): string {
-        return wrapper.get("[data-testid='composer-failed-announcement']").text();
+    function announced(_wrapper: VueWrapper): string {
+        return document.querySelector("[data-testid='announcer-assertive']")?.textContent ?? "";
     }
+
+    // The announcer speaks from the page, so each cell starts with nothing said.
+    afterEach(() => {
+        document.body.replaceChildren();
+    });
 
     test("is not drawn while nothing failed", () => {
         const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true } });
@@ -951,11 +956,11 @@ describe("the composer's strip for a failed send", () => {
     // and the strip holding that message says it.
     test("says a failure aloud once, assertively, as it happens here", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
-        const region = wrapper.get("[data-testid='composer-failed-announcement']");
-        expect(region.attributes("aria-live")).toBe("assertive");
         expect(announced(wrapper)).toBe("");
 
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
+        const region = document.querySelector("[data-testid='announcer-assertive']");
+        expect(region?.getAttribute("aria-live")).toBe("assertive");
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
 
         // the same failures again, as another send of the room changes, say nothing new
@@ -970,14 +975,14 @@ describe("the composer's strip for a failed send", () => {
     test("says a failure again when a try again fails", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
-        const first = wrapper.get("[data-testid='composer-failed-announcement'] span").element;
 
         await wrapper.setProps({ sendFailure: null });
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 2 } });
 
-        // drawn afresh, so a screen reader reads the same words again
+        // put in afresh, emptied and written again a moment later, so a screen reader reads the same words again
+        expect(announced(wrapper)).toBe("");
+        await new Promise(resolve => setTimeout(resolve, 0));
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
-        expect(wrapper.get("[data-testid='composer-failed-announcement'] span").element).not.toBe(first);
     });
 
     test("does not say failures already there when the box opens or the person comes back to the room", async () => {

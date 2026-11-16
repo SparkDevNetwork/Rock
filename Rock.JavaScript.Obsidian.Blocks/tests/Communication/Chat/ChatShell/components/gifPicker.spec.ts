@@ -174,7 +174,7 @@ describe("the GIF picker", () => {
     test("a screen reader hears a failure and a busy search, not only results", async () => {
         const gifs = fakeGifs();
         await open(gifs);
-        const live = (): string => picker().querySelector("[aria-live]")?.textContent?.trim() ?? "";
+        const live = (): string => document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim() ?? "";
 
         picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
         gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });

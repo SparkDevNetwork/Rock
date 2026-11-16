@@ -48,7 +48,7 @@
 // button "All emoji". The full picker's search is the input "Search emoji"; the tabs role="tablist"
 // "Emoji categories", one role="tab" per section named as it is, above the grid; the grid
 // role="grid", its one section a role="rowgroup" named for its heading, rows of eight role="row",
-// each emoji a role="gridcell" button with data-code. The live line is data-testid="emoji-live",
+// each emoji a role="gridcell" button with data-code. The live line is said through the announcer,
 // the empty line data-testid="emoji-empty", a search cut short data-testid="emoji-more", the foot
 // data-testid="emoji-preview".
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -475,7 +475,7 @@ describe("the search", () => {
         await typeSearch("heart");
 
         expect(codesOf(cells())).toEqual(["heart", "smiling_face_with_3_hearts", "orange_heart"]);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("3 results");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("3 results");
     });
 
     test("matches keywords", async () => {
@@ -484,7 +484,7 @@ describe("the search", () => {
         await typeSearch("pray");
 
         expect(codesOf(cells())).toEqual(["pray"]);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("1 result");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("1 result");
     });
 
     test("Enter takes the first result", async () => {
@@ -503,7 +503,7 @@ describe("the search", () => {
 
         expect(cells()).toHaveLength(0);
         expect(document.querySelector("[data-testid='emoji-empty']")?.textContent?.trim()).toMatch(/^No emoji match ["“]zzz["”]$/);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("No emoji match");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("No emoji match");
 
         await press(search(), "Enter");
         expect(w.emitted("react")).toBeUndefined();
@@ -515,7 +515,7 @@ describe("the search", () => {
         await typeSearch("sample");
 
         expect(drawnGlyphs()).toBe(80);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("439 results");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("439 results");
         expect(document.querySelector("[data-testid='emoji-more']")?.textContent?.trim()).toBe("Showing the first 80. Keep typing to narrow it down.");
 
         await typeSearch("sample face travel 4");

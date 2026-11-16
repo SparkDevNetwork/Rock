@@ -123,8 +123,6 @@
                         <span>Hover or arrow to preview</span>
                     </span>
                 </div>
-
-                <div class="chat-sr-only" aria-live="polite" data-testid="emoji-live">{{ liveLine }}</div>
             </template>
         </div>
     </Popover>
@@ -465,6 +463,7 @@ img.chat-picker-prev {
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
@@ -1098,6 +1097,14 @@ img.chat-picker-prev {
     // #endregion Lifecycle Hooks
 
     // #region Watchers
+
+    // A search's count is said as it changes; nothing is said as the search is cleared.
+    const { announce } = useAnnouncer();
+    watch(liveLine, line => {
+        if (line) {
+            announce(line);
+        }
+    });
 
     // However it closes, by a choice, a key, a press elsewhere or its anchor going, the host hears
     // it at once and may remove the picker; the surface plays its own way out on the page meanwhile.
