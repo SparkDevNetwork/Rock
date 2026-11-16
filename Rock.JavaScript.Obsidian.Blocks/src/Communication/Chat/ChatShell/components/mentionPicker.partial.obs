@@ -2,13 +2,13 @@
 <template>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
         <Transition leave-active-class="is-leaving" :css="isWayOutPlayed">
-            <div v-if="isOpen"
+            <div v-if="pop.isOpen.value"
                  ref="popElement"
                  class="chat-mention-pop"
                  :class="{ 'is-waiting': isAwaitingFirstAnswer }"
                  data-testid="mention-picker"
                  :aria-hidden="isAwaitingFirstAnswer ? 'true' : undefined"
-                 :style="popStyles">
+                 :style="[pop.floatingStyles.value, pop.origin.value]">
                 <!--
                     Moved out to the chat's root when it has one, since the chat's clipped frame would cut a
                     popover drawn inside it; left in place where there is no root, as when a part is drawn alone.
@@ -128,11 +128,11 @@
 
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { MentionPerson } from "../types.partial";
     import { personName } from "../ui/face.partial";
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { usePopover } from "../ui/popover.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
 
     // #region Types
@@ -216,7 +216,7 @@
     const emit = defineEmits<{
         /** A row was chosen: its token, and the name and photo its chip shows. */
         (e: "choose", token: string, name: string, photoUrl: string | null): void;
-        /** Escape, or a press outside the picker and its editor. */
+        /** Escape, a press outside the picker and its editor, or Tab with nothing to choose. */
         (e: "close"): void;
     }>();
 
@@ -251,18 +251,21 @@
     const lastRows = ref<PickerRow[]>([]);
 
     const overlayHost = computed(() => overlayHostOf(props.anchor ?? props.target));
-    const anchorElement = computed(() => props.anchor ?? props.target ?? undefined);
 
-    // Above the box at its start, below only when there is no room above, slid along inside the
-    // window 8px clear of its edge. Placed by left and top, since a transform here would override
-    // the pop's own and the picker would only fade.
-    const { floatingStyles, placement, x, update } = useFloating(anchorElement, popElement, {
+    /**
+     * The popover the picker is. Its anchor is the editor, so a press in the editor keeps it open
+     * and Escape gives focus back there; it is placed on the composer's box, above it at its start,
+     * and grows from the box's middle.
+     */
+    const pop = usePopover(computed(() => props.target ?? undefined), popElement, {
         placement: "top-start",
-        strategy: "fixed",
-        transform: false,
-        middleware: [offset(8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
-        whileElementsMounted: autoUpdate
+        virtualAnchor: () => props.anchor?.getBoundingClientRect() ?? null
     });
+
+    // Mounted open, it is drawn with its first render, its keys taken as it mounts.
+    if (props.isOpen) {
+        void pop.open();
+    }
 
     // #endregion Values
 
@@ -298,29 +301,15 @@
     /** Whether closing plays the way out: not after a choice, which the chip answers at once, nor for a picker never shown. */
     const isWayOutPlayed = computed((): boolean => !isChosen.value && !props.isAwaitingFirstAnswer);
 
-    /**
-     * The placement, with the pop grown from the box's middle along the picker's nearest edge and
-     * moving toward it, so a picker flipped below grows down from above.
-     */
-    const popStyles = computed((): Record<string, string> => {
-        const isAbove = placement.value.startsWith("top");
-        const anchorBox = anchorElement.value?.getBoundingClientRect();
-        const width = popElement.value?.offsetWidth ?? 0;
-        const middle = anchorBox ? anchorBox.left + anchorBox.width / 2 - (x.value ?? 0) : width / 2;
-        return {
-            ...floatingStyles.value,
-            transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
-            "--chat-pop-toward": isAbove ? "1" : "-1"
-        };
-    });
-
     // #endregion Computed Values
 
     // #region Event Handlers
 
     /**
-     * The picker's keys, read before the editor's own: listened for on the document as it is
-     * captured, so Enter inserts the chip and never reaches the editor as a send.
+     * The picker's keys, read before the editor's own: listened for on the window as it is
+     * captured, so Enter inserts the chip and never reaches the editor as a send, and a Tab that
+     * chooses never reaches the popover, which would take it for Tab past its end. Escape is the
+     * popover's, which closes it as it closes every popover.
      */
     function onKeydown(event: KeyboardEvent): void {
         const target = props.target;
@@ -340,6 +329,7 @@
         else if (event.key === "Enter" || (event.key === "Tab" && (count > 0 || isAwaiting))) {
             // Enter is held even with nothing to choose, since a send is never what it means here.
             event.preventDefault();
+            event.stopPropagation();
             const row = count > 0 ? rows.value[activeIndex.value] : undefined;
             if (row) {
                 choose(row);
@@ -348,24 +338,10 @@
                 isChoicePending = true;
             }
         }
-        else if (event.key === "Escape") {
-            event.preventDefault();
-            emit("close");
-        }
         else if (event.key.length === 1 || event.key === "Backspace" || event.key === "Delete") {
             // A changed query is a new wish; the Enter pressed for the old one no longer stands.
             isChoicePending = false;
         }
-    }
-
-    /** A press outside the picker and its editor closes it, leaving focus where the press put it. */
-    function onDocumentPointerDown(event: Event): void {
-        const target = event.target as Node;
-        if (popElement.value?.contains(target) || props.target?.contains(target)) {
-            return;
-        }
-
-        emit("close");
     }
 
     // #endregion Event Handlers
@@ -414,16 +390,16 @@
         lastRows.value = rows.value.length > 0 ? rows.value : [];
         activeIndex.value = 0;
         markTarget();
-        document.addEventListener("keydown", onKeydown, true);
-        document.addEventListener("pointerdown", onDocumentPointerDown, true);
+        window.addEventListener("keydown", onKeydown, true);
+        void pop.open();
     }
 
-    /** Ends an opening: its keys no longer listened for, and the editor collapsed. */
+    /** Ends an opening: its keys no longer listened for, the editor collapsed and the popover closed. */
     function closed(): void {
         isShown = false;
-        document.removeEventListener("keydown", onKeydown, true);
-        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+        window.removeEventListener("keydown", onKeydown, true);
         unmarkTarget();
+        pop.close();
     }
 
     // #endregion Functions
@@ -455,12 +431,6 @@
         }
     });
 
-    // Placed again as soon as new rows are drawn, before the frame is painted: waiting for the
-    // size watcher would draw one frame at the old height's top, a jump as the picker shows.
-    watch([drawnRows, () => props.isAwaitingFirstAnswer, () => props.isAwaitingAnswer], () => {
-        update();
-    }, { flush: "post" });
-
     watch([activeIndex, drawnRows, () => props.target, () => props.isAwaitingFirstAnswer], async () => {
         await nextTick();
         markTarget();
@@ -468,6 +438,15 @@
 
     // After the render, so an opening marks the editor with the listbox it now draws.
     watch(() => props.isOpen, isOpen => isOpen ? opened() : closed(), { flush: "post" });
+
+    // The popover closed itself, by Escape, a press elsewhere or Tab with nothing to choose: the
+    // opening ends here and the composer hears it, which may open it again on the next change.
+    watch(pop.isOpen, isOpen => {
+        if (!isOpen && isShown) {
+            closed();
+            emit("close");
+        }
+    });
 
     // #endregion Watchers
 
