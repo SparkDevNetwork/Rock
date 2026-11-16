@@ -431,6 +431,12 @@
         }
     });
 
+    // Placed again as soon as new rows are drawn, before the frame is painted: waiting for the
+    // size watcher would draw one frame at the old height's top, a jump as the picker shows.
+    watch([drawnRows, () => props.isAwaitingFirstAnswer, () => props.isAwaitingAnswer], () => {
+        pop.update();
+    }, { flush: "post" });
+
     watch([activeIndex, drawnRows, () => props.target, () => props.isAwaitingFirstAnswer], async () => {
         await nextTick();
         markTarget();

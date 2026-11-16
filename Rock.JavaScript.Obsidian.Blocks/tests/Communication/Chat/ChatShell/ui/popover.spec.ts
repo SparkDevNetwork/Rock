@@ -109,6 +109,9 @@ describe("the popover", () => {
     // A surface whose own size changes, as the @ picker's when its rows do, is placed again before
     // the frame is painted, rather than drawing one frame where the old size put it.
     it("is placed again at once when asked, from where its anchor is now", async () => {
+        // a window 1000 by 800, which jsdom does not lay out
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
         const pop = host({ options: { placement: "bottom-start", offset: 0 } });
         await pop.open();
         await settle();
@@ -116,6 +119,7 @@ describe("the popover", () => {
         anchor.getBoundingClientRect = (): DOMRect => ({ x: 120, y: 40, left: 120, top: 40, right: 160, bottom: 60, width: 40, height: 20, toJSON: () => ({}) }) as DOMRect;
 
         pop.update();
+        await new Promise(resolve => setTimeout(resolve, 0));
         await settle();
 
         expect(pop.floatingStyles.value.left).toBe("120px");

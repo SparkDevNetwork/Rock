@@ -83,6 +83,12 @@ export type PopoverControl = {
 
     /** Whether it is drawn as a bottom sheet now. */
     isSheet: ComputedRef<boolean>;
+
+    /**
+     * Places it again now, for a surface whose own size has just changed, as the @ picker's does
+     * when its rows do: the watcher on its size would place it a frame late, a jump as it shows.
+     */
+    update: () => void;
 };
 
 /**
@@ -298,5 +304,5 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
     onScopeDispose(() => pull(entry));
 
-    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet };
+    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet, update: floated.update };
 }
