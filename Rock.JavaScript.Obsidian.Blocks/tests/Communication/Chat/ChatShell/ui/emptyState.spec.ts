@@ -79,6 +79,13 @@ describe("the empty state's look", () => {
         expect(ruleOf(style, ".chat-empty.is-error .chat-empty-title")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
     });
 
+    // A short last line, such as one word left alone under a paragraph, reads as an accident; the
+    // part balances its lines, so every empty state gets it.
+    test("balances the lines of its title and its text", () => {
+        expect(ruleOf(style, ".chat-empty-title")).toMatch(/text-wrap:\s*balance/);
+        expect(ruleOf(style, ".chat-empty-text")).toMatch(/text-wrap:\s*balance/);
+    });
+
     test("holds no motion, priority, reach or capitals of its own", () => {
         expect(partRuleBreaks("emptyState.partial.obs")).toEqual([]);
     });
