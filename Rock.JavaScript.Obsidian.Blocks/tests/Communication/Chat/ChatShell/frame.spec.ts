@@ -38,7 +38,7 @@ import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
 import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { online } from "./statusShapes";
-import { badgesIn, createStatusStore, StatusStore } from "./statusStore";
+import { badgesIn, chatSheet, createStatusStore, shellFolder, StatusStore, styleRules } from "./statusStore";
 
 // #region Stand-ins
 
@@ -1586,6 +1586,18 @@ describe("the look, by the open conversation's kind", () => {
         expect(lookOf(w)).toBe("conversational");
         expect(isFeedCommunity(w)).toBe(false);
         expect(w.get(`[data-testid='channel-row'][data-channel-id='${dmAnna.channel_id}']`).attributes("data-layout")).toBe("conversational");
+    });
+
+    test("a bubble's widest is said once, in the sheet, for the conversation and its threads alike, with no reach into the row", () => {
+        const widest = (selector: RegExp): string => styleRules(chatSheet, selector).join(";");
+
+        expect(widest(/^\.chat-grp \.chat-msg\.is-conversational$/)).toMatch(/max-width:\s*calc\(min\(78%, 620px\) \+ 42px\)/);
+        expect(widest(/^\.chat-grp\.is-own \.chat-msg\.is-conversational$/)).toMatch(/max-width:\s*min\(78%, 620px\)/);
+        expect(widest(/^\.chat-grp \.chat-msg\.is-conversational\.is-phone$/)).toMatch(/max-width:\s*calc\(86% \+ 42px\)/);
+        expect(widest(/^\.chat-grp\.is-own \.chat-msg\.is-conversational\.is-phone$/)).toMatch(/max-width:\s*86%/);
+        for (const screen of ["components/messageFeed.partial.obs", "components/threadDrawer.partial.obs"]) {
+            expect(readFileSync(join(shellFolder, screen), "utf8")).not.toMatch(/:deep\(\.chat-msg\.is-conversational\)/);
+        }
     });
 });
 
