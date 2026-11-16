@@ -48,6 +48,7 @@ class FakeObserver {
 /** A page the test lands by hand. */
 type Deferred = { promise: Promise<void>, resolve: () => void };
 
+/** A page that lands only when the test says; one never landed holds the row as a slow page would. */
 function deferred(): Deferred {
     let resolve = (): void => { /* Set below. */ };
     const promise = new Promise<void>(done => {
@@ -97,7 +98,7 @@ afterEach(() => {
 
 describe("the load-more row", () => {
     it("asks for the next page as it comes into view, watched against its own scroller", async () => {
-        const load = jest.fn(() => Promise.resolve());
+        const load = jest.fn(() => deferred().promise);
         mountRow({ load });
         await settle();
 
@@ -157,7 +158,7 @@ describe("the load-more row", () => {
     });
 
     it("re-arms once the failure clears: arriving in view asks again", async () => {
-        const load = jest.fn(() => Promise.resolve());
+        const load = jest.fn(() => deferred().promise);
         const w = mount(LoadMoreRow, { props: { name: "members", label: "Load more", load, isFailed: true, failure: "Couldn't load more." }, attachTo: document.body });
         wrapper = w;
         await settle();
