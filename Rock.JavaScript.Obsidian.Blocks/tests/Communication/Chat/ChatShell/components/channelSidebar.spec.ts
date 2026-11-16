@@ -176,6 +176,59 @@ afterEach(() => {
 });
 
 describe("the sidebar's top", () => {
+    // The Activity inbox, Mentions and the Threads the person follows, opens from the head beside
+    // New message, and carries the new-mention dot that used to sit in the conversation's header.
+    test("offers Activity beside New message, which asks for the inbox", async () => {
+        const w = mountSidebar({ isActivityOffered: true });
+        const top = w.get("[data-testid='sidebar-top']");
+        const buttons = top.findAll("button").map(b => b.attributes("data-testid"));
+
+        expect(buttons.indexOf("sidebar-activity")).toBe(buttons.indexOf("new-message") - 1);
+        const activity = w.get("[data-testid='sidebar-activity']");
+        expect(activity.attributes("aria-label")).toBe("Activity");
+        expect(activity.attributes("aria-expanded")).toBe("false");
+        expect(w.find("[data-testid='sidebar-activity-dot']").exists()).toBe(false);
+
+        await activity.trigger("click");
+        expect(w.emitted("activity")).toHaveLength(1);
+    });
+
+    test("draws the church-colour dot on Activity while a mention waits, and says so", async () => {
+        const w = mountSidebar({ isActivityOffered: true, hasMentionDot: true });
+
+        const activity = w.get("[data-testid='sidebar-activity']");
+        expect(activity.attributes("aria-label")).toBe("Activity, new mentions");
+        const dot = activity.get("[data-testid='sidebar-activity-dot']");
+        expect(dot.classes()).not.toContain("is-warning");
+
+        await w.setProps({ isActivityOpen: true });
+        expect(activity.attributes("aria-expanded")).toBe("true");
+    });
+
+    test("leaves Activity out until it is offered, and keeps it in the list's head on a phone", () => {
+        expect(mountSidebar().find("[data-testid='sidebar-activity']").exists()).toBe(false);
+        wrapper?.unmount();
+
+        const phone = mountSidebar({ isPhone: true, isActivityOffered: true });
+        expect(phone.get("[data-testid='sidebar-top']").find("[data-testid='sidebar-activity']").exists()).toBe(true);
+    });
+
+    // The head has no rule of its own until rows scroll under it, so a scrolled list is never cut
+    // mid-row against nothing.
+    test("rules off the head once the list scrolls under it", async () => {
+        const w = mountSidebar();
+        const list = w.get(".chat-side-list").element as HTMLElement;
+        expect(w.get("[data-testid='sidebar-top']").classes()).not.toContain("is-scrolled");
+
+        list.scrollTop = 40;
+        await w.get(".chat-side-list").trigger("scroll");
+        expect(w.get("[data-testid='sidebar-top']").classes()).toContain("is-scrolled");
+
+        list.scrollTop = 0;
+        await w.get(".chat-side-list").trigger("scroll");
+        expect(w.get("[data-testid='sidebar-top']").classes()).not.toContain("is-scrolled");
+    });
+
     // The page above the block already names the church and Rock's rail shows its logo, so the head
     // is one row for finding a conversation and starting one.
     test("draws no church name or mark: the head is the search beside the compose button", () => {
@@ -668,6 +721,23 @@ describe("the loading sidebar", () => {
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
     });
 
+    // The list opens with 44px channel rows under Channels, then 52px conversation rows under
+    // Direct messages, so its loading rows take those shapes under those headings and nothing
+    // changes shape as the rows land.
+    test("draws channel rows under Channels and conversation rows under Direct messages while loading", () => {
+        const w = mountSidebar({ rows: [], loadState: "loading" });
+        const list = w.get(".chat-side-list").element;
+        const drawn = Array.from(list.querySelectorAll("[data-testid='sidebar-skeleton-heading'], [data-testid='sidebar-skeleton']"))
+            .map(element => element.getAttribute("data-testid") === "sidebar-skeleton-heading" ? element.textContent?.trim() : element.classList.contains("is-channel") ? "channel" : element.classList.contains("is-person") ? "person" : "other");
+
+        expect(drawn[0]).toBe("Channels");
+        const dms = drawn.indexOf("Direct messages");
+        expect(dms).toBeGreaterThan(1);
+        expect(drawn.slice(1, dms).every(shape => shape === "channel")).toBe(true);
+        expect(drawn.slice(dms + 1).length).toBeGreaterThan(0);
+        expect(drawn.slice(dms + 1).every(shape => shape === "person")).toBe(true);
+    });
+
     test("tells assistive technology the list is loading, and hides the skeleton from it", () => {
         const w = mountSidebar({ rows: [], loadState: "loading" });
         const list = w.get(".chat-side-list");
@@ -700,7 +770,8 @@ describe("the loading sidebar", () => {
         const error = w.get("[data-testid='sidebar-error']");
 
         expect(error.classes()).toContain("is-error");
-        expect(error.text()).toContain("Couldn't load your conversations.");
+        // a title, so no full stop, as every heading in the chat is written
+        expect(error.get(".chat-empty-title").text()).toBe("Couldn't load your conversations");
         expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
         expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
 
@@ -714,6 +785,47 @@ describe("the loading sidebar", () => {
         await w.setProps({ rows: [youth, team, dmAnna], loadState: "loaded" });
 
         expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+});
+
+// A search that matches nothing says so, rather than leaving bare headings with their plus buttons.
+describe("the search", () => {
+    test("says No results when nothing matches, with no headings", async () => {
+        const w = mountSidebar();
+
+        await w.get("[data-testid='sidebar-search'] input").setValue("zzzz");
+
+        expect(w.get("[data-testid='sidebar-no-results']").text()).toContain("No results");
+        expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
+    });
+
+    // A name cut short by the column's width shows whole in a tooltip on a resting pointer.
+    test("shows a cut-short name whole in a tooltip, and nothing for a name that fits", async () => {
+        const w = mountSidebar();
+        const names = w.findAll("[data-testid='row-name']");
+        const cut = names[names.length - 1].element as HTMLElement;
+        Object.defineProperty(cut, "scrollWidth", { configurable: true, value: 300 });
+        Object.defineProperty(cut, "clientWidth", { configurable: true, value: 120 });
+        const row = cut.closest("[data-testid='channel-row']") as HTMLElement;
+
+        jest.useFakeTimers();
+        try {
+            row.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe(cut.textContent?.trim());
+
+            row.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            const fits = names[0].element.closest("[data-testid='channel-row']") as HTMLElement;
+            fits.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(document.querySelector("[role='tooltip']")).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 });
 
