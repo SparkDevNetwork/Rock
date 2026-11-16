@@ -22,7 +22,7 @@ import { nextTick, onBeforeUnmount, ref, Ref, shallowRef, watch } from "vue";
 import type { ChatShell } from "../shell.partial";
 import { ChatPerson, PersonProfile } from "../types.partial";
 import { shownMembers } from "./useMembers.partial";
-import { Frame } from "./useFrame.partial";
+import { Frame } from "./useFrameView.partial";
 import { MessageActionsView } from "./useMessageActionsView.partial";
 import { RoomChoice } from "./usePrefs.partial";
 

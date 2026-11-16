@@ -25,7 +25,7 @@ import type { ChatShell } from "../shell.partial";
 import { DisplayPiece, PendingMessage, SidebarRow } from "../types.partial";
 import { AttachmentTray, canAttach } from "./useAttachments.partial";
 import { ComposerDraft } from "./useDrafts.partial";
-import { PanelKind } from "./useFrame.partial";
+import { PanelKind } from "./useFrameView.partial";
 import { Typing } from "./usePresence.partial";
 import { failedSends, isOwnedByConversation, lockedReason, retryableSends, sendFailure, SendFailure } from "./useSend.partial";
 import { OpenThreadState } from "./useThreads.partial";

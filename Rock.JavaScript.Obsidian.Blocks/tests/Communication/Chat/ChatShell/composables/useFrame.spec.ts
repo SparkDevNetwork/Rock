@@ -24,7 +24,7 @@
 // over a stand-in shell holding just what the frame calls.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { computed, defineComponent, h, reactive, ref, shallowRef } from "vue";
-import { Frame, useFrame } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrame.partial";
+import { Frame, useFrameView } from "../../../../../src/Communication/Chat/ChatShell/composables/useFrameView.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 
 const team = "c0000001-0000-4000-8000-000000000000";
@@ -129,7 +129,6 @@ type Mounted = {
  */
 function mountFrame(): Mounted {
     const calls: Calls = [];
-    const forgetReplyLanding = (): void => void calls.push("forgetReplyLanding");
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
     const hasPanelField = ref(false);
@@ -138,13 +137,13 @@ function mountFrame(): Mounted {
     const Host = defineComponent({
         setup() {
             const rootElement = ref<HTMLElement>();
-            frame = useFrame({
+            frame = useFrameView({
                 shell: shallowRef(shell),
                 activeChannelId: computed(() => state.activeChannelId),
                 rootElement,
                 linkedReply: null,
-                landOnReply: async () => undefined,
-                forgetReplyLanding
+                campuses: [],
+                showNotice: () => undefined
             });
 
             return () => h("div", { ref: rootElement }, [

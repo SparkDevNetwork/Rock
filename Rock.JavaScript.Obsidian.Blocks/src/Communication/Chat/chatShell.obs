@@ -710,7 +710,6 @@
     import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
-    import { useMembersPanel } from "./ChatShell/composables/useMembersPanel.partial";
     import { StatusChoice } from "./ChatShell/composables/usePrefs.partial";
     import AddPeople from "./ChatShell/components/addPeople.partial.obs";
     import RemoveMember from "./ChatShell/components/removeMember.partial.obs";
@@ -729,11 +728,8 @@
     import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { useMessageActionsView } from "./ChatShell/composables/useMessageActionsView.partial";
-    import { useFrame } from "./ChatShell/composables/useFrame.partial";
+    import { useFrameView } from "./ChatShell/composables/useFrameView.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
-    import { useJump } from "./ChatShell/composables/useJump.partial";
-    import { useRoomsView } from "./ChatShell/composables/useRoomsView.partial";
-    import { useThreadsPanel } from "./ChatShell/composables/useThreadsPanel.partial";
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { useDialogs } from "./ChatShell/composables/useDialogs.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
@@ -890,41 +886,34 @@
 
     const draft = computed((): DirectMessageDraft | null => shell.value.directMessages.draft);
 
-    // Created here rather than with the values, since they read the open conversation above. The
-    // frame's landing is the jump's, made just after it, so the frame reaches it only once called.
-    const {
-        isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, panelElement, drawnThread, threadOrigin, threadOpenCount,
-        onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
-        openThreadFromMentions, openFromTap, openThreadDrawer, closeThreadDrawer, closePanel,
-        mainView, openMainView, closeMainView, openFromMainView, openAddPeople
-    } = useFrame({
+    // Created here rather than with the values, since it reads the open conversation above.
+    const frame = useFrameView({
         shell,
         activeChannelId,
         rootElement,
         linkedReply: config.channelGuid && config.threadRootId
             ? { channelId: config.channelGuid.toLowerCase(), rootId: config.threadRootId, messageId: config.messageId ?? null }
             : null,
-        landOnReply: (landing, origin) => landOnReply(landing, origin),
-        forgetReplyLanding: () => {
-            landingReplyId.value = null;
-        }
+        campuses,
+        showNotice
     });
 
-    const { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation } = useJump({
-        shell,
-        activeChannelId,
-        isPhone,
-        threadOpenCount,
-        openThreadDrawer,
-        closeThreadDrawer
-    });
+    const {
+        isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
+        panelKind, shownPanel, panelElement, drawnThread, threadOrigin,
+        onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
+        mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
+        landingReplyId, landingMessageId, onJump, landInConversation,
+        membersView, removeView, addView,
+        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
+    } = frame;
 
     // One computed per fact of the open room, handed to every composable below that reads it.
     const {
         activeRow, activeFacts, activeKind, isJoinBarShown, isActiveDirectMessage, activePeople, activePair, activeTitle, look, activeSubtitle, isActiveBehind,
         roomTitles, roomKinds, publicRooms, threadRow, threadKind, threadPair, foundTitle, foundRow, foundTimeline, isPreviewingRoom
-    } = useRoomsView({ shell, activeChannelId, drawnThread });
+    } = frame.rooms;
 
     /**
      * Why her status cannot be set now, in the banner's words, while the church is read only and a
@@ -977,9 +966,6 @@
         return id ? campuses.find(campus => campus.guid.toLowerCase() === id)?.name ?? null : null;
     });
 
-    /** What the members panel, the remove confirm and Add people draw of the roster. */
-    const { membersView, removeView, addView } = useMembersPanel({ shell, roomTitles, roomKinds, campuses: config.campuses ?? [] });
-
     /** The quotes, the editor and the delete confirm, and where a message's bar and menu send their actions. */
     const {
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
@@ -990,10 +976,6 @@
         // The card is the dialogs', made below since they take this view's askBlock in turn.
         openCard: (...card) => openCard(...card)
     });
-
-    const {
-        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
-    } = useThreadsPanel({ shell, activeChannelId, drawnThread, showNotice });
 
     const {
         conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
