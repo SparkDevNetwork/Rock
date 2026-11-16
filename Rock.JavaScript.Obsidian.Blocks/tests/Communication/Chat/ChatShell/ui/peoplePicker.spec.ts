@@ -22,16 +22,20 @@
 // listed last, and can be neither picked nor reached with the arrows. Enter with a name only ever
 // picks, waiting for an answer still out; Enter on an empty field is the owner's next step.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PeoplePicker from "../../../../../src/Communication/Chat/ChatShell/ui/peoplePicker.partial.obs";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, chatSheet, createStatusStore, provideStatus, fillsAndRings, setsBothRings, StatusStore } from "../statusStore";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, fillsAndRings, setsBothRings, shellFolder, StatusStore } from "../statusStore";
 
 /** One person as chat_search_people answers them, exactly its keys. */
 function person(n: number, nickName: string, lastName: string, inRoom?: boolean): PersonRow {
     return { person_alias_guid: `a00000${10 + n}-0000-4000-8000-000000000000`, nick_name: nickName, last_name: lastName, avatar_url: null, campus_id: null, ...(inRoom === undefined ? {} : { in_room: inRoom }) };
 }
+
+/** The picker's own file, which holds its whole look. */
+const pickerFile = join(shellFolder, "ui/peoplePicker.partial.obs");
 
 const aaron = person(1, "Aaron", "Park", false);
 const anna = person(2, "Anna", "Reyes", true);
@@ -276,11 +280,11 @@ describe("online status", () => {
         ["the list over the page", /^\.chat-pk-list$/],
         ["the list inline", /^\.chat-pk\.is-inline \.chat-pk-list$/]
     ])("rings its badge in %s's fill", (_place, selector) => {
-        expect(setsBothRings(chatSheet, selector)).toBe(true);
+        expect(setsBothRings(pickerFile, selector)).toBe(true);
     });
 
     test("rings its badge in each result's own fill as it changes: hover, the active option, none when dimmed", () => {
-        const states = fillsAndRings(chatSheet, /^\.chat-pk-opt(:hover|\.is-active|\[aria-disabled="true"\])$/);
+        const states = fillsAndRings(pickerFile, /^\.chat-pk-opt(:hover|\.is-active|\[aria-disabled="true"\])$/);
 
         expect(states).toHaveLength(3);
         expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
