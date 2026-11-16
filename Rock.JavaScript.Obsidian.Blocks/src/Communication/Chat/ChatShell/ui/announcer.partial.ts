@@ -15,45 +15,38 @@
 // </copyright>
 //
 
-// The chat's one voice for a screen reader: what a part says without moving focus, such as how
-// many results came back or that a list is up to date. One pair of live regions, polite and
-// assertive, in the chat's root, so two parts never talk over each other from regions of their own.
-//
-// A screen reader listens only inside an open modal dialog, so while one is open the announcer
-// speaks from a pair of regions inside it instead; the modal surface registers itself as it opens.
+// The chat's one voice for a screen reader, so two parts never talk over each other from live
+// regions of their own. A screen reader listens only inside an open modal surface, so while one is
+// open the voice speaks from inside it.
 
 import { inject, InjectionKey, onScopeDispose, provide, Ref, watch } from "vue";
 import { SurfaceElement } from "./focusTrap.partial";
 
-/** How urgently a screen reader is to speak: polite waits its turn, assertive interrupts, for a failure. */
+/** Assertive interrupts, for a failure. */
 export type Politeness = "polite" | "assertive";
 
-/** What a part says through. */
 export type Announcer = {
     announce: (text: string, politeness?: Politeness) => void;
 };
 
-/** One live region and what it was last given to say. */
 type Region = {
     element: HTMLElement;
 
     /**
-     * Words given to it in this task, which a screen reader is handed only once the task ends: a
+     * Words given in this task: a screen reader is handed them only once the task ends, so a
      * region taken off the page before then takes them with it unheard.
      */
     unheard: string | null;
 
-    /** The step waiting for the next task: writing words cleared to be said again, or marking them heard. */
     timer?: number;
 };
 
-/** Where an announcement is spoken from: a pair of live regions in one element. */
 type Voice = {
     host: HTMLElement;
     regions: Partial<Record<Politeness, Region>>;
 };
 
-/** The announcer's whole state: the root's voice, and the voices of the modal surfaces open on it, newest last. */
+/** The root's voice, and the open modal surfaces' voices, newest last. */
 type AnnouncerHost = {
     root: () => HTMLElement | null;
     rootVoice: Voice | null;
@@ -62,10 +55,9 @@ type AnnouncerHost = {
 
 const announcerKey: InjectionKey<AnnouncerHost> = Symbol("chat-announcer");
 
-/** The announcer a part drawn alone speaks through, from the page's body. */
+/** For a part drawn alone, with no shell to provide a voice. */
 const pageHost: AnnouncerHost = { root: () => document.body, rootVoice: null, modals: [] };
 
-/** A live region of one politeness, read by a screen reader and never seen. */
 function regionIn(voice: Voice, politeness: Politeness): Region {
     const held = voice.regions[politeness];
     if (held?.element.isConnected) {
@@ -84,9 +76,8 @@ function regionIn(voice: Voice, politeness: Politeness): Region {
 }
 
 /**
- * Gives a region words to say. The same words again are cleared first and written in the next
- * task, so a screen reader hears a change rather than nothing. Newer words replace any step still
- * waiting, so a late rewrite never lands over them.
+ * The same words again are cleared and written in the next task, so a screen reader hears a change
+ * rather than nothing; newer words cancel that step, so a late rewrite never lands over them.
  */
 function write(region: Region, text: string): void {
     window.clearTimeout(region.timer);
@@ -106,10 +97,7 @@ function write(region: Region, text: string): void {
     }, 0);
 }
 
-/**
- * A voice in an element, with both its regions made at once: a live region added together with
- * its first words is often not heard, so each is on the page before anything is said in it.
- */
+// Both regions are made at once: one added together with its first words is often not heard.
 function voiceIn(element: HTMLElement): Voice {
     const voice: Voice = { host: element, regions: {} };
     regionIn(voice, "polite");
@@ -117,7 +105,6 @@ function voiceIn(element: HTMLElement): Voice {
     return voice;
 }
 
-/** The root's voice, made once for each root element. */
 function rootVoiceOf(host: AnnouncerHost): Voice | null {
     const root = host.root();
     if (!root) {
@@ -131,7 +118,6 @@ function rootVoiceOf(host: AnnouncerHost): Voice | null {
     return host.rootVoice;
 }
 
-/** The voice an announcement is spoken in now: the newest open modal surface's, else the root's. */
 function voiceOf(host: AnnouncerHost): Voice | null {
     return host.modals[host.modals.length - 1] ?? rootVoiceOf(host);
 }
@@ -150,7 +136,7 @@ function announcerOf(host: AnnouncerHost): Announcer {
 }
 
 /**
- * Provides the announcer to every part below, speaking from the chat's root. Called once, by the shell.
+ * Provides the announcer to every part below. Called once, by the shell.
  *
  * @param root The chat's root element.
  *
@@ -160,7 +146,6 @@ export function provideAnnouncer(root: Ref<HTMLElement | undefined>): Announcer 
     const host: AnnouncerHost = { root: () => root.value ?? null, rootVoice: null, modals: [] };
     provide(announcerKey, host);
 
-    // The root's regions go on the page as the root does, ahead of the first words.
     watch(root, () => rootVoiceOf(host), { immediate: true, flush: "post" });
 
     return announcerOf(host);
@@ -176,8 +161,8 @@ export function useAnnouncer(): Announcer {
 }
 
 /**
- * Makes an open modal surface the place announcements are spoken from, for as long as its element
- * is drawn. Called by the modal surfaces themselves: the sheet and the dialog.
+ * Makes a modal surface the place announcements are spoken from while its element is drawn.
+ * Called by the sheet and the dialog.
  *
  * @param element The modal surface's element, while drawn.
  */
@@ -185,9 +170,8 @@ export function useAnnouncerModal(element: SurfaceElement): void {
     const host = inject(announcerKey, pageHost);
     let voice: Voice | null = null;
 
-    // A choice that closes the surface, as Leave closes the details, is said in the same task the
-    // surface goes: words its regions were given then are said again in the voice beneath, which
-    // is the newest once this one is off the stack. Words already heard are not repeated.
+    // A choice that closes the surface, as Leave closes the details, is said in the task the
+    // surface goes, so its unheard words are said again in the voice beneath; heard ones are not.
     function leave(): void {
         if (!voice) {
             return;
