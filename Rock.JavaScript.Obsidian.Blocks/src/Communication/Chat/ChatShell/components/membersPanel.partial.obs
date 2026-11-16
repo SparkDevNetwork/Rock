@@ -2,34 +2,24 @@
 <template>
     <PanelHost title="Members"
                :subtitle="subtitle"
-               :isPhone="isPhone"
                :entranceKeys="entranceKeys"
                @close="emit('close')">
         <template v-if="!refusal" #top>
             <div class="chat-mb-top">
-                <label class="chat-mb-search chat-field">
-                    <Icon name="search" size="sm" />
-                    <input ref="filterElement"
-                           class="chat-field-input"
-                           type="search"
-                           placeholder="Filter members"
-                           aria-label="Filter members"
-                           autocomplete="off"
-                           spellcheck="false"
-                           data-testid="members-filter"
-                           :value="query"
-                           :data-autofocus="isPhone ? undefined : ''"
-                           @input="onInput"
-                           @keydown="onFilterKeydown" />
-                    <button v-if="query"
-                            type="button"
-                            class="chat-mb-clear"
-                            aria-label="Clear filter"
-                            data-testid="members-clear"
-                            @click="onClear">
-                        <Icon name="x" size="xs" />
-                    </button>
-                </label>
+                <Field ref="filterField"
+                       type="search"
+                       leadingIcon="search"
+                       placeholder="Filter members"
+                       clearable
+                       clearLabel="Clear filter"
+                       aria-label="Filter members"
+                       autocomplete="off"
+                       spellcheck="false"
+                       data-testid="members-filter"
+                       :modelValue="query"
+                       :data-autofocus="isPhone ? undefined : ''"
+                       @update:modelValue="emit('query', $event)"
+                       @keydown="onFilterKeydown" />
             </div>
         </template>
 
@@ -104,7 +94,7 @@
                                     <span class="chat-mb-name">
                                         <b>{{ row.name }}</b>
                                         <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
-                                        <span v-if="row.isLeader" class="chat-pill" data-testid="member-leader">Leader</span>
+                                        <Badge v-if="row.isLeader" label="Leader" tone="neutral" data-testid="member-leader" />
                                     </span>
                                 </span>
                             </button>
@@ -112,14 +102,12 @@
                             <span class="chat-mb-acts">
                                 <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
                                 <template v-else>
-                                    <button v-if="row.canMessage"
-                                            type="button"
-                                            class="chat-mb-msg"
+                                    <Button v-if="row.canMessage"
+                                            size="sm"
+                                            icon="message"
                                             data-testid="member-message"
                                             :aria-label="`Message ${row.name}`"
-                                            @click="emit('message', row.guid)">
-                                        <Icon name="message" size="xs" />Message
-                                    </button>
+                                            @click="emit('message', row.guid)">Message</Button>
                                     <Menu v-if="row.menu"
                                           icon="dots"
                                           :label="`More for ${row.name}`"
@@ -132,13 +120,11 @@
                             <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
                                 <Icon name="alert" size="xs" />
                                 <span>{{ row.refusal }}</span>
-                                <button type="button"
-                                        class="chat-mb-err-x"
-                                        aria-label="Dismiss"
-                                        data-testid="member-refusal-dismiss"
-                                        @click="onDismiss(row.guid)">
-                                    <Icon name="x" size="xs" />
-                                </button>
+                                <IconButton icon="x"
+                                            size="sm"
+                                            label="Dismiss"
+                                            data-testid="member-refusal-dismiss"
+                                            @click="onDismiss(row.guid)" />
                             </div>
                         </li>
                     </TransitionGroup>
@@ -146,23 +132,16 @@
 
                 <div v-if="isNoneShown" class="chat-mb-none" data-testid="members-none">No one in {{ channelName }} matches &ldquo;{{ query.trim() }}&rdquo;.</div>
 
-                <div v-if="isMoreShown" class="chat-mb-more">
+                <!-- Asks for the next page as it scrolls into view; pressed, it asks too, and after a failure only a press asks again. -->
+                <div v-if="isMoreShown" ref="moreElement" class="chat-mb-more">
                     <span v-if="moreError" class="chat-mb-more-err" data-testid="members-more-error"><Icon name="alert" size="xs" />Couldn't load more.</span>
-                    <button type="button"
-                            class="chat-ls-btn"
+                    <Button size="sm"
                             data-testid="members-more"
-                            :aria-busy="isLoadingMore ? 'true' : undefined"
-                            :aria-disabled="isLoadingMore ? 'true' : undefined"
-                            @click="onLoadMore">
-                        <template v-if="isLoadingMore"><span class="chat-spinner" aria-hidden="true"></span>Loading</template>
-                        <template v-else-if="moreError">Try again</template>
-                        <template v-else>Load more</template>
-                    </button>
+                            :busy="isLoadingMore"
+                            @click="emit('loadMore')">{{ isLoadingMore ? "Loading" : moreError ? "Try again" : "Load more" }}</Button>
                 </div>
                 <div v-else-if="isEndShown" class="chat-mb-end" data-testid="members-end">That's everyone.</div>
             </div>
-
-            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
         </div>
 
         <!--
@@ -173,16 +152,14 @@
         -->
         <template v-if="isAddShown || isAddHeld" #foot>
             <div class="chat-mb-foot" :class="{ 'is-reserved': isAddHeld }" data-testid="members-foot">
-                <div v-if="isAddHeld" class="chat-mb-add is-place" aria-hidden="true"></div>
-                <button v-else
-                        type="button"
-                        class="chat-mb-add"
+                <div v-if="isAddHeld" class="chat-mb-place" aria-hidden="true"></div>
+                <Button v-else
+                        block
+                        icon="user-plus"
                         data-testid="members-add"
                         :aria-disabled="isGroupFull ? 'true' : undefined"
                         :aria-describedby="isGroupFull ? fullHintId : undefined"
-                        @click="onAdd">
-                    <Icon name="user-plus" size="sm" />Add people
-                </button>
+                        @click="onAdd">Add people</Button>
                 <p v-if="isGroupFull" :id="fullHintId" class="chat-mb-foot-hint" data-testid="members-add-full">Full, {{ groupCapacity }} of {{ groupCapacity }}</p>
             </div>
         </template>
@@ -190,30 +167,10 @@
 </template>
 
 <style scoped>
-/* Ported from the design's members panel; the small outlined button, the skeleton and the spinner are the sheet's. */
+/* The members panel's layout; its field, buttons, badge, skeleton and states are the shared parts. */
 .chat-mb-top {
     flex: none;
     padding: 12px 14px 6px;
-}
-
-.chat-mb-clear {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    margin-right: -6px;
-    color: var(--chat-text-2);
-    background: var(--chat-press);
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-clear:hover {
-    color: var(--chat-text);
-    background: color-mix(in srgb, var(--chat-text) 16%, transparent);
 }
 
 .chat-mb-list {
@@ -314,10 +271,6 @@
     white-space: nowrap;
 }
 
-.chat-mb-name .chat-pill {
-    flex: none;
-}
-
 .chat-mb-you {
     flex: none;
     font-size: var(--chat-fs-ui);
@@ -400,23 +353,6 @@
     min-width: 0;
 }
 
-.chat-mb-err-x {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    padding: 0;
-    color: inherit;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-mb-err-x:hover {
-    background: color-mix(in srgb, var(--chat-danger) 12%, transparent);
-}
-
 /* A removed row collapses, from the height measured as it starts to leave. */
 .chat-mb-row.is-leaving {
     --chat-collapse-from: var(--chat-mb-row-h);
@@ -424,56 +360,20 @@
     animation: chat-collapse var(--chat-d-row-collapse) var(--chat-ease-out) forwards;
 }
 
-/* The foot under the list: one outlined button the width of the panel, as the design's members panel. */
+/* The foot under the list: one outlined button the width of the panel. */
 .chat-mb-foot {
     flex: none;
     padding: 10px 14px 12px;
     border-top: 1px solid var(--chat-line);
 }
 
-.chat-mb-add {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 36px;
-    padding: 0 14px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-/* The button's place while Rock has not answered: its box, drawn as nothing, under no line yet. */
+/* The button's place while Rock has not answered: its height, drawn as nothing, under no line yet. */
 .chat-mb-foot.is-reserved {
     border-top-color: transparent;
 }
 
-.chat-mb-add.is-place {
-    visibility: hidden;
-}
-
-.chat-mb-add .chat-ic {
-    color: var(--chat-brand-ink);
-}
-
-.chat-mb-add:hover:not([aria-disabled="true"]) {
-    background: var(--chat-hover);
-    border-color: var(--chat-icon);
-}
-
-.chat-mb-add[aria-disabled="true"] {
-    cursor: default;
-    color: var(--chat-muted);
-    opacity: .6;
-}
-
-.chat-mb-add[aria-disabled="true"] .chat-ic {
-    color: var(--chat-icon);
+.chat-mb-place {
+    height: 32px;
 }
 
 .chat-mb-foot-hint {
@@ -487,26 +387,6 @@
     .chat-mb-acts {
         opacity: 1;
     }
-}
-
-.chat-mb-msg {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    height: 28px;
-    padding: 0 11px 0 9px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-mb-msg:hover {
-    color: var(--chat-text);
-    border-color: var(--chat-icon);
 }
 
 .chat-mb-hint {
@@ -553,10 +433,6 @@
     padding: 14px 8px 4px;
 }
 
-.chat-mb-more .chat-ls-btn[aria-busy="true"] {
-    color: var(--chat-muted);
-}
-
 .chat-mb-more-err {
     display: inline-flex;
     gap: 6px;
@@ -578,16 +454,23 @@
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
+    import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
     import { MemberRemoval } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatError, FaceStatus, RosterMember } from "../types.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { shownStatus } from "../ui/face.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
@@ -695,18 +578,6 @@
             default: null
         },
 
-        /** The reader, whose own row says "(you)" and offers no Message. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
-        /** Whether the chat is in its one-pane phone layout, where a row's actions always show. */
-        isPhone: {
-            type: Boolean,
-            default: false
-        },
-
         /** Whether Rock lets the reader add and remove people here. */
         canManageMembers: {
             type: Boolean,
@@ -749,14 +620,17 @@
 
     const skeletonWidths = [58, 44, 66, 50, 40, 62, 48];
 
+    // The phone's one-pane layout always shows a row's actions; the reader's own row says "(you)" and offers no Message.
+    const { isPhone, me } = useChatSession();
+    const { announce } = useAnnouncer();
+
     const listElement = ref<HTMLElement>();
-    const filterElement = ref<HTMLInputElement>();
+    const moreElement = ref<HTMLElement>();
+    const filterField = ref<InstanceType<typeof Field>>();
 
     // A row's actions show as the message action bar does: faded in once the pointer rests on a
     // row, passing from row to row at once, faded out a moment after the pointer leaves them.
     const hover = useHoverIntent<string>(() => listElement.value);
-
-    const announcement = ref("");
 
     /** How many rows were drawn when a later page was asked for, until it lands. */
     let moreFrom: number | null = null;
@@ -842,21 +716,12 @@
 
     // #region Event Handlers
 
-    function onInput(event: Event): void {
-        emit("query", (event.target as HTMLInputElement).value);
-    }
-
     /** Escape clears a query before it closes the panel. */
     function onFilterKeydown(event: KeyboardEvent): void {
         if (event.key === "Escape" && props.query) {
             event.preventDefault();
             emit("query", "");
         }
-    }
-
-    function onClear(): void {
-        emit("query", "");
-        filterElement.value?.focus();
     }
 
     function onMenuSelect(personAliasGuid: string, key: string): void {
@@ -896,13 +761,6 @@
         }
     }
 
-    function onLoadMore(): void {
-        // the page already on its way answers for this press too
-        if (!props.isLoadingMore) {
-            emit("loadMore");
-        }
-    }
-
     /** The pointer reached a row, or a gap between them. */
     function onPointerOver(event: PointerEvent): void {
         if (event.pointerType === "touch") {
@@ -932,7 +790,7 @@
 
     function drawMember(member: RosterMember): DrawnMember {
         const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
-        const isSelf = member.person_alias_guid.toLowerCase() === props.personAliasGuid.toLowerCase();
+        const isSelf = member.person_alias_guid.toLowerCase() === me.value.personAliasGuid.toLowerCase();
         const isLeader = props.isChannel && member.is_leader;
         const roles = [isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p).map(p => `, ${p}`).join("");
 
@@ -1009,7 +867,7 @@
 
         const active = document.activeElement;
         const wasOnMore = !active || active === document.body || !!active.closest("[data-testid='members-more']");
-        announcement.value = `${added.length} more ${added.length === 1 ? "member" : "members"} loaded`;
+        announce(`${added.length} more ${added.length === 1 ? "member" : "members"} loaded`);
         await nextTick();
         if (wasOnMore) {
             listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${added[0].person_alias_guid}']`)?.focus({ preventScroll: true });
@@ -1050,16 +908,20 @@
 
         const next = leaving.get(gone[0]) ?? null;
         gone.forEach(guid => leaving.delete(guid));
-        ((next ? whoOf(next) : null) ?? filterElement.value)?.focus({ preventScroll: true });
+        ((next ? whoOf(next) : null) ?? filterField.value?.inputElement)?.focus({ preventScroll: true });
     }, { flush: "post" });
 
     // A screen reader hears what the first page brought.
     watch(() => props.isLoading, (isLoading, wasLoading) => {
         if (wasLoading && !isLoading && !props.error && !props.refusal) {
             const count = props.members.length;
-            announcement.value = props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`;
+            announce(props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`);
         }
     });
+
+    // The next page is asked as the Load more row scrolls into view, as every list pages; after a
+    // failed page only the press asks again.
+    usePagingTrigger(moreElement, () => emit("loadMore"), { enabled: () => isMoreShown.value && !props.isLoadingMore && !props.moreError });
 
     // #endregion Watchers
 

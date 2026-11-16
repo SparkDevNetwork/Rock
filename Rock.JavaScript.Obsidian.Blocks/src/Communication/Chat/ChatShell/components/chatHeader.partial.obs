@@ -71,15 +71,16 @@
                         data-testid="header-mentions"
                         :aria-expanded="isMentionsOpen ? 'true' : 'false'"
                         @click="emit('mentions')">
-                <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-mentions-dot" aria-hidden="true"></span>
+                <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-mentions-dot" />
             </IconButton>
 
             <!-- A worded pill with no glyph, so the room's notify menu stays the header's only bell. -->
-            <button v-if="isPushOffered && !isPhone"
-                    type="button"
-                    class="chat-header-push is-brand is-sm"
+            <Button v-if="isPushOffered && !isPhone"
+                    class="chat-header-push"
+                    kind="brand"
+                    size="sm"
                     data-testid="push-offer"
-                    @click="emit('turnOnPush')">Turn on notifications</button>
+                    @click="emit('turnOnPush')">Turn on notifications</Button>
 
             <!-- The room's notify menu, the bell drawn as its mode; kept on a phone, where Star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
@@ -100,7 +101,7 @@
             <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more">
                 <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" @openChange="onMoreOpenChange" />
                 <!-- Over the menu's button, which draws no mark of its own. -->
-                <span v-if="hasMentionDot" class="chat-header-dot" data-testid="header-more-dot" aria-hidden="true"></span>
+                <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-more-dot" />
             </span>
         </div>
     </header>
@@ -262,32 +263,9 @@ button.chat-header-id:hover .chat-header-chev {
     margin-left: auto;
 }
 
-/* The push offer, the design's small button in the church's color, set a little apart from the icons beside it. */
+/* The push offer, the small button in the church's color, set a little apart from the icons beside it. */
 .chat-header-push {
-    display: inline-flex;
-    flex: none;
-    align-items: center;
     margin: 0 4px;
-    font-weight: 600;
-    white-space: nowrap;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-header-push.is-sm {
-    height: 28px;
-    padding: 0 11px;
-    font-size: var(--chat-fs-ui);
-}
-
-.chat-header-push.is-brand {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-.chat-header-push.is-brand:hover {
-    background: color-mix(in srgb, var(--chat-brand-fill) 88%, var(--chat-shade));
 }
 
 .chat-header-more,
@@ -311,12 +289,7 @@ button.chat-header-id:hover .chat-header-chev {
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 8px;
-    height: 8px;
     pointer-events: none;
-    background: var(--chat-danger);
-    border-radius: var(--chat-r-full);
-    box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
 /*
@@ -341,10 +314,6 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-header-pile:hover,
 .chat-header-pile[aria-expanded="true"] {
     background: var(--chat-hover);
-}
-
-.chat-header-pile :deep(.chat-av) {
-    font-size: 10px !important;
 }
 
 /* A room whose faces cannot be shown draws the people icon in a face's place. */
@@ -488,8 +457,10 @@ button.chat-header-id:hover .chat-header-chev {
     import { computed, PropType, ref, watch } from "vue";
     import { notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
-    import { ChannelFacts, ChatError, ChatPerson } from "../types.partial";
+    import { ChannelFacts, ChatError, ChatPerson, RoomKind } from "../types.partial";
+    import { useChatSession } from "../chatSession.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
@@ -500,8 +471,8 @@ button.chat-header-id:hover .chat-header-chev {
 
     // #region Types
 
-    /** What the room is, which decides the mark beside its title. */
-    export type HeaderRoomKind = "channel" | "person" | "group";
+    /** What the room is, which decides the mark beside its title: a conversation's kind, kept under this name for the screens that still import it. */
+    export type HeaderRoomKind = RoomKind;
 
     // #endregion Types
 
@@ -520,6 +491,9 @@ button.chat-header-id:hover .chat-header-chev {
         /** Star or Unstar, from the header or the phone's More. */
         (e: "star"): void
     }>();
+
+    // The one-pane phone layout leads with Back and folds the actions into a menu.
+    const { isPhone } = useChatSession();
 
     const props = defineProps({
         title: {
@@ -619,12 +593,6 @@ button.chat-header-id:hover .chat-header-chev {
 
         /** Whether the room is in the person's Starred, which presses Star. */
         isStarred: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the chat is in its one-pane phone layout, which leads with Back and folds actions into a menu. */
-        isPhone: {
             type: Boolean,
             default: false
         },

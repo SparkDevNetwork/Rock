@@ -3,16 +3,14 @@
     <div class="chat-side" :class="{ 'is-phone': isPhone }" data-testid="channel-sidebar">
         <!-- One row to find a conversation or start one; the page above already names the church. -->
         <div class="chat-side-top" data-testid="sidebar-top">
-            <label class="chat-side-search chat-field">
-                <Icon name="search" size="sm" />
-                <input v-model="query"
-                       class="chat-field-input"
-                       type="text"
-                       placeholder="Search"
-                       aria-label="Find a conversation"
-                       autocomplete="off"
-                       data-testid="sidebar-search" />
-            </label>
+            <Field v-model="query"
+                   class="chat-side-search"
+                   :size="isPhone ? 'lg' : 'md'"
+                   leadingIcon="search"
+                   placeholder="Search"
+                   aria-label="Find a conversation"
+                   autocomplete="off"
+                   data-testid="sidebar-search" />
             <IconButton v-if="isNewMessageShown"
                         class="chat-side-new"
                         icon="compose"
@@ -38,28 +36,22 @@
             -->
             <div v-if="loadState === 'loading'">
                 <span class="chat-sr-only">Loading conversations</span>
-                <div v-for="width in skeletonWidths" :key="width" class="chat-side-skel" aria-hidden="true" data-testid="sidebar-skeleton">
-                    <i class="chat-skeleton chat-side-skel-c"></i>
-                    <span class="chat-side-skel-l"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
-                </div>
+                <Skeleton v-for="width in skeletonWidths" :key="width" class="chat-side-skel" shape="person" :widths="[width, 32]" data-testid="sidebar-skeleton" />
             </div>
 
-            <div v-else-if="loadState === 'failed'" class="chat-ls-err" role="status" data-testid="sidebar-error">
-                <Icon name="alert" size="sm" />
-                <span>Couldn't load your conversations.</span>
-                <button type="button" class="chat-ls-btn" @click="emit('retry')">Try again</button>
-            </div>
+            <EmptyState v-else-if="loadState === 'failed'"
+                        tone="error"
+                        title="Couldn't load your conversations."
+                        actionLabel="Try again"
+                        data-testid="sidebar-error"
+                        @action="emit('retry')" />
 
             <div v-else-if="rows.length === 0" class="chat-side-empty" data-testid="sidebar-empty">
-                <span class="chat-side-empty-glyph" aria-hidden="true"><Icon name="message" /></span>
-                <b>No conversations yet</b>
-                <span>Message someone from your groups, or browse channels to join.</span>
+                <EmptyState title="No conversations yet" text="Message someone from your groups, or browse channels to join." />
                 <div class="chat-side-empty-actions">
-                    <button v-if="isNewMessageShown" type="button" class="chat-side-empty-btn is-solid" data-testid="empty-new-message" @click="emit('newMessage')">
-                        <Icon name="compose" size="sm" />New message
-                    </button>
-                    <!-- With no New message beside it, this is the one way in, so it is the solid one. -->
-                    <button type="button" class="chat-side-empty-btn" :class="isNewMessageShown ? 'is-link' : 'is-solid'" data-testid="empty-browse" @click="emit('browse')">Browse channels</button>
+                    <Button v-if="isNewMessageShown" kind="brand" icon="compose" data-testid="empty-new-message" @click="emit('newMessage')">New message</Button>
+                    <!-- With no New message beside it, this is the one way in, so it is the filled one. -->
+                    <Button :kind="isNewMessageShown ? 'ghost' : 'brand'" data-testid="empty-browse" @click="emit('browse')">Browse channels</Button>
                 </div>
             </div>
 
@@ -129,20 +121,16 @@
                                 <span class="chat-row-sub">
                                     <span class="chat-row-prev" data-testid="row-preview">{{ row.preview_line }}</span>
                                     <span class="chat-row-end">
-                                        <span v-if="mentionsOf(row) > 0" class="chat-badge is-pop" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
-                                            <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
-                                        </span>
-                                        <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
+                                        <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" isPopping data-testid="row-mention-badge" />
+                                        <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
                                     </span>
                                 </span>
                             </span>
                         </template>
 
                         <span v-if="lookOf(row) === 'community'" class="chat-row-end">
-                            <span v-if="mentionsOf(row) > 0" class="chat-badge is-pop" :class="{ 'is-quiet': isMuted(row) }" data-testid="row-mention-badge" aria-hidden="true">
-                                <Icon name="at" /><span>{{ countText(mentionsOf(row)) }}</span>
-                            </span>
-                            <span v-else-if="isDotShown(row)" class="chat-dot" data-testid="row-dot" aria-hidden="true"></span>
+                            <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" isPopping data-testid="row-mention-badge" />
+                            <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
                         </span>
 
                         <span class="chat-sr-only" data-testid="row-label-suffix">{{ labelSuffixOf(row) }}</span>
@@ -172,7 +160,7 @@
                         :choice="statusChoice"
                         :closedReason="statusClosedReason"
                         :isRetrying="isStatusRetrying"
-                        :personAliasGuid="personAliasGuid"
+                        :personAliasGuid="me.personAliasGuid"
                         :personName="personName"
                         :personPhotoUrl="personPhotoUrl"
                         :isPhone="isPhone"
@@ -220,33 +208,17 @@
     padding: 0 12px;
 }
 
+/* The search takes the head's width beside the compose button. */
 .chat-side-search {
-    display: flex;
     flex: 1;
-    gap: 8px;
-    align-items: center;
     min-width: 0;
-    height: 38px;
-    padding: 0 12px;
-    margin: 0;
-    font-size: var(--chat-fs-ui);
-    /* Rock's theme bolds a label, and the field inside takes its face from this one. */
-    font-weight: 400;
-    color: var(--chat-muted);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-field);
 }
 
-.chat-side-search :deep(.chat-ic) {
-    color: var(--chat-icon);
-}
-
-/* The compose button is a ring square beside the search, so the head reads as one row. */
+/* The compose button is a ring square as tall as the search's field beside it, so the head reads as one row. */
 .chat-side-top :deep(.chat-side-new) {
     --chat-ic-size: 18px;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     color: var(--chat-text-2);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
@@ -260,14 +232,10 @@
     border-color: var(--chat-line-strong);
 }
 
-/* A touch target of 40px on a phone. */
-.is-phone .chat-side-search {
-    height: 40px;
-}
-
+/* A phone's large field, a finger's target, and the square beside it its height. */
 .is-phone .chat-side-top :deep(.chat-side-new) {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
 }
 
 .chat-side-list {
@@ -612,76 +580,18 @@
     border: 1.5px dashed var(--chat-line-strong);
 }
 
-/*
-    A loading row in a conversation row's place, shaped as the members panel's skeleton row is;
-    the fill and pulse are the sheet's one skeleton.
-*/
+/* A loading row in a conversation row's place, as tall as the row it stands in for. */
 .chat-side-skel {
-    display: flex;
-    gap: 10px;
-    align-items: center;
     height: 52px;
-    padding: 0 8px;
 }
 
 .is-phone .chat-side-skel {
     height: 56px;
 }
 
-.chat-side-skel i {
-    display: block;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-side-skel-c {
-    flex: none;
-    width: 36px;
-    height: 36px;
-}
-
-.chat-side-skel-l {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.chat-side-skel-l i:first-child {
-    height: 10px;
-}
-
-.chat-side-skel-l i:last-child {
-    width: 32%;
-    height: 8px;
-}
-
-/* A new person with nothing to list yet: centred and calm, one solid button and one link. */
+/* A new person with nothing to list yet: the words, then one filled button and one quiet one. */
 .chat-side-empty {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    padding: 36px 24px 28px;
-    text-align: center;
-}
-
-.chat-side-empty-glyph {
-    --chat-ic-size: 30px;
-    --chat-ic-stroke: 1.5;
-    display: inline-grid;
-    margin-bottom: 6px;
-    color: var(--chat-icon);
-}
-
-.chat-side-empty b {
-    font-size: var(--chat-fs-display);
-    font-weight: 650;
-}
-
-.chat-side-empty > span:not(.chat-side-empty-glyph) {
-    max-width: 30ch;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
+    padding: 24px 0 16px;
 }
 
 .chat-side-empty-actions {
@@ -689,46 +599,6 @@
     flex-direction: column;
     gap: 8px;
     align-items: center;
-    margin-top: 12px;
-}
-
-.chat-side-empty-btn {
-    display: inline-flex;
-    flex: none;
-    gap: 7px;
-    align-items: center;
-    height: 28px;
-    padding: 0 8px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-brand-ink);
-    white-space: nowrap;
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-control);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-side-empty-btn:hover {
-    background: var(--chat-hover);
-}
-
-/* The one filled button: the church fill with the text color chosen to read on it. */
-.chat-side-empty-btn.is-solid {
-    --chat-ic-size: 16px;
-    height: 34px;
-    padding: 0 16px;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-.chat-side-empty-btn.is-solid:hover {
-    background: var(--chat-brand-fill);
-    box-shadow: inset 0 0 0 999px var(--chat-press);
-}
-
-.chat-side-empty-btn.is-link {
-    color: var(--chat-brand-ink);
 }
 </style>
 
@@ -736,16 +606,23 @@
     import { computed, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import StatusMenu from "./statusMenu.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
+    import Dot from "../ui/dot.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
+    import Field from "../ui/field.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import { personFace, rowPeople } from "../ui/face.partial";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
     import { notifyIconFor, StatusChoice } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
     import { FaceStatus, SidebarRow } from "../types.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
@@ -805,12 +682,6 @@
             default: null
         },
 
-        /** The person's primary alias, whose own status the foot's face draws. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
         /** Whether online status is on, which splits the foot: the face sets the status, the rest opens Chat settings. */
         isStatusShown: {
             type: Boolean,
@@ -831,12 +702,6 @@
 
         /** Whether her status choice has failed to save and is being asked again, which her face's menu says. */
         isStatusRetrying: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the block is drawn one pane at a time, as on a phone. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -885,6 +750,10 @@
     }>();
 
     // #region Values
+
+    // Whether the block is drawn one pane at a time, as on a phone; and the signed-in person, whose
+    // own status the foot's face draws.
+    const { isPhone, me } = useChatSession();
 
     /** What "Find a conversation" holds. */
     const query = ref("");
@@ -1008,11 +877,6 @@
             "is-out": !row.is_member,
             "is-flash": flashIds.value.has(row.channel_id)
         };
-    }
-
-    /** A count as every count in the chat reads it, "99+" above 99. */
-    function countText(count: number): string {
-        return count > 99 ? "99+" : String(count);
     }
 
     /** Today's last message by its time, an older one by its day. */

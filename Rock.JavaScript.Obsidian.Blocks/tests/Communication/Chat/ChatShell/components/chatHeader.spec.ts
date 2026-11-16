@@ -29,14 +29,18 @@ import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partia
 import { join } from "path";
 import { busy } from "../statusShapes";
 import { anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
+import { providedSession } from "../sessionShapes";
 
 const lostConnection: ChatError = { code: "rt.disconnected", severity: "degraded", text: null };
 
 let wrapper: VueWrapper | null = null;
 
-function mountHeader(props: Record<string, unknown> = {}): VueWrapper {
+function mountHeader(given: Record<string, unknown> = {}): VueWrapper {
+    // the phone flag is the session's, which the header reads for itself
+    const { isPhone = false, ...props } = given;
     wrapper = mount(ChatHeader, {
         props: { title: "worship-team", ...props },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
         attachTo: document.body
     });
     return wrapper;

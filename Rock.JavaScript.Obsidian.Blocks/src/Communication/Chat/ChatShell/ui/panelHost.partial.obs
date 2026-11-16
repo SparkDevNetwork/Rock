@@ -116,6 +116,7 @@
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import IconButton from "./iconButton.partial.obs";
+    import { useChatSession } from "../chatSession.partial";
 
     const props = defineProps({
         /** The panel's name, in its header and as its label. */
@@ -130,10 +131,14 @@
             default: null
         },
 
-        /** Whether the chat is in its one-pane phone layout, where a panel leaves by its back chevron and has no X. */
+        /**
+         * Whether the chat is in its one-pane phone layout, where a panel leaves by its back chevron
+         * and has no X; null, as every panel leaves it, reads the session. Kept only while the
+         * thread drawer still hands it down.
+         */
         isPhone: {
-            type: Boolean,
-            default: false
+            type: Boolean as PropType<boolean | null>,
+            default: null
         },
 
         /** A back chevron with this label, which goes back rather than closing; null for none. */
@@ -165,6 +170,11 @@
 
     // #region Values
 
+    const session = useChatSession();
+
+    /** The phone layout: the session's, unless a caller still hands one down. */
+    const isPhone = computed((): boolean => props.isPhone ?? session.isPhone.value);
+
     const bodyElement = ref<HTMLElement>();
 
     /** Whether an entrance is under way. */
@@ -184,7 +194,7 @@
     // #region Computed Values
 
     /** A phone always leaves by the chevron; a wide block shows one only when there is somewhere to go back to. */
-    const isBackShown = computed((): boolean => props.isPhone || props.backLabel !== null);
+    const isBackShown = computed((): boolean => isPhone.value || props.backLabel !== null);
 
     // #endregion Computed Values
 

@@ -210,6 +210,13 @@ function fakeShell(): Record<string, unknown> {
             get listed(): SidebarRow[] {
                 return this.rows;
             },
+            // a room's row and kind as the store finds them: the row first, then the room's own facts
+            rowOf(channelId: string): SidebarRow | undefined {
+                return this.rows.find(row => row.channel_id === channelId);
+            },
+            roomKindOf(channelId: string): SidebarRow["room_kind"] | null {
+                return this.rowOf(channelId)?.room_kind ?? (rooms as unknown as ReturnType<typeof roomsOf>).state.facts[channelId]?.room_kind ?? null;
+            },
             loadState: "loaded",
             retryLoad: jest.fn()
         }),

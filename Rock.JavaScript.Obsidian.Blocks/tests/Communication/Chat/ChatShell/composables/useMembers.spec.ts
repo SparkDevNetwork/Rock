@@ -46,9 +46,10 @@
 //
 //   shownMembers(state): RosterMember[]      what the panel lists for the query typed
 //   searchStatus(state): "searching" | "answered" | "failed" | null
-//   memberSearchPause: 250; the page and search sizes are the platform's limits
+//   every search waits the chat's one search pause, 200 ms; the page and search sizes are the platform's limits
 import { watch } from "vue";
-import { createMembers, MemberRights, memberSearchPause, rightsReadAheadFor, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
+import { createMembers, MemberRights, rightsReadAheadFor, searchStatus, shownMembers, successorChoices } from "../../../../../src/Communication/Chat/ChatShell/composables/useMembers.partial";
+import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
 import { CallResult } from "../../../../../src/Communication/Chat/ChatShell/platformCall.partial";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -272,7 +273,7 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery(" ann ");
-        jest.advanceTimersByTime(memberSearchPause - 1);
+        jest.advanceTimersByTime(searchPause - 1);
         expect(calls).toHaveLength(1);
         expect(searchStatus(members.state)).toBe("searching");
 
@@ -308,9 +309,9 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery("a");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         members.setQuery("an");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
 
         forAn.resolve(page([anna]));
         await settle();
@@ -329,7 +330,7 @@ describe("the search", () => {
         members.setQuery("a");
         jest.advanceTimersByTime(100);
         members.setQuery("an");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
 
         expect(calls.slice(1).map(c => c.args.p_query)).toEqual(["an"]);
     });
@@ -340,7 +341,7 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery("an");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         members.setQuery("");
         held.resolve(page([anna]));
         await settle();
@@ -354,7 +355,7 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery("   ");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
 
         expect(calls).toHaveLength(1);
         expect(searchStatus(members.state)).toBeNull();
@@ -366,7 +367,7 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery("an");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         await settle();
         expect(searchStatus(members.state)).toBe("failed");
         expect(names(shownMembers(members.state))).toEqual(["Anna"]);
@@ -383,7 +384,7 @@ describe("the search", () => {
         await members.open(channel);
 
         members.setQuery("person");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         await settle();
         expect(members.state.search.hasMore).toBe(true);
 
@@ -416,7 +417,7 @@ describe("stopping", () => {
 
             members.setQuery("an");
             members.stop();
-            jest.advanceTimersByTime(memberSearchPause);
+            jest.advanceTimersByTime(searchPause);
             await members.loadMore();
             await members.open(otherChannel);
 
@@ -578,10 +579,10 @@ describe("the status the roster's people carry", () => {
             await members.retry();
             members.openAdd();
             members.setAddQuery("a");
-            jest.advanceTimersByTime(memberSearchPause);
+            jest.advanceTimersByTime(searchPause);
             await settle();
             members.setAddQuery("ab");
-            jest.advanceTimersByTime(memberSearchPause);
+            jest.advanceTimersByTime(searchPause);
             await settle();
 
             expect(told.people.map(people => names(people as Parameters<typeof names>[0]))).toEqual([["Tom"], ["Aaron"]]);
@@ -933,7 +934,7 @@ describe("removing someone", () => {
             const { members } = doorHarness({ calls: [page([tom, anna]), page([anna, annie])] });
             await members.open(channel);
             members.setQuery("an");
-            jest.advanceTimersByTime(memberSearchPause);
+            jest.advanceTimersByTime(searchPause);
             await settle();
 
             members.askRemove(guid(4));
@@ -1062,7 +1063,7 @@ describe("removing a leader", () => {
 
             members.setSuccessorQuery("an");
             expect(names(successorChoices(members.state))).toEqual(["Anna"]);
-            jest.advanceTimersByTime(memberSearchPause);
+            jest.advanceTimersByTime(searchPause);
             expect(calls[1]).toEqual({ name: "chat_list_members", args: { p_channel_id: channel, p_after: null, p_limit: memberPageSize, p_query: "an" } });
 
             await settle();
@@ -1171,7 +1172,7 @@ describe("adding people", () => {
 
         members.setAddQuery(" a ");
         expect(members.state.adding.isSearching).toBe(true);
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         expect(calls[1]).toEqual({ name: "chat_search_people", args: { p_query: "a", p_limit: peopleSearchSize, p_campus_only: false, p_channel_id: channel } });
 
         await settle();
@@ -1186,16 +1187,16 @@ describe("adding people", () => {
         members.openAdd();
 
         members.setAddQuery("a");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         members.setAddQuery("lu");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         await settle();
         forA.resolve({ ok: true, data: { people: [aaron] } });
         await settle();
         expect(members.state.adding.people?.map(p => p.nick_name)).toEqual(["Luis"]);
 
         members.setAddQuery("");
-        jest.advanceTimersByTime(memberSearchPause);
+        jest.advanceTimersByTime(searchPause);
         expect(calls).toHaveLength(3);
         expect(members.state.adding.people).toBeNull();
     });

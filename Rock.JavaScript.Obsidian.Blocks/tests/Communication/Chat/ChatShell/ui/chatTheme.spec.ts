@@ -1094,18 +1094,21 @@ describe("the components' own styles", () => {
     // layer: a layer is rasterized wherever the badge happened to be when it was made, part way
     // through a panel's slide, so the same badge drew differently from one load to the next. Every
     // edge is a whole pixel.
+    // The mention count is the shared badge: its look is the badge part's own, and a screen only
+    // says which tone it takes and whether it pops.
     describe("the mention badge", () => {
         const sidebarPath = resolve(components, "channelSidebar.partial.obs");
         const threadsPath = resolve(components, "threadsPanel.partial.obs");
-        const sheetRule = (selector: string, property: string): string => declarationOf(sheetPath, selector, property);
-        /** The class lists of the badges a template draws. */
-        const badgeClasses = (path: string): string[] => [...readFileSync(path, "utf8").matchAll(/\sclass="(chat-badge\b[^"]*)"/g)].map(m => m[1]);
+        const badgePath = resolve(components, "../ui/badge.partial.obs");
+        const badgeRule = (selector: string, property: string): string => declarationOf(badgePath, selector, property);
+        /** The badges a template draws, each as its whole self-closed tag, whose bindings may hold a ">". */
+        const badgeTags = (path: string): string[] => [...readFileSync(path, "utf8").matchAll(/<Badge\b[\s\S]*?\/>/g)].map(m => m[0]);
 
         test("is a soft tint with the church's ink and no filled brand color", () => {
-            expect(sheetRule(".chat-badge", "background")).toBe(normalize("var(--chat-brand-tint)"));
-            expect(sheetRule(".chat-badge", "color")).toBe(normalize("var(--chat-brand-ink)"));
+            expect(badgeRule(".chat-badge.is-brand", "background")).toBe(normalize("var(--chat-brand-tint)"));
+            expect(badgeRule(".chat-badge.is-brand", "color")).toBe(normalize("var(--chat-brand-ink)"));
 
-            const rules = readSheet(sheetPath).rules.filter(r => r.selector.includes(".chat-badge"));
+            const rules = readSheet(badgePath).rules.filter(r => r.selector.includes(".chat-badge"));
             for (const rule of rules) {
                 for (const property of ["background", "background-color", "color"]) {
                     expect(rule.declarations.get(property) ?? "").not.toMatch(/brand-fill|on-brand/);
@@ -1114,39 +1117,41 @@ describe("the components' own styles", () => {
         });
 
         test("pops, and stays in its own layer for its whole life, only where it is marked to pop", () => {
-            expect(sheetRule(".chat-badge.is-pop", "will-change")).toBe("transform");
-            expect(sheetRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-spring var(--chat-d-spring) var(--chat-ease-spring)"));
-            expect(sheetRule(".chat-badge", "will-change")).toBe("");
-            expect(sheetRule(".chat-badge", "animation")).toBe("");
+            expect(badgeRule(".chat-badge.is-pop", "will-change")).toBe("transform");
+            expect(badgeRule(".chat-badge.is-pop", "animation")).toBe(normalize("chat-spring var(--chat-d-spring) var(--chat-ease-spring)"));
+            expect(badgeRule(".chat-badge", "will-change")).toBe("");
+            expect(badgeRule(".chat-badge", "animation")).toBe("");
             // under reduced motion the spring has no scale and the quick time, so it only fades in
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-spring-from", isReducedMotion)).toBe("1");
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring", isReducedMotion)).toBe(normalize("var(--chat-t-fast)"));
         });
 
         test("pops in the sidebar, where a new mention arrives, and not in the threads list, where it was already seen", () => {
-            const sidebar = badgeClasses(sidebarPath);
+            const sidebar = badgeTags(sidebarPath);
             expect(sidebar.length).toBeGreaterThan(0);
-            for (const classes of sidebar) {
-                expect(classes.split(" ")).toContain("is-pop");
+            for (const tag of sidebar) {
+                expect(tag).toMatch(/\sisPopping\b/);
             }
-            expect(badgeClasses(threadsPath)).toEqual(["chat-badge"]);
-            // Nothing in the threads list stops a pop, since its badge never starts one.
-            expect(declarationOf(threadsPath, ".chat-ls-foot .chat-badge", "animation")).toBe("");
+            const threads = badgeTags(threadsPath);
+            expect(threads).toHaveLength(1);
+            expect(threads[0]).not.toMatch(/isPopping/);
         });
 
         test("sits on whole pixels", () => {
-            expect(sheetRule(".chat-badge", "height")).toBe("20px");
-            expect(sheetRule(".chat-badge", "line-height")).toBe("20px");
-            expect(sheetRule(".chat-badge", "min-width")).toBe("22px");
-            expect(sheetRule(".chat-badge", "font-size")).toBe(normalize("var(--chat-fs-badge)"));
+            expect(badgeRule(".chat-badge.is-count", "height")).toBe("20px");
+            expect(badgeRule(".chat-badge.is-count", "line-height")).toBe("20px");
+            expect(badgeRule(".chat-badge.is-count", "min-width")).toBe("22px");
+            expect(badgeRule(".chat-badge", "font-size")).toBe(normalize("var(--chat-fs-badge)"));
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-fs-badge")).toBe("11px");
         });
 
         test("a muted room's badge is neutral, drawn from tokens the loud badge does not use, in both themes", () => {
-            expect(sheetRule(".chat-badge.is-quiet", "color")).toBe(normalize("var(--chat-muted)"));
-            expect(sheetRule(".chat-badge.is-quiet", "background")).toBe(normalize("var(--chat-hover)"));
-            expect(sheetRule(".chat-badge.is-quiet", "background")).not.toBe(sheetRule(".chat-badge", "background"));
-            expect(sheetRule(".chat-badge.is-quiet", "color")).not.toBe(sheetRule(".chat-badge", "color"));
+            expect(badgeRule(".chat-badge.is-muted", "color")).toBe(normalize("var(--chat-muted)"));
+            expect(badgeRule(".chat-badge.is-muted", "background")).toBe(normalize("var(--chat-hover)"));
+            expect(badgeRule(".chat-badge.is-muted", "background")).not.toBe(badgeRule(".chat-badge.is-brand", "background"));
+            expect(badgeRule(".chat-badge.is-muted", "color")).not.toBe(badgeRule(".chat-badge.is-brand", "color"));
+            // the sidebar takes the muted tone for a muted room
+            expect(badgeTags(sidebarPath).every(tag => tag.includes(":tone=\"isMuted(row) ? 'muted' : 'brand'\""))).toBe(true);
 
             // Both neutral tokens are set for light and for every dark path, so neither theme falls back to the brand tint.
             for (const condition of [isDarkExplicit, isDarkUnthemed, isDarkFollowingSystem]) {
@@ -1198,11 +1203,19 @@ describe("the components' own styles", () => {
     describe("the sidebar's head and tiles", () => {
         const sidebarPath = resolve(components, "channelSidebar.partial.obs");
 
-        test("the search and compose are 38px with the field and control corners, in one 64px row", () => {
+        // The search is the shared field, whose box sets its height and corners; the compose square
+        // beside it takes the field's height, the large field's on a phone, so the head is one row.
+        test("the search is the shared field and the compose square is its height, in one 64px row", () => {
+            const fieldPath = resolve(components, "../ui/field.partial.obs");
             expect(declarationOf(sidebarPath, ".chat-side-top", "height")).toBe("64px");
-            expect(declarationOf(sidebarPath, ".chat-side-search", "height")).toBe("38px");
-            expect(declarationOf(sidebarPath, ".chat-side-search", "border-radius")).toBe(normalize("var(--chat-r-field)"));
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("38px");
+            expect(readFileSync(sidebarPath, "utf8")).toMatch(/<Field v-model="query"[^>]*:size="isPhone \? 'lg' : 'md'"/);
+            expect(declarationOf(fieldPath, ".chat-fld-box", "min-height")).toBe("36px");
+            expect(declarationOf(fieldPath, ".chat-fld.is-lg .chat-fld-box", "min-height")).toBe("44px");
+            expect(declarationOf(fieldPath, ".chat-fld-box", "border-radius")).toBe(normalize("var(--chat-r-field)"));
+            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("36px");
+            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "height")).toBe("36px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "width")).toBe("44px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "height")).toBe("44px");
             expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-control)"));
         });
 
@@ -1212,10 +1225,15 @@ describe("the components' own styles", () => {
             expect(declarationOf(sidebarPath, ".chat-ch-tile", "border-radius")).toBe(normalize("var(--chat-r-control)"));
         });
 
-        test("the empty state's solid button is the church fill with its text color, and its link the church ink", () => {
-            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "background")).toBe(normalize("var(--chat-brand-fill)"));
-            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-solid", "color")).toBe(normalize("var(--chat-on-brand)"));
-            expect(declarationOf(sidebarPath, ".chat-side-empty-btn.is-link", "color")).toBe(normalize("var(--chat-brand-ink)"));
+        // The empty state's actions are the shared buttons: the one way in is the church fill with its
+        // text color, the other the quiet button beside it.
+        test("the empty state's solid button is the shared brand button, and the other the shared quiet one", () => {
+            const buttonPath = resolve(components, "../ui/button.partial.obs");
+            expect(declarationOf(buttonPath, ".chat-btn.is-brand", "background")).toBe(normalize("var(--chat-brand-fill)"));
+            expect(declarationOf(buttonPath, ".chat-btn.is-brand", "color")).toBe(normalize("var(--chat-on-brand)"));
+            const source = readFileSync(sidebarPath, "utf8");
+            expect(source).toContain('<Button v-if="isNewMessageShown" kind="brand"');
+            expect(source).toContain(`<Button :kind="isNewMessageShown ? 'ghost' : 'brand'"`);
         });
     });
 
