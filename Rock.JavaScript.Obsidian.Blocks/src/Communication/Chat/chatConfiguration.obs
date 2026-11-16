@@ -20,12 +20,13 @@
                              label="API Key"
                              help="The API key for Rock to use when interacting with the external chat application."
                              :rules="['noemojisorspecialfonts']"
-                             :disabled="isSaving" />
+                             :disabled="isSaving || !isEditable" />
                     <TextBox v-model="apiSecret"
                              label="API Secret"
                              help="The API secret for Rock to use when interacting with the external chat application."
+                             type="password"
                              :rules="['noemojisorspecialfonts']"
-                             :disabled="isSaving" />
+                             :disabled="isSaving || !isEditable" />
                     <DataViewPicker v-model="chatBadgeDataViews"
                                     label="Badge Persisted Data Views"
                                     help="The Persisted Data Views that will be used to populate badges within the external chat application."
@@ -33,22 +34,23 @@
                                     :displayPersistedOnly="true"
                                     :multiple="true"
                                     :enhanceForLongLists="true"
-                                    :disabled="isSaving" />
+                                    :disabled="isSaving || !isEditable" />
                 </div>
                 <div class="col-md-6">
                     <CheckBox v-model="areChatProfilesVisible"
                               label="Chat Profiles Are Visible"
                               help="The system default for whether individuals' profiles are visible in the external chat application. This can be overridden per individual."
-                              :disabled="isSaving" />
+                              :disabled="isSaving || !isEditable" />
                     <CheckBox v-model="isOpenDirectMessagingAllowed"
                               label="Open Direct Messaging Is Allowed"
                               help="The system default for whether individuals can receive direct messages from anybody in the system. This can be overridden per individual."
-                              :disabled="isSaving" />
+                              :disabled="isSaving || !isEditable" />
                 </div>
             </div>
 
             <div class="actions">
-                <RockButton :btnType="BtnType.Primary"
+                <RockButton v-if="isEditable"
+                            :btnType="BtnType.Primary"
                             type="submit"
                             :disabled="isSaving">Save</RockButton>
 
@@ -91,6 +93,7 @@
     const isOpenDirectMessagingAllowed = ref(config.chatConfigurationBag?.isOpenDirectMessagingAllowed ?? false);
     const chatBadgeDataViews = ref<ListItemBag[] | null>(config.chatConfigurationBag?.chatBadgeDataViews ?? null);
 
+    const isEditable = config.isEditable ?? false;
     const isSaving = ref(false);
     const blockActionMessage = ref("");
     const blockActionAlertType = ref<string | undefined>(undefined);
@@ -103,7 +106,7 @@
      * Called when the save button is clicked.
      */
     async function onSave(): Promise<void> {
-        if (isSaving.value) {
+        if (isSaving.value || !isEditable) {
             return;
         }
 

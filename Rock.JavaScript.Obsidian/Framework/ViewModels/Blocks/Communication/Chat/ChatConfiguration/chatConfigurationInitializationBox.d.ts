@@ -34,6 +34,9 @@ export type ChatConfigurationInitializationBox = {
      */
     errorMessage?: string | null;
 
+    /** Gets or sets a value indicating whether the current person can edit the chat configuration. */
+    isEditable: boolean;
+
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
