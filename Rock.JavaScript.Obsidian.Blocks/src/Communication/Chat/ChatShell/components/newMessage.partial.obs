@@ -43,6 +43,8 @@
                           isMatchMarked
                           :noneText="noneText"
                           :note="note"
+                          :count="count"
+                          :retry="retrySearch"
                           :campusNames="campusNames"
                           prefix="nd"
                           labelTestId="nd-to-label"
@@ -52,7 +54,7 @@
                           @choose="onChoose"
                           @unchoose="unchoose"
                           @submit="onSubmit"
-                          @noMatch="onNoMatch"
+                          @noMatch="announce(noneText)"
                           @tab="onTab"
                           @escape="onEscape"
                           @announce="announce" />
@@ -60,11 +62,9 @@
 
         <div class="chat-nd-body">
             <div v-if="chosen.length === 0" class="chat-nd-scroll">
-                <div class="chat-nd-start is-empty" data-testid="nd-empty">
-                    <span class="chat-nd-empty-ic" aria-hidden="true"><Icon name="compose" /></span>
-                    <b>Start a conversation</b>
-                    <p>Choose one person for a private conversation, or up to {{ maxOthers }} for a group. You can message people who accept messages from everyone, and people in your private groups.</p>
-                </div>
+                <EmptyState title="Start a conversation"
+                            :text="`Choose one person, or up to ${maxOthers} for a group.`"
+                            data-testid="nd-empty" />
             </div>
 
             <!-- While the lookup is out nothing is guessed: a quiet line only once it is slow. -->
@@ -98,9 +98,10 @@
                     <div v-if="!isFound" class="chat-nd-start" data-testid="nd-start">
                         <Avatar v-if="chosen.length === 1" :key="onlyAlias ?? undefined" :people="faces.slice(0, 1)" :size="56" :status="onlyStatus" />
                         <GroupFace v-else :people="faces" :size="56" />
-                        <b data-testid="nd-start-title">{{ startTitle }}</b>
-                        <p v-if="chosen.length === 1">This is the start of your conversation with <strong>{{ chosen[0].nick_name }}</strong><span v-if="onlyStatus" class="chat-sr-only">{{ onlyStatus.label }}</span>. Only the two of you can see it.</p>
-                        <p v-else>This is the start of a group conversation. Only the {{ chosen.length + 1 }} people here can see it.</p>
+                        <b data-testid="nd-start-title">{{ startTitle }}<span v-if="onlyStatus" class="chat-sr-only">{{ onlyStatus.label }}</span></b>
+                        <!-- Who can see it, counting no one twice: "you and" one person, or the people here. -->
+                        <p v-if="chosen.length === 1">Only you and {{ chosen[0].nick_name }} can see it.</p>
+                        <p v-else>Only the people here can see it.</p>
                     </div>
 
                     <!-- The first message on its way, in the Conversational look its conversation will have. -->
@@ -295,10 +296,6 @@
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in);
 }
 
-.chat-nd-start.is-empty {
-    padding-top: 56px;
-}
-
 .chat-nd-start b {
     margin-top: 6px;
     font-size: var(--chat-fs-title);
@@ -313,22 +310,6 @@
     font-size: var(--chat-fs-ui);
     line-height: 1.5;
     color: var(--chat-muted);
-}
-
-.chat-nd-start p strong {
-    font-weight: 600;
-    color: var(--chat-text-2);
-}
-
-.chat-nd-empty-ic {
-    --chat-ic-size: 26px;
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-surface);
 }
 
 .chat-nd-look {
@@ -528,6 +509,7 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Button from "../ui/button.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -655,9 +637,6 @@
      */
     const search = useLatestSearch<PersonRow[]>(text => props.search(text), { isSearchable: text => text !== "" });
 
-    /** "No one to message for …", shown in the note until the text changes. */
-    const noOneText = ref<string | null>(null);
-
     /** The text of the message sent, which the pending message draws while the box moves on. */
     const sentText = ref<string | null>(null);
 
@@ -707,7 +686,8 @@
             return null;
         }
 
-        return error instanceof Error && error.message ? error.message : failedWords("People could not be searched.").alone;
+        // Said beside the list's Try again, so the words only name what failed.
+        return error instanceof Error && error.message ? error.message : failedWords("Couldn't search people.").besideRetry;
     });
 
     /**
@@ -738,7 +718,8 @@
             return "You already have this conversation";
         }
 
-        return props.chosen.length === 1 ? "New conversation" : `New group of ${props.chosen.length + 1} people`;
+        // The people chosen, never the person choosing, as every count in the view is.
+        return props.chosen.length === 1 ? "New conversation" : `You and ${props.chosen.length} others`;
     });
 
     /** The title the sidebar will give the new conversation, so the name never changes as it starts. */
@@ -762,20 +743,16 @@
         .filter(campus => campus.guid)
         .map(campus => [campus.guid!.toLowerCase(), campus.name ?? ""])));
 
-    const noneText = computed((): string => `No one found for “${query.value.trim()}”. Can't find someone? They may not accept messages from everyone.`);
+    /** The list's one line for a name no one matched; Enter on it says it again rather than adding a second. */
+    const noneText = computed((): string => `No one found for “${query.value.trim()}”. Some people only take messages from their groups.`);
 
-    const note = computed((): string => {
-        if (noOneText.value) {
-            return noOneText.value;
-        }
+    /** The line under the field, only at the cap. */
+    const note = computed((): string => props.chosen.length >= props.maxOthers ? capWords.value : "");
 
-        const count = props.chosen.length;
-        if (count >= props.maxOthers) {
-            return `${props.maxOthers} people is the most for one conversation. Press Tab to write your message.`;
-        }
+    /** How many are chosen of the most, at the field's end once the cap nears. */
+    const count = computed((): string => props.chosen.length >= 6 ? `${props.chosen.length} of ${props.maxOthers}` : "");
 
-        return count >= 6 ? `${count} of ${props.maxOthers} people` : "";
-    });
+    const capWords = computed((): string => `${props.maxOthers} is the most for one conversation.`);
 
     const pendingPhase = computed(() => props.draft?.phase ?? null);
 
@@ -806,25 +783,19 @@
     /** The name typed: its search goes out once typing pauses. */
     function onInput(typed: string): void {
         query.value = typed;
-        noOneText.value = null;
         search.set(typed.trim());
     }
 
-    /** Enter on an empty To field moves to the message, or at the cap says it is reached. */
-    function onSubmit(): void {
-        if (props.chosen.length >= props.maxOthers) {
-            // The note already says how to move on; focus stays so it is read.
-            announce(`${props.maxOthers} people is the most for one conversation.`);
-        }
-        else if (props.chosen.length > 0) {
-            focusEditor();
-        }
+    /** The failed search, asked again for the same name at once. */
+    function retrySearch(): void {
+        search.set(query.value.trim(), { isAtOnce: true });
     }
 
-    /** Enter on a name no one matched: the note says so until the text changes. */
-    function onNoMatch(text: string): void {
-        noOneText.value = `No one to message for “${text}”`;
-        announce(`No one to message for ${text}`);
+    /** Enter on an empty To field moves to the message. */
+    function onSubmit(): void {
+        if (props.chosen.length > 0) {
+            focusEditor();
+        }
     }
 
     /** The next field is the message, not the emoji button that sits before it. */
@@ -893,7 +864,7 @@
         // before this reads it again.
         const count = props.chosen.length + 1;
         emit("choose", person);
-        const full = count >= props.maxOthers ? ` ${props.maxOthers} people is the most for one conversation. Press Tab to write your message.` : "";
+        const full = count >= props.maxOthers ? ` ${capWords.value}` : "";
         announce(`Added ${nameOf(person)}. ${count} ${count === 1 ? "person" : "people"} chosen.${full}`);
     }
 
@@ -966,16 +937,29 @@
         }
     });
 
-    // A chip's remove button goes with its chip, and a browser drops focus from it to the page, so
-    // focus moves to the field to carry on typing; focus somewhere else is left where it is.
+    // A chip's remove button goes with its chip, and the field's input goes at the cap, and a
+    // browser drops focus from either to the page: one taken out puts focus back in the field to
+    // carry on typing; the cap reached moves it on to the message, now or once the composer is
+    // drawn. Focus somewhere else is left where it is.
     watch(() => props.chosen.length, async (count, before) => {
         const active = document.activeElement;
-        if (count >= before || isLocked.value || (active && active !== document.body && !viewElement.value?.contains(active))) {
+        if (isLocked.value || (active && active !== document.body && !viewElement.value?.contains(active))) {
             return;
         }
 
-        await nextTick();
-        pickerElement.value?.focus();
+        if (count < before) {
+            await nextTick();
+            pickerElement.value?.focus();
+        }
+        else if (count >= props.maxOthers) {
+            await nextTick();
+            if (editorElement()) {
+                focusEditor();
+            }
+            else {
+                isEditorFocusOwed = true;
+            }
+        }
     });
 
     // #endregion Watchers

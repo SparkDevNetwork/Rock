@@ -22,7 +22,12 @@
                     </button>
                 </span>
             </span>
-            <input ref="inputElement"
+            <!--
+                Over the page, at the cap there is no one left to type for, so the input goes and
+                leaves no empty row; inline, the list under it says the cap and the field keeps focus.
+            -->
+            <input v-if="isInline || !isFull"
+                   ref="inputElement"
                    class="chat-pk-input chat-field-input"
                    type="text"
                    role="combobox"
@@ -44,6 +49,7 @@
                    @blur="isFocused = false"
                    @keydown="onKeydown" />
             <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
+            <span v-if="count" class="chat-pk-count" :data-testid="`${prefix}-count`">{{ count }}</span>
         </div>
 
         <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
@@ -57,7 +63,13 @@
             <template v-if="!isDisabled">
                 <div v-if="isFull" class="chat-pk-msg" :data-testid="`${prefix}-cap`"><Icon class="chat-pk-msg-ic" name="info" size="xs" />{{ capText }}</div>
                 <template v-else-if="query.trim()">
-                    <div v-if="searchError" class="chat-pk-msg is-error" :data-testid="`${prefix}-search-error`">{{ searchError }}</div>
+                    <EmptyState v-if="searchError"
+                                tone="error"
+                                :title="searchError"
+                                :actionLabel="retry ? 'Try again' : ''"
+                                :actionAttrs="{ 'data-testid': `${prefix}-search-retry` }"
+                                :data-testid="`${prefix}-search-error`"
+                                @action="retry?.()" />
                     <div v-else-if="results === null" class="chat-pk-msg" :data-testid="`${prefix}-searching`">Searching…</div>
                     <div v-else-if="options.length === 0" class="chat-pk-msg" :data-testid="`${prefix}-none`">{{ noneText }}</div>
                     <div v-for="(option, index) in options"
@@ -177,9 +189,9 @@
     opacity: .4;
 }
 
-/* The field is a text box, so the input keeps the browser's own 1px by 2px inset and a width to type in. */
+/* The field is a text box, kept on the chips' line down to 80px before it wraps, so a wide zoom leaves no blank row. */
 .chat-shell .chat-pk-input {
-    min-width: 120px;
+    min-width: 80px;
     height: 30px;
     padding: 1px 2px;
     font-size: var(--chat-fs-body);
@@ -199,6 +211,16 @@
 .chat-shell .chat-pk-busy .chat-spinner {
     width: 13px;
     height: 13px;
+}
+
+/* How many are chosen of the most, at the field's end, as the cap nears. */
+.chat-shell .chat-pk-count {
+    flex: none;
+    padding-right: 4px;
+    margin-left: auto;
+    font-size: var(--chat-fs-small);
+    font-weight: 600;
+    color: var(--chat-muted);
 }
 
 /* A result's badge rings in the list's fill, under the result's own as it changes. */
@@ -296,10 +318,6 @@
     color: var(--chat-muted);
 }
 
-.chat-shell .chat-pk-msg.is-error {
-    color: var(--chat-danger-ink);
-}
-
 .chat-shell .chat-pk-note {
     padding: 6px 4px 0;
     font-size: var(--chat-fs-small);
@@ -362,6 +380,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "./avatar.partial.obs";
+    import EmptyState from "./emptyState.partial.obs";
     import Icon from "./icon.partial.obs";
     import MatchText from "./matchText.partial.obs";
     import { PersonRow } from "../types.partial";
@@ -480,6 +499,18 @@
         note: {
             type: String,
             default: ""
+        },
+
+        /** How many are chosen of the most, drawn at the field's end, as "6 of 8"; none by default. */
+        count: {
+            type: String,
+            default: ""
+        },
+
+        /** Asks the failed search again, which offers Try again beside the failure; none without it. */
+        retry: {
+            type: Function as PropType<(() => void) | null>,
+            default: null
         },
 
         /** The church's campus names by guid in lower case, which name each person's campus. */
@@ -636,6 +667,10 @@
             }
             else if (props.isSearching) {
                 isEnterWaiting.value = true;
+            }
+            else if (props.searchError && props.retry) {
+                // The list's Try again, from the keyboard, since the field keeps focus.
+                props.retry();
             }
             else {
                 pickWithText();
