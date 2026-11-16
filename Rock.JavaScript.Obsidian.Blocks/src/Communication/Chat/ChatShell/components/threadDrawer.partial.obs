@@ -376,6 +376,7 @@
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { useSeenObserver } from "../composables/useSeenObserver.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, ChatPerson, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
@@ -673,7 +674,7 @@
     let scrollElement: HTMLElement | null = null;
 
     const bodyElement = ref<HTMLElement | null>(null);
-    const topElement = ref<HTMLElement | null>(null);
+    const topElement = ref<HTMLElement>();
 
     /**
      * Whether the reader is at the newest reply, as the conversation keeps its own: kept there
@@ -685,7 +686,6 @@
     // A reply counts as seen once any of it is on screen, the same rule as the conversation's.
     const seen = useSeenObserver(scroller, row => emit("seen", Number(row.dataset.replyId)));
 
-    let topObserver: IntersectionObserver | null = null;
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
@@ -696,6 +696,12 @@
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
+
+    // Scrolling up to the top mark asks for older replies, once the thread has been placed.
+    usePagingTrigger(topElement, () => emit("loadOlder"), {
+        enabled: () => isPlaced && props.hasMore,
+        root: scroller
+    });
 
     /** The reply flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
@@ -948,22 +954,6 @@
         }
     }
 
-    /** Watches the top of the scroller, so scrolling up to it asks for older replies. */
-    function observeTop(): void {
-        topObserver?.disconnect();
-        topObserver = null;
-        if (!topElement.value || typeof IntersectionObserver === "undefined") {
-            return;
-        }
-
-        topObserver = new IntersectionObserver(entries => {
-            if (isPlaced && entries.some(entry => entry.isIntersecting)) {
-                emit("loadOlder");
-            }
-        }, { root: scroller() });
-        topObserver.observe(topElement.value);
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -1000,8 +990,6 @@
         }
     });
 
-    watch(topElement, observeTop);
-
     // A landing the shell lets go of is done, so the next request for the same reply, a second
     // push for a reply whose thread is still open, lands on it again.
     watch(() => props.landOnId, id => {
@@ -1017,7 +1005,6 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        observeTop();
         void place();
 
         // A scroll does not bubble, and the scroller is the panel host's, outside this body.
@@ -1037,7 +1024,6 @@
     onBeforeUnmount(() => {
         scrollElement?.removeEventListener("scroll", onScroll);
         actionBar.stop();
-        topObserver?.disconnect();
         if (focusTimer) {
             clearTimeout(focusTimer);
         }

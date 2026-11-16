@@ -37,8 +37,7 @@
              role="tabpanel"
              :aria-labelledby="`${uid}-tab-${tab}`"
              :aria-busy="shown.isLoading ? 'true' : 'false'"
-             data-testid="reactors-list"
-             @scroll="onScroll">
+             data-testid="reactors-list">
             <ListRow v-for="row in rows"
                      :key="row.key"
                      data-testid="reactors-row">
@@ -58,6 +57,8 @@
                 <span class="chat-skeleton chat-rl-sk-face"></span>
                 <span class="chat-skeleton chat-rl-sk-name"></span>
             </div>
+            <!-- The next page is asked for as this comes near, under the rows held for it. -->
+            <div ref="endElement" class="chat-rl-end" aria-hidden="true" data-testid="reactors-end"></div>
             <EmptyState v-if="shown.isFailed"
                         tone="error"
                         :title="failedText"
@@ -142,6 +143,10 @@
     border-radius: var(--chat-r-inset);
 }
 
+.chat-rl-end {
+    height: 1px;
+}
+
 .chat-rl-name {
     min-width: 0;
     overflow: hidden;
@@ -172,6 +177,7 @@
     import ListRow from "../ui/listRow.partial.obs";
     import { personFace, personName } from "../ui/face.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { ReactionReader } from "../composables/useReactions.partial";
     import { EmojiGlyph, Reaction, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
 
@@ -258,10 +264,8 @@
 
     const { announce } = useAnnouncer();
 
-    /** How near the list's end, in pixels, the next page is asked for. */
-    const pageAheadPx = 80;
-
     const listElement = ref<HTMLElement>();
+    const endElement = ref<HTMLElement>();
     const tab = ref<string>(allTab);
     const lists = reactive(new Map<string, TabList>());
 
@@ -329,13 +333,6 @@
         document.getElementById(`${uid}-tab-${keys[next]}`)?.focus();
     }
 
-    function onScroll(): void {
-        const list = listElement.value;
-        if (list && list.scrollTop + list.clientHeight >= list.scrollHeight - pageAheadPx) {
-            loadMore(tab.value);
-        }
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -384,6 +381,14 @@
     }
 
     // #endregion Functions
+
+    // The next page is asked for as the list's end comes within 80px. A failed page waits for Try
+    // again, so a list that keeps failing is not asked again and again as its end stays in view.
+    usePagingTrigger(endElement, () => loadMore(tab.value), {
+        enabled: () => shown.value.hasMore && !shown.value.isLoading && !shown.value.isFailed,
+        root: () => listElement.value ?? null,
+        margin: "0px 0px 80px 0px"
+    });
 
     // #region Watchers
 
