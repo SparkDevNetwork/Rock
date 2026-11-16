@@ -862,6 +862,10 @@ namespace Rock.Blocks.Communication
                 testCommunication.ReviewerPersonAliasId = primaryAliasId;
                 testCommunication.Subject = string.Format( "[Test] {0}", testCommunication.Subject );
 
+                // A test is delivered only to the current person.
+                testCommunication.CCEmails = null;
+                testCommunication.BCCEmails = null;
+
                 foreach ( var attachment in communication.Attachments )
                 {
                     var cloneAttachment = attachment.Clone( false );
@@ -1018,6 +1022,20 @@ namespace Rock.Blocks.Communication
                     .Queryable()
                     .AsNoTracking()
                     .Count( r => r.CommunicationId == communication.Id );
+
+                // CC and BCC addresses receive the email too, so they count toward
+                // the approval limit and the bulk email threshold.
+                if ( communication.CommunicationType == CommunicationType.Email )
+                {
+                    recipientCount += CountEmailAddresses( communication.CCEmails ) + CountEmailAddresses( communication.BCCEmails );
+
+                    if ( !communication.IsBulkCommunication
+                         && GetMediumComponent( bag.MediumEntityTypeGuid ).Medium is Rock.Communication.Medium.Email emailMedium
+                         && emailMedium.IsBulkEmailThresholdExceeded( recipientCount ) )
+                    {
+                        communication.IsBulkCommunication = true;
+                    }
+                }
 
                 if ( recipientCount > this.MaximumRecipients && !authorization.IsBlockApproveActionAuthorized )
                 {
@@ -1214,6 +1232,62 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Invalid communication list." );
             }
 
+            /*
+                11/13/2026 - JMH
+
+                The block settings below decide what the page offers, so a request
+                has to be held to them as well. Values the block loaded itself stay
+                allowed (the medium and recipients already stored on the communication
+                and the Person page parameter), or editing a saved draft would be refused.
+
+                Reason: Apply the medium, additional recipient and Simple mode settings to every Save, Test and Send.
+            */
+            var storedMediumGuid = communication == null ? null : GetMediumEntityTypeGuid( communication.CommunicationType );
+
+            if ( bag.MediumEntityTypeGuid != storedMediumGuid && !GetMediums( currentPerson ).Any( m => m.Value.AsGuid() == bag.MediumEntityTypeGuid ) )
+            {
+                return ActionBadRequest( "Invalid communication medium." );
+            }
+
+            if ( !this.AreAdditionalEmailRecipientsAllowed && bag.AdditionalEmailAddresses?.Any() == true )
+            {
+                var storedNamelessEmails = communication == null
+                    ? new List<string>()
+                    : GetRecipientBags( rockContext, new RecipientQueryOptions { CommunicationId = communication.Id, IsNamelessOnly = true } )
+                        .Select( r => r.Email )
+                        .ToList();
+
+                if ( bag.AdditionalEmailAddresses.Any( a => !storedNamelessEmails.Contains( a, StringComparer.OrdinalIgnoreCase ) ) )
+                {
+                    return ActionBadRequest( "Additional email recipients are not allowed." );
+                }
+            }
+
+            if ( this.Mode == Mode.Simple && bag.Recipients?.Any() == true )
+            {
+                var allowedAliasGuids = communication == null
+                    ? new List<Guid>()
+                    : GetRecipientBags( rockContext, new RecipientQueryOptions { CommunicationId = communication.Id } )
+                        .Select( r => r.PersonAliasGuid )
+                        .ToList();
+
+                var pagePersonId = this.PersonId;
+
+                if ( communication == null && this.IsPersonPageParameterEnabled && pagePersonId.HasValue )
+                {
+                    allowedAliasGuids.AddRange( new PersonAliasService( rockContext )
+                        .GetPrimaryAliasQuery()
+                        .Where( p => p.PersonId == pagePersonId.Value )
+                        .Select( p => p.Guid )
+                        .ToList() );
+                }
+
+                if ( bag.Recipients.Any( r => !allowedAliasGuids.Contains( r.PersonAliasGuid ) ) )
+                {
+                    return ActionBadRequest( "Recipients cannot be added in this mode." );
+                }
+            }
+
             return null;
         }
 
@@ -1246,6 +1320,18 @@ namespace Rock.Blocks.Communication
 
             return GetCommunicationListGroupBags( rockContext, currentPerson )
                 .Any( g => g.Value.Equals( communicationListGroupGuidValue, StringComparison.OrdinalIgnoreCase ) );
+        }
+
+        /// <summary>
+        /// Counts the email addresses in a delimited address list.
+        /// </summary>
+        /// <param name="emails">The comma or semicolon delimited email addresses.</param>
+        /// <returns>The number of addresses in the list.</returns>
+        private static int CountEmailAddresses( string emails )
+        {
+            return emails.IsNullOrWhiteSpace()
+                ? 0
+                : emails.Replace( ';', ',' ).Split( ',' ).Count( e => e.IsNotNullOrWhiteSpace() );
         }
 
         /// <summary>
@@ -2344,7 +2430,7 @@ namespace Rock.Blocks.Communication
             }
 
             communication.EnabledLavaCommands = this.EnabledLavaCommands;
-            communication.IsBulkCommunication = bag.IsBulkCommunication;
+            communication.IsBulkCommunication = bag.IsBulkCommunication || ( this.Mode == Mode.Simple && this.IsSendSimpleAsBulkEnabled );
             communication.ExcludeDuplicateRecipientAddress = bag.ExcludeDuplicateRecipientAddress;
 
             if ( medium != null )
@@ -2370,8 +2456,29 @@ namespace Rock.Blocks.Communication
             new StructuredContentHelper( bag.PushOpenMessageJson )
                 .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
 
+            var storedCcEmails = communication.CCEmails;
+            var storedBccEmails = communication.BCCEmails;
+
             // Copy the communication data in the request to the Communication object.
             CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );
+
+            if ( !this.IsCcBccEntryAllowed )
+            {
+                // With CC/BCC entry off, the only values the block supplies are the
+                // ones already stored on the communication or set by the selected template.
+                // An empty value is kept, since a template without CC or BCC clears them.
+                var ccBccTemplate = GetAuthorizedTemplate( rockContext, bag.CommunicationTemplateGuid );
+
+                if ( communication.CCEmails.IsNotNullOrWhiteSpace() && communication.CCEmails != storedCcEmails && communication.CCEmails != ccBccTemplate?.CCEmails )
+                {
+                    communication.CCEmails = storedCcEmails;
+                }
+
+                if ( communication.BCCEmails.IsNotNullOrWhiteSpace() && communication.BCCEmails != storedBccEmails && communication.BCCEmails != ccBccTemplate?.BCCEmails )
+                {
+                    communication.BCCEmails = storedBccEmails;
+                }
+            }
 
             var communicationType = communication.CommunicationType;
             List<ListItemBag> binaryFileAttachments;
