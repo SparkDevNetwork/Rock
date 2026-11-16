@@ -365,6 +365,18 @@ describe("the picker's keys, pressed in the editor", () => {
         expect(w.emitted("close")).toHaveLength(1);
         expect(w.emitted("choose")).toBeUndefined();
     });
+
+    // Tab past a popover's end closes it, as every popover closes; with nothing to choose the key
+    // is the browser's, which moves focus on from the editor.
+    test("Tab with nothing to choose closes, and leaves the key to the browser", async () => {
+        const { w, target } = drawPicker({ people: [] });
+
+        const event = await press(target, "Tab");
+
+        expect(event.defaultPrevented).toBe(false);
+        expect(w.emitted("close")).toHaveLength(1);
+        expect(w.emitted("choose")).toBeUndefined();
+    });
 });
 
 describe("the picker while its answer is on its way", () => {
