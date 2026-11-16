@@ -131,16 +131,6 @@
             default: null
         },
 
-        /**
-         * Whether the chat is in its one-pane phone layout, where a panel leaves by its back chevron
-         * and has no X; null, as every panel leaves it, reads the session. Kept only while the
-         * thread drawer still hands it down.
-         */
-        isPhone: {
-            type: Boolean as PropType<boolean | null>,
-            default: null
-        },
-
         /** A back chevron with this label, which goes back rather than closing; null for none. */
         backLabel: {
             type: String as PropType<string | null>,
@@ -170,10 +160,8 @@
 
     // #region Values
 
-    const session = useChatSession();
-
-    /** The phone layout: the session's, unless a caller still hands one down. */
-    const isPhone = computed((): boolean => props.isPhone ?? session.isPhone.value);
+    /** The chat's one-pane phone layout, where a panel leaves by its back chevron and has no X. */
+    const isPhone = useChatSession().isPhone;
 
     const bodyElement = ref<HTMLElement>();
 

@@ -130,7 +130,6 @@
                 <!-- The conversation's own composer; its key hint gives way to this view's hint below it. -->
                 <Composer class="chat-nd-comp"
                           :title="isFound ? foundTitle : startTitle"
-                          :isPhone="isPhone"
                           :isDisabled="isLocked"
                           :isLocked="isServiceLocked"
                           :lockedReason="lockedReason"

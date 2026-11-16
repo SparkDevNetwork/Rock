@@ -2,7 +2,6 @@
 <template>
     <PanelHost title="Thread"
                :subtitle="conversationTitle || null"
-               :isPhone="isPhone"
                :backLabel="isFromList ? `Back to ${listTitle}` : null"
                closeLabel="Close thread"
                :entranceKeys="entranceKeys"
@@ -157,7 +156,6 @@
             <Composer isThread
                       :title="conversationTitle"
                       :isChannel="isChannel"
-                      :isPhone="isPhone"
                       :isLocked="isLocked"
                       :lockedReason="lockedReason"
                       :maxLength="maxLength"
