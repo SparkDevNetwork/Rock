@@ -315,5 +315,8 @@ describe("the typing bubble's look", () => {
         expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-bob var\(--chat-d-pulse\)/);
         expect(style).not.toMatch(/prefers-reduced-motion/);
         expect(reduced).toMatch(/@keyframes chat-bob\s*\{\s*from,\s*to\s*\{\s*opacity: 1;/);
+        // the later dots wait their turn drawn as the bob's first frame, which under reduced motion
+        // is full strength, so no dot stands faint while it waits
+        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-bob var\(--chat-d-pulse\) var\(--chat-ease-state\) infinite backwards;/);
     });
 });
