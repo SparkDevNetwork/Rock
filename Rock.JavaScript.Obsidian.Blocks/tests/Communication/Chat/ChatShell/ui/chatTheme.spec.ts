@@ -379,7 +379,10 @@ const namedLiterals: Named[] = [
     { name: "d-refresh-spin", value: ".8s" },
     { name: "d-skeleton", value: "1.6s" },
     { name: "d-tip-delay", value: "500ms" },
-    { name: "d-tip-delay-rx", value: "350ms" }
+    { name: "d-tip-delay-rx", value: "350ms" },
+
+    // The typing dots' strength between bobs; with no bob to wait for, they stand at full strength.
+    { name: "bob-dim", value: ".45", reduced: "1" }
 ];
 
 // #endregion The tokens, as data
@@ -454,6 +457,31 @@ describe("the chat token sheet", () => {
         const values = valuesOf(sheet, `--chat-${name}`, isReducedMotion);
 
         expect(values).toContain(normalize(value));
+    });
+
+    // A loop that only decorates (the typing dots, the connection sweep, a skeleton, a live dot) is
+    // stopped under reduced motion, not redrawn still: a loop drawn still keeps running on every frame
+    // for nothing, and a part reading its animation sees one playing. Each plays through the loop
+    // stop, which only reduced motion sets, so one line in the sheet stops them all; a part's scoped
+    // rule outranks the sheet's, so a selector there could not. A busy spinner keeps turning.
+    test("stops every decorative loop under reduced motion by the one loop stop, and keeps a busy spinner turning", () => {
+        const chat = resolve(__dirname, "../../../../../src/Communication/Chat");
+        const filesUnder = (dir: string): string[] => readdirSync(dir, { withFileTypes: true })
+            .flatMap(entry => entry.isDirectory() ? filesUnder(resolve(dir, entry.name)) : [resolve(dir, entry.name)]);
+        const loops = [sheetPath, ...filesUnder(chat).filter(path => path.endsWith(".obs"))].flatMap(path => readSheet(path).rules
+            .filter(rule => rule.media === "" && /\binfinite\b/.test(rule.declarations.get("animation") ?? ""))
+            .map(rule => ({ at: `${basename(path)} ${rule.selector}`, animation: normalize(rule.declarations.get("animation")!) })));
+        const decorative = loops.filter(loop => !loop.animation.startsWith("chat-spin"));
+        const played = new Set(decorative.map(loop => /^var\(--chat-loop-stop,([\w-]+)\)/.exec(loop.animation)?.[1] ?? loop.animation));
+
+        expect(loops.some(loop => loop.animation.startsWith("chat-spin"))).toBe(true);
+        expect(decorative.length).toBeGreaterThan(0);
+        expect(decorative.filter(loop => !loop.animation.startsWith("var(--chat-loop-stop,")).map(loop => loop.at)).toEqual([]);
+        expect(valuesOf(sheet, "--chat-loop-stop", isReducedMotion)).toEqual(["none"]);
+        expect(valuesOf(sheet, "--chat-loop-stop", rule => !isReducedMotion(rule))).toEqual([]);
+        for (const name of played) {
+            expect(`${name}: ${sheet.keyframes.filter(keyframes => keyframes === name).length}`).toBe(`${name}: 1`);
+        }
     });
 
     test("leaves the shared durations alone under reduced motion, since hovers and fades still help", () => {

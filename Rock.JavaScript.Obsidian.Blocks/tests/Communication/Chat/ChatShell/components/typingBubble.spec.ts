@@ -271,7 +271,8 @@ describe("the typing bubble's look", () => {
     const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs"), "utf8");
     const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
     const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
-    const reduced = sheet.slice(sheet.lastIndexOf("@keyframes chat-bob"));
+    const reduced = /@media \(prefers-reduced-motion: reduce\)\s*\{\s*\.chat-shell\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
+    const bobs = sheet.match(/@keyframes chat-bob\s*\{[\s\S]*?\n\}/g) ?? [];
 
     test("draws no motion of its own: its Transition plays no class, and no keyframe is its own, its dots playing the set's bob", () => {
         expect(source).toMatch(/<Transition :css="false" @leave="onLeave">/);
@@ -311,12 +312,15 @@ describe("the typing bubble's look", () => {
         }
     });
 
+    // Between bobs a dot rests at the bob's dim strength, so a later dot waiting its turn is drawn as
+    // the bob's first frame. Under reduced motion the bob does not run at all, rather than running
+    // drawn still on every frame: the sheet's loop stop ends it and every dot stands at full strength.
     test("its dots bob, and under reduced motion stand still at full strength", () => {
-        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-bob var\(--chat-d-pulse\)/);
+        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*opacity: var\(--chat-bob-dim\);[^}]*animation: var\(--chat-loop-stop, chat-bob\) var\(--chat-d-pulse\) var\(--chat-ease-state\) infinite;/);
         expect(style).not.toMatch(/prefers-reduced-motion/);
-        expect(reduced).toMatch(/@keyframes chat-bob\s*\{\s*from,\s*to\s*\{\s*opacity: 1;/);
-        // the later dots wait their turn drawn as the bob's first frame, which under reduced motion
-        // is full strength, so no dot stands faint while it waits
-        expect(style).toMatch(/\.chat-typing-bubble i\s*\{[^}]*animation: chat-bob var\(--chat-d-pulse\) var\(--chat-ease-state\) infinite backwards;/);
+        expect(bobs).toHaveLength(1);
+        expect(bobs[0]).toMatch(/0%,\s*60%,\s*100%\s*\{\s*opacity: var\(--chat-bob-dim\);/);
+        expect(reduced).toMatch(/--chat-loop-stop: none;/);
+        expect(reduced).toMatch(/--chat-bob-dim: 1;/);
     });
 });
