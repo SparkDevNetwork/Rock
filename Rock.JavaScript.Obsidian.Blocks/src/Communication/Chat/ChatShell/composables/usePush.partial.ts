@@ -16,18 +16,27 @@
 //
 // Web push on this browser. A browser that has been refused once can never be asked again, and
 // Firefox and Safari ask only from a click, so the browser is asked only when the person clicks
-// "Turn on notifications"; the church's setting decides when that button shows. A browser that
-// already said yes registers again on every load without asking, which keeps its token current.
+// "Turn on notifications"; the church's setting decides when that button shows.
+//
+// The browser's permission belongs to whoever granted it, not to the person signed in now, so it
+// never decides alone whose notifications this browser shows. A load registers only on this
+// person's own yes on this browser, their Turn on, remembered here per church and person, which
+// keeps the token current on every load after it. A sign-in that ends with the browser session (a
+// phone-number sign-in, an impersonation, a password sign-in without Keep me logged in) never
+// registers: closing the browser is no sign-out Rock sees, so the next person to open it would get
+// this person's notifications. Every load that will not register lets go the token the browser
+// holds, whoever registered it, so the last person's notifications stop arriving here even when
+// their sign-out could not reach the platform.
 //
 // The token goes to the platform under the person's token, through the one call path, and into a
 // cookie: the Chat block is not on the page where a person signs out of Rock, so Rock reads the
 // cookie there and takes this browser out of push itself.
 //
-// The church's prompt timing decides only when the header offers push unasked. Chat settings shows
-// this browser's push as one state and offers Turn on whatever that timing, since the person came
-// to the setting themselves. Turn off takes the device out and is remembered on this browser,
-// because the browser keeps allowing notifications and the next load would otherwise register it
-// again; an unregister that fails keeps the cookie, so the next load asks again.
+// The church's prompt timing decides only when the header offers push unasked, and only to a
+// person who has not chosen here. Chat settings shows this browser's push as one state and offers
+// Turn on whatever that timing, since the person came to the setting themselves. Turn off takes
+// the device out and is remembered as their choice; an unregister that fails keeps the cookie, so
+// the next load asks again.
 import { ChatSettings } from "./useSession.partial";
 import { CallResult } from "../platformCall.partial";
 import { failedWords } from "../errors.partial";
@@ -37,6 +46,9 @@ import { ChatError } from "../types.partial";
 export type PushDependencies = {
     /** The push settings the latest exchange answered. */
     settings: () => ChatSettings["push"];
+
+    /** Whether the person's sign-in outlasts the browser session; one that does not never registers. */
+    isSignInKept: boolean;
 
     /** The path of the page the Chat block is on, which a tap on a notification opens. */
     pagePath: string;
@@ -62,15 +74,22 @@ export type PushDependencies = {
     /** The token the cookie keeps from an earlier load, or null. */
     readCookie: () => string | null;
 
-    /** Whether the person turned push off on this browser, kept in its storage; none keeps nothing. */
-    offFlag?: { read: () => boolean, write: (isOff: boolean) => void };
+    /**
+     * This person's choice of push on this browser, kept in its storage, or null where they never
+     * chose; none keeps nothing, so only this load's Turn on registers.
+     */
+    choice?: { read: () => PushChoice | null, write: (choice: PushChoice) => void };
 };
+
+/** A person's own choice of push on one browser: their Turn on or their Turn off. */
+export type PushChoice = "on" | "off";
 
 /**
  * This browser's push as Chat settings draws it: offered, the browser's own box up, on, refused by
- * the browser, or not set up where the platform sent no Firebase values.
+ * the browser, not set up where the platform sent no Firebase values, or not kept for a sign-in
+ * that ends with the browser session.
  */
-export type PushState = "offered" | "asking" | "on" | "blocked" | "unavailable";
+export type PushState = "offered" | "asking" | "on" | "blocked" | "unavailable" | "not_kept";
 
 /** The part of a ServiceWorkerRegistration push reads: the worker in each slot. */
 export type WorkerRegistration = Pick<ServiceWorkerRegistration, "installing" | "waiting" | "active">;
@@ -83,7 +102,7 @@ const workerActivationMs = 10000;
 
 /** Push as the shell holds it. */
 export type PushRegistration = {
-    /** Registers without asking where the browser already allowed it. */
+    /** Registers where this person said yes here, or else lets go the token the browser holds. */
     start: () => Promise<void>;
 
     /** Whether the "Turn on notifications" button shows. */
@@ -128,24 +147,33 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
     /** The token this browser registered under on this load, which Turn off takes out. */
     let registeredToken: string | null = null;
 
-    const isTurnedOff = (): boolean => {
+    /** The load's letting go of the browser's token while it is on its way, which a Turn on waits for. */
+    let releasing: Promise<void> = Promise.resolve();
+
+    const readChoice = (): PushChoice | null => {
         try {
-            return dependencies.offFlag?.read() ?? false;
+            return dependencies.choice?.read() ?? null;
         }
         catch {
-            // a browser that blocks its storage remembers nothing, so push follows its permission
-            return false;
+            // a browser that blocks its storage remembers nothing, so only this load's Turn on registers
+            return null;
         }
     };
 
-    const setTurnedOff = (isOff: boolean): void => {
+    const writeChoice = (choice: PushChoice): void => {
         try {
-            dependencies.offFlag?.write(isOff);
+            dependencies.choice?.write(choice);
         }
         catch {
             // as above
         }
     };
+
+    /**
+     * Whether a load registers: only on this person's own yes here, under a sign-in that outlasts
+     * the browser session, while the browser still allows notifications.
+     */
+    const mayRegisterOnLoad = (): boolean => dependencies.isSignInKept && readChoice() === "on" && dependencies.permission() === "granted";
 
     const readCookie = (): string | null => {
         try {
@@ -227,17 +255,21 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
     }
 
     /**
-     * Takes the held device out. A failure keeps the token in the cookie, so the next load, which
-     * finds this browser turned off, asks again, and Rock's sign-out still reaches it.
+     * Takes the held device out, whoever registered it, since the platform lets the holder of a
+     * token remove it. A failure keeps the token in the cookie, so the next load, which will not
+     * register, asks again, and Rock's sign-out still reaches it.
+     *
+     * @param registered The token to take out, or none for the one this browser holds.
+     * @param isCurrent Whether the caller still wants the answer kept, read after every await.
      */
-    async function unregister(registered?: string): Promise<ChatError | null> {
+    async function unregister(registered?: string, isCurrent: () => boolean = () => !isStopped): Promise<ChatError | null> {
         const token = registered ?? await heldToken();
-        if (!token || isStopped) {
+        if (!token || !isCurrent()) {
             return null;
         }
 
         const result = await dependencies.call("chat_unregister_device", { p_token: token }).catch(() => null);
-        if (isStopped) {
+        if (!isCurrent()) {
             return null;
         }
 
@@ -253,6 +285,18 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             severity: "failed",
             text: (result && !result.ok ? result.error.text : null) ?? failedWords("Notifications couldn't be turned off on this browser.").alone
         };
+    }
+
+    /**
+     * Lets go the token this browser holds on a load that will not register, whoever registered
+     * it: the cookie's, else the browser's own, since a sign-out that failed to reach the platform
+     * still expires the cookie. A Turn on in this tab, or this person's yes from another tab, wins:
+     * the choice is read again once the token is had, and an answer arriving after either is not
+     * kept. Nothing is said of a failure; the cookie keeps the token and the next load tries again.
+     */
+    async function release(generation: number): Promise<void> {
+        const isCurrent = (): boolean => !isStopped && generation === operationGeneration && !mayRegisterOnLoad();
+        await unregister(undefined, isCurrent);
     }
 
     /**
@@ -305,24 +349,20 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return;
             }
 
-            // An earlier Turn off whose unregister failed left its token in the cookie.
-            if (isTurnedOff()) {
-                if (readCookie()) {
-                    await unregister();
-                }
-
+            if (mayRegisterOnLoad()) {
+                await register(operationGeneration);
                 return;
             }
 
-            if (dependencies.permission() !== "granted") {
-                return;
-            }
-
-            await register(operationGeneration);
+            releasing = release(operationGeneration);
+            await releasing;
         },
 
+        // Unasked only to a person who has not chosen here, under a kept sign-in, while the
+        // browser can still ask or already allows, and not once this load registered.
         isOffered: (): boolean => {
-            if (isStopped || !isAvailable() || dependencies.permission() !== "default") {
+            if (isStopped || !isAvailable() || !dependencies.isSignInKept || dependencies.permission() === "denied"
+                || readChoice() !== null || registeredToken !== null) {
                 return false;
             }
 
@@ -335,12 +375,12 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         },
 
         turnOn: async (): Promise<void> => {
-            if (isStopped || !isAvailable()) {
+            if (isStopped || !isAvailable() || !dependencies.isSignInKept) {
                 return;
             }
 
             const generation = ++operationGeneration;
-            // A browser that still allows notifications after a Turn off here needs no asking.
+            // A browser that already allows notifications, by anyone's yes, needs no asking.
             if (dependencies.permission() !== "granted") {
                 isAsking = true;
                 const answer = await dependencies.requestPermission().finally(() => {
@@ -351,7 +391,14 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 }
             }
 
-            setTurnedOff(false);
+            writeChoice("on");
+            // A release this load sent may still land on the platform; the register goes after it,
+            // so it can never take out the device this registers.
+            await releasing;
+            if (isStopped || generation !== operationGeneration) {
+                return;
+            }
+
             await register(generation);
         },
 
@@ -361,7 +408,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             }
 
             operationGeneration++;
-            setTurnedOff(true);
+            writeChoice("off");
             const pending = [...registering];
             let failure = await unregister();
             for (const registration of pending) {
@@ -377,6 +424,10 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return "unavailable";
             }
 
+            if (!dependencies.isSignInKept) {
+                return "not_kept";
+            }
+
             if (isAsking) {
                 return "asking";
             }
@@ -386,7 +437,8 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
                 return "blocked";
             }
 
-            return permission === "granted" && registeredToken !== null && !isTurnedOff() ? "on" : "offered";
+            // a Turn off whose unregister failed keeps its token here, and still reads as off
+            return permission === "granted" && registeredToken !== null && readChoice() !== "off" ? "on" : "offered";
         },
 
         stop: (): void => {

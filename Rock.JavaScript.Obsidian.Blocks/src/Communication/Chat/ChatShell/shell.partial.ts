@@ -141,7 +141,7 @@ export type ShellOptions = {
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
-    push?: Omit<PushDependencies, "settings" | "call" | "offFlag">;
+    push?: Omit<PushDependencies, "settings" | "call" | "choice">;
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
@@ -1204,10 +1204,15 @@ export function createChatShell(options: ShellOptions): ChatShell {
                     ...options.push,
                     settings: () => session.settings().push,
                     call: (name, args) => platform.call(name, args),
-                    // per church and person, so each person on a shared browser keeps their own Turn off
-                    offFlag: {
-                        read: () => options.storage?.getItem(pushOffKey) === "true",
-                        write: isOff => options.storage?.setItem(pushOffKey, isOff ? "true" : "false")
+                    // Per church and person, so each person on a shared browser keeps their own
+                    // choice. The key and its values are the ones a Turn off and Turn on always
+                    // wrote, "true" for off and "false" for on, so a yes given before is kept.
+                    choice: {
+                        read: () => {
+                            const stored = options.storage?.getItem(pushOffKey);
+                            return stored === "true" ? "off" : stored === "false" ? "on" : null;
+                        },
+                        write: choice => options.storage?.setItem(pushOffKey, choice === "off" ? "true" : "false")
                     }
                 });
                 // drawn now, as a browser's first registration can take half a minute

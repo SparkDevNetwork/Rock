@@ -36,7 +36,10 @@ export type BrowserShellOptions = {
 
     areSharedChannelsFilteredByCampus: boolean;
 
-    /** Whether the person's sign-in outlasts the browser session, which the sign-in mark lasts as long as. */
+    /**
+     * Whether the person's sign-in outlasts the browser session, which the sign-in mark lasts as
+     * long as, and without which this browser never registers for push.
+     */
     isSignInPersisted: boolean;
 
     /** Shows a toast that is not a failure. */
@@ -107,6 +110,9 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         }
 
         return {
+            // a sign-in that ends with the browser session never registers, since closing the
+            // browser is no sign-out Rock sees
+            isSignInKept: options.isSignInPersisted,
             pagePath: window.location.pathname,
             permission: () => Notification.permission,
             requestPermission: () => Notification.requestPermission(),

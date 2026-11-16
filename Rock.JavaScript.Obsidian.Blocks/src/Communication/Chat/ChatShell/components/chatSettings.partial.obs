@@ -402,7 +402,7 @@
 
     /**
      * What the browser row says in each of push's states: the state in words beside its dot, and a
-     * line under the label only where the person has something to do.
+     * line under the label only where the person has something to do or would wonder why.
      */
     const pushRow = computed((): { status: string | null, sub: string | null } => {
         switch (props.push) {
@@ -417,6 +417,10 @@
 
             case "blocked":
                 return { status: "Blocked", sub: "Allow it in browser settings, then reload" };
+
+            // Says why, and asks nothing: a phone-number sign-in has no Keep me logged in box.
+            case "not_kept":
+                return { status: "Off", sub: "Not sent to a sign-in that ends when the browser closes" };
 
             default:
                 return { status: "Not available", sub: `Not set up for ${props.organizationName} yet` };
