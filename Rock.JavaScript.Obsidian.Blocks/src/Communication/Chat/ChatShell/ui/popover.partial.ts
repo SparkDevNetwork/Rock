@@ -15,9 +15,8 @@
 // </copyright>
 //
 
-// The one way the chat opens a floating surface beside what opened it, for every menu, picker,
-// card and tip: where it is placed, what closes it, where it grows from and where focus goes as it
-// closes. A surface draws itself; this decides everything about its coming and going.
+// The one way every menu, picker, card and tip floats beside what opened it, so they all place,
+// close and give focus back alike. A surface draws itself; this owns its coming and going.
 
 import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref } from "vue";
 import { autoUpdate, flip, offset, Placement, shift, useFloating } from "@Obsidian/Libs/floating-ui";
@@ -25,76 +24,43 @@ import { EscapeLayer, focusableSelector, focusQuietly, isDrawn, pullEscapeLayer,
 
 /** How a popover is placed and closed. */
 export type PopoverOptions = {
-    /** Where it opens from its anchor; below at its end by default. */
     placement?: Placement;
-
-    /** The gap to its anchor, in pixels; 8 by default. */
     offset?: number;
 
-    /**
-     * A box to place beside instead of the anchor's own, as a card under a whole message row that
-     * a face opened. Read at every placement; null falls back to the anchor.
-     */
+    /** A box to place beside instead of the anchor, as a card under the whole row a face opened. */
     virtualAnchor?: () => DOMRect | null;
 
-    /**
-     * Whether it is drawn as a bottom sheet now, as on a phone: then it is not placed, and a press
-     * outside it is the sheet's scrim's to answer.
-     */
+    /** Drawn as a phone's sheet now: not placed, and a press outside is the scrim's to answer. */
     isSheet?: () => boolean;
 
-    /** What focus goes back to as it closes by key, when not what had focus as it opened. */
     returnTo?: () => HTMLElement | null;
 
-    /**
-     * Whether a press outside, Escape and Tab past its end close it; true by default. A tip that
-     * shows on its own timers is placed here and closed by its own rules.
-     */
+    /** False for a tip, which shows and hides on its own timers and is only placed here. */
     isDismissable?: boolean;
 };
 
 /** One popover's state and what changes it. */
 export type PopoverControl = {
     isOpen: Ref<boolean>;
-
-    /** The surface element, set by the surface as it is drawn. */
     floating: Ref<HTMLElement | undefined>;
-
-    /** The element it opens beside. */
     anchor: Readonly<Ref<HTMLElement | undefined>>;
 
-    /**
-     * Opens it, resolving once the surface is drawn: true when it is still open then, false when
-     * it was closed before, so the caller moves no focus into a surface that never came.
-     */
+    /** Resolves false when it was closed before it was drawn, so no focus moves into nothing. */
     open: () => Promise<boolean>;
 
-    /** Closes it; with isFocusReturned, focus goes back to what opened it, when that is still on the page. */
     close: (options?: { isFocusReturned?: boolean }) => void;
-
-    /** Opens it, or closes it when open, as its anchor's press does. */
     toggle: () => Promise<boolean>;
-
-    /** Where the surface is placed; empty while it is a sheet. */
     floatingStyles: ComputedRef<Record<string, string>>;
-
-    /** Where the surface grows from and which way it moves, toward its anchor. */
     origin: ComputedRef<Record<string, string>>;
-
-    /** Whether it is drawn as a bottom sheet now. */
     isSheet: ComputedRef<boolean>;
 
-    /**
-     * Places it again now, for a surface whose own size has just changed, as the @ picker's does
-     * when its rows do: the watcher on its size would place it a frame late, a jump as it shows.
-     */
+    /** Places it now, for a surface that just changed size: its size watcher would be a frame late. */
     update: () => void;
 };
 
 /**
- * The popovers open now, oldest first. A press inside a newer one counts as inside every older
- * one, since a popover opened from another is drawn apart from it at the chat's root and would
- * otherwise close its parent when chosen in. Escape is the shared stack's, with the dialogs.
+ * Oldest first. A press inside a newer popover counts as inside every older one: one opened from
+ * another is drawn apart from it at the chat's root, and would otherwise close its parent.
  */
 const openStack: OpenPopover[] = [];
 
@@ -112,10 +78,7 @@ function onDocumentKeydown(event: KeyboardEvent): void {
     }
 }
 
-/**
- * A press outside every open popover that does not count it as inside closes it, newest first.
- * Captured on its way down, so a part that stops the press on its way up cannot keep one open.
- */
+/** Captured on its way down, so a part that stops the press on its way up cannot keep one open. */
 function onDocumentPointerDown(event: Event): void {
     const target = event.target as Node;
     for (let at = openStack.length - 1; at >= 0; at--) {
@@ -155,14 +118,9 @@ function pull(popover: OpenPopover): void {
 }
 
 /**
- * A floating surface beside an anchor. The caller draws the surface while isOpen, binds its
- * element to floating and its style to floatingStyles and origin, or draws it with the Popover
- * part, which does all three.
- *
- * Placed below at the anchor's end unless told otherwise, flipped to the other side when there is
- * no room and slid along inside the window 8px clear of its edge; the alignment never flips, which
- * would throw a surface near the window's edge to the far side of what opened it. Placed by left
- * and top, never a transform, since the surface's pop motion is a transform of its own.
+ * A floating surface beside an anchor, drawn by the caller or by the Popover part. Its alignment
+ * never flips, which would throw a surface near the window's edge to the far side of its anchor;
+ * it is placed by left and top, since its pop motion is a transform of its own.
  *
  * @param anchor What it opens beside, and gives focus back to.
  * @param floating The surface's element, while drawn.
@@ -175,14 +133,12 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
     const isSheet = computed((): boolean => options.isSheet?.() ?? false);
     const isDismissable = options.isDismissable ?? true;
 
-    /** What had focus as it opened, given focus back on a close by key. */
     let opener: HTMLElement | null = null;
 
     /** Counts each open, so an open that was closed before its surface was drawn does not land. */
     let opening = 0;
 
-    // A sheet is placed by its own rules, so nothing is floated for it. A virtual anchor keeps the
-    // real one as its context, so the placement follows the anchor's own scrolling container.
+    // A virtual anchor keeps the real one as its context, so it follows the anchor's own scroller.
     const reference = computed(() => {
         const element = anchor.value;
         if (isSheet.value || !element) {
@@ -205,11 +161,8 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
     const floatingStyles = computed((): Record<string, string> => isSheet.value ? {} : floated.floatingStyles.value as Record<string, string>);
 
-    /**
-     * Grown from the anchor's middle along the surface's edge nearest it, and moving toward it, so a
-     * surface flipped above its anchor grows up from below rather than down from a corner it does
-     * not touch. Clamped to the surface, as an anchor can sit past its end.
-     */
+    // Grown from the anchor's middle, so one flipped above grows up from below rather than from a
+    // corner it does not touch; clamped, as an anchor can sit past the surface's end.
     const origin = computed((): Record<string, string> => {
         const isAbove = floated.placement.value.startsWith("top");
         const box = (options.virtualAnchor?.() ?? null) ?? anchor.value?.getBoundingClientRect();
@@ -230,11 +183,9 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
     };
 
     /**
-     * Tab past either end of the surface closes it and hands focus to its anchor without taking
-     * the key, so the browser moves on from the anchor as if the surface had never been there:
-     * it is drawn at the chat's root, away from its anchor, where Tab would go on from instead.
-     * A surface with nothing to tab to, as a menu whose rows the arrows move between, closes on
-     * any Tab. A sheet is modal and keeps Tab inside, through its own trap.
+     * Tab past either end closes it and hands focus to its anchor without taking the key, so the
+     * browser goes on from the anchor rather than from the chat's root, where the surface is drawn.
+     * A sheet is modal and keeps Tab inside, through its own trap.
      */
     function onTab(event: KeyboardEvent): void {
         if (isSheet.value) {
