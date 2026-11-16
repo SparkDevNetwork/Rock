@@ -16,6 +16,7 @@
 //
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Linq;
 using Rock.Data;
 using Rock.Model;
@@ -57,6 +58,21 @@ namespace Rock.Rest.Controllers
             if ( !batch.IsAuthorized( Rock.Security.Authorization.DELETE, GetPerson() ) )
             {
                 throw new System.Web.Http.HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            /*
+                11/16/2026 - MSE
+
+                Automated batches are created and managed by Rock's giving automation. The
+                Batch List block (FinancialBatchList.cs) refuses to delete them, so REST
+                refuses them the same way.
+
+                Reason: Automated batches cannot be deleted over REST, matching the Batch List block.
+            */
+            if ( batch.IsAutomated )
+            {
+                var errorResponse = ControllerContext.Request.CreateErrorResponse( System.Net.HttpStatusCode.BadRequest, "Automated batches cannot be deleted." );
+                throw new System.Web.Http.HttpResponseException( errorResponse );
             }
 
             base.Delete( id );
