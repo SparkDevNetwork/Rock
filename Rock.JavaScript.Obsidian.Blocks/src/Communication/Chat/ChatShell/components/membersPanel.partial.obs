@@ -95,7 +95,7 @@
                                     <Avatar :people="[{ name: row.name, photoUrl: row.photoUrl }]" :size="36" :status="statusOf(row.guid)" />
                                 </template>
                                 <span class="chat-mb-name">
-                                    <b>{{ row.name }}</b>
+                                    <b data-testid="member-name">{{ row.name }}</b>
                                     <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
                                     <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
                                 </span>
