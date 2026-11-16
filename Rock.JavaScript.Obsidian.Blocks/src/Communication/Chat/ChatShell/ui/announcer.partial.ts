@@ -127,13 +127,17 @@ function announcerOf(host: AnnouncerHost): Announcer {
  * Provides the announcer to every part below, speaking from the chat's root. Called once, by the shell.
  *
  * @param root The chat's root element.
+ *
+ * @returns The same announcer, for the shell's own modules, which a part's inject cannot reach.
  */
-export function provideAnnouncer(root: Ref<HTMLElement | undefined>): void {
+export function provideAnnouncer(root: Ref<HTMLElement | undefined>): Announcer {
     const host: AnnouncerHost = { root: () => root.value ?? null, rootVoice: null, modals: [] };
     provide(announcerKey, host);
 
     // The root's regions go on the page as the root does, ahead of the first words.
     watch(root, () => rootVoiceOf(host), { immediate: true, flush: "post" });
+
+    return announcerOf(host);
 }
 
 /**

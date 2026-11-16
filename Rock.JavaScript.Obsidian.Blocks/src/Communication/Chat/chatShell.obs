@@ -186,7 +186,6 @@
                     <JoinBar v-if="isJoinBarShown && activeChannelId"
                              :name="activeTitle"
                              :state="shell.rooms.joinOf(activeChannelId)"
-                             :announcement="shell.rooms.state.announcement"
                              :isPhone="isPhone"
                              @join="onJoin"
                              @browse="openMainView('directory')" />
@@ -231,7 +230,6 @@
                     <ChannelDirectory v-if="mainView === 'directory'"
                                       :directory="shell.rooms.state.directory"
                                       :joins="shell.rooms.state.joins"
-                                      :announcement="shell.rooms.state.announcement"
                                       :campuses="campuses"
                                       :personCampusGuid="personCampusGuid"
                                       :organizationName="organizationName"
@@ -502,14 +500,12 @@
                                  :personPhotoUrl="personPhotoUrl"
                                  :leave="shell.rooms.leaveOf(activeChannelId)"
                                  :rename="shell.rooms.renameOf(activeChannelId)"
-                                 :announcement="shell.rooms.state.announcement"
                                  :canSeeRoster="activeRow?.can_mention ?? false"
                                  :isPhone="isPhone"
                                  :notifyMode="activeRow?.notify_mode ?? null"
                                  :isStarred="!!activeRow?.is_favorite"
                                  :isHidden="!!activeRow?.hidden"
                                  :prefsNotes="shell.prefs.roomOf(activeChannelId).notes"
-                                 :prefsAnnouncement="shell.prefs.state.announcement"
                                  @close="closeDetails"
                                  @members="onDetailsMembers"
                                  @leave="onLeave"
@@ -530,7 +526,6 @@
                           :statusClosedReason="statusClosedReason"
                           :isStatusRetrying="isStatusRetrying"
                           :notes="shell.prefs.state.meNotes"
-                          :announcement="shell.prefs.state.announcement"
                           :push="shell.state.push"
                           :isPhone="isPhone"
                           :blocked="shell.blocks.state"
@@ -785,7 +780,7 @@
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { applyChatTheme } from "./ChatShell/ui/brand.partial";
     import { provideChatSession } from "./ChatShell/chatSession.partial";
-    import { provideAnnouncer } from "./ChatShell/ui/announcer.partial";
+    import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
 
     // #region Types
@@ -818,11 +813,16 @@
     /** Whether the church has a profile card template, whose lines a card reserves while Rock renders it. */
     const isProfileLavaConfigured = ref(config.session?.isProfileLavaConfigured === true);
 
+    /** The chat's one voice, once provided below; the shell's rooms and settings speak in it. */
+    let announcer: Announcer | null = null;
+
     const buildShell = createBrowserShellBuilder({
         linkedChannelId: config.channelGuid ?? null,
         areSharedChannelsFilteredByCampus: config.areSharedChannelsFilteredByCampus ?? false,
         isSignInPersisted: config.isSignInPersisted ?? false,
         notify: showNotice,
+        // Provided below with the chat's root; nothing is said before the shell has started.
+        announce: (text, politeness) => announcer?.announce(text, politeness),
         invokeBlockAction,
         // Called only after the frame below is set up, so the landings they reach are there.
         mentionViews: {
@@ -1050,8 +1050,9 @@
         mentionSource: mentionSourceFor
     });
 
-    // The chat's one voice for a screen reader, speaking from its root.
-    provideAnnouncer(rootElement);
+    // The chat's one voice for a screen reader, speaking from its root; the shell's rooms and
+    // settings speak in it too.
+    announcer = provideAnnouncer(rootElement);
 
     const {
         isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, openCard, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,

@@ -42,6 +42,9 @@ export type BrowserShellOptions = {
     /** Shows a toast that is not a failure. */
     notify: NonNullable<ShellOptions["notify"]>;
 
+    /** Says a sentence to a screen reader in the chat's one voice. */
+    announce: NonNullable<ShellOptions["announce"]>;
+
     /** Calls one of the Chat block's actions in Rock. */
     invokeBlockAction: InvokeBlockActionFunc;
 
@@ -151,6 +154,7 @@ export function createBrowserShellBuilder(options: BrowserShellOptions): (sessio
         session,
         linkedChannelId: options.linkedChannelId,
         notify: options.notify,
+        announce: options.announce,
         mentionViews: options.mentionViews,
         areSharedChannelsFilteredByCampus: options.areSharedChannelsFilteredByCampus,
         mintChurchToken: async () => {

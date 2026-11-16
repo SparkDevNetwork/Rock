@@ -811,6 +811,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         channels,
         isOffline: () => state.connection !== null,
         notify: notice => options.notify?.(notice),
+        announce: (text, politeness) => options.announce?.(text, politeness),
         status: {
             tenantId,
             personAliasGuid,

@@ -141,7 +141,7 @@ describe("the announcer", () => {
         const Root = defineComponent({
             setup() {
                 const root = ref<HTMLElement>();
-                provided = (provideAnnouncer(root) as Announcer | undefined) ?? null;
+                provided = provideAnnouncer(root);
                 return () => h("div", { ref: root, "data-testid": "root" });
             }
         });
