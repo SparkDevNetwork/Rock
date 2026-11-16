@@ -41,6 +41,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import MentionsPanel from "../../../../../src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import { ChatError, MentionRow, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { providedSession } from "../sessionShapes";
 
@@ -387,5 +388,19 @@ describe("the inbox's entrance", () => {
         await w.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50, { created_at: at(9, 0, 1) })] });
         expect(entered(w).isEntering).toBe(true);
         expect(w.findAll(".chat-ls-row").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([false, false, true]);
+    });
+});
+
+// Every mention is drawn on the shared list row: its button is the row's, the row just opened is
+// the list's selected one, and the message runs on under the author's line.
+describe("the shared list row", () => {
+    test("draws each mention on the list row, its button the row's, the one just opened selected", () => {
+        const w = draw({ rows: [row(60), row(50)], currentId: 50 });
+
+        const drawn = w.findAllComponents(ListRow);
+        expect(drawn).toHaveLength(2);
+        expect(w.findAll("[data-testid='mention-row-open']").every(b => b.classes().includes("chat-lrow-hit"))).toBe(true);
+        expect(drawn.map(r => r.props("selected"))).toEqual([false, true]);
+        expect(drawn[0].findComponent(MessageBody).element.closest(".chat-lrow-detail")).not.toBeNull();
     });
 });

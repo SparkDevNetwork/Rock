@@ -48,6 +48,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ThreadsPanel from "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { providedSession } from "../sessionShapes";
 
@@ -606,5 +607,30 @@ describe("a root by someone the reader blocked", () => {
 
         expect(w.get("[data-testid='thread-row-open']").attributes("aria-label")).toMatch(/^Someone in /);
         expect(w.get("[data-testid='thread-row-follow']").attributes("aria-label")).toBe("Unfollow thread by Someone");
+    });
+});
+
+// Every thread is drawn on the shared list row: its button is the row's, its follow toggle is
+// among the row's actions, and a row unfollowed on the All tab is faded with its toggle held out.
+// The block's sheet then holds no recipe of a panel's row, and the list reaches into no part.
+describe("the shared list row", () => {
+    test("draws each thread on the list row, its follow toggle among the row's actions", () => {
+        const w = draw({ tab: "all", rows: [row(40, { following: false }), row(30)] });
+
+        const drawn = w.findAllComponents(ListRow);
+        expect(drawn).toHaveLength(2);
+        expect(openButtons(w).every(b => b.classList.contains("chat-lrow-hit"))).toBe(true);
+        expect(drawn[0].get("[data-testid='thread-row-follow']").element.closest(".chat-lrow-actions")).not.toBeNull();
+        expect([drawn[0].props("dimmed"), drawn[0].props("actionsShown")]).toEqual([true, true]);
+        expect([drawn[1].props("dimmed"), drawn[1].props("actionsShown")]).toEqual([false, null]);
+    });
+
+    test("leaves the row's recipe to the list row: none in the sheet, and no reach into a part for it", () => {
+        const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs"), "utf8");
+
+        expect(sheet).not.toMatch(/\.chat-ls-(hit|in)\b/);
+        expect(sheet).not.toMatch(/\.chat-ls-row:hover/);
+        expect(source).not.toMatch(/:deep\(\.chat-ls-follow/);
     });
 });

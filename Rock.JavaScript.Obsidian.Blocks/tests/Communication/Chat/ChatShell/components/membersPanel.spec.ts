@@ -44,6 +44,7 @@ import { nextTick, reactive } from "vue";
 import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import StatusBadge from "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs";
+import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
 import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
@@ -75,7 +76,7 @@ const self = member("Jordan", "Lee", { person_alias_guid: me });
 
 import { join } from "path";
 import { away, online } from "../statusShapes";
-import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, fillsAndRings, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, viewer } from "../statusStore";
 
 let wrapper: VueWrapper | null = null;
 
@@ -821,5 +822,25 @@ describe("online status", () => {
 
         expect(states.length).toBeGreaterThan(0);
         expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));
+    });
+});
+
+// Every member is drawn on the shared list row: its button is the row's, a removal fades it and
+// holds its Removing out, and the panel styles no row of its own nor reaches into one.
+describe("the shared list row", () => {
+    test("draws each member on the list row, its button the row's", () => {
+        const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "removing" } } });
+
+        const rows = w.findAll("[data-testid='member-row']");
+        const drawn = w.findAllComponents(ListRow);
+        expect(drawn).toHaveLength(rows.length);
+        expect(rows.every(r => r.get("[data-testid='member-who']").classes().includes("chat-lrow-hit"))).toBe(true);
+        expect(drawn[2].props("dimmed")).toBe(true);
+        expect(drawn[2].props("actionsShown")).toBe(true);
+        expect(drawn[0].props("dimmed")).toBe(false);
+    });
+
+    test("reaches into no part from its styles", () => {
+        expect(styleRules(join(shellFolder, "components/membersPanel.partial.obs"), /:deep\(/)).toEqual([]);
     });
 });
