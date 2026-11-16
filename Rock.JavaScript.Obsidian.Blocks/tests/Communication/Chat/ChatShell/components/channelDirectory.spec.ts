@@ -132,6 +132,38 @@ function scrollTo(w: VueWrapper, scrollTop: number, scrollHeight = 2000, clientH
     scroller.dispatchEvent(new Event("scroll"));
 }
 
+/** The observers the view made, so a test can say what came into view; jsdom computes none. */
+const observers: FakeObserver[] = [];
+
+class FakeObserver {
+    public watched: Element[] = [];
+    constructor(public callback: IntersectionObserverCallback, public options?: IntersectionObserverInit) {
+        observers.push(this);
+    }
+    observe(element: Element): void {
+        this.watched.push(element);
+    }
+    unobserve(element: Element): void {
+        this.watched = this.watched.filter(one => one !== element);
+    }
+    disconnect(): void {
+        this.watched = [];
+    }
+    takeRecords(): IntersectionObserverEntry[] {
+        return [];
+    }
+    see(isIntersecting: boolean): void {
+        this.callback(this.watched.map(target => ({ target, isIntersecting }) as IntersectionObserverEntry), this as unknown as IntersectionObserver);
+    }
+}
+
+/** The list's end comes into view, as a reader scrolling near it would bring it. */
+async function reachEnd(): Promise<void> {
+    await nextTick();
+    observers.filter(observer => observer.watched.length > 0).forEach(observer => observer.see(true));
+    await nextTick();
+}
+
 // #endregion Helpers
 
 beforeAll(() => {
@@ -145,10 +177,18 @@ beforeAll(() => {
     }
 });
 
+const originalObserver = window.IntersectionObserver;
+
+beforeEach(() => {
+    observers.length = 0;
+    window.IntersectionObserver = FakeObserver as unknown as typeof IntersectionObserver;
+});
+
 afterEach(() => {
     wrapper?.unmount();
     wrapper = null;
     document.body.innerHTML = "";
+    window.IntersectionObserver = originalObserver;
 });
 
 describe("the header", () => {
@@ -533,22 +573,26 @@ describe("loading", () => {
 });
 
 describe("the next page", () => {
-    test("is asked as the list nears its end, while there is more", () => {
+    // The list's end is watched against the list's own scroller, about four rows ahead of view.
+    test("is asked as the list nears its end, while there is more", async () => {
         const w = mountDirectory({ directory: directory({ hasMore: true }) });
-
-        scrollTo(w, 100);
+        await nextTick();
         expect(w.emitted("loadMore")).toBeUndefined();
 
-        scrollTo(w, 1350);
+        await reachEnd();
+
         expect(w.emitted("loadMore")).toHaveLength(1);
+        const watching = observers.find(observer => observer.watched.length > 0);
+        expect(watching?.options?.root).toBe(w.get("[data-testid='directory-scroll']").element);
+        expect(watching?.options?.rootMargin).toBe("360px");
     });
 
-    test("is never asked once the list has ended", () => {
-        const w = mountDirectory({ directory: directory({ hasMore: false }) });
+    test("is never asked once the list has ended", async () => {
+        mountDirectory({ directory: directory({ hasMore: false }) });
 
-        scrollTo(w, 1500);
+        await reachEnd();
 
-        expect(w.emitted("loadMore")).toBeUndefined();
+        expect(wrapper?.emitted("loadMore")).toBeUndefined();
     });
 
     test("shows that it is loading under the rows", () => {
