@@ -310,19 +310,23 @@ describe("the count line", () => {
         expect(w.get("[data-testid='directory-count']").text()).toBe("12 channels");
     });
 
-    test("carries All and Not joined, the one chosen pressed, each asking for its own set", async () => {
+    // All and Not joined are one choice of two, so they are the segmented part: a radio group
+    // whose chosen option is checked, rather than two pressed buttons.
+    test("carries All and Not joined, the one chosen checked, each asking for its own set", async () => {
         const w = mountDirectory({ directory: directory({ show: "notJoined" }) });
+        const option = (value: string): ReturnType<typeof w.get> => w.get(`[data-testid='directory-show-option'][data-value='${value}']`);
 
         const show = w.get("[data-testid='directory-show']");
-        expect(show.attributes("role")).toBe("group");
+        expect(show.attributes("role")).toBe("radiogroup");
         expect(show.attributes("aria-label")).toBe("Show");
-        expect(w.get("[data-testid='directory-show-all']").text()).toBe("All");
-        expect(w.get("[data-testid='directory-show-all']").attributes("aria-pressed")).toBe("false");
-        expect(w.get("[data-testid='directory-show-not-joined']").text()).toBe("Not joined");
-        expect(w.get("[data-testid='directory-show-not-joined']").attributes("aria-pressed")).toBe("true");
+        expect(option("all").text()).toBe("All");
+        expect(option("all").attributes("aria-checked")).toBe("false");
+        expect(option("notJoined").text()).toBe("Not joined");
+        expect(option("notJoined").attributes("aria-checked")).toBe("true");
 
-        await w.get("[data-testid='directory-show-all']").trigger("click");
-        await w.get("[data-testid='directory-show-not-joined']").trigger("click");
+        await option("all").trigger("click");
+        await w.setProps({ directory: directory({ show: "all" }) });
+        await option("notJoined").trigger("click");
         expect(w.emitted("show")).toEqual([["all"], ["notJoined"]]);
     });
 });
@@ -583,7 +587,7 @@ describe("an empty answer", () => {
 
         const empty = w.get("[data-testid='directory-empty']");
         expect(empty.attributes("data-kind")).toBe("none");
-        expect(empty.get("b").text()).toBe("No channels to browse yet");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels to browse yet");
         expect(empty.text()).toContain("When Cedar Hill Church opens channels to everyone, they'll show up here.");
         expect(empty.find("button").exists()).toBe(false);
         expect(w.find("[data-testid='directory-count']").exists()).toBe(false);
@@ -593,7 +597,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ query: "zzz", rows: [], total: 0, emptyKind: "query" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels match “zzz”");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels match “zzz”");
         expect(empty.text()).toContain("Search looks at channel names. Private groups don't show here; a leader can add you.");
         expect(w.get("[data-testid='directory-count']").text()).toBe("0 channels match");
         const action = empty.get("[data-testid='directory-empty-action']");
@@ -606,7 +610,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ query: "zzz", campus: { kind: "campus", campusId: north.guid }, show: "notJoined", rows: [], total: 0, emptyKind: "filters" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels match “zzz”");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels match “zzz”");
         expect(empty.text()).toContain("You're only looking at North Campus, and channels you haven't joined. Clear the filters to search every public channel.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("Clear filters");
@@ -624,7 +628,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ show: "notJoined", rows: [], total: 0, emptyKind: "allJoined" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("You're in every channel here");
+        expect(empty.get(".chat-empty-title").text()).toBe("You're in every channel here");
         expect(empty.text()).toContain("Nothing left to join.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("Show all");
@@ -642,7 +646,7 @@ describe("an empty answer", () => {
         const w = mountDirectory({ directory: directory({ campus: { kind: "campus", campusId: north.guid }, rows: [], total: 0, emptyKind: "campus" }) });
 
         const empty = w.get("[data-testid='directory-empty']");
-        expect(empty.get("b").text()).toBe("No channels for this campus yet");
+        expect(empty.get(".chat-empty-title").text()).toBe("No channels for this campus yet");
         expect(empty.text()).toContain("Try another campus, or the whole church.");
         const action = empty.get("[data-testid='directory-empty-action']");
         expect(action.text()).toBe("All campuses");

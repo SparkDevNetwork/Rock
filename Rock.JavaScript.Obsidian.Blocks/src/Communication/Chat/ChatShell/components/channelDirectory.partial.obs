@@ -45,9 +45,8 @@
                 <!-- Only words typed wait in the field; a filter asked again with none waits in the rows it keeps drawn. -->
                 <span v-if="directory.isSearching && directory.query.trim() !== ''" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
                 <IconButton v-if="directory.query"
-                            class="chat-fd-clear"
                             icon="x"
-                            iconSize="sm"
+                            size="sm"
                             label="Clear search"
                             data-testid="directory-search-clear"
                             @click="onClearSearch" />
@@ -91,33 +90,40 @@
                     </ul>
                 </template>
 
-                <div v-else-if="directory.error" class="chat-fd-error" role="status" data-testid="directory-error">
-                    <Icon name="alert" size="sm" />
-                    <span>{{ messageOrOffline(directory.error, "Couldn't load channels. Check your connection and try again.") }}</span>
-                    <button type="button" class="chat-fd-btn" data-testid="directory-retry" @click="emit('retry')">Try again</button>
-                </div>
+                <EmptyState v-else-if="directory.error"
+                            tone="error"
+                            :title="loadFailure"
+                            actionLabel="Try again"
+                            :actionAttrs="{ 'data-testid': 'directory-retry' }"
+                            data-testid="directory-error"
+                            @action="emit('retry')" />
 
-                <div v-else-if="directory.emptyKind === 'none'" class="chat-fd-empty" data-testid="directory-empty" data-kind="none">
-                    <span class="chat-fd-empty-ic" aria-hidden="true"><Icon name="hash" /></span>
-                    <b>No channels to browse yet</b>
-                    <span>When {{ organizationName || "your church" }} opens channels to everyone, they'll show up here.</span>
-                </div>
+                <EmptyState v-else-if="directory.emptyKind === 'none'"
+                            title="No channels to browse yet"
+                            :text="`When ${organizationName || 'your church'} opens channels to everyone, they'll show up here.`"
+                            data-testid="directory-empty"
+                            data-kind="none" />
 
                 <template v-else>
                     <div class="chat-fd-count">
                         <span data-testid="directory-count">{{ countText }}</span>
-                        <div class="chat-fd-seg" role="group" aria-label="Show" data-testid="directory-show">
-                            <button type="button" :aria-pressed="directory.show === 'all' ? 'true' : 'false'" data-testid="directory-show-all" @click="emit('show', 'all')">All</button>
-                            <button type="button" :aria-pressed="directory.show === 'notJoined' ? 'true' : 'false'" data-testid="directory-show-not-joined" @click="emit('show', 'notJoined')">Not joined</button>
-                        </div>
+                        <Segmented class="chat-fd-show"
+                                   :options="showOptions"
+                                   :modelValue="directory.show"
+                                   aria-label="Show"
+                                   optionTestId="directory-show-option"
+                                   data-testid="directory-show"
+                                   @update:modelValue="emit('show', $event as DirectoryShow)" />
                     </div>
 
-                    <div v-if="empty" class="chat-fd-empty" data-testid="directory-empty" :data-kind="directory.emptyKind">
-                        <span class="chat-fd-empty-ic" aria-hidden="true"><Icon :name="empty.icon" /></span>
-                        <b>{{ empty.title }}</b>
-                        <span>{{ empty.text }}</span>
-                        <button type="button" class="chat-fd-btn" data-testid="directory-empty-action" @click="empty.act">{{ empty.button }}</button>
-                    </div>
+                    <EmptyState v-if="empty"
+                                :title="empty.title"
+                                :text="empty.text"
+                                :actionLabel="empty.button"
+                                :actionAttrs="{ 'data-testid': 'directory-empty-action' }"
+                                data-testid="directory-empty"
+                                :data-kind="directory.emptyKind"
+                                @action="empty.act" />
 
                     <ul v-else class="chat-fd-list" aria-label="Channels" data-testid="directory-list">
                         <li v-for="row in drawnRows"
@@ -160,18 +166,14 @@
                                     <Icon name="check" size="xs" />Joined
                                 </span>
                                 <!-- One button through Join, Joining and a refusal, so focus stays on it while the door is out. -->
-                                <button v-else
-                                        type="button"
-                                        class="chat-fd-btn chat-fd-join"
+                                <Button v-else
+                                        class="chat-fd-join"
+                                        size="sm"
                                         :data-testid="row.join.kind === 'joining' ? 'directory-joining' : 'directory-join'"
                                         :aria-label="row.join.kind === 'joining' ? undefined : `Join ${row.name}`"
-                                        :aria-disabled="row.join.kind === 'joining' ? 'true' : undefined"
-                                        :aria-busy="row.join.kind === 'joining' ? 'true' : undefined"
-                                        :disabled="row.join.kind === 'refused' || undefined"
-                                        @click="onJoin(row.id, row.join)">
-                                    <template v-if="row.join.kind === 'joining'"><span class="chat-spinner"></span>Joining</template>
-                                    <template v-else>Join</template>
-                                </button>
+                                        :busy="row.join.kind === 'joining'"
+                                        :disabled="row.join.kind === 'refused'"
+                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "Joining" : "Join" }}</Button>
                             </div>
                         </li>
                     </ul>
@@ -179,10 +181,10 @@
                     <div v-if="directory.isLoadingMore" class="chat-fd-more" data-testid="directory-more">
                         <span class="chat-spinner"></span>Loading more channels…
                     </div>
-                    <div v-else-if="directory.moreError" class="chat-fd-error" role="status" data-testid="directory-more-error">
+                    <div v-else-if="directory.moreError" class="chat-fd-error" data-testid="directory-more-error">
                         <Icon name="alert" size="sm" />
-                        <span>{{ messageOrOffline(directory.moreError, "Couldn't load more channels. Check your connection and try again.") }}</span>
-                        <button type="button" class="chat-fd-btn" @click="emit('retry')">Try again</button>
+                        <span>{{ moreFailure }}</span>
+                        <Button size="sm" @click="emit('retry')">Try again</Button>
                     </div>
                 </template>
             </div>
@@ -289,11 +291,6 @@
     font-size: var(--chat-fs-title);
 }
 
-.chat-fd-search :deep(.chat-fd-clear) {
-    width: 30px;
-    height: 30px;
-}
-
 .chat-fd-busy {
     display: inline-grid;
     place-items: center;
@@ -383,36 +380,9 @@
     color: var(--chat-muted);
 }
 
-/* The small segmented control: the chosen half filled in the text color. */
-.chat-fd-seg {
-    display: inline-flex;
-    gap: 2px;
-    padding: 3px;
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-}
-
-.chat-fd-seg button {
-    padding: 3px 10px;
-    font: inherit;
-    font-size: var(--chat-fs-small);
-    font-weight: 600;
-    color: var(--chat-muted);
-    white-space: nowrap;
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-fd-seg button:hover:not([aria-pressed="true"]) {
-    color: var(--chat-text);
-}
-
-.chat-fd-seg button[aria-pressed="true"] {
-    color: var(--chat-surface);
-    background: var(--chat-text);
+/* All and Not joined keep their own width at the count's end. */
+.chat-fd-show {
+    flex: none;
 }
 
 .chat-fd-list {
@@ -548,7 +518,7 @@
     padding-right: 10px;
 }
 
-.chat-fd.is-phone .chat-fd-act .chat-fd-btn,
+.chat-fd.is-phone .chat-fd-join,
 .chat-fd.is-phone .chat-fd-joined {
     min-width: 64px;
 }
@@ -611,51 +581,9 @@
     padding-right: 12px;
 }
 
-/* The design's small line button, used for Join and for each empty state's way out. */
-.chat-fd-btn {
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-    height: 28px;
-    padding: 0 11px;
-    font: inherit;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-fd-btn:hover:not(:disabled) {
-    border-color: var(--chat-icon);
-}
-
-.chat-fd-btn:disabled {
-    opacity: .5;
-}
-
-.chat-fd-act .chat-fd-btn {
-    min-width: 76px;
-}
-
-.chat-fd-btn .chat-spinner {
-    width: 12px;
-    height: 12px;
-}
-
-/* Join leans in toward the church color when its row is pointed at or it has focus. */
+/* Join, Joining and Joined hold one width, so the row does not shift as the door answers. */
 .chat-fd-join {
-    opacity: .92;
-}
-
-.chat-fd-row:hover .chat-fd-join:not(:disabled),
-.chat-fd-join:focus-visible {
-    color: var(--chat-brand-ink);
-    border-color: var(--chat-brand);
-    opacity: 1;
+    min-width: 76px;
 }
 
 .chat-fd-joined {
@@ -699,41 +627,7 @@
     }
 }
 
-.chat-fd-empty {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    padding: 48px 24px 24px;
-    text-align: center;
-}
-
-.chat-fd-empty-ic {
-    --chat-ic-size: 26px;
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    margin-bottom: 6px;
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-fd-empty b {
-    font-size: var(--chat-fs-display);
-}
-
-.chat-fd-empty > span:not(.chat-fd-empty-ic) {
-    max-width: 40ch;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-fd-empty .chat-fd-btn {
-    margin-top: 10px;
-}
-
+/* A next page that did not come: a strip under the rows held, with its Try again. */
 .chat-fd-error {
     display: flex;
     gap: 8px;
@@ -810,9 +704,13 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { useAnnouncer } from "../ui/announcer.partial";
+    import Button from "../ui/button.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
 
@@ -841,9 +739,8 @@
         label: string;
     };
 
-    /** An empty answer's look and its one way out. */
-    type EmptyState = {
-        icon: string;
+    /** What an empty answer says, and its one way out. */
+    type EmptyAnswer = {
         title: string;
         text: string;
         button: string;
@@ -928,6 +825,8 @@
 
     const idle: JoinState = { kind: "idle" };
 
+    const announcer = useAnnouncer();
+
     // #endregion Values
 
     // #region Computed Values
@@ -975,15 +874,26 @@
         });
     });
 
+    /** All, or only the rooms the person is not in. */
+    const showOptions: SegmentedOption[] = [
+        { value: "all", label: "All" },
+        { value: "notJoined", label: "Not joined" }
+    ];
+
+    /** Why the first page did not come, in words. */
+    const loadFailure = computed((): string => props.directory.error ? messageOrOffline(props.directory.error, "Couldn't load channels. Check your connection and try again.") : "");
+
+    /** Why the next page did not come, in words. */
+    const moreFailure = computed((): string => props.directory.moreError ? messageOrOffline(props.directory.moreError, "Couldn't load more channels. Check your connection and try again.") : "");
+
     /** The empty state the answer draws, past the one with nothing public at all. */
-    const empty = computed((): EmptyState | null => {
+    const empty = computed((): EmptyAnswer | null => {
         const query = props.directory.query.trim();
         const campus = props.directory.campus;
 
         switch (props.directory.emptyKind) {
             case "query":
                 return {
-                    icon: "search",
                     title: `No channels match “${query}”`,
                     text: "Search looks at channel names. Private groups don't show here; a leader can add you.",
                     button: "Clear search",
@@ -997,7 +907,6 @@
                 ].filter(part => part !== "");
 
                 return {
-                    icon: "search",
                     title: `No channels match “${query}”`,
                     text: `You're only looking at ${looking.join(", and ")}. Clear the filters to search every public channel.`,
                     button: "Clear filters",
@@ -1007,7 +916,6 @@
 
             case "allJoined":
                 return {
-                    icon: "check",
                     title: "You're in every channel here",
                     text: `Nothing left to join${campus.kind !== "all" ? " for this campus" : ""}.`,
                     button: "Show all",
@@ -1016,7 +924,6 @@
 
             case "campus":
                 return {
-                    icon: "hash",
                     title: "No channels for this campus yet",
                     text: "Try another campus, or the whole church.",
                     button: "All campuses",
@@ -1129,6 +1036,14 @@
     // #endregion Functions
 
     // #region Watchers
+
+    // A page that did not come is said as it is drawn, since the reader's place is elsewhere.
+    watch([loadFailure, moreFailure], ([load, more], [loadBefore, moreBefore]) => {
+        const words = load && load !== loadBefore ? load : more && more !== moreBefore ? more : "";
+        if (words) {
+            announcer.announce(words);
+        }
+    });
 
     // A refused Join is disabled, and a browser drops focus from a disabled button to the page, so
     // focus on it moves first to the row's own button.
