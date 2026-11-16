@@ -700,7 +700,18 @@ Guid - ContentChannelItem Guid";
                     pageTitle = contentChannelItem.Title;
                 }
 
-                if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 )
+                /*
+                    11/16/2026 - MSE
+
+                    The output and page title caches are read before the item is loaded, so a cached
+                    render is served to everyone. Only cache the render when an anonymous visitor may
+                    view the item, otherwise a render made for an authorized person would be served to
+                    people who are not allowed to see it. Items that carry View rules are rendered on
+                    every request.
+
+                    Reason: Never cache output that was built for a person who can view more than everyone else.
+                */
+                if ( outputCacheDuration.HasValue && outputCacheDuration.Value > 0 && contentChannelItem.IsAuthorized( Rock.Security.Authorization.VIEW, null ) )
                 {
                     string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
                     var cacheKeys = GetCacheItem( CACHEKEYS_CACHE_KEY, true ) as HashSet<string> ?? new HashSet<string>();
@@ -899,13 +910,31 @@ Guid - ContentChannelItem Guid";
 
         /// <summary>
         /// Determines if the content channel item is approved to be displayed.
-        /// This checks the approval state of the item and that it is part of
-        /// the configured channel (if there is one).
+        /// This checks that the current person is allowed to view the item, the
+        /// approval state of the item and that it is part of the configured
+        /// channel (if there is one).
         /// </summary>
         /// <param name="contentChannelItem">The item to be checked.</param>
         /// <returns><c>true</c> if the item is okay to display; otherwise <c>false</c>.</returns>
         private bool ItemIsApprovedToDisplay( ContentChannelItem contentChannelItem )
         {
+            /*
+                11/16/2026 - MSE
+
+                The item must be viewable by the current person. Without this check an anonymous
+                visitor could read any approved item, including its title and page title, even when
+                the item or its channel denies View. GetBreadCrumbs calls this method on a block that
+                was created without a page, so RockPage is null and CurrentPerson cannot be used there.
+                The person is read from the request's HttpContext in that case.
+
+                Reason: Require View permission on the content channel item before it is shown.
+            */
+            var currentPerson = RockPage != null ? CurrentPerson : ( System.Web.HttpContext.Current?.Items["CurrentPerson"] as Person );
+            if ( !contentChannelItem.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) )
+            {
+                return false;
+            }
+
             // If the item requires approval, make sure it is one of our approved statuses.
             if ( contentChannelItem.ContentChannel.RequiresApproval )
             {
