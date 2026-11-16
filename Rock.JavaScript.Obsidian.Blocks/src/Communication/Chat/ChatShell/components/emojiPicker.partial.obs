@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Drawn afresh for each step, so the full picker pops in where the tray was. -->
     <Popover :key="step"
              :popover="pop"
              :label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
@@ -8,6 +7,7 @@
              :isPill="step === 'tray'"
              @keydown="onKeydown">
         <div class="chat-picker" :class="{ 'is-tray': step === 'tray' }">
+            <!-- The popover is drawn afresh for each step, so the full picker pops in where the tray was. -->
             <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
                 <button v-for="(item, index) in trayItems"
                         :key="item.code"

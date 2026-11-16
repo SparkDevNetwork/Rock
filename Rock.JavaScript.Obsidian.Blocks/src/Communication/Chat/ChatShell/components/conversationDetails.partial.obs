@@ -142,7 +142,7 @@
                      data-testid="leave-confirm"
                      @keydown.esc.stop.prevent="onLeaveCancel">
                     <template v-if="leaveError">
-                        <p :id="`${renameId}-leave`" class="chat-set-err" data-testid="leave-error"><Icon name="alert" size="xs" /><span>{{ leaveError }}</span></p>
+                        <p :id="`${renameId}-leave`" class="chat-set-err" data-testid="leave-error"><span class="chat-set-err-mark"><Icon name="alert" size="xs" /></span><span>{{ leaveError }}</span></p>
                     </template>
                     <template v-else>
                         <b :id="`${renameId}-leave`" data-testid="leave-question">Leave {{ title }}?</b>
@@ -318,7 +318,9 @@
     font-size: var(--chat-fs-ui);
 }
 
-.chat-set-err :deep(.chat-ic) {
+/* The mark sits on the sentence's first line, however many it wraps to. */
+.chat-set-err-mark {
+    display: inline-flex;
     flex: none;
     margin-top: 2px;
 }

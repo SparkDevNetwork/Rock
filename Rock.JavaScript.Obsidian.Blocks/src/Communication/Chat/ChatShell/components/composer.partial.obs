@@ -35,7 +35,7 @@
 
         <!-- A paused service, or a room the person cannot post in, in the server's own words. -->
         <div v-if="isClosed" ref="lockedElement" class="chat-composer-locked" tabindex="-1" data-testid="composer-locked">
-            <Icon name="lock" />
+            <span class="chat-composer-locked-mark"><Icon name="lock" /></span>
             <span>{{ lockedReason || "Sending is paused for maintenance." }}</span>
         </div>
 
@@ -86,7 +86,7 @@
             </span>
 
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
-                <Icon name="reply" size="sm" />
+                <span class="chat-composer-quote-mark"><Icon name="reply" size="sm" /></span>
                 <span class="chat-composer-quote-main">
                     <b>{{ quoteTitle }}</b>
                     <span data-testid="composer-quote-preview">{{ quotePreview }}</span>
@@ -304,7 +304,9 @@
     border-radius: var(--chat-r-field) var(--chat-r-field) var(--chat-r-tail) var(--chat-r-tail);
 }
 
-.chat-composer-quote > :deep(.chat-ic) {
+/* The icon draws in the color around it, so its holder gives it the church's ink. */
+.chat-composer-quote-mark {
+    display: inline-flex;
     color: var(--chat-brand-ink);
 }
 
@@ -598,7 +600,8 @@
     outline: 0;
 }
 
-.chat-composer-locked :deep(.chat-ic) {
+.chat-composer-locked-mark {
+    display: inline-flex;
     color: var(--chat-icon);
 }
 

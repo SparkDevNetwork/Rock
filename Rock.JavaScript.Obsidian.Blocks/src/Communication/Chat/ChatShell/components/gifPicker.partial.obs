@@ -1,9 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!--
-        A sheet on a phone is the dialog itself; beside the "+" the popover is. On a touch screen
-        the surface takes focus, as focus in the search would raise the keyboard over the GIFs.
-    -->
     <Popover :popover="pop"
              label="Add a GIF"
              :role="pop.isSheet.value ? '' : 'dialog'"
@@ -13,6 +9,10 @@
              data-testid="gif-picker"
              @keydown="onKeydown">
         <div class="chat-picker chat-gif" :class="{ 'is-sheet': pop.isSheet.value }">
+            <!--
+                A sheet on a phone is the dialog itself; beside the "+" the popover is. On a touch
+                screen the surface takes focus, as focus in the search would raise the keyboard over the GIFs.
+            -->
             <div class="chat-gif-head">
                 <Field ref="searchField"
                        leadingIcon="search"

@@ -8,7 +8,7 @@
              :class="{ 'is-refused': drawn === 'refused', 'is-pending': drawn === 'pending' }"
              data-testid="join-bar"
              :data-state="drawn">
-            <Icon name="door" />
+            <span class="chat-joinbar-mark"><Icon name="door" /></span>
             <span class="chat-joinbar-main">
                 <b data-testid="join-bar-title">{{ title }}</b>
                 <span v-if="drawn === 'pending'" data-testid="join-bar-text"><span class="chat-spinner"></span>Setting up, a few seconds</span>
@@ -59,7 +59,9 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
-.chat-joinbar > :deep(.chat-ic) {
+/* The icon draws in the color around it, so its holder gives it the bar's ink. */
+.chat-joinbar-mark {
+    display: inline-flex;
     color: var(--chat-brand-ink);
 }
 
@@ -107,7 +109,7 @@
     border-color: color-mix(in srgb, var(--chat-danger) 30%, transparent);
 }
 
-.chat-joinbar.is-refused > :deep(.chat-ic) {
+.chat-joinbar.is-refused .chat-joinbar-mark {
     color: var(--chat-danger-ink);
 }
 
