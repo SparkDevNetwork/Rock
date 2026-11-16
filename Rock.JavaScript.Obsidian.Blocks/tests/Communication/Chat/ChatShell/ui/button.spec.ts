@@ -54,6 +54,15 @@ describe("the text button", () => {
         expect(wrapper.get("button").classes()).toEqual(expect.arrayContaining(["chat-btn", "is-line", "is-md"]));
     });
 
+    // The way forward from a failure, such as a failed send's Try again, beside a plain Delete: a
+    // line button in the danger ink, where the filled danger kind would say it destroys something.
+    test("draws its words in the danger ink in the danger tone, keeping its kind's line", () => {
+        wrapper = draw({ tone: "danger" }, "Try again");
+
+        expect(wrapper.get("button").classes()).toEqual(expect.arrayContaining(["is-line", "is-tone-danger"]));
+        expect(ruleOf(styleOf("button.partial.obs"), ".chat-btn.is-tone-danger")).toMatch(/color:\s*var\(--chat-danger-ink\)/);
+    });
+
     test("draws an icon before its words when given one, at the small icon size", () => {
         wrapper = draw({ icon: "search" });
         const icon = wrapper.findComponent(Icon);
