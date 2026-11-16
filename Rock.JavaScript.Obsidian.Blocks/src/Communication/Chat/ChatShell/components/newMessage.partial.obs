@@ -547,13 +547,14 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import Composer from "./composer.partial.obs";
     import { PickerSource } from "./emojiPicker.partial.obs";
     import FailedMarker from "./failedMarker.partial.obs";
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
+    import { useLatestSearch } from "../composables/useLatestSearch.partial";
     import { SendFailure, SendFailureNews, useSlowSend } from "../composables/useSend.partial";
     import { failedWords } from "../errors.partial";
     import { startedTitle } from "../stores/channelStore.partial";
@@ -675,25 +676,17 @@
 
     const titleId = `chat-nd-title-${newGuid()}`;
 
-    /**
-     * How long typing must pause before the search goes out, an estimate. A search per keystroke
-     * would cost the platform a query for every letter of every name typed.
-     */
-    const searchPauseMs = 250;
-
     const viewElement = ref<HTMLElement>();
     const pickerElement = ref<InstanceType<typeof PeoplePicker>>();
 
+    /** The name as typed, untrimmed. */
     const query = ref("");
 
-    /** The last answer for the text typed, or null while none has come for it. */
-    const results = ref<PersonRow[] | null>(null);
-
-    /** Why the last search for the text typed failed, in the platform's words, or null. */
-    const searchError = ref<string | null>(null);
-
-    /** Whether the pause is running or its search has not answered. */
-    const isSearching = ref(false);
+    /**
+     * The people search, the shared one every search box uses: the one pause after typing, so a
+     * typed name asks the platform once, and only the newest name's answer drawn.
+     */
+    const search = useLatestSearch<PersonRow[]>(text => props.search(text), { isSearchable: text => text !== "" });
 
     /** "No one to message for …", shown in the note until the text changes. */
     const noOneText = ref<string | null>(null);
@@ -717,8 +710,6 @@
     const isFieldFocusedFirst = props.chosen.length === 0;
     let isEditorFocusOwed = !isFieldFocusedFirst;
 
-    let searchTimer: ReturnType<typeof setTimeout> | null = null;
-
     /**
      * What each phase of the first message on its way says to a screen reader, as its line under
      * the message reads. A failure is said by the composer's strip that offers its choices.
@@ -738,12 +729,28 @@
     /** How many times the first message has failed, so each failure is said as it happens. */
     const failedCount = ref(0);
 
-    /** Counts the text typed, so an answer for text the person has since changed is dropped. */
-    let searchCount = 0;
-
     // #endregion Values
 
     // #region Computed Values
+
+    /** Why the newest search failed, in the platform's words, or null. */
+    const searchError = computed((): string | null => {
+        const error = search.error;
+        if (!error) {
+            return null;
+        }
+
+        return error instanceof Error && error.message ? error.message : failedWords("People could not be searched.").alone;
+    });
+
+    /**
+     * The newest answer for the name typed, or null while none has come for it. A failed search
+     * says so in the list it would have filled, so it holds no one rather than an older answer.
+     */
+    const results = computed((): PersonRow[] | null => searchError.value ? [] : search.results);
+
+    /** Whether the pause is running or its search has not answered. */
+    const isSearching = computed((): boolean => search.busy);
 
     const isLocked = computed((): boolean => props.draft?.status === "starting");
 
@@ -833,41 +840,7 @@
     function onInput(typed: string): void {
         query.value = typed;
         noOneText.value = null;
-        cancelSearch();
-        const thisSearch = ++searchCount;
-        const text = query.value.trim();
-
-        if (text === "") {
-            results.value = null;
-            searchError.value = null;
-            isSearching.value = false;
-            return;
-        }
-
-        isSearching.value = true;
-        searchTimer = setTimeout(async () => {
-            searchTimer = null;
-            let rows: PersonRow[] = [];
-            let failure: string | null = null;
-            try {
-                rows = await props.search(text);
-            }
-            catch (error) {
-                failure = error instanceof Error && error.message ? error.message : failedWords("People could not be searched.").alone;
-            }
-            if (thisSearch !== searchCount) {
-                return;
-            }
-
-            // A failed search says so in the list it would have filled, until the next answer;
-            // the picker says what an answer found, or picks from it for an Enter that waited.
-            isSearching.value = false;
-            searchError.value = failure;
-            results.value = rows;
-            if (failure) {
-                announce(failure);
-            }
-        }, searchPauseMs);
+        search.set(typed.trim());
     }
 
     /** Enter on an empty To field moves to the message, or at the cap says it is reached. */
@@ -947,12 +920,8 @@
 
     /** A person picked: the name and its search are cleared for the next. */
     function onChoose(person: PersonRow): void {
-        cancelSearch();
-        searchCount++;
         query.value = "";
-        results.value = null;
-        searchError.value = null;
-        isSearching.value = false;
+        search.set("");
         // Counted before the choice goes out, since the owner may add the person to the same list
         // before this reads it again.
         const count = props.chosen.length + 1;
@@ -979,13 +948,6 @@
         announcer.announce(text);
     }
 
-    function cancelSearch(): void {
-        if (searchTimer !== null) {
-            clearTimeout(searchTimer);
-            searchTimer = null;
-        }
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -1010,6 +972,14 @@
     watch(() => isPhaseShown.value && pendingPhase.value !== "failed" ? pendingPhase.value : null, phase => {
         if (phase) {
             announce(phaseWords[phase]);
+        }
+    });
+
+    // A failed search is said as it lands, since the list it would have filled may be out of sight;
+    // what an answer found the picker says itself.
+    watch(searchError, failure => {
+        if (failure) {
+            announce(failure);
         }
     });
 
@@ -1042,6 +1012,4 @@
     });
 
     // #endregion Watchers
-
-    onBeforeUnmount(cancelSearch);
 </script>
