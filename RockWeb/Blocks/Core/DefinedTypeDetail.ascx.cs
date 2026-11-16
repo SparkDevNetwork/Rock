@@ -664,8 +664,9 @@ namespace RockWeb.Blocks.Core
             }
 
             // Make sure an existing attribute can only be updated if it
-            // already belongs to this defined type.
-            if ( edtDefinedTypeAttributes.AttributeId.HasValue )
+            // already belongs to this defined type. A new attribute has an
+            // Id of 0, which SaveAttributeEdits treats as new.
+            if ( edtDefinedTypeAttributes.AttributeId.GetValueOrDefault() > 0 )
             {
                 var existingAttribute = new AttributeService( new RockContext() ).Get( edtDefinedTypeAttributes.AttributeId.Value );
 
