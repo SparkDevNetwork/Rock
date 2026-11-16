@@ -225,7 +225,7 @@
     // #region Types
 
     /** One row as it is drawn and read. */
-    type DrawnRow = {
+    type DrawnMention = {
         messageId: number;
         channelId: string;
 
@@ -253,7 +253,7 @@
     /** The rows of one day, under its heading. */
     type DrawnDay = {
         label: string;
-        rows: DrawnRow[];
+        rows: DrawnMention[];
     };
 
     // #endregion Types
@@ -396,7 +396,7 @@
     // #region Event Handlers
 
     /** A reply opens its thread at the reply; anything else lands on the message in its conversation. */
-    function onOpen(row: DrawnRow): void {
+    function onOpen(row: DrawnMention): void {
         if (row.rootId !== null) {
             emit("openThread", row.rootId, row.channelId, row.messageId);
         }
@@ -447,7 +447,7 @@
         return /[.!?…]$/.test(text) ? text : `${text}.`;
     }
 
-    function drawRow(row: MentionRow, index: number, now: Date): DrawnRow {
+    function drawRow(row: MentionRow, index: number, now: Date): DrawnMention {
         const message = row.message;
         const display = messageDisplay(message);
         const isShown = display.kind === "message" || display.kind === "system";

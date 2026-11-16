@@ -30,13 +30,14 @@
 //          roomTitles: Record<string, string> (each conversation's title by channel id, as the
 //          header shows it), roomKinds: Record<string, "channel" | "person" | "group">,
 //          publicRooms: Record<string, boolean> (whether each channel is public, which draws its
-//          hash rather than its lock, as the sidebar does), isPhone: boolean, personAliasGuid: string
+//          hash rather than its lock, as the sidebar does); the reader and the phone flag come from
+//          the session
 //   emits: open(rootId: number, channelId: string), tab(tab: "channel" | "all"), refresh,
 //          follow(rootId: number, isFollowing: boolean), loadMore, close
 //   marks: thread-row (each row, class is-unread and is-off), thread-row-open (the row's button,
 //          labelled), thread-row-follow (aria-pressed, changed at once), thread-row-mentions,
 //          thread-row-status ("Following" or "Not following"), thread-row-error, thread-skeleton,
-//          threads-empty, threads-empty-title, threads-empty-body, threads-error, threads-refresh;
+//          threads-empty (the shared empty state's title and line), threads-error, threads-refresh;
 //          the tabs are role="tab" with aria-selected. The panel host's marks are threadDrawer.spec's.
 //
 // A refusal shows the server's sentence; a call that never reached the platform has none, and
@@ -48,6 +49,7 @@ import { nextTick } from "vue";
 import ThreadsPanel from "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { ChatError } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -108,7 +110,9 @@ function row(rootId: number, extra: Record<string, unknown> = {}, rootExtra: Rec
 
 let wrapper: VueWrapper | null = null;
 
-function draw(props: Record<string, unknown> = {}): VueWrapper {
+function draw(given: Record<string, unknown> = {}): VueWrapper {
+    // the reader and the phone flag are the session's, which the panel reads for itself
+    const { personAliasGuid = me, isPhone = false, ...props } = given;
     wrapper = mount(ThreadsPanel, {
         props: {
             tab: "channel",
@@ -120,10 +124,9 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             channelId: channel,
             kind: "channel",
             roomTitles,
-            isPhone: false,
-            personAliasGuid: me,
             ...props
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },
         attachTo: document.body
     });
     return wrapper;
@@ -436,8 +439,8 @@ describe("loading, empty and failed", () => {
     ])("an empty %s tab says so and offers every followed thread", async (kind, conversation, title) => {
         const w = draw({ kind, rows: [], roomTitles: { [channel]: conversation } });
 
-        expect(plain(w.get("[data-testid='threads-empty-title']").text())).toBe(title);
-        expect(plain(w.get("[data-testid='threads-empty-body']").text())).toBe(
+        expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-title").text())).toBe(title);
+        expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-text").text())).toBe(
             "Reply to any message to start one. Threads you follow from every conversation are under All.");
 
         const seeAll = w.findAll("[data-testid='threads-empty'] button").find(b => plain(b.text()) === "See all followed threads");
@@ -449,8 +452,8 @@ describe("loading, empty and failed", () => {
     test("an empty All tab says how a thread comes to be followed", () => {
         const w = draw({ tab: "all", rows: [] });
 
-        expect(plain(w.get("[data-testid='threads-empty-title']").text())).toBe("You're not following any threads");
-        expect(plain(w.get("[data-testid='threads-empty-body']").text())).toBe(
+        expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-title").text())).toBe("You're not following any threads");
+        expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-text").text())).toBe(
             "You follow a thread when you start it, reply in it or are mentioned in it. New replies to those threads collect here.");
     });
 

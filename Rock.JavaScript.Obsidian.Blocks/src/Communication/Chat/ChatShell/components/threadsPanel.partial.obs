@@ -1,20 +1,23 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PanelHost title="Threads"
+    <ListPanel title="Threads"
                :subtitle="subtitle"
-               :isPhone="isPhone"
+               name="threads"
+               itemName="thread"
                :entranceKeys="entranceKeys"
+               :isLoading="isLoading"
+               :isRefreshing="isRefreshing"
+               :error="error ? messageOrOffline(error, offlineRefresh) : null"
+               :isEmpty="rows.length === 0"
+               :emptyTitle="emptyTitle"
+               :emptyText="emptyBody"
+               :emptyActionLabel="tab === 'channel' ? 'See all followed threads' : ''"
+               :loadedSentence="loadedSentence"
+               upToDateSentence="Threads are up to date"
+               :bodyAttrs="{ id: `${uid}-tabpanel`, role: 'tabpanel', 'aria-labelledby': `${uid}-tab-${tab}` }"
+               @refresh="emit('refresh')"
+               @emptyAction="chooseTab('all')"
                @close="emit('close')">
-        <template #actions>
-            <IconButton class="chat-ls-refresh"
-                        icon="refresh"
-                        label="Refresh threads"
-                        data-testid="threads-refresh"
-                        :aria-busy="isRefreshing ? 'true' : undefined"
-                        :aria-disabled="isRefreshing ? 'true' : undefined"
-                        @click="onRefresh" />
-        </template>
-
         <template #top>
             <div class="chat-ls-top">
                 <div class="chat-ls-tabs" role="tablist" aria-label="Which threads" :data-on="tab" @keydown="onTabKeydown">
@@ -37,118 +40,82 @@
             </div>
         </template>
 
-        <div :id="`${uid}-tabpanel`"
-             role="tabpanel"
-             :aria-labelledby="`${uid}-tab-${tab}`"
-             :aria-busy="isLoading ? 'true' : 'false'">
-            <div v-if="error" class="chat-ls-err" role="status" data-testid="threads-error">
-                <Icon name="alert" size="sm" />
-                <span>{{ errorSentence }}</span>
-                <button type="button" class="chat-ls-btn" @click="emit('refresh')">Try again</button>
-            </div>
+        <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between rows. Right arrow reaches the row's follow switch.</span>
+        <ul ref="listElement"
+            class="chat-ls-list"
+            :class="{ 'is-phone': isPhone }"
+            :aria-label="listLabel"
+            @keydown="onListKeydown">
+            <li v-for="(drawn, index) in drawnRows"
+                :key="drawn.rootId"
+                class="chat-ls-row chat-enter"
+                :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
+                :style="{ '--chat-enter-i': index }"
+                data-testid="thread-row">
+                <button type="button"
+                        class="chat-ls-hit"
+                        data-testid="thread-row-open"
+                        :data-root-id="drawn.rootId"
+                        :aria-label="drawn.label"
+                        :aria-describedby="`${uid}-hint`"
+                        v-bind="listKeys.itemAttrs(drawn.rootId)"
+                        :ref="listKeys.itemRef(drawn.rootId)"
+                        @click="emit('open', drawn.rootId, drawn.channelId)"></button>
 
-            <template v-if="isLoading">
-                <span class="chat-sr-only">Loading threads</span>
-                <ul class="chat-ls-list" aria-hidden="true">
-                    <li v-for="index in 3" :key="index" class="chat-ls-skel" data-testid="thread-skeleton">
-                        <span class="chat-skeleton chat-ls-sk chat-ls-sk-av"></span>
-                        <span class="chat-ls-sk-lines">
-                            <i v-for="(width, line) in skeletonWidths[index - 1]" :key="line" class="chat-skeleton chat-ls-sk" :style="{ width: `${width}%` }"></i>
-                        </span>
-                    </li>
-                </ul>
-            </template>
-
-            <div v-else-if="rows.length === 0" class="chat-ls-empty" data-testid="threads-empty">
-                <span class="chat-ls-empty-ic" aria-hidden="true"><Icon :name="tab === 'channel' ? 'thread' : 'bell'" /></span>
-                <b data-testid="threads-empty-title">{{ emptyTitle }}</b>
-                <span data-testid="threads-empty-body">{{ emptyBody }}</span>
-                <button v-if="tab === 'channel'" type="button" class="chat-ls-btn" @click="chooseTab('all')">See all followed threads</button>
-            </div>
-
-            <template v-else>
-                <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between rows. Right arrow reaches the row's follow switch.</span>
-                <ul ref="listElement"
-                    class="chat-ls-list"
-                    :class="{ 'is-phone': isPhone }"
-                    :aria-label="listLabel"
-                    @keydown="onListKeydown">
-                    <li v-for="(drawn, index) in drawnRows"
-                        :key="drawn.rootId"
-                        class="chat-ls-row chat-enter"
-                        :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
-                        :style="{ '--chat-enter-i': index }"
-                        data-testid="thread-row">
-                        <button type="button"
-                                class="chat-ls-hit"
-                                data-testid="thread-row-open"
-                                :data-root-id="drawn.rootId"
-                                :aria-label="drawn.label"
-                                :aria-describedby="`${uid}-hint`"
-                                :tabindex="isTabStop(drawn.rootId, index) ? 0 : -1"
-                                @focus="roveId = drawn.rootId"
-                                @click="emit('open', drawn.rootId, drawn.channelId)"></button>
-
-                        <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
-                        <div class="chat-ls-in" aria-hidden="true" inert>
-                            <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
-                            <div class="chat-ls-main">
-                                <div class="chat-ls-head">
-                                    <b v-if="drawn.who">{{ drawn.who }}</b>
-                                    <span v-if="tab === 'all'" class="chat-ls-sub">
-                                        <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
-                                        <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
-                                    </span>
-                                    <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
-                                </div>
-                                <div class="chat-ls-text">
-                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="personAliasGuid" :isConversation="drawn.isConversation" />
-                                </div>
-                                <div class="chat-ls-foot">
-                                    <span class="chat-ls-faces">
-                                        <Avatar v-for="(face, faceIndex) in drawn.faces" :key="faceIndex" :people="[face]" :size="18" />
-                                    </span>
-                                    <span class="chat-ls-count">{{ drawn.count }}</span>
-                                    <span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>
-                                    <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
-                                        <span v-if="drawn.status"
-                                              class="chat-ls-fol"
-                                              :class="{ 'is-off': drawn.isOff }"
-                                              data-testid="thread-row-status"><Icon v-if="!drawn.isOff" name="bell" size="xs" />{{ drawn.status }}</span>
-                                        <span v-if="drawn.mentions" class="chat-badge" data-testid="thread-row-mentions">
-                                            <Icon name="at" /><span>{{ drawn.mentions }}</span>
-                                        </span>
-                                    </span>
-                                </div>
-                            </div>
+                <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
+                <div class="chat-ls-in" aria-hidden="true" inert>
+                    <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
+                    <div class="chat-ls-main">
+                        <div class="chat-ls-head">
+                            <b v-if="drawn.who">{{ drawn.who }}</b>
+                            <span v-if="tab === 'all'" class="chat-ls-sub">
+                                <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                                <span v-if="drawn.isRoomNamed">{{ drawn.room }}</span>
+                            </span>
+                            <time class="chat-ls-t">{{ drawn.lastWhen }}</time>
                         </div>
+                        <div class="chat-ls-text">
+                            <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :personAliasGuid="me.personAliasGuid" :isConversation="drawn.isConversation" />
+                        </div>
+                        <div class="chat-ls-foot">
+                            <span class="chat-ls-faces">
+                                <Avatar v-if="drawn.faces.length > 0" :people="drawn.faces" :size="18" />
+                            </span>
+                            <span class="chat-ls-count">{{ drawn.count }}</span>
+                            <span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>
+                            <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
+                                <span v-if="drawn.status"
+                                      class="chat-ls-fol"
+                                      :class="{ 'is-off': drawn.isOff }"
+                                      data-testid="thread-row-status"><Icon v-if="!drawn.isOff" name="bell" size="xs" />{{ drawn.status }}</span>
+                                <Badge v-if="drawn.mentions" icon="at" :count="drawn.mentions" data-testid="thread-row-mentions" />
+                            </span>
+                        </div>
+                    </div>
+                </div>
 
-                        <IconButton class="chat-ls-follow"
-                                    :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
-                                    :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
-                                    data-testid="thread-row-follow"
-                                    tabindex="-1"
-                                    :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
-                                    @click="onFollow(drawn)" />
+                <IconButton class="chat-ls-follow"
+                            :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
+                            :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
+                            data-testid="thread-row-follow"
+                            tabindex="-1"
+                            :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
+                            @click="onFollow(drawn)" />
 
-                        <SettingNote v-if="drawn.error"
-                                     class="chat-ls-rowerr"
-                                     role="alert"
-                                     :note="drawn.error"
-                                     data-testid="thread-row-error"
-                                     @retry="onFollowRetry(drawn.rootId)" />
-                    </li>
-                </ul>
-                <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
-            </template>
-
-            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
-        </div>
-    </PanelHost>
+                <SettingNote v-if="drawn.error"
+                             class="chat-ls-rowerr"
+                             role="alert"
+                             :note="drawn.error"
+                             data-testid="thread-row-error"
+                             @retry="onFollowRetry(drawn.rootId)" />
+            </li>
+        </ul>
+        <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
+    </ListPanel>
 </template>
 
 <style scoped>
-/* The list's row, its states, the failure strip, the empty state and the skeleton are the sheet's, shared with the mentions inbox; what is here is the threads list's own. */
+/* The list's frame and states are the list panel's, and its row the sheet's, shared with the mentions inbox; what is here is the threads list's own. */
 
 /* The tabs' band under the header. */
 .chat-ls-top {
@@ -229,19 +196,12 @@
     white-space: nowrap;
 }
 
+/* The repliers' pile, ringed in the panel's own fill. */
 .chat-ls-faces {
+    --chat-av-ring: var(--chat-surface);
+
     display: inline-flex;
     flex: none;
-}
-
-/* 18px faces overlap 4px, ringed in the panel's own fill so an initial is never cut. */
-.chat-ls-faces :deep(.chat-av) {
-    font-size: 9px !important;
-    box-shadow: 0 0 0 1.5px var(--chat-surface);
-}
-
-.chat-ls-faces > :deep(.chat-pile + .chat-pile) {
-    margin-left: -4px;
 }
 
 .chat-ls-count {
@@ -393,30 +353,31 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import PanelHost from "../ui/panelHost.partial.obs";
+    import ListPanel from "../ui/listPanel.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { failureNote } from "../composables/saveRule.partial";
+    import { useListKeys } from "../composables/useListKeys.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { messageDisplay } from "../heldMessage.partial";
-    import { FollowError } from "../composables/useThreads.partial";
-    import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
+    import { FollowError, ThreadListTab } from "../composables/useThreads.partial";
+    import { ChatError, DisplayPiece, MessageBlock, RoomKind, ThreadListRow, TimelineMessage } from "../types.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
-    type Tab = "channel" | "all";
-
-    type RoomKind = "channel" | "person" | "group";
+    type Tab = ThreadListTab;
 
     /** One row as it is drawn and read. */
-    type DrawnRow = {
+    type DrawnThread = {
         rootId: number;
         channelId: string;
 
@@ -522,18 +483,6 @@
         publicRooms: {
             type: Object as PropType<Record<string, boolean>>,
             default: () => ({})
-        },
-
-        /** Whether the chat is in its one-pane phone layout. */
-        isPhone: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The reader, whose own root is named You. */
-        personAliasGuid: {
-            type: String as PropType<string>,
-            default: ""
         }
     });
 
@@ -551,14 +500,13 @@
     /** Ids this panel's tabs, hint and tab panel are tied together by, unique per panel drawn. */
     const uid = `chat-ls-${newGuid()}`;
 
-    const skeletonWidths = [[46, 92, 60], [38, 84, 44], [52, 88, 70]];
-
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
 
-    /** The row that holds the list's one tab stop, once one has been focused. */
-    const roveId = ref<number | null>(null);
+    // The reader, whose own root is named You; on a phone a row's follow switch always shows.
+    const { isPhone, me } = useChatSession();
 
-    const announcement = ref("");
+    // The list is one tab stop; Up, Down, Home and End move between rows, Right and Left are the row's own.
+    const listKeys = useListKeys(() => props.rows.map(row => row.root.id));
 
     const listElement = ref<HTMLElement>();
     const endElement = ref<HTMLElement>();
@@ -598,9 +546,14 @@
         ? "You follow a thread when you start it, reply in it or are mentioned in it. New replies to those threads collect here."
         : "Reply to any message to start one. Threads you follow from every conversation are under All.");
 
-    const errorSentence = computed((): string => props.error ? messageOrOffline(props.error, offlineRefresh) : "");
+    const drawnRows = computed((): DrawnThread[] => props.rows.map(drawRow));
 
-    const drawnRows = computed((): DrawnRow[] => props.rows.map(drawRow));
+    /** What a screen reader hears as a tab's first page lands. */
+    const loadedSentence = computed((): string => {
+        const count = props.rows.length;
+        const what = `${count} ${count === 1 ? "thread" : "threads"}`;
+        return props.tab === "channel" ? `${what} in ${here.value}` : `${what} you follow`;
+    });
 
     /** The list's rows for the panel's entrance, none while a tab's first page loads. */
     const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.root.id)));
@@ -609,21 +562,14 @@
 
     // #region Event Handlers
 
-    function onRefresh(): void {
-        // a refresh already out answers for this press too
-        if (!props.isRefreshing) {
-            emit("refresh");
-        }
-    }
-
     /** The bell changes at once, so a second press while the first is out asks again. */
-    function onFollow(row: DrawnRow): void {
+    function onFollow(row: DrawnThread): void {
         emit("follow", row.rootId, !row.isFollowing);
     }
 
     /** Try again takes its button away, so the bell it asked again takes focus, its row the tab stop. */
     async function onFollowRetry(rootId: number): Promise<void> {
-        roveId.value = rootId;
+        listKeys.current.value = rootId;
         await nextTick();
         listElement.value?.querySelector<HTMLElement>(`[data-testid='thread-row-open'][data-root-id='${rootId}']`)
             ?.closest(".chat-ls-row")
@@ -642,7 +588,10 @@
         chooseTab(next);
     }
 
-    /** Up, Down, Home and End move between rows; Right reaches a row's follow toggle and Left returns. */
+    /**
+     * The row's own keys, beside the list's: Right reaches a row's follow toggle and Left returns.
+     * Up, Down, Home and End pressed on the toggle move between rows as from the row itself.
+     */
     function onListKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement | null;
         const row = target?.closest<HTMLElement>(".chat-ls-row");
@@ -655,30 +604,14 @@
         if (event.key === "ArrowRight" && isOnHit) {
             event.preventDefault();
             row.querySelector<HTMLElement>("[data-testid='thread-row-follow']")?.focus();
-            return;
         }
-
-        if (event.key === "ArrowLeft" && !isOnHit) {
+        else if (event.key === "ArrowLeft" && !isOnHit) {
             event.preventDefault();
             hit.focus();
-            return;
         }
-
-        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
-            return;
+        else if (!isOnHit) {
+            listKeys.itemAttrs(Number(hit.dataset.rootId)).onKeydown(event);
         }
-
-        const hits = Array.from(listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-hit") ?? []);
-        const index = hits.indexOf(hit);
-        if (index < 0) {
-            return;
-        }
-
-        event.preventDefault();
-        const wanted = event.key === "Home" ? 0 : event.key === "End" ? hits.length - 1 : index + (event.key === "ArrowDown" ? 1 : -1);
-        const next = hits[Math.max(0, Math.min(hits.length - 1, wanted))];
-        next.focus();
-        next.closest(".chat-ls-row")?.scrollIntoView({ block: "nearest" });
     }
 
     // #endregion Event Handlers
@@ -698,12 +631,6 @@
         if (element instanceof HTMLElement) {
             tabElements[tab] = element;
         }
-    }
-
-    /** The first row holds the tab stop until another is focused, or when the one focused is gone. */
-    function isTabStop(rootId: number, index: number): boolean {
-        const isRoveShown = roveId.value !== null && props.rows.some(r => r.root.id === roveId.value);
-        return isRoveShown ? roveId.value === rootId : index === 0;
     }
 
     function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {
@@ -743,13 +670,14 @@
         return /[.!?…]$/.test(text) ? text : `${text}.`;
     }
 
-    function drawRow(row: ThreadListRow): DrawnRow {
+    function drawRow(row: ThreadListRow): DrawnThread {
         const root = row.root;
         const rootId = root.id;
         const followError = props.followError;
         const display = messageDisplay(root);
         const isShown = display.kind === "message" || display.kind === "system";
-        const isMine = !!props.personAliasGuid && root.person_alias_guid?.toLowerCase() === props.personAliasGuid.toLowerCase();
+        const reader = me.value.personAliasGuid;
+        const isMine = !!reader && root.person_alias_guid?.toLowerCase() === reader.toLowerCase();
         const name = fullName(root.sender_nick_name, root.sender_last_name);
         const spokenWho = isMine ? "You" : name || "Someone";
         const who = display.kind === "blocked" ? "" : spokenWho;
@@ -806,41 +734,5 @@
         };
     }
 
-    /**
-     * Takes the root's links out of the tab order. The drawn row is inert, which a browser that
-     * knows inert honours; the oldest Safari Rock supports does not, and would stop on each link.
-     */
-    function quietLinks(): void {
-        listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-in a").forEach(link => {
-            link.tabIndex = -1;
-        });
-    }
-
     // #endregion Functions
-
-    // #region Watchers
-
-    // A screen reader hears what a fetch brought, since the rows change under it without a word.
-    watch(() => props.isLoading, (isLoading, wasLoading) => {
-        if (wasLoading && !isLoading && !props.error) {
-            const count = props.rows.length;
-            const what = `${count} ${count === 1 ? "thread" : "threads"}`;
-            announcement.value = props.tab === "channel" ? `${what} in ${here.value}` : `${what} you follow`;
-        }
-    });
-
-    watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
-        if (wasRefreshing && !isRefreshing && !props.error) {
-            announcement.value = "Threads are up to date";
-        }
-    });
-
-    // #endregion Watchers
-
-    // #region Lifecycle Hooks
-
-    onMounted(quietLinks);
-    onUpdated(quietLinks);
-
-    // #endregion Lifecycle Hooks
 </script>
