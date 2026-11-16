@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-// Floating notices: one raised pill each, stacked in one place above the composer, spoken through
-// one status region that is on the page before anything is said in it. Any part raises one through
+// Floating notices: one raised pill each, stacked in one place above the composer, each said once
+// through the session's announcer, which owns the live regions. Any part raises one through
 // the session's notices; a passing notice goes after the sheet's toast life, a failure stays until
 // it is let go, and one that offers an action stays until its owner takes it back.
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -39,6 +39,11 @@ function drawHost(): { wrapper: VueWrapper, notices: Notices } {
     return { wrapper: mount(Parent, { attachTo: document.body }), notices };
 }
 
+/** What the page's live regions of one politeness say now. */
+function spoken(politeness: "polite" | "assertive"): string[] {
+    return Array.from(document.querySelectorAll<HTMLElement>(`[aria-live='${politeness}']`)).map(region => region.textContent ?? "").filter(text => text !== "");
+}
+
 function pill(wrapper: VueWrapper, key: string): ReturnType<VueWrapper["find"]> {
     return wrapper.find(`[data-key='${key}']`);
 }
@@ -52,18 +57,34 @@ describe("the notices", () => {
         jest.useRealTimers();
     });
 
-    test("speak through one status region, there before anything is said in it", async () => {
+    test("are each said once through the session's announcer, a failure assertively, and the host is no live region of its own", async () => {
         const { wrapper, notices } = drawHost();
         drawn = wrapper;
-        const region = wrapper.get("[data-testid='notices']");
-        expect(region.attributes("role")).toBe("status");
+        const host = wrapper.get("[data-testid='notices']");
+        expect(host.attributes("role")).toBeUndefined();
+        expect(host.attributes("aria-live")).toBeUndefined();
 
         notices.show({ key: "online", code: "back-online", text: "You're back online", icon: "check" });
         await nextTick();
 
-        expect(region.get("[data-key='online']").text()).toBe("You're back online");
-        expect(region.get("[data-key='online']").attributes("data-code")).toBe("back-online");
+        expect(host.get("[data-key='online']").text()).toBe("You're back online");
+        expect(host.get("[data-key='online']").attributes("data-code")).toBe("back-online");
         expect(wrapper.findComponent(Icon).props("name")).toBe("check");
+        expect(spoken("polite")).toEqual(["You're back online"]);
+
+        // raised again in the same words it is not said again, which would clear the region first
+        notices.show({ key: "online", code: "back-online", text: "You're back online", icon: "check" });
+        await nextTick();
+        expect(spoken("polite")).toEqual(["You're back online"]);
+
+        notices.show({ key: "limit", text: "Slow down a little.", tone: "failure" });
+        await nextTick();
+        expect(spoken("assertive")).toEqual(["Slow down a little."]);
+
+        // new words under the same key are said
+        notices.show({ key: "online", text: "Back online, catching up" });
+        await nextTick();
+        expect(spoken("polite")).toEqual(["Back online, catching up"]);
     });
 
     test("a notice raised again under its key replaces itself rather than stacking", async () => {

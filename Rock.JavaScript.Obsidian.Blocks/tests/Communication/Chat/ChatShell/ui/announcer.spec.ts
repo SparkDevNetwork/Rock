@@ -72,6 +72,24 @@ describe("the announcer", () => {
         expect(root.querySelectorAll("[aria-live='polite']")).toHaveLength(1);
     });
 
+    // A live region added together with its first words is often not heard, so both are on the
+    // page from the moment the root, or an open modal surface, is.
+    it("has its polite and assertive regions in the chat's root before anything is said", async () => {
+        shell();
+        await settle();
+        const root = document.querySelector("[data-testid='root']") as HTMLElement;
+        expect(root.querySelectorAll("[aria-live='polite']")).toHaveLength(1);
+        expect(root.querySelectorAll("[aria-live='assertive']")).toHaveLength(1);
+    });
+
+    it("has both its regions inside an open modal surface before anything is said there", async () => {
+        shell(true);
+        await settle();
+        const modal = document.querySelector("[data-testid='modal']") as HTMLElement;
+        expect(modal.querySelectorAll("[aria-live='polite']")).toHaveLength(1);
+        expect(modal.querySelectorAll("[aria-live='assertive']")).toHaveLength(1);
+    });
+
     it("speaks a failure assertively, from its own region", async () => {
         shell();
         await settle();

@@ -53,14 +53,16 @@ describe("the toast's pill", () => {
         jest.useRealTimers();
     });
 
-    test("speaks through one status region, which is there before anything is said in it", async () => {
-        const wrapper = mount(ErrorToast, { props: { errors: [] } });
-        const region = wrapper.get("[data-testid='error-toast']");
-        expect(region.attributes("role")).toBe("status");
+    test("says a failure assertively through the announcer, the toast itself no live region", async () => {
+        const wrapper = mount(ErrorToast, { props: { errors: [] }, attachTo: document.body });
+        const toast = wrapper.get("[data-testid='error-toast']");
+        expect(toast.attributes("role")).toBeUndefined();
 
         await wrapper.setProps({ errors: [{ code: "rpc.rate_limited", severity: "quota", text: "Slow down a little." }] });
 
-        expect(region.get("[data-code='rpc.rate_limited']").text()).toBe("Slow down a little.");
+        expect(toast.get("[data-code='rpc.rate_limited']").text()).toBe("Slow down a little.");
+        expect(document.querySelector("[aria-live='assertive']")?.textContent).toBe("Slow down a little.");
+        wrapper.unmount();
     });
 
     test("stays past 2.6 seconds when it is a failure, since the person may need to act on it", () => {
