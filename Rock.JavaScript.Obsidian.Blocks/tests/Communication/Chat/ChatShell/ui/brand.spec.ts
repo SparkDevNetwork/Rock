@@ -222,7 +222,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#EFB999",
             "thread-unread-line": "#F0B48F",
             "row-announcement": "#FDF5F0",
-            "current-line": "#ECC4AE",
             "focus-line": "#F3A97A",
             "composer-line": "#F4A470",
             "composer-glow": "rgba(255, 121, 29, 0.6)"
@@ -245,7 +244,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#7A4828",
             "thread-unread-line": "#854C27",
             "row-announcement": "#1C1717",
-            "current-line": "#64402A",
             "focus-line": "#9C5425",
             "composer-line": "#A75824",
             "composer-glow": "rgba(255, 121, 29, 0.6)"
@@ -283,7 +281,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#95C0AF",
             "thread-unread-line": "#8BBCA8",
             "row-announcement": "#F0F6F3",
-            "current-line": "#A9C9BE",
             "focus-line": "#77B398",
             "composer-line": "#6DAE91",
             "composer-glow": "rgba(30, 138, 84, 0.6)"
@@ -306,7 +303,6 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#204F3E",
             "thread-unread-line": "#205440",
             "row-announcement": "#0E181B",
-            "current-line": "#21453A",
             "focus-line": "#205D43",
             "composer-line": "#206245",
             "composer-glow": "rgba(30, 138, 84, 0.6)"

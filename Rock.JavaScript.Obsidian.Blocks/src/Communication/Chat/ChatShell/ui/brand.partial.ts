@@ -23,7 +23,7 @@
 /** The tokens drawn from the church color, by their name in the sheet without the prefix. */
 export type BrandTokenSet = Record<"brand-fill" | "on-brand" | "brand-ink" | "brand-tint" | "brand-wash" | "brand-ring" | "brand-line" | "reaction-mine-line" | "flash" | "own-hairline"
     | "mn-bg" | "mn-bg-hover" | "mn-bg-own" | "announcement-pill" | "announcement-ring" | "thread-unread-line" | "row-announcement"
-    | "current-line" | "focus-line" | "composer-line" | "composer-glow", string>;
+    | "focus-line" | "composer-line" | "composer-glow", string>;
 
 /** The variable only Rock's newer themes define; the older themes have no dark mode. */
 const rockThemeV2Probe = "--popup-box-shadow";
@@ -229,10 +229,9 @@ export function brandTokens(color: string): { light: BrandTokenSet, dark: BrandT
         "row-announcement": toHex(mixSrgb(church, parseColor(surface)!, 0.06))
     });
 
-    // The lines in the church color: the open room's icon box at 30% over the line, the search
-    // box's border while it has focus at 55%, and the composer's at 60% with a glow under it.
-    const lines = (line: string): Pick<BrandTokenSet, "current-line" | "focus-line" | "composer-line" | "composer-glow"> => ({
-        "current-line": toHex(mixSrgb(church, parseColor(line)!, 0.30)),
+    // The lines in the church color: the search box's border while it has focus at 55% over the
+    // line, and the composer's at 60% with a glow under it.
+    const lines = (line: string): Pick<BrandTokenSet, "focus-line" | "composer-line" | "composer-glow"> => ({
         "focus-line": toHex(mixSrgb(church, parseColor(line)!, 0.55)),
         "composer-line": toHex(mixSrgb(church, parseColor(line)!, 0.60)),
         "composer-glow": withAlpha(church, 0.6)

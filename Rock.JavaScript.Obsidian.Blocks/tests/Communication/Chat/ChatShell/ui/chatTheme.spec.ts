@@ -261,11 +261,6 @@ const tokens: Token[] = [
         light: "0 0 0 1px var(--chat-line), 0 1px 2px rgba(13,17,23,.05), 0 6px 14px -4px rgba(30,36,52,.16)",
         dark: "0 0 0 1px rgba(255,255,255,.08), 0 8px 18px -6px rgba(0,0,0,.65)"
     },
-    {
-        name: "shadow-frame",
-        light: "0 1px 2px rgba(13,17,23,.04), 0 24px 48px -16px rgba(60,66,90,.22)",
-        dark: "0 0 0 1px rgba(255,255,255,.05), 0 24px 60px -16px rgba(0,0,0,.8)"
-    },
 
     // Motion.
     { name: "ease-in", light: "cubic-bezier(.1,.9,.2,1)" },
@@ -277,7 +272,6 @@ const tokens: Token[] = [
     { name: "t-msg", light: "260ms" },
     { name: "t-panel", light: "300ms" },
     { name: "rise", light: "8px" },
-    { name: "msg-scale", light: ".985" },
     { name: "pop-scale", light: ".96" },
     { name: "react-from", light: ".55" }
 ];
@@ -285,7 +279,6 @@ const tokens: Token[] = [
 /** What reduced motion changes: no lift, no scale, no slide, and shorter entrances. */
 const reducedMotion: Array<[string, string]> = [
     ["rise", "0px"],
-    ["msg-scale", "1"],
     ["pop-scale", "1"],
     ["react-from", "1"],
     ["t-msg", "140ms"],
@@ -318,7 +311,6 @@ const namedLiterals: Named[] = [
     { name: "d-flash", value: "2.2s" },
     { name: "d-row-flash", value: "1.2s" },
     { name: "d-roll", value: "220ms" },
-    { name: "d-pop-remove", value: "130ms" },
     { name: "d-tools-show", value: "90ms" },
     { name: "d-tools-move", value: "140ms" },
     { name: "d-tools-hide", value: "80ms" },
@@ -335,7 +327,6 @@ const namedLiterals: Named[] = [
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
-    { name: "d-divider-fade", value: "600ms" },
     { name: "d-read-fade", value: "400ms" },
     { name: "d-pulse", value: "1.2s" },
     { name: "d-sweep", value: "1.1s" },
@@ -343,10 +334,7 @@ const namedLiterals: Named[] = [
     { name: "d-refresh-spin", value: ".8s" },
     { name: "d-skeleton", value: "1.6s" },
     { name: "d-tip-delay", value: "500ms" },
-    { name: "d-tip-delay-rx", value: "350ms" },
-    { name: "d-search-people", value: "250ms" },
-    { name: "d-search-channels", value: "200ms" },
-    { name: "d-lookup-line", value: "300ms" }
+    { name: "d-tip-delay-rx", value: "350ms" }
 ];
 
 // #endregion The tokens, as data

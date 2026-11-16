@@ -65,9 +65,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1
   },
-  "S9": {
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 11
-  },
+  "S9": {},
   "S12": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/addPeople.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 5,
