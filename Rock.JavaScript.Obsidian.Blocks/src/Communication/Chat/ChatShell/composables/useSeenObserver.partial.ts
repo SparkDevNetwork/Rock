@@ -16,9 +16,10 @@
 //
 
 // Marking messages seen, the one way the feed and a thread do it: a row counts as seen once any of
-// it is on screen in a page the reader is looking at.
+// it is on screen in a page the reader is looking at. Beside it, where one mark stands against
+// the reader's view, as the feed's New divider tells its unread strip whether to point up or down.
 
-import { onScopeDispose } from "vue";
+import { onMounted, onScopeDispose, readonly, Ref, ref } from "vue";
 
 /** What a list asks of its seen watch. */
 export type SeenObserver = {
@@ -74,6 +75,77 @@ export function useSeenObserver(root: () => HTMLElement | null, onSeen: (element
                     watching.observe(element);
                 }
             });
+        }
+    };
+}
+
+/** Where one mark stands against the reader's view. */
+export type PlaceInView = {
+    /** Whether the mark is out of view, as the browser last reported. */
+    isOffScreen: Readonly<Ref<boolean>>;
+
+    /** Whether the mark, out of view, is above it rather than below. */
+    isAbove: Readonly<Ref<boolean>>;
+
+    /** Watches the mark as it is drawn, in place of the one before; null while none is drawn. */
+    watch: (element: Element | null) => void;
+};
+
+/**
+ * Watches one mark for where it stands against the reader's view: in it, above it or below it. A
+ * mark drawn before the list is mounted is watched from the mount, when the scroller it is placed
+ * against is drawn. A browser with no observer reports the mark in view.
+ *
+ * Called in a component's setup; it stops as the component goes.
+ *
+ * @param root The list's scroller, the view the mark is placed against.
+ *
+ * @returns The mark's place, and how to tell it which element the mark is.
+ */
+export function usePlaceInView(root: () => HTMLElement | null): PlaceInView {
+    const isOffScreen = ref(false);
+    const isAbove = ref(false);
+    let mark: Element | null = null;
+    let observer: IntersectionObserver | null = null;
+
+    onMounted(() => {
+        if (typeof IntersectionObserver === "undefined") {
+            return;
+        }
+
+        observer = new IntersectionObserver(entries => {
+            for (const entry of entries) {
+                isOffScreen.value = !entry.isIntersecting;
+                isAbove.value = !!entry.rootBounds && entry.boundingClientRect.bottom < entry.rootBounds.top;
+            }
+        }, { root: root() });
+
+        if (mark) {
+            observer.observe(mark);
+        }
+    });
+
+    onScopeDispose(() => {
+        observer?.disconnect();
+        observer = null;
+    });
+
+    return {
+        isOffScreen: readonly(isOffScreen),
+        isAbove: readonly(isAbove),
+        watch(element: Element | null): void {
+            if (element === mark) {
+                return;
+            }
+
+            if (mark) {
+                observer?.unobserve(mark);
+            }
+
+            mark = element;
+            if (element) {
+                observer?.observe(element);
+            }
         }
     };
 }

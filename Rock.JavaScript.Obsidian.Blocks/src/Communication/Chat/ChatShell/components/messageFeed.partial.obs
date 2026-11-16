@@ -47,9 +47,8 @@
                 message count, and a reader at the newest message is kept there through it.
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
-                <Button v-if="timeline.hasMore" kind="ghost" size="sm" class="chat-feed-older" @click="emit('loadOlder')">
-                    Show older messages
-                </Button>
+                <!-- Older messages are asked for as this comes into view at the top, as a thread's are. -->
+                <div v-if="timeline.hasMore" ref="olderElement" class="chat-feed-older" aria-hidden="true" data-testid="feed-older"></div>
 
                 <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
                 <ChannelIntro v-if="isIntroShown && facts"
@@ -311,8 +310,7 @@
 }
 
 .chat-feed-older {
-    align-self: center;
-    margin-top: 12px;
+    height: 1px;
 }
 
 /* Each day is its own section, its pill where the day starts. */
@@ -701,6 +699,8 @@
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+    import { usePlaceInView, useSeenObserver } from "../composables/useSeenObserver.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
@@ -889,14 +889,26 @@
 
     /** The feed's one action bar, on the message the pointer rests on or a keyboard reaches. */
     const actionBar = useActionBar(() => feed.value);
-    let observer: IntersectionObserver | null = null;
-    let dividerObserver: IntersectionObserver | null = null;
+
+    /** The mark at the top of what is held, while older messages remain. */
+    const olderElement = ref<HTMLElement>();
+
+    // A row counts as seen once any of it is on screen, which is what the read position is saved from.
+    const seen = useSeenObserver(() => feed.value, row => emit("seen", Number(row.dataset.messageId)));
+
+    // Scrolling up to the top asks for the page before it; the shell asks once for a page however
+    // often it is told, and a page that lands moves the mark out of view, so it can ask again.
+    usePagingTrigger(olderElement, () => emit("loadOlder"), {
+        enabled: () => props.timeline.isLoaded && props.timeline.hasMore,
+        root: () => feed.value
+    });
 
     let dividerElement: Element | null = null;
 
-    /** Whether the New divider is out of view, and on which side, as the browser last reported. */
-    const isDividerOffScreen = ref(false);
-    const isDividerAbove = ref(false);
+    /** Whether the New divider is out of view, and on which side, so the strip can point to it. */
+    const dividerPlace = usePlaceInView(() => feed.value);
+    const isDividerOffScreen = dividerPlace.isOffScreen;
+    const isDividerAbove = dividerPlace.isAbove;
 
     const isMarkedRead = ref(false);
 
@@ -1211,34 +1223,15 @@
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
     function setDivider(element: unknown): void {
-        const next = element instanceof Element ? element : null;
-        if (next === dividerElement) {
-            return;
-        }
-
-        if (dividerElement) {
-            dividerObserver?.unobserve(dividerElement);
-        }
-
-        dividerElement = next;
-        if (next) {
-            dividerObserver?.observe(next);
-        }
+        dividerElement = element instanceof Element ? element : null;
+        dividerPlace.watch(dividerElement);
     }
 
-    /**
-     * Watches every message row that is not watched yet. A row counts as seen once any of it
-     * is on screen, which is what the read position is saved from.
-     */
+    /** Watches every message row not watched yet; the shell keeps only the newest it is told of. */
     function observeRows(): void {
-        if (!feed.value || !observer) {
-            return;
+        if (feed.value) {
+            seen.observeAll(feed.value, "[data-message-id]");
         }
-
-        feed.value.querySelectorAll<HTMLElement>("[data-message-id]:not([data-observed])").forEach(element => {
-            element.dataset.observed = "true";
-            observer?.observe(element);
-        });
     }
 
     /** The newest id in the timeline, or null when it is empty. */
@@ -1276,17 +1269,27 @@
     // Keyed on the messages at either end, not their count: the newest page replaces a held one
     // of the same size when more than a page arrived meanwhile, and its rows still need watching,
     // counting and following.
-    watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
+    watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async (ends, oldEnds) => {
+        const [first, newest] = ends.split(":");
+        const [oldFirst, oldNewest] = oldEnds.split(":");
+
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
         reader.read();
 
         const shouldFollow = isAtNewest.value;
+        const fromEnd = reader.endOf() - (feed.value?.scrollTop ?? 0);
         noteArrivals(!shouldFollow);
         await nextTick();
         observeRows();
 
         if (shouldFollow) {
             reader.toNewest();
+        }
+        else if (feed.value && first !== oldFirst && newest === oldNewest) {
+            // An older page went in above: the reader stays as far from the newest end as they
+            // were, so what they were reading holds still, as a browser that anchors scrolling
+            // would keep it, and the mark at the top leaves view until they scroll up again.
+            feed.value.scrollTop = reader.endOf() - fromEnd;
         }
 
         if (props.timeline.messages.length > 0) {
@@ -1365,26 +1368,6 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        observer = new IntersectionObserver(entries => {
-            for (const entry of entries) {
-                if (entry.isIntersecting && document.visibilityState === "visible") {
-                    emit("seen", Number((entry.target as HTMLElement).dataset.messageId));
-                }
-            }
-        }, { root: feed.value });
-
-        // The divider's own watch: whether it is in view, and if not, above or below.
-        dividerObserver = new IntersectionObserver(entries => {
-            for (const entry of entries) {
-                isDividerOffScreen.value = !entry.isIntersecting;
-                isDividerAbove.value = !!entry.rootBounds && entry.boundingClientRect.bottom < entry.rootBounds.top;
-            }
-        }, { root: feed.value });
-
-        if (dividerElement) {
-            dividerObserver.observe(dividerElement);
-        }
-
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
         if (!props.timeline.isLoaded) {
             skeletonTimer = setTimeout(() => {
@@ -1404,10 +1387,6 @@
 
     onBeforeUnmount(() => {
         actionBar.stop();
-        observer?.disconnect();
-        observer = null;
-        dividerObserver?.disconnect();
-        dividerObserver = null;
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
         }

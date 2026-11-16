@@ -2195,13 +2195,13 @@ describe("loading older messages", () => {
         const state = timeline([message(5, anna, at(14, 50)), message(6, anna, at(14, 51))], { hasMore: true });
         const wrapper = draw({ timeline: state });
         placeScroll(wrapper, 0, 2000, 500);
-        let height = 2000;
+        // laid out as a browser would: 300px a drawn row, so the height grows only once the page is drawn
+        const height = (): number => 1400 + 300 * wrapper.findAll("[data-message-id]").length;
         const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
-        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: () => height });
-        layContent(wrapper, () => height);
+        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: height });
+        layContent(wrapper, height);
 
         state.messages.unshift(message(3, anna, at(14, 40)), message(4, anna, at(14, 45)));
-        height = 2600;
         await nextTick();
         await nextTick();
 
