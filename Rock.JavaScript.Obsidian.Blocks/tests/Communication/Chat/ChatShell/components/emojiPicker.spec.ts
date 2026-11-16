@@ -742,6 +742,7 @@ describe("on a phone", () => {
     test("the full picker is a sheet of the picker's height, and the dialog is the sheet", async () => {
         await open({ mode: "insert", isPhone: true });
 
+        expect(sheet()).not.toBeNull();
         expect(search().closest("[data-testid='sheet']")).toBe(sheet());
         expect(sheet()?.classList.contains("is-picker")).toBe(true);
         expect(sheet()?.getAttribute("aria-label")).toBe("Add emoji");
@@ -750,8 +751,9 @@ describe("on a phone", () => {
     });
 
     test("the reaction picker's tray is a sheet as tall as what it holds", async () => {
-        await open({ isPhone: true });
+        await open({ startsOn: "tray", isPhone: true });
 
+        expect(sheet()).not.toBeNull();
         expect(trayGlyphs()[0].closest("[data-testid='sheet']")).toBe(sheet());
         expect(sheet()?.classList.contains("is-picker")).toBe(false);
         expect(sheet()?.getAttribute("aria-label")).toBe("Add reaction");
