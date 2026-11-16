@@ -354,7 +354,7 @@ const namedLiterals: Named[] = [
 
     // Durations.
     { name: "d-flash", value: "2.2s" },
-    { name: "d-row-flash", value: "1.2s" },
+    { name: "d-move", value: "220ms", reduced: "0ms" },
     { name: "d-roll", value: "220ms" },
     { name: "d-tools-show", value: "90ms" },
     { name: "d-tools-move", value: "140ms", reduced: "0ms" },

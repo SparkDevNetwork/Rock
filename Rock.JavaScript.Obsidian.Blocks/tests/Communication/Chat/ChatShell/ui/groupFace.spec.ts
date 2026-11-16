@@ -212,19 +212,14 @@ describe("a group's face ring", () => {
         expect(backgrounds.every(value => value === `var(${fill})`)).toBe(true);
     });
 
-    test("follows a sidebar row's arrival flash, its fill registered as a color so it fades", () => {
+    // A row a message moves glides to its place and is never washed, so its ring has no arrival
+    // fill to follow: no flash in the sheet, no fill registered to fade.
+    test("has no sidebar row's arrival wash to follow: no flash in the sheet, no fill registered to fade", () => {
         const text = readFileSync(join(shell, "components/channelSidebar.partial.obs"), "utf8");
-        // the keyframes are the token sheet's, where every motion lives; the fill is registered beside the row
         const sheet = readFileSync(join(shell, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
-        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(sheet);
-        const registered = /@property --chat-row-fill\s*\{([^{}]*)\}/.exec(text);
 
-        expect(flash).not.toBeNull();
-        expect(flash![1]).not.toMatch(/background/);
-        expect(flash![1]).toMatch(/0%\s*\{\s*--chat-row-fill: var\(--chat-flash\);/);
-        expect(flash![1]).toMatch(/100%\s*\{\s*--chat-row-fill: transparent;/);
-        expect(registered).not.toBeNull();
-        expect(registered![1]).toMatch(/syntax: "<color>";/);
-        expect(registered![1]).toMatch(/initial-value: transparent;/);
+        expect(sheet).not.toMatch(/@keyframes chat-row-flash/);
+        expect(text).not.toMatch(/@property --chat-row-fill/);
+        expect(text).not.toMatch(/chat-row-flash/);
     });
 });

@@ -423,7 +423,7 @@ describe("a row's states", () => {
         expect(w.emitted("select")).toEqual([[youth.channel_id]]);
     });
 
-    test("flashes a row that arrives, and not the rows a fresh sidebar puts in a new order", async () => {
+    test("washes no row that arrives, nor the rows a fresh sidebar puts in a new order", async () => {
         const w = mountSidebar({ rows: [team, youth, dmAnna] });
         expect(w.findAll(".is-flash")).toHaveLength(0);
 
@@ -431,13 +431,13 @@ describe("a row's states", () => {
         await w.setProps({ rows: [youth, team, dmAnna, starred] });
         await nextTick();
 
-        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, starred.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("flashes nothing when a room leaves, though every row below it climbs a place", async () => {
+    test("washes nothing when a room leaves, though every row below it climbs a place", async () => {
         const w = mountSidebar({ rows: [team, youth, starred] });
 
         await w.setProps({ rows: [youth, starred] });
@@ -446,7 +446,7 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("flashes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
+    test("washes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [{ ...team, is_favorite: true }, youth, prayer] });
 
@@ -481,14 +481,14 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("flashes only the room the person stars, which moves up into Starred", async () => {
+    test("washes not even the room the person stars, which moves up into Starred keeping its element", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [team, youth, prayer] });
 
         await w.setProps({ rows: [{ ...prayer, is_favorite: true }, team, youth] });
         await nextTick();
 
-        expect(rowOf(w, prayer.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, prayer.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
     });
@@ -779,7 +779,7 @@ describe("the loading sidebar", () => {
         expect(w.emitted("retry")).toHaveLength(1);
     });
 
-    test("glows nothing when the first sidebar lands after a previewed room's row", async () => {
+    test("washes nothing when the first sidebar lands after a previewed room's row", async () => {
         const w = mountSidebar({ rows: [team], loadState: "loading" });
 
         await w.setProps({ rows: [youth, team, dmAnna], loadState: "loaded" });
@@ -901,8 +901,9 @@ describe("a previewed room", () => {
     });
 });
 
-// The live sidebar: the reader's own last message reads "You: " in any direct message, and a row
-// glows once when a message from someone else reaches it, as the design's incoming message does.
+// The live sidebar: the reader's own last message reads "You: " in any direct message. A row a
+// message moves glides to its place, keeping its element and its face; nothing washes it, since
+// its bold, dot and badge already say what is new.
 describe("the reader's own last message", () => {
     test("reads as the platform's line says, its 'You: ' included, the row adding nothing of its own", () => {
         const ownPair = { ...dmAnna, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis", is_unread: false, preview_line: "You: Do you have a minute after rehearsal?" };
@@ -914,14 +915,14 @@ describe("the reader's own last message", () => {
     });
 });
 
-describe("the flash on a live message", () => {
-    test("a direct message's row glows on a message from someone else, even where it does not move", async () => {
+describe("a live message, which moves a row and never washes it", () => {
+    test("a direct message's row is not washed by a message from someone else, its bold and dot saying it", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup] });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
@@ -934,17 +935,17 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a conversation new to the list glows with someone else's first message, not with the reader's own, as from another of their devices", async () => {
+    test("a conversation new to the list is not washed, whoever wrote its first message", async () => {
         const w = mountSidebar({ rows: [dmGroup] });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_is_own: true }, { ...dmAnna, is_unread: true }, dmGroup] });
         await nextTick();
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
-        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("on a post Rock made in the reader's name, which is news to them as its bold says", async () => {
+    test("nor on a post Rock made in the reader's name, which its bold says", async () => {
         const w = mountSidebar({ rows: [dmGroup, dmRead] });
 
         await w.setProps({
@@ -952,7 +953,7 @@ describe("the flash on a live message", () => {
         });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
     test("not on an edit of the newest message, nor a walk-back after a delete", async () => {
@@ -965,34 +966,49 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("glows for its own whole length, not ending when the dot it gains finishes its own animation", async () => {
-        const w = mountSidebar({ rows: [dmRead, dmGroup] });
+    // One step: the bold and the mark arrive in the same frame, the badge never popping in after.
+    test("turns bold and gains its mark in one step, the mention badge not popping in after", async () => {
+        const w = mountSidebar({ rows: [team, dmRead] });
 
-        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
+        await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true, mention_count: 1 }, { ...dmRead, last_message_id: 12, is_unread: true }] });
         await nextTick();
-        // the dot's animation ends first, and its event bubbles up through the row
-        rowOf(w, dmRead.channel_id).get("[data-testid='row-dot']").element.dispatchEvent(new Event("animationend", { bubbles: true }));
-        await nextTick();
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
 
-        // the row's own glow ending is what clears it
-        rowOf(w, dmRead.channel_id).element.dispatchEvent(new Event("animationend", { bubbles: true }));
-        await nextTick();
-        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).toContain("is-unread");
+        const badge = rowOf(w, team.channel_id).get("[data-testid='row-mention-badge']");
+        expect(badge.classes()).not.toContain("is-pop");
+        expect(rowOf(w, dmRead.channel_id).find("[data-testid='row-dot']").exists()).toBe(true);
     });
 
-    test("not the conversation on screen, which a message from someone else reaches without glowing", async () => {
+    // A row a live message moves to the top glides there by the list's one move, keeping its
+    // element, so its face is never drawn again and never fades back in.
+    test("a direct message moved to the top keeps its element and its face, gliding by the list's one move", async () => {
+        const w = mountSidebar({ rows: [dmGroup, dmAnna, dmRead] });
+        const row = rowOf(w, dmRead.channel_id).element;
+        const face = rowOf(w, dmRead.channel_id).get(".chat-av").element;
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup, dmAnna] });
+        await nextTick();
+
+        expect(rowIdsIn(w, "dms")[0]).toBe(dmRead.channel_id);
+        expect(rowOf(w, dmRead.channel_id).element).toBe(row);
+        expect(rowOf(w, dmRead.channel_id).get(".chat-av").element).toBe(face);
+        const groups = w.findAllComponents({ name: "TransitionGroup" });
+        expect(groups.length).toBeGreaterThan(0);
+        expect(groups.every(group => group.props("moveClass") === "chat-move")).toBe(true);
+    });
+
+    test("not the conversation on screen, nor another reached at the same time", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup, team], activeChannelId: dmRead.channel_id });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way" }, team, { ...dmGroup, last_message_id: 12, last_message_preview: "Hello", is_unread: true }] });
         await nextTick();
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
-        // another conversation reached at the same time still glows
-        expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
+        // nor is another conversation reached at the same time
+        expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a direct message a reread sidebar shows newer messages for does not glow, as after a reconnect; a live one after it does", async () => {
+    test("a direct message is not washed by a reread sidebar, nor by a live message after it", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup], sidebarReads: 1 });
 
         await w.setProps({
@@ -1003,16 +1019,16 @@ describe("the flash on a live message", () => {
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
-        // a room the reread brings that was not listed is still news
-        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+        // nor a room the reread brings that was not listed
+        expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 13, last_message_preview: "Here", is_unread: true }, { ...dmGroup, last_message_id: 12, is_unread: true }, dmAnna] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a direct message glows on its first live message after the page's first sidebar, which glows nothing", async () => {
+    test("a direct message is not washed by its first live message after the page's first sidebar", async () => {
         const w = mountSidebar({ rows: [], sidebarReads: 0, loadState: "loading" });
 
         await w.setProps({ rows: [dmRead, dmGroup], sidebarReads: 1, loadState: "loaded" });
@@ -1022,10 +1038,10 @@ describe("the flash on a live message", () => {
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a channel's row does not glow on turning unread where it does not move: its bold and darker mark say it", async () => {
+    test("a channel's row is not washed on turning unread: its bold and darker mark say it", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 
         await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true }, dmRead] });
