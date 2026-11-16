@@ -224,8 +224,9 @@ function fakeShell(): Record<string, unknown> {
             state: timelineOf
         },
         motion: createMessageMotion(),
-        // the latest failure, as the sender tells it, held so a test can say a send just failed
-        sender: { pending: () => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last },
+        // the latest failure, as the sender tells it, held so a test can say a send just failed; its
+        // sends are reactive, as the sender's own rows are, so a test's new sends reach what reads them
+        sender: reactive({ pending: (): unknown[] => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last }),
         // the real drafts, on a storage that outlives the block as a browser's does
         drafts: createDrafts({
             storage: {
@@ -2308,10 +2309,11 @@ describe("mentions", () => {
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
 
-        const drawer = w.findComponent(ThreadDrawerComponent);
-        expect(drawer.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: false });
+        // the reply composer the block fills the drawer's foot with
+        const reply = w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent);
+        expect(reply.props("mentionSource")).toEqual({ canMention: true, people: [], isAllOffered: false });
 
-        drawer.vm.$emit("mentionQuery", "b");
+        reply.vm.$emit("mentionQuery", "b");
         expect(mentionsOf().search).toHaveBeenCalledWith(team, "b");
     });
 
@@ -2327,7 +2329,7 @@ describe("mentions", () => {
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
         mentionsOf().warm.mockClear();
-        w.findComponent(ThreadDrawerComponent).vm.$emit("composerFocus");
+        w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).vm.$emit("focus");
         expect(mentionsOf().warm).toHaveBeenCalledWith(team);
     });
 });
@@ -5165,12 +5167,12 @@ describe("the person a composer's Busy note is about", () => {
         await openRow(w, dmAnna.channel_id);
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
-        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toEqual(anna);
+        expect(w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).props("busyPerson")).toEqual(anna);
 
         await openRow(w, team.channel_id);
         await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
         await settle();
-        expect(w.findComponent(ThreadDrawerComponent).props("busyPerson")).toBeNull();
+        expect(w.findComponent(ThreadDrawerComponent).findComponent(ComposerComponent).props("busyPerson")).toBeNull();
     });
 });
 

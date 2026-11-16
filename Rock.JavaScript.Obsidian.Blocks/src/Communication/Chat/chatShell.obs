@@ -339,13 +339,11 @@
                                   :root="drawnThread.root"
                                   :replies="drawnThread.replies"
                                   :pending="shell.sender.pending(drawnThread.channelId)"
-                                  :lastFailure="shell.sender.lastFailure()"
                                   :isFollowing="drawnThread.following"
                                   :followError="drawerFollowError"
                                   :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
                                   :isChannel="threadKind === 'channel'"
                                   :isDirectMessage="threadKind === 'person'"
-                                  :busyPerson="threadPair"
                                   :isFromList="threadOrigin !== null"
                                   :listTitle="threadOrigin === 'mentions' ? 'Mentions' : 'Threads'"
                                   :hasMore="drawnThread.hasMore"
@@ -353,44 +351,58 @@
                                   :error="drawnThread.error"
                                   :olderError="drawnThread.olderError"
                                   :landOnId="landingReplyId"
-                                  :isLocked="!shell.state.isComposerOpen"
-                                  :lockedReason="lockedReason(threadRow, shell.state.service)"
-                                  :maxLength="threadRow?.max_length ?? 0"
                                   :isPersonLeader="threadRow?.is_leader ?? false"
-                                  :draft="threadDraft ?? undefined"
-                                  :tray="trayOf(drawnThread.channelId, drawnThread.rootId)"
-                                  :quote="threadQuote"
-                                  :isQuoteOwn="isOwnQuote(threadQuote)"
                                   :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
                                   :editingId="editingIdIn(drawnThread.channelId)"
                                   :editError="editErrorIn(drawnThread.channelId)"
                                   :isEditSaving="isEditSavingIn(drawnThread.channelId)"
                                   :reactionHost="reactionHost"
-                                  :emojiSource="emojiSource"
-                                  :mentionSource="mentionSourceFor(threadRow)"
                                   :typing="threadTyping"
                                   :typingPlace="threadQuoteKey"
-                                  @mentionQuery="onMentionQuery(threadRow, $event)"
-                                  @composerFocus="onComposerFocus(threadRow, 'thread')"
-                                  @composerBlur="onComposerBlur"
                                   @close="closeThreadDrawer"
                                   @back="onThreadBack"
                                   @follow="onFollowThread"
-                                  @send="onSendReply"
                                   @seen="shell.threads.seen"
                                   @loadOlder="onLoadOlderReplies"
                                   @retry="onRetry"
                                   @discard="shell.sender.discard"
-                                  @cancelQuote="onCancelQuote(threadQuoteKey)"
-                                  @draftText="onDraftText(threadQuoteKey, $event)"
-                                  @draftAlsoSent="onDraftAlsoSent(threadQuoteKey, $event)"
-                                  @draftMention="onDraftMention(threadQuoteKey, $event)"
-                                  @editLast="onEditLastReply"
                                   @jump="onJump($event, true)"
-                                  @messageAction="onMessageAction($event, drawnThread.rootId)"
-                                  @emojiPickerOpen="onEmojiPickerOpen"
-                                  @emojiChosen="onEmojiChosen"
-                                  @overLimit="onOverLimit" />
+                                  @messageAction="onMessageAction($event, drawnThread.rootId)">
+                        <template #composer>
+                            <Composer isThread
+                                      :title="roomTitles[drawnThread.channelId] ?? ''"
+                                      :isChannel="threadKind === 'channel'"
+                                      :isLocked="!shell.state.isComposerOpen"
+                                      :lockedReason="lockedReason(threadRow, shell.state.service)"
+                                      :maxLength="threadRow?.max_length ?? 0"
+                                      :text="threadDraft?.text ?? ''"
+                                      :mentions="threadDraft?.mentions ?? []"
+                                      :isAlsoSent="threadDraft?.isAlsoSent ?? false"
+                                      :quote="threadQuote"
+                                      :isQuoteOwn="isOwnQuote(threadQuote)"
+                                      :emojiSource="emojiSource"
+                                      :mentionSource="mentionSourceFor(threadRow)"
+                                      :conversationKey="threadComposerKey"
+                                      :sendFailure="threadFailure"
+                                      :lastFailure="shell.sender.lastFailure()"
+                                      :tray="trayOf(drawnThread.channelId, drawnThread.rootId)"
+                                      :busyPerson="threadPair"
+                                      @send="onSendReply"
+                                      @retryFailed="onRetryFailed(threadSends)"
+                                      @discardFailed="onDiscardFailed(threadSends)"
+                                      @update:text="onDraftText(threadQuoteKey, $event)"
+                                      @update:isAlsoSent="onDraftAlsoSent(threadQuoteKey, $event)"
+                                      @mention="onDraftMention(threadQuoteKey, $event)"
+                                      @editLast="onEditLastReply"
+                                      @cancelQuote="onCancelQuote(threadQuoteKey)"
+                                      @emojiPickerOpen="onEmojiPickerOpen"
+                                      @emojiChosen="onEmojiChosen"
+                                      @mentionQuery="onMentionQuery(threadRow, $event)"
+                                      @focus="onComposerFocus(threadRow, 'thread')"
+                                      @blur="onComposerBlur"
+                                      @overLimit="onOverLimit" />
+                        </template>
+                    </ThreadDrawer>
                 </div>
             </aside>
 
@@ -983,7 +995,7 @@
     } = useOverlaysView({ shell, activeChannelId, personAliasGuid, rootElement, frame, openReactionPicker, closeReactionPicker });
 
     const {
-        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, conversationTyping, threadTyping,
+        conversationTray, conversationDraft, threadDraft, conversationSends, conversationFailure, threadSends, threadFailure, threadComposerKey, conversationTyping, threadTyping,
         onMentionQuery, onComposerFocus, onComposerBlur, onDraftText, onDraftAlsoSent, onDraftMention, onConversationDragOver, onConversationDrop,
         onSendReply, onEmojiPickerOpen, onEmojiChosen, onRetry, onRetryFailed, onDiscardFailed, trayOf, mentionSourceFor
     } = useComposers({ shell, activeChannelId, activeRow, isJoinBarShown, drawnThread, panelKind, isPanelHidden, conversationQuoteKey, threadQuoteKey });
