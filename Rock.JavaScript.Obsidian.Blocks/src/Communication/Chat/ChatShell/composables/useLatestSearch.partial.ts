@@ -36,8 +36,8 @@ export type LatestSearchOptions<T> = {
     /** Whether a query is a search at all; one that is not asks nothing and clears the last answer. */
     isSearchable?: (query: string) => boolean;
 
-    /** Told of each answer kept, with the query it answers, for a box that holds its answers in its own state. */
-    onAnswer?: (answer: T, query: string) => void;
+    /** Told of each answer kept, with the query and page it answers, for a box that holds its answers in its own state. */
+    onAnswer?: (answer: T, query: string, page: number) => void;
 };
 
 /** A box's search: what it holds now, and what changes it. */
@@ -54,8 +54,14 @@ export type LatestSearch<T> = {
     /** Why the newest ask failed, or null. */
     error: unknown;
 
+    /** The page the newest answer is, from 1. */
+    page: number;
+
     /** Searches for a query after the pause, or at once when told to. */
     set: (query: string, options?: { isAtOnce?: boolean }) => void;
+
+    /** Asks the next page of the query held, unless an ask is out; a newer query drops it. */
+    more: () => void;
 
     /** Drops the pause and the ask out; the answer held stays. */
     cancel: () => void;
@@ -67,12 +73,12 @@ export type LatestSearch<T> = {
 /**
  * A search box's search. Made in a component's setup or another scope, it stops with it.
  *
- * @param fetch Asks for a query's answer; the signal is aborted when a newer query replaces it.
+ * @param fetch Asks for a page of a query's answer, from 1; the signal is aborted when a newer query replaces it.
  * @param options How the box searches.
  *
  * @returns The search.
  */
-export function useLatestSearch<T>(fetch: (query: string, signal: AbortSignal) => Promise<T>, options: LatestSearchOptions<T> = {}): LatestSearch<T> {
+export function useLatestSearch<T>(fetch: (query: string, signal: AbortSignal, page: number) => Promise<T>, options: LatestSearchOptions<T> = {}): LatestSearch<T> {
     const pause = options.pause ?? searchPause;
 
     let timer: ReturnType<typeof setTimeout> | null = null;
@@ -82,20 +88,21 @@ export function useLatestSearch<T>(fetch: (query: string, signal: AbortSignal) =
     let asks = 0;
     let isStopped = false;
 
-    async function ask(query: string): Promise<void> {
+    async function ask(query: string, page: number): Promise<void> {
         const number = ++asks;
         controller = new AbortController();
         try {
-            const answer = await fetch(query, controller.signal);
+            const answer = await fetch(query, controller.signal, page);
             if (isStopped || number !== asks) {
                 return;
             }
 
             controller = null;
             search.results = answer;
+            search.page = page;
             search.error = null;
             search.busy = false;
-            options.onAnswer?.(answer, query);
+            options.onAnswer?.(answer, query, page);
         }
         catch (error) {
             // A cancelled ask is stale from that moment, its failure most of all.
@@ -136,14 +143,23 @@ export function useLatestSearch<T>(fetch: (query: string, signal: AbortSignal) =
 
         search.busy = true;
         if (isAtOnce) {
-            void ask(query);
+            void ask(query, 1);
             return;
         }
 
         timer = setTimeout(() => {
             timer = null;
-            void ask(query);
+            void ask(query, 1);
         }, pause);
+    }
+
+    function more(): void {
+        if (isStopped || search.busy || search.results === null) {
+            return;
+        }
+
+        search.busy = true;
+        void ask(search.query, search.page + 1);
     }
 
     function stop(): void {
@@ -156,7 +172,9 @@ export function useLatestSearch<T>(fetch: (query: string, signal: AbortSignal) =
         results: null,
         busy: false,
         error: null,
+        page: 0,
         set,
+        more,
         cancel,
         stop
     }) as LatestSearch<T>;
