@@ -41,7 +41,9 @@ export type PagingTriggerOptions = {
  * observer pages nothing by scrolling.
  *
  * @param sentinel The element at the list's end, while drawn.
- * @param loadMore Asks for the next page. A promise holds the next ask until it settles.
+ * @param loadMore Asks for the next page. A promise holds the next ask until it settles, and lets
+ *     a list whose `enabled` does not change around each page ask again after a short one; a page
+ *     that failed is asked again only on the sentinel's next arrival.
  * @param options When the list may ask, and against what it scrolls.
  */
 export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMore: () => unknown, options: PagingTriggerOptions = {}): void {
@@ -64,10 +66,14 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
         const asked = loadMore();
         if (asked instanceof Promise) {
             isPromised = true;
-            void asked.finally(() => {
+            asked.then(() => {
                 isPromised = false;
                 isAsking = false;
                 ask();
+            }, () => {
+                // the list shows the failure and its way to ask again; asking at once would only fail again
+                isPromised = false;
+                isAsking = isInView;
             });
         }
     }
