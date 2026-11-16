@@ -67,7 +67,7 @@ describe("an initials avatar", () => {
         expect(face.textContent!.trim()).toBe("AL");
     });
 
-    test.each([20, 32, 34, 48])("is %ipx round with initials 0.37 of its size", size => {
+    test.each([32, 34, 48])("is %ipx round with initials 0.37 of its size", size => {
         const [face] = faces(draw([{ name: "Anna Lee" }], size));
 
         expect(parseFloat(face.style.width)).toBe(size);
@@ -76,11 +76,26 @@ describe("an initials avatar", () => {
     });
 
     // A face in a group's mark is partly covered or crowded by the others, so it reads by one letter.
-    test.each([20, 25, 39])("draws one initial 0.42 of its size at %ipx when asked for one letter", size => {
+    test.each([25, 39])("draws one initial 0.42 of its size at %ipx when asked for one letter", size => {
         const [face] = faces(mount(Avatar, { props: { people: [{ name: "Anna Lee", photoUrl: null }], size, isOneLetter: true } }));
 
         expect(face.textContent!.trim()).toBe("A");
         expect(Math.abs(parseFloat(face.style.fontSize) - size * 0.42)).toBeLessThanOrEqual(0.01);
+    });
+
+    // Below 9px an initial stops reading, so a small face's letters hold there instead of
+    // shrinking with it: the 18px faces of a thread's pill keep the 9px they were drawn at.
+    test.each([
+        [16, false],
+        [18, false],
+        [20, false],
+        [18, true],
+        [20, true]
+    ])("holds its initials at 9px on a %ipx face (one letter: %s), where the ratio would draw them smaller", (size, isOneLetter) => {
+        const [face] = faces(mount(Avatar, { props: { people: [{ name: "Anna Lee", photoUrl: null }], size, isOneLetter } }));
+
+        expect(parseFloat(face.style.width)).toBe(size);
+        expect(face.style.fontSize).toBe("9px");
     });
 
     test("gives the same name the same hue on every draw", () => {
