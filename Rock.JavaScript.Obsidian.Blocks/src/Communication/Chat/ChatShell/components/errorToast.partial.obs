@@ -47,7 +47,8 @@
     let raised: string[] = [];
 
     // Failures first. A failure stays until it is let go; a notice passes after the toast life.
-    // Each mirrors the shell's own list, so it goes when the shell drops it, never before.
+    // Each mirrors the shell's own list, so it goes when the shell drops it, never before. The
+    // shell grows and shrinks its lists in place, so the watch reads into them.
     watch(() => [props.errors, props.notices] as const, ([errors, notices]) => {
         const items: NoticeItem[] = [
             ...errors
@@ -61,5 +62,5 @@
         raised.filter(key => !keys.includes(key)).forEach(key => shown.withdraw(key));
         items.forEach(item => shown.show(item));
         raised = keys;
-    }, { immediate: true });
+    }, { immediate: true, deep: true });
 </script>
