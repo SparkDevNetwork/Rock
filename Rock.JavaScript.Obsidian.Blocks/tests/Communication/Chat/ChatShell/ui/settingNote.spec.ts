@@ -47,7 +47,8 @@ describe("the inline notice", () => {
         expect(retry.props("size")).toBe("sm");
         expect(retry.props("icon")).toBe("refresh");
         // after the words, never inside them, so the sentence reads whole
-        expect(note.element.lastElementChild).toBe(retry.element);
+        expect(note.element.lastElementChild?.contains(retry.element)).toBe(true);
+        expect(note.get(".chat-set-note-words").element.contains(retry.element)).toBe(false);
     });
 
     test("a failure that cannot be asked again offers nothing to press", () => {
@@ -90,7 +91,7 @@ describe("the inline notice", () => {
             props: { note: { kind: "error", text: "Not sent.", retry: () => undefined } },
             slots: { end: "<button data-testid='x-delete'>Delete</button>" }
         });
-        const ends = [...note.element.children].slice(-2).map(child => child.getAttribute("data-testid"));
+        const ends = [...note.element.lastElementChild!.children].map(child => child.getAttribute("data-testid"));
 
         expect(ends).toEqual(["note-retry", "x-delete"]);
     });
