@@ -172,6 +172,7 @@ jobs:
           repositories: Rock
 
       - name: Checkout PR branch
+        timeout-minutes: 5
         uses: actions/checkout@v5
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -455,11 +456,29 @@ jobs:
         run: gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null
 
       - name: Report failure
-        if: failure()
+        if: failure() || cancelled()
+        env:
+          PUSHED: ${{ steps.push.outcome }}
         run: |
+          log="[Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          if [ "$PUSHED" = "success" ]; then
+            # The change is on public, so never say "Ship failed" and keep the
+            # label. Finish what the success path does; each part is retry-safe.
+            gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
+              -b "**Shipped to public, but the run stopped before it finished.** Don't add \`$LABEL\` again.
+          $SHIPPED
+
+          If this PR is still open, close it and add the \`awaiting-build\` label. If merge-up conflicts were resolved automatically and there's no comment explaining them, the workflow log shows each one. $log
+
+          <!-- shipped-sha: $SHIPPED_SHA -->"
+            gh pr close "$PR" -R "$GITHUB_REPOSITORY" || true
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=awaiting-build" > /dev/null || true
+            exit 0
+          fi
+
           reason="${SHIP_FAIL:-Something unexpected failed. See the workflow log.}"
           gh pr comment "$PR" -R "$GITHUB_REPOSITORY" \
             -b "**Ship failed.** $reason
 
-          [Workflow log]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          $log"
           gh api -X DELETE "repos/$GITHUB_REPOSITORY/issues/$PR/labels/$LABEL" || true
