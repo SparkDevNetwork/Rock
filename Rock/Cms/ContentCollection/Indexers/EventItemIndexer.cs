@@ -97,7 +97,7 @@ namespace Rock.Cms.ContentCollection.Indexers
                     .Where( eci => eci.EventCalendarId == contentCollectionSourceCache.EntityId )
                     .Select( eci => eci.EventItem )
                     .ToList()
-                    .Where( ei => ei.NextStartDateTime.HasValue && ei.NextStartDateTime >= now )
+                    .Where( ei => ei.IsActive && ei.NextStartDateTime.HasValue && ei.NextStartDateTime >= now )
                     .ToList();
 
                 if ( !eventItems.Any() )
@@ -150,8 +150,21 @@ namespace Rock.Cms.ContentCollection.Indexers
                     .Include( ei => ei.EventItemOccurrences )
                     .FirstOrDefault( ei => ei.Id == id );
 
-                if ( itemEntity == null || !itemEntity.NextStartDateTime.HasValue || itemEntity.NextStartDateTime < RockDateTime.Now )
+                /*
+                    11/16/2026 - MSE
+
+                    An event item that is missing, inactive, has no upcoming occurrence
+                    or has already ended must not stay in the content collection index.
+                    Delete any existing documents for it instead of leaving them
+                    searchable until the next full index job. The delete does not use
+                    the open RockContext so it is safe to await here.
+
+                    Reason: Remove inactive and ended event items from search as soon as they are saved.
+                */
+                if ( itemEntity == null || !itemEntity.IsActive || !itemEntity.NextStartDateTime.HasValue || itemEntity.NextStartDateTime < RockDateTime.Now )
                 {
+                    await DeleteContentCollectionDocumentAsync( id );
+
                     return 0;
                 }
 
