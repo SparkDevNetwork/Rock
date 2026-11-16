@@ -1414,6 +1414,10 @@ namespace Rock.Blocks.Mobile.Connection
                 if ( existingNote.Text != text )
                 {
                     existingNote.Text = text;
+
+                    // Match the web Connections Hub: the editor becomes the
+                    // story author shown on the Celebrations Report.
+                    existingNote.CreatedByPersonAliasId = RequestContext.CurrentPerson?.PrimaryAliasId;
                     RockContext.SaveChanges();
                 }
             }
