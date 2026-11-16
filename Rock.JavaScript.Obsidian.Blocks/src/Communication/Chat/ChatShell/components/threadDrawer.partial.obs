@@ -313,23 +313,6 @@
 .chat-th-body.is-community:not(.is-phone) :deep(.chat-msg.is-community) {
     --chat-cm-pad: 16px;
 }
-
-.chat-grp :deep(.chat-msg.is-conversational) {
-    max-width: calc(min(78%, 620px) + 42px);
-}
-
-.chat-grp.is-own :deep(.chat-msg.is-conversational) {
-    align-self: flex-end;
-    max-width: min(78%, 620px);
-}
-
-.is-phone .chat-grp :deep(.chat-msg.is-conversational) {
-    max-width: calc(86% + 42px);
-}
-
-.is-phone .chat-grp.is-own :deep(.chat-msg.is-conversational) {
-    max-width: 86%;
-}
 </style>
 
 <script setup lang="ts">

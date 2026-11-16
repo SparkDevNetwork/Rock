@@ -425,27 +425,6 @@
     padding: 0;
 }
 
-/*
-    A bubble is at most 78 percent of the group's width and 620px, 86 percent on a phone; another
-    person's row also holds their face and its gap, so it is that much wider.
-*/
-.chat-grp :deep(.chat-msg.is-conversational) {
-    max-width: calc(min(78%, 620px) + 42px);
-}
-
-.chat-grp.is-own :deep(.chat-msg.is-conversational) {
-    align-self: flex-end;
-    max-width: min(78%, 620px);
-}
-
-.is-phone .chat-grp :deep(.chat-msg.is-conversational) {
-    max-width: calc(86% + 42px);
-}
-
-.is-phone .chat-grp.is-own :deep(.chat-msg.is-conversational) {
-    max-width: 86%;
-}
-
 .chat-unread-strip {
     position: absolute;
     top: 0;

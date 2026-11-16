@@ -1056,6 +1056,29 @@
 }
 
 /*
+    A bubble in a group of the conversation or a thread is at most 78 percent of the group's width
+    and 620px, 86 percent on a phone; another person's row also holds their face and its gap, so it
+    is that much wider. Here once for both, which draw the same groups; a row outside a group, such
+    as a system line, keeps its own width.
+*/
+.chat-shell .chat-grp .chat-msg.is-conversational {
+    max-width: calc(min(78%, 620px) + 42px);
+}
+
+.chat-shell .chat-grp.is-own .chat-msg.is-conversational {
+    align-self: flex-end;
+    max-width: min(78%, 620px);
+}
+
+.chat-shell .chat-grp .chat-msg.is-conversational.is-phone {
+    max-width: calc(86% + 42px);
+}
+
+.chat-shell .chat-grp.is-own .chat-msg.is-conversational.is-phone {
+    max-width: 86%;
+}
+
+/*
     A send that failed: a solid danger disc with a light bang, on the message where Sending… was and
     on the strip over the composer that offers its choices. Its glyph is a share of the disc, so it
     draws the same at the size either place gives it.
