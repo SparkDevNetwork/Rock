@@ -25,6 +25,7 @@ using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -46,6 +47,11 @@ namespace Rock.Blocks.Communication.Chat
     {
         #region Keys
 
+        /// <summary>
+        /// The value sent to the browser in place of a stored API secret.
+        /// </summary>
+        private const string ApiSecretMask = "********";
+
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
@@ -61,7 +67,8 @@ namespace Rock.Blocks.Communication.Chat
             return new ChatConfigurationInitializationBox
             {
                 ChatConfigurationBag = GetCurrentChatConfigurationBag(),
-                NavigationUrls = GetBoxNavigationUrls()
+                NavigationUrls = GetBoxNavigationUrls(),
+                IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
             };
         }
 
@@ -80,6 +87,11 @@ namespace Rock.Blocks.Communication.Chat
             if ( bag == null )
             {
                 return ActionBadRequest();
+            }
+
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "You are not authorized to edit the chat configuration." );
             }
 
             SaveChatConfigurationToSystemSettings( bag );
@@ -149,7 +161,7 @@ namespace Rock.Blocks.Communication.Chat
             return new ChatConfigurationBag
             {
                 ApiKey = chatConfiguration.ApiKey,
-                ApiSecret = chatConfiguration.ApiSecret,
+                ApiSecret = chatConfiguration.ApiSecret.IsNotNullOrWhiteSpace() ? ApiSecretMask : string.Empty,
                 AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
                 ChatBadgeDataViews = chatBadgeDataViews,
@@ -207,7 +219,7 @@ namespace Rock.Blocks.Communication.Chat
             var chatConfiguration = new Rock.Communication.Chat.ChatConfiguration
             {
                 ApiKey = bag.ApiKey,
-                ApiSecret = bag.ApiSecret,
+                ApiSecret = bag.ApiSecret == ApiSecretMask ? preSaveChatConfiguration.ApiSecret : bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
                 DirectMessageAccessDataViewGuid = directMessageDataViewGuid,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
