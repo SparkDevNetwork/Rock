@@ -25,6 +25,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, PropType } from "vue";
 import PanelHost from "../../../../../src/Communication/Chat/ChatShell/ui/panelHost.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 let wrapper: VueWrapper | null = null;
 
@@ -172,5 +173,25 @@ describe("the panel's entrance", () => {
         riseEnds(w, "c");
         await w.vm.$nextTick();
         expect(isEntering(w)).toBe(false);
+    });
+});
+
+// On a phone the panel fills the frame and leaves by its back chevron, with no X. The host reads
+// the phone flag from the session, so no screen between the shell and the host carries it.
+describe("the panel's way out", () => {
+    test("on a phone, as the session says, is the back chevron alone", async () => {
+        wrapper = mount(PanelHost, { props: { title: "Mentions" }, global: { provide: providedSession({ isPhone: true }) }, attachTo: document.body });
+
+        expect(wrapper.find("[data-testid='panel-back']").exists()).toBe(true);
+        expect(wrapper.find("[data-testid='panel-close']").exists()).toBe(false);
+        await wrapper.get("[data-testid='panel-back']").trigger("click");
+        expect(wrapper.emitted("close")).toHaveLength(1);
+    });
+
+    test("on a wide block is the X alone", () => {
+        wrapper = mount(PanelHost, { props: { title: "Mentions" }, global: { provide: providedSession({ isPhone: false }) }, attachTo: document.body });
+
+        expect(wrapper.find("[data-testid='panel-back']").exists()).toBe(false);
+        expect(wrapper.find("[data-testid='panel-close']").exists()).toBe(true);
     });
 });
