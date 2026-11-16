@@ -125,7 +125,7 @@
 .chat-lrow.is-dimmed > .chat-lrow-main,
 .chat-lrow.is-dimmed > .chat-lrow-meta,
 .chat-lrow.is-dimmed > .chat-lrow-detail {
-    opacity: .55;
+    opacity: .62;
 }
 
 /*
