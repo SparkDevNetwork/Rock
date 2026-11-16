@@ -96,6 +96,12 @@ describe("the inline notice", () => {
         expect(ends).toEqual(["note-retry", "x-delete"]);
     });
 
+    test("takes the attributes for its Try again from where it is drawn, as the empty state's action does", () => {
+        const note = mount(SettingNote, { props: { note: { kind: "error", text: "Not sent.", retry: () => undefined }, retryAttrs: { "data-testid": "x-retry" } } });
+
+        expect(note.findComponent(Button).attributes("data-testid")).toBe("x-retry");
+    });
+
     test("takes its test id and id from where it is drawn", () => {
         const note = mount(SettingNote, { props: { note: { kind: "info", text: "Hi" } }, attrs: { "data-testid": "x-note", id: "x-1" } });
 

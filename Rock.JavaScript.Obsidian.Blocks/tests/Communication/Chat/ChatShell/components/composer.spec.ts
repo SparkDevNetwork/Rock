@@ -854,7 +854,7 @@ describe("the composer's strip for a failed send", () => {
         const notice = wrapper.findComponent(SettingNote);
         expect(notice.attributes("data-testid")).toBe("composer-failed");
         expect(notice.props("note").kind).toBe("error");
-        expect(strip(wrapper).get("[data-testid='note-retry']").text()).toBe("Try again");
+        expect(strip(wrapper).get("[data-testid='composer-failed-retry']").text()).toBe("Try again");
         const buttons = strip(wrapper).findAll("button");
         expect(buttons.map(button => button.text())).toEqual(["Try again", "Delete"]);
         expect(buttons.every(button => button.attributes("type") === "button")).toBe(true);
@@ -895,7 +895,7 @@ describe("the composer's strip for a failed send", () => {
     test("Try again and Delete reach the owner, and focus goes back to the box", async () => {
         const wrapper = mountComposer({ props: { sendFailure: offline }, attachTo: document.body });
 
-        await strip(wrapper).get("[data-testid='note-retry']").trigger("click");
+        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
         await flushPromises();
         expect(wrapper.emitted("retryFailed")).toHaveLength(1);
         expect(document.activeElement).toBe(editorOf(wrapper));
@@ -947,7 +947,7 @@ describe("the composer's strip for a failed send", () => {
             attachTo: document.body
         });
 
-        await strip(wrapper).get("[data-testid='note-retry']").trigger("click");
+        await strip(wrapper).get("[data-testid='composer-failed-retry']").trigger("click");
         await flushPromises();
 
         expect(document.activeElement).toBe(editorOf(wrapper));
