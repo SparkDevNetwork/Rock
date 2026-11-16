@@ -773,10 +773,43 @@ namespace RockWeb.Blocks.Communication
                 return;
             }
 
+            // With sending disabled, replies in an existing conversation are still
+            // allowed. A message to anyone else would start a new conversation.
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() && !HasConversationWithRecipient( toPersonId.Value, GetSelectedSmsNumberId() ) )
+            {
+                return;
+            }
+
             SendMessageToPerson( toPersonId.Value, message, false );
             tbNewMessage.Text = string.Empty;
             LoadResponsesForRecipientPerson( toPersonId.Value );
             UpdateMessagePart( message );
+        }
+
+        /// <summary>
+        /// Determines whether the person has a conversation on the system phone number.
+        /// </summary>
+        /// <param name="personId">The identifier of the person.</param>
+        /// <param name="smsSystemPhoneNumberId">The identifier of the system phone number.</param>
+        /// <returns><c>true</c> if the person has sent a message to the number or been sent one from it; otherwise <c>false</c>.</returns>
+        /// <remarks>Outbound messages count when they are SMS, pending or delivered, and on an approved communication.</remarks>
+        private static bool HasConversationWithRecipient( int personId, int smsSystemPhoneNumberId )
+        {
+            var smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
+
+            using ( var rockContext = new RockContext() )
+            {
+                return new CommunicationResponseService( rockContext )
+                        .Queryable()
+                        .Any( r => r.FromPersonAlias.PersonId == personId && r.RelatedSmsFromSystemPhoneNumberId == smsSystemPhoneNumberId )
+                    || new CommunicationRecipientService( rockContext )
+                        .Queryable()
+                        .Any( r => r.PersonAlias.PersonId == personId
+                            && r.MediumEntityTypeId == smsMediumEntityTypeId
+                            && r.Communication.SmsFromSystemPhoneNumberId == smsSystemPhoneNumberId
+                            && r.Communication.Status == CommunicationStatus.Approved
+                            && ( r.Status == CommunicationRecipientStatus.Delivered || r.Status == CommunicationRecipientStatus.Pending ) );
+            }
         }
 
         /// <summary>
@@ -786,6 +819,12 @@ namespace RockWeb.Blocks.Communication
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void mdNewMessage_SaveClick( object sender, EventArgs e )
         {
+            if ( !GetAttributeValue( AttributeKey.EnableSmsSend ).AsBoolean() )
+            {
+                mdNewMessage.Hide();
+                return;
+            }
+
             string message = tbSMSTextMessage.Text.Trim();
             if ( message.IsNullOrWhiteSpace() )
             {
