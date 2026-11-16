@@ -4,7 +4,7 @@
             v-bind="$attrs"
             type="button"
             class="chat-icon-btn"
-            :class="[`is-${size}`, { 'is-failure': tone === 'failure' }]"
+            :class="[`is-${size}`, { 'is-failure': tone === 'failure', 'is-open': isOpen }]"
             :aria-label="label"
             @mouseenter="onPointerEnter"
             @mouseleave="hideTip"
@@ -66,8 +66,12 @@
     color: var(--chat-brand-ink);
 }
 
-/* A header button whose panel or menu is open. */
-.chat-icon-btn[aria-expanded="true"] {
+/*
+    A header button whose panel or menu is open, or a button whose menu closed on a choice that
+    opened something else, while that is up.
+*/
+.chat-icon-btn[aria-expanded="true"],
+.chat-icon-btn.is-open {
     color: var(--chat-brand-ink);
     background: var(--chat-brand-wash);
 }
@@ -184,6 +188,12 @@
 
         /** Keeps the tooltip away, such as while the menu this button opened covers it. */
         isTooltipDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Draws the open look while what the button opened is up, as the composer's "+" while its GIF picker is. */
+        isOpen: {
             type: Boolean as PropType<boolean>,
             default: false
         }
