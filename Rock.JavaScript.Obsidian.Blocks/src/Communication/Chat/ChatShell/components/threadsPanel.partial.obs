@@ -121,7 +121,12 @@
                              @retry="onFollowRetry(drawn.rootId)" />
             </li>
         </ul>
-        <div v-if="hasMore" ref="endElement" class="chat-ls-endmark" aria-hidden="true"></div>
+        <!-- The list's failure strip says why a page failed, so the row says only Try again. -->
+        <LoadMoreRow v-if="hasMore"
+                     name="threads"
+                     label="Load older threads"
+                     :load="loadMore"
+                     :isFailed="!!error" />
     </ListPanel>
 </template>
 
@@ -294,10 +299,6 @@
     margin: -4px 10px 0 52px;
 }
 
-.chat-ls-endmark {
-    height: 1px;
-}
-
 </style>
 
 <script setup lang="ts">
@@ -308,6 +309,7 @@
     import IconButton from "../ui/iconButton.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
     import ListPanel from "../ui/listPanel.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
@@ -315,7 +317,6 @@
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { failureNote } from "../composables/saveRule.partial";
     import { useListKeys } from "../composables/useListKeys.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { messageDisplay } from "../heldMessage.partial";
     import { FollowError, ThreadListTab } from "../composables/useThreads.partial";
     import { ChatError, DisplayPiece, MessageBlock, RoomKind, ThreadListRow, TimelineMessage } from "../types.partial";
@@ -463,13 +464,7 @@
     const listKeys = useListKeys(() => props.rows.map(row => row.root.id));
 
     const listElement = ref<HTMLElement>();
-    const endElement = ref<HTMLElement>();
     const tabElements: Partial<Record<Tab, HTMLElement>> = {};
-
-    // Scrolling to the end of the list asks for the next page, while one is left; its promise lets
-    // the trigger ask again after a page that leaves the end in view. A failure shown in place
-    // holds it until the list is fetched again.
-    usePagingTrigger(endElement, () => props.loadMore(), { enabled: () => props.hasMore && !props.error });
 
     // #endregion Values
 
