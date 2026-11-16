@@ -157,6 +157,12 @@ namespace Rock.Tests.Rest
             AssertDeclaresProtectedOverride( "EntityTypesController", "CheckCanEdit", typeof( EntityType ) );
         }
 
+        [TestMethod]
+        public void PersonTokensController_OverridesCheckCanEdit()
+        {
+            AssertDeclaresProtectedOverride( "PersonTokensController", "CheckCanEdit", typeof( PersonToken ) );
+        }
+
         #endregion
 
         #region Action Methods
@@ -189,6 +195,12 @@ namespace Rock.Tests.Rest
         public void EntityTypesController_PublicActions_AreUnchanged()
         {
             CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( "EntityTypesController" ) ) );
+        }
+
+        [TestMethod]
+        public void PersonTokensController_PublicActions_AreUnchanged()
+        {
+            CollectionAssert.AreEqual( new string[0], GetDeclaredPublicActionNames( GetControllerType( "PersonTokensController" ) ) );
         }
 
         #endregion
