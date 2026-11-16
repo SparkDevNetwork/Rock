@@ -853,6 +853,28 @@ namespace Rock.Blocks.Cms
                 ResultSources = new List<SearchResultSourceBag>()
             };
 
+            /*
+                11/16/2026 - MSE
+
+                A content collection with no sources must return no results. Without
+                this check the ungrouped branch below builds an empty source sub-query,
+                the index components drop an empty sub-query, and the search then runs
+                with no source limit and returns documents from every collection.
+
+                Reason: Prevent a collection with no sources from searching every index.
+            */
+            var sources = ContentCollectionSourceCache.All()
+                .Where( s => s.ContentCollectionId == contentCollection.Id )
+                .OrderBy( s => s.Order )
+                .ToList();
+
+            if ( sources.Count == 0 )
+            {
+                resultBag.TotalResultCount = 0;
+
+                return resultBag;
+            }
+
             if ( !groupResults )
             {
                 AppendAllSourcesToSearchQuery( searchQuery, contentCollection );
@@ -872,11 +894,6 @@ namespace Rock.Blocks.Cms
             }
             else
             {
-                var sources = ContentCollectionSourceCache.All()
-                    .Where( s => s.ContentCollectionId == contentCollection.Id )
-                    .OrderBy( s => s.Order )
-                    .ToList();
-
                 foreach ( var source in sources )
                 {
                     resultBag.ResultSources.Add( await GetSearchResultsForSourceAsync( searchQuery, source, query.Offset ?? 0, maxResults, order ) );

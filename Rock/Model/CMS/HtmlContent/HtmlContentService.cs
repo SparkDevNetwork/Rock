@@ -198,26 +198,42 @@ namespace Rock.Model
         #region HtmlContent Caching Methods
 
         /// <summary>
-        /// Returns the htmlcontent cachekey for a specific blockId or, if specified, a specific entityValue (Entity Context)
+        /// Returns the htmlcontent cachekey for a specific blockId and, if specified, a specific entityValue (Entity Context).
+        /// The block identifier is part of the key unless the entityValue contains a Context Name, in which case blocks
+        /// that share the Context Name also share the cached content. This matches the rules used by
+        /// <see cref="AddFilterLogic(IQueryable{HtmlContent}, int, string)"/> to load the content.
         /// </summary>
         /// <param name="blockId">The block identifier.</param>
         /// <param name="entityValue">The entity value.</param>
         /// <returns></returns>
         private static string HtmlContentCacheKey( int blockId, string entityValue )
         {
-            // If an entity value is specified, then return content specific to that context (entityValue), 
-            // otherwise return content for the current block instance
-            string cacheKey;
-            if ( !string.IsNullOrEmpty( entityValue ) )
+            /*
+                11/16/2026 - MSE
+
+                The cache key must follow the same rules as AddFilterLogic. Content is only
+                shared between blocks when the entityValue contains a Context Name. Before this
+                the block id was dropped from the key whenever any entityValue was set, so two
+                blocks with the same context value and no Context Name could serve each other's
+                cached HTML, including HTML that was restricted to a specific audience.
+
+                Reason: Keep cached HTML from one block from being served by a different block.
+            */
+
+            // No entity value, return content for the current block instance.
+            if ( entityValue.IsNullOrWhiteSpace() )
             {
-                cacheKey = "HtmlContent:" + entityValue;
-            }
-            else
-            {
-                cacheKey = "HtmlContent:" + blockId.ToString();
+                return "HtmlContent:" + blockId.ToString();
             }
 
-            return cacheKey;
+            // A Context Name links content across blocks so the block id is not considered.
+            if ( entityValue.Contains( "&ContextName=" ) )
+            {
+                return "HtmlContent:" + entityValue;
+            }
+
+            // Otherwise the content is specific to this block instance and context value.
+            return "HtmlContent:" + blockId.ToString() + ":" + entityValue;
         }
 
         /// <summary>
