@@ -62,6 +62,16 @@ describe("the badge", () => {
         expect(mount(Badge, { props: { count: 2 } }).attributes("aria-hidden")).toBe("true");
     });
 
+    // A role such as Leader or Announcement is words nothing else on the row says, so it is read
+    // where it stands; a count or a GIF mark repeats what holds it, and stays hidden.
+    test("reads its words when they say what nothing else does, as a role label's do", () => {
+        const role = mount(Badge, { props: { label: "Leader", tone: "neutral", isSpoken: true } });
+
+        expect(role.attributes("aria-hidden")).toBeUndefined();
+        expect(role.text()).toBe("Leader");
+        expect(mount(Badge, { props: { label: "GIF", tone: "media" } }).attributes("aria-hidden")).toBe("true");
+    });
+
     test("springs in as it appears when asked, the set's spring that reduced motion turns to a short fade", () => {
         expect(mount(Badge, { props: { count: 2, isPopping: true } }).classes()).toContain("is-pop");
         expect(ruleOf(styleOf("badge.partial.obs"), ".chat-badge.is-pop")).toMatch(/animation:\s*chat-spring var\(--chat-d-spring\)/);
