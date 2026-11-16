@@ -18,8 +18,12 @@
 // a screen reader reads it, and a pointer that rests on the button sees it as a tooltip after half
 // a second, late enough that passing over a row of buttons does not flicker tips.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { readFileSync } from "fs";
+import { resolve } from "path";
 import { nextTick } from "vue";
+import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
+import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 function tooltip(): Element | null {
     return document.querySelector("[role='tooltip']");
@@ -150,5 +154,78 @@ describe("the icon button", () => {
 
             expect(tooltip()).not.toBeNull();
         });
+    });
+});
+
+// Two sizes: the 32px button of every bar and panel, and the 22px close that sits inside a pill, a
+// notice or a field. A failure is the Not sent marker: the red mark and its words on the line of
+// the text around it, with no button look of its own, owned here rather than restyled from outside.
+describe("the icon button's sizes and tones", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+    });
+
+    test("is the middle size and the default tone unless told otherwise", () => {
+        wrapper = mount(IconButton, { props: { icon: "bell", label: "Notifications" } });
+
+        expect(wrapper.get("button").classes()).toEqual(expect.arrayContaining(["chat-icon-btn", "is-md"]));
+        expect(wrapper.get("button").classes()).not.toContain("is-failure");
+        expect(wrapper.findComponent(Icon).props("size")).toBe("md");
+    });
+
+    test("small is the close of a pill or a field, drawing the smallest icon unless given one", () => {
+        wrapper = mount(IconButton, { props: { icon: "x", label: "Dismiss", size: "sm" } });
+
+        expect(wrapper.get("button").classes()).toContain("is-sm");
+        expect(wrapper.findComponent(Icon).props("size")).toBe("xs");
+    });
+
+    test("a failure is marked as one, and keeps its name and its words for a screen reader", () => {
+        wrapper = mount(IconButton, { props: { icon: "bang", label: "Not sent. Try again or delete", tone: "failure" }, slots: { default: "<span>Not sent</span>" } });
+        const button = wrapper.get("button");
+
+        expect(button.classes()).toContain("is-failure");
+        expect(button.attributes("aria-label")).toBe("Not sent. Try again or delete");
+        expect(button.text()).toBe("Not sent");
+    });
+});
+
+describe("the icon button's look", () => {
+    const style = styleOf("iconButton.partial.obs");
+    const sheet = readFileSync(resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+
+    test("is a 32px square with 8px corners, and its small size a 22px round close", () => {
+        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/width:\s*32px/);
+        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/height:\s*32px/);
+        expect(ruleOf(style, ".chat-icon-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\)/);
+        expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/width:\s*22px/);
+        expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/height:\s*22px/);
+        expect(ruleOf(style, ".chat-icon-btn.is-sm")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
+    });
+
+    // A finger or a pointer needs 24 by 24 CSS pixels, and the words are one short line, so the
+    // button takes the height and a matching negative margin keeps the line from growing.
+    test("a failure is at least 24px tall on the text's baseline, its mark the danger disc, its words setting the baseline", () => {
+        const failure = ruleOf(style, ".chat-icon-btn.is-failure");
+
+        expect(failure).toMatch(/min-height:\s*24px/);
+        expect(failure).toMatch(/align-self:\s*baseline/);
+        expect(failure).toMatch(/margin-block:\s*-4px/);
+        expect(failure).toMatch(/flex-wrap:\s*wrap/);
+        expect(failure).toMatch(/align-content:\s*center/);
+        expect(ruleOf(style, ".chat-icon-btn.is-failure > .chat-ic")).toMatch(/background:\s*var\(--chat-danger\)/);
+        expect(ruleOf(style, ".chat-icon-btn.is-failure :slotted(*)")).toMatch(/align-self:\s*baseline/);
+        expect(ruleOf(style, ".chat-icon-btn.is-failure :slotted(*)")).toMatch(/line-height:\s*var\(--chat-fail-mark-s, 14px\)/);
+    });
+
+    test("the failure's look lives in the part alone: the token sheet no longer restyles the button", () => {
+        expect(sheet).not.toMatch(/chat-fail-btn/);
+    });
+
+    test("holds no motion, priority, reach or capitals of its own", () => {
+        expect(partRuleBreaks("iconButton.partial.obs")).toEqual([]);
     });
 });

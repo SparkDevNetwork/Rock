@@ -459,7 +459,7 @@ describe("a face's status badge", () => {
         expect(badgeOf(wrapper)).toBeNull();
     });
 
-    test.each([[32, -1.3], [36, -0.7], [44, 0.4], [56, 2.2]])("sits on the rim of a %ipx face, %fpx from its right and bottom edges", (size, offset) => {
+    test.each([[32, -1.3], [36, -0.7], [44, 0.4], [56, 0.7]])("sits on the rim of a %ipx face, %fpx from its right and bottom edges", (size, offset) => {
         const wrapper = mount(Avatar, { props: { people: anna, size, status: statuses.online }, global });
         const badge = badgeOf(wrapper)!;
 
@@ -563,5 +563,34 @@ describe("a face's status badge", () => {
 
             expect(transitionClasses(badgeOf(wrapper))).toContain("chat-status-enter-active");
         });
+    });
+});
+
+// The badge scales with the face it sits on, keeping 12px on a 44px face and never drawn under
+// 12px, so it reads as the same mark on a sidebar row and on a profile's large face; its ring is
+// 2px, and 3px from a 64px face up, where 2px would read as a hairline.
+describe("a face's status badge, sized with the face", () => {
+    const online = { state: "online", label: ", online", tip: "Online", busyUntil: null, revision: 4 };
+    const anna = [{ name: "Anna Lee", photoUrl: null }];
+
+    function badgeAt(size: number): HTMLElement {
+        const wrapper = mount(Avatar, { props: { people: anna, size, status: online }, global: { stubs: { transition: false } } });
+        return wrapper.element.querySelector<HTMLElement>("[data-testid='status-badge']")!;
+    }
+
+    test.each([[32, 12], [36, 12], [44, 12], [56, 15], [64, 17], [96, 26]])("on a %ipx face is %ipx", (size, badge) => {
+        expect(badgeAt(size).style.getPropertyValue("--chat-status-s")).toBe(`${badge}px`);
+    });
+
+    test.each([[44, 2], [63, 2], [64, 3], [96, 3]])("on a %ipx face is ringed %ipx", (size, ring) => {
+        expect(badgeAt(size).style.getPropertyValue("--chat-status-ring")).toBe(`${ring}px`);
+    });
+
+    test("draws its disc and its ring from the size and ring it is given", () => {
+        const text = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs"), "utf8");
+
+        expect(text).toMatch(/width:\s*var\(--chat-status-s\)/);
+        expect(text).toMatch(/height:\s*var\(--chat-status-s\)/);
+        expect(text).toMatch(/0 0 0 var\(--chat-status-ring\) var\(--chat-av-ring, var\(--chat-surface\)\)/);
     });
 });
