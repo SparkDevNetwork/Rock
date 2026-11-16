@@ -1220,6 +1220,7 @@ describe("the composer's GIFs", () => {
             on,
             isOn: () => on.value,
             search: jest.fn(async () => ({ ok: true as const, items: [result("first"), result("second")], hasNext: false })),
+            covers: jest.fn(async () => ({ ok: true as const, words: [{ word: "Thanks", still: null, width: 0, height: 0 }] })),
             turnOff: () => {
                 on.value = false;
             }

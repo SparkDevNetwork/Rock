@@ -21,7 +21,9 @@
 // settings carry it, until the platform refuses a search or a send as off, which hides them at
 // once rather than at the next token. A picker holds its own search state while it is open: it
 // waits for the person to stop typing, asks once for each query long enough to mean something, ends
-// an ask a newer query overtook, and pages on.
+// an ask a newer query overtook, and pages on. Before anything is typed a picker shows the
+// platform's topic words, each with one cover from its filtered search: the words live on the
+// platform alone, and the browser asks for them once a page, on the first open.
 //
 // This lives apart from the attachments because its lifetime is the picker's, and nothing in it
 // uploads or signs a file.
@@ -31,9 +33,6 @@ import { ChatError, GifResult } from "../types.partial";
 import { useLatestSearch } from "./useLatestSearch.partial";
 
 // #region Search
-
-/** The words offered before anything is typed, since the picker shows nothing trending. */
-export const gifSuggestions = ["Thanks", "Praying", "Amen", "Celebrate", "Welcome", "Haha", "Wow", "Love it", "Yes", "Coffee"];
 
 /** The shortest query asked; one letter matches too much to be worth KLIPY's answer. */
 const minimumQueryLength = 2;
@@ -50,6 +49,15 @@ export type GifSearchAnswer =
     | { ok: true, items: GifResult[], hasNext: boolean }
     | { ok: false, error: ChatError, retryAfterSeconds: number | null };
 
+/**
+ * One topic word and its cover: a still from the word's own filtered search, at its size, or no
+ * still where KLIPY gave none, which the picker draws as a plain plate.
+ */
+export type GifCover = { word: string, still: string | null, width: number, height: number };
+
+/** The topic words in the platform's order, or that they could not be had. */
+export type GifCovers = { ok: true, words: GifCover[] } | { ok: false };
+
 /** The session's GIF search, and whether GIFs are offered at all. */
 export type Gifs = {
     /** Whether the church has GIFs on and the platform has not since refused them as off; reactive. */
@@ -63,6 +71,9 @@ export type Gifs = {
      * @param signal Ends an ask no longer wanted.
      */
     search: (query: string, page: number, signal?: AbortSignal) => Promise<GifSearchAnswer>;
+
+    /** The topic words and their covers, asked once a page; a failed ask is asked again next time. */
+    covers: () => Promise<GifCovers>;
 
     /** Hides GIFs for the rest of the page's life, as a refusal as off says to. */
     turnOff: () => void;
@@ -92,6 +103,38 @@ export function createGifs(dependencies: GifDependencies): Gifs {
     // rare enough to wait for that.
     const isRefused = ref(false);
 
+    // The covers are the same for every church and change only as KLIPY's results do, so one
+    // answer serves the page's life; a failure is not kept, so Try again asks again.
+    let coversAsked: Promise<GifCovers> | null = null;
+
+    /** Asks the platform for the topic words once, and reads its answer into this client's shape. */
+    async function askCovers(): Promise<GifCovers> {
+        const result: CallResult = await dependencies.callFunction("gif-search", { covers: true });
+        if (!result.ok) {
+            if (result.error.code === gifsOffCode) {
+                isRefused.value = true;
+            }
+            coversAsked = null;
+            return { ok: false };
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const data = (result.data ?? {}) as { words?: unknown };
+        const words = Array.isArray(data.words) ? data.words as Array<Record<string, unknown>> : [];
+        return {
+            ok: true,
+            words: words.filter(entry => typeof entry?.word === "string").map(entry => {
+                const hasCover = typeof entry.still === "string" && typeof entry.w === "number" && typeof entry.h === "number";
+                return {
+                    word: entry.word as string,
+                    still: hasCover ? entry.still as string : null,
+                    width: hasCover ? entry.w as number : 0,
+                    height: hasCover ? entry.h as number : 0
+                };
+            })
+        };
+    }
+
     return {
         // The refusal is read first so a reader is always subscribed to it, even while the church
         // switch is off.
@@ -116,13 +159,20 @@ export function createGifs(dependencies: GifDependencies): Gifs {
             };
         },
 
+        covers: (): Promise<GifCovers> => {
+            if (!coversAsked) {
+                coversAsked = askCovers();
+            }
+            return coversAsked;
+        },
+
         turnOff: () => {
             isRefused.value = true;
         }
     };
 }
 
-/** Where a picker's search stands: suggestions, waiting, GIFs, none, a failure or busy. */
+/** Where a picker's search stands: the topics, waiting, GIFs, none, a failure or busy. */
 export type GifSearchStatus = "idle" | "loading" | "results" | "empty" | "error" | "busy";
 
 /** A picker's search, read reactively. */
@@ -139,7 +189,7 @@ export type GifSearch = {
     readonly busyText: string | null;
 
     /**
-     * Searches for what was typed, once typing stops, or at once for a suggestion or Enter.
+     * Searches for what was typed, once typing stops, or at once for a topic or Enter.
      *
      * @param query What the search box holds.
      * @param isAtOnce Whether to ask now rather than after the pause.
@@ -232,7 +282,7 @@ export function createGifSearch(gifs: Gifs): GifSearch {
             state.query = query;
             const trimmed = query.trim();
             if (trimmed.length < minimumQueryLength) {
-                // a shorter query is no search, so the suggestions come back
+                // a shorter query is no search, so the topics come back
                 search.set(trimmed);
                 state.items = [];
                 state.hasNext = false;
@@ -271,29 +321,41 @@ export function createGifSearch(gifs: Gifs): GifSearch {
 
 // #region Masonry
 
-/** One drawn tile: the GIF and its place in KLIPY's order, which the keys move through. */
-export type MasonryTile = { item: GifResult, index: number, top: number, height: number };
+/** One drawn tile: what it draws and its place in order, which the keys move through. */
+export type MasonryTile<T = GifResult> = { item: T, index: number, top: number, height: number };
 
 /** The space between tiles, as a share of a column's width, so a column's height is in widths. */
 const tileGap = 0.03;
 
 /**
- * Lays GIFs out in columns of equal width, each in the column that is shortest when it comes, so
- * every GIF keeps its own shape and nothing is cropped.
+ * A GIF's height as a share of its width, from its preview's size, which is the one drawn.
  *
- * @param items The GIFs in KLIPY's order.
+ * @param item The GIF.
+ *
+ * @returns Its height in widths.
+ */
+export function gifHeight(item: GifResult): number {
+    const width = item.preview?.width || item.width;
+    return (item.preview?.height || item.height) / (width || 1);
+}
+
+/**
+ * Lays tiles out in columns of equal width, each in the column that is shortest when it comes, so
+ * every GIF keeps its own shape and nothing is cropped. The results and the topics share it.
+ *
+ * @param items The tiles in order.
+ * @param heightOf A tile's height as a share of its width.
  * @param count How many columns.
  *
  * @returns The columns, each its tiles from the top, with where each sits in column widths.
  */
-export function masonry(items: GifResult[], count = 2): MasonryTile[][] {
-    const columns: MasonryTile[][] = Array.from({ length: count }, () => []);
+export function masonry<T>(items: T[], heightOf: (item: T) => number, count = 2): MasonryTile<T>[][] {
+    const columns: MasonryTile<T>[][] = Array.from({ length: count }, () => []);
     const heights = Array<number>(count).fill(0);
 
     items.forEach((item, index) => {
         const shortest = heights.indexOf(Math.min(...heights));
-        const width = item.preview?.width || item.width;
-        const height = (item.preview?.height || item.height) / (width || 1);
+        const height = heightOf(item);
         columns[shortest].push({ item, index, top: heights[shortest], height });
         heights[shortest] += height + tileGap;
     });
@@ -311,7 +373,7 @@ export function masonry(items: GifResult[], count = 2): MasonryTile[][] {
  *
  * @returns The place moved to, or null at an edge.
  */
-export function nextInMasonry(columns: MasonryTile[][], from: number, key: string): number | null {
+export function nextInMasonry(columns: MasonryTile<unknown>[][], from: number, key: string): number | null {
     const column = columns.findIndex(tiles => tiles.some(tile => tile.index === from));
     if (column < 0) {
         return null;
