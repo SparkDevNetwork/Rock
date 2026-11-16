@@ -117,7 +117,7 @@
                 </div>
 
                 <div v-if="refusedText" class="chat-nd-refused-wrap">
-                    <div class="chat-nd-refused" role="alert" data-testid="nd-refused">
+                    <div class="chat-nd-refused" data-testid="nd-refused">
                         <Icon name="alert" size="sm" />
                         <span class="chat-nd-refused-t">{{ refusedText }}</span>
                         <button v-if="refused"
@@ -160,9 +160,6 @@
                 </div>
             </template>
         </div>
-
-        <!-- Keyed by count, so the same words are read twice. -->
-        <span class="chat-sr-only" aria-live="polite" data-testid="nd-announcement"><span v-if="announcement" :key="announcement.count">{{ announcement.text }}</span></span>
     </div>
 </template>
 
@@ -568,6 +565,7 @@
     import IconButton from "../ui/iconButton.partial.obs";
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
     import { useChatSession } from "../chatSession.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
 
     const props = defineProps({
         /** Whether the latest service settings prevent sending, even before a room exists. */
@@ -709,8 +707,8 @@
      */
     const boxText = ref("");
 
-    /** The newest sentence for screen readers, counted so the same words are read twice. */
-    const announcement = ref<{ text: string, count: number } | null>(null);
+    /** The chat's one voice, which says what changed out of sight. */
+    const announcer = useAnnouncer();
 
     /**
      * Opened with people already chosen, the message is the next thing to write, so focus goes
@@ -978,7 +976,7 @@
     }
 
     function announce(text: string): void {
-        announcement.value = { text, count: (announcement.value?.count ?? 0) + 1 };
+        announcer.announce(text);
     }
 
     function cancelSearch(): void {
@@ -1014,6 +1012,14 @@
             announce(phaseWords[phase]);
         }
     });
+
+    // A refusal is said at once and assertively, as it is drawn over the composer, a standing one
+    // included as the view opens; the strip itself is no live region.
+    watch(refusedText, text => {
+        if (text) {
+            announcer.announce(text, "assertive");
+        }
+    }, { immediate: true });
 
     // A conversation found is said once, as it lands, in the strip's own words; the strip itself is
     // no live region, so its person's status changing later says nothing.

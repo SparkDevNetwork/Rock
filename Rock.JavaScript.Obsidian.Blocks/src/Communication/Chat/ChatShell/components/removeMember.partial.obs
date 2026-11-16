@@ -58,7 +58,7 @@
                 <div v-if="choices.length === 0 && query.trim()" class="chat-rm-none" data-testid="leader-none">No one in {{ channelName }} matches “{{ query.trim() }}”.</div>
             </div>
 
-            <div v-if="refusal" class="chat-rm-err" role="alert" data-testid="leader-refusal">
+            <div v-if="refusal" class="chat-rm-err" data-testid="leader-refusal">
                 <Icon name="alert" size="sm" />
                 <span>{{ refusal }}</span>
             </div>
@@ -209,6 +209,7 @@
     import Icon from "../ui/icon.partial.obs";
     import { RosterMember } from "../types.partial";
     import { useChatSession } from "../chatSession.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
 
     const props = defineProps({
         /** The person being removed; null while nobody is, which draws nothing. */
@@ -268,6 +269,9 @@
 
     /** The reader, who is "(you)" among the choices. */
     const { me } = useChatSession();
+
+    /** The chat's one voice, which speaks from inside the open dialog. */
+    const announcer = useAnnouncer();
 
     /** The person last asked about, kept while the dialog plays its close. */
     const shown = ref<RosterMember | null>(props.member);
@@ -340,6 +344,13 @@
         if (member) {
             shown.value = member;
             pick.value = null;
+        }
+    });
+
+    // The door's refusal is said at once and assertively as its box is drawn; the box is no live region.
+    watch(() => props.refusal, text => {
+        if (text) {
+            announcer.announce(text, "assertive");
         }
     });
 

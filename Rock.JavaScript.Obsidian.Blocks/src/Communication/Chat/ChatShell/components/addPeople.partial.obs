@@ -37,21 +37,19 @@
                           @choose="choose"
                           @unchoose="unchoose"
                           @submit="onAdd"
-                          @full="announcement = capText"
-                          @noMatch="announcement = `No one to add for ${$event}`"
-                          @announce="announcement = $event" />
+                          @full="announcer.announce(capText)"
+                          @noMatch="announcer.announce(`No one to add for ${$event}`)"
+                          @announce="announcer.announce($event)" />
 
             <div class="chat-ap-warn" data-testid="ap-warn">
                 <Icon name="history" size="sm" />
                 <span>{{ isChannel ? `New members will see the history of ${channelName}.` : "New people will see this conversation's history, back to the first message." }}</span>
             </div>
 
-            <div v-if="shownRefusal" class="chat-ap-err" role="alert" data-testid="ap-refusal">
+            <div v-if="shownRefusal" class="chat-ap-err" data-testid="ap-refusal">
                 <Icon name="alert" size="sm" />
                 <span>{{ shownRefusal }}</span>
             </div>
-
-            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
 
             <template #actions>
                 <Button kind="ghost" data-testid="ap-cancel" @click="emit('close')">Cancel</Button>
@@ -116,6 +114,7 @@
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -204,7 +203,8 @@
     const pickerElement = ref<InstanceType<typeof PeoplePicker>>();
     const chosen = ref<PersonRow[]>([]);
 
-    const announcement = ref("");
+    /** The chat's one voice, which speaks from inside the open dialog. */
+    const announcer = useAnnouncer();
 
     // #endregion Values
 
@@ -294,13 +294,13 @@
     /** A person the room can take, picked by the picker: the name clears for the next. */
     function choose(person: PersonRow): void {
         chosen.value = [...chosen.value, person];
-        announcement.value = `Added ${nameOf(person)}. ${chosen.value.length} ${chosen.value.length === 1 ? "person" : "people"} chosen.`;
+        announcer.announce(`Added ${nameOf(person)}. ${chosen.value.length} ${chosen.value.length === 1 ? "person" : "people"} chosen.`);
         emit("query", "");
     }
 
     function unchoose(person: PersonRow): void {
         chosen.value = chosen.value.filter(p => p.person_alias_guid !== person.person_alias_guid);
-        announcement.value = `Removed ${nameOf(person)}`;
+        announcer.announce(`Removed ${nameOf(person)}`);
         void nextTick(() => pickerElement.value?.focus());
     }
 
@@ -312,7 +312,13 @@
     watch(() => props.isOpen, isOpen => {
         if (isOpen) {
             chosen.value = [];
-            announcement.value = "";
+        }
+    });
+
+    // The door's refusal is said at once and assertively as its box is drawn; the box is no live region.
+    watch(shownRefusal, text => {
+        if (text) {
+            announcer.announce(text, "assertive");
         }
     });
 
