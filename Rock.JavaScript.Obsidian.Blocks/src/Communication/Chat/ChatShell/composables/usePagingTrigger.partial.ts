@@ -76,6 +76,9 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
         observer?.disconnect();
         observer = null;
         isInView = false;
+
+        // a new sentinel is a new arrival, unless an ask is still out
+        isAsking = isPromised;
         if (!element || typeof IntersectionObserver === "undefined") {
             return;
         }

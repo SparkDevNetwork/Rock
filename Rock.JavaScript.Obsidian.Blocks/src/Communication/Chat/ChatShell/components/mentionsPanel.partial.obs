@@ -42,7 +42,7 @@
 
             <template v-else>
                 <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between mentions.</span>
-                <div ref="listElement" @keydown="onListKeydown">
+                <div ref="listElement">
                     <section v-for="day in days" :key="day.label" :aria-label="day.label">
                         <h3 class="chat-ls-day" data-testid="mentions-day">{{ day.label }}</h3>
                         <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
@@ -60,8 +60,8 @@
                                         :aria-describedby="`${uid}-hint`"
                                         :aria-current="drawn.isCurrent ? 'true' : undefined"
                                         :data-autofocus="drawn.isCurrent ? '' : undefined"
-                                        :tabindex="isTabStop(drawn.messageId) ? 0 : -1"
-                                        @focus="roveId = drawn.messageId"
+                                        v-bind="listKeys.itemAttrs(drawn.messageId)"
+                                        :ref="listKeys.itemRef(drawn.messageId)"
                                         @click="onOpen(drawn)"></button>
                                 <span v-if="drawn.isNew" class="chat-ls-new" aria-hidden="true" data-testid="mention-row-new"></span>
 
@@ -111,7 +111,6 @@
                 </div>
             </template>
 
-            <span class="chat-sr-only" aria-live="polite">{{ announcement }}</span>
         </div>
     </PanelHost>
 </template>
@@ -258,6 +257,8 @@
     import { dayLabel, timeLabel } from "../feedLayout.partial";
     import { messageDisplay } from "../heldMessage.partial";
     import { ChatError, DisplayPiece, MentionRow, MessageBlock, TimelineMessage } from "../types.partial";
+    import { useListKeys } from "../composables/useListKeys.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
 
     // #region Types
 
@@ -402,9 +403,11 @@
     const offlineOlder = "Couldn't load older mentions. You're offline.";
 
     /** The row that holds the list's one tab stop, once one has been focused. */
-    const roveId = ref<number | null>(null);
 
-    const announcement = ref("");
+    const { announce } = useAnnouncer();
+
+    // The list is one tab stop, and the arrows move between rows across the day headings.
+    const listKeys = useListKeys(() => days.value.flatMap(day => day.rows.map(row => row.messageId)));
 
     const listElement = ref<HTMLElement>();
 
@@ -462,34 +465,9 @@
         }
     }
 
-    /** Up, Down, Home and End move between rows, across the day headings. */
-    function onListKeydown(event: KeyboardEvent): void {
-        if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) {
-            return;
-        }
-
-        const hits = Array.from(listElement.value?.querySelectorAll<HTMLElement>(".chat-ls-hit") ?? []);
-        const index = hits.indexOf(event.target as HTMLElement);
-        if (index < 0) {
-            return;
-        }
-
-        event.preventDefault();
-        const wanted = event.key === "Home" ? 0 : event.key === "End" ? hits.length - 1 : index + (event.key === "ArrowDown" ? 1 : -1);
-        const next = hits[Math.max(0, Math.min(hits.length - 1, wanted))];
-        next.focus();
-        next.closest(".chat-ls-row")?.scrollIntoView({ block: "nearest" });
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
-
-    /** The row last focused holds the tab stop while it is drawn; otherwise the first row. */
-    function isTabStop(messageId: number): boolean {
-        const isRoveShown = roveId.value !== null && props.rows.some(r => r.message.id === roveId.value);
-        return isRoveShown ? roveId.value === messageId : props.rows[0]?.message.id === messageId;
-    }
 
     function fullName(nickName: string | null | undefined, lastName: string | null | undefined): string {
         return `${nickName ?? ""} ${lastName ?? ""}`.trim();
@@ -593,13 +571,13 @@
         if (wasLoading && !isLoading && !props.error) {
             const count = props.rows.length;
             const newCount = props.newIds.length;
-            announcement.value = `${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`;
+            announce(`${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`);
         }
     });
 
     watch(() => props.isRefreshing, (isRefreshing, wasRefreshing) => {
         if (wasRefreshing && !isRefreshing && !props.error) {
-            announcement.value = "Mentions are up to date";
+            announce("Mentions are up to date");
         }
     });
 
@@ -612,7 +590,7 @@
 
         olderFrom = null;
         if (props.olderError) {
-            announcement.value = messageOrOffline(props.olderError, offlineOlder);
+            announce(messageOrOffline(props.olderError, offlineOlder));
             return;
         }
 
@@ -620,8 +598,8 @@
         const first = props.rows[from];
         const added = props.rows.length - from;
         if (first) {
-            announcement.value = `${added} older ${added === 1 ? "mention" : "mentions"} loaded`;
-            roveId.value = first.message.id;
+            announce(`${added} older ${added === 1 ? "mention" : "mentions"} loaded`);
+            listKeys.current.value = first.message.id;
             listElement.value?.querySelector<HTMLElement>(`.chat-ls-hit[data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
         }
     }, { flush: "post" });

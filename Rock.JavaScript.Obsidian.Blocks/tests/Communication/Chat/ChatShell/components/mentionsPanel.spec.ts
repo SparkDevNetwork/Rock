@@ -328,7 +328,7 @@ describe("loading, empty and failed", () => {
 
         await w.setProps({ isLoading: false, rows: [row(60), row(50), row(40)], newIds });
 
-        expect(w.get("[aria-live='polite']").text()).toBe(said);
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe(said);
     });
 
     test("says there are no mentions yet, and how they come", () => {

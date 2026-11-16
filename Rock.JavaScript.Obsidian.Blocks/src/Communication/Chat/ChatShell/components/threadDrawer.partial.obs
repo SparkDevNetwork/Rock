@@ -376,6 +376,7 @@
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
+    import { useSeenObserver } from "../composables/useSeenObserver.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
     import { ChatError, ChatPerson, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
@@ -681,7 +682,9 @@
      */
     const reader = useNewestEnd(scroller, bodyElement);
 
-    let rowObserver: IntersectionObserver | null = null;
+    // A reply counts as seen once any of it is on screen, the same rule as the conversation's.
+    const seen = useSeenObserver(scroller, row => emit("seen", Number(row.dataset.replyId)));
+
     let topObserver: IntersectionObserver | null = null;
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -938,15 +941,11 @@
         row.focus({ preventScroll: true });
     }
 
-    /**
-     * Watches every reply row not watched yet. A reply counts as seen once any of it is on screen,
-     * the same rule as the conversation's, and the shell keeps only the newest it is told of.
-     */
+    /** Watches every reply row not watched yet; the shell keeps only the newest it is told of. */
     function observeRows(): void {
-        bodyElement.value?.querySelectorAll<HTMLElement>("[data-reply-id]:not([data-observed])").forEach(element => {
-            element.dataset.observed = "true";
-            rowObserver?.observe(element);
-        });
+        if (bodyElement.value) {
+            seen.observeAll(bodyElement.value, "[data-reply-id]");
+        }
     }
 
     /** Watches the top of the scroller, so scrolling up to it asks for older replies. */
@@ -1018,16 +1017,6 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        if (typeof IntersectionObserver !== "undefined") {
-            rowObserver = new IntersectionObserver(entries => {
-                for (const entry of entries) {
-                    if (entry.isIntersecting && document.visibilityState === "visible") {
-                        emit("seen", Number((entry.target as HTMLElement).dataset.replyId));
-                    }
-                }
-            }, { root: scroller() });
-        }
-
         observeTop();
         void place();
 
@@ -1048,7 +1037,6 @@
     onBeforeUnmount(() => {
         scrollElement?.removeEventListener("scroll", onScroll);
         actionBar.stop();
-        rowObserver?.disconnect();
         topObserver?.disconnect();
         if (focusTimer) {
             clearTimeout(focusTimer);

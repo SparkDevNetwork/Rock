@@ -28,8 +28,8 @@ export type SeenObserver = {
 
 /**
  * Watches a list's rows for being seen. Each row is watched once however often the list redraws,
- * and the reader's store keeps only the newest it is told of. A browser with no observer marks
- * nothing rather than failing.
+ * marked data-observed once it is, and the reader's store keeps only the newest it is told of. A
+ * browser with no observer marks nothing rather than failing.
  *
  * Called in a component's setup; it stops as the component goes.
  *
@@ -40,7 +40,6 @@ export type SeenObserver = {
  */
 export function useSeenObserver(root: () => HTMLElement | null, onSeen: (element: HTMLElement) => void): SeenObserver {
     let observer: IntersectionObserver | null = null;
-    const watched = new WeakSet<Element>();
 
     /** Made on the first rows, when the scroller is drawn to be watched within. */
     function observerFor(): IntersectionObserver | null {
@@ -70,8 +69,8 @@ export function useSeenObserver(root: () => HTMLElement | null, onSeen: (element
             }
 
             container.querySelectorAll<HTMLElement>(selector).forEach(element => {
-                if (!watched.has(element)) {
-                    watched.add(element);
+                if (element.dataset.observed !== "true") {
+                    element.dataset.observed = "true";
                     watching.observe(element);
                 }
             });

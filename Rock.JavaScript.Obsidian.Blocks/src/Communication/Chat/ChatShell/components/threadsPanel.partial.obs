@@ -393,7 +393,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, onMounted, onUpdated, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onMounted, onUpdated, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
@@ -404,6 +404,7 @@
     import { messageOrOffline } from "../errors.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { failureNote } from "../composables/saveRule.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { messageDisplay } from "../heldMessage.partial";
     import { FollowError } from "../composables/useThreads.partial";
     import { ChatError, DisplayPiece, MessageBlock, ThreadListRow, TimelineMessage } from "../types.partial";
@@ -563,7 +564,8 @@
     const endElement = ref<HTMLElement>();
     const tabElements: Partial<Record<Tab, HTMLElement>> = {};
 
-    let endObserver: IntersectionObserver | null = null;
+    // Scrolling to the end of the list asks for the next page, while one is left.
+    usePagingTrigger(endElement, () => emit("loadMore"), { enabled: () => props.hasMore });
 
     // #endregion Values
 
@@ -814,22 +816,6 @@
         });
     }
 
-    /** Watches the end of the list, so scrolling to it asks for the next page. */
-    function observeEnd(): void {
-        endObserver?.disconnect();
-        endObserver = null;
-        if (!endElement.value || typeof IntersectionObserver === "undefined") {
-            return;
-        }
-
-        endObserver = new IntersectionObserver(entries => {
-            if (entries.some(entry => entry.isIntersecting)) {
-                emit("loadMore");
-            }
-        });
-        endObserver.observe(endElement.value);
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -849,18 +835,12 @@
         }
     });
 
-    watch(endElement, observeEnd);
-
     // #endregion Watchers
 
     // #region Lifecycle Hooks
 
     onMounted(quietLinks);
     onUpdated(quietLinks);
-
-    onBeforeUnmount(() => {
-        endObserver?.disconnect();
-    });
 
     // #endregion Lifecycle Hooks
 </script>
