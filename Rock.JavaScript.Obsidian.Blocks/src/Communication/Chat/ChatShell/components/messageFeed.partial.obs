@@ -12,7 +12,7 @@
                 <b>{{ unreadCountText }}</b>
                 <span>since {{ unreadSince }}</span>
             </button>
-            <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
+            <Button kind="ghost" size="sm" data-testid="mark-read" @click="onMarkRead">Mark as read</Button>
         </div>
 
         <!--
@@ -47,9 +47,9 @@
                 message count, and a reader at the newest message is kept there through it.
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
-                <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
+                <Button v-if="timeline.hasMore" kind="ghost" size="sm" class="chat-feed-older" @click="emit('loadOlder')">
                     Show older messages
-                </button>
+                </Button>
 
                 <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
                 <ChannelIntro v-if="isIntroShown && facts"
@@ -530,21 +530,6 @@
     text-underline-offset: 2px;
 }
 
-.chat-ghost-button {
-    height: 28px;
-    padding: 0 12px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-ghost-button:hover {
-    background: var(--chat-hover);
-}
-
 .chat-jump {
     position: absolute;
     bottom: 14px;
@@ -708,6 +693,7 @@
     import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import TypingBubble from "./typingBubble.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
     import { pageRevealKey } from "../pageLoad.partial";

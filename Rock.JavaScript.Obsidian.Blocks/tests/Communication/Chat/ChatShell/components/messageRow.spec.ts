@@ -1546,14 +1546,14 @@ describe("the Leader pill", () => {
 
         const pill = w.get("[data-testid='message-head'] [data-testid='leader-pill']");
         expect(pill.text()).toBe("Leader");
-        expect(pill.classes()).toContain("chat-pill");
+        expect(pill.classes()).toContain("chat-badge");
         expect(pill.element.previousElementSibling?.getAttribute("data-testid")).toBe("sender-name");
     });
 
     test("the pill sits before an announcement's own pill", () => {
         const w = draw({ message: message({ sender_is_leader: true, message_type: "announcement" }), isChannel: true });
 
-        const pills = w.findAll("[data-testid='message-head'] .chat-pill").map(p => p.text());
+        const pills = w.findAll("[data-testid='message-head'] .chat-badge").map(p => p.text());
         expect(pills).toEqual(["Leader", "Announcement"]);
     });
 

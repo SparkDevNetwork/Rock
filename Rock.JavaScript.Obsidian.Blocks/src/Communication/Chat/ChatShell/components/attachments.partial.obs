@@ -14,14 +14,15 @@
                     </span>
                     <span class="chat-attach-chip-main">
                         <span class="chat-attach-chip-name" data-testid="attachment-tray-name" :title="file.name">{{ file.name }}</span>
-                        <!-- A failure stands where a file's size does: its words, then Try again as a link. -->
+                        <!-- A failure stands where a file's size does: its words, then Try again. -->
                         <span v-if="file.status === 'failed'" class="chat-attach-chip-line">
                             <span class="chat-attach-chip-failure" data-testid="attachment-tray-failure" :title="failureText(file)">{{ failureText(file) }}</span>
-                            <button v-if="file.failure?.canRetry"
-                                    type="button"
+                            <Button v-if="file.failure?.canRetry"
+                                    kind="ghost"
+                                    size="sm"
                                     class="chat-attach-chip-retry"
                                     data-testid="attachment-tray-retry"
-                                    @click="tray.retry(file.localId)">Try again</button>
+                                    @click="tray.retry(file.localId)">Try again</Button>
                         </span>
                         <span v-else-if="file.status !== 'uploaded'"
                               class="chat-attach-progress"
@@ -64,7 +65,7 @@
                          :width="item.width ?? undefined"
                          :height="item.height ?? undefined"
                          decoding="async" />
-                    <span v-if="index === shownImages.length - 1 && images.length > shownImages.length" class="chat-attach-more" data-testid="attachment-more">+{{ images.length - shownImages.length }}</span>
+                    <span v-if="index === shownImages.length - 1 && images.length > shownImages.length" class="chat-attach-more"><Badge tone="neutral" :label="`+${images.length - shownImages.length}`" data-testid="attachment-more" /></span>
                 </button>
             </div>
 
@@ -97,7 +98,7 @@
                            playsinline
                            preload="none"
                            @error="deadGifs.add(item.id)"></video>
-                    <span class="chat-attach-gif-badge" data-testid="attachment-gif-badge" aria-hidden="true">GIF</span>
+                    <Badge tone="media" label="GIF" class="chat-attach-gif-badge" data-testid="attachment-gif-badge" />
                     <button v-if="isMotionReduced"
                             type="button"
                             class="chat-attach-gif-play"
@@ -274,27 +275,9 @@
     text-overflow: ellipsis;
 }
 
-/* Try again reads as a link in the line's own color, underlined so it is not color alone. */
+/* Try again never gives way; the failure's words do. */
 .chat-attach-chip-retry {
     flex: none;
-    padding: 0;
-    font: inherit;
-    font-weight: 600;
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    background: transparent;
-    border: 0;
-}
-
-.chat-attach-chip-retry:hover {
-    text-decoration-thickness: 2px;
-}
-
-.chat-attach-chip-retry:focus-visible {
-    border-radius: var(--chat-r-control);
-    outline: 2px solid var(--chat-focus-line);
-    outline-offset: 1px;
 }
 
 /* Progress fills from the left by transform alone, so nothing lays out again as it moves. */
@@ -415,16 +398,6 @@
     bottom: 6px;
     left: 6px;
     z-index: 1;
-    display: inline-flex;
-    align-items: center;
-    height: 18px;
-    padding: 0 6px;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
-    color: var(--chat-media-fg);
-    letter-spacing: .05em;
-    background: var(--chat-media-scrim);
-    border-radius: var(--chat-r-inset);
 }
 
 .chat-attach-gif-play {
@@ -471,14 +444,12 @@
     color: var(--chat-muted);
 }
 
+/* The photos past the grid's last tile, counted on a shade over it. */
 .chat-attach-more {
     position: absolute;
     inset: 0;
     display: grid;
     place-items: center;
-    font-size: var(--chat-fs-display);
-    font-weight: 700;
-    color: var(--chat-tip-fg);
     background: var(--chat-scrim);
 }
 
@@ -583,6 +554,8 @@ a.chat-attach-file:focus-visible {
     import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
     import { useIsMotionReduced } from "../ui/viewport.partial";
     import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
+    import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";

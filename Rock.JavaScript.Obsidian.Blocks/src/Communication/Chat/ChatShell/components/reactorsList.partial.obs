@@ -58,10 +58,12 @@
                 <span class="chat-skeleton chat-rl-sk-face"></span>
                 <span class="chat-skeleton chat-rl-sk-name"></span>
             </div>
-            <div v-if="shown.isFailed" class="chat-rl-err" role="status" data-testid="reactors-error">
-                <span>Couldn't load everyone who reacted.</span>
-                <button type="button" class="chat-rl-retry" @click="loadMore(tab)">Try again</button>
-            </div>
+            <EmptyState v-if="shown.isFailed"
+                        tone="error"
+                        :title="failedText"
+                        actionLabel="Try again"
+                        data-testid="reactors-error"
+                        @action="loadMore(tab)" />
         </div>
     </Dialog>
 </template>
@@ -158,23 +160,6 @@
     width: 120px;
     height: 12px;
 }
-
-.chat-rl-err {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 8px 12px;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-rl-retry {
-    padding: 0;
-    font-weight: 600;
-    color: var(--chat-brand-ink);
-    background: none;
-    border: 0;
-}
 </style>
 
 <script setup lang="ts">
@@ -182,9 +167,11 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
     import { personFace, personName } from "../ui/face.partial";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { ReactionReader } from "../composables/useReactions.partial";
     import { EmojiGlyph, Reaction, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
 
@@ -265,6 +252,11 @@
 
     /** The most rows held for people on their way: what the list shows before it scrolls. */
     const reservedLimit = 8;
+
+    /** What a failed page says, in the list and to a screen reader as it fails. */
+    const failedText = "Couldn't load everyone who reacted.";
+
+    const { announce } = useAnnouncer();
 
     /** How near the list's end, in pixels, the next page is asked for. */
     const pageAheadPx = 80;
@@ -383,6 +375,7 @@
         list.isLoading = false;
         if (!page) {
             list.isFailed = true;
+            announce(failedText);
             return;
         }
 
