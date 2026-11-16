@@ -342,10 +342,19 @@ namespace Rock.Communication.Chat.Platform.Session
         /// sees, so the mark must end with it for the drafts to be forgotten.
         /// </summary>
         /// <param name="principal">Who the request is signed in as, or null.</param>
-        /// <returns><c>true</c> only for Rock's sign-in cookie with a persisted ticket.</returns>
+        /// <returns><c>true</c> only for Rock's sign-in cookie with a persisted ticket that lives a day or more.</returns>
+        /// <remarks>
+        /// A passwordless code sign-in writes a persisted ticket that lives two hours by default and
+        /// ends on its own, with no sign-out Rock sees, as a session sign-in ends when the browser
+        /// closes. So a ticket counts as kept only when it is persisted and was issued for a day or
+        /// more; Keep me logged in issues one for Rock's forms timeout, a month by default. Renewing
+        /// a ticket keeps the length it was issued for.
+        /// </remarks>
         internal static bool IsSignInPersisted( IPrincipal principal )
         {
-            return ( principal?.Identity as FormsIdentity )?.Ticket?.IsPersistent == true;
+            var ticket = ( principal?.Identity as FormsIdentity )?.Ticket;
+
+            return ticket?.IsPersistent == true && ticket.Expiration - ticket.IssueDate >= TimeSpan.FromDays( 1 );
         }
 
         /// <summary>
