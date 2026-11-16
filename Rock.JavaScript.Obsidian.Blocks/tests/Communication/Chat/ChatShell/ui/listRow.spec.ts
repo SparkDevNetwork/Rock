@@ -20,7 +20,7 @@
 // press through, so its actions stay buttons of their own rather than buttons inside a button.
 import { mount, VueWrapper } from "@vue/test-utils";
 import ListRow from "../../../../../src/Communication/Chat/ChatShell/ui/listRow.partial.obs";
-import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
+import { mediaOf, outsideMedia, partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 const slots = {
     lead: "<span data-testid='lead'>A</span>",
@@ -113,6 +113,11 @@ describe("the list row's look", () => {
         expect(ruleOf(style, ".chat-lrow.is-selected")).toMatch(/--chat-lrow-fill:\s*var\(--chat-brand-wash\)/);
         expect(ruleOf(style, ".chat-lrow")).toMatch(/background:\s*var\(--chat-lrow-fill\)/);
         expect(ruleOf(style, ".chat-lrow")).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
+    });
+
+    test("tints under a pointer that can hover, so a tap on a touch screen leaves no tint behind", () => {
+        expect(ruleOf(mediaOf(style, "(hover: hover)"), ".chat-lrow.is-interactive:hover")).toMatch(/--chat-lrow-fill:\s*var\(--chat-hover\)/);
+        expect(ruleOf(outsideMedia(style), ".chat-lrow.is-interactive:hover")).toBe("");
     });
 
     test("a face in the row rings itself in the row's own fill, so the ring matches what is behind it", () => {

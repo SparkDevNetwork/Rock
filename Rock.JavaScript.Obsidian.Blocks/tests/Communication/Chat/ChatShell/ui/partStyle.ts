@@ -52,6 +52,39 @@ export function ruleOf(style: string, selector: string): string {
     return bodies.join(";");
 }
 
+/** Each `@media` block of a style, its query and its rules, braces matched so nested rules stay whole. */
+function mediaBlocks(style: string): Array<{ query: string, start: number, end: number, body: string }> {
+    const blocks: Array<{ query: string, start: number, end: number, body: string }> = [];
+
+    for (const match of style.matchAll(/@media\s*([^{]+)\{/g)) {
+        const open = (match.index ?? 0) + match[0].length;
+        let depth = 1;
+        let at = open;
+        while (at < style.length && depth > 0) {
+            depth += style[at] === "{" ? 1 : style[at] === "}" ? -1 : 0;
+            at++;
+        }
+        blocks.push({ query: match[1].trim(), start: match.index ?? 0, end: at, body: style.slice(open, at - 1) });
+    }
+
+    return blocks;
+}
+
+/** The rules inside every `@media` block of a style whose query is exactly the one given, joined. */
+export function mediaOf(style: string, query: string): string {
+    return mediaBlocks(style).filter(block => block.query === query).map(block => block.body).join("\n");
+}
+
+/** A style with every `@media` block taken out: the rules that hold on every screen. */
+export function outsideMedia(style: string): string {
+    let rest = style;
+    for (const block of mediaBlocks(style).reverse()) {
+        rest = rest.slice(0, block.start) + rest.slice(block.end);
+    }
+
+    return rest;
+}
+
 /**
  * What a part's styles may not hold: a keyframe of its own, a reduced-motion rule of its own
  * (the sheet's tokens and its one set carry reduced motion), a reach into another component, a

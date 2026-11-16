@@ -21,7 +21,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import Field from "../../../../../src/Communication/Chat/ChatShell/ui/field.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
-import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
+import { mediaOf, outsideMedia, partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 describe("the text field", () => {
     let wrapper: VueWrapper | null = null;
@@ -165,6 +165,11 @@ describe("the text field's look", () => {
         expect(ruleOf(style, ".chat-fld-box:focus-within")).toMatch(/border-color:\s*var\(--chat-focus-line\)/);
         expect(ruleOf(style, ".chat-fld-box:focus-within")).toMatch(/box-shadow:\s*0 0 0 3px var\(--chat-brand-ring\)/);
         expect(ruleOf(style, ".chat-fld.is-invalid .chat-fld-box")).toMatch(/border-color:\s*var\(--chat-danger\)/);
+    });
+
+    test("darkens its line under a pointer that can hover, so a tap on a touch screen leaves no hover behind", () => {
+        expect(ruleOf(mediaOf(style, "(hover: hover)"), ".chat-fld-box:hover")).toMatch(/border-color:\s*var\(--chat-icon\)/);
+        expect(ruleOf(outsideMedia(style), ".chat-fld-box:hover")).toBe("");
     });
 
     test("holds no motion, priority, reach or capitals of its own", () => {
