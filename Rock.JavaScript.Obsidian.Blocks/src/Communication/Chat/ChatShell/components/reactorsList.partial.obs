@@ -39,17 +39,16 @@
              :aria-busy="shown.isLoading ? 'true' : 'false'"
              data-testid="reactors-list"
              @scroll="onScroll">
-            <div v-for="row in rows"
-                 :key="row.key"
-                 class="chat-rl-row"
-                 data-testid="reactors-row">
-                <Avatar :people="[row.face]" :size="28" />
+            <ListRow v-for="row in rows"
+                     :key="row.key"
+                     data-testid="reactors-row">
+                <template #lead><Avatar :people="[row.face]" :size="28" /></template>
                 <span class="chat-rl-name">{{ row.label }}</span>
-                <template v-if="tab === allTab && row.glyph">
+                <template v-if="tab === allTab && row.glyph" #meta>
                     <img v-if="row.glyph.image_url" class="chat-rl-e is-image is-end" :src="row.glyph.image_url" :alt="row.glyph.label" />
                     <span v-else class="chat-rl-e is-end" :aria-label="row.glyph.label">{{ row.glyph.emoji }}</span>
                 </template>
-            </div>
+            </ListRow>
             <!-- Rows held for the people still on their way, by the count, so nothing moves when they land. -->
             <div v-for="index in reservedCount"
                  :key="`reserved-${index}`"
@@ -184,6 +183,7 @@
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
     import { personFace, personName } from "../ui/face.partial";
     import { ReactionReader } from "../composables/useReactions.partial";
     import { EmojiGlyph, Reaction, Reactor, ReactorsCursor, ReactorsPage } from "../types.partial";
