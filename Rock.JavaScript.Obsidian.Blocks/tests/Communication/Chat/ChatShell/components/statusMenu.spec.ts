@@ -387,6 +387,10 @@ describe("the keyboard", () => {
         const w = mountMenu();
         await openMenu(w);
 
+        // from Automatic, checked, down past the hours to the morning end
+        await press("ArrowDown");
+        await press("ArrowDown");
+        await press("ArrowDown");
         await press("Enter");
 
         expect(chosen(w)).toEqual({ busy_until: new Date(2026, 10, 11, 8, 0).toISOString(), appear_offline: false });

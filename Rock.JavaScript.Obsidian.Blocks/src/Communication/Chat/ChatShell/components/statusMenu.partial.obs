@@ -4,15 +4,25 @@
         <Menu :label="label"
               :items="items"
               :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
-              :focusKey="focusKey"
               :note="note"
               :noteIcon="closedReason ? 'lock' : 'alert'"
-              :anchorAttrs="anchorAttrs"
               @openChange="onOpenChange"
               @select="onSelect">
-            <template #anchor>
-                <Avatar v-if="trigger === 'face'" :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" :status="ownStatus" own :hasStatusTip="false" />
-                <template v-else>Change</template>
+            <template #trigger="{ attrs, isOpen }">
+                <IconButton v-if="trigger === 'face'"
+                            v-bind="attrs"
+                            class="chat-status-face"
+                            :label="label"
+                            tooltip="Set status"
+                            :isTooltipDisabled="isOpen"
+                            data-testid="status-face">
+                    <Avatar :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" :status="ownStatus" own :hasStatusTip="false" />
+                </IconButton>
+                <Button v-else
+                        v-bind="attrs"
+                        size="sm"
+                        :aria-label="label"
+                        data-testid="status-change">Change</Button>
             </template>
         </Menu>
     </span>
@@ -30,39 +40,21 @@
     foot sets, and over it in whatever fill the button takes, hovered, pressed or open, in the
     button's own order, so the ring always reads as the disc behind it.
 */
-.chat-status-menu :deep(.chat-status-face) {
+.chat-status-menu .chat-status-face {
     width: 40px;
     height: 40px;
 }
 
-.chat-status-menu :deep(.chat-status-face:hover) {
+.chat-status-menu .chat-status-face:hover {
     --chat-av-ring-over: var(--chat-hover);
 }
 
-.chat-status-menu :deep(.chat-status-face:active) {
+.chat-status-menu .chat-status-face:active {
     --chat-av-ring-over: var(--chat-press);
 }
 
-.chat-status-menu :deep(.chat-status-face[aria-expanded="true"]) {
+.chat-status-menu .chat-status-face[aria-expanded="true"] {
     --chat-av-ring-over: var(--chat-brand-wash);
-}
-
-/* Change, outlined as the dialog's other small buttons are. */
-.chat-status-menu :deep(.chat-status-change) {
-    width: auto;
-    height: 28px;
-    padding: 0 10px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-    border-radius: var(--chat-r-full);
-}
-
-.chat-status-menu :deep(.chat-status-change:hover) {
-    background: var(--chat-surface);
-    border-color: var(--chat-icon);
 }
 </style>
 
@@ -70,6 +62,8 @@
     import { computed, PropType, ref } from "vue";
     import { useChatSession } from "../chatSession.partial";
     import Avatar from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
+    import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import { untilWords } from "../ui/face.partial";
     import { useFaceStatus, useStatusClock } from "../composables/usePresenceStatus.partial";
@@ -167,15 +161,12 @@
         return `Your status: ${ownStatus.value.tip}${words} Set status`;
     });
 
-    const anchorAttrs = computed((): Record<string, unknown> => props.trigger === "face"
-        ? { class: "chat-status-face", "data-testid": "status-face", tooltip: "Set status" }
-        : { class: "chat-status-change", "data-testid": "status-change", tooltip: "Change your status" });
-
     /**
-     * The items, named from the clock as the menu opened. The check sits by her settings' value,
-     * never by the item pressed last: a Busy with no end on Until I turn it off, an end at the
-     * next 8:00 on the morning item, and any other end on a row of its own first among the ends,
-     * since an end cannot be read back as the length that set it.
+     * The items, named from the clock as the menu opened, Busy's lengths short to long as a clock
+     * reads. The check sits by her settings' value, never by the item pressed last: a Busy with
+     * no end on Until I turn it off, an end at the next 8:00 on the morning item, and any other
+     * end on a row of its own first among the ends, since an end cannot be read back as the
+     * length that set it. The menu opens on what is checked.
      */
     const items = computed((): MenuItem[] => {
         const now = openedAt.value.day;
@@ -188,9 +179,9 @@
             ends.push(busyItem("busy-current", untilLabel(new Date(end), now), true));
         }
         ends.push(
-            busyItem("busy-morning", untilLabel(morning, now), end === morning.getTime()),
             busyItem("busy-1h", "For 1 hour", false),
             busyItem("busy-2h", "For 2 hours", false),
+            busyItem("busy-morning", untilLabel(morning, now), end === morning.getTime()),
             busyItem("busy-off", "Until I turn it off", end === Infinity)
         );
         ends[0] = { ...ends[0], isSeparatorBefore: true, heading: "Busy · notifications paused" };
@@ -202,9 +193,6 @@
         ];
         return props.closedReason ? all.map(item => ({ ...item, isDisabled: true })) : all;
     });
-
-    /** The Busy chosen, which the keyboard opens on; the morning end while none is, the end a person most often takes. */
-    const focusKey = computed((): string => items.value.find(item => item.isChecked && item.key.startsWith("busy-"))?.key ?? "busy-morning");
 
     // #endregion Computed Values
 

@@ -16,7 +16,7 @@
 //
 // The menu, mounted: an icon button that opens a list of actions beside it. A keyboard user must be
 // able to open it, move through it and leave it without losing their place, so focus goes to the
-// first item on open, the arrows cycle, and Escape closes it and puts focus back on the button
+// first item on open, or the one checked in a set of choices, the arrows cycle, and Escape closes it and puts focus back on the button
 // that opened it. The button says whether its menu is open, which is how a screen reader knows.
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -449,12 +449,12 @@ describe("a menu's note and its way out", () => {
         expect(tab.defaultPrevented).toBe(false);
     });
 
-    test("opens on the item it is told to, and draws an item's heading for the eye alone", async () => {
+    test("draws an item's heading for the eye alone, the item its own name for the ear", async () => {
         const choices = [
             { key: "a", label: "A", isChecked: false },
             { key: "b", label: "B", isChecked: true, heading: "Later ones", ariaLabel: "Later B" }
         ];
-        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices, focusKey: "b" }, attachTo: document.body });
+        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices }, attachTo: document.body });
         (wrapper.get("button").element as HTMLElement).click();
         await settle();
 
