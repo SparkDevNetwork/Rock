@@ -476,7 +476,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 return Membership( "door.not_found", "That channel could not be found." );
             }
 
-            var refusal = RefuseManaging( rockContext, room, caller, "You can't add people to this channel." );
+            var refusal = RefuseManaging( rockContext, room, caller, gate, "You can't add people to this channel." );
             if ( refusal != null )
             {
                 return refusal;
@@ -585,7 +585,7 @@ namespace Rock.Communication.Chat.Platform.Doors
 
             return new ChatMemberRightsBag
             {
-                CanManageMembers = RefuseManaging( rockContext, room, caller, null ) == null,
+                CanManageMembers = RefuseManaging( rockContext, room, caller, gate, null ) == null,
                 CanRename = RefuseRenaming( room, caller ) == null,
                 LastLeaderPersonAliasGuid = lastLeaderId.HasValue ? new PersonAliasService( rockContext ).GetPrimaryAliasGuid( lastLeaderId.Value ) : null
             };
@@ -1201,16 +1201,25 @@ namespace Rock.Communication.Chat.Platform.Doors
 
         /// <summary>
         /// Why the caller may not add or remove people here: in a shared channel they need to
-        /// manage its members, in a conversation of more than two they need to be in it.
+        /// manage its members, in a conversation of more than two they need to be in it and to
+        /// hold Direct Message Access.
         /// </summary>
         /// <returns>The refusal, or null where they may.</returns>
-        private static ChatMembershipResultBag RefuseManaging( RockContext rockContext, RoomRead room, Person caller, string channelRefusal )
+        private static ChatMembershipResultBag RefuseManaging( RockContext rockContext, RoomRead room, Person caller, ChatMintResult gate, string channelRefusal )
         {
             if ( room.Channel.ChannelType == DirectChannelType )
             {
                 if ( !room.LivePersonIds.Contains( caller.Id ) )
                 {
                     return Membership( "door.not_member", "You're not in this conversation." );
+                }
+
+                // Choosing who is in a conversation is starting one with them, and removing can turn
+                // a group into a one-to-one, so both take the right to start conversations. Without
+                // it a member still reads, sends, renames and leaves.
+                if ( !gate.CanStartDm )
+                {
+                    return Membership( "door.not_allowed", "You can't change who is in conversations." );
                 }
 
                 // A conversation of two stays private; adding someone starts a new one instead.

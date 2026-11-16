@@ -110,7 +110,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                     return Membership( "door.not_found", "That channel could not be found." );
                 }
 
-                var refusal = RefuseManaging( rockContext, room, caller, "You can't remove people from this channel." );
+                var refusal = RefuseManaging( rockContext, room, caller, gate, "You can't remove people from this channel." );
                 if ( refusal != null )
                 {
                     return refusal;
