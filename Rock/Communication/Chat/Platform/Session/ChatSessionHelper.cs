@@ -807,7 +807,8 @@ namespace Rock.Communication.Chat.Platform.Session
         /// <summary>
         /// Unregisters one push token for the person: signs the person's church token, exchanges
         /// it, and calls the platform's unregister under the person's own token, which removes the
-        /// token only where the person holds it. Never throws.
+        /// token in the person's church whoever registered it, since holding the token is holding
+        /// the browser. Never throws.
         /// </summary>
         /// <param name="person">The person signing out, or null.</param>
         /// <param name="deviceToken">The browser's push token.</param>
@@ -866,9 +867,10 @@ namespace Rock.Communication.Chat.Platform.Session
         #region Private Methods
 
         /// <summary>
-        /// Unregisters on the thread pool, so two calls to the platform never slow the sign-out; a
-        /// device left behind still drops out when the next person signs in on this browser or FCM
-        /// reports the token gone.
+        /// Unregisters on the thread pool, so two calls to the platform never slow the sign-out. The
+        /// cookie is expired whether or not this reaches the platform, so a device left behind drops
+        /// out when the next chat page on this browser that will not register lets go the token the
+        /// browser holds, or when FCM reports the token gone.
         /// </summary>
         /// <param name="personId">The person signing out.</param>
         /// <param name="deviceToken">The browser's push token.</param>
@@ -1138,7 +1140,7 @@ namespace Rock.Communication.Chat.Platform.Session
         Removed,
 
         /// <summary>
-        /// The platform held no such token for the person.
+        /// The platform held no such token in the person's church.
         /// </summary>
         NotHeld,
 

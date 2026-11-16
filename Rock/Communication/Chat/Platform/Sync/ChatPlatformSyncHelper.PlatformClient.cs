@@ -203,10 +203,11 @@ namespace Rock.Communication.Chat.Platform.Sync
 
             /// <summary>
             /// Takes one push token out of push, under the person's platform token this client
-            /// exchanged for, so the platform removes it only where that person holds it.
+            /// exchanged for, so the platform removes it within that person's church, whoever
+            /// registered it there.
             /// </summary>
             /// <param name="deviceToken">The push token.</param>
-            /// <returns>True where it was removed, false where the person held no such token, null where the call failed.</returns>
+            /// <returns>True where it was removed, false where the church held no such token, null where the call failed.</returns>
             public bool? UnregisterDevice( string deviceToken )
             {
                 bool? removed = null;
