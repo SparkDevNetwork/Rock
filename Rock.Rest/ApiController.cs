@@ -57,6 +57,19 @@ namespace Rock.Rest
         where T : Rock.Data.Entity<T>, new()
     {
         /// <summary>
+        /// The audit properties that Rock sets when a record is saved. v1 clients
+        /// may not write them.
+        /// </summary>
+        private static readonly HashSet<string> ProtectedAuditPropertyNames = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            nameof( IModel.CreatedByPersonAliasId ),
+            nameof( IModel.ModifiedByPersonAliasId ),
+            nameof( IModel.CreatedDateTime ),
+            nameof( IModel.ModifiedDateTime ),
+            nameof( IModel.ModifiedAuditValuesAlreadyUpdated )
+        };
+
+        /// <summary>
         /// Gets or sets the service.
         /// </summary>
         /// <value>
@@ -340,6 +353,21 @@ namespace Rock.Rest
             */
             value.Id = 0;
 
+            /*
+                11/16/2026 - MSE
+
+                Rock sets the created and modified person and date from the signed-in person when
+                a record is saved, but keeps the values the client posted (an author, a back date,
+                or a modified by person with ModifiedAuditValuesAlreadyUpdated set). A client could
+                store another person as the author or last modifier of the new record. Clearing them
+                lets Rock set them from the caller. This covers the allowed related records posted
+                with the record (such as TransactionDetails), since they are inserted in the same
+                save. Use v2 with EXECUTE_UNRESTRICTED_WRITE to import historical authors and dates.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            ClearAuditValues( value, Service.Context );
+
             SetProxyCreation( true );
 
             CheckCanEdit( value );
@@ -413,7 +441,30 @@ namespace Rock.Rest
 
             CheckCanEdit( targetModel );
 
+            /*
+                11/16/2026 - MSE
+
+                SetValues copies every posted value, including the created and modified person and
+                date and the ModifiedAuditValuesAlreadyUpdated flag. A client could name another
+                person as the author or last modifier of the record, or back date it. Keep the
+                stored created values and clear the flag so Rock sets the modified values from the
+                signed-in person when the record is saved. We restore instead of rejecting so
+                clients that echo the whole record keep working.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            var storedAuditModel = targetModel as IModel;
+            var storedCreatedByPersonAliasId = storedAuditModel?.CreatedByPersonAliasId;
+            var storedCreatedDateTime = storedAuditModel?.CreatedDateTime;
+
             Service.SetValues( value, targetModel );
+
+            if ( storedAuditModel != null )
+            {
+                storedAuditModel.CreatedByPersonAliasId = storedCreatedByPersonAliasId;
+                storedAuditModel.CreatedDateTime = storedCreatedDateTime;
+                storedAuditModel.ModifiedAuditValuesAlreadyUpdated = false;
+            }
 
             /*
                 10/19/2026 - MSE
@@ -478,6 +529,22 @@ namespace Rock.Rest
             {
                 var response = ControllerContext.Request.CreateErrorResponse(
                     HttpStatusCode.BadRequest, "Cannot set Id" );
+                throw new HttpResponseException( response );
+            }
+            else if ( values.Keys.Any( k => ProtectedAuditPropertyNames.Contains( k ) ) )
+            {
+                /*
+                    11/16/2026 - MSE
+
+                    PATCH sets any property it names, so a client could name another person as the
+                    last modifier of the record (with ModifiedAuditValuesAlreadyUpdated set), or as
+                    its author, or back date it. Rock sets these from the signed-in person when the
+                    record is saved. PATCH names the properties, so we refuse instead of ignoring them.
+
+                    Reason: Clients must not choose who authored or modified a record, or when.
+                */
+                var response = ControllerContext.Request.CreateErrorResponse(
+                    HttpStatusCode.BadRequest, "Cannot set audit values" );
                 throw new HttpResponseException( response );
             }
 

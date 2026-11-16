@@ -341,6 +341,69 @@ namespace Rock.Rest
         }
 
         /// <summary>
+        /// Clears the created and modified person and date values, and the already updated flag,
+        /// on a posted entity and on every related record posted with it that is not tracked by
+        /// the context. Rock then sets them from the signed-in person when the records are saved.
+        /// Call this after the related records have been checked, so only allowed records remain.
+        /// </summary>
+        /// <param name="entity">The posted entity that is about to be added.</param>
+        /// <param name="context">The context the entity will be added to, or <c>null</c> if it will be added to a new context.</param>
+        protected static void ClearAuditValues( object entity, DbContext context )
+        {
+            /*
+                11/16/2026 - MSE
+
+                Rock keeps the created and modified values a client posted, for the posted record
+                and for every related record inserted with it (such as TransactionDetails or
+                PhoneNumbers). This walks the posted graph the same way the related record check
+                does. Records already tracked by the context are not inserted, so they are left alone.
+
+                Reason: Clients must not choose who authored or modified a record, or when.
+            */
+            if ( entity == null )
+            {
+                return;
+            }
+
+            if ( entity is IModel model )
+            {
+                model.CreatedByPersonAliasId = null;
+                model.ModifiedByPersonAliasId = null;
+                model.CreatedDateTime = null;
+                model.ModifiedDateTime = null;
+                model.ModifiedAuditValuesAlreadyUpdated = false;
+            }
+
+            foreach ( var property in GetRelatedRecordProperties( entity.GetType() ) )
+            {
+                var value = property.GetValue( entity );
+
+                if ( value == null )
+                {
+                    continue;
+                }
+
+                if ( IsMappedEntityType( property.PropertyType ) )
+                {
+                    if ( !IsTrackedEntity( value, context ) )
+                    {
+                        ClearAuditValues( value, context );
+                    }
+
+                    continue;
+                }
+
+                foreach ( var relatedItem in ( ( IEnumerable ) value ).Cast<object>() )
+                {
+                    if ( relatedItem != null && !IsTrackedEntity( relatedItem, context ) )
+                    {
+                        ClearAuditValues( relatedItem, context );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Determines whether the property is a navigation property that holds a related
         /// record or a collection of related records.
         /// </summary>
