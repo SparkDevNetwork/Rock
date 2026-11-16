@@ -433,8 +433,7 @@ namespace Rock.NMI
 Result Code:  {threeStepChangeStep3Response.ResultCode} ({resultCodeMessage}).
 Result text: {threeStepChangeStep3Response.ResultText}.
 Amount: {threeStepChangeStep3Response.Amount}.
-Transaction id: {threeStepChangeStep3Response.TransactionId}.
-                    Card Holder Name: {threeStepChangeStep3Response.Billing?.FirstName} {threeStepChangeStep3Response.Billing?.LastName}." ) );
+Transaction id: {threeStepChangeStep3Response.TransactionId}." ) );
 
                     return null;
                 }
