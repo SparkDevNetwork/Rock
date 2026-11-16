@@ -782,6 +782,8 @@ describe("a room's choice and Chat settings' switches", () => {
 
         expect(s.prefCalls.map(c => [c.channelId, c.changes])).toEqual([[team, { notify_mode: "mentions" }], [prayer, { notify_mode: "silent" }]]);
         expect(s.toasts.map(t => t.text)).toEqual(["You'll be notified only when mentioned"]);
+        // the toast is said by the notices' host as it is drawn, so nothing is said beside it
+        expect(s.lastSaid()).toBeNull();
         expect(s.prefs.roomOf(prayer).notes).toEqual({});
     });
 
