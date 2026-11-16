@@ -17,25 +17,17 @@
                 <span v-else data-testid="join-bar-text">Join this channel to post and get notifications.</span>
             </span>
 
-            <button v-if="drawn === 'refused'"
+            <Button v-if="drawn === 'refused'"
                     ref="browseButton"
-                    type="button"
-                    class="chat-joinbar-btn is-line"
+                    icon="search"
                     data-testid="join-bar-browse"
-                    @click="emit('browse')">
-                <Icon name="search" size="xs" />Browse channels
-            </button>
+                    @click="emit('browse')">Browse channels</Button>
             <!-- One button through Join and Joining, so focus stays on it while the door is out. -->
-            <button v-else-if="drawn !== 'pending'"
-                    type="button"
-                    class="chat-joinbar-btn is-brand"
+            <Button v-else-if="drawn !== 'pending'"
+                    kind="brand"
+                    :busy="drawn === 'joining'"
                     data-testid="join-channel"
-                    :aria-disabled="drawn === 'joining' ? 'true' : undefined"
-                    :aria-busy="drawn === 'joining' ? 'true' : undefined"
-                    @click="onJoin">
-                <template v-if="drawn === 'joining'"><span class="chat-spinner"></span>Joining</template>
-                <template v-else>Join channel</template>
-            </button>
+                    @click="onJoin">{{ drawn === 'joining' ? 'Joining' : 'Join channel' }}</Button>
         </div>
 
         <!--
@@ -126,52 +118,11 @@
     color: var(--chat-danger-ink);
 }
 
-/* The design's large brand button and its line button. */
-.chat-joinbar-btn {
-    display: inline-flex;
-    flex: none;
-    gap: 6px;
-    align-items: center;
-    height: 38px;
-    padding: 0 18px;
-    font: inherit;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-joinbar-btn.is-brand {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-    border: 0;
-}
-
-.chat-joinbar-btn.is-brand:hover:not([aria-disabled="true"]) {
-    box-shadow: inset 0 0 0 999px var(--chat-press);
-}
-
-.chat-joinbar-btn.is-line {
-    height: 30px;
-    padding: 0 14px;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-}
-
-.chat-joinbar-btn.is-line:hover {
-    border-color: var(--chat-icon);
-}
-
-.chat-joinbar-btn .chat-spinner {
-    width: 13px;
-    height: 13px;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { JoinState, RoomAnnouncement } from "../composables/useRooms.partial";
 
@@ -209,7 +160,7 @@
     // #region Values
 
     const barElement = ref<HTMLElement>();
-    const browseButton = ref<HTMLButtonElement>();
+    const browseButton = ref<InstanceType<typeof Button>>();
 
     // #endregion Values
 
