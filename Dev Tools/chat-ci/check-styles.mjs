@@ -841,6 +841,10 @@ function crossFileFindings(files, push) {
           if (!isRule || prelude.startsWith('@')) return;
           const parts = new Set();
           for (const compound of styledCompounds(prelude)) {
+            // A compound naming a class this file renders is this file's own element: its other
+            // classes are modifiers, which a part may build from a value the reader cannot list.
+            const names = [...compound.matchAll(/\.([\w-]+)/g)].map((match) => match[1]);
+            if (names.some((name) => renderedBy.get(name)?.has(file))) continue;
             for (const match of compound.matchAll(/\.([\w-]+)/g)) {
               const part = owner.get(match[1]);
               if (part && part !== file) parts.add(`.${match[1]} (${basename(part)})`);
