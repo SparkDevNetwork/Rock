@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="hostElement" class="chat-notices" role="status">
-        <!-- Always on the page, so a screen reader is already listening when a notice is added to it. -->
+    <div ref="hostElement" class="chat-notices">
         <TransitionGroup name="chat-notice">
             <div v-for="item in notices.items.value"
                  :key="item.key"
@@ -88,14 +87,21 @@
     import Button from "./button.partial.obs";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
+    import { useAnnouncer } from "./announcer.partial";
     import { tokenDuration } from "./brand.partial";
     import { isDismissible, isPassing, NoticeItem, useNotices } from "./notices.partial";
 
     // The one host of the session's notices. A passing notice's life starts when it is first
     // drawn; one let go some other way takes its timer with it. A failure has no timer: the person
-    // may need to act on it, so it stays until they let it go.
+    // may need to act on it, so it stays until they let it go. The host only draws; what it draws
+    // is said through the announcer, which owns the chat's live regions.
 
     const notices = useNotices();
+
+    const { announce } = useAnnouncer();
+
+    /** The words each drawn notice was last said in, so one raised again unchanged is not said twice. */
+    const said = new Map<string, string>();
 
     /** The design's toast life, used where the sheet is not on the page. */
     const fallbackLifeMs = 2600;
@@ -130,6 +136,23 @@
                     timers.delete(key);
                     notices.dismiss(key);
                 }, lifeMs()));
+            }
+        }
+    }, { immediate: true });
+
+    // A notice is said as it is first drawn and again only in new words; a failure interrupts.
+    watch(notices.items, all => {
+        const keys = all.map(item => item.key);
+        said.forEach((_, key) => {
+            if (!keys.includes(key)) {
+                said.delete(key);
+            }
+        });
+
+        for (const item of all) {
+            if (said.get(item.key) !== item.text) {
+                said.set(item.key, item.text);
+                announce(item.text, item.tone === "failure" ? "assertive" : "polite");
             }
         }
     }, { immediate: true });

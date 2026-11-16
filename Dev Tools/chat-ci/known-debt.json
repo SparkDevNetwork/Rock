@@ -105,7 +105,6 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/removeMember.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 3,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/notice.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 2
   },
   "P6": {

@@ -68,23 +68,34 @@ function regionIn(voice: Voice, politeness: Politeness): HTMLElement {
     return region;
 }
 
-/** The voice an announcement is spoken in now: the newest open modal surface's, else the root's. */
-function voiceOf(host: AnnouncerHost): Voice | null {
-    const modal = host.modals[host.modals.length - 1];
-    if (modal) {
-        return modal;
-    }
+/**
+ * A voice in an element, with both its regions made at once: a live region added together with
+ * its first words is often not heard, so each is on the page before anything is said in it.
+ */
+function voiceIn(element: HTMLElement): Voice {
+    const voice: Voice = { host: element, regions: {} };
+    regionIn(voice, "polite");
+    regionIn(voice, "assertive");
+    return voice;
+}
 
+/** The root's voice, made once for each root element. */
+function rootVoiceOf(host: AnnouncerHost): Voice | null {
     const root = host.root();
     if (!root) {
         return null;
     }
 
     if (host.rootVoice?.host !== root) {
-        host.rootVoice = { host: root, regions: {} };
+        host.rootVoice = voiceIn(root);
     }
 
     return host.rootVoice;
+}
+
+/** The voice an announcement is spoken in now: the newest open modal surface's, else the root's. */
+function voiceOf(host: AnnouncerHost): Voice | null {
+    return host.modals[host.modals.length - 1] ?? rootVoiceOf(host);
 }
 
 function announcerOf(host: AnnouncerHost): Announcer {
@@ -118,7 +129,11 @@ function announcerOf(host: AnnouncerHost): Announcer {
  * @param root The chat's root element.
  */
 export function provideAnnouncer(root: Ref<HTMLElement | undefined>): void {
-    provide(announcerKey, { root: () => root.value ?? null, rootVoice: null, modals: [] });
+    const host: AnnouncerHost = { root: () => root.value ?? null, rootVoice: null, modals: [] };
+    provide(announcerKey, host);
+
+    // The root's regions go on the page as the root does, ahead of the first words.
+    watch(root, () => rootVoiceOf(host), { immediate: true, flush: "post" });
 }
 
 /**
@@ -153,11 +168,8 @@ export function useAnnouncerModal(element: SurfaceElement): void {
     watch(() => (typeof element === "function" ? element() : element.value) ?? undefined, surface => {
         leave();
         if (surface) {
-            voice = { host: surface, regions: {} };
+            voice = voiceIn(surface);
             host.modals.push(voice);
-
-            // made at once, so a region is on the page before the first words arrive in it
-            regionIn(voice, "polite");
         }
     }, { immediate: true, flush: "post" });
 
