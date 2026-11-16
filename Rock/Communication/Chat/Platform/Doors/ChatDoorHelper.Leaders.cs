@@ -68,7 +68,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .FirstOrDefault();
             if ( !targetId.HasValue )
             {
-                return Membership( "door.not_found", "That person could not be found." );
+                return PersonNotFound( personAliasGuid, "That person could not be found." );
             }
 
             // Leaving has its own door and its own line.
@@ -86,7 +86,7 @@ namespace Rock.Communication.Chat.Platform.Doors
                     .FirstOrDefault();
                 if ( !replacementId.HasValue )
                 {
-                    return Membership( "door.not_found", "The person chosen to lead next could not be found." );
+                    return PersonNotFound( replacementPersonAliasGuid.Value, "The person chosen to lead next could not be found." );
                 }
             }
 

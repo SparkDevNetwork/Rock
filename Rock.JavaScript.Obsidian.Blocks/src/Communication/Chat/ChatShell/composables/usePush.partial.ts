@@ -79,13 +79,6 @@ export type PushDependencies = {
      * chose; none keeps nothing, so only this load's Turn on registers.
      */
     choice?: { read: () => PushChoice | null, write: (choice: PushChoice) => void };
-
-    /**
-     * Whether a load here already let go the browser's token for this church and nothing has
-     * registered since, kept in this browser's storage; none keeps nothing, so every such load
-     * lets go again.
-     */
-    released?: { read: () => boolean, write: (isReleased: boolean) => void };
 };
 
 /** A person's own choice of push on one browser: their Turn on or their Turn off. */
@@ -197,24 +190,6 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         }
     };
 
-    const writeReleased = (isReleased: boolean): void => {
-        try {
-            dependencies.released?.write(isReleased);
-        }
-        catch {
-            // as above: the next load lets go again
-        }
-    };
-
-    const readReleased = (): boolean => {
-        try {
-            return dependencies.released?.read() ?? false;
-        }
-        catch {
-            return false;
-        }
-    };
-
     /** Whether the platform sent the Firebase values push needs. */
     const isAvailable = (): boolean => dependencies.settings().web !== null && dependencies.settings().vapid_key !== null;
 
@@ -263,9 +238,6 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
 
                 registeredToken = token;
                 dependencies.writeCookie(token);
-                // this browser holds a registration again, which the next load that will not
-                // register must let go
-                writeReleased(false);
                 return null;
             }
             finally {
@@ -344,19 +316,13 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
      * or Turn off here is not kept. Nothing is said of a failure; the cookie keeps the token and
      * the next load tries again.
      *
-     * A finished release is remembered for this church on this browser until anything registers
-     * here, so the next such load with no cookie loads no Firebase and calls nothing.
+     * Every such load releases, at the cost of loading Firebase for the browser's token: nothing
+     * is remembered of an earlier release, since a register whose answer was lost would leave
+     * that memory standing and the next person's load would skip the release it needs.
      */
     async function release(generation: number): Promise<void> {
-        if (!readCookie() && readReleased()) {
-            return;
-        }
-
         const isCurrent = (): boolean => !isStopped && generation === operationGeneration && !mayRegisterOnLoad();
-        const failure = await unregister(undefined, isCurrent);
-        if (!failure && isCurrent()) {
-            writeReleased(true);
-        }
+        await unregister(undefined, isCurrent);
     }
 
     /**

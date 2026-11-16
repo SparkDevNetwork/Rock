@@ -141,7 +141,7 @@ export type ShellOptions = {
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
-    push?: Omit<PushDependencies, "settings" | "call" | "choice" | "released">;
+    push?: Omit<PushDependencies, "settings" | "call" | "choice">;
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
@@ -767,10 +767,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
      * A membership door's answer as the person reads it. Rock answers a room the person may not
      * know of, one they were taken out of included, as one that does not exist, in a channel's
      * words since the answer says nothing of the room; a conversation is never called a channel.
+     * A person the door could not find is named by the answer, and keeps the door's own words.
      */
-    function inRoomWords<T extends { code?: string | null, message?: string | null }>(channelId: string, answer: T): T {
+    function inRoomWords<T extends { code?: string | null, message?: string | null, personAliasGuid?: string | null }>(channelId: string, answer: T): T {
         const kind = roomKindOf(channelId);
-        return answer.code === "door.not_found" && (kind === "person" || kind === "group")
+        return answer.code === "door.not_found" && !answer.personAliasGuid && (kind === "person" || kind === "group")
             ? { ...answer, message: "That conversation could not be found." }
             : answer;
     }
@@ -1045,8 +1046,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // from here. It draws the look of the room opened last, as nothing else is known yet.
     const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
-    // per church, not per person: what it remembers is this browser's token, whoever is signed in
-    const pushReleasedKey = `rock-chat:push-released:${tenantId.toLowerCase()}`;
 
     const presence = createPresence({
         callFunction,
@@ -1235,10 +1234,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
                             return stored === "true" ? "off" : stored === "false" ? "on" : null;
                         },
                         write: choice => options.storage?.setItem(pushOffKey, choice === "off" ? "true" : "false")
-                    },
-                    released: {
-                        read: () => options.storage?.getItem(pushReleasedKey) === "true",
-                        write: isReleased => isReleased ? options.storage?.setItem(pushReleasedKey, "true") : options.storage?.removeItem(pushReleasedKey)
                     }
                 });
                 // drawn now, as a browser's first registration can take half a minute

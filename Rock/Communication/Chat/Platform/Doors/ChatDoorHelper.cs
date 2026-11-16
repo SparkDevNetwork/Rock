@@ -460,7 +460,8 @@ namespace Rock.Communication.Chat.Platform.Doors
                 .ToList();
             if ( chosen.Count != requested.Count )
             {
-                return Membership( "door.not_found", "One of the people chosen could not be found." );
+                var missing = requested.First( g => !chosen.Any( a => a.Guid == g ) );
+                return PersonNotFound( missing, "One of the people chosen could not be found." );
             }
 
             // Two aliases of one person are one person, named by the first alias given for them.
@@ -1612,6 +1613,15 @@ namespace Rock.Communication.Chat.Platform.Doors
         private static ChatMembershipResultBag Membership( string code, string message )
         {
             return new ChatMembershipResultBag { Code = code, Message = message };
+        }
+
+        /// <summary>
+        /// The refusal of a person the door could not find, naming the alias the caller sent, so it
+        /// tells nothing new and is never read as the room not being found, which names nobody.
+        /// </summary>
+        private static ChatMembershipResultBag PersonNotFound( Guid personAliasGuid, string message )
+        {
+            return new ChatMembershipResultBag { Code = "door.not_found", PersonAliasGuid = personAliasGuid, Message = message };
         }
 
         /// <summary>
