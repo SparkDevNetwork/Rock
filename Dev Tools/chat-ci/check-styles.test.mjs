@@ -874,6 +874,44 @@ test('S12 refuses restyling a part from outside it, and passes layout around it 
   assert.deepEqual(ruleLines(findings, 'S12', `${shell}/ui/avatar.partial.obs`), []);
 });
 
+test('S12 reads a modifier on a file\'s own element as its own, though another part alone names the modifier', () => {
+  // The switch names its small size outright; the button builds its size class from a value, which
+  // the template reader cannot list, so "is-sm" reads as the switch's alone.
+  const toggle = [
+    '<template>',
+    '    <button class="chat-switch" :class="{ \'is-sm\': size === \'sm\' }" type="button"></button>',
+    '</template>',
+    '<style scoped>',
+    '.chat-switch.is-sm { width: 0; }',
+    '</style>',
+  ].join('\n');
+  const button = [
+    '<template>',
+    '    <button class="chat-btn" :class="[`is-${size}`]" type="button"><slot /></button>',
+    '</template>',
+    '<style scoped>',
+    '.chat-btn.is-sm { height: 0; }',
+    '</style>',
+  ].join('\n');
+  const screen = [
+    '<template>',
+    '    <div class="chat-pane"><Switch size="sm" /></div>',
+    '</template>',
+    '<style scoped>',
+    '.chat-pane .is-sm { margin: 0; }',
+    '</style>',
+  ].join('\n');
+
+  const findings = findStyleDebt([
+    { file: `${shell}/ui/switch.partial.obs`, text: toggle },
+    { file: `${shell}/ui/button.partial.obs`, text: button },
+    { file: `${shell}/components/pane.partial.obs`, text: screen },
+  ]);
+
+  assert.deepEqual(ruleLines(findings, 'S12', `${shell}/ui/button.partial.obs`), [], JSON.stringify(findings));
+  assert.deepEqual(ruleLines(findings, 'S12', `${shell}/components/pane.partial.obs`), [5], JSON.stringify(findings));
+});
+
 /** Writes a debt file into a fresh folder and returns its path. */
 function debtFile(entries) {
   const folder = mkdtempSync(join(tmpdir(), 'chat-debt-'));
