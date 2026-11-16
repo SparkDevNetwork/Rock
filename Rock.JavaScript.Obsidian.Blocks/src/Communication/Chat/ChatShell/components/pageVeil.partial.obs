@@ -22,8 +22,16 @@
                     <Dot class="chat-veil-dot" tone="info" pulse />
                     <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
                 </div>
+                <!-- The list's own sections, so nothing changes shape when it arrives: channels, then direct messages. -->
                 <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
-                    <Skeleton v-for="width in sidebarWidths" :key="width" shape="person" :widths="[width, 32]" />
+                    <div class="chat-veil-sec" data-testid="veil-section">
+                        <h3 class="chat-veil-heading" data-testid="veil-heading">Channels</h3>
+                        <Skeleton v-for="width in channelWidths" :key="width" shape="channel" :widths="[width]" />
+                    </div>
+                    <div class="chat-veil-sec" data-testid="veil-section">
+                        <h3 class="chat-veil-heading" data-testid="veil-heading">Direct messages</h3>
+                        <Skeleton v-for="width in personWidths" :key="width" shape="person" :widths="[width, 32]" />
+                    </div>
                 </div>
             </template>
 
@@ -79,6 +87,23 @@
 .chat-veil.is-sidebar {
     padding: 4px 8px 12px;
     background: var(--chat-sidebar);
+}
+
+/*
+    A section's heading, drawn as the list draws its own: the same place and type, so the words
+    stand still when the list takes over from the veil. The list's heading line is as tall as its
+    26px add button, the words centred in it, so the veil's padding takes the button's place.
+*/
+.chat-veil-heading {
+    margin: 0;
+    padding: 19px 8px 9px 10px;
+    font-family: inherit;
+    font-size: var(--chat-fs-badge);
+    font-weight: 700;
+    line-height: 16px;
+    color: var(--chat-muted);
+    text-transform: uppercase;
+    letter-spacing: .07em;
 }
 
 /* The marks fade in once they are due, so they never pop. */
@@ -219,8 +244,9 @@
         statusLine?: string | null;
     }>();
 
-    /** The widths of a list's rows, as the sidebar's own loading rows vary them. */
-    const sidebarWidths = [58, 44, 66, 50, 40, 62, 48];
+    /** The widths of the list's rows, varied so a column of them reads as names rather than stripes. */
+    const channelWidths = [58, 44, 66];
+    const personWidths = [50, 40, 62, 48];
 
     /**
      * The region is revealed and the veil fades out over it: inert from that moment, to pointer
