@@ -21,48 +21,57 @@
         <div ref="listElement">
             <section v-for="day in days" :key="day.label" :aria-label="day.label">
                 <h3 class="chat-ls-day" data-testid="mentions-day">{{ day.label }}</h3>
+                <!--
+                    Each mention is a list row named by its button alone, so what it draws is for
+                    the eye: its links and chips are never reached. The row just opened is the
+                    list's selected one.
+                -->
                 <ul class="chat-ls-list" :class="{ 'is-phone': isPhone }">
-                    <li v-for="drawn in day.rows"
-                        :key="drawn.messageId"
-                        class="chat-ls-row chat-ls-mn chat-enter"
-                        :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
-                        :style="{ '--chat-enter-i': drawn.index }"
-                        data-testid="mention-row">
-                        <button type="button"
-                                class="chat-ls-hit"
-                                data-testid="mention-row-open"
-                                :data-message-id="drawn.messageId"
-                                :aria-label="drawn.label"
-                                :aria-describedby="`${uid}-hint`"
-                                :aria-current="drawn.isCurrent ? 'true' : undefined"
-                                :data-autofocus="drawn.isCurrent ? '' : undefined"
-                                v-bind="listKeys.itemAttrs(drawn.messageId)"
-                                :ref="listKeys.itemRef(drawn.messageId)"
-                                @click="onOpen(drawn)"></button>
-                        <Dot v-if="drawn.isNew" class="chat-ls-new" data-testid="mention-row-new" />
-
-                        <!-- What the row's button says, drawn for the eye; its links and chips are never reached. -->
-                        <div class="chat-ls-in" aria-hidden="true" inert>
-                            <span class="chat-ls-avw">
-                                <Avatar :people="[drawn.author]" :size="32" />
-                                <span class="chat-ls-at"><Icon name="at" /></span>
+                    <ListRow v-for="drawn in day.rows"
+                             :key="drawn.messageId"
+                             as="li"
+                             class="chat-ls-row chat-enter"
+                             :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
+                             :style="{ '--chat-enter-i': drawn.index }"
+                             data-testid="mention-row"
+                             interactive
+                             :selected="drawn.isCurrent"
+                             :label="drawn.label"
+                             :hitAttrs="{
+                                 'data-testid': 'mention-row-open',
+                                 'data-message-id': drawn.messageId,
+                                 'aria-describedby': `${uid}-hint`,
+                                 'data-autofocus': drawn.isCurrent ? '' : undefined,
+                                 ...listKeys.itemAttrs(drawn.messageId)
+                             }"
+                             :hitRef="listKeys.itemRef(drawn.messageId)"
+                             @press="onOpen(drawn)">
+                        <template #lead>
+                            <span class="chat-ls-face">
+                                <Dot v-if="drawn.isNew" class="chat-ls-new" data-testid="mention-row-new" />
+                                <span class="chat-ls-avw">
+                                    <Avatar :people="[drawn.author]" :size="32" />
+                                    <span class="chat-ls-at"><Icon name="at" /></span>
+                                </span>
                             </span>
-                            <div class="chat-ls-main">
-                                <div class="chat-ls-head">
-                                    <b>{{ drawn.who }}</b>
-                                    <span class="chat-ls-sub">
-                                        <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
-                                        <span>{{ drawn.room }}</span>
-                                    </span>
-                                    <time class="chat-ls-t">{{ drawn.time }}</time>
-                                </div>
-                                <div class="chat-ls-text">
-                                    <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :isConversation="drawn.isConversation" />
-                                </div>
-                                <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
-                            </div>
+                        </template>
+                        <div class="chat-ls-head">
+                            <b>{{ drawn.who }}</b>
+                            <span class="chat-ls-sub">
+                                <Icon v-if="drawn.roomIcon" :name="drawn.roomIcon" size="xs" />
+                                <span>{{ drawn.room }}</span>
+                            </span>
                         </div>
-                    </li>
+                        <template #meta>
+                            <time class="chat-ls-t">{{ drawn.time }}</time>
+                        </template>
+                        <template #detail>
+                            <div class="chat-ls-text">
+                                <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :isConversation="drawn.isConversation" />
+                            </div>
+                            <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
+                        </template>
+                    </ListRow>
                 </ul>
             </section>
         </div>
@@ -84,25 +93,18 @@
 </template>
 
 <style scoped>
-/* The list's frame and states are the list panel's, and its row the sheet's, shared with the threads list; what is here is the inbox's own. */
+/* The list's frame and states are the list panel's, and its row the list row; what is here is the inbox's own. */
 
-/* A mention row leaves room on its left for the New dot. */
-.chat-ls-mn .chat-ls-in {
-    padding-left: 18px;
+/* The face leaves room on its left for the New dot, which sits there centred on it. */
+.chat-ls-face {
+    position: relative;
+    padding-left: 8px;
 }
 
-/* Under the list as well, so the row just opened outranks the shared row's hover. */
-.chat-ls-list .chat-ls-row.is-current {
-    background: var(--chat-brand-wash);
-}
-
-/* The New dot, at the row's left edge, beside the author's line. */
 .chat-ls-new {
     position: absolute;
-    top: 23px;
-    left: 6px;
-    z-index: 1;
-    pointer-events: none;
+    top: calc(50% - 4px);
+    left: -4px;
 }
 
 .chat-ls-row.is-new .chat-ls-head b {
@@ -212,6 +214,7 @@
     import Dot from "../ui/dot.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import ListPanel from "../ui/listPanel.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
     import { newGuid } from "@Obsidian/Utility/guid";
     import MessageBody from "./messageBody.partial.obs";
     import { messageOrOffline } from "../errors.partial";
@@ -515,7 +518,7 @@
         if (first) {
             announce(`${added} older ${added === 1 ? "mention" : "mentions"} loaded`);
             listKeys.current.value = first.message.id;
-            listElement.value?.querySelector<HTMLElement>(`.chat-ls-hit[data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
+            listElement.value?.querySelector<HTMLElement>(`[data-testid='mention-row-open'][data-message-id='${first.message.id}']`)?.focus({ preventScroll: true });
         }
     }, { flush: "post" });
 
