@@ -27,13 +27,14 @@
 </template>
 
 <style scoped>
-/* Fixed, so the chat's clipped frame cannot cut a surface near its edge. */
+/* Fixed, so the chat's clipped frame cannot cut a surface near its edge; one hairline and a soft shadow, no ring. */
 .chat-popover {
     z-index: var(--chat-z-popover);
     background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-surface);
     outline: none;
-    box-shadow: var(--chat-shadow-pop);
+    box-shadow: var(--chat-shadow-float);
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
 }
 

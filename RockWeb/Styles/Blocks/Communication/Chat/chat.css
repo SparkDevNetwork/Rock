@@ -195,6 +195,8 @@
     /* Shadows. */
     --chat-shadow-card: var(--box-shadow, 0 0 2px rgba(145, 158, 171, .2), 0 12px 24px -4px rgba(145, 158, 171, .12));
     --chat-shadow-pop: 0 0 0 1px rgba(13, 17, 23, .06), 0 4px 8px rgba(13, 17, 23, .04), 0 16px 36px -8px rgba(30, 36, 52, .24);
+    /* A floating surface's soft shadow under its one hairline, with no ring of its own. */
+    --chat-shadow-float: 0 4px 8px rgba(13, 17, 23, .04), 0 16px 36px -8px rgba(30, 36, 52, .24);
     --chat-shadow-bar: 0 0 0 1px var(--chat-line), 0 1px 2px rgba(13, 17, 23, .05), 0 6px 14px -4px rgba(30, 36, 52, .16);
     --chat-shadow-day: 0 2px 10px -4px rgba(13, 17, 23, .18);
     --chat-shadow-strip: 0 6px 12px -10px rgba(13, 17, 23, .25);
@@ -367,6 +369,7 @@
     --chat-badge-ink-mix: 0%;
     --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
     --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
+    --chat-shadow-float: 0 16px 40px -8px rgba(0, 0, 0, .7);
     --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
     color-scheme: dark;
 }
@@ -445,6 +448,7 @@
         --chat-badge-ink-mix: 0%;
         --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
         --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
+        --chat-shadow-float: 0 16px 40px -8px rgba(0, 0, 0, .7);
         --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
         color-scheme: dark;
     }
