@@ -182,7 +182,8 @@ describe("a group's face ring", () => {
     }
 
     test("lays the owner's fill over its base in every ring", () => {
-        const rings = rules("ui/groupFace.partial.obs", /./).filter(body => /box-shadow/.test(body));
+        // a bubble rings its face through the face's halo hook, which the sheet's face rule draws
+        const rings = rules("ui/groupFace.partial.obs", /./).filter(body => /box-shadow|--chat-av-halo/.test(body));
 
         expect(rings.length).toBeGreaterThan(0);
         for (const body of rings) {
@@ -190,9 +191,18 @@ describe("a group's face ring", () => {
         }
     });
 
+    // The header's title button hugs the title alone, so the face beside it sits on the bar, whose
+    // fill never changes: its ring is the bar's, over nothing.
+    test("on the header sits on the bar beside the title button, ringed in the bar's fill", () => {
+        const states = rules("components/chatHeader.partial.obs", /^\.chat-header-id(\[|:|$)/);
+
+        expect(states.some(body => /--chat-av-ring:\s*var\(--chat-surface\)/.test(body))).toBe(true);
+        expect(states.some(body => /--chat-av-ring-over:\s*transparent/.test(body))).toBe(true);
+        expect(states.some(body => /background/.test(body))).toBe(false);
+    });
+
     test.each([
-        ["a sidebar row", "components/channelSidebar.partial.obs", /^\.chat-row(\[|:|$)/, "--chat-row-fill"],
-        ["the header's title button", "components/chatHeader.partial.obs", /^(button)?\.chat-header-id(\[|:|$)/, "--chat-header-id-fill"]
+        ["a sidebar row", "components/channelSidebar.partial.obs", /^\.chat-row(\[|:|$)/, "--chat-row-fill"]
     ])("follows %s's hover and current state through its fill", (_name, file, selector, fill) => {
         const states = rules(file, selector);
         const backgrounds = states.flatMap(body => Array.from(body.matchAll(/(?:^|[;\s])background(?:-color)?:\s*([^;]+);/g)).map(match => match[1].trim()));

@@ -22,7 +22,8 @@
 /*
     A group conversation's mark in the slot a one-person face fills. Every offset is a share of the
     slot, written against the 36px sidebar slot it was drawn for, so the header and the details
-    dialog draw the same shape larger.
+    dialog draw the same shape larger. Each bubble sets the face's halo and inset through the
+    face's own hooks, which the sheet's avatar rule reads, rather than reaching into the face.
 */
 .chat-gf {
     position: relative;
@@ -37,10 +38,6 @@
     display: flex;
 }
 
-.chat-gf-bubble :deep(.chat-av) {
-    box-sizing: border-box;
-}
-
 /* Two people: the first at the back, top left, the second in front, ringed in what it sits on. */
 .is-back {
     top: 0;
@@ -48,8 +45,8 @@
 }
 
 /* An initial at the back is centred in the part the front face leaves showing; a photo stays whole. */
-.is-back:not(.has-photo) :deep(.chat-av) {
-    padding: 0 calc(var(--chat-gf-s) * 7 / 36) calc(var(--chat-gf-s) * 7 / 36) 0;
+.is-back:not(.has-photo) {
+    --chat-av-inset: 0 calc(var(--chat-gf-s) * 7 / 36) calc(var(--chat-gf-s) * 7 / 36) 0;
 }
 
 .is-front {
@@ -61,17 +58,17 @@
     The ring is what the mark sits on, drawn as the owner draws it: its fill, translucent on hover,
     over its base, so the ring matches the surface behind it in every state.
 */
-.is-front :deep(.chat-av) {
-    box-shadow:
+.is-front {
+    --chat-av-halo:
         0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring-over, transparent),
         0 0 0 calc(var(--chat-gf-s) * 2 / 36) var(--chat-av-ring, var(--chat-surface));
 }
 
 /* Three or more: a triangle of bubbles, each ringed so they read as separate. */
-.is-top :deep(.chat-av),
-.is-left :deep(.chat-av),
-.is-right :deep(.chat-av) {
-    box-shadow:
+.is-top,
+.is-left,
+.is-right {
+    --chat-av-halo:
         0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring-over, transparent),
         0 0 0 calc(var(--chat-gf-s) * 1.5 / 36) var(--chat-av-ring, var(--chat-surface));
 }
@@ -86,8 +83,8 @@
     left: 0;
 }
 
-.is-left:not(.has-photo) :deep(.chat-av) {
-    padding-right: calc(var(--chat-gf-s) * 3 / 36);
+.is-left:not(.has-photo) {
+    --chat-av-inset: 0 calc(var(--chat-gf-s) * 3 / 36) 0 0;
 }
 
 .is-right {

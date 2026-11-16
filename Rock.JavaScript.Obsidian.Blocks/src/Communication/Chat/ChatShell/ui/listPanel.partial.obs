@@ -53,6 +53,20 @@
     animation: chat-spin var(--chat-d-refresh-spin) linear infinite;
 }
 
+/* Over the list: the failure, beside the rows it could not replace. */
+.chat-ls-err {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding: 8px 8px 8px 11px;
+    margin: 8px 14px 6px;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.4;
+    color: var(--chat-danger-ink);
+    background: var(--chat-danger-soft);
+    border-radius: var(--chat-r-control);
+}
+
 /* The failed refresh's Try again sits at the strip's end. */
 .chat-lp-retry {
     margin-left: auto;

@@ -883,10 +883,16 @@
 
 
 /* An initials avatar in the person's hue; the avatar component sets the hue and the size. */
+/*
+    A face. A mark that sets faces in a shape of its own, a group's, rings and insets each through
+    --chat-av-halo and --chat-av-inset on what holds it, so nothing outside the face restyles it.
+*/
 .chat-av {
+    box-sizing: border-box;
     display: inline-grid;
     flex: none;
     place-items: center;
+    padding: var(--chat-av-inset, 0);
     overflow: hidden;
     font-weight: 650;
     line-height: 1;
@@ -895,6 +901,7 @@
     user-select: none;
     background: hsl(var(--chat-av-hue) var(--chat-av-sat) var(--chat-av-l));
     border-radius: var(--chat-r-full);
+    box-shadow: var(--chat-av-halo, none);
 }
 
 /* A channel's letter tile: its first letter on a tint of its name's hue, as an avatar's initials are. */
@@ -1187,9 +1194,9 @@
 }
 
 /*
-    A tooltip, placed by script beside its anchor. Fixed, so the chat's clipped frame cannot cut a
-    tip near its edge. It fades in from 3px below on the translate property, since the placement
-    owns the transform.
+    A tooltip, placed by script below its anchor, or above where there is no room. Fixed, so the
+    chat's clipped frame cannot cut a tip near its edge. It only fades in, since the placement owns
+    where it is.
 */
 .chat-tip {
     z-index: var(--chat-z-tip);
@@ -1311,20 +1318,6 @@
     overflow-wrap: anywhere;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
-}
-
-/* Over the list: the failure, beside the rows it could not replace. */
-.chat-shell .chat-ls-err {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 8px 8px 8px 11px;
-    margin: 8px 14px 6px;
-    font-size: var(--chat-fs-ui);
-    line-height: 1.4;
-    color: var(--chat-danger-ink);
-    background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-control);
 }
 
 /*
