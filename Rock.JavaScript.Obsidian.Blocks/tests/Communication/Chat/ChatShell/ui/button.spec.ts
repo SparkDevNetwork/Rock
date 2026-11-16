@@ -96,6 +96,22 @@ describe("the text button", () => {
         expect(wrapper.emitted("click")).toBeUndefined();
     });
 
+    // "Join channel" turning to a spinner and "Joining" was 14px narrower, so its end moved while
+    // the door was out: busy holds the width the button had at rest, and lets it go when done.
+    test("keeps the width it had at rest while busy, however short its busy words, and lets it go after", async () => {
+        wrapper = draw({}, "Join channel");
+        const button = wrapper.get("button");
+        jest.spyOn(button.element, "getBoundingClientRect").mockReturnValue({ width: 115.5, height: 32 } as DOMRect);
+
+        await wrapper.setProps({ busy: true });
+
+        expect((button.element as HTMLElement).style.minWidth).toBe("115.5px");
+
+        await wrapper.setProps({ busy: false });
+
+        expect((button.element as HTMLElement).style.minWidth).toBe("");
+    });
+
     test("when disabled is a disabled button, and not busy", () => {
         wrapper = draw({ disabled: true });
         const button = wrapper.get("button");
