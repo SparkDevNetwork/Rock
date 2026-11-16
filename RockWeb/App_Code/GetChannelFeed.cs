@@ -122,15 +122,6 @@ namespace RockWeb
                 RockCache.Remove( cacheKey );
             }
 
-            var mimeTypeCache = RockCache.Get( $"{cacheKey}:{AttributeKey.MimeType}" );
-            if (  mimeTypeCache != null && contentCache != null  && cacheDuration > 0 )
-            {
-                response.ContentType = ( string ) mimeTypeCache;
-                response.Write( ( string ) contentCache );
-                response.StatusCode = 200;
-                return;
-            }
-
             if ( request.HttpMethod != GET && request.HttpMethod != HEAD )
             {
                 response.TrySkipIisCustomErrors = true;
@@ -168,11 +159,32 @@ namespace RockWeb
                 return;
             }
 
-            if ( !channel.EnableRss )
+            /*
+                11/12/2026 - MSE
+
+                The feed is served to anyone who knows the channel id and its output is cached by URL only,
+                so it is always built for the anonymous person (null) and never for the signed in person.
+                The same 403 response is used when RSS is off and when View is denied so the response does
+                not reveal that a secured channel exists. This check runs before the cached output is
+                returned (the cache read is below this check) so output cached before the channel was
+                secured can not be served, and before the HEAD handling.
+
+                Reason: Content channel RSS feeds served channels without checking View permission.
+            */
+            if ( !channel.EnableRss || !channel.IsAuthorized( Rock.Security.Authorization.VIEW, null ) )
             {
                 response.TrySkipIisCustomErrors = true;
                 response.StatusCode = 403;
                 response.Write( "RSS is not enabled for this channel." );
+                return;
+            }
+
+            var mimeTypeCache = RockCache.Get( $"{cacheKey}:{AttributeKey.MimeType}" );
+            if (  mimeTypeCache != null && contentCache != null  && cacheDuration > 0 )
+            {
+                response.ContentType = ( string ) mimeTypeCache;
+                response.Write( ( string ) contentCache );
+                response.StatusCode = 200;
                 return;
             }
 
@@ -234,7 +246,7 @@ namespace RockWeb
             var rockContext = new RockContext();
             ContentChannelItemService contentService = new ContentChannelItemService( rockContext );
 
-            var content = contentService.Queryable().AsNoTracking().Where( c =>
+            var content = contentService.Queryable().Include( c => c.ContentChannel.ContentChannelType ).AsNoTracking().Where( c =>
                 c.ContentChannelId == channel.Id &&
                 c.StartDateTime <= RockDateTime.Now );
 
@@ -264,7 +276,21 @@ namespace RockWeb
                 content = content.OrderByDescending( c => c.StartDateTime );
             }
 
-            var contentItems = content.Take( rssItemLimit ).ToList();
+            /*
+                11/12/2026 - MSE
+
+                Items inherit the channel security but can have their own View rules. Item security can not
+                be evaluated in SQL, so the filter runs after the query. The items are streamed (AsEnumerable)
+                in the existing order and only items the anonymous person (null, because the output is cached
+                by URL) can View count toward the Count limit, so hidden items do not use up the count.
+
+                Reason: Content channel RSS feeds included items without checking View permission.
+            */
+            var contentItems = content
+                .AsEnumerable()
+                .Where( i => i.IsAuthorized( Rock.Security.Authorization.VIEW, null ) )
+                .Take( rssItemLimit )
+                .ToList();
 
             foreach ( var item in contentItems )
             {
@@ -299,6 +325,11 @@ namespace RockWeb
             if ( lastModifiedItem.HasValue )
             {
                 RockCache.AddOrUpdate( $"{cacheKey}:{AttributeKey.LastModified}", lastModifiedItem.ToString() );
+            }
+            else
+            {
+                // Do not keep a date from an item that is no longer in the feed.
+                RockCache.Remove( $"{cacheKey}:{AttributeKey.LastModified}" );
             }
 
             if ( cacheDuration > 0 )
