@@ -183,6 +183,15 @@ describe("the icon button's sizes and tones", () => {
         expect(wrapper.findComponent(Icon).props("size")).toBe("xs");
     });
 
+    // A button whose menu has closed on a choice that opened something else, as the composer's "+"
+    // whose GIF picker is up, keeps the look of a button whose menu is open.
+    test("draws the open look while what it opened is up, as it does while its own menu is open", () => {
+        wrapper = mount(IconButton, { props: { icon: "plus", label: "Add a GIF or file", isOpen: true } });
+
+        expect(wrapper.get("button").classes()).toContain("is-open");
+        expect(ruleOf(styleOf("iconButton.partial.obs"), ".chat-icon-btn.is-open")).toMatch(/background:\s*var\(--chat-brand-wash\)/);
+    });
+
     test("a failure is marked as one, and keeps its name and its words for a screen reader", () => {
         wrapper = mount(IconButton, { props: { icon: "bang", label: "Not sent. Try again or delete", tone: "failure" }, slots: { default: "<span>Not sent</span>" } });
         const button = wrapper.get("button");
