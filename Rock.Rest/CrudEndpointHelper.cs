@@ -121,6 +121,27 @@ namespace Rock.Rest
                     return BadRequest( errorMessage );
                 }
 
+                /*
+                    11/16/2026 - MSE
+
+                    Rock sets the created and modified person and date from the signed-in person when
+                    a record is saved, but keeps the values the client posted. A restricted caller
+                    could store another person as the author or last modifier of the new record, or
+                    back date it. Only callers that have security ignored (EXECUTE_UNRESTRICTED_WRITE)
+                    may write audit values, as in Update and Patch. Clearing them before the check also
+                    stops the posted author from counting as the record's author during authorization.
+
+                    Reason: Restricted callers must not write audit columns.
+                */
+                if ( !IsSecurityIgnored && entity is IModel postedAuditModel )
+                {
+                    postedAuditModel.CreatedByPersonAliasId = null;
+                    postedAuditModel.ModifiedByPersonAliasId = null;
+                    postedAuditModel.CreatedDateTime = null;
+                    postedAuditModel.ModifiedDateTime = null;
+                    postedAuditModel.ModifiedAuditValuesAlreadyUpdated = false;
+                }
+
                 using ( var rockContext = new RockContext() )
                 {
                     var service = ( Service<TEntity> ) Activator.CreateInstance( typeof( TService ), rockContext );
