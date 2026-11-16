@@ -2,7 +2,6 @@
   "S1": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/reactionCard.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 1,
     "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 2
   },
@@ -10,12 +9,8 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRow.partial.obs": 2
   },
   "S3": {},
-  "S4": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 2
-  },
-  "S5": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 4
-  },
+  "S4": {},
+  "S5": {},
   "S6": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionBar.partial.obs": 7,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/blockCard.partial.obs": 5,
@@ -23,8 +18,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs": 5,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 6,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 3,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 1,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/joinBar.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 3,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs": 2,
@@ -37,7 +31,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 10,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/statusMenu.partial.obs": 6,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 5,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 4,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 8,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs": 3,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/groupFace.partial.obs": 5,
@@ -48,13 +42,11 @@
   "S7": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 1
   },
   "S8": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1
   },
@@ -65,8 +57,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/chatHeader.partial.obs": 3,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 3,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 3,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 1,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/joinBar.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 3,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs": 1,
@@ -77,11 +68,11 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 4,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/removeMember.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 3,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadSummary.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 4,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/settingNote.partial.obs": 1,
-    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 43
+    "RockWeb/Styles/Blocks/Communication/Chat/chat.css": 40
   },
   "P2": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionPicker.partial.obs": 1,
@@ -106,7 +97,6 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/composer.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/conversationDetails.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/errorToast.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/gifPicker.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/joinBar.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 4,
@@ -118,6 +108,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/removeMember.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 3,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/notice.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 2
   },
   "P6": {
