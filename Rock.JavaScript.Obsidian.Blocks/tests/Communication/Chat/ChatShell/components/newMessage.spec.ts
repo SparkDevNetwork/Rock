@@ -36,6 +36,7 @@ import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
 import { join } from "path";
 import { away } from "../statusShapes";
+import { providedSession } from "../sessionShapes";
 import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
 
 // #region Fixtures
@@ -67,7 +68,9 @@ function draftFor(people: PersonRow[], overrides: Partial<DirectMessageDraft> = 
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountView(props: Record<string, unknown> = {}): VueWrapper {
+    const { isPhone = false, ...rest } = props;
     wrapper = mount(NewMessage, {
         props: {
             maxOthers: 8,
@@ -78,9 +81,9 @@ function mountView(props: Record<string, unknown> = {}): VueWrapper {
             draft: null,
             error: null,
             refused: null,
-            isPhone: false,
-            ...props
+            ...rest
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
         attachTo: document.body
     });
     return wrapper;

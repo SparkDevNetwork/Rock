@@ -118,6 +118,7 @@
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { JoinState } from "../composables/useRooms.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     const props = defineProps({
         /** The channel's name, written with no "#". */
@@ -130,14 +131,11 @@
         state: {
             type: Object as PropType<JoinState>,
             required: true
-        },
-
-        /** Whether the block is drawn one pane at a time, where the composer sits tighter. */
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
+
+    /** Whether the block is drawn one pane at a time, where the composer sits tighter. */
+    const isPhone = useChatSession().isPhone;
 
     const emit = defineEmits<{
         (e: "join"): void,

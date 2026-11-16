@@ -567,6 +567,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
+    import { useChatSession } from "../chatSession.partial";
 
     const props = defineProps({
         /** Whether the latest service settings prevent sending, even before a room exists. */
@@ -648,13 +649,11 @@
         emojiSource: {
             type: Object as PropType<PickerSource | null>,
             default: null
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
+
+    /** Drawn at a phone's width: Back in Close's place, and the message box takes no first focus. */
+    const isPhone = useChatSession().isPhone;
 
     const emit = defineEmits<{
         (e: "back"): void,
@@ -912,7 +911,7 @@
             // A phone's keyboard would cover the start block the person has not read yet, and a
             // person already typing in the To field keeps their place there.
             nextTick(() => {
-                if (!props.isPhone && !pickerElement.value?.hasFocus()) {
+                if (!isPhone.value && !pickerElement.value?.hasFocus()) {
                     focusEditor();
                 }
             });

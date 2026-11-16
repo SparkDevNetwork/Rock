@@ -29,6 +29,7 @@ import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
 import { DirectoryState, JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 
 /** The rules a component's styles give under reduced motion, selector and body, read from its source. */
@@ -98,7 +99,9 @@ function directory(overrides: Partial<DirectoryState> = {}): DirectoryState {
 
 let wrapper: VueWrapper | null = null;
 
+/** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
+    const { isPhone = false, ...rest } = props;
     wrapper = mount(ChannelDirectory, {
         props: {
             directory: directory(),
@@ -106,9 +109,9 @@ function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
             campuses: [downtown, north],
             personCampusGuid: downtown.guid,
             organizationName: "Cedar Hill Church",
-            isPhone: false,
-            ...props
+            ...rest
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) },
         attachTo: document.body
     });
     return wrapper;

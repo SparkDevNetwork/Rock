@@ -186,7 +186,6 @@
                     <JoinBar v-if="isJoinBarShown && activeChannelId"
                              :name="activeTitle"
                              :state="shell.rooms.joinOf(activeChannelId)"
-                             :isPhone="isPhone"
                              @join="onJoin"
                              @browse="openMainView('directory')" />
 
@@ -233,7 +232,6 @@
                                       :campuses="campuses"
                                       :personCampusGuid="personCampusGuid"
                                       :organizationName="organizationName"
-                                      :isPhone="isPhone"
                                       @back="onBack"
                                       @close="closeMainView"
                                       @query="shell.rooms.setQuery"
@@ -259,7 +257,6 @@
                                 :draft="draft"
                                 :error="shell.directMessages.error"
                                 :refused="shell.directMessages.refused"
-                                :isPhone="isPhone"
                                 :isServiceLocked="!shell.state.isComposerOpen"
                                 :lockedReason="lockedReason(null, shell.state.service)"
                                 :emojiSource="emojiSource"

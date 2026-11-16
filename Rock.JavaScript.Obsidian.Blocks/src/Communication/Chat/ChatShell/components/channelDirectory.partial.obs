@@ -712,6 +712,7 @@
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
     import { messageOrOffline } from "../errors.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState } from "../composables/useRooms.partial";
 
     // #region Types
@@ -777,11 +778,6 @@
         organizationName: {
             type: String,
             default: ""
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -818,6 +814,9 @@
     const idle: JoinState = { kind: "idle" };
 
     const announcer = useAnnouncer();
+
+    /** Drawn at a phone's width: Back in Close's place, and narrower gutters. */
+    const isPhone = useChatSession().isPhone;
 
     // The next page is asked about four rows before the list's end shows. The rooms drop a second
     // ask while one is out, and ask nothing once the list has ended or a page has failed.
