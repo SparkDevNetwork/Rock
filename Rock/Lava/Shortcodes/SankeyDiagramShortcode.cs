@@ -22,6 +22,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
+using Newtonsoft.Json;
+
 using Rock.Web.UI;
 using Rock.ViewModels.Controls;
 
@@ -186,6 +188,33 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         private string[] defaultColors = { "#ea5545", "#f46a9b", "#ef9b20", "#edbf33", "#ede15b", "#bdcf32", "#87bc45", "#27aeef", "#b33dc6" };
 
+        /*
+            11/13/26 - JMH
+
+            Node names, colors and the tooltip action label can be bound from data that other people edit.
+            The default serializer leaves angle brackets alone, so a value could close the inline script block.
+            EscapeHtml writes those characters as unicode escapes, which the browser reads back unchanged.
+            Colors also go into the legend's style attribute, so anything outside a plain color value is dropped.
+
+            Reason: Prevent stored XSS through data bound into the Sankey diagram.
+        */
+        /// <summary>
+        /// The serializer settings used to write the diagram data into the script block.
+        /// </summary>
+        private static readonly Lazy<JsonSerializerSettings> _scriptSerializerSettings = new Lazy<JsonSerializerSettings>( () =>
+        {
+            var settings = Rock.JsonExtensions.CreateSerializerSettings( false, true, true );
+
+            settings.StringEscapeHandling = StringEscapeHandling.EscapeHtml;
+
+            return settings;
+        } );
+
+        /// <summary>
+        /// Matches the named, hex, rgb() and hsl() color values that are allowed for a node.
+        /// </summary>
+        private static readonly Regex _safeColorRegex = new Regex( @"^[A-Za-z0-9#,.%() ]{1,40}\z", RegexOptions.Compiled );
+
         #endregion
 
         #region Methods
@@ -240,8 +269,8 @@ namespace Rock.Lava.Shortcodes
                 foreach ( var node in nodes )
                 {
                     legend += "<div class=\"flow-key\">";
-                    legend += $@"<span class=""color"" style=""background-color:{node.Color}""></span>";
-                    legend += $@"<span>{node.Order}. {node.Name}</span>";
+                    legend += $@"<span class=""color"" style=""background-color:{node.Color.EncodeHtml()}""></span>";
+                    legend += $@"<span>{node.Order}. {node.Name.EncodeHtml()}</span>";
                     legend += "</div>";
                 }
 
@@ -263,10 +292,10 @@ namespace Rock.Lava.Shortcodes
 
 Rock.Lava.Shortcode.SankeyDiagram.init(
     ""#{elementId}"",
-    {edges.ToCamelCaseJson( true, true )},
-    {nodes.ToCamelCaseJson( true, true )},
-    {options.ToCamelCaseJson( true, true )},
-    ""{nodeTooltipActionLabel}""
+    {SerializeForScript( edges )},
+    {SerializeForScript( nodes )},
+    {SerializeForScript( options )},
+    {SerializeForScript( nodeTooltipActionLabel )}
 )
 
 </script>
@@ -280,6 +309,16 @@ Rock.Lava.Shortcode.SankeyDiagram.init(
             }
 
             result.Write( residualBlockContent.Trim() );
+        }
+
+        /// <summary>
+        /// Serializes a value into camel case JSON that is safe to place inside an inline script block.
+        /// </summary>
+        /// <param name="value">The value to serialize.</param>
+        /// <returns>The JSON string with HTML characters escaped.</returns>
+        internal static string SerializeForScript( object value )
+        {
+            return JsonConvert.SerializeObject( value, _scriptSerializerSettings.Value );
         }
 
         /// <summary>
@@ -456,7 +495,7 @@ Rock.Lava.Shortcode.SankeyDiagram.init(
                         Order = ++currentNodeOrder,
                     };
 
-                    if ( node.Color == null )
+                    if ( node.Color == null || !_safeColorRegex.IsMatch( node.Color ) )
                     {
                         node.Color = GetNextDefaultColor();
                     }

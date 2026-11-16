@@ -1856,6 +1856,7 @@
     <Compile Include="Plugin\HotFixes\341_RemoveTagRestControllerAllUsersAuth.cs" />
     <Compile Include="Plugin\HotFixes\344_EscapeStepFlowFooterLavaTemplate.cs" />
     <Compile Include="Plugin\HotFixes\345_AddBackgroundCheckAdministratorEditAuth.cs" />
+    <Compile Include="Plugin\HotFixes\346_EscapeLavaChartShortcodeData.cs" />
     <Compile Include="Plugin\HotFixes\280_AuthFixForIssue6712.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
