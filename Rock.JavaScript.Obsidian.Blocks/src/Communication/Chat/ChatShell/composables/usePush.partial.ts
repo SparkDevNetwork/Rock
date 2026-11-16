@@ -79,17 +79,24 @@ export type PushDependencies = {
      * chose; none keeps nothing, so only this load's Turn on registers.
      */
     choice?: { read: () => PushChoice | null, write: (choice: PushChoice) => void };
+
+    /**
+     * Whether a load here already let go the browser's token for this church and nothing has
+     * registered since, kept in this browser's storage; none keeps nothing, so every such load
+     * lets go again.
+     */
+    released?: { read: () => boolean, write: (isReleased: boolean) => void };
 };
 
 /** A person's own choice of push on one browser: their Turn on or their Turn off. */
 export type PushChoice = "on" | "off";
 
 /**
- * This browser's push as Chat settings draws it: offered, the browser's own box up, on, refused by
- * the browser, not set up where the platform sent no Firebase values, or not kept for a sign-in
- * that ends with the browser session.
+ * This browser's push as Chat settings draws it: offered, the browser's own box up, a Turn on on
+ * its way, on, refused by the browser, not set up where the platform sent no Firebase values, or
+ * not kept for a sign-in that ends with the browser session.
  */
-export type PushState = "offered" | "asking" | "on" | "blocked" | "unavailable" | "not_kept";
+export type PushState = "offered" | "asking" | "turning_on" | "on" | "blocked" | "unavailable" | "not_kept";
 
 /** The part of a ServiceWorkerRegistration push reads: the worker in each slot. */
 export type WorkerRegistration = Pick<ServiceWorkerRegistration, "installing" | "waiting" | "active">;
@@ -111,8 +118,11 @@ export type PushRegistration = {
     /** The person sent a message, which is when an after_send prompt shows. */
     noteSend: () => void;
 
-    /** The button was clicked: asks the browser, and registers on a yes. */
-    turnOn: () => Promise<void>;
+    /**
+     * The button was clicked: asks the browser where it must, and registers on a yes; answers why
+     * the register failed, or null where it succeeded, was overtaken or the browser was not allowed.
+     */
+    turnOn: () => Promise<ChatError | null>;
 
     /** Takes this browser's device out of push and remembers it here; answers why it could not, or null. */
     turnOff: () => Promise<ChatError | null>;
@@ -143,6 +153,9 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
 
     /** Set while the browser's own permission box is up. */
     let isAsking = false;
+
+    /** Set from a Turn on's click until it settles, so the row is busy and a second click does nothing. */
+    let isTurningOn = false;
 
     /** The token this browser registered under on this load, which Turn off takes out. */
     let registeredToken: string | null = null;
@@ -184,43 +197,76 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         }
     };
 
+    const writeReleased = (isReleased: boolean): void => {
+        try {
+            dependencies.released?.write(isReleased);
+        }
+        catch {
+            // as above: the next load lets go again
+        }
+    };
+
+    const readReleased = (): boolean => {
+        try {
+            return dependencies.released?.read() ?? false;
+        }
+        catch {
+            return false;
+        }
+    };
+
     /** Whether the platform sent the Firebase values push needs. */
     const isAvailable = (): boolean => dependencies.settings().web !== null && dependencies.settings().vapid_key !== null;
 
     /**
      * Registers the worker, gets the token and gives it to the platform. Every await is checked
      * against the stop, so a page closed or signed out halfway registers nothing afterwards.
+     *
+     * @returns Why it failed, or null where it registered or was overtaken.
      */
-    async function register(generation: number): Promise<void> {
+    async function register(generation: number): Promise<ChatError | null> {
         const push = dependencies.settings();
         const isCurrent = (): boolean => !isStopped && generation === operationGeneration;
+        const failed = (text?: string | null): ChatError => ({
+            code: "push.register_failed",
+            severity: "failed",
+            text: text ?? failedWords("Notifications couldn't be turned on for this browser.").alone
+        });
 
         try {
             const registration = await dependencies.registerWorker(dependencies.pagePath);
             if (!isCurrent()) {
-                return;
+                return null;
             }
 
             await whenActive(registration);
             if (!isCurrent()) {
-                return;
+                return null;
             }
 
             const token = await dependencies.getToken(push.web as Record<string, unknown>, push.vapid_key as string, registration);
             if (!isCurrent()) {
-                return;
+                return null;
             }
 
             const pending = { token, result: dependencies.call("chat_register_device", { p_token: token, p_platform: "web" }) };
             registering.add(pending);
             try {
                 const result = await pending.result;
-                if (!isCurrent() || !result.ok) {
-                    return;
+                if (!isCurrent()) {
+                    return null;
+                }
+
+                if (!result.ok) {
+                    return failed(result.error.text);
                 }
 
                 registeredToken = token;
                 dependencies.writeCookie(token);
+                // this browser holds a registration again, which the next load that will not
+                // register must let go
+                writeReleased(false);
+                return null;
             }
             finally {
                 registering.delete(pending);
@@ -229,6 +275,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         catch {
             // Push is extra: a browser that blocks it, or a Firebase that will not answer, leaves
             // chat working as before, and the next load tries again.
+            return isCurrent() ? failed() : null;
         }
     }
 
@@ -290,13 +337,26 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
     /**
      * Lets go the token this browser holds on a load that will not register, whoever registered
      * it: the cookie's, else the browser's own, since a sign-out that failed to reach the platform
-     * still expires the cookie. A Turn on in this tab, or this person's yes from another tab, wins:
-     * the choice is read again once the token is had, and an answer arriving after either is not
-     * kept. Nothing is said of a failure; the cookie keeps the token and the next load tries again.
+     * still expires the cookie. A Turn on in this tab waits for the release before it registers.
+     * This person's yes from another tab is read again once the token is had, so a yes given
+     * before then stops the release; one given after it is sent can still lose its registration,
+     * which fails closed: that tab's next load registers again. An answer arriving after a Turn on
+     * or Turn off here is not kept. Nothing is said of a failure; the cookie keeps the token and
+     * the next load tries again.
+     *
+     * A finished release is remembered for this church on this browser until anything registers
+     * here, so the next such load with no cookie loads no Firebase and calls nothing.
      */
     async function release(generation: number): Promise<void> {
+        if (!readCookie() && readReleased()) {
+            return;
+        }
+
         const isCurrent = (): boolean => !isStopped && generation === operationGeneration && !mayRegisterOnLoad();
-        await unregister(undefined, isCurrent);
+        const failure = await unregister(undefined, isCurrent);
+        if (!failure && isCurrent()) {
+            writeReleased(true);
+        }
     }
 
     /**
@@ -359,10 +419,11 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         },
 
         // Unasked only to a person who has not chosen here, under a kept sign-in, while the
-        // browser can still ask or already allows, and not once this load registered.
+        // browser can still ask or already allows, and not from a Turn on's click or once this
+        // load registered.
         isOffered: (): boolean => {
             if (isStopped || !isAvailable() || !dependencies.isSignInKept || dependencies.permission() === "denied"
-                || readChoice() !== null || registeredToken !== null) {
+                || readChoice() !== null || registeredToken !== null || isTurningOn) {
                 return false;
             }
 
@@ -374,32 +435,41 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
             hasSent = true;
         },
 
-        turnOn: async (): Promise<void> => {
-            if (isStopped || !isAvailable() || !dependencies.isSignInKept) {
-                return;
+        // One busy state from the click until the register settles, whether or not the browser
+        // asks: the row draws it at once, and a second click while it lasts does nothing.
+        turnOn: async (): Promise<ChatError | null> => {
+            if (isStopped || !isAvailable() || !dependencies.isSignInKept || isTurningOn) {
+                return null;
             }
 
-            const generation = ++operationGeneration;
-            // A browser that already allows notifications, by anyone's yes, needs no asking.
-            if (dependencies.permission() !== "granted") {
-                isAsking = true;
-                const answer = await dependencies.requestPermission().finally(() => {
-                    isAsking = false;
-                });
-                if (isStopped || generation !== operationGeneration || answer !== "granted") {
-                    return;
+            isTurningOn = true;
+            try {
+                const generation = ++operationGeneration;
+                // A browser that already allows notifications, by anyone's yes, needs no asking.
+                if (dependencies.permission() !== "granted") {
+                    isAsking = true;
+                    const answer = await dependencies.requestPermission().finally(() => {
+                        isAsking = false;
+                    });
+                    // a box closed or answered no is the person's own answer, so nothing is said
+                    if (isStopped || generation !== operationGeneration || answer !== "granted") {
+                        return null;
+                    }
                 }
-            }
 
-            writeChoice("on");
-            // A release this load sent may still land on the platform; the register goes after it,
-            // so it can never take out the device this registers.
-            await releasing;
-            if (isStopped || generation !== operationGeneration) {
-                return;
-            }
+                writeChoice("on");
+                // A release this load sent may still land on the platform; the register goes after
+                // it, so it can never take out the device this registers.
+                await releasing;
+                if (isStopped || generation !== operationGeneration) {
+                    return null;
+                }
 
-            await register(generation);
+                return await register(generation);
+            }
+            finally {
+                isTurningOn = false;
+            }
         },
 
         turnOff: async (): Promise<ChatError | null> => {
@@ -430,6 +500,10 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
 
             if (isAsking) {
                 return "asking";
+            }
+
+            if (isTurningOn) {
+                return "turning_on";
             }
 
             const permission = dependencies.permission();

@@ -927,8 +927,9 @@ export function createMembers(dependencies: MembersDependencies): Members {
             }
 
             if (answer.code !== "ok") {
-                // The person was gone before the door looked: the row is stale and leaves once read.
-                refuse(answer.message || removeFailed.alone, answer.code === "door.not_member");
+                // The person was gone before the door looked, or the room is one the person may no
+                // longer know of: either way the row is stale and leaves once read.
+                refuse(answer.message || removeFailed.alone, answer.code === "door.not_member" || answer.code === "door.not_found");
                 return;
             }
 

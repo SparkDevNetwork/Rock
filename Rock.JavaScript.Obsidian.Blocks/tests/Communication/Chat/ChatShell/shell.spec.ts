@@ -3867,9 +3867,14 @@ describe("the browser row", () => {
     });
 
     test("a Turn on takes the header's offer away at the click, and one that fails is told and Off again", async () => {
-        const h = await started({ push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("offer") });
+        // Firebase will not give this browser a token
+        const h = await started({
+            push: fakeBrowserPush({ value: "granted" }, async () => {
+                throw new Error("messaging/permission-blocked");
+            }),
+            pushSettings: pushSettings("offer")
+        });
         expect(h.shell.state.isPushOffered).toBe(true);
-        h.deviceAnswer.value = { status: 500, body: { code: "rpc.unavailable", message: "x" } };
 
         const turning = h.shell.turnOnPush();
         expect(h.shell.state.isPushOffered).toBe(false);

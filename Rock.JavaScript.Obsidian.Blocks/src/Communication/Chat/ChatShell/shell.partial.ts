@@ -141,7 +141,7 @@ export type ShellOptions = {
     mark: (name: string) => void;
 
     /** The browser's push, or nothing where this browser has none. */
-    push?: Omit<PushDependencies, "settings" | "call" | "choice">;
+    push?: Omit<PushDependencies, "settings" | "call" | "choice" | "released">;
 
     /** Loads the page again; the browser's own reload when not given. */
     reloadPage?: () => void;
@@ -763,12 +763,28 @@ export function createChatShell(options: ShellOptions): ChatShell {
         return { ok: true, person: result.data as PersonProfile };
     }
 
+    /**
+     * A membership door's answer as the person reads it. Rock answers a room the person may not
+     * know of, one they were taken out of included, as one that does not exist, in a channel's
+     * words since the answer says nothing of the room; a conversation is never called a channel.
+     */
+    function inRoomWords<T extends { code?: string | null, message?: string | null }>(channelId: string, answer: T): T {
+        const kind = roomKindOf(channelId);
+        return answer.code === "door.not_found" && (kind === "person" || kind === "group")
+            ? { ...answer, message: "That conversation could not be found." }
+            : answer;
+    }
+
+    const leaveChannel = options.leaveChannel;
+    const addMembers = options.addMembers;
+    const removeMember = options.removeMember;
+
     const rooms = createRooms({
         getChannel,
         listDirectory,
         getPerson,
         joinChannel: options.joinChannel,
-        leaveChannel: options.leaveChannel,
+        leaveChannel: leaveChannel && (async channelId => inRoomWords(channelId, await leaveChannel(channelId))),
         renameConversation: options.renameConversation,
         getMemberRights: options.getMemberRights,
         getProfileDetails: options.getProfileDetails,
@@ -791,7 +807,11 @@ export function createChatShell(options: ShellOptions): ChatShell {
     });
     const members = createMembers({
         call,
-        doors: { getRights: options.getMemberRights, addMembers: options.addMembers, removeMember: options.removeMember },
+        doors: {
+            getRights: options.getMemberRights,
+            addMembers: addMembers && (async (channelId, people) => inRoomWords(channelId, await addMembers(channelId, people))),
+            removeMember: removeMember && (async (channelId, person, replacement) => inRoomWords(channelId, await removeMember(channelId, person, replacement)))
+        },
         // a lost connection is told by its banner, and a door asked then would not be reached
         isOffline: () => state.connection !== null,
         notify: notice => options.notify?.(notice),
@@ -1025,6 +1045,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // from here. It draws the look of the room opened last, as nothing else is known yet.
     const reveal = createPageReveal({ kind: readRememberedKind(options.storage, storageKey) });
     const pushOffKey = `rock-chat:push-off:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
+    // per church, not per person: what it remembers is this browser's token, whoever is signed in
+    const pushReleasedKey = `rock-chat:push-released:${tenantId.toLowerCase()}`;
 
     const presence = createPresence({
         callFunction,
@@ -1213,6 +1235,10 @@ export function createChatShell(options: ShellOptions): ChatShell {
                             return stored === "true" ? "off" : stored === "false" ? "on" : null;
                         },
                         write: choice => options.storage?.setItem(pushOffKey, choice === "off" ? "true" : "false")
+                    },
+                    released: {
+                        read: () => options.storage?.getItem(pushReleasedKey) === "true",
+                        write: isReleased => isReleased ? options.storage?.setItem(pushReleasedKey, "true") : options.storage?.removeItem(pushReleasedKey)
                     }
                 });
                 // drawn now, as a browser's first registration can take half a minute
@@ -1277,14 +1303,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
                 return;
             }
 
-            // only the browser's own box shows at once; on waits for the register to settle
+            // Busy from the click, the header's offer gone at once; on waits for the register to
+            // settle, and a register that fails is told.
             const turning = push.turnOn();
-            if (push.state() === "asking") {
-                state.push = "asking";
-            }
-            await turning;
             state.isPushOffered = push.isOffered();
             state.push = push.state();
+            const failure = await turning;
+            state.isPushOffered = push.isOffered();
+            state.push = push.state();
+            if (failure) {
+                report(failure);
+            }
         },
 
         turnOffPush: async (): Promise<void> => {
