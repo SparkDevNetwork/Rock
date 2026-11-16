@@ -113,11 +113,12 @@ export function useTooltip(anchor: Ref<HTMLElement | undefined>, isDisabled: () 
     /** Whether the focus that is coming was a press, since a tip under the pointer is noise. */
     let isPointerFocus = false;
 
-    // Above the anchor, or below it when there is no room, kept 8px inside the window. An
-    // interactive tip hangs below, from the anchor's start, as a card opened from it does. Placed
-    // as every popover is; shown and hidden by the tip's own timers, never by a press or a key.
+    // Below the anchor, or above it when there is no room, kept 8px inside the window: the chat
+    // sits under the page's own header, which a tip hung above a header button would cover. An
+    // interactive tip hangs from the anchor's start, as a card opened from it does. Placed as every
+    // popover is; shown and hidden by the tip's own timers, never by a press or a key.
     const { isOpen: isTipShown, floatingStyles } = usePopover(anchor, tipElement, {
-        placement: isInteractive ? "bottom-start" : "top",
+        placement: isInteractive ? "bottom-start" : "bottom",
         offset: isInteractive ? 6 : 8,
         isDismissable: false
     });
