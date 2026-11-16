@@ -464,7 +464,7 @@ button.chat-header-id:hover .chat-header-chev {
     width: 40%;
     content: "";
     background: linear-gradient(90deg, transparent, var(--chat-warning), transparent);
-    animation: chat-sweep var(--chat-d-sweep) var(--chat-ease-state) infinite;
+    animation: var(--chat-loop-stop, chat-sweep) var(--chat-d-sweep) var(--chat-ease-state) infinite;
 }
 
 .chat-fade-enter-active,

@@ -266,6 +266,8 @@
     --chat-d-spin: .7s;
     --chat-d-refresh-spin: .8s;
     --chat-d-skeleton: 1.6s;
+    /* The typing dots' strength between bobs, and so at rest. */
+    --chat-bob-dim: .45;
     /* A photo or face fading in once decoded, and how long the first decoded one of a batch waits for the rest. */
     --chat-d-img-in: 220ms;
     --chat-d-img-batch: 300ms;
@@ -483,11 +485,13 @@
         --chat-d-spring: var(--chat-t-fast);
         --chat-d-sheet-out: var(--chat-t-fast);
         --chat-d-progress: 0ms;
-    }
-
-    .chat-shell .chat-skeleton,
-    .chat-shell .chat-attach-tile:has(> .chat-img-hold) {
-        animation: none;
+        /*
+            Every decorative loop plays var(--chat-loop-stop, its own name), and the stop is set
+            here alone, so each loop, a part's scoped one too, does not run at all: no animation
+            ticking every frame drawn still. The typing dots, with no bob, stand at full strength.
+        */
+        --chat-loop-stop: none;
+        --chat-bob-dim: 1;
     }
 }
 
@@ -496,8 +500,9 @@
     motion changed here changes everywhere it plays. A motion that moves reads its distance from a
     token, and a part names a distance of its own only through the set's own variable (such as
     --chat-pop-from); under reduced motion every distance is nothing, so a rise is left a fade and
-    no part needs a reduced-motion rule. The few motions that move and nothing else, or that loop,
-    are redrawn still in the reduced-motion block after the set.
+    no part needs a reduced-motion rule. The few motions that move and nothing else are redrawn as
+    fades in the reduced-motion block after the set; a loop that decorates plays through the loop
+    stop, so under reduced motion it does not play.
 */
 
 /* Fade: opacity only, for scrims, swaps and anything that appears where it stands. */
@@ -684,7 +689,10 @@
     }
 }
 
-/* Loops: a busy spinner, a dot that waits, a skeleton breathing, the typing dots, the connection sweep. */
+/*
+    Loops: a busy spinner, a dot that waits, a skeleton breathing, the typing dots, the connection
+    sweep. All but the spinner decorate, and play through the loop stop.
+*/
 @keyframes chat-spin {
     to {
         transform: rotate(360deg);
@@ -711,7 +719,7 @@
     0%,
     60%,
     100% {
-        opacity: .45;
+        opacity: var(--chat-bob-dim);
         transform: none;
     }
 
@@ -732,9 +740,9 @@
 }
 
 /*
-    Reduced motion: what only moves becomes a fade, and a loop that decorates is drawn still (a
-    busy spinner keeps turning, since it says something is happening). A later definition under a
-    matching query replaces the one above.
+    Reduced motion: what only moves becomes a fade. A later definition under a matching query
+    replaces the one above. A loop is never redrawn still here, since a still loop keeps running;
+    the loop stop ends it instead.
 */
 @media (prefers-reduced-motion: reduce) {
     @keyframes chat-slide-in {
@@ -746,34 +754,6 @@
     @keyframes chat-slide-out {
         to {
             opacity: 0;
-        }
-    }
-
-    @keyframes chat-pulse {
-        from,
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes chat-skeleton-pulse {
-        from,
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes chat-bob {
-        from,
-        to {
-            opacity: 1;
-        }
-    }
-
-    @keyframes chat-sweep {
-        from,
-        to {
-            transform: none;
         }
     }
 }
@@ -1055,18 +1035,11 @@
     vertical-align: 1px;
     background: var(--chat-warning);
     border-radius: var(--chat-r-full);
-    animation: chat-pulse var(--chat-d-pulse) var(--chat-ease-state) infinite;
+    animation: var(--chat-loop-stop, chat-pulse) var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 .chat-live-dot.is-info {
     background: var(--chat-info);
-}
-
-/* Looping decoration stops; the words beside the dot still say what is happening. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-live-dot {
-        animation: none;
-    }
 }
 
 
@@ -1193,12 +1166,12 @@
 .chat-skeleton {
     background: var(--chat-bubble);
     border-radius: var(--chat-r-control);
-    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+    animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
 /* A photo's held box is a skeleton too while its image waits to be decoded: the same pulse as every other. */
 .chat-attach-tile:has(> .chat-img-hold) {
-    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+    animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
 /* Read by a screen reader, never seen: a live announcement, the "@" before a mention chip's name. */

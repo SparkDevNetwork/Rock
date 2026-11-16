@@ -75,16 +75,18 @@
 }
 
 /*
-    Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before, drawn as the
-    first frame while it waits, so under reduced motion every dot stands at full strength at once.
+    Each dot lifts 2px and brightens in turn, a fifth of the cycle after the one before. At rest it
+    stands at the bob's dim strength, its first frame, so a later dot waiting its turn already looks
+    as the bob begins. A decorative loop, stopped under reduced motion, where the dots stand at full
+    strength.
 */
 .chat-typing-bubble i {
     width: 7px;
     height: 7px;
     background: currentColor;
     border-radius: var(--chat-r-full);
-    opacity: .45;
-    animation: chat-bob var(--chat-d-pulse) var(--chat-ease-state) infinite backwards;
+    opacity: var(--chat-bob-dim);
+    animation: var(--chat-loop-stop, chat-bob) var(--chat-d-pulse) var(--chat-ease-state) infinite;
 }
 
 .chat-typing-bubble i:nth-child(2) {

@@ -240,7 +240,7 @@
 }
 
 .chat-gif-tile.is-loading {
-    animation: chat-skeleton-pulse var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
+    animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
 .chat-gif-tile.is-loading img {
