@@ -569,8 +569,25 @@ namespace Rock.Blocks.Engagement.SignUp
                 .ThenBy( gm => gm.Person.Gender )
                 .ToList();
 
+            /*
+                11/12/2026 - MSE
+
+                In Group mode, the registrar must be an Active, direct member of the specified Group. The children
+                added by Include Children come from their family Group (GroupId is the family's, not the specified
+                Group's), so they must not satisfy this check; otherwise a child of a member could act as the registrar,
+                and a family membership status would be mistaken for the Group membership status. In Family mode, the
+                registrar's own family membership is what's being checked, as before.
+
+                Reason: Inactive and Pending group members must not be able to act as the registrar.
+            */
             // Ensure the current Person belongs to the specified Group.
-            if ( !groupMembers.Any( gm => gm.PersonId == currentPersonId ) )
+            if ( !groupMembers.Any( gm =>
+                gm.PersonId == currentPersonId
+                && (
+                    !groupModeGroupId.HasValue
+                    || ( gm.GroupId == groupModeGroupId.Value && gm.GroupMemberStatus == GroupMemberStatus.Active )
+                )
+            ) )
             {
                 registrationData.ErrorMessage = $"{UnableToRegisterPrefix} as you don't belong to the specified {groupTerm}.";
                 return false;
@@ -728,7 +745,16 @@ namespace Rock.Blocks.Engagement.SignUp
                 FullName = person.FullName,
                 IsChild = person.AgeClassification == AgeClassification.Child,
                 CommunicationPreference = communicationPreference,
-                Email = person.Email,
+                /*
+                    11/12/2026 - MSE
+
+                    Only the registrar's own email is used by the client (to pre-fill the form) and by the server
+                    (a changed email is saved only for the registrar). Don't send the email addresses of the other
+                    registrants (group members, or the children added by Include Children) to the browser.
+
+                    Reason: Prevent disclosure of other people's email addresses.
+                */
+                Email = isRegistrar ? person.Email : null,
                 MobilePhoneNumber = mobilePhone?.Number,
                 MobilePhoneNumberFormatted = mobilePhone?.NumberFormatted,
                 MobilePhoneCountryCode = mobilePhone?.CountryCode,
@@ -802,6 +828,20 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             foreach ( var registrant in registrationData.Registrants )
             {
+                /*
+                    11/12/2026 - MSE
+
+                    Only the registrar's own answers are sent to the browser. The answers are only
+                    shown and edited in Anonymous mode, where the registrar is the only registrant,
+                    so other people's answers were never used by the page.
+
+                    Reason: Do not send other group or family members' answers to the browser.
+                */
+                if ( !registrant.IsRegistrar )
+                {
+                    continue;
+                }
+
                 var existingProjectGroupMember = registrationData.ExistingProjectMembers
                         .FirstOrDefault( pm => pm.GroupMember.Person.IdKey == registrant.PersonIdKey )
                         ?.GroupMember;
@@ -833,6 +873,30 @@ namespace Rock.Blocks.Engagement.SignUp
         private bool IsPublicAttribute( AttributeCache attributeCache )
         {
             return attributeCache.IsPublic;
+        }
+
+        /// <summary>
+        /// Gets the ids of the people the current caller may act for: the authenticated (or impersonated) person and their family members.
+        /// The set is empty for a signed-out caller.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns>The set of person ids.</returns>
+        private HashSet<int> GetCallerAndFamilyPersonIds( RockContext rockContext )
+        {
+            var personIds = new HashSet<int>();
+
+            if ( IsAuthenticatedOrImpersonated )
+            {
+                var callerPerson = this.RequestContext.CurrentPerson;
+                personIds.Add( callerPerson.Id );
+
+                foreach ( var familyPersonId in callerPerson.GetFamilyMembers( true, rockContext ).Select( fm => fm.PersonId ).ToList() )
+                {
+                    personIds.Add( familyPersonId );
+                }
+            }
+
+            return personIds;
         }
 
         /// <summary>
@@ -911,6 +975,9 @@ namespace Rock.Blocks.Engagement.SignUp
 
             var registrantAttributeValuesToSave = new List<RegistrantAttributeValuesToSave>();
             var communicationUpdates = new List<CommunicationUpdate>();
+
+            // The ids of the people the current caller may act for (themselves and their family members); built lazily when needed.
+            HashSet<int> callerAndFamilyPersonIds = null;
 
             var groupMemberAssignmentsToDelete = new List<GroupMemberAssignment>();
             var groupMembersToDelete = new List<GroupMember>();
@@ -1175,13 +1242,33 @@ namespace Rock.Blocks.Engagement.SignUp
                         // Add them to the `registered` collection so we can assure the registrar that they're still registered.
                         registered.Add( registrant );
 
-                        // Ensure any changes to attribute values are saved.
-                        registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                        /*
+                            11/12/2026 - MSE
+
+                            Save changes to attribute values for an existing registration only when the caller is that person or one
+                            of their family members. A signed-out visitor (or a signed-in stranger) who supplies another registrant's
+                            name and email must not be able to replace that person's saved answers. The registrant is still added to
+                            the `registered` collection above, so the form still tells the caller that this person is registered.
+                            Note that `registrarPerson` can't be used for this check, as it's set to the first matched person for a
+                            signed-out caller.
+
+                            Reason: Prevent unauthenticated changes to another person's saved answers.
+                        */
+                        if ( callerAndFamilyPersonIds == null )
                         {
-                            Registrant = registrant,
-                            GroupMember = existingProjectMember?.GroupMember,
-                            GroupMemberAssignment = existingRegistration
-                        } );
+                            callerAndFamilyPersonIds = GetCallerAndFamilyPersonIds( rockContext );
+                        }
+
+                        // Ensure any changes to attribute values are saved, but only for the caller or their family members.
+                        if ( callerAndFamilyPersonIds.Contains( person.Id ) )
+                        {
+                            registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
+                            {
+                                Registrant = registrant,
+                                GroupMember = existingProjectMember?.GroupMember,
+                                GroupMemberAssignment = existingRegistration
+                            } );
+                        }
                     }
                     else
                     {
@@ -1537,10 +1624,38 @@ namespace Rock.Blocks.Engagement.SignUp
                     registered.Add( registrant );
                     workflowMembers.Add( projectGroupMember );
 
+                    var groupMemberForAttributeValues = projectGroupMember;
+
+                    if ( mode == RegisterMode.Anonymous && !addGroupMember )
+                    {
+                        /*
+                            11/16/2026 - MSE
+
+                            In Anonymous mode, a signed-out visitor can supply an existing project member's name and email while
+                            registering for a different occurrence of the same project. That person's GroupMember record already
+                            existed before this request, so saving the submitted member attribute values onto it would replace the
+                            answers that person saved earlier. Only save member attribute values onto a pre-existing GroupMember
+                            when the caller is that person or one of their family members. The person is still registered, and the
+                            attribute values for the newly created GroupMemberAssignment are still saved, as nothing is overwritten.
+                            GroupMember records created in this request keep saving their member attribute values.
+
+                            Reason: Prevent unauthenticated changes to another person's saved answers.
+                        */
+                        if ( callerAndFamilyPersonIds == null )
+                        {
+                            callerAndFamilyPersonIds = GetCallerAndFamilyPersonIds( rockContext );
+                        }
+
+                        if ( !callerAndFamilyPersonIds.Contains( personId.Value ) )
+                        {
+                            groupMemberForAttributeValues = null;
+                        }
+                    }
+
                     registrantAttributeValuesToSave.Add( new RegistrantAttributeValuesToSave
                     {
                         Registrant = registrant,
-                        GroupMember = projectGroupMember,
+                        GroupMember = groupMemberForAttributeValues,
                         GroupMemberAssignment = groupMemberAssignment
                     } );
 
