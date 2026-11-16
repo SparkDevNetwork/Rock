@@ -4191,7 +4191,12 @@ namespace Rock.Rest.v2
                     ? AttributeCache.Get( options.UpdateAttributeGuid.Value )
                     : null;
 
-                if ( updateAttribute?.FieldType?.Field is DefinedValueFieldType )
+                // Only an attribute built on this defined type and open to adding values may be updated.
+                var isAttributeForDefinedType = updateAttribute?.FieldType?.Field is DefinedValueFieldType
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "definedtype" ).AsIntegerOrNull() == definedType.Id
+                    && updateAttribute.ConfigurationValues.GetValueOrNull( "AllowAddingNewValues" ).AsBoolean();
+
+                if ( isAttributeForDefinedType )
                 {
                     var needSave = DefinedValueFieldType.AddValueToAttributeConfiguration( updateAttribute.Id, definedValue.Id, rockContext );
 

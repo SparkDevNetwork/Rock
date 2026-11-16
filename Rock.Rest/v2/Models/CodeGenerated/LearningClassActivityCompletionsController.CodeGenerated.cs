@@ -62,8 +62,8 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Route( "{id}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( Rock.Model.LearningClassActivityCompletion ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -73,7 +73,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.Get( id );
         }
@@ -86,8 +86,8 @@ namespace Rock.Rest.v2.Models
         [HttpPost]
         [Route( "" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -97,7 +97,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Create( value );
         }
@@ -112,8 +112,8 @@ namespace Rock.Rest.v2.Models
         [HttpPut]
         [Route( "{id}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.NoContent )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -123,7 +123,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Update( id, value );
         }
@@ -138,8 +138,8 @@ namespace Rock.Rest.v2.Models
         [HttpPatch]
         [Route( "{id}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.NoContent )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -149,7 +149,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Patch( id, values );
         }
@@ -162,8 +162,8 @@ namespace Rock.Rest.v2.Models
         [HttpDelete]
         [Route( "{id}" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.NoContent )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -173,7 +173,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.Delete( id );
         }
@@ -186,8 +186,8 @@ namespace Rock.Rest.v2.Models
         [HttpGet]
         [Route( "{id}/attributevalues" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_READ )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ProducesResponse( HttpStatusCode.OK, Type = typeof( Dictionary<string, ModelAttributeValueBag> ) )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -197,7 +197,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_READ );
+            helper.IsSecurityIgnored = true;
 
             return helper.GetAttributeValues( id );
         }
@@ -212,8 +212,8 @@ namespace Rock.Rest.v2.Models
         [HttpPatch]
         [Route( "{id}/attributevalues" )]
         [Authenticate]
-        [Secured( Security.Authorization.EXECUTE_WRITE )]
-        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
+        [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
         [ProducesResponse( HttpStatusCode.NoContent )]
         [ProducesResponse( HttpStatusCode.BadRequest )]
         [ProducesResponse( HttpStatusCode.NotFound )]
@@ -223,7 +223,7 @@ namespace Rock.Rest.v2.Models
         {
             var helper = new CrudEndpointHelper<Rock.Model.LearningClassActivityCompletion, Rock.Model.LearningClassActivityCompletionService>( this );
 
-            helper.IsSecurityIgnored = IsCurrentPersonAuthorized( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE );
+            helper.IsSecurityIgnored = true;
 
             return helper.PatchAttributeValues( id, values );
         }
