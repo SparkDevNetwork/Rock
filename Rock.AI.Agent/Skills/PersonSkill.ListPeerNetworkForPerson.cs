@@ -19,6 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
@@ -36,7 +37,36 @@ internal sealed partial class PersonSkill
         var rockContext = AgentRequestContext.RockContext;
 
         var peerNetworkService = rockContext.Set<PeerNetwork>();
-        var personId = IdHasher.Instance.GetId( personIdKey );
+
+        /*
+            11/16/2026 - MSE
+
+            The person must be loaded by IdKey with the shared entity loader so
+            integer ids are refused and Person VIEW is checked. Public agents are
+            limited to the current person's own peer network, because the seeded
+            staff-only Person skill rules are the only other control and an
+            administrator can open the skill to a public agent.
+
+            Reason: Peer network tool returned any person's relationships to non-staff callers.
+        */
+        var helper = new AgentToolHelper( AgentRequestContext, _logger );
+        var person = helper.GetRequiredEntity<Model.Person>( personIdKey );
+
+        var isOtherPersonOnPublicAgent = person != null
+            && AgentRequestContext.AudienceType != AudienceType.Internal
+            && person.Id != AgentRequestContext.CurrentPerson?.Id;
+
+        if ( isOtherPersonOnPublicAgent )
+        {
+            helper.AddError( "You can only view your own peer network." );
+        }
+
+        if ( helper.HasErrors )
+        {
+            return helper.ErrorResult;
+        }
+
+        var personId = person.Id;
 
         var results = peerNetworkService
             .Where( pn => pn.SourcePersonId == personId )
