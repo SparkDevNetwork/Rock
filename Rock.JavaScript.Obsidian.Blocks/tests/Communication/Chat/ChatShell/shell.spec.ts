@@ -3599,6 +3599,30 @@ describe("the live sidebar", () => {
             expect(h.shell.rooms.leaveOf(channelA)).toEqual({ kind: "refused", text: "That channel could not be found." });
         });
 
+        // A person the door could not find names that person; it says nothing of the room, so its
+        // words stand and the row it was asked about stays.
+        test("a person not found in a conversation keeps the door's own words and leaves no row stale", async () => {
+            const h = await startedLive({
+                getMemberRights: async () => ({ canManageMembers: true, canRename: true, lastLeaderPersonAliasGuid: null }),
+                removeMember: async () => ({ code: "door.not_found", message: "That person could not be found.", isPending: false, personAliasGuid: anna }) as never,
+                addMembers: async () => ({ code: "door.not_found", message: "One of the people chosen could not be found.", isPending: false, personAliasGuid: anna }) as never
+            });
+            const annaRow = { person_alias_guid: anna, nick_name: "Anna", last_name: "Reyes", avatar_url: null, is_leader: false, details: null, can_message: true };
+
+            void h.shell.members.open(dmD);
+            await settle();
+            h.shell.members.state.rows = [annaRow];
+            h.shell.members.askRemove(anna);
+            await h.shell.members.remove();
+            expect(h.shell.members.state.removals[anna]).toEqual({ kind: "refused", text: "That person could not be found.", isStale: false });
+            h.shell.members.dismissRemoval(anna);
+            expect(h.shell.members.state.rows).toEqual([annaRow]);
+
+            h.shell.members.openAdd();
+            await h.shell.members.add([annaRow as never]);
+            expect(h.shell.members.state.adding.refusal?.text).toMatch(/^One of the people chosen could not be found\./);
+        });
+
         test("without the doors, Leave and Rename are refused with a sentence and nothing else changes", async () => {
             const h = await startedLive();
 
@@ -3882,6 +3906,18 @@ describe("the browser row", () => {
 
         expect(h.shell.state.errors.map(e => e.code)).toContain("push.register_failed");
         expect(h.shell.state.push).toBe("offered");
+    });
+
+    // Nothing is remembered of a release: a register whose answer was lost would leave such a
+    // memory standing, and the next person's load would skip the release it needed.
+    test("every load that will not register lets go the browser's token, even after an earlier load let it go", async () => {
+        const stored: Record<string, string> = {};
+        const first = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(first.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
+        first.shell.stop();
+
+        const next = await started({ stored, push: fakeBrowserPush({ value: "granted" }), pushSettings: pushSettings("off") });
+        expect(next.deviceCalls.map(c => c.name)).toEqual(["chat_unregister_device"]);
     });
 
     test("a choice is kept per church and person, so another person on the browser registers only on their own yes", async () => {

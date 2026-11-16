@@ -1459,6 +1459,39 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
         }
 
         [TestMethod]
+        public void APersonADoorCannotFindIsNamedSoItIsNeverReadAsTheRoom()
+        {
+            // The answer names the person the caller sent, so it tells nothing new, and a client
+            // tells it apart from a room that cannot be found by the person it names.
+            using ( var scene = new ChatDoorScene() )
+            {
+                var ada = scene.AddChatPerson( "Ada", isOpenDmAllowed: true );
+                var bo = scene.AddChatPerson( "Bo", isOpenDmAllowed: true );
+                var cy = scene.AddChatPerson( "Cy", isOpenDmAllowed: true );
+                var group = scene.Start( ada, scene.Alias( bo ), scene.Alias( cy ) ).ChannelGuid.Value;
+                var nobody = Guid.NewGuid();
+                var nobodyElse = Guid.NewGuid();
+
+                var added = scene.Add( ada, group, scene.Alias( bo ), nobody );
+                Assert.AreEqual( "door.not_found", added.Code );
+                Assert.AreEqual( "One of the people chosen could not be found.", added.Message );
+                Assert.AreEqual( nobody, added.PersonAliasGuid );
+
+                var removed = scene.Remove( ada, group, nobody );
+                Assert.AreEqual( "That person could not be found.", removed.Message );
+                Assert.AreEqual( nobody, removed.PersonAliasGuid );
+
+                var replaced = scene.Remove( ada, group, scene.Alias( cy ), nobodyElse );
+                Assert.AreEqual( "The person chosen to lead next could not be found.", replaced.Message );
+                Assert.AreEqual( nobodyElse, replaced.PersonAliasGuid );
+
+                // A room that cannot be found names nobody.
+                Assert.IsNull( scene.Remove( ada, Guid.NewGuid(), scene.Alias( bo ) ).PersonAliasGuid );
+                Assert.AreEqual( 3, scene.ActiveMemberCount( group ) );
+            }
+        }
+
+        [TestMethod]
         public void ARoomTheCallerIsBannedFromOrManagesIsOneTheyKnowOf()
         {
             using ( var scene = new ChatDoorScene() )
