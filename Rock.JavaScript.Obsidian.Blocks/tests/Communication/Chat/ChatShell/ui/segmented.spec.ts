@@ -19,10 +19,9 @@
 // arrows move and choose as they go, wrapping round. Each option may be described by a line of
 // its own, which a screen reader hears as the arrows reach it.
 import { mount, VueWrapper } from "@vue/test-utils";
-import { ref } from "vue";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import Segmented from "../../../../../src/Communication/Chat/ChatShell/ui/segmented.partial.obs";
-import { isPhoneKey } from "../../../../../src/Communication/Chat/ChatShell/ui/viewport.partial";
+import { providedSession } from "../sessionShapes";
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
 
 const options = [
@@ -161,7 +160,7 @@ describe("the segmented control", () => {
     });
 
     test("gives each option a larger target on a phone, read from the session rather than handed in", () => {
-        wrapper = mount(Segmented, { props: { options, modelValue: "all" }, global: { provide: { [isPhoneKey as symbol]: ref(true) } } });
+        wrapper = mount(Segmented, { props: { options, modelValue: "all" }, global: { provide: providedSession({ isPhone: true }) } });
 
         expect(wrapper.classes()).toContain("is-phone");
     });

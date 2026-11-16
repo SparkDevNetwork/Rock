@@ -105,10 +105,10 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, inject, PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "./icon.partial.obs";
-    import { isPhoneKey } from "./viewport.partial";
+    import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
@@ -155,7 +155,7 @@
 
     // #region Values
 
-    const isPhone = inject(isPhoneKey, ref(false));
+    const isPhone = useChatSession().isPhone;
 
     const optionElements = ref<HTMLButtonElement[]>([]);
 
