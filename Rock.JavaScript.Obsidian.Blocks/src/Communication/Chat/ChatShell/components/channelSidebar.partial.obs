@@ -5,6 +5,7 @@
         <div class="chat-side-top" data-testid="sidebar-top">
             <Field v-model="query"
                    class="chat-side-search"
+                   :size="isPhone ? 'lg' : 'md'"
                    leadingIcon="search"
                    placeholder="Search"
                    aria-label="Find a conversation"
@@ -213,11 +214,11 @@
     min-width: 0;
 }
 
-/* The compose button is a ring square beside the search, so the head reads as one row. */
+/* The compose button is a ring square as tall as the search's field beside it, so the head reads as one row. */
 .chat-side-top :deep(.chat-side-new) {
     --chat-ic-size: 18px;
-    width: 38px;
-    height: 38px;
+    width: 36px;
+    height: 36px;
     color: var(--chat-text-2);
     background: var(--chat-surface);
     border: 1px solid var(--chat-line);
@@ -231,10 +232,10 @@
     border-color: var(--chat-line-strong);
 }
 
-/* A touch target of 40px on a phone. */
+/* A phone's large field, a finger's target, and the square beside it its height. */
 .is-phone .chat-side-top :deep(.chat-side-new) {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
 }
 
 .chat-side-list {

@@ -1101,8 +1101,8 @@ describe("the components' own styles", () => {
         const threadsPath = resolve(components, "threadsPanel.partial.obs");
         const badgePath = resolve(components, "../ui/badge.partial.obs");
         const badgeRule = (selector: string, property: string): string => declarationOf(badgePath, selector, property);
-        /** The badges a template draws, each as its tag. */
-        const badgeTags = (path: string): string[] => [...readFileSync(path, "utf8").matchAll(/<Badge\b[^>]*>/g)].map(m => m[0]);
+        /** The badges a template draws, each as its whole self-closed tag, whose bindings may hold a ">". */
+        const badgeTags = (path: string): string[] => [...readFileSync(path, "utf8").matchAll(/<Badge\b[\s\S]*?\/>/g)].map(m => m[0]);
 
         test("is a soft tint with the church's ink and no filled brand color", () => {
             expect(badgeRule(".chat-badge.is-brand", "background")).toBe(normalize("var(--chat-brand-tint)"));
