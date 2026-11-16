@@ -1266,7 +1266,7 @@ describe("the person's failed replies", () => {
 
         await w.setProps({ lastFailure: { localId: "a", count: 1 } });
 
-        expect(w.get("[data-testid='composer-failed-announcement']").text()).toBe("Your message wasn't sent. You're offline.");
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Your message wasn't sent. You're offline.");
     });
 
     test("draw no strip while every reply is on its way", () => {

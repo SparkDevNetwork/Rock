@@ -1361,9 +1361,9 @@ describe("the conversation's failed sends", () => {
         expect((mockShell!.sender as { discard: jest.Mock }).discard.mock.calls).toEqual([["l1"], ["l3"]]);
     });
 
-    /** Every failure said aloud on the page, by any strip. */
+    /** Every failure said aloud on the page, by any strip, through the announcer. */
     function saidAloud(w: VueWrapper): string[] {
-        return w.findAll("[data-testid='composer-failed-announcement']").map(region => region.text()).filter(text => text !== "");
+        return w.findAll("[data-testid='announcer-assertive']").map(region => region.text()).filter(text => text !== "");
     }
 
     // A reply also sent to the conversation is drawn in both feeds, but its failure is one: the
@@ -1403,12 +1403,19 @@ describe("the conversation's failed sends", () => {
             mockFailureNews.last = { localId: "r1", count: 1 };
             await settle();
 
+            // the announcer keeps the words it said, so saying them again would be a write to its region
+            const writes: MutationRecord[] = [];
+            const region = new MutationObserver(records => writes.push(...records));
+            region.observe(w.get("[data-testid='announcer-assertive']").element, { childList: true, characterData: true, subtree: true });
+
             await w.get("[data-testid='frame-panel'] [data-testid='panel-close']").trigger("click");
             await settle();
+            await new Promise(resolve => setTimeout(resolve, 0));
 
             // the closing drawer may still be drawn as its column narrows; the conversation now has it
             expect(w.find("[data-testid='frame-main'] [data-testid='composer-failed']").exists()).toBe(true);
-            expect(w.get("[data-testid='frame-main'] [data-testid='composer-failed-announcement']").text()).toBe("");
+            expect([...writes, ...region.takeRecords()]).toHaveLength(0);
+            region.disconnect();
         });
     });
 
@@ -3612,7 +3619,7 @@ describe("a channel the person has not joined", () => {
         (roomsOf().state as unknown as { announcement: unknown }).announcement = { text: "You're in Volunteers. It can take a few seconds to show up.", isAssertive: false, count: 1 };
         await settle();
 
-        expect(w.get("[data-testid='frame-main'] [data-testid='join-bar-announcement']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
+        expect(w.get("[data-testid='announcer-polite']").text()).toBe("You're in Volunteers. It can take a few seconds to show up.");
     });
 
     test("the composer's re-entry only fades in under reduced motion", () => {
