@@ -30,11 +30,11 @@
 //          members: RosterMember[] (the rows to list),
 //          hasMore, isLoading, isLoadingMore: boolean, error, moreError: ChatError | null,
 //          refusal: "not_member" | "no_roster_right" | null, query: string,
-//          searchStatus: "searching" | "answered" | "failed" | null, personAliasGuid: string,
-//          isPhone: boolean
+//          searchStatus: "searching" | "answered" | "failed" | null; the reader and the phone
+//          flag come from the session
 //   emits: query(text), loadMore, retry, retrySearch, message(personAliasGuid),
 //          person(personAliasGuid), close
-//   marks: members-panel, members-filter, members-clear, members-section (with
+//   marks: members-panel, members-filter, the filter's Clear filter, members-section (with
 //          members-section-count), member-row, member-who, member-you, member-leader,
 //          member-message, member-skeleton, members-state (data-state),
 //          members-retry, members-more, members-more-error, members-end, members-hint,
@@ -44,6 +44,7 @@ import { nextTick, reactive } from "vue";
 import MembersPanel from "../../../../../src/Communication/Chat/ChatShell/components/membersPanel.partial.obs";
 import { RosterMember } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import StatusBadge from "../../../../../src/Communication/Chat/ChatShell/ui/statusBadge.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
 
@@ -78,7 +79,9 @@ import { afterFades, anna as statusAnna, badgesIn, ben as statusBen, carl as sta
 
 let wrapper: VueWrapper | null = null;
 
-function draw(props: Record<string, unknown> = {}): VueWrapper {
+function draw(given: Record<string, unknown> = {}): VueWrapper {
+    // the reader and the phone flag are the session's, which the panel reads for itself
+    const { personAliasGuid = me, isPhone = false, ...props } = given;
     wrapper = mount(MembersPanel, {
         props: {
             channelName: "young-adults",
@@ -92,10 +95,9 @@ function draw(props: Record<string, unknown> = {}): VueWrapper {
             refusal: null,
             query: "",
             searchStatus: null,
-            personAliasGuid: me,
-            isPhone: false,
             ...props
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },
         attachTo: document.body
     });
     return wrapper;
@@ -147,7 +149,7 @@ describe("a row", () => {
         const rows = w.findAll("[data-testid='member-row']");
 
         expect(rows[0].get("[data-testid='member-leader']").text()).toBe("Leader");
-        expect(rows[0].get("[data-testid='member-leader']").classes()).toContain("chat-pill");
+        expect(rows[0].get("[data-testid='member-leader']").classes()).toContain("chat-badge");
         expect(rows[2].find("[data-testid='member-leader']").exists()).toBe(false);
         expect(rows[4].get("[data-testid='member-you']").text()).toBe("(you)");
         expect(rows[0].find("[data-testid='member-you']").exists()).toBe(false);
@@ -291,13 +293,13 @@ describe("paging", () => {
 describe("the search", () => {
     test("the filter asks for what was typed, and its own X clears it", async () => {
         const w = draw();
-        expect(w.find("[data-testid='members-clear']").exists()).toBe(false);
+        expect(w.find("[aria-label='Clear filter']").exists()).toBe(false);
 
         await w.get("[data-testid='members-filter']").setValue("an");
         expect(w.emitted("query")).toEqual([["an"]]);
 
         await w.setProps({ query: "an", searchStatus: "searching", members: [anna] });
-        await w.get("[data-testid='members-clear']").trigger("click");
+        await w.get("[aria-label='Clear filter']").trigger("click");
         expect(w.emitted("query")?.[1]).toEqual([""]);
     });
 
