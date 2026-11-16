@@ -67,6 +67,17 @@ namespace Rock.Model
                 return false;
             }
 
+            // A filter may only sit under a parent filter that belongs to the same data view.
+            if ( string.Compare( action, Authorization.VIEW, true ) != 0 && ParentId.HasValue )
+            {
+                var parentFilter = DataViewFilterCache.Get( ParentId.Value );
+
+                if ( parentFilter == null || parentFilter.DataViewId != DataViewId )
+                {
+                    return false;
+                }
+            }
+
             // If viewing, make sure user is authorized to view the component that filter is using
             // and all the child models/components
             if ( string.Compare( action, Authorization.VIEW, true ) == 0 )
