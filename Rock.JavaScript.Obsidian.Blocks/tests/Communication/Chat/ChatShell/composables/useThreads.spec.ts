@@ -1071,6 +1071,59 @@ describe("the thread's read position", () => {
     test("leaves the root bold when the platform answers it bold", async () => {
         expect((await leftWith(true)).thread_unread).toBe(true);
     });
+
+    // The thread's position is kept by the same tracker as a conversation's, keyed by the thread:
+    // a failed save is tried again by the next event, and a failure for a thread since left
+    // touches nothing of the thread open now.
+    test("a failed save is tried again by the next event, and one for a thread left leaves the open thread's position alone", async () => {
+        const { threads, callsTo, answers } = await opened(41);
+        const { targets, fire } = page();
+        threads.attach(targets);
+        threads.seen(42);
+        answers.chat_mark_thread_read = [offline];
+
+        fire("blur");
+        await settle();
+        fire("blur");
+        await settle();
+        expect(callsTo("chat_mark_thread_read").map(c => c.args.p_message_id)).toEqual([42, 42]);
+
+        threads.seen(43);
+        const held = deferred<CallResult>();
+        answers.chat_mark_thread_read = [held];
+        fire("blur");
+        answers.chat_get_thread_history = [threadAnswer(root(50), [reply(52, 50), reply(51, 50)], { read_cursor: 52 })];
+        await threads.openThread(channel, 50);
+        threads.seen(52);
+        held.resolve(offline);
+        await settle();
+
+        fire("blur");
+        await settle();
+        expect(callsTo("chat_mark_thread_read").map(c => c.args)).toEqual([
+            { p_root_id: 40, p_message_id: 42 },
+            { p_root_id: 40, p_message_id: 42 },
+            { p_root_id: 40, p_message_id: 43 }
+        ]);
+    });
+
+    // A reply that arrives live while the thread's page is on its way is drawn, and seen, before
+    // the page says where the reader was; it is not forgotten when the page lands.
+    test("keeps a reply seen before the thread's page lands", async () => {
+        const { threads, callsTo, answers } = await setup();
+        const held = deferred<CallResult>();
+        answers.chat_get_thread_history = [held];
+        const opening = threads.openThread(channel, 40);
+        threads.seen(43);
+
+        held.resolve(threadAnswer(root(40), [reply(43, 40), reply(42, 40), reply(41, 40)], { read_cursor: 41 }));
+        await opening;
+        await threads.closeThread();
+
+        expect(callsTo("chat_mark_thread_read")).toEqual([
+            { name: "chat_mark_thread_read", args: { p_root_id: 40, p_message_id: 43 } }
+        ]);
+    });
 });
 
 describe("thread.updated", () => {
@@ -1480,6 +1533,27 @@ describe("the threads list's rows, as thread.updated moves them", () => {
         await settle();
 
         expect(row(h, 40)).toMatchObject({ has_unread: false, mention_count: 0 });
+    });
+
+    // A save made while the thread stays open, as the window loses focus, answers the bold as one
+    // made on leaving does, so a row the list fetched bold meanwhile is read at once.
+    test("a save while the thread stays open reads its row's bold and mention badge", async () => {
+        const h = await listed([listRow(40)]);
+        h.answers.chat_get_thread_history = [threadAnswer(root(40), [reply(42, 40), reply(41, 40)], { read_cursor: 41 })];
+        await h.threads.openThread(channel, 40);
+        h.answers.chat_list_threads = [listAnswer([listRow(40, { has_unread: true, mention_count: 1, root: root(40, { thread_unread: true }) })])];
+        await h.threads.refresh();
+        const { targets, fire } = page();
+        h.threads.attach(targets);
+        h.threads.seen(42);
+
+        h.answers.chat_mark_thread_read = [{ ok: true, data: { read_cursor: 42, last_reply_id: 42, thread_unread: false } }];
+        fire("blur");
+        await settle();
+
+        expect(h.threads.state.thread).not.toBeNull();
+        expect(row(h, 40)).toMatchObject({ has_unread: false, mention_count: 0 });
+        expect(row(h, 40).root).toMatchObject({ thread_unread: false });
     });
 
     test("a live reply leaves the mention badge as the list was fetched", async () => {
