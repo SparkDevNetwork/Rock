@@ -60,7 +60,7 @@ function find(id: string): HTMLElement {
 }
 
 function press(element: Element): void {
-    element.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(new Event("pointerdown", { bubbles: true, cancelable: true }));
 }
 
 function key(name: string, options: KeyboardEventInit = {}): KeyboardEvent {
@@ -307,7 +307,7 @@ describe("the popover surface", () => {
             expose({ pop });
             return () => [
                 h("button", { ref: anchor, "data-testid": "anchor" }, "open"),
-                h(Popover, { popover: pop, label: "Things", isSheet: props.isSheet }, () => h("button", { "data-testid": "inside" }, "inside"))
+                h(Popover, { popover: pop, label: "Things" }, () => h("button", { "data-testid": "inside" }, "inside"))
             ];
         }
     });

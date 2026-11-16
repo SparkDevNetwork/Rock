@@ -1,8 +1,48 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div><slot /></div>
+    <div class="chat-scrim"
+         data-testid="scrim"
+         @pointerdown.self="isPressed = true"
+         @click.self="onClick"></div>
 </template>
 
+<style scoped>
+/* Over the whole chat, under the sheet or dialog it sets apart. */
+.chat-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: var(--chat-z-scrim);
+    background: var(--chat-scrim);
+    animation: chat-fade-in var(--chat-t-base) var(--chat-ease-state);
+}
+
+/* Leaving, it takes no press: the tap that closed it is already over. */
+.chat-scrim.is-leaving {
+    pointer-events: none;
+    animation: chat-fade-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+</style>
+
 <script setup lang="ts">
-    defineProps({ popover: { type: Object, default: null }, label: { type: String, default: "" }, isOpen: { type: Boolean, default: false }, isSheet: { type: Boolean, default: false }, height: { type: String, default: "content" } });
-    defineEmits(["dismiss"]);
+    import { ref } from "vue";
+
+    // The shade behind a sheet or dialog. It takes the whole of a tap that lands on it: it asks to
+    // close only on the click that ends a press begun on it, so the press, the release and the
+    // click all land here, and nothing under it is pressed by the tap that closed it. A drag that
+    // starts in the sheet and ends on the shade closes nothing.
+
+    const emit = defineEmits<{
+        (e: "dismiss"): void;
+    }>();
+
+    /** Whether the press that ends in a click began on the scrim. */
+    const isPressed = ref(false);
+
+    function onClick(): void {
+        if (isPressed.value) {
+            emit("dismiss");
+        }
+
+        isPressed.value = false;
+    }
 </script>

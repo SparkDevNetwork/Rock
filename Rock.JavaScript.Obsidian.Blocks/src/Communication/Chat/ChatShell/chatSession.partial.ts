@@ -33,7 +33,7 @@ export type ChatMe = {
 };
 
 /** What the session shares. */
-export type ChatSession = {
+export type SessionContext = {
     /** Whether the chat is drawn at a phone's width, so menus, pickers and cards open as sheets. */
     isPhone: Readonly<Ref<boolean>>;
 
@@ -50,14 +50,14 @@ export type ChatSession = {
     mentionSource: (row: SidebarRow | null) => MentionPickerSource | null;
 };
 
-const chatSessionKey: InjectionKey<ChatSession> = Symbol("chat-session");
+const chatSessionKey: InjectionKey<SessionContext> = Symbol("chat-session");
 
 /**
  * Provides the session to every part below the caller. Called once, by the shell.
  *
  * @param session What the session shares.
  */
-export function provideChatSession(session: ChatSession): void {
+export function provideChatSession(session: SessionContext): void {
     provide(chatSessionKey, session);
 }
 
@@ -67,7 +67,7 @@ export function provideChatSession(session: ChatSession): void {
  *
  * @returns The session.
  */
-export function useChatSession(): ChatSession {
+export function useChatSession(): SessionContext {
     return inject(chatSessionKey, null) ?? {
         isPhone: ref(false),
         me: computed((): ChatMe => ({ personAliasGuid: "", name: "", photoUrl: null })),

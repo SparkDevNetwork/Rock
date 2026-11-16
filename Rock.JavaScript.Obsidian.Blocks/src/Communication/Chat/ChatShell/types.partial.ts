@@ -25,6 +25,9 @@
  */
 export type RoomKind = "channel" | "person" | "group";
 
+/** A bottom sheet's height: as tall as its content, or the one taller height a picker takes. */
+export type SheetHeight = "content" | "picker";
+
 /**
  * A system line's kind, as Rock gave it when it posted the line; a line with none is told by the
  * info mark.

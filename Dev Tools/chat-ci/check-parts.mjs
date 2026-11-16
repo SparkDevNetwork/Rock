@@ -52,6 +52,8 @@ const OWNERS = {
     'ui/tooltip.partial',
     // Tab hands the person picker's key to the dialog holding it, which decides what comes next.
     'ui/peoplePicker.partial',
+    // Tab past a popover's end leaves it for its anchor's place in the page; it keeps no focus in.
+    'ui/popover.partial',
   ],
   P15: ['stores/channelStore.partial'],
 };

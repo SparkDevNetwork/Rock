@@ -44,7 +44,7 @@ describe("the scrim", () => {
     it("takes the whole tap: it dismisses on the click that ends a press begun on it, never on the press alone", async () => {
         const wrapper = mount(Scrim, { attachTo: document.body });
         const scrim = find("scrim") as HTMLElement;
-        scrim.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+        scrim.dispatchEvent(new Event("pointerdown", { bubbles: true }));
         expect(wrapper.emitted("dismiss")).toBeUndefined();
         scrim.click();
         expect(wrapper.emitted("dismiss")).toHaveLength(1);
@@ -120,7 +120,7 @@ describe("the sheet", () => {
         const drawn = sheet();
         await settle();
         const scrim = find("scrim") as HTMLElement;
-        scrim.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true }));
+        scrim.dispatchEvent(new Event("pointerdown", { bubbles: true }));
         scrim.click();
         expect(drawn.emitted("dismiss")).toHaveLength(1);
     });

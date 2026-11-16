@@ -1,8 +1,105 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div><slot /></div>
+    <Sheet v-if="popover.isSheet.value"
+           :isOpen="popover.isOpen.value"
+           :label="label"
+           :height="sheetHeight"
+           @dismiss="popover.close({ isFocusReturned: true })">
+        <div :ref="setFloating" class="chat-popover-sheet" v-bind="$attrs">
+            <slot />
+        </div>
+    </Sheet>
+    <!--
+        Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut a
+        surface drawn inside it; left in place where there is no root, as when a part is drawn alone.
+    -->
+    <Teleport v-else :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <Transition leave-active-class="is-leaving">
+            <div v-if="popover.isOpen.value"
+                 :ref="setFloating"
+                 class="chat-popover"
+                 data-testid="popover"
+                 :role="role || undefined"
+                 :aria-label="label"
+                 tabindex="-1"
+                 :style="[popover.floatingStyles.value, popover.origin.value]"
+                 v-bind="$attrs">
+                <slot />
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
+<style scoped>
+/* Fixed, so the chat's clipped frame cannot cut a surface near its edge. */
+.chat-popover {
+    z-index: var(--chat-z-popover);
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-surface);
+    outline: none;
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+/* Leaves half as far and faster than it came, and takes no press on its way out. */
+.chat-popover.is-leaving {
+    pointer-events: none;
+    animation: chat-pop-out var(--chat-t-fast) var(--chat-ease-out) forwards;
+}
+
+/* On a phone the content fills the sheet, scrolling inside it when it runs past the height. */
+.chat-popover-sheet {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+</style>
+
 <script setup lang="ts">
-    defineProps({ popover: { type: Object, default: null }, label: { type: String, default: "" }, isOpen: { type: Boolean, default: false }, isSheet: { type: Boolean, default: false }, height: { type: String, default: "content" } });
-    defineEmits(["dismiss"]);
+    import { computed, PropType } from "vue";
+    import Sheet from "./sheet.partial.obs";
+    import { PopoverControl } from "./popover.partial";
+    import { overlayHostOf } from "./tooltip.partial";
+    import { SheetHeight } from "../types.partial";
+
+    // The surface every popover is drawn on: beside its anchor, grown from it, with the chat's
+    // surface look; on a phone a bottom sheet instead. Its coming and going is the popover's
+    // (usePopover); what it holds is the caller's, in the slot.
+
+    defineOptions({ inheritAttrs: false });
+
+    const props = defineProps({
+        /** The popover this surface draws. */
+        popover: {
+            type: Object as PropType<PopoverControl>,
+            required: true
+        },
+
+        /** What the surface is called, for a screen reader. */
+        label: {
+            type: String,
+            required: true
+        },
+
+        /** The surface's role, such as dialog for a card; none for one whose content carries its own, as a menu's list. */
+        role: {
+            type: String,
+            default: ""
+        },
+
+        /** The sheet's height on a phone: as tall as its content, or the taller picker height. */
+        sheetHeight: {
+            type: String as PropType<SheetHeight>,
+            default: "content"
+        }
+    });
+
+    /** The chat's root, which the surface is drawn in; null where it is drawn alone. */
+    const overlayHost = computed(() => overlayHostOf(props.popover.anchor.value));
+
+    /** Hands the drawn surface to its popover, which places it and tells a press inside from one outside. */
+    function setFloating(element: unknown): void {
+        props.popover.floating.value = element instanceof HTMLElement ? element : undefined;
+    }
 </script>

@@ -1,8 +1,139 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div><slot /></div>
+    <span ref="placeElement" class="chat-sheet-place" aria-hidden="true"></span>
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <Transition leave-active-class="is-leaving">
+            <Scrim v-if="isOpen" @dismiss="emit('dismiss')" />
+        </Transition>
+        <Transition leave-active-class="is-leaving">
+            <div v-if="isOpen"
+                 ref="sheetElement"
+                 class="chat-sheet-panel"
+                 :class="{ 'is-picker': height === 'picker' }"
+                 role="dialog"
+                 aria-modal="true"
+                 :aria-label="label"
+                 data-testid="sheet"
+                 @keydown="onKeydown">
+                <div class="chat-sheet-handle" aria-hidden="true"></div>
+                <slot />
+            </div>
+        </Transition>
+    </Teleport>
 </template>
 
+<style scoped>
+/* Where the sheet sits in the page's order: it draws nothing, the sheet itself is drawn at the chat's root. */
+.chat-sheet-place {
+    display: none;
+}
+
+/*
+    Held to the chat's bottom edge across its whole width, over the scrim. It slides up its whole
+    height and back down faster, a fade alone where less motion is asked for (the shared slide's
+    own rule); the safe area keeps it off a phone's home bar.
+*/
+.chat-sheet-panel {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--chat-z-sheet);
+    display: flex;
+    flex-direction: column;
+    max-height: 90%;
+    padding: 8px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+    overflow: hidden;
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-bottom: 0;
+    border-radius: var(--chat-r-surface) var(--chat-r-surface) 0 0;
+    box-shadow: var(--chat-shadow-float);
+    animation: chat-slide-in var(--chat-t-panel) var(--chat-ease-in);
+}
+
+/* The taller of the two heights, fixed, for a picker whose content scrolls inside it. */
+.chat-sheet-panel.is-picker {
+    height: 72%;
+    padding-right: 0;
+    padding-left: 0;
+}
+
+.chat-sheet-panel.is-leaving {
+    animation: chat-slide-out var(--chat-d-sheet-out) var(--chat-ease-out) forwards;
+}
+
+.chat-sheet-handle {
+    flex: none;
+    width: 40px;
+    height: 5px;
+    margin: 2px auto 12px;
+    background: var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
+}
+</style>
+
 <script setup lang="ts">
-    defineProps({ popover: { type: Object, default: null }, label: { type: String, default: "" }, isOpen: { type: Boolean, default: false }, isSheet: { type: Boolean, default: false }, height: { type: String, default: "content" } });
-    defineEmits(["dismiss"]);
+    import { onMounted, PropType, ref } from "vue";
+    import Scrim from "./scrim.partial.obs";
+    import { useAnnouncerModal } from "./announcer.partial";
+    import { useFocusTrap } from "./focusTrap.partial";
+    import { overlayHostOf } from "./tooltip.partial";
+    import { SheetHeight } from "../types.partial";
+
+    // A bottom sheet over a scrim: how every menu, picker and card is drawn on a phone. It is
+    // modal: focus starts inside it and stays there, Escape or a tap on the scrim asks it to
+    // close, a screen reader hears only it, and announcements made while it is open are spoken
+    // from inside it. It has two heights: as tall as its content, or the taller picker height.
+
+    const props = defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** What the sheet is called, for a screen reader. */
+        label: {
+            type: String,
+            required: true
+        },
+
+        /** As tall as its content, or the one taller height a picker takes. */
+        height: {
+            type: String as PropType<SheetHeight>,
+            default: "content"
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Escape or a tap on the scrim. */
+        (e: "dismiss"): void;
+    }>();
+
+    const placeElement = ref<HTMLElement>();
+    const sheetElement = ref<HTMLElement>();
+
+    /** The chat's root, which the sheet covers from its bottom edge; null where it is drawn alone. */
+    const overlayHost = ref<HTMLElement | null>(null);
+
+    // Ended the moment it closes, not after it slides away, so focus is never left on a vanishing control.
+    const trapped = (): HTMLElement | undefined => props.isOpen ? sheetElement.value : undefined;
+    useFocusTrap(trapped);
+    useAnnouncerModal(trapped);
+
+    function onKeydown(event: KeyboardEvent): void {
+        if (event.key === "Escape" && !event.isComposing) {
+            // The sheet's Escape is its own, never also the panel's behind it.
+            event.preventDefault();
+            event.stopPropagation();
+            emit("dismiss");
+        }
+    }
+
+    // The sheet is drawn elsewhere, so the root is found from where the sheet sits in the page.
+    onMounted(() => {
+        overlayHost.value = overlayHostOf(placeElement.value);
+    });
+
+    defineExpose({ element: sheetElement });
 </script>

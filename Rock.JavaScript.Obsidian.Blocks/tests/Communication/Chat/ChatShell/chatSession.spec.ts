@@ -19,10 +19,10 @@
 // is signed in and the width is not a phone's.
 import { mount } from "@vue/test-utils";
 import { computed, defineComponent, h, nextTick, ref } from "vue";
-import { ChatMe, ChatSession, provideChatSession, useChatSession } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
+import { ChatMe, SessionContext, provideChatSession, useChatSession } from "../../../../src/Communication/Chat/ChatShell/chatSession.partial";
 
 describe("the session context", () => {
-    let read: ChatSession;
+    let read: SessionContext;
 
     const Deep = defineComponent({
         setup() {

@@ -39,7 +39,7 @@
 import { computed, reactive } from "vue";
 import { isUnreadAfterSave } from "../composables/useMarkRead.partial";
 import { personName } from "../ui/face.partial";
-import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, ChatPerson, DmPreviewEvent, MarkReadResult, SidebarRow } from "../types.partial";
+import { ChannelMentionEvent, ChannelReadEvent, ChannelUnreadEvent, ChatBadge, ChatPerson, DmPreviewEvent, MarkReadResult, RoomKind, SidebarRow } from "../types.partial";
 
 /** What the store reaches outside itself. */
 export type ChannelStoreDependencies = {
@@ -48,12 +48,27 @@ export type ChannelStoreDependencies = {
 
     /** Fetches the first sidebar again after it failed, going on with whatever waited on it. */
     retryFirstLoad: () => void;
+
+    /**
+     * A room's kind from its own facts, for a room opened from outside the list, which has no
+     * row; asked only after the rows. Null where its facts are not held.
+     */
+    factsKindOf?: (channelId: string) => RoomKind | null;
 };
 
 /** The sidebar a shell holds. */
 export type ChannelStore = {
     /** The rows in the platform's order, every room the store holds. */
     rows: SidebarRow[];
+
+    /** A room's row, where the sidebar holds it: the one way any module finds it. */
+    rowOf: (channelId: string) => SidebarRow | undefined;
+
+    /**
+     * What kind of room a channel is, for every place that words or draws by it: the row first,
+     * which every room in the list has, then the room's own facts for one opened outside the list.
+     */
+    roomKindOf: (channelId: string) => RoomKind | null;
 
     /** The rows the sidebar lists, in the same order: all but the stand-in of a direct message not yet written in. */
     listed: SidebarRow[];
@@ -403,6 +418,10 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
     }
 
     return Object.assign(store, {
+        rowOf: find,
+
+        roomKindOf: (channelId: string): RoomKind | null => find(channelId)?.room_kind ?? dependencies.factsKindOf?.(channelId) ?? null,
+
         setSidebar: (rows: SidebarRow[]): void => {
             const preview = store.rows.find(row => row.channel_id === store.previewChannelId);
             // A room hidden from the screen it is open on is still the person's to look at, though

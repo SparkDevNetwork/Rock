@@ -20,7 +20,7 @@
 // focus; these cells hold the one answer.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, PropType, ref } from "vue";
-import { focusableSelector, useFocusTrap } from "../../../../../src/Communication/Chat/ChatShell/ui/focusTrap.partial";
+import { focusableSelector, isFocusQuiet, useFocusTrap } from "../../../../../src/Communication/Chat/ChatShell/ui/focusTrap.partial";
 
 async function settle(): Promise<void> {
     await nextTick();
@@ -71,6 +71,15 @@ describe("the focus trap", () => {
         trap(twoButtons);
         await settle();
         expect(document.activeElement).toBe(find("first"));
+    });
+
+    it("starts quietly, so the first control's tip does not rise for a focus the person did not ask for", async () => {
+        let wasQuiet: boolean | null = null;
+        trap(() => [h("button", { "data-testid": "first", onFocus: () => {
+            wasQuiet = isFocusQuiet();
+        } }, "1")]);
+        await settle();
+        expect(wasQuiet).toBe(true);
     });
 
     it("starts on the control marked to start on, where there is one", async () => {
@@ -130,9 +139,11 @@ describe("the focus trap", () => {
     });
 
     it("holds Tab where there is nothing to move to", async () => {
-        trap(() => [h("p", "nothing to press")]);
+        trap(() => [h("p", { tabindex: -1, "data-testid": "words" }, "nothing to press")]);
         await settle();
+        find("words").focus();
         expect(tab().defaultPrevented).toBe(true);
+        expect(document.activeElement).toBe(find("words"));
     });
 
     it("gives focus back to what had it when the trap opened, as it closes", async () => {
