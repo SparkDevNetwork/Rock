@@ -33,8 +33,7 @@
             <div :id="bodyId"
                  ref="bodyElement"
                  class="chat-gif-body"
-                 :aria-busy="search.status === 'loading' ? 'true' : undefined"
-                 @scroll="onBodyScroll">
+                 :aria-busy="search.status === 'loading' ? 'true' : undefined">
                 <template v-if="search.status === 'idle'">
                     <p class="chat-gif-label">Try a search</p>
                     <div class="chat-gif-chips">
@@ -89,6 +88,9 @@
                             :actionAttrs="{ 'data-testid': 'gif-retry' }"
                             data-testid="gif-error"
                             @action="search.retry()" />
+
+                <!-- The end of the GIFs, which asks the next page as it comes into view. -->
+                <span v-if="search.status === 'results'" ref="endElement" class="chat-gif-end" aria-hidden="true"></span>
             </div>
 
             <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
@@ -225,6 +227,12 @@
     outline: none;
 }
 
+/* Where the GIFs end, a line the paging watches for. */
+.chat-gif-end {
+    display: block;
+    height: 1px;
+}
+
 /* KLIPY named at the foot, as its terms ask. */
 .chat-gif-foot {
     display: flex;
@@ -262,6 +270,7 @@
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
     import { GifResult } from "../types.partial";
 
@@ -286,9 +295,6 @@
     }>();
 
     // #region Values
-
-    /** How near the body's end a scroll asks the next page, in pixels. */
-    const loadMoreWithinPx = 200;
 
     /** What a failed search says, drawn and heard alike. */
     const failedTitle = "GIFs can't load right now";
@@ -315,6 +321,7 @@
     /** The search's input, which the picker opens on and returns to. */
     const searchElement = computed((): HTMLInputElement | undefined => searchField.value?.inputElement);
     const bodyElement = ref<HTMLElement>();
+    const endElement = ref<HTMLElement>();
 
     /** The search this picker holds while it is open. */
     const search = createGifSearch(props.gifs);
@@ -413,14 +420,6 @@
         loaded.add(slug);
     }
 
-    /** Near the end of what is drawn, the next page is asked. */
-    function onBodyScroll(): void {
-        const body = bodyElement.value;
-        if (body && body.scrollTop + body.clientHeight >= body.scrollHeight - loadMoreWithinPx) {
-            search.loadMore();
-        }
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -487,4 +486,11 @@
     });
 
     // #endregion Lifecycle Hooks
+
+    // The next page is asked 200px before the end of the GIFs scrolls into view, while one is left and none is out.
+    usePagingTrigger(endElement, () => search.loadMore(), {
+        enabled: () => search.status === "results" && search.hasNext && !search.isLoadingMore,
+        root: () => bodyElement.value ?? null,
+        margin: "0px 0px 200px 0px"
+    });
 </script>
