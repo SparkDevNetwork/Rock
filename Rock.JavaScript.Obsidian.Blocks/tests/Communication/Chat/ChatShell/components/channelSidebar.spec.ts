@@ -32,6 +32,7 @@ import { avatarHue } from "../../../../../src/Communication/Chat/ChatShell/ui/br
 import { FaceStatus, SidebarRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { anna, badgesIn, ben, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { providedSession } from "../sessionShapes";
 
 // #region Fixtures
 
@@ -136,7 +137,9 @@ const allRows = [team, youth, starred, muted, dmAnna, dmGroup, dmBig, dmRead];
 
 let wrapper: VueWrapper | null = null;
 
-function mountSidebar(props: Record<string, unknown> = {}): VueWrapper {
+function mountSidebar(given: Record<string, unknown> = {}): VueWrapper {
+    // the reader and the phone flag are the session's, which the sidebar reads for itself
+    const { personAliasGuid = "", isPhone = false, ...props } = given;
     wrapper = mount(ChannelSidebar, {
         props: {
             rows: allRows,
@@ -144,6 +147,7 @@ function mountSidebar(props: Record<string, unknown> = {}): VueWrapper {
             isNewMessageShown: true,
             ...props
         },
+        global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },
         attachTo: document.body
     });
     return wrapper;
@@ -183,7 +187,7 @@ describe("the sidebar's top", () => {
         expect(top.find("[data-testid='sidebar-search']").exists()).toBe(true);
         expect(top.find("[data-testid='new-message']").exists()).toBe(true);
         expect(w.findAll(".chat-side-search")).toHaveLength(1);
-        expect(top.get(".chat-side-search").classes()).toContain("chat-field");
+        expect(top.get(".chat-side-search").classes()).toContain("chat-fld");
     });
 
     test("is not given the church's name at all", () => {
@@ -326,11 +330,11 @@ describe("a row's states", () => {
         const loud = rowOf(w, youth.channel_id).get("[data-testid='row-mention-badge']");
         expect(loud.text()).toContain("2");
         expect(loud.classes()).toContain("chat-badge");
-        expect(loud.classes()).not.toContain("is-quiet");
+        expect(loud.classes()).not.toContain("is-muted");
         expect(loud.attributes("aria-hidden")).toBe("true");
 
         const quiet = rowOf(w, muted.channel_id).get("[data-testid='row-mention-badge']");
-        expect(quiet.classes()).toContain("is-quiet");
+        expect(quiet.classes()).toContain("is-muted");
 
         expect(rowOf(w, team.channel_id).find("[data-testid='row-mention-badge']").exists()).toBe(false);
     });
@@ -619,20 +623,20 @@ describe("the empty sidebar", () => {
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
     });
 
-    // Centred and calm: a glyph with no box, the line, one solid button and one link.
+    // Centred and calm: the shared empty state's words alone, as every empty state is, then one solid button and one link.
     test("offers New message as the one solid button and Browse channels as a link after it", async () => {
         const w = mountSidebar({ rows: [] });
         const empty = w.get("[data-testid='sidebar-empty']");
 
         expect(empty.find(".chat-side-empty-ic").exists()).toBe(false);
-        expect(empty.find(".chat-side-empty-glyph svg").exists()).toBe(true);
+        expect(empty.find(".chat-side-empty-glyph svg").exists()).toBe(false);
         const buttons = empty.get(".chat-side-empty-actions").findAll("button");
         expect(buttons.map(button => button.text())).toEqual(["New message", "Browse channels"]);
         expect(buttons[0].attributes("data-testid")).toBe("empty-new-message");
-        expect(buttons[0].classes()).toContain("is-solid");
+        expect(buttons[0].classes()).toContain("is-brand");
         expect(buttons[1].attributes("data-testid")).toBe("empty-browse");
-        expect(buttons[1].classes()).toContain("is-link");
-        expect(buttons[1].classes()).not.toContain("is-solid");
+        expect(buttons[1].classes()).toContain("is-ghost");
+        expect(buttons[1].classes()).not.toContain("is-brand");
 
         await buttons[1].trigger("click");
         expect(w.emitted("browse")).toHaveLength(1);
@@ -648,7 +652,7 @@ describe("the empty sidebar", () => {
     test("makes Browse channels the solid button when it is the only way in", () => {
         const w = mountSidebar({ rows: [], isNewMessageShown: false });
 
-        expect(w.get("[data-testid='empty-browse']").classes()).toContain("is-solid");
+        expect(w.get("[data-testid='empty-browse']").classes()).toContain("is-brand");
     });
 });
 
@@ -671,7 +675,7 @@ describe("the loading sidebar", () => {
         expect(list.attributes("aria-busy")).toBe("true");
         expect(list.get(".chat-sr-only").text()).toBe("Loading conversations");
         expect(w.get("[data-testid='sidebar-skeleton']").attributes("aria-hidden")).toBe("true");
-        expect(w.get("[data-testid='sidebar-skeleton']").findAll(".chat-skeleton").length).toBeGreaterThan(0);
+        expect(w.get("[data-testid='sidebar-skeleton']").findAll(".chat-skel-bone").length).toBeGreaterThan(0);
     });
 
     test("draws only the skeleton while loading, though a previewed room already has a row", () => {
@@ -695,7 +699,7 @@ describe("the loading sidebar", () => {
         const w = mountSidebar({ rows: [], loadState: "failed" });
         const error = w.get("[data-testid='sidebar-error']");
 
-        expect(error.classes()).toContain("chat-ls-err");
+        expect(error.classes()).toContain("is-error");
         expect(error.text()).toContain("Couldn't load your conversations.");
         expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
         expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
@@ -1190,13 +1194,13 @@ describe("the sidebar's foot with online status", () => {
                 rows: allRows,
                 personName: "Jordan Lee",
                 personCampusName: "Downtown Campus",
-                personAliasGuid: self,
                 isStatusShown: true,
                 statusChoice: { busy_until: "infinity", appear_offline: false },
                 ...props
             },
             global: {
                 provide: {
+                    ...providedSession({ me: { personAliasGuid: self } }),
                     [presenceStatusKey as symbol]: { statusOf: (guid: string) => guid === self ? busy : null, register: () => () => undefined, now: () => Date.now() }
                 }
             },
