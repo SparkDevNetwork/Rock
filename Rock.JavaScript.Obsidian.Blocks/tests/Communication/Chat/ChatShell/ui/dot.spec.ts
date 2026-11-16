@@ -62,8 +62,8 @@ describe("the dot's look", () => {
         expect(ruleOf(style, ".chat-dot.is-info")).toMatch(/background:\s*var\(--chat-info\)/);
     });
 
-    test("pulses with the set's pulse, which reduced motion draws still", () => {
-        expect(ruleOf(style, ".chat-dot.is-pulse")).toMatch(/animation:\s*chat-pulse var\(--chat-d-pulse\)/);
+    test("pulses with the set's pulse through the loop stop, which reduced motion sets to none", () => {
+        expect(ruleOf(style, ".chat-dot.is-pulse")).toMatch(/animation:\s*var\(--chat-loop-stop, chat-pulse\) var\(--chat-d-pulse\)/);
     });
 
     test("a ring follows the fill under it, as a face's does", () => {

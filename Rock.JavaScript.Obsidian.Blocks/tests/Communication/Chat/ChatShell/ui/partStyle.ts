@@ -77,7 +77,8 @@ export function partRuleBreaks(file: string): string[] {
     if (/text-transform:\s*uppercase/.test(style)) {
         breaks.push("forced capitals");
     }
-    for (const match of style.matchAll(/animation(?:-name)?:\s*([\w-]+)/g)) {
+    // A decorative loop plays through the loop stop, var(--chat-loop-stop, its name); the name is the set's.
+    for (const match of style.matchAll(/animation(?:-name)?:\s*(?:var\(--chat-loop-stop,\s*)?([\w-]+)/g)) {
         if (match[1] !== "none" && !known.has(match[1])) {
             breaks.push(`an animation outside the set: ${match[1]}`);
         }
