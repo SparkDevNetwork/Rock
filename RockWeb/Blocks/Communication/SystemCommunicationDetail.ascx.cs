@@ -177,6 +177,14 @@ namespace RockWeb.Blocks.Communication
 
             if ( emailTemplateId == 0 )
             {
+                // View on the block is enough to load this page, so adding a record needs its own check.
+                if ( !IsUserAuthorized( Authorization.EDIT ) && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+                {
+                    nbEditModeMessage.Text = EditModeMessage.NotAuthorizedToEdit( SystemCommunication.FriendlyTypeName );
+                    nbEditModeMessage.Visible = true;
+                    return;
+                }
+
                 emailTemplate = new SystemCommunication();
                 emailTemplateService.Add( emailTemplate );
             }
@@ -194,8 +202,21 @@ namespace RockWeb.Blocks.Communication
                 }
             }
 
+            // The pickers only offer values this person may use, but the posted
+            // identifiers can be changed. A value already on the record is kept as is.
+            var categoryId = cpCategory.SelectedValueAsInt();
+            var smsFromSystemPhoneNumberId = spnpSMSFrom.SelectedSystemPhoneNumberId;
+
+            if ( !IsSelectableCategory( categoryId, emailTemplate.CategoryId )
+                || !IsSelectableSystemPhoneNumber( smsFromSystemPhoneNumberId, emailTemplate.SmsFromSystemPhoneNumberId ) )
+            {
+                nbEditModeMessage.Text = "The selected category or phone number is not available.";
+                nbEditModeMessage.Visible = true;
+                return;
+            }
+
             emailTemplate.IsActive = cbIsActive.Checked;
-            emailTemplate.CategoryId = cpCategory.SelectedValueAsInt();
+            emailTemplate.CategoryId = categoryId;
             emailTemplate.Title = tbTitle.Text;
             emailTemplate.FromName = tbFromName.Text;
             emailTemplate.From = tbFrom.Text;
@@ -207,7 +228,7 @@ namespace RockWeb.Blocks.Communication
             emailTemplate.LavaFields = kvlMergeFields.GetValueAsDictionaryOrNull();
             emailTemplate.CssInliningEnabled = cbCssInliningEnabled.Checked;
 
-            emailTemplate.SmsFromSystemPhoneNumberId = spnpSMSFrom.SelectedSystemPhoneNumberId;
+            emailTemplate.SmsFromSystemPhoneNumberId = smsFromSystemPhoneNumberId;
             emailTemplate.SMSMessage = tbSMSTextMessage.Text;
 
             var pushCommunication = new CommunicationDetails();
@@ -286,6 +307,46 @@ namespace RockWeb.Blocks.Communication
         #region Internal Methods
 
         /// <summary>
+        /// Determines whether the current person may save the posted category.
+        /// </summary>
+        /// <param name="categoryId">The posted category identifier.</param>
+        /// <param name="currentCategoryId">The category identifier already on the record.</param>
+        /// <returns><c>true</c> if the category is unchanged, cleared, or a system communication category the person may view; otherwise <c>false</c>.</returns>
+        private bool IsSelectableCategory( int? categoryId, int? currentCategoryId )
+        {
+            if ( !categoryId.HasValue || categoryId == currentCategoryId )
+            {
+                return true;
+            }
+
+            var category = CategoryCache.Get( categoryId.Value );
+
+            return category != null
+                && category.EntityTypeId == EntityTypeCache.Get<SystemCommunication>().Id
+                && category.IsAuthorized( Authorization.VIEW, CurrentPerson );
+        }
+
+        /// <summary>
+        /// Determines whether the current person may save the posted SMS from number.
+        /// </summary>
+        /// <param name="systemPhoneNumberId">The posted system phone number identifier.</param>
+        /// <param name="currentSystemPhoneNumberId">The system phone number identifier already on the record.</param>
+        /// <returns><c>true</c> if the number is unchanged, cleared, or an active number the person may view; otherwise <c>false</c>.</returns>
+        private bool IsSelectableSystemPhoneNumber( int? systemPhoneNumberId, int? currentSystemPhoneNumberId )
+        {
+            if ( !systemPhoneNumberId.HasValue || systemPhoneNumberId == currentSystemPhoneNumberId )
+            {
+                return true;
+            }
+
+            var systemPhoneNumber = SystemPhoneNumberCache.Get( systemPhoneNumberId.Value );
+
+            return systemPhoneNumber != null
+                && systemPhoneNumber.IsActive
+                && systemPhoneNumber.IsAuthorized( Authorization.VIEW, CurrentPerson );
+        }
+
+        /// <summary>
         /// Shows the edit.
         /// </summary>
         /// <param name="emailTemplateId">The email template id.</param>
@@ -307,6 +368,14 @@ namespace RockWeb.Blocks.Communication
             if ( emailTemplate != null && !emailTemplate.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
             {
                 nbNotAuthorized.Text = EditModeMessage.NotAuthorizedToView( SystemCommunication.FriendlyTypeName );
+                nbNotAuthorized.Visible = true;
+                pnlDetails.Visible = false;
+                return;
+            }
+
+            if ( emailTemplate == null && !IsUserAuthorized( Authorization.EDIT ) && !IsUserAuthorized( Authorization.ADMINISTRATE ) )
+            {
+                nbNotAuthorized.Text = EditModeMessage.NotAuthorizedToEdit( SystemCommunication.FriendlyTypeName );
                 nbNotAuthorized.Visible = true;
                 pnlDetails.Visible = false;
                 return;
