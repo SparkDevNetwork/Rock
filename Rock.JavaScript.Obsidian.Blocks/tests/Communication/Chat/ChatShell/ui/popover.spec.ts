@@ -23,6 +23,7 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, PropType, ref } from "vue";
 import { PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
 import Popover from "../../../../../src/Communication/Chat/ChatShell/ui/popoverSurface.partial.obs";
+import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import { ruleOf, styleOf } from "./partStyle";
 
 /** A button that opens a popover holding two buttons, or none, and a button outside it. */
@@ -231,6 +232,49 @@ describe("the popover", () => {
         await settle();
         expect(outer.isOpen.value).toBe(true);
         expect(inner.isOpen.value).toBe(true);
+    });
+
+    // Popovers and dialogs stand on one Escape stack: the newest open surface takes the key,
+    // whichever kind it is, and the one under it keeps it for the next press.
+    describe("beside a dialog", () => {
+        function dialog(): VueWrapper {
+            const wrapper = mount(Dialog, { props: { isOpen: true, title: "Leave Volunteers?" }, attachTo: document.body });
+            wrappers.push(wrapper);
+            return wrapper;
+        }
+
+        it("lets a dialog opened over an open popover take Escape alone, and leaves the popover the next", async () => {
+            const pop = host();
+            await pop.open();
+            const confirm = dialog();
+            await settle();
+            find("dialog-cancel").focus();
+
+            key("Escape");
+            await settle();
+            expect(confirm.emitted("close")).toHaveLength(1);
+            expect(pop.isOpen.value).toBe(true);
+
+            await confirm.setProps({ isOpen: false });
+            await settle();
+            find("a-first").focus();
+            key("Escape");
+            await settle();
+            expect(pop.isOpen.value).toBe(false);
+        });
+
+        it("lets a popover opened over an open dialog take Escape alone", async () => {
+            const confirm = dialog();
+            await settle();
+            const pop = host();
+            await pop.open();
+            find("a-first").focus();
+
+            key("Escape");
+            await settle();
+            expect(pop.isOpen.value).toBe(false);
+            expect(confirm.emitted("close")).toBeUndefined();
+        });
     });
 
     it("leaves Escape alone while the person is composing a word", async () => {
