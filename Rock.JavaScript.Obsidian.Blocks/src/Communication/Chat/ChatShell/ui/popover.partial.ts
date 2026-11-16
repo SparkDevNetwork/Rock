@@ -21,7 +21,7 @@
 
 import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref } from "vue";
 import { autoUpdate, flip, offset, Placement, shift, useFloating } from "@Obsidian/Libs/floating-ui";
-import { focusableSelector, focusQuietly, isDrawn } from "./focusTrap.partial";
+import { EscapeLayer, focusableSelector, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "./focusTrap.partial";
 
 /** How a popover is placed and closed. */
 export type PopoverOptions = {
@@ -92,32 +92,22 @@ export type PopoverControl = {
 };
 
 /**
- * The popovers open now, oldest first. Escape closes the newest alone, and a press inside a newer
- * one counts as inside every older one, since a popover opened from another is drawn apart from it
- * at the chat's root and would otherwise close its parent when chosen in.
+ * The popovers open now, oldest first. A press inside a newer one counts as inside every older
+ * one, since a popover opened from another is drawn apart from it at the chat's root and would
+ * otherwise close its parent when chosen in. Escape is the shared stack's, with the dialogs.
  */
 const openStack: OpenPopover[] = [];
 
-type OpenPopover = {
+type OpenPopover = EscapeLayer & {
     contains: (node: Node) => boolean;
     close: (isFocusReturned: boolean) => void;
     onTab: (event: KeyboardEvent) => void;
     isSheet: () => boolean;
 };
 
-/** Escape closes the newest popover only, before any part under it sees the key. */
 function onDocumentKeydown(event: KeyboardEvent): void {
     const top = openStack[openStack.length - 1];
-    if (!top || event.isComposing) {
-        return;
-    }
-
-    if (event.key === "Escape") {
-        event.preventDefault();
-        event.stopPropagation();
-        top.close(true);
-    }
-    else if (event.key === "Tab" && event.target instanceof Node && top.contains(event.target)) {
+    if (top && !event.isComposing && event.key === "Tab" && event.target instanceof Node && top.contains(event.target)) {
         top.onTab(event);
     }
 }
@@ -147,6 +137,7 @@ function push(popover: OpenPopover): void {
     }
 
     openStack.push(popover);
+    pushEscapeLayer(popover);
 }
 
 function pull(popover: OpenPopover): void {
@@ -154,6 +145,8 @@ function pull(popover: OpenPopover): void {
     if (at >= 0) {
         openStack.splice(at, 1);
     }
+
+    pullEscapeLayer(popover);
 
     if (openStack.length === 0) {
         document.removeEventListener("keydown", onDocumentKeydown, true);
@@ -231,6 +224,7 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
     const entry: OpenPopover = {
         contains: node => !!floating.value?.contains(node) || !!anchor.value?.contains(node),
         close: isFocusReturned => close({ isFocusReturned }),
+        takeEscape: () => close({ isFocusReturned: true }),
         onTab,
         isSheet: () => isSheet.value
     };

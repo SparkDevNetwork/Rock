@@ -78,6 +78,64 @@ export function isFocusQuiet(): boolean {
     return isQuietFocus;
 }
 
+/**
+ * A surface Escape closes. A popover takes the key before anything under it sees it, since focus
+ * may stay outside it, in the box that opened it. A modal surface holds focus, so the key goes on
+ * to it: its own parts answer first, as a search clears its words, and the surface last.
+ */
+export type EscapeLayer = {
+    /** Closes a popover; none for a modal surface, which answers the key itself. */
+    takeEscape?: () => void;
+};
+
+/**
+ * Every open surface Escape closes, popovers and modal surfaces in one stack, oldest first, so the
+ * newest takes the key whichever kind it is and the one under it keeps it for the next press.
+ */
+const escapeStack: EscapeLayer[] = [];
+
+/** Captured on its way down, so a part under the newest popover never sees the key. */
+function onDocumentEscape(event: KeyboardEvent): void {
+    const top = escapeStack[escapeStack.length - 1];
+    if (event.key !== "Escape" || event.isComposing || !top?.takeEscape) {
+        return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    top.takeEscape();
+}
+
+/**
+ * Puts an open surface on top of the Escape stack.
+ *
+ * @param layer The surface.
+ */
+export function pushEscapeLayer(layer: EscapeLayer): void {
+    if (escapeStack.length === 0) {
+        document.addEventListener("keydown", onDocumentEscape, true);
+    }
+
+    escapeStack.push(layer);
+}
+
+/**
+ * Takes a surface off the Escape stack as it closes; one not on it is left alone.
+ *
+ * @param layer The surface.
+ */
+export function pullEscapeLayer(layer: EscapeLayer): void {
+    const at = escapeStack.indexOf(layer);
+    if (at < 0) {
+        return;
+    }
+
+    escapeStack.splice(at, 1);
+    if (escapeStack.length === 0) {
+        document.removeEventListener("keydown", onDocumentEscape, true);
+    }
+}
+
 /** How a trap starts and ends. */
 export type FocusTrapOptions = {
     /** What focus goes back to as the trap ends, when not what had focus as it began. */
@@ -106,6 +164,9 @@ export type FocusTrapOptions = {
 export function useFocusTrap(element: SurfaceElement, options: FocusTrapOptions = {}): void {
     let opener: HTMLElement | null = null;
     let trapped: HTMLElement | null = null;
+
+    // A modal surface is on the Escape stack while it holds the keyboard.
+    const layer: EscapeLayer = {};
 
     function controls(): HTMLElement[] {
         return Array.from(trapped?.querySelectorAll<HTMLElement>(focusableSelector) ?? []).filter(isDrawn);
@@ -144,6 +205,7 @@ export function useFocusTrap(element: SurfaceElement, options: FocusTrapOptions 
         opener = document.activeElement instanceof HTMLElement && document.activeElement !== document.body ? document.activeElement : null;
         trapped = surface;
         surface.addEventListener("keydown", onKeydown);
+        pushEscapeLayer(layer);
         void nextTick(() => {
             if (trapped !== surface || surface.contains(document.activeElement)) {
                 return;
@@ -162,6 +224,7 @@ export function useFocusTrap(element: SurfaceElement, options: FocusTrapOptions 
     function end(): void {
         trapped?.removeEventListener("keydown", onKeydown);
         trapped = null;
+        pullEscapeLayer(layer);
         const target = options.returnTo?.() ?? opener;
         opener = null;
         if (target?.isConnected) {
