@@ -29,6 +29,40 @@ namespace Rock.Rest.Controllers
     public partial class FinancialBatchesController
     {
         /// <summary>
+        /// Deletes the specified financial batch after checking that the person
+        /// holds the Delete permission on the batch.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        [Authenticate, Secured]
+        public override void Delete( int id )
+        {
+            SetProxyCreation( true );
+
+            FinancialBatch batch;
+            if ( !Service.TryGet( id, out batch ) )
+            {
+                throw new System.Web.Http.HttpResponseException( System.Net.HttpStatusCode.NotFound );
+            }
+
+            /*
+                11/16/2026 - MSE
+
+                The base DELETE only requires EDIT on the batch, but the Batch List screens
+                require the batch Delete permission before they delete a batch. Check the same
+                permission here. This keeps the base signature so the ApiId and any custom
+                REST security do not change.
+
+                Reason: Deleting a batch over REST must require the batch Delete permission.
+            */
+            if ( !batch.IsAuthorized( Rock.Security.Authorization.DELETE, GetPerson() ) )
+            {
+                throw new System.Web.Http.HttpResponseException( System.Net.HttpStatusCode.Unauthorized );
+            }
+
+            base.Delete( id );
+        }
+
+        /// <summary>
         /// Gets the control totals.
         /// </summary>
         /// <param name="queryOptions">The query options.</param>
