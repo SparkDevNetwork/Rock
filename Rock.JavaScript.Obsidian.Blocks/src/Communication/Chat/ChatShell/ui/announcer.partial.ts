@@ -33,10 +33,24 @@ export type Announcer = {
     announce: (text: string, politeness?: Politeness) => void;
 };
 
+/** One live region and what it was last given to say. */
+type Region = {
+    element: HTMLElement;
+
+    /**
+     * Words given to it in this task, which a screen reader is handed only once the task ends: a
+     * region taken off the page before then takes them with it unheard.
+     */
+    unheard: string | null;
+
+    /** The step waiting for the next task: writing words cleared to be said again, or marking them heard. */
+    timer?: number;
+};
+
 /** Where an announcement is spoken from: a pair of live regions in one element. */
 type Voice = {
     host: HTMLElement;
-    regions: Partial<Record<Politeness, HTMLElement>>;
+    regions: Partial<Record<Politeness, Region>>;
 };
 
 /** The announcer's whole state: the root's voice, and the voices of the modal surfaces open on it, newest last. */
@@ -52,20 +66,44 @@ const announcerKey: InjectionKey<AnnouncerHost> = Symbol("chat-announcer");
 const pageHost: AnnouncerHost = { root: () => document.body, rootVoice: null, modals: [] };
 
 /** A live region of one politeness, read by a screen reader and never seen. */
-function regionIn(voice: Voice, politeness: Politeness): HTMLElement {
+function regionIn(voice: Voice, politeness: Politeness): Region {
     const held = voice.regions[politeness];
-    if (held?.isConnected) {
+    if (held?.element.isConnected) {
         return held;
     }
 
-    const region = document.createElement("span");
-    region.className = "chat-sr-only";
-    region.setAttribute("aria-live", politeness);
-    region.setAttribute("aria-atomic", "true");
-    region.dataset.testid = `announcer-${politeness}`;
-    voice.host.appendChild(region);
+    const element = document.createElement("span");
+    element.className = "chat-sr-only";
+    element.setAttribute("aria-live", politeness);
+    element.setAttribute("aria-atomic", "true");
+    element.dataset.testid = `announcer-${politeness}`;
+    voice.host.appendChild(element);
+    const region: Region = { element, unheard: null };
     voice.regions[politeness] = region;
     return region;
+}
+
+/**
+ * Gives a region words to say. The same words again are cleared first and written in the next
+ * task, so a screen reader hears a change rather than nothing. Newer words replace any step still
+ * waiting, so a late rewrite never lands over them.
+ */
+function write(region: Region, text: string): void {
+    window.clearTimeout(region.timer);
+    region.unheard = text;
+    const isRepeat = region.element.textContent === text;
+    region.element.textContent = isRepeat ? "" : text;
+    region.timer = window.setTimeout(() => {
+        if (!isRepeat) {
+            region.unheard = null;
+            return;
+        }
+
+        region.element.textContent = text;
+        region.timer = window.setTimeout(() => {
+            region.unheard = null;
+        }, 0);
+    }, 0);
 }
 
 /**
@@ -106,19 +144,7 @@ function announcerOf(host: AnnouncerHost): Announcer {
                 return;
             }
 
-            const region = regionIn(voice, politeness);
-
-            // The same words again are cleared first and written a moment later, so a screen
-            // reader hears a change rather than nothing.
-            if (region.textContent === text) {
-                region.textContent = "";
-                window.setTimeout(() => {
-                    region.textContent = text;
-                }, 0);
-                return;
-            }
-
-            region.textContent = text;
+            write(regionIn(voice, politeness), text);
         }
     };
 }
@@ -159,14 +185,34 @@ export function useAnnouncerModal(element: SurfaceElement): void {
     const host = inject(announcerKey, pageHost);
     let voice: Voice | null = null;
 
+    // A choice that closes the surface, as Leave closes the details, is said in the same task the
+    // surface goes: words its regions were given then are said again in the voice beneath, which
+    // is the newest once this one is off the stack. Words already heard are not repeated.
     function leave(): void {
         if (!voice) {
             return;
         }
 
-        Object.values(voice.regions).forEach(region => region?.remove());
-        host.modals.splice(host.modals.indexOf(voice), 1);
+        const left = voice;
         voice = null;
+        const at = host.modals.indexOf(left);
+        if (at >= 0) {
+            host.modals.splice(at, 1);
+        }
+
+        const announcer = announcerOf(host);
+        (["polite", "assertive"] as const).forEach(politeness => {
+            const region = left.regions[politeness];
+            if (!region) {
+                return;
+            }
+
+            window.clearTimeout(region.timer);
+            region.element.remove();
+            if (region.unheard) {
+                announcer.announce(region.unheard, politeness);
+            }
+        });
     }
 
     watch(() => (typeof element === "function" ? element() : element.value) ?? undefined, surface => {
