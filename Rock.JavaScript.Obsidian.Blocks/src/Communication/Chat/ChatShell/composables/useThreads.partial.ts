@@ -57,7 +57,7 @@ import type { MessageMotion } from "../messageMotion.partial";
 import type { Presence } from "./usePresence.partial";
 import { quoteKey } from "./useMessageActions.partial";
 import { changedFields, heldRevisions, layNewer, revOf, RevisionLedger, takeChange } from "../revisions.partial";
-import { PageEventTargets } from "./useMarkRead.partial";
+import { createReadTracker, PageEventTargets } from "./useMarkRead.partial";
 import { PlatformLimits } from "./useSession.partial";
 import { createSaveRule, SaveOutcome } from "./saveRule.partial";
 import { failureWords } from "../errors.partial";
@@ -80,6 +80,9 @@ export function threadPlaceOf(message: Pick<TimelineMessage, "id" | "parent_id">
 
 /** Which threads the list shows: the open conversation's, or every thread the person follows. */
 export type ThreadListTab = "channel" | "all";
+
+/** One open of a thread, which its read position is tracked by. */
+type ThreadReadKey = { channelId: string, rootId: number };
 
 /** Where the list's next page starts: its last row's newest reply and root, as the platform listed them. */
 type ListCursor = { last_reply_at: string | null, id: number };
@@ -335,10 +338,35 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // waits for it, so one save of a root is out at a time and only the newest says how it went.
     const followRule = createSaveRule(() => isStopped);
 
-    // The open thread's read position: the newest reply on screen, and what is stored or on its
-    // way to being stored, the same pair the channel's position keeps.
-    let newestSeen: number | null = null;
-    let lastSaved: number | null = null;
+    // The open thread's read position, kept by the conversation's own tracker: the newest reply on
+    // screen and what is stored or on its way. It is keyed by each open of a thread, so a save
+    // that fails after the thread was left, or left and opened again, rolls back nothing of the
+    // open now. Every save goes out with keepalive, as the conversation's does, so one made as the
+    // page closes or the shell stops still arrives; each answer marks the thread's root and row,
+    // whether the thread is still open or was left.
+    let readKey: ThreadReadKey | null = null;
+    const reader = createReadTracker<ThreadReadKey, MarkThreadReadAnswer>({
+        save: async (key, messageId) => {
+            if (isStopped) {
+                return null;
+            }
+
+            const result = await dependencies.call("chat_mark_thread_read", { p_root_id: key.rootId, p_message_id: messageId }, { keepalive: true });
+            if (isStopped || !result.ok) {
+                return null;
+            }
+
+            const answer = body<MarkThreadReadAnswer>(result);
+            return { ...answer, read_cursor: answer.read_cursor ?? messageId };
+        },
+        onSaved: (key, answer) => {
+            if (key === readKey && state.thread) {
+                state.thread.readCursor = answer.read_cursor;
+            }
+
+            applySaved(key.channelId, key.rootId, answer);
+        }
+    });
 
     // The newest thread.updated for the open thread while its root is still on its way, laid over
     // the root the page brings: the page may have been read before the reply it reports.
@@ -430,8 +458,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         const thisOpen = ++threadOpen;
         threadRead++;
         state.thread = { channelId, rootId, root: null, replies: [], following: false, readCursor: null, hasMore: false, isLoading: true, error: null, olderError: null };
-        newestSeen = null;
-        lastSaved = null;
+        // tracked from the moment it is drawn: a live reply can be on screen before the page lands
+        readKey = { channelId, rootId };
+        reader.show(readKey);
         pendingRootUpdate = null;
         whileLoading = [];
         ledger = new Map();
@@ -490,8 +519,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         thread.readCursor = page.read_cursor ?? null;
         thread.hasMore = page.has_more === true;
         thread.error = null;
-        newestSeen = thread.readCursor;
-        lastSaved = thread.readCursor;
+        reader.open(readKey as ThreadReadKey, thread.readCursor);
         changes.forEach(change => change());
     }
 
@@ -669,42 +697,6 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         return row;
     }
 
-    /**
-     * Saves the open thread's position if a newer reply than the stored one was on screen. Taken
-     * as saved before the answer, so a second event while the save is out sends nothing more.
-     */
-    async function flush(): Promise<void> {
-        const thread = state.thread;
-        const messageId = newestSeen;
-        if (isStopped || !thread || messageId === null || (lastSaved !== null && messageId <= lastSaved)) {
-            return;
-        }
-
-        const previous = lastSaved;
-        const thisOpen = threadOpen;
-        lastSaved = messageId;
-
-        const result = await dependencies.call("chat_mark_thread_read", { p_root_id: thread.rootId, p_message_id: messageId }, saveOptions);
-        if (isStopped) {
-            return;
-        }
-        if (!result.ok) {
-            // the next event tries again, unless the person has moved on since
-            if (thisOpen === threadOpen && lastSaved === messageId) {
-                lastSaved = previous;
-            }
-            return;
-        }
-
-        if (thisOpen === threadOpen && state.thread) {
-            state.thread.readCursor = body<MarkThreadReadAnswer>(result).read_cursor ?? messageId;
-        }
-    }
-
-    // Every save goes out with keepalive, as the channel's does, so one made as the page closes
-    // or the shell stops still arrives.
-    const saveOptions = { keepalive: true };
-
     /** Puts the thread's saved position on its root in the conversation and on its row in the list. */
     function applySaved(channelId: string, rootId: number, answer: Partial<MarkThreadReadAnswer>): void {
         // A reply that landed as the person left keeps the thread unread. The platform answers the
@@ -728,27 +720,14 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
      * closes at once, and a thread opened while the save is out is tracked from its own place.
      */
     async function leaveThread(): Promise<void> {
-        const thread = state.thread;
-        const messageId = newestSeen;
-        const saved = lastSaved;
-
         threadOpen++;
         threadRead++;
         state.thread = null;
-        newestSeen = null;
-        lastSaved = null;
+        readKey = null;
         pendingRootUpdate = null;
         whileLoading = [];
         dependencies.timelines.keepThreadRead(null);
-
-        if (isStopped || !thread || messageId === null || (saved !== null && messageId <= saved)) {
-            return;
-        }
-
-        const result = await dependencies.call("chat_mark_thread_read", { p_root_id: thread.rootId, p_message_id: messageId }, saveOptions);
-        if (!isStopped && result.ok) {
-            applySaved(thread.channelId, thread.rootId, body<MarkThreadReadAnswer>(result));
-        }
+        await reader.leave();
     }
 
     /**
@@ -1059,9 +1038,9 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                     }
 
                     const open = state.thread;
-                    if (open?.rootId === rootId && typeof answer.read_cursor === "number") {
+                    if (open?.rootId === rootId && readKey && typeof answer.read_cursor === "number") {
                         open.readCursor = answer.read_cursor;
-                        lastSaved = Math.max(lastSaved ?? 0, answer.read_cursor);
+                        reader.open(readKey, answer.read_cursor);
                     }
                 },
                 refused: failure => {
@@ -1126,34 +1105,11 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
             return load.done;
         },
 
-        seen: (messageId: number): void => {
-            if (state.thread && (newestSeen === null || messageId > newestSeen)) {
-                newestSeen = messageId;
-            }
-        },
+        seen: reader.seen,
 
         closeThread: () => leaveThread(),
 
-        attach: (targets: PageEventTargets): (() => void) => {
-            const onVisibility = (): void => {
-                if (targets.document.visibilityState === "hidden") {
-                    void flush();
-                }
-            };
-            const onLeave = (): void => {
-                void flush();
-            };
-
-            targets.document.addEventListener("visibilitychange", onVisibility);
-            targets.window.addEventListener("blur", onLeave);
-            targets.window.addEventListener("pagehide", onLeave);
-
-            return () => {
-                targets.document.removeEventListener("visibilitychange", onVisibility);
-                targets.window.removeEventListener("blur", onLeave);
-                targets.window.removeEventListener("pagehide", onLeave);
-            };
-        },
+        attach: (targets: PageEventTargets): (() => void) => reader.attach(targets),
 
         applyEvent: (channelId: string, event: string, payload: unknown): void => {
             if (isStopped || !payload || typeof payload !== "object") {

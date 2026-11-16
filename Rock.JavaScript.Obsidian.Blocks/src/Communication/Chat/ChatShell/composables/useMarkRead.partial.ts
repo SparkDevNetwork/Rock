@@ -14,24 +14,28 @@
 // limitations under the License.
 // </copyright>
 //
-// The read position. It is the busiest write chat has, so it is saved on events only and never
-// on a timer: when the person leaves the channel, when the tab or app goes to the background or
-// the window loses focus, and when the page closes. What is saved is the newest message that was
-// actually on screen, and nothing is sent when nothing newer was seen since the last save. A
-// person who sits in a busy channel writes nothing until they leave it.
+// The read position, a conversation's and an open thread's alike. It is the busiest write chat
+// has, so it is saved on events only and never on a timer: when the person leaves the
+// conversation or thread, when the tab or app goes to the background or the window loses focus,
+// and when the page closes. What is saved is the newest message that was actually on screen, and
+// nothing is sent when nothing newer was seen since the last save. A person who sits in a busy
+// channel writes nothing until they leave it.
 //
 // The save goes out with fetch and keepalive so that one made as the page closes still arrives;
 // a beacon cannot carry the person's token.
 import { createPlatformCall } from "../platformCall.partial";
 import { MarkReadResult } from "../types.partial";
 
-/** What the tracker reaches outside itself. */
-export type ReadTrackerDependencies = {
+/**
+ * What the tracker reaches outside itself, for what it tracks by its key (a conversation by its
+ * channel, a thread by its root) and what a save answers.
+ */
+export type ReadTrackerDependencies<K = string, A = MarkReadResult> = {
     /** Saves the position. Resolves null when the save failed. */
-    save: (channelId: string, messageId: number) => Promise<MarkReadResult | null>;
+    save: (key: K, messageId: number) => Promise<A | null>;
 
-    /** A save came back with the position as stored and the channel's last message. */
-    onSaved: (channelId: string, result: MarkReadResult) => void;
+    /** A save came back with its answer: the position as stored, and what it says of the unread. */
+    onSaved: (key: K, answer: A) => void;
 };
 
 /** The parts of the page the tracker listens to. */
@@ -50,21 +54,21 @@ export type PageEventTargets = {
     };
 };
 
-/** The read tracker a shell holds. */
-export type ReadTracker = {
-    /** A channel was put on screen, before the position the platform holds for it is known. */
-    show: (channelId: string) => void;
+/** A read tracker, for a conversation or a thread. */
+export type ReadTracker<K = string> = {
+    /** It was put on screen, before the position the platform holds for it is known. */
+    show: (key: K) => void;
 
-    /** A channel was opened, with the position the platform holds for it. */
-    open: (channelId: string, storedCursor: number | null) => void;
+    /** It was opened, or its stored position learned, with the position the platform holds for it. */
+    open: (key: K, storedCursor: number | null) => void;
 
-    /** A message of the open channel was on screen. */
+    /** A message of what is open was on screen. */
     seen: (messageId: number) => void;
 
-    /** Saves the open channel's position if something newer was seen. */
+    /** Saves the open position if something newer was seen. */
     flush: () => Promise<void>;
 
-    /** Saves, then stops tracking the channel that was open. */
+    /** Saves, then stops tracking what was open. */
     leave: () => Promise<void>;
 
     /** Saves on background, lost focus and close. Returns what removes the listeners. */
@@ -72,23 +76,23 @@ export type ReadTracker = {
 };
 
 /**
- * Creates the read tracker.
+ * Creates a read tracker.
  *
  * @param dependencies What the tracker reaches outside itself.
  *
  * @returns The tracker.
  */
-export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTracker {
-    let activeChannelId: string | null = null;
+export function createReadTracker<K = string, A = MarkReadResult>(dependencies: ReadTrackerDependencies<K, A>): ReadTracker<K> {
+    let activeKey: K | null = null;
     let newestSeen: number | null = null;
     let lastSaved: number | null = null;
 
-    /** Saves the open channel's position if something newer than the last save was seen. */
+    /** Saves the open position if something newer than the last save was seen. */
     async function flush(): Promise<void> {
-        const channelId = activeChannelId;
+        const key = activeKey;
         const messageId = newestSeen;
 
-        if (channelId === null || messageId === null || (lastSaved !== null && messageId <= lastSaved)) {
+        if (key === null || messageId === null || (lastSaved !== null && messageId <= lastSaved)) {
             return;
         }
 
@@ -97,17 +101,17 @@ export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTr
         const previous = lastSaved;
         lastSaved = messageId;
 
-        const result = await dependencies.save(channelId, messageId);
+        const result = await dependencies.save(key, messageId);
 
         if (!result) {
             // The next event tries again, unless the person has moved on since.
-            if (activeChannelId === channelId && lastSaved === messageId) {
+            if (activeKey === key && lastSaved === messageId) {
                 lastSaved = previous;
             }
             return;
         }
 
-        dependencies.onSaved(channelId, result);
+        dependencies.onSaved(key, result);
     }
 
     /** The larger of two positions, either of which may be unknown. */
@@ -118,21 +122,21 @@ export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTr
         // open has finished catching up, are seen before the stored position is known, and the
         // feed reports a message once, when it comes into view. A save made meanwhile is safe,
         // since the platform only ever moves a position forward.
-        show: (channelId: string): void => {
-            activeChannelId = channelId;
+        show: (key: K): void => {
+            activeKey = key;
             newestSeen = null;
             lastSaved = null;
         },
 
-        open: (channelId: string, storedCursor: number | null): void => {
-            const isShown = activeChannelId === channelId;
-            activeChannelId = channelId;
+        open: (key: K, storedCursor: number | null): void => {
+            const isShown = activeKey === key;
+            activeKey = key;
             lastSaved = isShown ? newer(lastSaved, storedCursor) : storedCursor;
             newestSeen = isShown ? newer(newestSeen, storedCursor) : storedCursor;
         },
 
         seen: (messageId: number): void => {
-            if (activeChannelId !== null && (newestSeen === null || messageId > newestSeen)) {
+            if (activeKey !== null && (newestSeen === null || messageId > newestSeen)) {
                 newestSeen = messageId;
             }
         },
@@ -140,23 +144,23 @@ export function createReadTracker(dependencies: ReadTrackerDependencies): ReadTr
         flush,
 
         leave: async (): Promise<void> => {
-            const channelId = activeChannelId;
+            const key = activeKey;
             const messageId = newestSeen;
             const saved = lastSaved;
 
-            // Let go at once, so a channel opened while this save is in flight is tracked from
-            // its own position and nothing seen in it is taken for the channel left.
-            activeChannelId = null;
+            // Let go at once, so what is opened while this save is in flight is tracked from its
+            // own position and nothing seen in it is taken for what was left.
+            activeKey = null;
             newestSeen = null;
             lastSaved = null;
 
-            if (channelId === null || messageId === null || (saved !== null && messageId <= saved)) {
+            if (key === null || messageId === null || (saved !== null && messageId <= saved)) {
                 return;
             }
 
-            const result = await dependencies.save(channelId, messageId);
+            const result = await dependencies.save(key, messageId);
             if (result) {
-                dependencies.onSaved(channelId, result);
+                dependencies.onSaved(key, result);
             }
         },
 
