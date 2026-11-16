@@ -425,10 +425,10 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                         dependencies.channels.applyPrefs(channelId, { notify_mode: effective });
                     }
 
-                    // A menu closes as it chooses, so the toast says what the choice means.
+                    // A menu closes as it chooses, so the toast says what the choice means, read
+                    // aloud by the notices' host as it is drawn.
                     if (isFromMenu) {
                         dependencies.notify({ code: "notify-mode", text: notifyWords[mode].toast, icon: notifyWords[mode].icon });
-                        dependencies.announce(notifyWords[mode].toast);
                     }
                 },
                 refused: failure => {

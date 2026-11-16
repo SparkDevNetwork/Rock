@@ -739,8 +739,8 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         }
 
         const name = nameOf(channelId);
+        // The notice is said as it is drawn, by the notices' host, so nothing is said beside it.
         dependencies.notify({ code: "room.joined", text: `Joined ${name}`, icon: "check" });
-        dependencies.announce(`You joined ${name}`);
     }
 
     // #endregion Join
@@ -1004,7 +1004,6 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // signal takes the room out of the sidebar when it follows.
             state.leaves[channelId] = { kind: "left" };
             dependencies.notify({ code: "room.left", text: `You left ${title}`, icon: "door" });
-            dependencies.announce(`You left ${title}.`);
 
             // Unless the person has gone to another conversation meanwhile.
             const now = dependencies.activeChannelId();
