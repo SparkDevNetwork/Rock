@@ -73,6 +73,45 @@ afterEach(() => {
     document.body.innerHTML = "";
 });
 
+/** A room's facts in the exact shape chat_get_channel answers. */
+function roomFacts(overrides: Partial<ChannelFacts> = {}): ChannelFacts {
+    return {
+        channel_id: "c0000001-0000-4000-8000-000000000000",
+        name: "Staff",
+        icon_url: null,
+        channel_type: "shared",
+        is_member: true,
+        can_post: true,
+        can_post_code: null,
+        can_post_reason: null,
+        max_length: 5000,
+        can_leave: true,
+        description: "Everyone on staff",
+        group_type_name: null,
+        campus_id: null,
+        is_public: true,
+        member_count: 42,
+        leaders: [],
+        faces: [],
+        people: [],
+        ...overrides
+    };
+}
+
+/** Rests the pointer on an element until its tooltip shows, and gives the tip's words. */
+async function tipOn(element: Element): Promise<string> {
+    jest.useFakeTimers();
+    try {
+        element.dispatchEvent(new MouseEvent("mouseenter"));
+        jest.advanceTimersByTime(600);
+        await nextTick();
+        return document.querySelector("[role='tooltip']")?.textContent?.trim() ?? "";
+    }
+    finally {
+        jest.useRealTimers();
+    }
+}
+
 describe("the title and subtitle", () => {
     test("shows the title and a group's subtitle", () => {
         const w = mountHeader({ title: "Anna and Marcus", subtitle: "3 people" });
@@ -299,11 +338,11 @@ describe("the push offer on a desktop", () => {
         expect(w.find("[data-testid='header-back']").exists()).toBe(false);
     });
 
-    test("sits after Mentions and before the room's notify menu", () => {
+    test("sits after Threads and before the room's notify menu", () => {
         const w = mountHeader({ kind: "channel", isPushOffered: true, isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
 
         const order = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
-        expect(order).toEqual(["header-threads", "header-mentions", "push-offer", "header-notify", "header-star"]);
+        expect(order).toEqual(["header-threads", "push-offer", "header-notify", "header-star"]);
     });
 });
 
@@ -380,69 +419,53 @@ describe("the header on a phone", () => {
     });
 });
 
+// The header is this conversation: the mentions inbox is everything across conversations, so it
+// opens from the sidebar's Activity, which carries the new-mention dot, and never from here.
 describe("the Mentions button", () => {
-    test("sits beside Threads on a desktop, labelled Mentions, and opens the inbox", async () => {
-        const w = mountHeader({ isThreadsOffered: true, isMentionsOffered: true });
+    test("is not in the header on a desktop: Threads is followed by the bell", () => {
+        const w = mountHeader({ kind: "channel", isThreadsOffered: true, isMentionsOffered: true, isPrefsOffered: true, notifyMode: "all" });
 
-        const buttons = w.findAll(".chat-header-actions button");
-        const threadsAt = buttons.findIndex(b => b.attributes("data-testid") === "header-threads");
-        const mentions = w.get("[data-testid='header-mentions']");
-        expect(buttons.findIndex(b => b.element === mentions.element)).toBe(threadsAt + 1);
-        expect(mentions.attributes("aria-label")).toBe("Mentions");
-        expect(hasIcon(w, mentions, "at")).toBe(true);
-        expect(mentions.attributes("aria-expanded")).toBe("false");
-        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
-
-        await mentions.trigger("click");
-        expect(w.emitted("mentions")).toHaveLength(1);
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
+        const buttons = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
+        expect(buttons.indexOf("header-notify")).toBe(buttons.indexOf("header-threads") + 1);
     });
 
-    test("shows as expanded while the inbox is open", () => {
+    test("is not drawn while the inbox is open, which the sidebar's Activity shows", () => {
         const w = mountHeader({ isMentionsOffered: true, isMentionsOpen: true });
 
-        expect(w.get("[data-testid='header-mentions']").attributes("aria-expanded")).toBe("true");
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
+        expect(w.find("[aria-expanded='true']").exists()).toBe(false);
     });
 
-    test("carries the dot and says so while a mention is new", () => {
-        const w = mountHeader({ isMentionsOffered: true, hasMentionDot: true });
+    test("leaves no new-mention dot in the header while a mention is new", () => {
+        const w = mountHeader({ isMentionsOffered: true, hasMentionDot: true, isThreadsOffered: true });
 
-        const mentions = w.get("[data-testid='header-mentions']");
-        expect(mentions.attributes("aria-label")).toBe("Mentions, new mentions");
-        const dot = mentions.get("[data-testid='header-mentions-dot']");
-        expect(dot.attributes("aria-hidden")).toBe("true");
+        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
+        expect(w.find(".chat-dot").exists()).toBe(false);
     });
 
-    test("is not drawn unless offered", async () => {
+    test("is not drawn even when offered", async () => {
         const w = mountHeader({ isThreadsOffered: true });
-        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
-
         await w.setProps({ isMentionsOffered: true });
-        expect(w.find("[data-testid='header-mentions']").exists()).toBe(true);
+
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
     });
 
-    test("moves into the phone's overflow menu, first, the menu button carrying the dot", async () => {
-        const w = mountHeader({ isPhone: true, isThreadsOffered: true, isMentionsOffered: true, hasMentionDot: true });
-
-        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
+    test("is not in the phone's overflow menu, which holds Threads, Members, Star and Channel details, its button carrying no dot", async () => {
+        const w = mountHeader({ isPhone: true, kind: "channel", isThreadsOffered: true, isMembersOffered: true, isMentionsOffered: true, hasMentionDot: true, isPrefsOffered: true, notifyMode: "all", facts: roomFacts() });
 
         const more = w.get("[data-testid='header-more'] button");
-        expect(more.attributes("aria-label")).toBe("More, new mentions");
-        expect(w.find("[data-testid='header-more-dot']").exists()).toBe(true);
+        expect(more.attributes("aria-label")).toBe("More");
+        expect(w.find("[data-testid='header-more-dot']").exists()).toBe(false);
 
         await more.trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        // the label each item shows; the Mentions item's dot also reads "new" to a screen reader
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Mentions", "Threads"]);
-        expect(items[0].textContent?.trim()).toBe("Mentionsnew");
-
-        items[0].click();
-        await settle();
-        expect(w.emitted("mentions")).toHaveLength(1);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", "Members", "Star", "Channel details"]);
     });
 
-    test("leaves the phone's menu button plain with no new mention", () => {
-        const w = mountHeader({ isPhone: true, isMentionsOffered: true });
+    test("leaves the phone's menu button plain while a mention is new", () => {
+        const w = mountHeader({ isPhone: true, isMentionsOffered: true, hasMentionDot: true, isPushOffered: true });
 
         expect(w.get("[data-testid='header-more'] button").attributes("aria-label")).toBe("More");
         expect(w.find("[data-testid='header-more-dot']").exists()).toBe(false);
@@ -637,24 +660,27 @@ describe("the way into the members panel", () => {
         expect(pile().attributes("aria-label")).toBe("13,536 members, open member list");
     });
 
-    test("is the same button for a group, its people's faces then +N, and nothing for a conversation of two", async () => {
+    // A group's face beside its title already draws its people with a "+N" of its own, so the
+    // button draws the people icon and the head count, never a second "+N" that counts otherwise.
+    test("is the same button for a group, the people icon and its head count, and nothing for a conversation of two", async () => {
         const people = [person(1, "Caleb", "Brooks"), person(2, "Hannah", "Diaz"), person(3, "Iris", "Moore"), person(4, "Jon", "Park")];
         const group = mountHeader({ title: "Hike planning", kind: "group", people, otherCount: 5, isMembersOffered: true });
 
         const members = group.get("[data-testid='header-members']");
         expect(members.classes()).toContain("chat-header-pile");
         expect(members.attributes("aria-label")).toBe("6 members, open member list");
-        expect(members.findAll(".chat-av")).toHaveLength(3);
-        expect(countOf(members)).toBe("+2");
-        expect(hasIcon(group, members, "users")).toBe(false);
+        expect(members.findAll(".chat-av")).toHaveLength(0);
+        expect(countOf(members)).toBe("6");
+        expect(hasIcon(group, members, "users")).toBe(true);
+        expect(group.get("[data-testid='group-face-more']").text()).toBe("+3");
         await members.trigger("click");
         expect(group.emitted("members")).toHaveLength(1);
 
         // once read, the room's facts give the head count
         await group.setProps({ people: people.slice(0, 2), otherCount: null, facts: facts({ channel_type: "dm", member_count: 4 }) });
         expect(members.attributes("aria-label")).toBe("4 members, open member list");
-        expect(members.findAll(".chat-av")).toHaveLength(2);
-        expect(countOf(members)).toBe("+1");
+        expect(members.findAll(".chat-av")).toHaveLength(0);
+        expect(countOf(members)).toBe("4");
         group.unmount();
 
         const pair = mountHeader({ title: "Anna Kim", kind: "person", people: [person(5, "Anna", "Kim")], isMembersOffered: true, facts: facts({ channel_type: "dm", member_count: 2 }) });
@@ -690,16 +716,16 @@ describe("the way into the members panel", () => {
         expect(w.find("[data-testid='header-members']").exists()).toBe(false);
     });
 
-    test("moves into the phone's overflow menu as Members, before Threads", async () => {
+    test("moves into the phone's overflow menu as Members, after Threads", async () => {
         const w = mountHeader({ isPhone: true, kind: "channel", isMembersOffered: true, isThreadsOffered: true, facts: facts() });
 
         expect(w.find("[data-testid='header-members']").exists()).toBe(false);
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Members", "Threads", "Channel details"]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", "Members", "Channel details"]);
 
-        items[0].click();
+        items[1].click();
         await settle();
         expect(w.emitted("members")).toHaveLength(1);
     });
@@ -718,7 +744,6 @@ describe("the notify menu and Star", () => {
         const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all" });
         const bell = (): ReturnType<VueWrapper["get"]> => w.get("[data-testid='header-notify'] button");
 
-        expect(bell().attributes("aria-label")).toBe("Notifications");
         expect(bell().attributes("aria-haspopup")).toBe("menu");
         expect(hasIcon(w, bell(), "bell")).toBe(true);
 
@@ -810,11 +835,24 @@ describe("the notify menu and Star", () => {
         expect(w.find("[data-testid='header-star']").exists()).toBe(false);
     });
 
-    test("sit after Mentions, the bell then Star", () => {
+    test("sit after Threads, the bell then Star", () => {
         const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: "all", isThreadsOffered: true, isMentionsOffered: true });
 
         const order = w.findAll(".chat-header-actions > [data-testid]").map(b => b.attributes("data-testid"));
-        expect(order).toEqual(["header-threads", "header-mentions", "header-notify", "header-star"]);
+        expect(order).toEqual(["header-threads", "header-notify", "header-star"]);
+    });
+
+    // The glyph alone said the mode; the bell's name and tip say it in words too.
+    test.each([
+        ["all", "Notifications: all messages"],
+        ["mentions", "Notifications: mentions only"],
+        ["silent", "Notifications: off"]
+    ])("names the room's mode, %s, in the bell's name and tooltip", async (mode, words) => {
+        const w = mountHeader({ kind: "channel", isPrefsOffered: true, notifyMode: mode });
+        const bell = w.get("[data-testid='header-notify'] button");
+
+        expect(bell.attributes("aria-label")).toBe(words);
+        expect(await tipOn(bell.element)).toBe(words);
     });
 });
 
@@ -890,6 +928,75 @@ describe("the faces in the header", () => {
     });
 });
 
+// Every header control is about this conversation: its Threads is this room's, the title button
+// hugs the title, and every icon-only control has a tooltip, drawn below it.
+describe("the header is this conversation", () => {
+    test("Threads opens this room's threads, named for it in its label and tooltip", async () => {
+        const w = mountHeader({ title: "Staff", kind: "channel", isThreadsOffered: true });
+        const threads = w.get("[data-testid='header-threads']");
+
+        expect(threads.attributes("aria-label")).toBe("Threads in Staff");
+        expect(await tipOn(threads.element)).toBe("Threads in Staff");
+        await threads.trigger("click");
+        expect(w.emitted("threads")).toHaveLength(1);
+    });
+
+    test("the title button holds the title alone, the line under it outside the button", () => {
+        const w = mountHeader({ title: "Staff", kind: "channel", facts: roomFacts() });
+        const details = w.get("[data-testid='header-details']");
+
+        expect(details.get("[data-testid='header-title']").text()).toBe("Staff");
+        expect(w.get("[data-testid='header-subtitle']").text()).toBe("Everyone on staff");
+        expect(details.find("[data-testid='header-subtitle']").exists()).toBe(false);
+        expect(details.find(".chat-channel-mark").exists()).toBe(false);
+    });
+
+    test.each([
+        ["channel", "Channel details"],
+        ["group", "Conversation details"]
+    ])("the title button of a %s shows its tooltip", async (kind, words) => {
+        const w = mountHeader({ title: "Staff", kind });
+
+        expect(await tipOn(w.get("[data-testid='header-details']").element)).toBe(words);
+    });
+
+    test("the members button shows the head count as its tooltip", async () => {
+        const w = mountHeader({ title: "Staff", kind: "channel", isMembersOffered: true, facts: roomFacts() });
+
+        expect(await tipOn(w.get("[data-testid='header-members']").element)).toBe("42 members");
+    });
+
+    test("leads with a sidebar button only while the sidebar is folded away, which asks for it back", async () => {
+        const w = mountHeader({ title: "Staff", kind: "channel" });
+        expect(w.find("[data-testid='header-sidebar']").exists()).toBe(false);
+
+        await w.setProps({ isSidebarFolded: true });
+        const button = w.get("[data-testid='header-sidebar']");
+        expect(button.attributes("aria-label")).toBe("Show conversations");
+        const header = w.get("[data-testid='chat-header']").element;
+        expect(header.firstElementChild).toBe(button.element);
+
+        await button.trigger("click");
+        expect(w.emitted("sidebar")).toHaveLength(1);
+    });
+
+    // The chat's one voice says the outage and the service's sentence, so no banner talks over it
+    // from a live region of its own.
+    test("says the outage assertively and the service's sentence politely, through the chat's one voice", async () => {
+        const w = mountHeader({ title: "Staff", kind: "channel" });
+
+        await w.setProps({ connection: lostConnection });
+        await settle();
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("You're offline. Reconnecting now. You can send again once you're back.");
+        expect(w.get("[data-testid='connection-banner']").attributes("role")).toBeUndefined();
+
+        await w.setProps({ banner: "Chat is down for maintenance." });
+        await settle();
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Chat is down for maintenance.");
+        expect(w.get("[data-testid='service-banner']").attributes("role")).toBeUndefined();
+    });
+});
+
 // A platform older than this client sends a room's facts without faces; the header still draws.
 describe("facts from an older platform", () => {
     test("without faces draw the people icon and the count", () => {
@@ -944,7 +1051,7 @@ describe("online status", () => {
         expect(badgesIn(w.element)).toEqual([]);
     });
 
-    test("rings its badge in the title button's fill over the bar", () => {
+    test("rings its badge in the bar's fill, the face sitting beside the title button", () => {
         expect(setsBothRings(join(shellFolder, "components/chatHeader.partial.obs"), /^(button)?\.chat-header-id(\[|:|$)/)).toBe(true);
     });
 
