@@ -137,7 +137,7 @@ export type PrefsDependencies = {
     savePersonSetting?: (setting: PersonSettingKey, value: boolean) => Promise<PersonSettingResult>;
 
     /** The sidebar, whose rows show a room's settings. */
-    channels: Pick<ChannelStore, "rows" | "applyPrefs" | "setSidebar">;
+    channels: Pick<ChannelStore, "rows" | "rowOf" | "applyPrefs" | "setSidebar">;
 
     /** Whether the connection is lost, when the door would not be reached. */
     isOffline: () => boolean;
@@ -312,11 +312,6 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         return state.rooms[channelId] ??= { notes: {} };
     }
 
-    /** The room's sidebar row, whose star is always known; a save's patch reads it whole. */
-    function rowOf(channelId: string): SidebarRow | undefined {
-        return dependencies.channels.rows.find(row => row.channel_id === channelId);
-    }
-
     /** A refusal in the server's own words; a lost connection says so. */
     function refusalWords(error: ChatError): FailureWords {
         return failureWords(error, dependencies.isOffline());
@@ -417,7 +412,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         roomOf: (channelId: string): RoomPrefs => state.rooms[channelId] ?? { notes: {} },
 
         setNotifyMode: async (channelId: string, mode: NotifyMode, isFromMenu: boolean): Promise<void> => {
-            const row = rowOf(channelId);
+            const row = dependencies.channels.rowOf(channelId);
             if (isStopped || !row || row.notify_mode === mode) {
                 return;
             }
@@ -453,7 +448,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         },
 
         setStarred: async (channelId: string, isStarred: boolean, isFromMenu: boolean): Promise<void> => {
-            const row = rowOf(channelId);
+            const row = dependencies.channels.rowOf(channelId);
             if (isStopped || !row) {
                 return;
             }
@@ -490,7 +485,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
         },
 
         setHidden: async (channelId: string, isHidden: boolean): Promise<void> => {
-            const row = rowOf(channelId);
+            const row = dependencies.channels.rowOf(channelId);
             if (isStopped || !row) {
                 return;
             }
@@ -568,7 +563,7 @@ export function createPrefs(dependencies: PrefsDependencies): Prefs {
                 await prefs.setNotifyMode(channelId, choice.mode, isFromMenu);
             }
             else if (choice.kind === "star") {
-                const isStarred = choice.isStarred ?? !dependencies.channels.rows.find(r => r.channel_id === channelId)?.is_favorite;
+                const isStarred = choice.isStarred ?? !dependencies.channels.rowOf(channelId)?.is_favorite;
                 await prefs.setStarred(channelId, isStarred, isFromMenu);
             }
             else {

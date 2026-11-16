@@ -605,7 +605,9 @@ export function createChatShell(options: ShellOptions): ChatShell {
         reloadSidebar: () => live.reloadSidebar(),
         // A first visit's page load waits on the sidebar to choose its conversation, so a retry
         // with nothing open runs the page load again; with a conversation open, only the list is owed.
-        retryFirstLoad: () => state.activeChannelId === null ? void opener.runPageLoad() : void live.loadSidebar().catch(() => undefined)
+        retryFirstLoad: () => state.activeChannelId === null ? void opener.runPageLoad() : void live.loadSidebar().catch(() => undefined),
+        // A room opened from outside the list is known by its facts, asked only once a room has none.
+        factsKindOf: channelId => rooms.factsOf(channelId)?.room_kind ?? null
     });
 
     /** A save of the read position, applied to the row and the unread mentions. */
@@ -657,13 +659,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         motion
     });
 
-    /**
-     * What kind of room a channel is, for every place a refusal is worded: the sidebar's row first,
-     * which every room in the list has, then the room's own facts for one opened outside the list.
-     */
-    function roomKindOf(channelId: string): RoomKind | null {
-        return channels.rows.find(row => row.channel_id === channelId)?.room_kind ?? rooms.factsOf(channelId)?.room_kind ?? null;
-    }
+    /** What kind of room a channel is, for every place a refusal is worded; the channel store's one answer. */
+    const roomKindOf = channels.roomKindOf;
 
     const messageActions = createMessageActions({
         call,

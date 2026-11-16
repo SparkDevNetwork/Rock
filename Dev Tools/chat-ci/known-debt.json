@@ -77,14 +77,12 @@
   "P2": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionPicker.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pickerShell.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 1
   },
   "P3": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionPicker.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/pickerShell.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 1
   },
   "P4": {},
   "P5": {
@@ -99,7 +97,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/gifPicker.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/joinBar.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 4,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs": 3,
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageEditor.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 2,
@@ -113,12 +111,10 @@
   "P6": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/attachments.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 1
   },
   "P8": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionSheet.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/menu.partial.obs": 1
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/actionSheet.partial.obs": 1
   },
   "P9": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/blockCard.partial.obs": 3,
@@ -141,13 +137,12 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs": 4,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/newMessage.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/reactorsList.partial.obs": 2,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/removeMember.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/statusMenu.partial.obs": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs": 10,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs": 4,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/dialog.partial.obs": 1,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/panelHost.partial.obs": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 25
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/chatShell.obs": 24
   },
   "P10": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/membersPanel.partial.obs": 1,
@@ -156,10 +151,9 @@
   },
   "P15": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/useFrame.partial.ts": 1,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/usePrefs.partial.ts": 2,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/useRooms.partial.ts": 9,
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/composables/useRoomsView.partial.ts": 4,
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/shell.partial.ts": 6
+    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/shell.partial.ts": 5
   },
   "T1": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs": 1,
