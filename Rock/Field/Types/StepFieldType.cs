@@ -71,6 +71,29 @@ namespace Rock.Field.Types
 
         // simple text box implemented by base FieldType
 
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return GetTextValue( privateValue, privateConfigurationValues );
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            /*
+                11/16/2026 - KH
+
+                The edit control is a plain text box that holds the Step's Guid,
+                so the edit value must stay the private value. Without this
+                override the base class would return GetPublicValue, which is
+                now the display text, and saving the form would write that text
+                over the Guid.
+
+                Reason: Keep the stored Step Guid intact when the edit form is saved.
+            */
+            return privateValue;
+        }
+
         #endregion
 
         #region Entity Methods
