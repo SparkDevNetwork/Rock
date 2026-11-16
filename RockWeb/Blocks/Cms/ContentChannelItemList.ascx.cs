@@ -460,7 +460,7 @@ namespace RockWeb.Blocks.Cms
             {
                 var contentChannel = ContentChannelCache.Get( contentChannelItem.ContentChannelId );
 
-                if ( contentChannel?.ContentLibraryConfiguration?.IsEnabled == true )
+                if ( contentChannel?.ContentLibraryConfiguration?.IsEnabled == true && contentChannelItem.IsEditable )
                 {
                     if ( contentChannelItem.IsUploadedToContentLibrary )
                     {
@@ -605,7 +605,8 @@ namespace RockWeb.Blocks.Cms
                 ContentLibrarySourceIdentifier = i.ContentLibrarySourceIdentifier,
                 IsDownloadedFromContentLibrary = i.IsDownloadedFromContentLibrary,
                 IsUploadedToContentLibrary = i.IsUploadedToContentLibrary,
-                ContentLibraryLicenseTypeGuid = i.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( i.ContentLibraryLicenseTypeValueId.Value )?.Guid : null
+                ContentLibraryLicenseTypeGuid = i.ContentLibraryLicenseTypeValueId.HasValue ? DefinedValueCache.Get( i.ContentLibraryLicenseTypeValueId.Value )?.Guid : null,
+                IsEditable = i.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson )
             } ).ToList();
 
             // only show the Event Occurrences item if any of the displayed content channel items have any occurrences (and the block setting is enabled)
@@ -748,6 +749,7 @@ namespace RockWeb.Blocks.Cms
             public bool IsDownloadedFromContentLibrary { get; internal set; }
             public bool IsUploadedToContentLibrary { get; internal set; }
             public Guid? ContentLibraryLicenseTypeGuid { get; internal set; }
+            public bool IsEditable { get; internal set; }
         }
 
         #endregion
@@ -895,7 +897,7 @@ namespace RockWeb.Blocks.Cms
         /// <summary>
         /// Gets the content channel item for a content library action, but only if it is in
         /// this block's channel, the channel has the content library enabled, the person can
-        /// view the item (the grid filter) and the item is in the state that shows the action's
+        /// edit the item and the item is in the state that shows the action's
         /// button in <see cref="gItems_RowDataBound(object, GridViewRowEventArgs)"/>.
         /// </summary>
         /// <param name="contentChannelItemId">The content channel item identifier.</param>
@@ -910,9 +912,19 @@ namespace RockWeb.Blocks.Cms
             }
 
             var contentChannelItem = new ContentChannelItemService( rockContext ).Get( contentChannelItemId );
+
+            /*
+                11/16/2026 - MSE
+
+                Uploading, updating and re-downloading write to the item and to this
+                church's entry in the Content Library, so they need EDIT on the item
+                (which inherits EDIT from the channel), the same as Delete.
+
+                Reason: Prevent people with only VIEW access from changing items or publishing them to the Content Library.
+            */
             if ( contentChannelItem == null
                 || contentChannelItem.ContentChannelId != _channelId.Value
-                || !contentChannelItem.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson )
+                || !contentChannelItem.IsAuthorized( Rock.Security.Authorization.EDIT, CurrentPerson )
                 || !isButtonShown( contentChannelItem ) )
             {
                 return null;

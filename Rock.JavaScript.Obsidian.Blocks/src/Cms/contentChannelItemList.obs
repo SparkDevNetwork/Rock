@@ -55,7 +55,7 @@
 
         <Column v-if="config.options?.isContentLibraryEnabled" itemClass="grid-columncommand justify-content-center" name="library" title="Library" width="80">
             <template #format="{ row }">
-                <RockButton v-if="row.isUploadedToContentLibrary"
+                <RockButton v-if="row.isEditable && row.isUploadedToContentLibrary"
                             title="Update"
                             btnType="default"
                             btnSize="sm"
@@ -63,7 +63,7 @@
                             @click.stop="showUpdateModal(row as GridRowItem)">
                     <i class="fa fa-upload" aria-label="Update"></i>
                 </RockButton>
-                <RockButton v-else-if="row.isDownloadedFromContentLibrary"
+                <RockButton v-else-if="row.isEditable && row.isDownloadedFromContentLibrary"
                             title="Re-Download"
                             btnType="default"
                             btnSize="sm"
@@ -71,7 +71,7 @@
                             @click.stop="showRedownloadModal(row as GridRowItem)">
                     <i class="fa fa-download" aria-label="Re-Download"></i>
                 </RockButton>
-                <RockButton v-else-if="!row.contentLibrarySourceIdentifier"
+                <RockButton v-else-if="row.isEditable && !row.contentLibrarySourceIdentifier"
                             title="Upload"
                             btnType="default"
                             btnSize="sm"

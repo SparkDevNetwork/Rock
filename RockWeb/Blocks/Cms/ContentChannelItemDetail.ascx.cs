@@ -1741,14 +1741,34 @@ namespace RockWeb.Blocks.Cms
         {
             using ( var rockContext = new RockContext() )
             {
-                var contentChannelItemService = new ContentChannelItemService( rockContext );
-                var contentChannelGuid = ContentChannelCache.Get( hfChannelId.Value.AsInteger() ).Guid;
-                contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
+                /*
+                    11/16/2026 - MSE
+
+                    The channel and the library item used to come from hidden fields, and
+                    this handler never checked EDIT, so a person who could only view the
+                    item could post a re-download of any library item into any channel.
+                    Use the item stored in ViewState, require EDIT on it, and take the
+                    channel and library item from the item itself, the same as the other
+                    actions on this block.
+
+                    Reason: Prevent people with only VIEW access from overwriting items or downloading library items into any channel.
+                */
+                var contentItem = GetEditableContentItem( rockContext );
+
+                if ( contentItem != null
+                    && contentItem.ContentChannel?.IsContentLibraryEnabled == true
+                    && contentItem.IsDownloadedFromContentLibrary
+                    && !contentItem.IsUploadedToContentLibrary
+                    && contentItem.ContentLibrarySourceIdentifier.HasValue )
                 {
-                    ContentLibraryItemGuidToDownload = hfContentLibraryItemGuid.Value.AsGuid(),
-                    DownloadIntoContentChannelGuid = contentChannelGuid,
-                    CurrentPersonPerformingDownload = CurrentPerson
-                } );
+                    var contentChannelItemService = new ContentChannelItemService( rockContext );
+                    contentChannelItemService.AddFromContentLibrary( new Rock.Model.CMS.ContentChannelItem.Options.ContentLibraryItemDownloadOptions
+                    {
+                        ContentLibraryItemGuidToDownload = contentItem.ContentLibrarySourceIdentifier.Value,
+                        DownloadIntoContentChannelGuid = contentItem.ContentChannel.Guid,
+                        CurrentPersonPerformingDownload = CurrentPerson
+                    } );
+                }
             }
             mdRedownload.Hide();
 
