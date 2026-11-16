@@ -83,12 +83,7 @@
                             :style="{ '--chat-enter-i': index }"
                             :message="item.messages[item.messages.length - 1]"
                             :blockedRun="item.messages"
-                            :personAliasGuid="personAliasGuid"
-                            :personName="personName"
-                            :personPhotoUrl="personPhotoUrl"
-                            :organizationName="organizationName"
                             :isChannel="isChannel"
-                            :isPhone="isPhone"
                             :isInThread="true"
                             :reactionHost="reactionHost"
                             :data-row-key="item.key"
@@ -99,12 +94,7 @@
                             class="chat-enter"
                             :style="{ '--chat-enter-i': index }"
                             :message="item.message"
-                            :personAliasGuid="personAliasGuid"
-                            :personName="personName"
-                            :personPhotoUrl="personPhotoUrl"
-                            :organizationName="organizationName"
                             :isChannel="isChannel"
-                            :isPhone="isPhone"
                             :isInThread="true"
                             :isFlashing="item.isReply && item.message.id === flashingId"
                             :reactionHost="reactionHost"
@@ -120,15 +110,10 @@
                                 :message="row.message"
                                 :pending="row.pending"
                                 :isOwn="item.isOwn"
-                                :personAliasGuid="personAliasGuid"
-                                :personName="personName"
-                                :personPhotoUrl="personPhotoUrl"
                                 :isPersonLeader="isPersonLeader"
-                                :organizationName="organizationName"
                                 :isChannel="isChannel"
                                 :position="row.position"
                                 :isTypingNext="row.isTypingNext"
-                                :isPhone="isPhone"
                                 :isDirectMessage="isDirectMessage"
                                 :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                 :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
@@ -376,8 +361,10 @@
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { useSeenObserver } from "../composables/useSeenObserver.partial";
     import { FeedItem, FeedLayoutResult, layoutFeed, replyCountText, useLayoutAgain } from "../feedLayout.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { ChatError, ChatPerson, DisplayPiece, PendingMessage, TimelineMessage } from "../types.partial";
 
     // #region Types
@@ -453,12 +440,6 @@
             default: null
         },
 
-        /** A phone leaves by the back chevron, which takes focus on open, and never focuses the composer, whose keyboard would cover the thread. */
-        isPhone: {
-            type: Boolean,
-            default: false
-        },
-
         /** Opened from a list, the threads list or the mentions inbox, so Escape and the chevron go back to it. */
         isFromList: {
             type: Boolean,
@@ -469,11 +450,6 @@
         listTitle: {
             type: String,
             default: "Threads"
-        },
-
-        personAliasGuid: {
-            type: String,
-            required: true
         },
 
         /** Whether older replies than those held remain. */
@@ -521,27 +497,10 @@
             default: 0
         },
 
-        /** The reader's own name and photo, for their messages the platform sent none with. */
-        personName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
             default: false
-        },
-
-        /** The church's name, the sender of a block post nobody signed. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
         },
 
         /** The reply a push or a link opened the thread at, once the replies hold it; scrolled to and flashed once. */
@@ -663,6 +622,13 @@
 
     // #region Values
 
+    /**
+     * The reader, and the phone flag: a phone leaves by the back chevron, which takes focus on
+     * open, and never focuses the composer, whose keyboard would cover the thread.
+     */
+    const session = useChatSession();
+    const isPhone = session.isPhone;
+
     /** The design's wait before the composer takes focus, so the panel has started to open. */
     const focusDelayMs = 60;
 
@@ -673,7 +639,7 @@
     let scrollElement: HTMLElement | null = null;
 
     const bodyElement = ref<HTMLElement | null>(null);
-    const topElement = ref<HTMLElement | null>(null);
+    const topElement = ref<HTMLElement>();
 
     /**
      * Whether the reader is at the newest reply, as the conversation keeps its own: kept there
@@ -685,7 +651,6 @@
     // A reply counts as seen once any of it is on screen, the same rule as the conversation's.
     const seen = useSeenObserver(scroller, row => emit("seen", Number(row.dataset.replyId)));
 
-    let topObserver: IntersectionObserver | null = null;
     let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
@@ -696,6 +661,12 @@
 
     /** Set once the thread has been scrolled to its newest reply, so the top mark asks for nothing before. */
     let isPlaced = false;
+
+    // Scrolling up to the top mark asks for older replies, once the thread has been placed.
+    usePagingTrigger(topElement, () => emit("loadOlder"), {
+        enabled: () => isPlaced && props.hasMore,
+        root: scroller
+    });
 
     /** The reply flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
@@ -874,7 +845,7 @@
         return layoutFeed({
             messages,
             pending,
-            personAliasGuid: props.personAliasGuid,
+            personAliasGuid: session.me.value.personAliasGuid,
             newDividerBeforeId: null,
             layout: props.isChannel ? "community" : "conversational",
             now: new Date(),
@@ -948,22 +919,6 @@
         }
     }
 
-    /** Watches the top of the scroller, so scrolling up to it asks for older replies. */
-    function observeTop(): void {
-        topObserver?.disconnect();
-        topObserver = null;
-        if (!topElement.value || typeof IntersectionObserver === "undefined") {
-            return;
-        }
-
-        topObserver = new IntersectionObserver(entries => {
-            if (isPlaced && entries.some(entry => entry.isIntersecting)) {
-                emit("loadOlder");
-            }
-        }, { root: scroller() });
-        topObserver.observe(topElement.value);
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -1000,8 +955,6 @@
         }
     });
 
-    watch(topElement, observeTop);
-
     // A landing the shell lets go of is done, so the next request for the same reply, a second
     // push for a reply whose thread is still open, lands on it again.
     watch(() => props.landOnId, id => {
@@ -1017,7 +970,6 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        observeTop();
         void place();
 
         // A scroll does not bubble, and the scroller is the panel host's, outside this body.
@@ -1027,7 +979,7 @@
         // A phone never focuses the composer on its own, since the keyboard would rise over the
         // thread; its back chevron takes focus instead, because the pane that opened the drawer
         // has slid out of reach and would leave focus nowhere.
-        const firstFocus = props.isPhone ? "[data-testid='panel-back']" : "[data-testid='composer-input']";
+        const firstFocus = isPhone.value ? "[data-testid='panel-back']" : "[data-testid='composer-input']";
         focusTimer = setTimeout(() => {
             focusTimer = null;
             bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>(firstFocus)?.focus({ preventScroll: true });
@@ -1037,7 +989,6 @@
     onBeforeUnmount(() => {
         scrollElement?.removeEventListener("scroll", onScroll);
         actionBar.stop();
-        topObserver?.disconnect();
         if (focusTimer) {
             clearTimeout(focusTimer);
         }

@@ -12,7 +12,7 @@
                 <b>{{ unreadCountText }}</b>
                 <span>since {{ unreadSince }}</span>
             </button>
-            <button type="button" class="chat-ghost-button" data-testid="mark-read" @click="onMarkRead">Mark as read</button>
+            <Button kind="ghost" size="sm" data-testid="mark-read" @click="onMarkRead">Mark as read</Button>
         </div>
 
         <!--
@@ -47,9 +47,8 @@
                 message count, and a reader at the newest message is kept there through it.
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
-                <button v-if="timeline.hasMore" type="button" class="chat-ghost-button chat-feed-older" @click="emit('loadOlder')">
-                    Show older messages
-                </button>
+                <!-- Older messages are asked for as this comes into view at the top, as a thread's are. -->
+                <div v-if="timeline.hasMore" ref="olderElement" class="chat-feed-older" aria-hidden="true" data-testid="feed-older"></div>
 
                 <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
                 <ChannelIntro v-if="isIntroShown && facts"
@@ -57,8 +56,7 @@
                               :campuses="campuses"
                               :notifyMode="notifyMode"
                               :isEmpty="timeline.messages.length === 0 && pending.length === 0"
-                              :isJoinRefused="isJoinRefused"
-                              :isPhone="isPhone" />
+                              :isJoinRefused="isJoinRefused" />
 
                 <!--
                     The room above the messages, so a short conversation sits at the bottom by the composer
@@ -83,12 +81,7 @@
                         <MessageRow v-else-if="item.kind === 'blocked'"
                                     :message="item.messages[item.messages.length - 1]"
                                     :blockedRun="item.messages"
-                                    :personAliasGuid="personAliasGuid"
-                                    :personName="personName"
-                                    :personPhotoUrl="personPhotoUrl"
-                                    :organizationName="organizationName"
                                     :isChannel="isChannel"
-                                    :isPhone="isPhone"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
                                     :data-message-id="item.messages[item.messages.length - 1].id"
@@ -97,12 +90,7 @@
 
                         <MessageRow v-else-if="item.kind !== 'group'"
                                     :message="item.message"
-                                    :personAliasGuid="personAliasGuid"
-                                    :personName="personName"
-                                    :personPhotoUrl="personPhotoUrl"
-                                    :organizationName="organizationName"
                                     :isChannel="isChannel"
-                                    :isPhone="isPhone"
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
@@ -116,15 +104,10 @@
                                         :message="row.message"
                                         :pending="row.pending"
                                         :isOwn="item.isOwn"
-                                        :personAliasGuid="personAliasGuid"
-                                        :personName="personName"
-                                        :personPhotoUrl="personPhotoUrl"
                                         :isPersonLeader="isPersonLeader"
-                                        :organizationName="organizationName"
                                         :isChannel="isChannel"
                                         :position="row.position"
                                         :isTypingNext="row.isTypingNext"
-                                        :isPhone="isPhone"
                                         :isDirectMessage="isDirectMessage"
                                         :isJustSent="!!row.message?.client_key && justSentKeys.has(row.message.client_key)"
                                         :isSendingSlow="!!row.pending && slowSendKeys.has(row.pending.localId)"
@@ -311,8 +294,7 @@
 }
 
 .chat-feed-older {
-    align-self: center;
-    margin-top: 12px;
+    height: 1px;
 }
 
 /* Each day is its own section, its pill where the day starts. */
@@ -530,21 +512,6 @@
     text-underline-offset: 2px;
 }
 
-.chat-ghost-button {
-    height: 28px;
-    padding: 0 12px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: none;
-    border: 0;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-ghost-button:hover {
-    background: var(--chat-hover);
-}
-
 .chat-jump {
     position: absolute;
     bottom: 14px;
@@ -708,13 +675,17 @@
     import ChannelIntro from "./channelIntro.partial.obs";
     import MessageRow from "./messageRow.partial.obs";
     import TypingBubble from "./typingBubble.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { TimelineState } from "../composables/useHistory.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { pageRevealKey } from "../pageLoad.partial";
     import { useViewArrivals } from "../messageMotion.partial";
     import { useFeedTail } from "../composables/useFeedTail.partial";
     import { useNewestEnd } from "../composables/useNewestEnd.partial";
     import { useActionBar } from "../composables/useActionBar.partial";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+    import { usePlaceInView, useSeenObserver } from "../composables/useSeenObserver.partial";
     import { MessageActionRequest } from "../composables/useMessageActions.partial";
     import { Typing } from "../composables/usePresence.partial";
     import { ThreadPlace } from "../composables/useThreads.partial";
@@ -734,22 +705,6 @@
             required: true
         },
 
-        personAliasGuid: {
-            type: String,
-            required: true
-        },
-
-        /** The reader's own name and photo, for their messages the platform sent none with. */
-        personName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
@@ -762,12 +717,6 @@
             default: null
         },
 
-        /** The church's name, the sender of a block post nobody signed. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
         /** A channel draws Community's flat rows; a direct message, Conversational's bubbles. */
         isChannel: {
             type: Boolean,
@@ -775,12 +724,6 @@
         },
 
         isDirectMessage: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the chat is in its one-pane phone layout, where the feed's edges come in. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -888,6 +831,10 @@
 
     const feed = ref<HTMLElement | null>(null);
 
+    /** The reader, whose own messages are never news to them, and the phone flag, where the feed's edges come in. */
+    const session = useChatSession();
+    const isPhone = session.isPhone;
+
     /** The box around everything the feed draws, watched for growth. */
     const content = ref<HTMLElement | null>(null);
     const dayFloat = ref<HTMLElement | null>(null);
@@ -903,14 +850,26 @@
 
     /** The feed's one action bar, on the message the pointer rests on or a keyboard reaches. */
     const actionBar = useActionBar(() => feed.value);
-    let observer: IntersectionObserver | null = null;
-    let dividerObserver: IntersectionObserver | null = null;
+
+    /** The mark at the top of what is held, while older messages remain. */
+    const olderElement = ref<HTMLElement>();
+
+    // A row counts as seen once any of it is on screen, which is what the read position is saved from.
+    const seen = useSeenObserver(() => feed.value, row => emit("seen", Number(row.dataset.messageId)));
+
+    // Scrolling up to the top asks for the page before it; the shell asks once for a page however
+    // often it is told, and a page that lands moves the mark out of view, so it can ask again.
+    usePagingTrigger(olderElement, () => emit("loadOlder"), {
+        enabled: () => props.timeline.isLoaded && props.timeline.hasMore,
+        root: () => feed.value
+    });
 
     let dividerElement: Element | null = null;
 
-    /** Whether the New divider is out of view, and on which side, as the browser last reported. */
-    const isDividerOffScreen = ref(false);
-    const isDividerAbove = ref(false);
+    /** Whether the New divider is out of view, and on which side, so the strip can point to it. */
+    const dividerPlace = usePlaceInView(() => feed.value);
+    const isDividerOffScreen = dividerPlace.isOffScreen;
+    const isDividerAbove = dividerPlace.isAbove;
 
     const isMarkedRead = ref(false);
 
@@ -1018,7 +977,7 @@
         return layoutFeed({
             messages: props.timeline.messages,
             pending: channelPending.value,
-            personAliasGuid: props.personAliasGuid,
+            personAliasGuid: session.me.value.personAliasGuid,
             newDividerBeforeId: dividerBeforeId.value,
             layout: layout.value,
             now: new Date(),
@@ -1225,34 +1184,15 @@
 
     /** Watches the New divider as it is drawn, so the strip can point to it while it is out of view. */
     function setDivider(element: unknown): void {
-        const next = element instanceof Element ? element : null;
-        if (next === dividerElement) {
-            return;
-        }
-
-        if (dividerElement) {
-            dividerObserver?.unobserve(dividerElement);
-        }
-
-        dividerElement = next;
-        if (next) {
-            dividerObserver?.observe(next);
-        }
+        dividerElement = element instanceof Element ? element : null;
+        dividerPlace.watch(dividerElement);
     }
 
-    /**
-     * Watches every message row that is not watched yet. A row counts as seen once any of it
-     * is on screen, which is what the read position is saved from.
-     */
+    /** Watches every message row not watched yet; the shell keeps only the newest it is told of. */
     function observeRows(): void {
-        if (!feed.value || !observer) {
-            return;
+        if (feed.value) {
+            seen.observeAll(feed.value, "[data-message-id]");
         }
-
-        feed.value.querySelectorAll<HTMLElement>("[data-message-id]:not([data-observed])").forEach(element => {
-            element.dataset.observed = "true";
-            observer?.observe(element);
-        });
     }
 
     /** The newest id in the timeline, or null when it is empty. */
@@ -1273,7 +1213,7 @@
             return;
         }
 
-        const me = props.personAliasGuid.toLowerCase();
+        const me = session.me.value.personAliasGuid.toLowerCase();
         // a message by someone the reader blocked is not news to them
         const arrived = props.timeline.messages.filter(m => m.id > previous && !m.blocked);
         const own = arrived.filter(m => (m.person_alias_guid ?? "").toLowerCase() === me);
@@ -1290,17 +1230,27 @@
     // Keyed on the messages at either end, not their count: the newest page replaces a held one
     // of the same size when more than a page arrived meanwhile, and its rows still need watching,
     // counting and following.
-    watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async () => {
+    watch(() => `${props.timeline.messages[0]?.id}:${newestId()}`, async (ends, oldEnds) => {
+        const [first, newest] = ends.split(":");
+        const [oldFirst, oldNewest] = oldEnds.split(":");
+
         // a message can land mid-scroll, before the scroll event for where the reader now is has run
         reader.read();
 
         const shouldFollow = isAtNewest.value;
+        const fromEnd = reader.endOf() - (feed.value?.scrollTop ?? 0);
         noteArrivals(!shouldFollow);
         await nextTick();
         observeRows();
 
         if (shouldFollow) {
             reader.toNewest();
+        }
+        else if (feed.value && first !== oldFirst && newest === oldNewest) {
+            // An older page went in above: the reader stays as far from the newest end as they
+            // were, so what they were reading holds still, as a browser that anchors scrolling
+            // would keep it, and the mark at the top leaves view until they scroll up again.
+            feed.value.scrollTop = reader.endOf() - fromEnd;
         }
 
         if (props.timeline.messages.length > 0) {
@@ -1379,26 +1329,6 @@
     // #region Lifecycle Hooks
 
     onMounted(() => {
-        observer = new IntersectionObserver(entries => {
-            for (const entry of entries) {
-                if (entry.isIntersecting && document.visibilityState === "visible") {
-                    emit("seen", Number((entry.target as HTMLElement).dataset.messageId));
-                }
-            }
-        }, { root: feed.value });
-
-        // The divider's own watch: whether it is in view, and if not, above or below.
-        dividerObserver = new IntersectionObserver(entries => {
-            for (const entry of entries) {
-                isDividerOffScreen.value = !entry.isIntersecting;
-                isDividerAbove.value = !!entry.rootBounds && entry.boundingClientRect.bottom < entry.rootBounds.top;
-            }
-        }, { root: feed.value });
-
-        if (dividerElement) {
-            dividerObserver.observe(dividerElement);
-        }
-
         // A first page that is quick never shows the skeleton, so a fast load does not flicker.
         if (!props.timeline.isLoaded) {
             skeletonTimer = setTimeout(() => {
@@ -1418,10 +1348,6 @@
 
     onBeforeUnmount(() => {
         actionBar.stop();
-        observer?.disconnect();
-        observer = null;
-        dividerObserver?.disconnect();
-        dividerObserver = null;
         if (skeletonTimer) {
             clearTimeout(skeletonTimer);
         }

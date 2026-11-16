@@ -19,7 +19,7 @@
         <template v-if="state === 'system'">
             <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
-                <MessageBody :text="text" :pieces="pieces" :personAliasGuid="personAliasGuid" :isConversation="!isChannel" />
+                <MessageBody :text="text" :pieces="pieces" :isConversation="!isChannel" />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
         </template>
@@ -37,20 +37,38 @@
         </template>
 
         <!-- Community: flat rows, a head with the name on every group, the rest in the gutter's time. -->
-        <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPhone="isPhone" :isPersonLeader="isPersonLeader" />
+        <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
         <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
 
-        <!-- A phone's actions, from a tap on the message; drawn over the whole chat. -->
-        <ActionSheet v-if="isSheetSurface"
-                     :isOpen="isSheetOpen"
-                     :message="message"
-                     :isOwn="isOwn"
-                     :isInThread="isInThread"
-                     :favorites="reactionHost?.favorites ?? []"
-                     v-on="actionHandlers"
-                     @close="onSheetClose" />
+        <!-- A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet over the whole chat. -->
+        <Sheet v-if="isSheetSurface" ref="sheet" :isOpen="isSheetOpen && !!message" label="Message actions" @dismiss="onSheetClose">
+            <!-- The phone has no hover bar, so the sheet carries the quick reactions, first, at a finger's size. -->
+            <div class="chat-sheet-react" data-testid="action-sheet-reactions">
+                <button v-for="favorite in quickReactions"
+                        :key="favorite.code"
+                        type="button"
+                        :aria-pressed="isMine(favorite.code) ? 'true' : 'false'"
+                        :aria-label="`${isMine(favorite.code) ? 'Remove your' : 'React with'} ${favorite.label}`"
+                        @click="onSheetReact(favorite.code)">
+                    <img v-if="!favorite.emoji && favorite.image_url" class="chat-sheet-glyph" :src="favorite.image_url" alt="" />
+                    <span v-else class="chat-sheet-glyph" aria-hidden="true">{{ favorite.emoji }}</span>
+                </button>
+                <button type="button" class="is-more" aria-label="More reactions" aria-haspopup="dialog" @click="onSheetMoreReactions">
+                    <Icon name="plus" />
+                </button>
+            </div>
+            <button v-for="item in sheetItems"
+                    :key="item.key"
+                    type="button"
+                    class="chat-sheet-item"
+                    :class="{ 'is-danger': item.isDanger }"
+                    @click="chooseSheetItem(item.key)">
+                <Icon :name="item.icon" />
+                <span class="chat-sheet-label">{{ item.label }}</span>
+            </button>
+        </Sheet>
     </div>
 </template>
 
@@ -287,6 +305,45 @@
     display: inline;
 }
 
+/* The sheet's six reactions spread across it as 44px circles, over a rule that sets them apart from its items. */
+.chat-sheet-react {
+    display: flex;
+    gap: 4px;
+    justify-content: space-between;
+    padding: 0 2px 10px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-sheet-react button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    font-size: var(--chat-emoji-tray);
+    line-height: 1;
+    background: var(--chat-sidebar);
+    border: 0;
+    border-radius: var(--chat-r-full);
+}
+
+.chat-sheet-react button[aria-pressed="true"] {
+    background: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1.5px var(--chat-reaction-mine-line);
+}
+
+.chat-sheet-react button.is-more {
+    color: var(--chat-icon);
+}
+
+/* A church's image emoji is held to the glyph's box. */
+img.chat-sheet-glyph {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
 /* Kept whole, so a wrap never leaves "AM" alone on a line. */
 .chat-sys-time {
     margin-left: 8px;
@@ -297,23 +354,31 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, proxyRefs, ref, toRef, watch } from "vue";
-    import ActionSheet from "./actionSheet.partial.obs";
+    import { computed, PropType, proxyRefs, ref, toRaw, toRef, watch } from "vue";
     import MessageBody from "./messageBody.partial.obs";
     import MessageRowBubble from "./messageRowBubble.partial.obs";
     import MessageRowCommunity from "./messageRowCommunity.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import Sheet from "../ui/sheet.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
     import { MessageRowHandlers, MessageRowReactionsProps, MessageRowSurface, MessageRowView, useMessageRowView } from "../composables/useMessageRowView.partial";
     import { ActionBarDock, useColumnActionBar } from "../composables/useActionBar.partial";
-    import { MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
+    import { isEditableMessage, isSenderBlockable, MessageActionRequest, messageRowRequests } from "../composables/useMessageActions.partial";
     import { ThreadPlace, threadPlaceOf } from "../composables/useThreads.partial";
     import { ReactionHost } from "../composables/useReactions.partial";
     import { blockedRunText, FeedLayout, RowPosition } from "../feedLayout.partial";
     import { rowKey, sendKey } from "../heldMessage.partial";
     import { useRowMotion } from "../messageMotion.partial";
-    import { ChatError, PendingMessage, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
+    import { useChatSession } from "../chatSession.partial";
+    import { ChatError, PendingMessage, ReactionFavorite, ReactorsCursor, ReactorsPage, SystemKind, TimelineMessage } from "../types.partial";
+
+    // #region Types
+
+    /** One of the phone sheet's items: a known action by its name, a server's by its place in the list. */
+    type SheetItem = { key: string, label: string, icon: string, isDanger?: boolean };
+
+    // #endregion Types
 
     const props = defineProps({
         /** The stored message, or null for a send that is not stored yet. */
@@ -333,34 +398,10 @@
             default: false
         },
 
-        /** The reader's alias guid, for the "you" mention chip. */
-        personAliasGuid: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        /** The reader's own name, for their messages the platform sent no name with. */
-        personName: {
-            type: String as PropType<string>,
-            default: ""
-        },
-
-        /** The reader's own photo, for their face in Community. */
-        personPhotoUrl: {
-            type: String as PropType<string | null>,
-            default: null
-        },
-
         /** Whether the reader leads this conversation, for the Leader pill on their own messages. */
         isPersonLeader: {
             type: Boolean,
             default: false
-        },
-
-        /** The church's name, the sender of a block post nobody signed. */
-        organizationName: {
-            type: String as PropType<string>,
-            default: ""
         },
 
         /** A channel's message is a flat Community row; a direct message's is a Conversational bubble. */
@@ -385,12 +426,6 @@
         groupKey: {
             type: String,
             default: ""
-        },
-
-        /** Whether the chat is in its one-pane phone layout, where Community's gutter and faces are smaller. */
-        isPhone: {
-            type: Boolean,
-            default: false
         },
 
         /** A direct message names nobody over a bubble: the header already says who it is with. */
@@ -497,7 +532,11 @@
 
     const columnBar = useColumnActionBar();
 
+    /** Whether the chat is in its one-pane phone layout, as the session says. */
+    const session = useChatSession();
+
     const isSheetOpen = ref(false);
+    const sheet = ref<InstanceType<typeof Sheet>>();
 
     /**
      * A screen with no hover, a tablet held in the hand, has no bar to show either, so it acts from
@@ -574,7 +613,7 @@
     const isActionable = computed((): boolean => state.value === "message" || state.value === "sent" || state.value === "unknown");
 
     /** A phone, or a screen with no hover, which acts from the sheet instead of the bar. */
-    const isTouchLayout = computed((): boolean => props.isPhone || isScreenHoverless);
+    const isTouchLayout = computed((): boolean => session.isPhone.value || isScreenHoverless);
 
     /**
      * Whether the message can be acted on now, the one rule the bar and the sheet both follow: a
@@ -595,6 +634,45 @@
     /** The editor takes the text's place while the message is live; a delete that lands meanwhile shows its tombstone. */
     const isEditorShown = computed((): boolean => props.isEditing && !!props.message && !props.pending && isActionable.value);
 
+    /** The first six favorites, the quick reactions a phone's sheet has room for. */
+    const quickReactions = computed((): ReactionFavorite[] => (props.reactionHost?.favorites ?? []).slice(0, 6));
+
+    /** The bar's and the menu's choices in one list, under the sheet's row of reactions. */
+    const sheetItems = computed((): SheetItem[] => {
+        const message = props.message;
+        const list: SheetItem[] = [];
+        if (!message) {
+            return list;
+        }
+
+        if (!props.isInThread) {
+            list.push({ key: "reply", label: "Reply in thread", icon: "thread" });
+        }
+
+        list.push({ key: "quote", label: "Quote", icon: "reply" });
+
+        if (props.isOwn && isEditableMessage(message)) {
+            list.push({ key: "edit", label: "Edit message", icon: "pencil" });
+        }
+
+        list.push({ key: "copy", label: "Copy text", icon: "copy" });
+
+        // Each by its place in the list, since an action's id is the server's and may be anything.
+        (message.actions ?? []).forEach((action, index) => {
+            list.push({ key: `action ${index}`, label: action.label, icon: "bolt" });
+        });
+
+        if (props.isOwn) {
+            list.push({ key: "delete", label: "Delete message", icon: "trash", isDanger: true });
+        }
+
+        if (isSenderBlockable(message, props.isOwn)) {
+            list.push({ key: "block", label: "Block", icon: "ban" });
+        }
+
+        return list;
+    });
+
     /** The column bar's props on this message, the same in both looks, which place it in different spots. */
     const barProps = computed((): Record<string, unknown> => ({
         message: props.message,
@@ -614,8 +692,7 @@
     const reactionsProps = computed((): MessageRowReactionsProps => ({
         message: props.message as TimelineMessage,
         isPreviewing: props.isPreviewing,
-        isPhone: isTouchLayout.value,
-        reader: { personAliasGuid: props.personAliasGuid, name: props.personName, photoUrl: props.personPhotoUrl },
+        reader: session.me.value,
         listReactors,
         isCardDisabled: !!props.message && !!props.reactionHost?.pickerAnchorOf(props.message.id),
         motion: reaction.value
@@ -625,7 +702,7 @@
         [`is-${layout.value}`]: true,
         [`is-${state.value}`]: true,
         "is-own": props.isOwn,
-        "is-phone": props.isPhone,
+        "is-phone": session.isPhone.value,
         "is-head": isHead.value,
         "is-announcement": isAnnouncement.value,
         "is-jumbo": isJumbo.value,
@@ -716,7 +793,7 @@
      */
     function pickerAnchor(anchor: HTMLElement): HTMLElement {
         const row = rowElement.value;
-        const isInSheet = !!anchor.closest(".chat-sheet");
+        const isInSheet = !!sheet.value?.element?.contains(anchor);
         if (!row || (row.contains(anchor) && !isInSheet)) {
             return anchor;
         }
@@ -739,7 +816,7 @@
      */
     function onRowClick(event: MouseEvent): void {
         const target = event.target as Element | null;
-        if (!isSheetOffered.value || target?.closest("button, a, input, label, [contenteditable='true'], .chat-sheet-scrim")) {
+        if (!isSheetOffered.value || target?.closest("button, a, input, label, [contenteditable='true'], .chat-scrim") || sheet.value?.element?.contains(target)) {
             return;
         }
 
@@ -750,6 +827,59 @@
     function onSheetClose(): void {
         isSheetOpen.value = false;
         rowElement.value?.focus({ preventScroll: true });
+    }
+
+    /** A reaction toggles the reader's own and closes the sheet. */
+    function onSheetReact(code: string): void {
+        const message = props.message;
+        if (message) {
+            onSheetClose();
+            actionHandlers.react(message, code);
+        }
+    }
+
+    /**
+     * The plus asks for the full picker, past its quick tray, which would only offer again the
+     * quick reactions the sheet has just shown. The sheet closes under it, so the picker is placed
+     * on the message rather than on this button.
+     */
+    function onSheetMoreReactions(event: MouseEvent): void {
+        const message = props.message;
+        if (message) {
+            // Closed first, so the picker takes focus after the row does; the sheet is drawn until
+            // the next render, so the plus is still found inside it. The message itself, not the
+            // props' view of it, so the host finds the very message it holds.
+            const anchor = event.currentTarget as HTMLElement;
+            onSheetClose();
+            actionHandlers.openPicker(toRaw(message), anchor, { startsOn: "full" });
+        }
+    }
+
+    /** Runs an item as the bar would and closes the sheet; its handler moves focus where it leads. */
+    function chooseSheetItem(key: string): void {
+        const message = props.message;
+        if (!message) {
+            return;
+        }
+
+        onSheetClose();
+        if (key === "reply") {
+            actionHandlers.replyInThread(message);
+        }
+        else if (key === "quote" || key === "edit" || key === "copy" || key === "delete" || key === "block") {
+            actionHandlers[key](message);
+        }
+        else {
+            const action = (message.actions ?? [])[Number(key.replace("action ", ""))];
+            if (action) {
+                actionHandlers.serverAction(action);
+            }
+        }
+    }
+
+    /** Whether the reader reacted with an emoji, which presses its reaction in the sheet. */
+    function isMine(code: string): boolean {
+        return !!props.message?.reactions?.some(reaction => reaction.code === code && reaction.mine);
     }
 
     /** The crossfade is a one-off, so the next edit can play it again. */

@@ -239,6 +239,7 @@ button.chat-quote:active .chat-quote-body {
     import Avatar from "../ui/avatar.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { attachmentsPreview } from "../composables/useAttachments.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { blockedSentence } from "../heldMessage.partial";
     import { TimelineMessage } from "../types.partial";
 
@@ -255,12 +256,6 @@ button.chat-quote:active .chat-quote-body {
             default: false
         },
 
-        /** The reader's alias, to know a quote of their own message. */
-        personAliasGuid: {
-            type: String,
-            default: ""
-        },
-
         /** A channel's reply line rather than a direct message's ghost. */
         isCommunity: {
             type: Boolean,
@@ -271,6 +266,12 @@ button.chat-quote:active .chat-quote-body {
     const emit = defineEmits<{
         (e: "jump", quotedMessageId: number): void
     }>();
+
+    // #region Values
+
+    const session = useChatSession();
+
+    // #endregion Values
 
     // #region Computed Values
 
@@ -295,8 +296,8 @@ button.chat-quote:active .chat-quote-body {
     const goneText = computed((): string => isBlocked.value ? `${blockedSentence}.` : isHidden.value ? "Original message is unavailable." : "Original message was deleted.");
 
     /** Aliases are compared in lower case, since the platform and Rock write guids in either. */
-    const isQuoteOfReader = computed((): boolean => !!quoted.value && !!props.personAliasGuid
-        && (quoted.value.person_alias_guid ?? "").toLowerCase() === props.personAliasGuid.toLowerCase());
+    const isQuoteOfReader = computed((): boolean => !!quoted.value && !!session.me.value.personAliasGuid
+        && (quoted.value.person_alias_guid ?? "").toLowerCase() === session.me.value.personAliasGuid.toLowerCase());
 
     const quotedName = computed((): string => [quoted.value?.sender_nick_name, quoted.value?.sender_last_name].filter(part => !!part).join(" ") || "Someone");
 

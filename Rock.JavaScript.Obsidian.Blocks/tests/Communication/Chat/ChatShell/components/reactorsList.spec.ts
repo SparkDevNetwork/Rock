@@ -36,6 +36,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ReactorsList from "../../../../../src/Communication/Chat/ChatShell/components/reactorsList.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -56,10 +57,46 @@ const chips = [
     { code: "heart", count: 1, mine: false, emoji: "❤️", image_url: null, label: "red heart", reactors: [person(cara, "Cara", "Lin", "2026-10-16T09:05:00Z")] }
 ];
 
+/** The observers made, so a test can say what came into view; jsdom has none. */
+const observers: FakeObserver[] = [];
+
+class FakeObserver {
+    public watched: Element[] = [];
+    constructor(public callback: IntersectionObserverCallback) {
+        observers.push(this);
+    }
+    observe(element: Element): void {
+        this.watched.push(element);
+    }
+    unobserve(element: Element): void {
+        this.watched = this.watched.filter(one => one !== element);
+    }
+    disconnect(): void {
+        this.watched = [];
+    }
+}
+
+const realObserver = window.IntersectionObserver;
+
+beforeEach(() => {
+    observers.length = 0;
+    window.IntersectionObserver = FakeObserver as unknown as typeof IntersectionObserver;
+});
+
+afterEach(() => {
+    window.IntersectionObserver = realObserver;
+});
+
 let wrapper: VueWrapper | null = null;
 
 function draw(props: Record<string, unknown>): VueWrapper {
-    wrapper = mount(ReactorsList, { props: { isOpen: true, reactions: chips, code: "pray", reader, listReactors: jest.fn(async () => ({ reactors: [], has_more: false })), ...props } as never, attachTo: document.body });
+    // the phone flag is the session's, provided as the shell provides it
+    const { isPhone = false, ...rest } = props;
+    wrapper = mount(ReactorsList, {
+        props: { isOpen: true, reactions: chips, code: "pray", reader, listReactors: jest.fn(async () => ({ reactors: [], has_more: false })), ...rest } as never,
+        attachTo: document.body,
+        global: { provide: providedSession({ isPhone: isPhone as boolean }) }
+    });
     return wrapper;
 }
 
@@ -157,11 +194,15 @@ describe("the tab of every emoji", () => {
         await w.findAll("[data-testid='reactors-tab']")[0].trigger("click");
         await settle();
 
-        const list = w.get("[data-testid='reactors-list']").element as HTMLElement;
-        Object.defineProperty(list, "scrollHeight", { value: 400, configurable: true });
-        Object.defineProperty(list, "clientHeight", { value: 320, configurable: true });
-        list.scrollTop = 20;
-        await w.get("[data-testid='reactors-list']").trigger("scroll");
+        // jsdom lays nothing out, so the list's end coming near, and going as the rows asked for push
+        // it down, is told as the browser's observer would tell it
+        const end = w.get("[data-testid='reactors-end']").element;
+        for (const isIntersecting of [true, false]) {
+            for (const observer of observers.filter(one => one.watched.includes(end))) {
+                observer.callback([{ target: end, isIntersecting } as IntersectionObserverEntry], observer as unknown as IntersectionObserver);
+            }
+        }
+        await settle();
 
         expect(listReactors).toHaveBeenLastCalledWith(null, { reacted_at: "2026-10-16T09:03:00Z", reactor_person_alias_guid: anna, code: "pray" });
     });

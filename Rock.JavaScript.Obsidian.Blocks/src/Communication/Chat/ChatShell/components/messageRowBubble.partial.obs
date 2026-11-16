@@ -22,7 +22,7 @@
                 @click="on.openThread">
             <Icon name="thread" size="xs" />Replied to a thread
         </button>
-        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" :personAliasGuid="view.personAliasGuid" @jump="on.jump" />
+        <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
             <!-- The face a group draws is marked by the group, so the tail moves it only while her run continues. It hangs straight in its line, which carries it when its row steps: a wrapper here would change what carries it. -->
             <span v-if="!view.isOwn" class="chat-msg-face" :data-tail="isLastOfGroup && groupKey ? `face:${groupKey}` : undefined">
@@ -47,10 +47,10 @@
                      class="chat-bubble"
                      data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
                     <div v-if="view.isAnnouncement" class="chat-bubble-label">
-                        <span class="chat-pill is-announcement" data-testid="announcement-pill"><Icon name="speaker" size="xs" />Announcement</span>
+                        <Badge tone="brand" icon="speaker" label="Announcement" data-testid="announcement-pill" />
                     </div>
                     <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
-                    <MessageBody :text="view.text" :pieces="view.pieces" :personAliasGuid="view.personAliasGuid" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
+                    <MessageBody :text="view.text" :pieces="view.pieces" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
                 </div>
                 <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :data-tail="isBubbleShown ? undefined : 'box'" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
                 <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
@@ -58,7 +58,7 @@
         </div>
         <MessageReactions v-if="view.message && (view.hasThread || view.isReactable)" v-bind="view.reactionsProps" v-on="on.reactions">
             <template v-if="view.hasThread" #default>
-                <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" @open="on.openThread" />
+                <ThreadSummary :message="view.message" :isRowOnScreen="view.isThreadStartedHere" :isOwn="view.isOwn" @open="on.openThread" />
             </template>
         </MessageReactions>
         <div class="chat-meta" :hidden="!isMetaDrawn" :class="{ 'is-failed': view.state === 'failed' }" data-tail="meta" data-testid="message-meta">
@@ -424,11 +424,6 @@
     margin-top: 4px;
 }
 
-.is-own .chat-reacts :deep(.chat-tsum-dot) {
-    right: auto;
-    left: -1px;
-}
-
 /* "Replied to a thread", in the quote label's recipe, over the bubble's side. */
 .chat-thread-label {
     --chat-ic-size: 12px;
@@ -473,6 +468,7 @@
     import MessageReactions from "./messageReactions.partial.obs";
     import ThreadSummary from "./threadSummary.partial.obs";
     import Avatar from "../ui/avatar.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import FailedMarker from "./failedMarker.partial.obs";
     import { MessageRowHandlers, MessageRowView } from "../composables/useMessageRowView.partial";

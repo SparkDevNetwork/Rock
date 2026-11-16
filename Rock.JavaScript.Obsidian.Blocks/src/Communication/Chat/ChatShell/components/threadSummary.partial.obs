@@ -19,7 +19,7 @@
         <span class="chat-tsum-faces" data-testid="thread-faces">
             <Avatar v-if="faces.length > 0" :people="faces" :size="18" isOneLetter />
         </span>
-        <span v-if="isUnread" class="chat-tsum-dot" data-testid="thread-unread-dot"></span>
+        <Dot v-if="isUnread" ringed class="chat-tsum-dot" :class="{ 'is-leading': isOwn }" data-testid="thread-unread-dot" />
         <!-- Inside the pill, so the pill stays one element; fixed, so it is placed against the window. -->
         <span v-if="isTipShown"
               ref="tipElement"
@@ -88,23 +88,25 @@
     display: inline-flex;
 }
 
-/* At the outer top corner: the right for another person's message, the left for the reader's own. */
+/* At the outer top corner: the right for another person's message, the left for the reader's own bubble. */
 .chat-tsum-dot {
+    /* Ringed in what is outside the pill, not the pill's own fill its faces are ringed in, so it cuts into the pill's edge. */
+    --chat-av-ring: var(--chat-surface);
     position: absolute;
     top: -2px;
     right: -1px;
-    width: 7px;
-    height: 7px;
-    background: var(--chat-brand-fill);
-    border-radius: var(--chat-r-full);
-    /* Cuts the dot out of the pill's border it sits on; the pill itself draws no ring. */
-    box-shadow: 0 0 0 2px var(--chat-surface);
+}
+
+.chat-tsum-dot.is-leading {
+    right: auto;
+    left: -1px;
 }
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
+    import Dot from "../ui/dot.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { useTooltip } from "../ui/tooltip.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
@@ -119,6 +121,12 @@
 
         /** Whether the row it sits under was already on screen when the summary mounted; read once. */
         isRowOnScreen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Under the reader's own bubble, at the row's far side, so the dot takes the pill's other outer corner. */
+        isOwn: {
             type: Boolean,
             default: false
         }

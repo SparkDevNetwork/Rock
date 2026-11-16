@@ -20,6 +20,7 @@
 // client trusts, whatever the server sent.
 import { mount, VueWrapper } from "@vue/test-utils";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
+import { providedSession } from "../sessionShapes";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 
@@ -307,7 +308,7 @@ describe("a person's chip, where people can be opened", () => {
     ];
 
     test("is a button asking for that person, the reader's own chip included, while the @all chip names no one", async () => {
-        const body = mount(MessageBody, { props: { text: "raw", pieces, personAliasGuid: reader, isPersonOpenable: true } });
+        const body = mount(MessageBody, { props: { text: "raw", pieces, isPersonOpenable: true }, global: { provide: providedSession({ me: { personAliasGuid: reader } }) } });
 
         const [person, you, all] = body.findAll("[data-testid='piece-mention']");
         expect(person.element.tagName).toBe("BUTTON");
@@ -325,7 +326,7 @@ describe("a person's chip, where people can be opened", () => {
         expect(asked[0][1]).toBe(person.element);
 
         // the same body in a list row draws plain chips
-        const listed = mount(MessageBody, { props: { text: "raw", pieces, personAliasGuid: reader } });
+        const listed = mount(MessageBody, { props: { text: "raw", pieces }, global: { provide: providedSession({ me: { personAliasGuid: reader } }) } });
         expect(listed.findAll("[data-testid='piece-mention']").some(chip => chip.element.tagName === "BUTTON")).toBe(false);
     });
 });

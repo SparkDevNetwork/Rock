@@ -41,6 +41,7 @@
 //          for the hover grace (220ms) after the pointer leaves, long enough to reach See all,
 //          data-testid="reaction-card-more". The full list is a dialog, data-testid="dialog".
 import { mount, VueWrapper } from "@vue/test-utils";
+import { providedSession } from "../sessionShapes";
 import { nextTick, reactive } from "vue";
 import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -83,8 +84,14 @@ function message(reactions: ReactionRow[], extra: Record<string, unknown> = {}):
 
 let wrapper: VueWrapper | null = null;
 
+/** The session the shell provides: whether the chat is drawn at a phone's width. */
+function session(isPhone = false): { provide: ReturnType<typeof providedSession> } {
+    return { provide: providedSession({ isPhone }) };
+}
+
 function mountRow(props: Record<string, unknown>, slots: Record<string, string> = {}): VueWrapper {
-    wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, ...props }, slots, attachTo: document.body });
+    const { isPhone = false, ...rest } = props;
+    wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, ...rest }, slots, attachTo: document.body, global: session(isPhone as boolean) });
     return wrapper;
 }
 
@@ -186,6 +193,7 @@ describe("where the row is drawn", () => {
         wrapper = mount(MessageReactions, {
             props: { reader, listReactors: async () => null, message: message([heart(1)]) },
             attrs: { "data-placed": "under-bubble" },
+            global: session(),
             attachTo: document.body
         });
 
@@ -421,7 +429,7 @@ describe("a chip's card from the keyboard", () => {
         const after = document.createElement("button");
         after.type = "button";
         document.body.append(hidden, after);
-        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, isPhone: true, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host });
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host, global: session(true) });
         await focusCard(wrapper);
         await chips(wrapper)[0].trigger("keydown", { key: "Tab" });
 
@@ -446,7 +454,7 @@ describe("a chip's card from the keyboard", () => {
         const after = document.createElement("button");
         after.type = "button";
         document.body.append(inert, ariaHidden, after);
-        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, isPhone: true, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host });
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: message([pray(12, false, [person(anna, "Anna", "Reyes")])]) }, attachTo: host, global: session(true) });
         await focusCard(wrapper);
         await chips(wrapper)[0].trigger("keydown", { key: "Tab" });
 
@@ -691,7 +699,7 @@ describe("the one card", () => {
         const root = document.createElement("div");
         root.className = "chat-shell";
         document.body.append(root);
-        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: message([pray(3)]) }, attachTo: root });
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: message([pray(3)]) }, attachTo: root, global: session() });
         const chip = chips(wrapper)[0];
 
         await rest(chip);

@@ -116,6 +116,7 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import ChannelMark from "../ui/channelMark.partial.obs";
+    import { useChatSession } from "../chatSession.partial";
     import { ChannelFacts } from "../types.partial";
 
     const props = defineProps({
@@ -147,15 +148,13 @@
         isJoinRefused: {
             type: Boolean,
             default: false
-        },
-
-        isPhone: {
-            type: Boolean,
-            default: false
         }
     });
 
     // #region Values
+
+    /** A phone draws the intro narrower, as the session says. */
+    const { isPhone } = useChatSession();
 
     /** Names the section by its heading, once per intro. */
     const titleId = `chat-intro-${newGuid()}`;

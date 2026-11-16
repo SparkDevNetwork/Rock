@@ -20,12 +20,13 @@
         </div>
         <div class="chat-editor-foot" data-testid="message-editor-foot">
             <span class="chat-editor-hint"><kbd>Esc</kbd> to cancel, <kbd>Enter</kbd> to save</span>
-            <button type="button" class="chat-editor-btn is-ghost" data-testid="edit-cancel" @click="emit('cancel')">Cancel</button>
-            <button type="button"
-                    class="chat-editor-btn is-brand"
+            <Button kind="ghost" size="sm" data-testid="edit-cancel" @click="emit('cancel')">Cancel</Button>
+            <!-- Held while the save is out, so a second press does not send the same edit twice. -->
+            <Button kind="brand"
+                    size="sm"
                     data-testid="edit-save"
                     :disabled="isSaving"
-                    @click="onSave(editor?.getText() ?? '')">Save</button>
+                    @click="onSave(editor?.getText() ?? '')">Save</Button>
         </div>
     </div>
 </template>
@@ -103,43 +104,11 @@
     border-radius: 0;
     box-shadow: none;
 }
-
-.chat-editor-btn {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    height: 30px;
-    padding: 0 14px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-editor-btn.is-ghost {
-    color: var(--chat-text-2);
-    background: transparent;
-}
-
-.chat-editor-btn.is-ghost:hover {
-    background: var(--chat-hover);
-}
-
-.chat-editor-btn.is-brand {
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-}
-
-/* Held while the save is out, so a second press does not send the same edit twice. */
-.chat-editor-btn:disabled {
-    cursor: default;
-    opacity: .6;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref } from "vue";
+    import Button from "../ui/button.partial.obs";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { isMotionReduced } from "../ui/viewport.partial";

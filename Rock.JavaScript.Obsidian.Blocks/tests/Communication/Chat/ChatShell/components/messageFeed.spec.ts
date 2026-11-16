@@ -28,6 +28,7 @@ import { join } from "path";
 import { defineComponent, h, nextTick, reactive } from "vue";
 import ChannelIntro from "../../../../../src/Communication/Chat/ChatShell/components/channelIntro.partial.obs";
 import MessageFeed from "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import { providedSession } from "../sessionShapes";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import MessageRow from "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs";
 import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
@@ -39,6 +40,20 @@ import { ChannelFacts, PendingMessage, TimelineMessage } from "../../../../../sr
 import { Typing, typingWords, TypingWords } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresence.partial";
 import TypingBubble from "../../../../../src/Communication/Chat/ChatShell/components/typingBubble.partial.obs";
 import { playAnimations, tailPlayed } from "../tailStage";
+
+/**
+ * A mount with the reader, the phone flag and the church in the session, as the shell provides
+ * them: a spec names them with the rest of a mount's props, and they move into the session here.
+ */
+function inSession(options: { props?: Record<string, unknown>, global?: { provide?: Record<string | symbol, unknown> } } & Record<string, unknown>): never {
+    const { isPhone, personAliasGuid, personName, personPhotoUrl, organizationName, ...props } = options.props ?? {};
+    const session = providedSession({
+        isPhone: !!isPhone,
+        me: { personAliasGuid: (personAliasGuid as string | undefined) ?? "", name: (personName as string | undefined) ?? "", photoUrl: (personPhotoUrl as string | null | undefined) ?? null },
+        churchName: (organizationName as string | undefined) ?? ""
+    });
+    return { ...options, props, global: { ...options.global, provide: { ...session, ...options.global?.provide } } } as never;
+}
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const ben = "a0000003-0000-4000-8000-000000000000";
@@ -194,7 +209,7 @@ const annaTyping: Typing = { typists: [{ alias: anna, person: annaPerson }], ...
 
 function draw(props: FeedProps, reveal?: { isMainRevealed: boolean }): VueWrapper {
     const provide = reveal ? { [pageRevealKey as symbol]: { state: reveal, holdFace: () => undefined } } : {};
-    return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, ...props }, global: { provide } });
+    return mount(MessageFeed, inSession({ props: { pending: [], personAliasGuid: me, ...props }, global: { provide } }));
 }
 
 /**
@@ -530,7 +545,7 @@ describe("the person's own message is one row from send to stored", () => {
     test("moved between groups by another person's newer message, the person's own send rises only once", async () => {
         const motion = createMessageMotion();
         const state = timeline([message(1, me, at(14, 58))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        const wrapper = mount(MessageFeed, inSession({ props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } }));
         motion.sent("k1", place);
         await wrapper.setProps({ pending: [pendingRow("k1")] });
         await nextTick();
@@ -557,7 +572,7 @@ describe("the person's own message is one row from send to stored", () => {
         const motion = createMessageMotion();
         motion.sent("k1", place);
         const state = timeline([message(1, anna, at(14, 50))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        const wrapper = mount(MessageFeed, inSession({ props: { timeline: state, pending: [], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } }));
         await nextTick();
 
         const fromAnotherTab = message(2, me, at(15, 0), { client_key: "from-another-tab" });
@@ -575,7 +590,7 @@ describe("the person's own message is one row from send to stored", () => {
         const motion = createMessageMotion();
         motion.sent("k1", place);
         const state = timeline([message(1, anna, at(14, 50))]);
-        const wrapper = mount(MessageFeed, { props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } });
+        const wrapper = mount(MessageFeed, inSession({ props: { timeline: state, pending: [pendingRow("k1")], personAliasGuid: me }, global: { provide: { [messageMotionKey as symbol]: motion } } }));
         await nextTick();
 
         state.messages.push(message(2, anna, at(15, 0)));
@@ -628,7 +643,7 @@ describe("the Sent hold, from whichever copy of the message comes first", () => 
         const Host = defineComponent({
             setup: () => () => h(MessageFeed, { timeline: timelines.state("c1"), pending: sender?.pending("c1") ?? [], personAliasGuid: me, isChannel, isPersonLeader })
         });
-        const wrapper = mount(Host, { global: { provide: { [messageMotionKey as symbol]: motion } } });
+        const wrapper = mount(Host, { global: { provide: { ...providedSession({ me: { personAliasGuid: me } }), [messageMotionKey as symbol]: motion } } });
 
         return {
             wrapper,
@@ -1417,10 +1432,10 @@ describe("Jump to latest", () => {
     });
 
     test("from the keyboard, hands focus to the newest message, since the button hides once there", async () => {
-        const wrapper = mount(MessageFeed, {
+        const wrapper = mount(MessageFeed, inSession({
             props: { pending: [], personAliasGuid: me, timeline: timeline([message(1, anna, at(14, 0)), message(2, anna, at(14, 1))]) },
             attachTo: document.body
-        });
+        }));
         placeScroll(wrapper, 0);
         await nextTick();
 
@@ -2176,6 +2191,39 @@ describe("the history skeleton", () => {
     });
 });
 
+// Older messages load as the reader scrolls up to the top, as a thread's do, with no button to
+// press; the page lands above without moving what the reader is looking at.
+describe("loading older messages", () => {
+    test("asks for them once as the top of the feed comes into view, with no button to press", async () => {
+        const wrapper = draw({ timeline: timeline([message(5, anna, at(14, 50))], { hasMore: true }) });
+        await nextTick();
+
+        expect(wrapper.text()).not.toContain("Show older messages");
+        const top = wrapper.get("[data-testid='feed-older']").element;
+        FakeIntersectionObserver.report(top, true);
+        FakeIntersectionObserver.report(top, true);
+
+        expect(wrapper.emitted("loadOlder")).toHaveLength(1);
+    });
+
+    test("an older page landing above keeps the reader where they were", async () => {
+        const state = timeline([message(5, anna, at(14, 50)), message(6, anna, at(14, 51))], { hasMore: true });
+        const wrapper = draw({ timeline: state });
+        placeScroll(wrapper, 0, 2000, 500);
+        // laid out as a browser would: 300px a drawn row, so the height grows only once the page is drawn
+        const height = (): number => 1400 + 300 * wrapper.findAll("[data-message-id]").length;
+        const scroller = wrapper.get("[data-testid='message-feed']").element as HTMLElement;
+        Object.defineProperty(scroller, "scrollHeight", { configurable: true, get: height });
+        layContent(wrapper, height);
+
+        state.messages.unshift(message(3, anna, at(14, 40)), message(4, anna, at(14, 45)));
+        await nextTick();
+        await nextTick();
+
+        expect(scroller.scrollTop).toBe(600);
+    });
+});
+
 describe("the channel intro", () => {
     const volunteers: ChannelFacts = {
         channel_id: "c1",
@@ -2199,7 +2247,7 @@ describe("the channel intro", () => {
     };
 
     function drawWithFacts(state: TimelineState, extra: Record<string, unknown> = {}): VueWrapper {
-        return mount(MessageFeed, { props: { pending: [], personAliasGuid: me, isChannel: true, timeline: state, facts: volunteers, campuses: [], notifyMode: "mentions", ...extra } });
+        return mount(MessageFeed, inSession({ props: { pending: [], personAliasGuid: me, isChannel: true, timeline: state, facts: volunteers, campuses: [], notifyMode: "mentions", ...extra } }));
     }
 
     test("is drawn at the top of a channel once its oldest page is loaded, before the first day", () => {
@@ -2304,11 +2352,11 @@ describe("the action bar", () => {
      */
     function drawFour(isChannel: boolean, isTransitionKept = false): VueWrapper {
         held = timeline([1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id))));
-        mounted = mount(MessageFeed, {
+        mounted = mount(MessageFeed, inSession({
             props: { pending: [], personAliasGuid: me, timeline: held, isChannel, isDirectMessage: !isChannel },
             attachTo: document.body,
             global: isTransitionKept ? { stubs: { transition: false } } : {}
-        });
+        }));
 
         // Vue drops an event stamped no later than the moment its listener was attached, as one
         // fired while the page was being drawn, and the fake clock stands still until moved.
@@ -2319,7 +2367,7 @@ describe("the action bar", () => {
     /** Four messages from Anna in a channel, the second as given, with the feed's own props. */
     function drawCase(second: Partial<TimelineMessage>, feedProps: Record<string, unknown> = {}): VueWrapper {
         const messages = [1, 2, 3, 4].map(id => message(id, anna, at(14, 40 + id), id === 2 ? second : {}));
-        mounted = mount(MessageFeed, { props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel: true, ...feedProps }, attachTo: document.body });
+        mounted = mount(MessageFeed, inSession({ props: { pending: [], personAliasGuid: me, timeline: timeline(messages), isChannel: true, ...feedProps }, attachTo: document.body }));
         jest.advanceTimersByTime(1);
         return mounted;
     }
@@ -2574,7 +2622,7 @@ describe("the action bar", () => {
             { localId: "local-1", channelId: "c1", body: "On my way", status: "sending", errorCode: null },
             { localId: "local-2", channelId: "c1", body: "Still here", status: "failed", errorCode: null }
         ];
-        mounted = mount(MessageFeed, { props: { pending, personAliasGuid: me, timeline: timeline(messages), isChannel: true }, attachTo: document.body });
+        mounted = mount(MessageFeed, inSession({ props: { pending, personAliasGuid: me, timeline: timeline(messages), isChannel: true }, attachTo: document.body }));
 
         const rows = mounted.findAll("[data-testid='pending-row']");
         expect(rows).toHaveLength(2);

@@ -30,7 +30,7 @@
                 :aria-label="`See all ${reaction.count} reactions`"
                 @click="emit('seeAll')">
             <template v-if="card.people.length > 0">
-                <span class="chat-rx-card-disc" aria-hidden="true">+{{ card.rest }}</span>
+                <span class="chat-rx-card-disc"><Badge tone="neutral" :label="`+${card.rest}`" /></span>
                 <span class="chat-rx-card-name is-muted">{{ card.rest }} {{ card.rest === 1 ? "other" : "others" }}</span>
             </template>
             <span class="chat-rx-card-see">See all<Icon name="right" size="xs" /></span>
@@ -137,18 +137,12 @@
 }
 
 /* The rest's face: a neutral disc the size of a face, holding the count. */
+/* The count of the rest stands in the faces' column, centred on it. */
 .chat-rx-card-disc {
     display: inline-grid;
     flex: none;
     place-items: center;
     width: 24px;
-    height: 24px;
-    font-size: 10px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-    color: var(--chat-text-2);
-    background: var(--chat-sidebar);
-    border-radius: var(--chat-r-full);
 }
 
 .chat-rx-card-see {
@@ -166,6 +160,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Avatar from "../ui/avatar.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { ReactionReader, WhoReacted, whoReacted } from "../composables/useReactions.partial";
     import { Reaction } from "../types.partial";
