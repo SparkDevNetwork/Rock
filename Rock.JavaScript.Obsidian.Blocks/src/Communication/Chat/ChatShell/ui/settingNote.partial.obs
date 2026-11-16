@@ -5,10 +5,7 @@
              save that lands has no line, since the control already shows it. Kept inside the root,
              since a comment beside it makes a fragment that drops the caller's attributes. -->
         <Icon :name="note.kind === 'error' ? 'alert' : 'info'" size="xs" />
-        <span>{{ note.text }}<template v-if="note.retry">{{ " " }}<button type="button"
-                        class="chat-set-retry"
-                        data-testid="note-retry"
-                        @click.stop="onRetry">Try again</button></template></span>
+        <span>{{ note.text }}<template v-if="note.retry">{{ " " }}<Button class="chat-set-retry" size="sm" data-testid="note-retry" @click="onRetry">Try again</Button></template></span>
     </span>
 </template>
 
@@ -33,24 +30,15 @@
     margin-top: 2px;
 }
 
-/* Try again reads as a link in the sentence's own color, underlined so it is not color alone. */
+/* Try again follows the sentence on its line. */
 .chat-set-retry {
-    padding: 0;
-    font: inherit;
-    color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    background: transparent;
-    border: 0;
-}
-
-.chat-set-retry:hover {
-    text-decoration-thickness: 2px;
+    vertical-align: middle;
 }
 </style>
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import Button from "./button.partial.obs";
     import Icon from "./icon.partial.obs";
 
     /** A line under a setting: what a change means, or a failed save's sentence with a way to ask it again. */
@@ -70,7 +58,9 @@
 
     // #region Event Handlers
 
-    function onRetry(): void {
+    /** Stopped here, so a row the note sits in does not take the press as its own. */
+    function onRetry(event: MouseEvent): void {
+        event.stopPropagation();
         props.note.retry?.();
         emit("retry");
     }

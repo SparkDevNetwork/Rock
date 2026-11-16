@@ -1097,7 +1097,7 @@ describe("with nothing open", () => {
         test("draws no marks while the wait runs, and draws them once it is spent", async () => {
             const w = await mountLoading();
 
-            expect(w.findAll("[data-testid='page-veil'] i.chat-skeleton")).toHaveLength(0);
+            expect(w.findAll("[data-testid='page-veil'] i.chat-skeleton, [data-testid='page-veil'] .chat-skel")).toHaveLength(0);
 
             revealOf().isSkeletonShown = true;
             await settle();
@@ -1113,15 +1113,15 @@ describe("with nothing open", () => {
 
             const main = (): ReturnType<typeof w.get> => w.get("[data-testid='frame-main'] [data-testid='page-veil']");
             expect(main().attributes("data-look")).toBe("channel");
-            expect(main().find(".chat-veil-text").exists()).toBe(true);
-            expect(main().find(".chat-veil-bubble").exists()).toBe(false);
+            expect(main().find(".chat-skel.is-group").exists()).toBe(true);
+            expect(main().find(".chat-skel.is-bubble").exists()).toBe(false);
 
             revealOf().kind = "direct";
             await settle();
 
             expect(main().attributes("data-look")).toBe("direct");
-            expect(main().find(".chat-veil-bubble").exists()).toBe(true);
-            expect(main().find(".chat-veil-text").exists()).toBe(false);
+            expect(main().find(".chat-skel.is-bubble").exists()).toBe(true);
+            expect(main().find(".chat-skel.is-group").exists()).toBe(false);
         });
 
         test("takes each veil away when its own region is revealed, the column's content then in reach", async () => {

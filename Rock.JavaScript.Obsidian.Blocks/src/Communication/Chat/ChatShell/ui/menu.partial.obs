@@ -38,7 +38,7 @@
                     </span>
                     <span v-else class="chat-menu-label">{{ item.label }}</span>
                     <kbd v-if="item.hint" class="chat-menu-hint">{{ item.hint }}</kbd>
-                    <span v-if="item.hasDot" class="chat-menu-dot"><span class="chat-sr-only">new</span></span>
+                    <span v-if="item.hasDot" class="chat-menu-dot"><Dot /><span class="chat-sr-only">new</span></span>
                     <span v-if="item.isChecked" class="chat-menu-check" data-testid="menu-check"><Icon name="check" size="sm" /></span>
                 </button>
             </template>
@@ -131,12 +131,10 @@
     box-shadow: none;
 }
 
+/* The dot's place at the item's end, holding the word a screen reader hears for it. */
 .chat-menu-dot {
+    display: inline-flex;
     flex: none;
-    width: 8px;
-    height: 8px;
-    background: var(--chat-danger);
-    border-radius: var(--chat-r-full);
 }
 
 .chat-menu-sep {
@@ -179,6 +177,7 @@
 <script setup lang="ts">
     import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import Dot from "./dot.partial.obs";
     import Icon from "./icon.partial.obs";
     import IconButton from "./iconButton.partial.obs";
     import Popover from "./popoverSurface.partial.obs";

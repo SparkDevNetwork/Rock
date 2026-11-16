@@ -19,14 +19,11 @@
             <template v-if="region === 'sidebar'">
                 <!-- A phone's start that is waiting says so above the rows, wrapping rather than cut. -->
                 <div v-if="statusLine" class="chat-veil-status is-list" aria-hidden="true" data-testid="veil-status">
-                    <span class="chat-live-dot is-info"></span>
+                    <Dot class="chat-veil-dot" tone="info" pulse />
                     <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
                 </div>
                 <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
-                    <div v-for="width in sidebarWidths" :key="width" class="chat-veil-side-row">
-                        <i class="chat-skeleton chat-veil-face"></i>
-                        <span class="chat-veil-lines"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
-                    </div>
+                    <Skeleton v-for="width in sidebarWidths" :key="width" shape="person" :widths="[width, 32]" />
                 </div>
             </template>
 
@@ -40,7 +37,7 @@
                             <i class="chat-skeleton chat-veil-name"></i>
                             <!-- A start that is waiting says so in the second line's place, where "Reconnecting…" sits once chat has started. -->
                             <span v-if="statusLine" class="chat-veil-status" aria-hidden="true" data-testid="veil-status">
-                                <span class="chat-live-dot is-info"></span>
+                                <Dot class="chat-veil-dot" tone="info" pulse />
                                 <span :key="statusLine" class="chat-veil-status-words">{{ statusLine }}</span>
                             </span>
                             <i v-else-if="kind === 'channel'" class="chat-skeleton chat-veil-desc"></i>
@@ -50,19 +47,12 @@
 
                 <div class="chat-veil-feed" aria-hidden="true">
                     <template v-if="isMarksShown">
+                        <!-- Every other row shorter, so the column reads as messages rather than stripes. -->
                         <template v-if="kind === 'channel'">
-                            <div v-for="index in 5" :key="index" class="chat-veil-row" data-testid="veil-row">
-                                <i class="chat-skeleton chat-veil-face"></i>
-                                <span class="chat-veil-lines">
-                                    <i class="chat-skeleton chat-veil-name"></i>
-                                    <i class="chat-skeleton chat-veil-text"></i>
-                                </span>
-                            </div>
+                            <Skeleton v-for="index in 5" :key="index" shape="group" :widths="index % 2 === 0 ? [46, 30] : [64, 40]" data-testid="veil-row" />
                         </template>
                         <template v-else>
-                            <div v-for="index in 5" :key="index" class="chat-veil-bubble-row" :class="{ 'is-own': index % 3 === 0 }" data-testid="veil-row">
-                                <i class="chat-skeleton chat-veil-bubble"></i>
-                            </div>
+                            <Skeleton v-for="index in 5" :key="index" shape="bubble" :isOwn="index % 3 === 0" :widths="[index % 2 === 0 ? 100 : 72]" data-testid="veil-row" />
                         </template>
                     </template>
                 </div>
@@ -98,13 +88,6 @@
     animation: chat-reveal-in var(--chat-t-base) var(--chat-ease-in) both;
 }
 
-.chat-veil-side-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 8px;
-}
-
 .chat-veil i {
     display: block;
 }
@@ -121,15 +104,6 @@
     flex: 1;
     flex-direction: column;
     gap: 7px;
-}
-
-.chat-veil-side-row .chat-veil-lines i:first-child {
-    height: 10px;
-}
-
-.chat-veil-side-row .chat-veil-lines i:last-child {
-    width: 32%;
-    height: 8px;
 }
 
 .chat-veil-header {
@@ -178,6 +152,12 @@
     padding: 8px;
 }
 
+/* The dot before the words, on their line. */
+.chat-veil-dot {
+    margin-right: 6px;
+    vertical-align: 1px;
+}
+
 .chat-veil-status-words {
     animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-in) both;
 }
@@ -191,41 +171,6 @@
     min-height: 0;
     padding: 28px 0 38px;
     overflow: hidden;
-}
-
-.chat-veil-row {
-    display: flex;
-    gap: 12px;
-    padding: 2px 20px;
-}
-
-.chat-veil-text {
-    width: 64%;
-    height: 12px;
-}
-
-.chat-veil-row:nth-child(2n) .chat-veil-text {
-    width: 46%;
-}
-
-.chat-veil-bubble-row {
-    display: flex;
-    padding: 0 20px;
-}
-
-.chat-veil-bubble-row.is-own {
-    justify-content: flex-end;
-}
-
-.chat-veil-bubble {
-    width: 44%;
-    height: 34px;
-    border-radius: var(--chat-r-bubble);
-}
-
-.chat-veil-bubble-row:nth-child(2n) .chat-veil-bubble {
-    width: 62%;
-    height: 54px;
 }
 
 /* The composer's box, which the real one takes over: same margins, same rule. */
@@ -251,6 +196,8 @@
 
 <script setup lang="ts">
     import { RoomLook } from "../pageLoad.partial";
+    import Dot from "../ui/dot.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
 
     defineProps<{
         /** The part of the frame this stands in for. */
