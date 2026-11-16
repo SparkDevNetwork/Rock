@@ -1,0 +1,67 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>{{ parts.before }}<mark v-if="parts.match" class="chat-match">{{ parts.match }}</mark>{{ parts.after }}</template>
+
+<style scoped>
+/*
+    The letters matched, underlined in the church's colour with no fill and no padding: a fill in a
+    row's own tint vanished on the row about to be picked, and padding split the word.
+*/
+.chat-match {
+    padding: 0;
+    font-weight: inherit;
+    color: var(--chat-brand-ink);
+    text-decoration: underline 2px var(--chat-brand-fill);
+    text-underline-offset: 3px;
+    text-decoration-skip-ink: none;
+    background: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+
+    // A name with the letters a search matched marked, the one mark every search draws: New
+    // message's and Add people's people, Browse's channels and the sidebar's search.
+    const props = defineProps({
+        /** The name as drawn. */
+        text: {
+            type: String,
+            required: true
+        },
+
+        /** What was typed, in any case, untrimmed; nothing is marked without it. */
+        query: {
+            type: String,
+            default: ""
+        }
+    });
+
+    /** The text split around the letters matched, the match empty when none are. */
+    const parts = computed((): { before: string, match: string, after: string } => {
+        const needle = props.query.trim().toLowerCase();
+        const at = matchAt(props.text.toLowerCase(), needle);
+        if (at < 0) {
+            return { before: props.text, match: "", after: "" };
+        }
+
+        return {
+            before: props.text.slice(0, at),
+            match: props.text.slice(at, at + needle.length),
+            after: props.text.slice(at + needle.length)
+        };
+    });
+
+    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
+    function matchAt(name: string, needle: string): number {
+        if (!needle) {
+            return -1;
+        }
+
+        if (name.startsWith(needle)) {
+            return 0;
+        }
+
+        const word = name.indexOf(` ${needle}`);
+        return word < 0 ? name.indexOf(needle) : word + 1;
+    }
+</script>

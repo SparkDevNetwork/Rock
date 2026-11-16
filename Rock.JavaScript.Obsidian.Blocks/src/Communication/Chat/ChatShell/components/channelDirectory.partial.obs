@@ -140,7 +140,7 @@
                                     @click="emit('open', row.id)">
                                 <span class="chat-fd-ic" aria-hidden="true"><Icon name="hash" /></span>
                                 <span class="chat-fd-main">
-                                    <span class="chat-fd-name" data-testid="directory-row-name">{{ row.before }}<mark v-if="row.match">{{ row.match }}</mark>{{ row.after }}</span>
+                                    <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
                                     <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
                                     <span class="chat-fd-meta" data-testid="directory-row-meta">
                                         <span v-for="part in row.meta" :key="part">{{ part }}</span>
@@ -477,13 +477,6 @@
     overflow-wrap: anywhere;
 }
 
-.chat-fd-name mark {
-    color: inherit;
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-inline);
-    box-shadow: 0 0 0 1px var(--chat-brand-tint);
-}
-
 .chat-fd-desc {
     overflow: hidden;
     font-size: var(--chat-fs-ui);
@@ -700,6 +693,7 @@
     import Button from "../ui/button.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import MatchText from "../ui/matchText.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
@@ -721,11 +715,6 @@
     type DrawnRow = {
         id: string;
         name: string;
-
-        /** The name split around the part the search matched. */
-        before: string;
-        match: string;
-        after: string;
         description: string | null;
         meta: string[];
         isMember: boolean;
@@ -837,10 +826,8 @@
     });
 
     const drawnRows = computed((): DrawnRow[] => {
-        const needle = props.directory.query.trim().toLowerCase();
         return props.directory.rows.map(row => {
             const name = row.name ?? "";
-            const at = needle ? name.toLowerCase().indexOf(needle) : -1;
             const join = props.joins[row.channel_id] ?? idle;
             // a join the door and the platform agree on shows as one before the row's own flag turns
             const isMember = row.is_member || join.kind === "joined";
@@ -849,9 +836,6 @@
             return {
                 id: row.channel_id,
                 name,
-                before: at < 0 ? name : name.slice(0, at),
-                match: at < 0 ? "" : name.slice(at, at + needle.length),
-                after: at < 0 ? "" : name.slice(at + needle.length),
                 description: row.description?.trim() || null,
                 meta,
                 isMember,

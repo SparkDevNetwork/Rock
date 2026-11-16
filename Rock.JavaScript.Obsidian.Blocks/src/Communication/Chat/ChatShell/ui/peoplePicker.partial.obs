@@ -75,7 +75,7 @@
                          @mouseenter="onOptionEnter(index)">
                         <Avatar class="chat-pk-o-face" :people="[faceOf(option.person)]" :size="32" :status="statusOf(option.person.person_alias_guid)" />
                         <span class="chat-pk-o-main">
-                            <b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b>
+                            <b><MatchText :text="option.name" :query="isMatchMarked ? query : ''" /></b>
                             <span v-if="statusOf(option.person.person_alias_guid)" class="chat-sr-only">{{ statusOf(option.person.person_alias_guid)?.label }}</span>
                             <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
                             <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
@@ -269,14 +269,6 @@
     text-overflow: ellipsis;
 }
 
-.chat-shell .chat-pk-o-main mark {
-    padding: 0;
-    color: inherit;
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-inline);
-    box-shadow: 0 0 0 1px var(--chat-brand-tint);
-}
-
 /* The plus shows on the row Enter would pick, and under the pointer. */
 .chat-shell .chat-pk-enter {
     display: grid;
@@ -371,17 +363,16 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "./avatar.partial.obs";
     import Icon from "./icon.partial.obs";
+    import MatchText from "./matchText.partial.obs";
     import { PersonRow } from "../types.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
 
     // #region Types
 
-    /** A person found as drawn: the name split around the part matched, and why they cannot be picked or their campus. */
+    /** A person found as drawn: the name, and why they cannot be picked or their campus. */
     type Option = {
         person: PersonRow;
-        before: string;
-        match: string;
-        after: string;
+        name: string;
         why: string;
         campus: string;
     };
@@ -571,22 +562,15 @@
 
     /** The answer, less the people already chosen, those who cannot be picked last. */
     const options = computed((): Option[] => {
-        const needle = props.isMatchMarked ? props.query.trim().toLowerCase() : "";
         const picked = new Set(props.chosen.map(person => person.person_alias_guid));
         return (props.results ?? [])
             .filter(person => !picked.has(person.person_alias_guid))
-            .map(person => {
-                const name = nameOf(person);
-                const at = matchAt(name.toLowerCase(), needle);
-                return {
-                    person,
-                    before: at < 0 ? name : name.slice(0, at),
-                    match: at < 0 ? "" : name.slice(at, at + needle.length),
-                    after: at < 0 ? "" : name.slice(at + needle.length),
-                    why: person.in_room && props.inRoomReason ? props.inRoomReason : "",
-                    campus: campusOf(person)
-                };
-            })
+            .map(person => ({
+                person,
+                name: nameOf(person),
+                why: person.in_room && props.inRoomReason ? props.inRoomReason : "",
+                campus: campusOf(person)
+            }))
             .sort((a, b) => Number(!!a.why) - Number(!!b.why));
     });
 
@@ -696,20 +680,6 @@
 
     function optionId(person: PersonRow): string {
         return `${idBase}-o-${person.person_alias_guid}`;
-    }
-
-    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
-    function matchAt(name: string, needle: string): number {
-        if (!needle) {
-            return -1;
-        }
-
-        if (name.startsWith(needle)) {
-            return 0;
-        }
-
-        const word = name.indexOf(` ${needle}`);
-        return word < 0 ? name.indexOf(needle) : word + 1;
     }
 
     /** Picks the option marked, else the first that can be picked; the owner says why when none can. */
