@@ -468,6 +468,8 @@
         --chat-d-tab-thumb: 0ms;
         --chat-d-stagger: 0ms;
         --chat-d-row-collapse: 0ms;
+        /* The message bar shows and hides by its own fades, at their own times, with no rise or sink. */
+        --chat-d-tools-move: 0ms;
         --chat-d-img-in: 140ms;
         --chat-d-reveal: 140ms;
         --chat-rise-sm: 0px;
