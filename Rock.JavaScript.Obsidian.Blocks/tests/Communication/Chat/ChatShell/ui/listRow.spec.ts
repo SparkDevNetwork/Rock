@@ -238,7 +238,7 @@ describe("the list row's look", () => {
     });
 
     test("a faded row fades what it shows and keeps its actions whole", () => {
-        expect(ruleOf(style, ".chat-lrow.is-dimmed > .chat-lrow-main")).toMatch(/opacity:\s*\.55/);
+        expect(ruleOf(style, ".chat-lrow.is-dimmed > .chat-lrow-main")).toMatch(/opacity:\s*\.62/);
         expect(ruleOf(style, ".chat-lrow.is-dimmed > .chat-lrow-actions")).toBe("");
     });
 
