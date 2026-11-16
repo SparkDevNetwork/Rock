@@ -619,13 +619,6 @@
     color: var(--chat-brand-ink);
 }
 
-/* Reduced motion: the church's campus note is simply there. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-fd-note {
-        animation: none;
-    }
-}
-
 /* A next page that did not come: a strip under the rows held, with its Try again. */
 .chat-fd-error {
     display: flex;

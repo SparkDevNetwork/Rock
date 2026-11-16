@@ -511,13 +511,6 @@
     border-radius: 0;
     box-shadow: none;
 }
-
-@media (prefers-reduced-motion: reduce) {
-    .chat-nd-start,
-    .chat-nd-found {
-        animation: none;
-    }
-}
 </style>
 
 <script setup lang="ts">
