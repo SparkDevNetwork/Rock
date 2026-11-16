@@ -47,8 +47,13 @@
                 message count, and a reader at the newest message is kept there through it.
             -->
             <div ref="content" class="chat-feed-content" data-testid="feed-content">
-                <!-- Older messages are asked for as this comes into view at the top, as a thread's are. -->
-                <div v-if="timeline.hasMore" ref="olderElement" class="chat-feed-older" aria-hidden="true" data-testid="feed-older"></div>
+                <!-- Older messages are asked for as this comes into view at the top; pressed, it asks too, and after a failure only a press asks again. -->
+                <div v-if="timeline.hasMore && loadOlder" ref="olderElement" class="chat-feed-older" data-testid="feed-older">
+                    <Button size="sm"
+                            data-testid="feed-older-load"
+                            :busy="isLoadingOlder"
+                            @click="onLoadOlder">{{ isLoadingOlder ? "Loading" : isOlderFailed ? "Try again" : "Load older messages" }}</Button>
+                </div>
 
                 <!-- What the channel is, at its very start: drawn once nothing older is left to load. -->
                 <ChannelIntro v-if="isIntroShown && facts"
@@ -293,8 +298,11 @@
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
+/* Load older messages, centred over the oldest held, as the members list centres Load more. */
 .chat-feed-older {
-    height: 1px;
+    display: flex;
+    justify-content: center;
+    padding: 12px 8px 4px;
 }
 
 /* Each day is its own section, its pill where the day starts. */
@@ -789,13 +797,21 @@
         typingPlace: {
             type: String as PropType<string | null>,
             default: null
+        },
+
+        /**
+         * Fetches the page before the oldest message held, failing when it could not. None where
+         * the feed is only shown, as a found conversation's preview is, which pages nothing.
+         */
+        loadOlder: {
+            type: Function as PropType<(() => Promise<void>) | null>,
+            default: null
         }
     });
 
     const emit = defineEmits<{
         (e: "seen", messageId: number): void,
         (e: "firstShown"): void,
-        (e: "loadOlder"): void,
         (e: "markRead", messageId: number): void,
         (e: "openThread", place: ThreadPlace): void,
         (e: "jump", quotedMessageId: number): void,
@@ -830,16 +846,21 @@
     /** The feed's one action bar, on the message the pointer rests on or a keyboard reaches. */
     const actionBar = useActionBar(() => feed.value);
 
-    /** The mark at the top of what is held, while older messages remain. */
+    /** The row at the top of what is held, while older messages remain. */
     const olderElement = ref<HTMLElement>();
+
+    /** The older page on its way, which a second ask, by scroll or by press, waits on rather than repeats. */
+    let olderLoad: Promise<void> | null = null;
+    const isLoadingOlder = ref(false);
+    const isOlderFailed = ref(false);
 
     // A row counts as seen once any of it is on screen, which is what the read position is saved from.
     const seen = useSeenObserver(() => feed.value, row => emit("seen", Number(row.dataset.messageId)));
 
-    // Scrolling up to the top asks for the page before it; the shell asks once for a page however
-    // often it is told, and a page that lands moves the mark out of view, so it can ask again.
-    usePagingTrigger(olderElement, () => emit("loadOlder"), {
-        enabled: () => props.timeline.isLoaded && props.timeline.hasMore,
+    // Scrolling up to the top asks for the page before it. Its promise lets the trigger ask again
+    // at once after a page that leaves the top in view; after a failure only a press asks.
+    usePagingTrigger(olderElement, loadOlderPage, {
+        enabled: () => !!props.loadOlder && props.timeline.isLoaded && props.timeline.hasMore && !isLoadingOlder.value && !isOlderFailed.value,
         root: () => feed.value
     });
 
@@ -1088,9 +1109,35 @@
         }
     }
 
+    /** The control at the top: a failure shows on it, so nothing more is done with one here. */
+    function onLoadOlder(): void {
+        loadOlderPage().catch(() => undefined);
+    }
+
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Asks for the page before the oldest held, or waits on the one already on its way. */
+    function loadOlderPage(): Promise<void> {
+        if (olderLoad || !props.loadOlder) {
+            return olderLoad ?? Promise.resolve();
+        }
+
+        isLoadingOlder.value = true;
+        isOlderFailed.value = false;
+        const load = props.loadOlder()
+            .catch(error => {
+                isOlderFailed.value = true;
+                throw error;
+            })
+            .finally(() => {
+                olderLoad = null;
+                isLoadingOlder.value = false;
+            });
+        olderLoad = load;
+        return load;
+    }
 
     /**
      * Brings a jumped-to message to the middle of the feed, flashes it and gives it focus, so a
