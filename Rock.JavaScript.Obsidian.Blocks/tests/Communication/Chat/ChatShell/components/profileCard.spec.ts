@@ -220,7 +220,7 @@ describe("the card", () => {
         const w = mountCard();
         await settle();
 
-        outside.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        outside.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
         await settle();
 
         expect(w.emitted("close")).toHaveLength(1);

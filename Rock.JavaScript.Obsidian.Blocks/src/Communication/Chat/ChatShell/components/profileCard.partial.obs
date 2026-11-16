@@ -9,7 +9,6 @@
              tabindex="-1"
              data-testid="profile-card"
              :style="cardStyles"
-             @keydown="onKeydown"
              @focusout="onFocusOut">
             <!--
                 Moved out to the chat's root when it has one, since a feed's faded edges would fade or cut
@@ -21,7 +20,7 @@
                 <div class="chat-pc-who">
                     <div class="chat-pc-name">
                         <b data-testid="profile-name">{{ fullName }}</b>
-                        <span v-if="person.is_leader" class="chat-pill" data-testid="profile-leader">Leader</span>
+                        <Badge v-if="person.is_leader" label="Leader" tone="neutral" data-testid="profile-leader" />
                         <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">You</span>
                     </div>
                     <!-- Their status first, in words, since a phone has no tooltip; the dot between is drawn for the eye and a screen reader hears a comma. -->
@@ -44,37 +43,38 @@
                                    :note="ownDetailsNote"
                                    @toggle="emit('toggleDetails', $event)" />
                 </div>
-                <button type="button"
-                        class="chat-pc-btn is-line"
+                <Button block
+                        icon="settings"
                         data-testid="profile-settings"
-                        @click="emit('settings')"><Icon name="settings" size="xs" />Chat settings</button>
+                        @click="emit('settings')">Chat settings</Button>
             </div>
             <div v-else-if="person.is_blocked" class="chat-pc-acts" data-testid="profile-actions">
                 <div class="chat-pc-muted" data-testid="profile-blocked">
                     <Icon name="ban" size="xs" />
                     <span><b>You blocked {{ person.nick_name }}.</b> You won't see their messages, and they can't message you.</span>
                 </div>
-                <button type="button"
-                        class="chat-pc-btn is-line"
+                <Button block
                         :disabled="isBlockBusy"
                         data-testid="profile-unblock"
-                        @click="emit('unblock', person)">Unblock</button>
+                        @click="emit('unblock', person)">Unblock</Button>
             </div>
             <div v-else class="chat-pc-acts" data-testid="profile-actions">
-                <button v-if="person.can_message"
-                        type="button"
-                        class="chat-pc-btn"
+                <Button v-if="person.can_message"
+                        kind="brand"
+                        block
+                        icon="message"
                         data-testid="profile-message"
-                        @click="emit('message', person)"><Icon name="message" size="xs" />Message</button>
+                        @click="emit('message', person)">Message</Button>
                 <div v-else class="chat-pc-muted" data-testid="profile-cannot-message">
                     <Icon name="mail" size="xs" />
                     <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
                 </div>
-                <button type="button"
-                        class="chat-pc-btn is-quiet"
+                <Button kind="ghost"
+                        block
+                        icon="ban"
                         :disabled="isBlockBusy"
                         data-testid="profile-block"
-                        @click="emit('block', person)"><Icon name="ban" size="xs" />Block</button>
+                        @click="emit('block', person)">Block</Button>
             </div>
 
             <!--
@@ -130,7 +130,6 @@
 <style scoped>
 /* Fixed, so the chat's clipped frame cannot cut a card near its edge. */
 .chat-pc {
-    --chat-pop-toward: -1;
     z-index: var(--chat-z-popover);
     width: 300px;
     max-width: calc(100vw - 16px);
@@ -448,61 +447,6 @@
     border-radius: var(--chat-r-control);
 }
 
-.chat-pc-btn {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 34px;
-    padding: 0 14px;
-    font: inherit;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-    border: 0;
-    border-radius: var(--chat-r-full);
-    transition: box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-pc-btn:hover {
-    box-shadow: inset 0 0 0 999px var(--chat-press);
-}
-
-/* The outlined button, as the person's own card's Chat settings. */
-.chat-pc-btn.is-line {
-    color: var(--chat-text);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line-strong);
-}
-
-.chat-pc-btn.is-line:hover {
-    border-color: var(--chat-icon);
-    box-shadow: none;
-}
-
-.chat-pc-btn.is-line :deep(.chat-ic) {
-    color: var(--chat-icon);
-}
-
-/* Block, the quiet last action: no fill or edge, so it never competes with Message. */
-.chat-pc-btn.is-quiet {
-    height: 30px;
-    font-weight: 500;
-    color: var(--chat-muted);
-    background: transparent;
-}
-
-.chat-pc-btn.is-quiet:hover {
-    color: var(--chat-text);
-}
-
-.chat-pc-btn:disabled {
-    cursor: default;
-    opacity: .55;
-}
-
 .chat-pc-muted {
     display: flex;
     gap: 8px;
@@ -530,15 +474,17 @@
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
-    import { autoUpdate, flip, offset, shift, useFloating } from "@Obsidian/Libs/floating-ui";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
     import Avatar from "../ui/avatar.partial.obs";
+    import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import { Note } from "../ui/settingNote.partial.obs";
     import SettingSwitch from "../ui/settingSwitch.partial.obs";
     import { tokenDuration } from "../ui/brand.partial";
     import { cardStatusWords, shownStatus } from "../ui/face.partial";
+    import { usePopover } from "../ui/popover.partial";
     import { overlayHostOf } from "../ui/tooltip.partial";
     import { meTitles } from "../composables/usePrefs.partial";
     import { ProfileRockState } from "../composables/useRooms.partial";
@@ -644,57 +590,31 @@
     /** The chat's root, which the card is drawn in; null where the card is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(overlayHostOf(props.anchor));
 
-    /**
-     * What had focus as the card opened, which Escape gives it back to. Read before the card takes
-     * focus; the anchor stands in should that have been nothing.
-     */
-    const opener = (document.activeElement instanceof HTMLElement && document.activeElement !== document.body
-        ? document.activeElement
-        : null) ?? props.anchor;
-
     /** The way out's length where the sheet is not on the page, and how long past it a close still waits. */
     const fallbackOutMs = 120;
     const outGraceMs = 50;
 
     /**
      * Opened from the right-hand panel, the card stands beside the panel at the opener's height
-     * rather than over the list; it falls back below the opener where the panel leaves no room.
+     * rather than over the list; where the panel leaves no room beside it, as a phone's panel that
+     * fills the frame, it opens below the opener as any other card does. The shared popover places
+     * it, closes it on a press outside, Escape or Tab past its end, and gives focus back.
      */
     const panel = props.anchor?.closest<HTMLElement>(".chat-panel") ?? null;
     const besideGap = 10;
-    const anchor = props.anchor;
-    const reference = panel && anchor
-        ? {
-            getBoundingClientRect: (): DOMRect => {
-                const openerRect = anchor.getBoundingClientRect();
+    const cardWidth = 300;
+    const isBeside = !!panel && panel.getBoundingClientRect().left - besideGap - cardWidth >= 8;
+    const anchorElement = ref<HTMLElement | undefined>(props.anchor ?? undefined);
+    const popover = usePopover(anchorElement, cardElement, {
+        placement: isBeside ? "left-start" : "bottom-start",
+        offset: isBeside ? besideGap : 8,
+        virtualAnchor: isBeside && panel && props.anchor
+            ? (): DOMRect => {
                 const left = panel.getBoundingClientRect().left;
-                // A phone's panel fills the frame, leaving no room beside it, so the card is placed
-                // from the opener itself, as any other card is.
-                if (left - besideGap - (cardElement.value?.offsetWidth ?? 0) < 8) {
-                    return openerRect;
-                }
-
-                const top = openerRect.top - 12;
+                const top = (props.anchor as HTMLElement).getBoundingClientRect().top - 12;
                 return { x: left, y: top, left, top, right: left, bottom: top, width: 0, height: 0, toJSON: () => ({}) } as DOMRect;
-            },
-            contextElement: anchor
-        }
-        : anchor;
-
-    // Placed by left and top, since a transform here would override the pop's own and the card
-    // would only fade. It flips to whichever side the window has room on, then is kept 8px inside
-    // the chat's frame both ways, overlapping its opener rather than leaving the chat.
-    const frame = props.anchor?.closest<HTMLElement>(".chat-frame") ?? null;
-    const { floatingStyles, placement, y: cardTop } = useFloating(ref(reference), cardElement, {
-        placement: panel ? "left-start" : "bottom-start",
-        strategy: "fixed",
-        transform: false,
-        middleware: [
-            offset(({ placement: side }) => side.startsWith("left") ? besideGap : 8),
-            flip({ fallbackPlacements: ["bottom-start", "top-start"] }),
-            shift({ padding: 8, crossAxis: true, ...(frame ? { boundary: frame } : {}) })
-        ],
-        whileElementsMounted: autoUpdate
+            }
+            : undefined
     });
 
     // #endregion Values
@@ -745,70 +665,23 @@
             });
     });
 
-    /**
-     * The placement, and the pop grown toward what opened it. Beside
-     * the panel the opener is to the side, so the card grows from its edge at the opener's middle
-     * and does not rise; above or below it, it comes in from just toward the opener.
-     */
-    const cardStyles = computed((): Record<string, string> => {
-        const side = placement.value.startsWith("left");
-        const anchorRect = side ? props.anchor?.getBoundingClientRect() : undefined;
-        const originY = anchorRect ? Math.max(0, anchorRect.top + anchorRect.height / 2 - cardTop.value) : 0;
-
-        return {
-            ...(props.anchor ? floatingStyles.value : {}),
-            "--chat-pop-toward": side ? "0" : placement.value.startsWith("top") ? "1" : "-1",
-            transformOrigin: side ? `100% ${originY}px` : placement.value.startsWith("top") ? "0 100%" : "0 0"
-        };
-    });
+    /** Where the popover places the card and grows it from, toward what opened it; in place where nothing did. */
+    const cardStyles = computed((): Record<string, string> => props.anchor ? { ...popover.floatingStyles.value, ...popover.origin.value } : popover.origin.value);
 
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    function onKeydown(event: KeyboardEvent): void {
-        if (event.key === "Escape") {
-            event.preventDefault();
-            event.stopPropagation();
-            void close(true);
-        }
-    }
-
     /**
-     * Focus leaving for somewhere outside the card, as Tab past its last control takes it, closes
-     * the card, leaving focus there; the card is not modal, so it does not hold Tab inside.
-     * Focus leaving the window says nothing about the card.
+     * Focus leaving for somewhere outside the card, by any way but the keys the popover answers,
+     * closes the card, leaving focus there; the card is not modal, so it does not hold focus
+     * inside. Focus leaving the window says nothing about the card.
      */
     function onFocusOut(event: FocusEvent): void {
         const next = event.relatedTarget;
         if (next instanceof Node && !cardElement.value?.contains(next)) {
-            void close(false);
+            popover.close();
         }
-    }
-
-    /**
-     * Escape closes the card wherever focus is, as on the page after a press that put focus
-     * nowhere. Taken first, so nothing behind the card closes with it; inside, the card's own
-     * handler has it.
-     */
-    function onDocumentKeydown(event: KeyboardEvent): void {
-        if (event.key === "Escape" && !cardElement.value?.contains(event.target as Node)) {
-            event.preventDefault();
-            event.stopPropagation();
-            void close(true);
-        }
-    }
-
-    /** A press anywhere outside the card closes it, leaving focus where the press put it. */
-    function onDocumentPress(event: Event): void {
-        const target = event.target as Node;
-
-        // A press on what opened the card is left to that control, which closes it by its click.
-        if (cardElement.value?.contains(target) || props.anchor?.contains(target)) {
-            return;
-        }
-
-        void close(false);
     }
 
     // #endregion Event Handlers
@@ -821,20 +694,17 @@
     }
 
     /**
-     * Plays the way out, then asks to be removed, since a removed element cannot animate; where
-     * nothing animates the word goes at once, and a hidden tab that holds the animation still lets
-     * it go once the way out's length has passed.
+     * Once the popover has closed it, plays the way out, then asks to be removed, since a removed
+     * element cannot animate; where nothing animates the word goes at once, and a hidden tab that
+     * holds the animation still lets it go once the way out's length has passed.
      */
-    async function close(isFocusReturned: boolean): Promise<void> {
+    async function leave(): Promise<void> {
         if (isClosing.value) {
             return;
         }
 
         isClosing.value = true;
         props.anchor?.removeAttribute("aria-expanded");
-        if (isFocusReturned) {
-            opener?.focus({ preventScroll: true });
-        }
 
         await nextTick();
 
@@ -861,25 +731,28 @@
         }
     });
 
+    watch(popover.isOpen, isOpen => {
+        if (!isOpen) {
+            void leave();
+        }
+    });
+
     // #endregion Watchers
 
     // #region Lifecycle Hooks
 
     onMounted(async () => {
         // What opened the card reads as expanded while it is open, which keeps a member row's
-        // actions showing beside it as when the row is hovered.
+        // actions showing beside it as when the row is hovered. Opened before the card takes
+        // focus, so the popover gives focus back to what had it.
         props.anchor?.setAttribute("aria-expanded", "true");
-        // mousedown rather than click, so a press that starts a text selection elsewhere still closes it.
-        document.addEventListener("mousedown", onDocumentPress, true);
-        document.addEventListener("keydown", onDocumentKeydown, true);
-        await nextTick();
-        cardElement.value?.focus({ preventScroll: true });
+        if (await popover.open()) {
+            cardElement.value?.focus({ preventScroll: true });
+        }
     });
 
     onBeforeUnmount(() => {
         props.anchor?.removeAttribute("aria-expanded");
-        document.removeEventListener("mousedown", onDocumentPress, true);
-        document.removeEventListener("keydown", onDocumentKeydown, true);
     });
 
     // #endregion Lifecycle Hooks
