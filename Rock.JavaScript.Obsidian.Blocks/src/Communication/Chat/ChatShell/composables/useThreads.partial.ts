@@ -345,7 +345,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
     // page closes or the shell stops still arrives; each answer marks the thread's root and row,
     // whether the thread is still open or was left.
     let readKey: ThreadReadKey | null = null;
-    const reader = createReadTracker<ThreadReadKey, MarkThreadReadAnswer>({
+    const reader = createReadTracker<ThreadReadKey, Partial<MarkThreadReadAnswer>>({
         save: async (key, messageId) => {
             if (isStopped) {
                 return null;
@@ -361,7 +361,7 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
         },
         onSaved: (key, answer) => {
             if (key === readKey && state.thread) {
-                state.thread.readCursor = answer.read_cursor;
+                state.thread.readCursor = answer.read_cursor ?? null;
             }
 
             applySaved(key.channelId, key.rootId, answer);
