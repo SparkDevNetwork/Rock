@@ -28,14 +28,12 @@
 import { InjectionKey, reactive, ref } from "vue";
 import { CallResult, PlatformCall } from "../platformCall.partial";
 import { ChatError, GifResult } from "../types.partial";
+import { useLatestSearch } from "./useLatestSearch.partial";
 
 // #region Search
 
 /** The words offered before anything is typed, since the picker shows nothing trending. */
 export const gifSuggestions = ["Thanks", "Praying", "Amen", "Celebrate", "Welcome", "Haha", "Wow", "Love it", "Yes", "Coffee"];
-
-/** How long typing must stop before a search is asked, so each word typed is not its own search. */
-const debounceMs = 300;
 
 /** The shortest query asked; one letter matches too much to be worth KLIPY's answer. */
 const minimumQueryLength = 2;
@@ -175,76 +173,54 @@ export function createGifSearch(gifs: Gifs): GifSearch {
         busyText: null as string | null
     });
 
-    let page = 0;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let controller: AbortController | null = null;
-
-    // Every ask is numbered; an answer to any but the newest is dropped.
-    let asks = 0;
+    /** Set once the picker has closed, after which nothing is asked or written. */
     let isStopped = false;
 
-    function cancel(): void {
-        if (timer !== null) {
-            clearTimeout(timer);
-            timer = null;
+    // One pause after the last keystroke, the ask a newer query replaces cancelled, and only the
+    // newest query's answers kept, its further pages included.
+    const search = useLatestSearch((query, signal, page) => gifs.search(query, page, signal), {
+        isSearchable: query => query.length >= minimumQueryLength,
+        onAnswer: (answer, _query, page) => {
+            state.isLoadingMore = false;
+            if (answer.ok) {
+                // A later page may repeat a GIF an earlier one drew; a tile is drawn once.
+                const seen = new Set(state.items.map(item => item.slug));
+                state.items = page === 1 ? answer.items : [...state.items, ...answer.items.filter(item => !seen.has(item.slug))];
+                state.hasNext = answer.hasNext;
+                state.status = state.items.length > 0 ? "results" : "empty";
+                return;
+            }
+
+            // A further page that failed leaves the GIFs already drawn where they are.
+            if (page > 1) {
+                state.hasNext = false;
+                return;
+            }
+
+            // A refusal as off ends GIFs for the session, and the switch that hides them closes the
+            // picker; a Try again that can never work is not drawn meanwhile.
+            if (answer.error.code === gifsOffCode) {
+                return;
+            }
+
+            if (answer.error.code === busyCode) {
+                state.status = "busy";
+                state.busyText = answer.error.text ?? busySentence;
+                return;
+            }
+
+            state.status = "error";
         }
-        controller?.abort();
-        controller = null;
+    });
 
-        // An ask cancelled is stale from that moment: its answer, an aborted call that resolves
-        // as a failure at once, must not be written while the newer query waits out its pause.
-        asks++;
-    }
-
-    async function ask(query: string, next: number): Promise<void> {
-        const number = ++asks;
-        controller = new AbortController();
-        const answer = await gifs.search(query, next, controller.signal);
-        if (isStopped || number !== asks) {
-            return;
-        }
-
-        controller = null;
-        state.isLoadingMore = false;
-        if (answer.ok) {
-            page = next;
-            // A later page may repeat a GIF an earlier one drew; a tile is drawn once.
-            const seen = new Set(state.items.map(item => item.slug));
-            state.items = next === 1 ? answer.items : [...state.items, ...answer.items.filter(item => !seen.has(item.slug))];
-            state.hasNext = answer.hasNext;
-            state.status = state.items.length > 0 ? "results" : "empty";
-            return;
-        }
-
-        // A further page that failed leaves the GIFs already drawn where they are.
-        if (next > 1) {
-            state.hasNext = false;
-            return;
-        }
-
-        // A refusal as off ends GIFs for the session, and the switch that hides them closes the
-        // picker; a Try again that can never work is not drawn meanwhile.
-        if (answer.error.code === gifsOffCode) {
-            return;
-        }
-
-        if (answer.error.code === busyCode) {
-            state.status = "busy";
-            state.busyText = answer.error.text ?? busySentence;
-            return;
-        }
-
-        state.status = "error";
-    }
-
-    function start(query: string): void {
-        page = 0;
+    /** Asks the first page of a query, the GIFs drawn for the last one cleared. */
+    function start(query: string, isAtOnce: boolean): void {
         state.items = [];
         state.hasNext = false;
         state.isLoadingMore = false;
         state.busyText = null;
         state.status = "loading";
-        void ask(query, 1);
+        search.set(query, { isAtOnce });
     }
 
     return Object.assign(state, {
@@ -253,11 +229,11 @@ export function createGifSearch(gifs: Gifs): GifSearch {
                 return;
             }
 
-            cancel();
             state.query = query;
             const trimmed = query.trim();
             if (trimmed.length < minimumQueryLength) {
                 // a shorter query is no search, so the suggestions come back
+                search.set(trimmed);
                 state.items = [];
                 state.hasNext = false;
                 state.isLoadingMore = false;
@@ -265,17 +241,7 @@ export function createGifSearch(gifs: Gifs): GifSearch {
                 return;
             }
 
-            if (isAtOnce) {
-                start(trimmed);
-                return;
-            }
-
-            state.status = "loading";
-            state.items = [];
-            timer = setTimeout(() => {
-                timer = null;
-                start(trimmed);
-            }, debounceMs);
+            start(trimmed, isAtOnce);
         },
 
         loadMore: (): void => {
@@ -284,20 +250,19 @@ export function createGifSearch(gifs: Gifs): GifSearch {
             }
 
             state.isLoadingMore = true;
-            void ask(state.query.trim(), page + 1);
+            search.more();
         },
 
         retry: (): void => {
             const trimmed = state.query.trim();
             if (!isStopped && trimmed.length >= minimumQueryLength) {
-                cancel();
-                start(trimmed);
+                start(trimmed, true);
             }
         },
 
         stop: (): void => {
             isStopped = true;
-            cancel();
+            search.stop();
         }
     }) as GifSearch;
 }
