@@ -48,7 +48,7 @@
 // button "All emoji". The full picker's search is the input "Search emoji"; the tabs role="tablist"
 // "Emoji categories", one role="tab" per section named as it is, above the grid; the grid
 // role="grid", its one section a role="rowgroup" named for its heading, rows of eight role="row",
-// each emoji a role="gridcell" button with data-code. The live line is data-testid="emoji-live",
+// each emoji a role="gridcell" button with data-code. The live line is said through the announcer,
 // the empty line data-testid="emoji-empty", a search cut short data-testid="emoji-more", the foot
 // data-testid="emoji-preview".
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -475,7 +475,7 @@ describe("the search", () => {
         await typeSearch("heart");
 
         expect(codesOf(cells())).toEqual(["heart", "smiling_face_with_3_hearts", "orange_heart"]);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("3 results");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("3 results");
     });
 
     test("matches keywords", async () => {
@@ -484,7 +484,7 @@ describe("the search", () => {
         await typeSearch("pray");
 
         expect(codesOf(cells())).toEqual(["pray"]);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("1 result");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("1 result");
     });
 
     test("Enter takes the first result", async () => {
@@ -503,7 +503,7 @@ describe("the search", () => {
 
         expect(cells()).toHaveLength(0);
         expect(document.querySelector("[data-testid='emoji-empty']")?.textContent?.trim()).toMatch(/^No emoji match ["“]zzz["”]$/);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("No emoji match");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("No emoji match");
 
         await press(search(), "Enter");
         expect(w.emitted("react")).toBeUndefined();
@@ -515,7 +515,7 @@ describe("the search", () => {
         await typeSearch("sample");
 
         expect(drawnGlyphs()).toBe(80);
-        expect(document.querySelector("[data-testid='emoji-live']")?.textContent?.trim()).toBe("439 results");
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim()).toBe("439 results");
         expect(document.querySelector("[data-testid='emoji-more']")?.textContent?.trim()).toBe("Showing the first 80. Keep typing to narrow it down.");
 
         await typeSearch("sample face travel 4");
@@ -690,10 +690,10 @@ describe("where it is placed", () => {
         document.body.append(row);
 
         const sized = jest.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
-            return this.classList.contains("chat-picker") ? 328 : 0;
+            return this.classList.contains("chat-popover") ? 328 : 0;
         });
         const tall = jest.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
-            return this.classList.contains("chat-picker") ? 380 : 0;
+            return this.classList.contains("chat-popover") ? 380 : 0;
         });
 
         wrapper = mount(EmojiPicker, {
@@ -706,7 +706,7 @@ describe("where it is placed", () => {
         sized.mockRestore();
         tall.mockRestore();
 
-        return document.querySelector<HTMLElement>(".chat-picker") as HTMLElement;
+        return document.querySelector<HTMLElement>(".chat-popover") as HTMLElement;
     }
 
     test("starts at another's message's anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
@@ -798,29 +798,33 @@ describe("closing", () => {
         expect(document.activeElement).toBe(row);
     });
 
-    // The way out starts a frame after the close is asked for, so it is still playing when its
-    // length has passed; the close waits a little past it before giving up on it.
-    test("waits on a way out still playing at its length, and closes by 50ms past it at the latest", async () => {
-        const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
-        prototype.getAnimations = () => [{ finished: new Promise(() => undefined) }];
-        try {
-            const w = await open();
-            document.querySelector<HTMLElement>(".chat-picker")?.style.setProperty("--chat-t-fast", "120ms");
-            jest.useFakeTimers();
+    // The host removes the picker on the word, so the word goes at once and the shared surface
+    // plays its own way out on the page, past the picker's removal.
+    test("says it closed at once, and plays its way out on the page as its host removes it", async () => {
+        // in the chat's root, where the surface is drawn apart from the host that removes it
+        const root = document.createElement("div");
+        root.className = "chat-shell";
+        anchor = document.createElement("button");
+        root.append(anchor);
+        document.body.append(root);
+        anchor.focus();
+        const w = mount(EmojiPicker, {
+            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor },
+            attachTo: document.body,
+            global: { stubs: { transition: false } }
+        });
+        wrapper = w;
+        await settle();
 
-            await press(search(), "Escape");
-            await jest.advanceTimersByTimeAsync(120);
-            expect(w.emitted("close")).toBeUndefined();
+        await press(search(), "Escape");
+        expect(w.emitted("close")).toHaveLength(1);
 
-            await jest.advanceTimersByTimeAsync(50);
-            expect(w.emitted("close")).toHaveLength(1);
-        }
-        finally {
-            delete prototype.getAnimations;
-        }
+        w.unmount();
+        wrapper = null;
+        expect(document.querySelector(".chat-popover")?.classList.contains("is-leaving")).toBe(true);
     });
 
-    test("does not wait on a way out that a hidden tab never plays, closing after its length", async () => {
+    test("never waits on a way out to say it closed, so a hidden tab that plays none still closes", async () => {
         // jsdom plays no animations; this one never finishes, as in a tab the browser has hidden.
         const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
         prototype.getAnimations = () => [{ finished: new Promise(() => undefined) }];
@@ -828,10 +832,6 @@ describe("closing", () => {
             const w = await open();
 
             await press(search(), "Escape");
-            expect(w.emitted("close")).toBeUndefined();
-
-            await new Promise(resolve => setTimeout(resolve, 200));
-            await settle();
 
             expect(w.emitted("close")).toHaveLength(1);
         }

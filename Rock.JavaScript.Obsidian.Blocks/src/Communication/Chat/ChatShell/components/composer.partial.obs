@@ -17,26 +17,25 @@
                         <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
                     </span>
                     <span class="chat-composer-failed-acts">
-                        <button v-if="isRetryOffered"
-                                type="button"
-                                class="chat-ls-btn is-retry"
+                        <Button v-if="isRetryOffered"
+                                kind="line"
+                                size="sm"
+                                icon="refresh"
                                 data-testid="composer-failed-retry"
-                                @click="onRetryFailed"><Icon name="refresh" size="xs" />Try again</button>
-                        <button type="button"
-                                class="chat-ls-btn"
+                                @click="onRetryFailed">Try again</Button>
+                        <Button kind="line"
+                                size="sm"
+                                icon="trash"
                                 data-testid="composer-failed-discard"
-                                @click="onDiscardFailed"><Icon name="trash" size="xs" />{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</button>
+                                @click="onDiscardFailed">{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</Button>
                     </span>
                 </div>
             </div>
         </Transition>
 
-        <!-- A failure said once as it happens; keyed, so the same words are read again for the next one. -->
-        <span class="chat-sr-only" aria-live="assertive" data-testid="composer-failed-announcement"><span v-if="failedAnnouncement" :key="failedAnnouncement.count">{{ failedAnnouncement.text }}</span></span>
-
         <!-- A paused service, or a room the person cannot post in, in the server's own words. -->
         <div v-if="isClosed" ref="lockedElement" class="chat-composer-locked" tabindex="-1" data-testid="composer-locked">
-            <Icon name="lock" />
+            <span class="chat-composer-locked-mark"><Icon name="lock" /></span>
             <span>{{ lockedReason || "Sending is paused for maintenance." }}</span>
         </div>
 
@@ -87,7 +86,7 @@
             </span>
 
             <div v-if="quote" class="chat-composer-quote" data-testid="composer-quote">
-                <Icon name="reply" size="sm" />
+                <span class="chat-composer-quote-mark"><Icon name="reply" size="sm" /></span>
                 <span class="chat-composer-quote-main">
                     <b>{{ quoteTitle }}</b>
                     <span data-testid="composer-quote-preview">{{ quotePreview }}</span>
@@ -113,7 +112,6 @@
                           icon="plus"
                           label="Add a GIF or file"
                           placement="top-start"
-                          :isSheet="isPhone"
                           :items="addItems"
                           :anchorAttrs="{ disabled: isDisabled, 'data-testid': 'composer-add', class: { 'is-open': isGifOpen } }"
                           @select="onAddSelect" />
@@ -181,7 +179,6 @@
             <GifPicker v-if="isGifOpen && isGifOffered && gifs"
                        :gifs="gifs"
                        :anchor="addAnchor"
-                       :isSheet="isPhone"
                        @pick="onGifPick"
                        @close="onGifClose" />
 
@@ -290,11 +287,6 @@
     margin-left: auto;
 }
 
-/* Try again is the way forward, in the danger ink; Delete stays the plain outline. */
-.chat-composer-failed-acts .chat-ls-btn.is-retry {
-    color: var(--chat-danger-ink);
-}
-
 /* The message being quoted, above the box, rising into place as it appears. */
 .chat-composer-quote {
     display: flex;
@@ -312,7 +304,9 @@
     border-radius: var(--chat-r-field) var(--chat-r-field) var(--chat-r-tail) var(--chat-r-tail);
 }
 
-.chat-composer-quote > :deep(.chat-ic) {
+/* The icon draws in the color around it, so its holder gives it the church's ink. */
+.chat-composer-quote-mark {
+    display: inline-flex;
     color: var(--chat-brand-ink);
 }
 
@@ -606,7 +600,8 @@
     outline: 0;
 }
 
-.chat-composer-locked :deep(.chat-ic) {
+.chat-composer-locked-mark {
+    display: inline-flex;
     color: var(--chat-icon);
 }
 
@@ -632,10 +627,13 @@
     import MentionPicker, { MentionPickerSource } from "./mentionPicker.partial.obs";
     import { attachmentsPreview, AttachmentTray, isTrayReady } from "../composables/useAttachments.partial";
     import { gifsKey } from "../composables/useGifs.partial";
+    import { useChatSession } from "../chatSession.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { canMakeSendKey, SendFailure, SendFailureNews, textAfterSend } from "../composables/useSend.partial";
     import { ChatPerson, DisplayPiece, GifResult, TimelineMessage } from "../types.partial";
     import Badge from "../ui/badge.partial.obs";
+    import Button from "../ui/button.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
     import { useIsMotionReduced } from "../ui/viewport.partial";
     import { busyNoteWords } from "../ui/face.partial";
     import ChipEditor from "../ui/chipEditor.partial.obs";
@@ -661,12 +659,6 @@
 
         /** Whether the open conversation is a channel, which draws the squarer box of its look. */
         isChannel: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the chat is in its phone layout, which has tighter padding and no key hint. */
-        isPhone: {
             type: Boolean,
             default: false
         },
@@ -834,6 +826,9 @@
     /** A thread reply's choice to show it in the conversation too, cleared with each send. */
     const isAlsoSent = ref(props.isAlsoSent);
 
+    /** Whether the chat is in its phone layout, which has tighter padding and no key hint. */
+    const isPhone = useChatSession().isPhone;
+
     const editor = ref<InstanceType<typeof ChipEditor>>();
     const emojiButton = ref<InstanceType<typeof IconButton>>();
 
@@ -861,8 +856,7 @@
     /** The counter shows from this many characters short of the limit. */
     const countdownFrom = 500;
 
-    /** The last failure said aloud, counted so the same words are read again for the next one. */
-    const failedAnnouncement = ref<{ text: string, count: number } | null>(null);
+    const { announce } = useAnnouncer();
 
     /** What the store draws for the other person of a direct message, asked about as the open conversation's. */
     const statusOf = useFaceStatus(() => props.busyPerson?.person_alias_guid ? [props.busyPerson.person_alias_guid] : [], 1);
@@ -1219,15 +1213,7 @@
         const failure = props.sendFailure;
         const news = props.lastFailure;
         if (failure && news && failure.localIds.includes(news.localId)) {
-            const text = failedReason.value ? `${failedLead.value}. ${failedReason.value}` : `${failedLead.value}.`;
-            failedAnnouncement.value = { text, count: (failedAnnouncement.value?.count ?? 0) + 1 };
-        }
-    });
-
-    // What was said in one place is not left to be read in the next.
-    watch(() => [props.sendFailure === null, props.conversationKey] as const, ([isNone, key], [, previousKey]) => {
-        if (isNone || key !== previousKey) {
-            failedAnnouncement.value = null;
+            announce(failedReason.value ? `${failedLead.value}. ${failedReason.value}` : `${failedLead.value}.`, "assertive");
         }
     });
 

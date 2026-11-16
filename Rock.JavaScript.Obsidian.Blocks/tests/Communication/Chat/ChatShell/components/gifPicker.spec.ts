@@ -25,6 +25,7 @@ import { nextTick } from "vue";
 import GifPicker from "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs";
 import { GifSearchAnswer, Gifs, gifSuggestions } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 
 function result(slug: string, width = 200, height = 112): GifResult {
     return {
@@ -63,10 +64,10 @@ afterEach(() => {
     jest.useRealTimers();
 });
 
-async function open(gifs: Gifs, props: Record<string, unknown> = {}): Promise<VueWrapper> {
+async function open(gifs: Gifs, { isPhone = false }: { isPhone?: boolean } = {}): Promise<VueWrapper> {
     anchor = document.createElement("button");
     document.body.appendChild(anchor);
-    wrapper = mount(GifPicker, { props: { gifs, anchor, ...props }, attachTo: document.body });
+    wrapper = mount(GifPicker, { props: { gifs, anchor }, attachTo: document.body, global: { provide: providedSession({ isPhone }) } });
     await flushPromises();
     return wrapper;
 }
@@ -173,7 +174,7 @@ describe("the GIF picker", () => {
     test("a screen reader hears a failure and a busy search, not only results", async () => {
         const gifs = fakeGifs();
         await open(gifs);
-        const live = (): string => picker().querySelector("[aria-live]")?.textContent?.trim() ?? "";
+        const live = (): string => document.querySelector("[data-testid='announcer-polite']")?.textContent?.trim() ?? "";
 
         picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
         gifs.asked[0].answer({ ok: false, error: { code: "rpc.unavailable", severity: "failed" }, retryAfterSeconds: null });
@@ -190,12 +191,12 @@ describe("the GIF picker", () => {
     test("the search ends as the picker starts to leave, so nothing is asked or written on its way out", async () => {
         jest.useFakeTimers();
         const gifs = fakeGifs();
-        const w = await open(gifs);
+        await open(gifs);
 
         search().value = "thanks";
         search().dispatchEvent(new Event("input"));
         await nextTick();
-        (w.findComponent({ ref: "shell" }).vm as unknown as { close: (isFocusReturned: boolean) => void }).close(true);
+        search().dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
         await nextTick();
         jest.advanceTimersByTime(1000);
 
@@ -240,8 +241,8 @@ describe("the GIF picker", () => {
     });
 
     test("a sheet over a scrim is modal for a screen reader, a popover is not", async () => {
-        await open(fakeGifs(), { isSheet: true });
-        expect(picker().getAttribute("aria-modal")).toBe("true");
+        await open(fakeGifs(), { isPhone: true });
+        expect(picker().closest("[data-testid='sheet']")?.getAttribute("aria-modal")).toBe("true");
         wrapper?.unmount();
         wrapper = null;
 
@@ -261,11 +262,50 @@ describe("the GIF picker", () => {
         expect(document.activeElement).toBe(anchor);
     });
 
+    // The shared paging trigger: a sentinel at the end of the GIFs asks the next page as it comes into view.
+    test("asks the next page as the end of the GIFs comes into view, and not while the last page is all there is", async () => {
+        const seen: Array<{ callback: IntersectionObserverCallback, watched: Element[] }> = [];
+        const original = window.IntersectionObserver;
+        window.IntersectionObserver = class {
+            public watched: Element[] = [];
+            constructor(public callback: IntersectionObserverCallback) {
+                seen.push(this);
+            }
+            observe(element: Element): void {
+                this.watched.push(element);
+            }
+            unobserve(): void { /* Nothing is watched apart. */ }
+            disconnect(): void {
+                this.watched = [];
+            }
+        } as unknown as typeof IntersectionObserver;
+        try {
+            const gifs = fakeGifs();
+            await open(gifs);
+            picker().querySelector<HTMLElement>("[data-testid='gif-suggestion']")?.click();
+            await answered(gifs, [result("a"), result("b")], true);
+
+            const end = seen.find(observer => observer.watched.length > 0);
+            end?.callback(end.watched.map(target => ({ target, isIntersecting: true }) as IntersectionObserverEntry), {} as IntersectionObserver);
+            await flushPromises();
+            expect(gifs.asked.map(a => a.page)).toEqual([1, 2]);
+
+            await answered(gifs, [result("c")], false);
+            const last = seen.filter(observer => observer.watched.length > 0).pop();
+            last?.callback(last.watched.map(target => ({ target, isIntersecting: true }) as IntersectionObserverEntry), {} as IntersectionObserver);
+            await flushPromises();
+            expect(gifs.asked.map(a => a.page)).toEqual([1, 2]);
+        }
+        finally {
+            window.IntersectionObserver = original;
+        }
+    });
+
     test("on a phone it is a bottom sheet over a scrim", async () => {
         const gifs = fakeGifs();
-        await open(gifs, { isSheet: true });
+        await open(gifs, { isPhone: true });
 
-        expect(picker().classList).toContain("is-sheet");
-        expect(document.querySelector("[data-testid='picker-scrim']")).not.toBeNull();
+        expect(picker().closest("[data-testid='sheet']")).not.toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
     });
 });

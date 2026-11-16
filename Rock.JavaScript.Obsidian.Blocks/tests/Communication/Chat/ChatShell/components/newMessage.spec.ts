@@ -775,7 +775,7 @@ test("a first message that fails is said by the composer's strip, not the view's
     await w.setProps({ draft: draftFor([caleb], { body: "hello", status: "draft", phase: "failed" }) });
     await settle();
 
-    expect(w.get("[data-testid='composer-failed-announcement']").text()).toBe("Your message wasn't sent.");
+    expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Your message wasn't sent.");
     expect(w.get("[data-testid='nd-announcement']").text()).toBe("");
 });
 

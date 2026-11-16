@@ -31,6 +31,7 @@ import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/c
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
 import { ChatPerson, FaceStatus, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
+import { providedSession } from "../sessionShapes";
 import { busyNow, createStatusStore, onlineNow, StatusStore, told, viewer } from "../statusStore";
 
 /** The composer's own style block, for the rules jsdom cannot lay out. */
@@ -239,7 +240,7 @@ describe("the composer's key hint", () => {
     });
 
     test("is left out on a phone, which has no Enter key worth naming", () => {
-        const wrapper = mountComposer({ props: { title: "Anna Reyes", isPhone: true } });
+        const wrapper = mountComposer({ props: { title: "Anna Reyes" }, global: { provide: providedSession({ isPhone: true }) } });
 
         expect(wrapper.find("[data-testid='composer-hint']").exists()).toBe(false);
     });
@@ -828,9 +829,14 @@ describe("the composer's strip for a failed send", () => {
         return wrapper.get("[data-testid='composer-failed']");
     }
 
-    function announced(wrapper: VueWrapper): string {
-        return wrapper.get("[data-testid='composer-failed-announcement']").text();
+    function announced(_wrapper: VueWrapper): string {
+        return document.querySelector("[data-testid='announcer-assertive']")?.textContent ?? "";
     }
+
+    // The announcer speaks from the page, so each cell starts with nothing said.
+    afterEach(() => {
+        document.body.replaceChildren();
+    });
 
     test("is not drawn while nothing failed", () => {
         const wrapper = mountComposer({ props: { title: "young-adults", isChannel: true } });
@@ -950,11 +956,11 @@ describe("the composer's strip for a failed send", () => {
     // and the strip holding that message says it.
     test("says a failure aloud once, assertively, as it happens here", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
-        const region = wrapper.get("[data-testid='composer-failed-announcement']");
-        expect(region.attributes("aria-live")).toBe("assertive");
         expect(announced(wrapper)).toBe("");
 
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
+        const region = document.querySelector("[data-testid='announcer-assertive']");
+        expect(region?.getAttribute("aria-live")).toBe("assertive");
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
 
         // the same failures again, as another send of the room changes, say nothing new
@@ -969,14 +975,14 @@ describe("the composer's strip for a failed send", () => {
     test("says a failure again when a try again fails", async () => {
         const wrapper = mountComposer({ props: { conversationKey: "c1" } });
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 1 } });
-        const first = wrapper.get("[data-testid='composer-failed-announcement'] span").element;
 
         await wrapper.setProps({ sendFailure: null });
         await wrapper.setProps({ sendFailure: offline, lastFailure: { localId: "k1", count: 2 } });
 
-        // drawn afresh, so a screen reader reads the same words again
+        // put in afresh, emptied and written again a moment later, so a screen reader reads the same words again
+        expect(announced(wrapper)).toBe("");
+        await new Promise(resolve => setTimeout(resolve, 0));
         expect(announced(wrapper)).toBe("Your message wasn't sent. You're offline.");
-        expect(wrapper.get("[data-testid='composer-failed-announcement'] span").element).not.toBe(first);
     });
 
     test("does not say failures already there when the box opens or the person comes back to the room", async () => {
@@ -1260,9 +1266,9 @@ describe("the composer's GIFs", () => {
     test("on a phone the \"+\" opens as a bottom sheet, off a phone as a menu beside it", async () => {
         const tray = createAttachments(harness().dependencies).trayFor(place, place);
         const phone = mountComposer({
-            props: { title: "Anna Reyes", tray, isPhone: true },
+            props: { title: "Anna Reyes", tray },
             attachTo: document.body,
-            global: { provide: { [gifsKey as symbol]: fakeGifs() } }
+            global: { provide: { [gifsKey as symbol]: fakeGifs(), ...providedSession({ isPhone: true }) } }
         });
 
         await phone.get("[data-testid='composer-add']").trigger("click");

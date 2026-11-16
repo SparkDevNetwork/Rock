@@ -1,143 +1,148 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PickerShell ref="shell"
-                 :key="step"
-                 :class="{ 'is-tray': step === 'tray' }"
-                 :anchor="anchor"
-                 :opener="opener"
-                 :label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
-                 :placement="placement"
-                 :isPill="step === 'tray'"
-                 @keydown="onKeydown"
-                 @close="emit('close')">
-        <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
-            <button v-for="(item, index) in trayItems"
-                    :key="item.code"
-                    type="button"
-                    class="chat-picker-cell"
-                    :tabindex="index === trayStop ? 0 : -1"
-                    :data-code="item.code"
-                    :aria-label="cellLabel(item)"
-                    :aria-pressed="isMine(item) ? 'true' : undefined"
-                    @click="choose(item)">
-                <img v-if="!item.emoji && item.image_url" class="chat-picker-glyph" :src="item.image_url" alt="" />
-                <span v-else class="chat-picker-glyph" aria-hidden="true">{{ item.emoji }}</span>
-            </button>
-            <span class="chat-picker-tray-sep" aria-hidden="true"></span>
-            <button type="button"
-                    class="chat-picker-tray-more"
-                    aria-label="All emoji"
-                    title="All emoji"
-                    :tabindex="trayStop === trayItems.length ? 0 : -1"
-                    @click="showAll">
-                <Icon name="plus" size="sm" />
-            </button>
-        </div>
+    <Popover :key="step"
+             :popover="pop"
+             :label="mode === 'react' ? 'Add reaction' : 'Add emoji'"
+             role="dialog"
+             :isPill="step === 'tray'"
+             @keydown="onKeydown">
+        <div class="chat-picker" :class="{ 'is-tray': step === 'tray' }">
+            <!-- The popover is drawn afresh for each step, so the full picker pops in where the tray was. -->
+            <div v-if="step === 'tray'" class="chat-picker-tray" role="toolbar" aria-label="Quick reactions" aria-orientation="horizontal">
+                <button v-for="(item, index) in trayItems"
+                        :key="item.code"
+                        type="button"
+                        class="chat-picker-cell"
+                        :tabindex="index === trayStop ? 0 : -1"
+                        :data-code="item.code"
+                        :aria-label="cellLabel(item)"
+                        :aria-pressed="isMine(item) ? 'true' : undefined"
+                        @click="choose(item)">
+                    <img v-if="!item.emoji && item.image_url" class="chat-picker-glyph" :src="item.image_url" alt="" />
+                    <span v-else class="chat-picker-glyph" aria-hidden="true">{{ item.emoji }}</span>
+                </button>
+                <span class="chat-picker-tray-sep" aria-hidden="true"></span>
+                <button type="button"
+                        class="chat-picker-tray-more"
+                        aria-label="All emoji"
+                        title="All emoji"
+                        :tabindex="trayStop === trayItems.length ? 0 : -1"
+                        @click="showAll">
+                    <Icon name="plus" size="sm" />
+                </button>
+            </div>
 
-        <template v-else>
-            <div class="chat-picker-head">
-                <label class="chat-picker-search chat-field">
-                    <Icon name="search" size="sm" />
-                    <input ref="searchElement"
-                           class="chat-field-input"
-                           type="text"
+            <template v-else>
+                <div class="chat-picker-head">
+                    <Field ref="searchField"
+                           leadingIcon="search"
                            placeholder="Search emoji"
                            autocomplete="off"
                            spellcheck="false"
                            aria-label="Search emoji"
                            :aria-controls="gridId"
-                           :value="query"
-                           @input="onSearchInput"
+                           :modelValue="query"
+                           @update:modelValue="onSearchInput"
                            @keydown="onSearchKeydown" />
-                </label>
-            </div>
+                </div>
 
-            <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
-                <button v-for="tab in tabs"
-                        :key="tab.id"
-                        type="button"
-                        role="tab"
-                        :aria-label="tab.label"
-                        :title="tab.label"
-                        :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
-                        :aria-controls="gridId"
-                        :tabindex="tab.id === tabStop ? 0 : -1"
-                        @click="onTabClick(tab.id)">
-                    <Icon v-if="tab.id === recentId" name="clock" size="sm" />
-                    <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
-                </button>
-            </div>
+                <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
+                    <button v-for="tab in tabs"
+                            :key="tab.id"
+                            type="button"
+                            role="tab"
+                            :aria-label="tab.label"
+                            :title="tab.label"
+                            :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
+                            :aria-controls="gridId"
+                            :tabindex="tab.id === tabStop ? 0 : -1"
+                            @click="onTabClick(tab.id)">
+                        <Icon v-if="tab.id === recentId" name="clock" size="sm" />
+                        <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
+                    </button>
+                </div>
 
-            <div :id="gridId"
-                 ref="bodyElement"
-                 class="chat-picker-body"
-                 role="grid"
-                 aria-label="Emoji"
-                 :aria-busy="drawnSection === null ? 'true' : undefined"
-                 @mouseover="onCellHover"
-                 @focusin="onCellHover">
-                <div v-if="drawnSection && drawnSection.rows.length > 0"
-                     :key="drawnSection.id"
-                     class="chat-picker-section"
-                     role="rowgroup"
-                     :aria-label="drawnSection.label">
-                    <div class="chat-picker-label" role="presentation">{{ drawnSection.label }}</div>
-                    <div class="chat-picker-grid">
-                        <div v-for="(row, rowIndex) in drawnSection.rows" :key="rowIndex" class="chat-picker-row" role="row">
-                            <button v-for="cell in row"
-                                    :key="cell.key"
-                                    type="button"
-                                    role="gridcell"
-                                    class="chat-picker-cell"
-                                    :class="{ 'is-first': cell.key === firstResultKey }"
-                                    :tabindex="cell.key === stopKey ? 0 : -1"
-                                    :data-code="cell.item.code"
-                                    :data-key="cell.key"
-                                    :aria-label="cellLabel(cell.item)"
-                                    :aria-pressed="isMine(cell.item) ? 'true' : undefined"
-                                    @click="choose(cell.item)">
-                                <img v-if="!cell.item.emoji && cell.item.image_url" class="chat-picker-glyph" :src="cell.item.image_url" alt="" />
-                                <span v-else class="chat-picker-glyph" aria-hidden="true">{{ cell.item.emoji }}</span>
-                            </button>
+                <div :id="gridId"
+                     ref="bodyElement"
+                     class="chat-picker-body"
+                     role="grid"
+                     aria-label="Emoji"
+                     :aria-busy="drawnSection === null ? 'true' : undefined"
+                     @mouseover="onCellHover"
+                     @focusin="onCellHover">
+                    <div v-if="drawnSection && drawnSection.rows.length > 0"
+                         :key="drawnSection.id"
+                         class="chat-picker-section"
+                         role="rowgroup"
+                         :aria-label="drawnSection.label">
+                        <div class="chat-picker-label" role="presentation">{{ drawnSection.label }}</div>
+                        <div class="chat-picker-grid">
+                            <div v-for="(row, rowIndex) in drawnSection.rows" :key="rowIndex" class="chat-picker-row" role="row">
+                                <button v-for="cell in row"
+                                        :key="cell.key"
+                                        type="button"
+                                        role="gridcell"
+                                        class="chat-picker-cell"
+                                        :class="{ 'is-first': cell.key === firstResultKey }"
+                                        :tabindex="cell.key === stopKey ? 0 : -1"
+                                        :data-code="cell.item.code"
+                                        :data-key="cell.key"
+                                        :aria-label="cellLabel(cell.item)"
+                                        :aria-pressed="isMine(cell.item) ? 'true' : undefined"
+                                        @click="choose(cell.item)">
+                                    <img v-if="!cell.item.emoji && cell.item.image_url" class="chat-picker-glyph" :src="cell.item.image_url" alt="" />
+                                    <span v-else class="chat-picker-glyph" aria-hidden="true">{{ cell.item.emoji }}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- A category's place while the catalog loads; the recents and the favorites need none. -->
-                <div v-if="drawnSection === null" class="chat-picker-loading" aria-hidden="true">
-                    <div class="chat-skeleton chat-picker-loading-label"></div>
-                    <div class="chat-picker-grid">
-                        <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
+                    <!-- A category's place while the catalog loads; the recents and the favorites need none. -->
+                    <div v-if="drawnSection === null" class="chat-picker-loading" aria-hidden="true">
+                        <div class="chat-skeleton chat-picker-loading-label"></div>
+                        <div class="chat-picker-grid">
+                            <div v-for="index in 16" :key="index" class="chat-skeleton chat-picker-loading-cell"></div>
+                        </div>
                     </div>
+
+                    <div v-if="isSearching && searchTotal === 0" class="chat-picker-empty" data-testid="emoji-empty">No emoji match “{{ query.trim() }}”</div>
+                    <div v-if="searchTotal > searchLimit" class="chat-picker-more" data-testid="emoji-more">Showing the first {{ searchLimit }}. Keep typing to narrow it down.</div>
                 </div>
 
-                <div v-if="isSearching && searchTotal === 0" class="chat-picker-empty" data-testid="emoji-empty">No emoji match “{{ query.trim() }}”</div>
-                <div v-if="searchTotal > searchLimit" class="chat-picker-more" data-testid="emoji-more">Showing the first {{ searchLimit }}. Keep typing to narrow it down.</div>
-            </div>
-
-            <div class="chat-picker-foot" data-testid="emoji-preview">
-                <template v-if="preview">
-                    <img v-if="!preview.emoji && preview.image_url" class="chat-picker-prev" :src="preview.image_url" alt="" />
-                    <span v-else class="chat-picker-prev" aria-hidden="true">{{ preview.emoji }}</span>
-                    <span class="chat-picker-name">
-                        {{ capitalized(preview.label) }}{{ isMine(preview) ? " (yours)" : "" }}
-                        <span>:{{ preview.code }}:</span>
+                <div class="chat-picker-foot" data-testid="emoji-preview">
+                    <template v-if="preview">
+                        <img v-if="!preview.emoji && preview.image_url" class="chat-picker-prev" :src="preview.image_url" alt="" />
+                        <span v-else class="chat-picker-prev" aria-hidden="true">{{ preview.emoji }}</span>
+                        <span class="chat-picker-name">
+                            {{ capitalized(preview.label) }}{{ isMine(preview) ? " (yours)" : "" }}
+                            <span>:{{ preview.code }}:</span>
+                        </span>
+                    </template>
+                    <span v-else class="chat-picker-name">
+                        {{ mode === "react" ? "Pick a reaction" : "Pick an emoji" }}
+                        <span>Hover or arrow to preview</span>
                     </span>
-                </template>
-                <span v-else class="chat-picker-name">
-                    {{ mode === "react" ? "Pick a reaction" : "Pick an emoji" }}
-                    <span>Hover or arrow to preview</span>
-                </span>
-            </div>
-
-            <div class="chat-sr-only" aria-live="polite" data-testid="emoji-live">{{ liveLine }}</div>
-        </template>
-    </PickerShell>
+                </div>
+            </template>
+        </div>
+    </Popover>
 </template>
 
 <style scoped>
-.chat-picker [hidden] {
-    display: none !important;
+/* The picker's frame inside the popover: one size, its parts in a column, cut to the popover's corners. */
+.chat-picker {
+    display: flex;
+    flex-direction: column;
+    width: 328px;
+    max-width: calc(100vw - 16px);
+    max-height: 380px;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+/* The tray is as wide as what it holds. */
+.chat-picker.is-tray {
+    width: auto;
 }
 
 .chat-picker-tray {
@@ -183,20 +188,6 @@
 .chat-picker-head {
     flex: none;
     padding: 10px 10px 4px;
-}
-
-.chat-picker-search {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    height: 34px;
-    padding: 0 10px;
-    margin: 0;
-    font-weight: 400;
-    color: var(--chat-muted);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-field);
 }
 
 /*
@@ -338,6 +329,11 @@ img.chat-picker-glyph {
     border-bottom: 1px solid var(--chat-line);
 }
 
+/* Hidden while a search draws its results; stated here, since the strip's own display would keep it drawn. */
+.chat-picker-tabs[hidden] {
+    display: none;
+}
+
 .chat-picker-tabs button {
     position: relative;
     display: grid;
@@ -464,10 +460,13 @@ img.chat-picker-prev {
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, nextTick, onMounted, PropType, ref } from "vue";
+    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
+    import { usePopover } from "../ui/popover.partial";
+    import Popover from "../ui/popoverSurface.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
-    import PickerShell from "./pickerShell.partial.obs";
     import { CatalogEmoji, EmojiGlyph } from "../types.partial";
 
     // #region Types
@@ -594,12 +593,29 @@ img.chat-picker-prev {
     /** Names this picker's grid, so its search and tabs can say which grid they control. */
     const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
 
-    // Drawn in the shared picker frame, which moves it out to the chat's root when it has one,
-    // since a feed's faded edges would fade or cut a picker drawn inside it, and closes it. Drawn
-    // afresh for each step, so the full picker pops in where the tray was.
-    const shell = ref<InstanceType<typeof PickerShell>>();
-    const pickerElement = computed((): HTMLElement | undefined => shell.value?.element ?? undefined);
-    const searchElement = ref<HTMLInputElement>();
+    /** Above what opened it, at the side of the message it belongs to: a bubble of the reader's own sits on the right, so its picker ends there. */
+    const placement = props.anchor?.closest(".chat-msg.is-conversational.is-own") ? "top-end" : "top-start";
+
+    /**
+     * The popover the picker is drawn in. Placed on its anchor, it closes on a press outside the
+     * control that opened it, which may be another, as a message's add chip opening it on the
+     * bubble: the opener is its anchor, the bubble only where it is placed. Focus goes back to the
+     * opener, or to the message's row once a choice has taken the opener away.
+     */
+    const pop = usePopover(computed(() => (props.opener ?? props.anchor) ?? undefined), ref<HTMLElement>(), {
+        placement,
+        virtualAnchor: () => props.opener && props.anchor ? props.anchor.getBoundingClientRect() : null,
+        returnTo: () => props.opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") ?? null : props.opener ?? props.anchor
+    });
+
+    const pickerElement = computed((): HTMLElement | undefined => pop.floating.value);
+
+    /** Watches for what the picker is placed beside leaving the page, which nothing else would tell it. */
+    let anchorObserver: MutationObserver | null = null;
+    const searchField = ref<InstanceType<typeof Field>>();
+
+    /** The search's input, which the full picker opens on and Up from the grid's top returns to. */
+    const searchElement = computed((): HTMLInputElement | undefined => searchField.value?.inputElement);
     const bodyElement = ref<HTMLElement>();
 
     /** The step on screen; inserting has no tray, since the composer's button offers no quick reactions. */
@@ -621,10 +637,6 @@ img.chat-picker-prev {
 
     /** The glyph named in the foot: the one hovered or focused, or a search's first result. */
     const preview = ref<PickerEmoji | null>(null);
-
-    /** Above what opened it, at the side of the message it belongs to: a bubble of the reader's own sits on the right, so its picker ends there. */
-    const placement = props.anchor?.closest(".chat-msg.is-conversational.is-own") ? "top-end" : "top-start";
-
 
     // #endregion Values
 
@@ -769,8 +781,8 @@ img.chat-picker-prev {
 
     // #region Event Handlers
 
-    function onSearchInput(event: Event): void {
-        query.value = (event.target as HTMLInputElement).value;
+    function onSearchInput(value: string): void {
+        query.value = value;
         chosenStop.value = null;
         if (bodyElement.value) {
             bodyElement.value.scrollTop = 0;
@@ -1023,8 +1035,8 @@ img.chat-picker-prev {
         preview.value = cell.item;
     }
 
-    function choose(item: PickerEmoji): void {
-        if (shell.value?.isClosing) {
+    async function choose(item: PickerEmoji): Promise<void> {
+        if (!pop.isOpen.value) {
             return;
         }
 
@@ -1037,7 +1049,13 @@ img.chat-picker-prev {
             emit("insert", item.emoji ?? `:${item.code}:`, item.code);
         }
 
-        void shell.value?.close(true);
+        pop.close({ isFocusReturned: true });
+
+        // A choice can take the opener away as the page redraws, and the focus it held with it.
+        await nextTick();
+        if (props.opener?.isConnected === false) {
+            props.anchor?.closest<HTMLElement>(".chat-msg")?.focus({ preventScroll: true });
+        }
     }
 
     /**
@@ -1056,9 +1074,45 @@ img.chat-picker-prev {
     // #region Lifecycle Hooks
 
     onMounted(async () => {
-        await nextTick();
-        focusOnOpen();
+        // Only a removal anywhere on the page can take the anchor away, so that is all it watches:
+        // placed beside a detached element the picker would float at the window's corner.
+        if (props.anchor && typeof MutationObserver !== "undefined") {
+            anchorObserver = new MutationObserver(() => {
+                if (props.anchor?.isConnected === false) {
+                    pop.close();
+                }
+            });
+            anchorObserver.observe(document.body, { childList: true, subtree: true });
+        }
+
+        if (await pop.open()) {
+            focusOnOpen();
+        }
+    });
+
+    onBeforeUnmount(() => {
+        anchorObserver?.disconnect();
     });
 
     // #endregion Lifecycle Hooks
+
+    // #region Watchers
+
+    // A search's count is said as it changes; nothing is said as the search is cleared.
+    const { announce } = useAnnouncer();
+    watch(liveLine, line => {
+        if (line) {
+            announce(line);
+        }
+    });
+
+    // However it closes, by a choice, a key, a press elsewhere or its anchor going, the host hears
+    // it at once and may remove the picker; the surface plays its own way out on the page meanwhile.
+    watch(pop.isOpen, isOpen => {
+        if (!isOpen) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
 </script>

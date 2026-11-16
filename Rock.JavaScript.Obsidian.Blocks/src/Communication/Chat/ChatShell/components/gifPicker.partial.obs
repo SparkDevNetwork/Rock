@@ -1,101 +1,124 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <PickerShell ref="shell"
-                 class="chat-gif"
-                 data-testid="gif-picker"
-                 :anchor="anchor"
-                 label="Add a GIF"
-                 :isSheet="isSheet"
-                 @keydown="onKeydown"
-                 @close="emit('close')">
-        <div class="chat-gif-head">
-            <Field ref="searchField"
-                   leadingIcon="search"
-                   placeholder="Search KLIPY"
-                   clearable
-                   clearLabel="Clear search"
-                   autocomplete="off"
-                   spellcheck="false"
-                   aria-label="Search KLIPY for a GIF"
-                   :aria-controls="bodyId"
-                   :modelValue="search.query"
-                   @update:modelValue="onSearchInput"
-                   @clear="onClear"
-                   @keydown="onSearchKeydown" />
-        </div>
-
-        <div :id="bodyId"
-             ref="bodyElement"
-             class="chat-gif-body"
-             :aria-busy="search.status === 'loading' ? 'true' : undefined"
-             @scroll="onBodyScroll">
-            <template v-if="search.status === 'idle'">
-                <p class="chat-gif-label">Try a search</p>
-                <div class="chat-gif-chips">
-                    <button v-for="word in gifSuggestions"
-                            :key="word"
-                            type="button"
-                            class="chat-gif-chip"
-                            data-testid="gif-suggestion"
-                            @click="onSuggestion(word)">{{ word }}</button>
-                </div>
-            </template>
-
-            <div v-else-if="search.status === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
-                <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
-                    <span v-for="shape in column" :key="shape" class="chat-gif-tile is-loading" :style="{ aspectRatio: shape }"></span>
-                </div>
+    <Popover :popover="pop"
+             label="Add a GIF"
+             :role="pop.isSheet.value ? '' : 'dialog'"
+             sheetHeight="picker"
+             tabindex="-1"
+             :data-autofocus="isTouch ? '' : undefined"
+             data-testid="gif-picker"
+             @keydown="onKeydown">
+        <div class="chat-picker chat-gif" :class="{ 'is-sheet': pop.isSheet.value }">
+            <!--
+                A sheet on a phone is the dialog itself; beside the "+" the popover is. On a touch
+                screen the surface takes focus, as focus in the search would raise the keyboard over the GIFs.
+            -->
+            <div class="chat-gif-head">
+                <Field ref="searchField"
+                       leadingIcon="search"
+                       placeholder="Search KLIPY"
+                       clearable
+                       clearLabel="Clear search"
+                       autocomplete="off"
+                       spellcheck="false"
+                       aria-label="Search KLIPY for a GIF"
+                       :data-autofocus="isTouch ? undefined : ''"
+                       :aria-controls="bodyId"
+                       :modelValue="search.query"
+                       @update:modelValue="onSearchInput"
+                       @clear="onClear"
+                       @keydown="onSearchKeydown" />
             </div>
 
-            <div v-else-if="search.status === 'results'" class="chat-gif-masonry">
-                <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="chat-gif-column" data-testid="gif-column">
-                    <button v-for="tile in column"
-                            :key="tile.item.slug"
-                            type="button"
-                            class="chat-gif-tile"
-                            :class="{ 'is-loading': !loaded.has(tile.item.slug) }"
-                            data-testid="gif-tile"
-                            :data-slug="tile.item.slug"
-                            :data-index="tile.index"
-                            :aria-label="tile.item.title || 'GIF'"
-                            :tabindex="tile.index === stop ? 0 : -1"
-                            :style="tileStyle(tile.item)"
-                            @click="pick(tile.item)">
-                        <img :src="tile.item.preview.url"
-                             alt=""
-                             referrerpolicy="no-referrer"
-                             decoding="async"
-                             @load="onTileLoad(tile.item.slug)" />
-                    </button>
-                </div>
-            </div>
-
-            <div v-else-if="search.status === 'empty'" class="chat-gif-state" data-testid="gif-empty">
-                <span class="chat-gif-state-icon"><Icon name="search" /></span>
-                <b>No GIFs found</b>
-                <span>Try another word, like Thanks or Amen.</span>
-            </div>
-
-            <div v-else class="chat-gif-state" data-testid="gif-error">
-                <span class="chat-gif-state-icon"><Icon name="alert" /></span>
-                <template v-if="search.status === 'busy'">
-                    <b>{{ search.busyText }}</b>
+            <div :id="bodyId"
+                 ref="bodyElement"
+                 class="chat-gif-body"
+                 :aria-busy="search.status === 'loading' ? 'true' : undefined">
+                <template v-if="search.status === 'idle'">
+                    <p class="chat-gif-label">Try a search</p>
+                    <div class="chat-gif-chips">
+                        <Pill v-for="word in gifSuggestions"
+                              :key="word"
+                              data-testid="gif-suggestion"
+                              @click="onSuggestion(word)">{{ word }}</Pill>
+                    </div>
                 </template>
-                <template v-else>
-                    <b>GIFs can't load right now</b>
-                    <span>Check your connection, then try again.</span>
-                </template>
-                <button type="button" class="chat-ls-btn chat-gif-retry" data-testid="gif-retry" @click="search.retry()"><Icon name="refresh" size="xs" />Try again</button>
+
+                <div v-else-if="search.status === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
+                    <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
+                        <span v-for="shape in column" :key="shape" class="chat-gif-tile is-loading" :style="{ aspectRatio: shape }"></span>
+                    </div>
+                </div>
+
+                <div v-else-if="search.status === 'results'" class="chat-gif-masonry">
+                    <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="chat-gif-column" data-testid="gif-column">
+                        <button v-for="tile in column"
+                                :key="tile.item.slug"
+                                type="button"
+                                class="chat-gif-tile"
+                                :class="{ 'is-loading': !loaded.has(tile.item.slug) }"
+                                data-testid="gif-tile"
+                                :data-slug="tile.item.slug"
+                                :data-index="tile.index"
+                                :aria-label="tile.item.title || 'GIF'"
+                                :tabindex="tile.index === stop ? 0 : -1"
+                                :style="tileStyle(tile.item)"
+                                @click="pick(tile.item)">
+                            <img :src="tile.item.preview.url"
+                                 alt=""
+                                 referrerpolicy="no-referrer"
+                                 decoding="async"
+                                 @load="onTileLoad(tile.item.slug)" />
+                        </button>
+                    </div>
+                </div>
+
+                <EmptyState v-else-if="search.status === 'empty'"
+                            title="No GIFs found"
+                            text="Try another word, like Thanks or Amen."
+                            data-testid="gif-empty" />
+
+                <!-- A busy search says KLIPY's own sentence; any other failure says why in general. -->
+                <EmptyState v-else
+                            tone="error"
+                            :title="search.status === 'busy' ? search.busyText ?? '' : failedTitle"
+                            :text="search.status === 'busy' ? '' : 'Check your connection, then try again.'"
+                            actionLabel="Try again"
+                            actionIcon="refresh"
+                            :actionAttrs="{ 'data-testid': 'gif-retry' }"
+                            data-testid="gif-error"
+                            @action="search.retry()" />
+
+                <!-- The end of the GIFs, which asks the next page as it comes into view. -->
+                <span v-if="search.status === 'results'" ref="endElement" class="chat-gif-end" aria-hidden="true"></span>
             </div>
+
+            <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
         </div>
-
-        <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
-
-        <div class="chat-sr-only" aria-live="polite">{{ liveLine }}</div>
-    </PickerShell>
+    </Popover>
 </template>
 
 <style scoped>
+/* The picker's frame inside the popover, the emoji picker's size: its parts in a column, cut to the popover's corners. */
+.chat-picker {
+    display: flex;
+    flex-direction: column;
+    width: 328px;
+    max-width: calc(100vw - 16px);
+    max-height: 380px;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+/* In a sheet it fills the sheet's height instead. */
+.chat-picker.is-sheet {
+    flex: 1;
+    width: auto;
+    max-width: none;
+    min-height: 0;
+    max-height: none;
+}
+
 .chat-gif-head {
     flex: none;
     padding: 10px 10px 6px;
@@ -137,28 +160,6 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
-}
-
-.chat-gif-chip {
-    display: inline-flex;
-    align-items: center;
-    height: 30px;
-    padding: 0 12px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    white-space: nowrap;
-    cursor: pointer;
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-gif-chip:hover {
-    color: var(--chat-text);
-    background: var(--chat-hover);
-    border-color: var(--chat-line-strong);
 }
 
 /* Two columns, each GIF whole at its own shape, the next one going in the shorter column. */
@@ -226,41 +227,10 @@
     outline: none;
 }
 
-/* Nothing found, a failure and busy: a word or two and what to do, in the body's middle. */
-.chat-gif-state {
-    display: grid;
-    gap: 6px;
-    place-items: center;
-    align-content: center;
-    height: 100%;
-    padding: 0 24px;
-    text-align: center;
-}
-
-.chat-gif-state b {
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-text);
-}
-
-.chat-gif-state span {
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-gif-state .chat-gif-state-icon {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    margin-bottom: 4px;
-    color: var(--chat-icon);
-    background: var(--chat-bubble);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-gif-retry {
-    margin-top: 6px;
+/* Where the GIFs end, a line the paging watches for. */
+.chat-gif-end {
+    display: block;
+    height: 1px;
 }
 
 /* KLIPY named at the foot, as its terms ask. */
@@ -292,10 +262,15 @@
 
 <script setup lang="ts">
     import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, reactive, ref, watch } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import Field from "../ui/field.partial.obs";
-    import Icon from "../ui/icon.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
+    import EmptyState from "../ui/emptyState.partial.obs";
+    import Pill from "../ui/pill.partial.obs";
+    import { usePopover } from "../ui/popover.partial";
+    import Popover from "../ui/popoverSurface.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
-    import PickerShell from "./pickerShell.partial.obs";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
     import { GifResult } from "../types.partial";
 
@@ -310,12 +285,6 @@
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
-        },
-
-        /** Whether it is drawn as a bottom sheet, as on a phone. */
-        isSheet: {
-            type: Boolean,
-            default: false
         }
     });
 
@@ -327,8 +296,8 @@
 
     // #region Values
 
-    /** How near the body's end a scroll asks the next page, in pixels. */
-    const loadMoreWithinPx = 200;
+    /** What a failed search says, drawn and heard alike. */
+    const failedTitle = "GIFs can't load right now";
 
     /** The shapes the loading tiles take, two columns of GIF-like sizes, so the wait looks like what comes. */
     const loadingColumns = [["16 / 9", "1 / 1", "4 / 3"], ["3 / 4", "16 / 10", "1 / 1"]];
@@ -336,12 +305,23 @@
     /** Names this picker's body, so its search can say what it controls. */
     const bodyId = `chat-gif-body-${getCurrentInstance()?.uid ?? 0}`;
 
-    const shell = ref<InstanceType<typeof PickerShell>>();
+    /** Above the "+" at its start, or a sheet of the picker's height while the chat is a phone's width. */
+    const session = useChatSession();
+    const pop = usePopover(computed(() => props.anchor ?? undefined), ref<HTMLElement>(), {
+        placement: "top-start",
+        isSheet: () => session.isPhone.value,
+        returnTo: () => props.anchor
+    });
+
+    /** Whether the screen is touch only, where the surface rather than the search takes focus as it opens. */
+    const isTouch = isHoverless();
+
     const searchField = ref<InstanceType<typeof Field>>();
 
     /** The search's input, which the picker opens on and returns to. */
     const searchElement = computed((): HTMLInputElement | undefined => searchField.value?.inputElement);
     const bodyElement = ref<HTMLElement>();
+    const endElement = ref<HTMLElement>();
 
     /** The search this picker holds while it is open. */
     const search = createGifSearch(props.gifs);
@@ -370,7 +350,7 @@
             case "busy":
                 return search.busyText ?? "";
             case "error":
-                return "GIFs can't load right now";
+                return failedTitle;
             default:
                 return "";
         }
@@ -440,14 +420,6 @@
         loaded.add(slug);
     }
 
-    /** Near the end of what is drawn, the next page is asked. */
-    function onBodyScroll(): void {
-        const body = bodyElement.value;
-        if (body && body.scrollTop + body.clientHeight >= body.scrollHeight - loadMoreWithinPx) {
-            search.loadMore();
-        }
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -472,12 +444,12 @@
     }
 
     function pick(item: GifResult | undefined): void {
-        if (!item || shell.value?.isClosing) {
+        if (!item || !pop.isOpen.value) {
             return;
         }
 
         emit("pick", item);
-        void shell.value?.close(true);
+        pop.close({ isFocusReturned: true });
     }
 
     // #endregion Functions
@@ -485,18 +457,27 @@
     // #region Lifecycle Hooks
 
     // Focus goes to the search, unless the screen is touch only, where it would raise the keyboard
-    // over the GIFs; the dialog takes it there and Escape still reaches it.
+    // over the GIFs; the surface takes it there and Escape still reaches it.
     onMounted(async () => {
-        await nextTick();
-        const isTouch = isHoverless();
-        (isTouch ? shell.value?.element : searchElement.value)?.focus({ preventScroll: true });
+        if (await pop.open()) {
+            (isTouch ? pop.floating.value : searchElement.value)?.focus({ preventScroll: true });
+        }
     });
 
-    // The search ends as the picker starts to leave, not when it is finally removed, so a pause
-    // that runs out or an answer that comes in during the way out writes nothing.
-    watch(() => shell.value?.isClosing, isClosing => {
-        if (isClosing) {
+    // What a search came to is said as it settles, from inside the sheet while it is one.
+    const { announce } = useAnnouncer();
+    watch(liveLine, line => {
+        if (line) {
+            announce(line);
+        }
+    });
+
+    // However it closes, the search ends as the picker starts to leave, so a pause that runs out or
+    // an answer that comes in during the way out writes nothing, and the host hears it at once.
+    watch(pop.isOpen, isOpen => {
+        if (!isOpen) {
             search.stop();
+            emit("close");
         }
     });
 
@@ -505,4 +486,11 @@
     });
 
     // #endregion Lifecycle Hooks
+
+    // The next page is asked 200px before the end of the GIFs scrolls into view, while one is left and none is out.
+    usePagingTrigger(endElement, () => search.loadMore(), {
+        enabled: () => search.status === "results" && search.hasNext && !search.isLoadingMore,
+        root: () => bodyElement.value ?? null,
+        margin: "0px 0px 200px 0px"
+    });
 </script>

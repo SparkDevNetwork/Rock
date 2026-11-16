@@ -33,6 +33,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { LeaveState, RenameState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { ChannelFacts, ChannelLeader, ChannelPerson } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { providedSession } from "../sessionShapes";
 import { busy, exchangeAnswer, online, toldEntry, watchAnswer } from "../statusShapes";
 import { afterFades, anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps, viewer } from "../statusStore";
 
@@ -124,6 +125,8 @@ const renameIdle: RenameState = { kind: "idle" };
 let wrapper: VueWrapper | null = null;
 
 function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
+    // The person, the church and the phone flag are the session's, provided as the shell provides them.
+    const { organizationName = "Cedar Hill Church", personName = "Jordan Ellis", personPhotoUrl = null, personAliasGuid = "", isPhone = false, ...rest } = props;
     wrapper = mount(ConversationDetails, {
         props: {
             kind: "channel",
@@ -131,16 +134,20 @@ function mountDetails(props: Record<string, unknown> = {}): VueWrapper {
             facts: channelFacts(),
             groupName: null,
             campuses: [downtown],
-            organizationName: "Cedar Hill Church",
-            personName: "Jordan Ellis",
-            personPhotoUrl: null,
             leave: idle,
             rename: renameIdle,
             canRename: false,
             nameMaxLength: 100,
-            ...props
+            ...rest
         },
-        attachTo: document.body
+        attachTo: document.body,
+        global: {
+            provide: providedSession({
+                isPhone: isPhone as boolean,
+                churchName: organizationName as string,
+                me: { personAliasGuid: personAliasGuid as string, name: personName as string, photoUrl: personPhotoUrl as string | null }
+            })
+        }
     });
     return wrapper;
 }
@@ -162,6 +169,11 @@ function nameOf(dialog: HTMLElement): string {
 
 function plain(text: string): string {
     return text.replace(/\s+/g, " ").trim();
+}
+
+/** The announcer's live region of a politeness, which the dialog speaks from while it is open. */
+function region(w: VueWrapper, politeness: "polite" | "assertive"): { element: Element } {
+    return w.get(`[role='dialog'] [data-testid='announcer-${politeness}']`);
 }
 
 /** An element's words as a screen reader reads them: an avatar's letters are hidden decoration. */
@@ -250,15 +262,17 @@ describe("the dialog", () => {
 
     test("reads the rooms' news said while it is open in its own live region, the assertive apart", async () => {
         const w = mountGroup({ announcement: { text: "You joined Volunteers", isAssertive: false, count: 3 } });
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+        // open and drawn, its regions on the page before it says anything
+        await settle();
+        expect(spoken(region(w, "polite"))).toBe("");
 
         await w.setProps({ announcement: { text: "Renamed to Trail crew.", isAssertive: false, count: 4 } });
-        expect(w.get("[data-testid='details-announcement']").attributes("aria-live")).toBe("polite");
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("Renamed to Trail crew.");
+        expect(region(w, "polite").element.getAttribute("aria-live")).toBe("polite");
+        expect(spoken(region(w, "polite"))).toBe("Renamed to Trail crew.");
 
         await w.setProps({ announcement: { text: "No.", isAssertive: true, count: 5 } });
-        expect(spoken(w.get("[data-testid='details-alert']"))).toBe("No.");
-        expect(spoken(w.get("[data-testid='details-announcement']"))).toBe("");
+        expect(spoken(region(w, "assertive"))).toBe("No.");
+        expect(spoken(region(w, "polite"))).not.toBe("No.");
     });
 
     test("writes no sentence with a hash, whatever the room", async () => {
@@ -974,12 +988,13 @@ describe("saving the room's settings", () => {
 
     test("reads the room's settings' news politely and a failed save at once", async () => {
         const w = mountDetails({ prefsAnnouncement: null });
+        await settle();
 
         await w.setProps({ prefsAnnouncement: { text: "Starred", isAssertive: false, count: 4 } });
-        expect(w.get("[data-testid='details-announcement']").text()).toBe("Starred");
+        expect(region(w, "polite").element.textContent).toBe("Starred");
 
         await w.setProps({ prefsAnnouncement: { text: "Not saved. Chat is read only tonight.", isAssertive: true, count: 5 } });
-        expect(w.get("[data-testid='details-alert']").text()).toBe("Not saved. Chat is read only tonight.");
+        expect(region(w, "assertive").element.textContent).toBe("Not saved. Chat is read only tonight.");
     });
 });
 
@@ -1019,8 +1034,8 @@ describe("the grouped list's measures", () => {
         expect(bodyOf("ui/segmented.partial.obs", ".chat-seg.is-phone .chat-seg-opt")).toMatch(/height:\s*40px;/);
     });
 
-    test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as pills", () => {
-        expect(bodyOf("components/conversationDetails.partial.obs", ".chat-rd-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
+    test("rounds the dialog's buttons, Leave's Cancel and Leave and the name's Save, as the shared button rounds every button", () => {
+        expect(bodyOf("ui/button.partial.obs", ".chat-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\);/);
     });
 
     test("rounds Chat settings' Turn on and Turn off as pills too", () => {
