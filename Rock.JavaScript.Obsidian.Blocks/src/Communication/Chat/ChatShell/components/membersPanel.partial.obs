@@ -39,31 +39,32 @@
              :aria-busy="isLoading ? 'true' : 'false'"
              @pointerover="onPointerOver"
              @pointerleave="onPointerLeave">
-            <div v-if="refusal === 'not_member'" class="chat-mb-state" data-testid="members-state" data-state="not_member">
-                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="users" /></span>
-                <h4>Join to see who's here</h4>
-                <p>Members of {{ channelName }} can see its member list.</p>
-            </div>
+            <EmptyState v-if="refusal === 'not_member'"
+                        data-testid="members-state"
+                        data-state="not_member"
+                        title="Join to see who's here"
+                        :text="`Members of ${channelName} can see its member list.`" />
 
-            <div v-else-if="refusal === 'no_roster_right'" class="chat-mb-state" data-testid="members-state" data-state="no_roster_right">
-                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="eye-off" /></span>
-                <h4>Only leaders can see who's here</h4>
-                <p>{{ channelName }} keeps its member list private. You can still message people you know.</p>
-            </div>
+            <EmptyState v-else-if="refusal === 'no_roster_right'"
+                        data-testid="members-state"
+                        data-state="no_roster_right"
+                        title="Only leaders can see who's here"
+                        :text="`${channelName} keeps its member list private. You can still message people you know.`" />
 
-            <div v-else-if="error" class="chat-mb-state" data-testid="members-state" data-state="error">
-                <span class="chat-mb-state-ic" aria-hidden="true"><Icon name="wifi-off" /></span>
-                <h4>Couldn't load members</h4>
-                <p>Check your connection, then try again.</p>
-                <button type="button" class="chat-ls-btn" data-testid="members-retry" @click="emit('retry')"><Icon name="refresh" size="xs" />Try again</button>
-            </div>
+            <EmptyState v-else-if="error"
+                        data-testid="members-state"
+                        data-state="error"
+                        tone="error"
+                        title="Couldn't load members"
+                        text="Check your connection, then try again."
+                        actionLabel="Try again"
+                        actionIcon="refresh"
+                        :actionAttrs="{ 'data-testid': 'members-retry' }"
+                        @action="emit('retry')" />
 
             <div v-else-if="isLoading" class="chat-mb-list">
                 <span class="chat-sr-only">Loading members</span>
-                <div v-for="width in skeletonWidths" :key="width" class="chat-mb-skel" aria-hidden="true" data-testid="member-skeleton">
-                    <i class="chat-skeleton chat-mb-skel-c"></i>
-                    <span class="chat-mb-skel-l"><i class="chat-skeleton" :style="{ width: `${width}%` }"></i><i class="chat-skeleton"></i></span>
-                </div>
+                <Skeleton v-for="width in skeletonWidths" :key="width" shape="person" :widths="[width]" data-testid="member-skeleton" />
             </div>
 
             <div v-else class="chat-mb-list">
@@ -571,89 +572,17 @@
     text-align: center;
 }
 
-.chat-mb-state {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    align-items: center;
-    padding: 56px 32px 24px;
-    text-align: center;
-}
-
-.chat-mb-state-ic {
-    --chat-ic-size: 22px;
-    display: grid;
-    place-items: center;
-    width: 52px;
-    height: 52px;
-    margin-bottom: 8px;
-    color: var(--chat-icon);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-surface);
-}
-
-.chat-mb-state h4 {
-    margin: 0;
-    font-size: var(--chat-fs-display);
-    font-weight: 700;
-    color: var(--chat-text);
-}
-
-.chat-mb-state p {
-    max-width: 30ch;
-    margin: 0;
-    font-size: var(--chat-fs-ui);
-    line-height: 1.45;
-    color: var(--chat-muted);
-}
-
-.chat-mb-state .chat-ls-btn {
-    margin-top: 12px;
-}
-
-.chat-mb-skel {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    padding: 8px;
-}
-
-.chat-mb-skel i {
-    display: block;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-mb-skel-c {
-    flex: none;
-    width: 36px;
-    height: 36px;
-}
-
-.chat-mb-skel-l {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    gap: 7px;
-}
-
-.chat-mb-skel-l i:first-child {
-    height: 10px;
-}
-
-.chat-mb-skel-l i:last-child {
-    width: 32%;
-    height: 8px;
-}
 </style>
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
+    import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
     import { MemberRemoval } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
