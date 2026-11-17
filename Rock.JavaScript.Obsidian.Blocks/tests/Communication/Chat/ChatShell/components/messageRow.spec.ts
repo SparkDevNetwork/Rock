@@ -461,6 +461,28 @@ describe("Community, in a channel", () => {
         expect(wrapper.findComponent(Avatar).props("size")).toBe(36);
     });
 
+    // The long time is the chat's tip, timed and drawn like every other, never the browser's title.
+    test("resting on the head's time shows the long time in the chat's tip, with no title", async () => {
+        const wrapper = mount(MessageRow, inSession({ props: { personAliasGuid: me, message: message(), isChannel: true, position: "first" }, attachTo: document.body }));
+        const time = wrapper.get("[data-testid='message-time']");
+        expect(time.attributes("title")).toBeUndefined();
+
+        jest.useFakeTimers();
+        try {
+            await time.trigger("mouseenter");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+            const tips = Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => plain(tip.textContent ?? ""));
+            expect(tips).toHaveLength(1);
+            expect(tips[0]).toMatch(/9:02 AM/);
+            expect(tips[0].length).toBeGreaterThan("9:02 AM".length);
+        }
+        finally {
+            jest.useRealTimers();
+            wrapper.unmount();
+        }
+    });
+
     test("the head names every group, the reader's own and another person's", () => {
         const own = draw({ message: ownConfirmed({ sender_nick_name: "Jordan", sender_last_name: "Lee" }), isOwn: true, isChannel: true, position: "single" });
         const other = draw({ message: message(), isChannel: true, position: "single" });

@@ -19,6 +19,7 @@
 // by the text the server put beside it, and a link or an image is drawn only from an address this
 // client trusts, whatever the server sent.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import { providedSession } from "../sessionShapes";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -59,11 +60,49 @@ describe("a message body's pieces", () => {
         expect(link.attributes("rel")).toBe("noopener noreferrer nofollow");
         expect(link.text()).toBe("x.org/a");
         expect(body.get("[data-testid='piece-emoji']").text()).toBe("👍");
-        expect(body.get("[data-testid='piece-emoji']").attributes("title")).toBe("Thumbs up");
+        // Named for a screen reader; the name a pointer rests for is the chat's tip, never the browser's.
+        expect(body.get("[data-testid='piece-emoji']").attributes("title")).toBeUndefined();
+        expect(body.get("[data-testid='piece-emoji']").attributes("role")).toBe("img");
+        expect(body.get("[data-testid='piece-emoji']").attributes("aria-label")).toBe("Thumbs up");
         const image = body.get("img");
         expect(image.attributes("src")).toBe("https://cdn.example/party.png");
         expect(image.attributes("alt")).toBe("Party");
+        expect(image.attributes("title")).toBeUndefined();
         expect(body.text()).not.toContain("raw");
+    });
+
+    // One tip per body, moved to the emoji under the pointer, as the bar's quick reactions share
+    // theirs: a long feed draws no tip per emoji.
+    test("resting on an emoji shows its name in the body's one tip, moved to each emoji in turn", async () => {
+        const body = mount(MessageBody, {
+            props: {
+                text: "raw",
+                pieces: [
+                    { type: "emoji", text: ":thumbsup:", code: "thumbsup", emoji: "👍", label: "Thumbs up" },
+                    { type: "emoji", text: ":party:", code: "party", image_url: "https://cdn.example/party.png", label: "Party" }
+                ]
+            },
+            attachTo: document.body
+        });
+        const rest = async (target: Element, event: string): Promise<void> => {
+            target.dispatchEvent(new MouseEvent(event, { bubbles: false }));
+            jest.advanceTimersByTime(500);
+            await nextTick();
+        };
+
+        jest.useFakeTimers();
+        try {
+            await rest(body.get("[data-testid='piece-emoji']").element, "mouseenter");
+            expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).toEqual(["Thumbs up"]);
+
+            await rest(body.get("[data-testid='piece-emoji']").element, "mouseleave");
+            await rest(body.get("img").element, "mouseenter");
+            expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).toEqual(["Party"]);
+        }
+        finally {
+            jest.useRealTimers();
+            body.unmount();
+        }
     });
 
     test("a link reads as its address without the scheme, and still opens the whole address", () => {
