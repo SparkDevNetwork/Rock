@@ -205,6 +205,9 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     /** Focus came into the frame: the column it is in is where focus lost from it goes back to. */
     onFocusIn: (event: FocusEvent) => void;
 
+    /** Focus left the frame for nowhere from a part still drawn: the person put it on the page, and no column is owed it. */
+    onFocusOut: (event: FocusEvent) => void;
+
     onSelect: (channelId: string) => Promise<void>;
 
     onBack: () => Promise<void>;
@@ -458,6 +461,15 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         const columns = [["panel", panelElement], ["main", mainElement], ["sidebar", sidebarElement]] as const;
         // focus in a dialog or popover over the frame is in none of them, and leaves the last noted
         focusRegion = columns.find(([, element]) => element.value?.contains(target))?.[0] ?? focusRegion;
+    }
+
+    function onFocusOut(event: FocusEvent): void {
+        const target = event.target;
+        // a control removed or put out of reach drops focus too, and that is owed a place; a part
+        // still drawn that lets go for nowhere is the person clicking out to the page
+        if (!(event.relatedTarget instanceof Element) && target instanceof HTMLElement && target.isConnected && isDrawn(target)) {
+            focusRegion = null;
+        }
     }
 
     async function onSelect(channelId: string): Promise<void> {
@@ -1200,6 +1212,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         rooms,
         onResize,
         onFocusIn,
+        onFocusOut,
         onSelect,
         onBack,
         onListPanel,

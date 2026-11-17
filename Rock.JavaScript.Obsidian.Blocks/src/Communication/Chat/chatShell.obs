@@ -1036,7 +1036,7 @@
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isMainInert, isPanelHidden, isPanelInert, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onFocusIn, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        onResize, onFocusIn, onFocusOut, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
@@ -1194,6 +1194,8 @@
         if (event.relatedTarget === null && target && isInViewOrDetails(target)) {
             isFocusOwed = true;
         }
+
+        onFocusOut(event);
     }
 
     /** Focus the person puts anywhere in the chat pays what is owed, and the frame notes the column it is in. */
