@@ -18,11 +18,11 @@
                  @keydown="onKeydown">
                 <!-- A panel: a fixed head with its tools, and a body that scrolls under it. -->
                 <template v-if="isPanel">
-                    <!-- Turned to another page, the head is Back and the page's title, which names the dialog meanwhile. -->
+                    <!-- Turned to another page, the head is Back and the page's title, which names the dialog meanwhile; its own tools, as Close, stay on every page. -->
                     <div class="chat-dialog-head" :class="{ 'is-turned': pages.isTurned.value }">
                         <IconButton v-if="pages.isTurned.value" ref="backButton" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
                         <h3 :id="titleId" class="chat-dialog-title" :data-testid="pages.isTurned.value ? 'page-title' : undefined">{{ pages.isTurned.value ? pages.title.value : title }}</h3>
-                        <slot v-if="!pages.isTurned.value" name="tools" />
+                        <slot name="tools" />
                     </div>
                     <!-- A panel whose rows lead to other pages draws its own body as the first of them. -->
                     <div class="chat-dialog-scroll">
