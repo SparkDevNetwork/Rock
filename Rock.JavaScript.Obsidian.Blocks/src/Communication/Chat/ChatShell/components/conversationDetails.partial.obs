@@ -47,20 +47,6 @@
             </SettingGroup>
         </template>
 
-        <SettingGroup v-else-if="kind === 'group'"
-                      label="People"
-                      ariaLabel="People in this conversation"
-                      isList
-                      data-testid="details-people">
-            <SettingRow v-for="chip in groupChips" :key="chip.key" class="chat-rd-prow" role="listitem" data-testid="details-person">
-                <template #text>
-                    <span class="chat-rd-person">
-                        <Avatar :people="[chip]" :size="32" :status="chipStatus(chip.alias)" />
-                        <span>{{ chip.label }}<span v-if="chipStatus(chip.alias)" class="chat-sr-only">{{ chipStatus(chip.alias)?.label }}</span></span>
-                    </span>
-                </template>
-            </SettingRow>
-        </SettingGroup>
 
         <SettingGroup v-if="canRename" class="chat-rn-grp" label="Conversation name" :labelFor="renameId">
             <div class="chat-rn">
@@ -274,22 +260,6 @@
     white-space: nowrap;
 }
 
-/* A People row centres its 32px face inside the group's least row height, so it keeps the one measure every row in a group has. */
-.chat-sg-row.chat-rd-prow {
-    padding-block: 4px;
-}
-
-/* A person in a group's People, whose badge rings in the group's fill. */
-.chat-rd-person {
-    --chat-av-ring: var(--chat-surface);
-    --chat-av-ring-over: transparent;
-
-    display: inline-flex;
-    gap: 10px;
-    align-items: center;
-    min-width: 0;
-}
-
 /* The line under a control: what the chosen mode means, or what a group's name does. */
 .chat-rd-cap {
     margin: 6px 0 0 2px;
@@ -375,11 +345,11 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { LeaveState, RenameState } from "../composables/useRooms.partial";
     import { failedWords, finalWords, offlineWords } from "../errors.partial";
-    import { ChannelFacts, ChannelLeader, FaceStatus } from "../types.partial";
+    import { ChannelFacts, ChannelLeader } from "../types.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Button from "../ui/button.partial.obs";
     import ChannelMark from "../ui/channelMark.partial.obs";
-    import { peopleCountWords, shownStatus } from "../ui/face.partial";
+    import { peopleCountWords } from "../ui/face.partial";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -504,11 +474,8 @@
 
     // #region Values
 
-    /**
-     * The session: the person, whose own chip and status a group draws, and the church, which the
-     * leave confirm says a group is at.
-     */
-    const { me, church } = useChatSession();
+    /** The session's church, which the leave confirm says a group is at. */
+    const { church } = useChatSession();
 
     /** Ties the name field to its label and notes, and the leave box to its question, once per dialog. */
     const renameId = `chat-rd-${newGuid()}`;
@@ -554,12 +521,10 @@
      */
     const otherAlias = computed((): string | null => props.kind === "person" ? props.facts.people[0]?.person_alias_guid.toLowerCase() ?? null : null);
 
-    // Asked about while closed too: the dialog draws its people from the room's facts, read once at
-    // the room's open, with no read of its own, so only the exchanges keep their status current
-    // for the moment it opens; a group is at most nine people, one room at a time.
-    const statusOf = useFaceStatus(() => props.kind === "person"
-        ? (otherAlias.value ? [otherAlias.value] : [])
-        : props.kind === "group" ? groupChips.value.map(chip => chip.alias).filter(alias => alias !== "") : [], 1);
+    // Asked about while closed too: the dialog draws the other person from the room's facts, read
+    // once at the room's open, with no read of its own, so only the exchanges keep their status
+    // current for the moment it opens. A group lists no one here, so asks about no one.
+    const statusOf = useFaceStatus(() => otherAlias.value ? [otherAlias.value] : [], 1);
 
     const otherStatus = computed(() => otherAlias.value ? statusOf(otherAlias.value) : null);
 
@@ -595,12 +560,6 @@
     /** Up to three listed leaders, as the channel's intro names them. */
     const leaders = computed((): AvatarPerson[] => props.facts.leaders.slice(0, 3).map(leader => ({ name: fullName(leader), photoUrl: leader.avatar_url })));
 
-    /** Everyone in a group, the person first and marked as them. */
-    const groupChips = computed((): Array<AvatarPerson & { key: string, alias: string, label: string }> => [
-        { key: "you", alias: me.value.personAliasGuid.toLowerCase(), name: me.value.name, photoUrl: me.value.photoUrl, label: `${me.value.name} (you)` },
-        ...props.facts.people.map(person => ({ key: person.person_alias_guid, alias: person.person_alias_guid.toLowerCase(), name: fullName(person), photoUrl: person.avatar_url, label: fullName(person) }))
-    ]);
-
     /** The members' first names, which is what a blank name shows. */
     const namesPlaceholder = computed((): string => props.facts.people.map(person => person.nick_name ?? "").filter(name => name !== "").join(", "));
 
@@ -635,14 +594,14 @@
     /** The three modes, in words chosen by the room's kind. */
     const notifyOptions = computed(() => notifyOptionsFor(props.kind));
 
-    /** The modes as the segmented control draws them, each described by its caption, read as the arrows reach it, since arrowing chooses and saves at once. */
-    const notifySegments = computed((): SegmentedOption[] => notifyOptions.value.map(option => ({ value: option.value, label: option.label, icon: option.icon, description: option.caption })));
+    /** The modes as the segmented control draws them, in the bell's own words, each described by the bell's line, read as the arrows reach it, since arrowing chooses and saves at once. */
+    const notifySegments = computed((): SegmentedOption[] => notifyOptions.value.map(option => ({ value: option.value, label: option.title, icon: option.icon, description: option.description })));
 
     /** The mode Tab lands on: the room's own, or the first where it has none. */
     const shownNotifyMode = computed((): string => notifyOptions.value.some(option => option.value === props.notifyMode) ? props.notifyMode ?? "all" : "all");
 
     /** The one line under the control, saying what only the mode Tab lands on means. */
-    const notifyCaption = computed((): string => notifyOptions.value.find(option => option.value === shownNotifyMode.value)?.caption ?? "");
+    const notifyCaption = computed((): string => notifyOptions.value.find(option => option.value === shownNotifyMode.value)?.description ?? "");
 
     const countText = computed((): string | null => draftName.value.length >= props.nameMaxLength - countShortOf ? `${draftName.value.length} of ${props.nameMaxLength} characters` : null);
 
@@ -682,11 +641,6 @@
     // #endregion Computed Values
 
     // #region Functions
-
-    /** What a People row's face shows of its person's status: her own row is one others see too, so it shows nothing of her Appear offline. */
-    function chipStatus(alias: string): FaceStatus | null {
-        return alias ? shownStatus(statusOf(alias), false) : null;
-    }
 
     /** A person's name as the chat shows it. */
     function fullName(person: ChannelLeader): string {
