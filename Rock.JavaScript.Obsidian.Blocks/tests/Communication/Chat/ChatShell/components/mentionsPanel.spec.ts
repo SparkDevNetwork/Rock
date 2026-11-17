@@ -316,7 +316,7 @@ describe("paging", () => {
         expect(w.emitted("loadOlder")).toBeUndefined();
     });
 
-    // The clean bar (F8-A): a list that has no more simply ends, as Members and Threads do.
+    // The clean bar: a list that has no more simply ends, as Members and Threads do.
     test("simply ends, with no end line, once there is no more", () => {
         const w = draw({ hasMore: false });
 
