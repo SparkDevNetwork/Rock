@@ -84,7 +84,10 @@ export type TimelineState = {
     /** The first of them, which the New divider stands above, as the platform found it; null for none. */
     firstUnreadId: number | null;
 
-    /** Whether a catch-up failed and is waiting to try again, so messages may be missing. */
+    /**
+     * Whether messages may be missing: a rejoin after a drop is catching up, or a catch-up failed
+     * and is waiting to try again.
+     */
     isBehind: boolean;
 
     /**
@@ -174,8 +177,11 @@ export type Timelines = {
     /** Fetches the page before the oldest message held. */
     loadOlder: (channelId: string) => Promise<void>;
 
-    /** The channel's live topic was joined: pages forward from what is verified until caught up. */
-    onJoined: (channelId: string) => Promise<void>;
+    /**
+     * The channel's live topic was joined: pages forward from what is verified until caught up. A
+     * join after a drop says the room is behind until then.
+     */
+    onJoined: (channelId: string, isAfterDrop?: boolean) => Promise<void>;
 
     /**
      * Takes the revision a live event on the channel's topic carries, whatever its name, before any
@@ -1213,7 +1219,7 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
             return load.done;
         },
 
-        onJoined: async (channelId: string): Promise<void> => {
+        onJoined: async (channelId: string, isAfterDrop: boolean = false): Promise<void> => {
             if (isStopped) {
                 return;
             }
@@ -1226,6 +1232,11 @@ export function createTimelines(dependencies: TimelineDependencies): Timelines {
                 return;
             }
 
+            // What was sent while the topic was down is missing until this catch-up reads it, so
+            // the room says so from the join; the pass's end, a refusal or a leave says it no longer.
+            if (isAfterDrop) {
+                state(channelId).isBehind = true;
+            }
             await requestCatchUp(channelId);
         },
 

@@ -505,9 +505,10 @@ export function createShellLive(dependencies: ShellLiveDependencies): ShellLive 
             }
         },
         onPersonalRejoined: reloadAfterRejoin,
-        onJoined: channelId => {
+        onJoined: (channelId, isRejoin) => {
             mark("chat:join");
-            timelines.onJoined(channelId).catch(error => report(classifyPlatformError(error)));
+            // a rejoin after a drop shows the room catching up until what was missed is in
+            timelines.onJoined(channelId, isRejoin).catch(error => report(classifyPlatformError(error)));
         },
         onUnknownError: () => {
             problems.report("realtime", "rt.unknown");
