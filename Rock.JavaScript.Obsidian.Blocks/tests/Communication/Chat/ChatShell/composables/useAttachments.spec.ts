@@ -293,7 +293,7 @@ describe("a tray's files", () => {
         expect(attachments.trayFor(`${channel}:42`, channel).files).toEqual([]);
     });
 
-    test("removing a file takes it out of the tray and lets its preview go", async () => {
+    test("removing a file takes it out of the tray and lets its local copy go", async () => {
         const sizes = new Map<Blob, { width: number, height: number }>();
         const h = harness(fakeCodec(sizes));
         const attachments = createAttachments(h.dependencies);
@@ -303,12 +303,12 @@ describe("a tray's files", () => {
 
         tray.add([photo]);
         await settle();
-        const preview = tray.files[0].previewUrl;
-        expect(preview).toMatch(/^blob:/);
+        const copy = tray.files[0].localCopyUrl;
+        expect(copy).toMatch(/^blob:/);
 
         tray.remove(tray.files[0].localId);
         expect(tray.files).toEqual([]);
-        expect(h.revoked).toEqual([preview]);
+        expect(h.revoked).toEqual([copy]);
     });
 });
 
@@ -811,10 +811,10 @@ describe("download links", () => {
         await settle();
         h.requests[0].respond(200);
         await settle();
-        const preview = tray.files[0].previewUrl;
+        const copy = tray.files[0].localCopyUrl;
         const [item] = attachments.take(channel) ?? [];
 
-        expect(attachments.previewOf(item.id)).toBe(preview);
+        expect(attachments.localCopyOf(item.id)).toBe(copy);
     });
 });
 
@@ -871,20 +871,20 @@ describe("letting go", () => {
         h.requests[0].respond(200);
         await settle();
         const items = attachments.take(channel) ?? [];
-        const preview = attachments.previewOf(items[0].id);
-        expect(preview).toMatch(/^blob:/);
+        const copy = attachments.localCopyOf(items[0].id);
+        expect(copy).toMatch(/^blob:/);
 
         attachments.release(items);
         // nothing is left to upload again from
         expect(await attachments.reupload(channel, items)).toBeNull();
         expect(h.begins).toHaveLength(1);
         // the photo still draws from its local copy until its link can
-        expect(attachments.previewOf(items[0].id)).toBe(preview);
+        expect(attachments.localCopyOf(items[0].id)).toBe(copy);
 
         attachments.links.subscribe(items);
         await settle();
-        expect(attachments.previewOf(items[0].id)).toBeNull();
-        expect(h.revoked).toEqual([preview]);
+        expect(attachments.localCopyOf(items[0].id)).toBeNull();
+        expect(h.revoked).toEqual([copy]);
     });
 
     test("stop ends every upload and renewal, lets every local copy go, and nothing is written after", async () => {
@@ -896,7 +896,7 @@ describe("letting go", () => {
         const tray = attachments.trayFor(channel, channel);
         tray.add([photo, picked("a.pdf", "application/pdf")]);
         await settle();
-        const preview = tray.files[0].previewUrl;
+        const copy = tray.files[0].localCopyUrl;
         const linked = image("d0000000-0000-4000-8000-0000000000e1");
         attachments.links.subscribe([linked]);
         await settle();
@@ -908,7 +908,7 @@ describe("letting go", () => {
 
         expect(h.requests.map(r => r.isAborted)).toEqual([true, true]);
         expect(tray.files.map(f => [f.status, f.failure])).toEqual([["uploading", null], ["uploading", null]]);
-        expect(h.revoked).toEqual([preview]);
+        expect(h.revoked).toEqual([copy]);
         expect(attachments.links.linkOf(unsigned)).toBeNull();
         expect(h.timers).toEqual([]);
 

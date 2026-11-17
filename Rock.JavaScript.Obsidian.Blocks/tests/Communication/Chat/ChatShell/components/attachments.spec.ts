@@ -805,7 +805,7 @@ describe("the composer's strip", () => {
                 size: 48_000,
                 width: null,
                 height: null,
-                previewUrl: null,
+                localCopyUrl: null,
                 status: "uploaded" as const,
                 progress: 1,
                 failure: null,
