@@ -959,28 +959,6 @@ describe("Escape", () => {
     });
 });
 
-describe("focus on open", () => {
-    test("goes to the reply composer on a wide block", async () => {
-        const w = draw();
-        await afterOpen();
-
-        expect(document.activeElement).toBe(w.get("[data-testid='composer-input']").element);
-    });
-
-    test("goes to the back chevron on a phone, never the composer, and the phone has no X", async () => {
-        const w = draw({ isPhone: true });
-        await afterOpen();
-
-        expect(document.activeElement).not.toBe(w.get("[data-testid='composer-input']").element);
-        expect(document.activeElement).toBe(w.get("[data-testid='panel-back']").element);
-        expect(w.get("[data-testid='panel-back']").attributes("aria-label")).toBe("Back");
-        expect(w.find("[data-testid='panel-close']").exists()).toBe(false);
-
-        await w.get("[data-testid='panel-back']").trigger("click");
-        expect(w.emitted("close")).toHaveLength(1);
-    });
-});
-
 // The person's own reply is edited in place in the drawer like any message: Up in the empty reply
 // box asks for the newest of their replies, and the reply open in the editor draws it with any
 // refusal under it, asking the block to save or cancel as a conversation's row does.
