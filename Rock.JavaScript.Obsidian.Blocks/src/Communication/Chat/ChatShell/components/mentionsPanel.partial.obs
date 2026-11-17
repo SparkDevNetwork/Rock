@@ -86,9 +86,6 @@
                      :isLoading="isLoadingOlder"
                      :isFailed="!!olderError"
                      :failure="olderError ? messageOrOffline(olderError, offlineOlder) : ''" />
-        <div v-else class="chat-ls-more">
-            <span class="chat-ls-endnote" data-testid="mentions-end"><Icon name="check" size="xs" />That's every mention</span>
-        </div>
     </ListPanel>
 </template>
 
@@ -154,23 +151,6 @@
     background: color-mix(in srgb, var(--chat-surface) 92%, transparent);
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
-}
-
-.chat-ls-more {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-    padding: 10px 16px 8px;
-}
-
-.chat-ls-endnote {
-    --chat-ic-size: 13px;
-    display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    font-size: var(--chat-fs-small);
-    color: var(--chat-muted);
 }
 
 </style>
