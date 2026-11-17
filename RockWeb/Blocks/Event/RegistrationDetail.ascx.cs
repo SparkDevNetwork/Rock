@@ -2504,9 +2504,9 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Cost,
-                        // The fee summary repeater outputs Description as HTML. Only the
-                        // registrant name is encoded here because the fee descriptions
-                        // include the formatted currency symbol, which may be an HTML entity.
+                        // The fee summary repeater outputs Description as HTML. Names are
+                        // encoded where each description is built, but the formatted currency
+                        // text is left as is because the currency symbol may be an HTML entity.
                         Description = registrant.PersonName.EncodeHtml(),
                         RegistrationRegistrantGuid = registrant.Guid
                     };
@@ -2544,11 +2544,11 @@ namespace RockWeb.Blocks.Event
                             string feeName;
                             if ( templateFee != null )
                             {
-                                feeName = templateFee.Name;
+                                feeName = templateFee.Name.EncodeHtml();
 
                                 if ( templateFee.FeeType == RegistrationFeeType.Multiple && feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
                                 {
-                                    feeName = string.Format( "{0}-{1}", templateFee.Name, feeInfo.FeeLabel );
+                                    feeName = string.Format( "{0}-{1}", templateFee.Name.EncodeHtml(), feeInfo.FeeLabel.EncodeHtml() );
                                 }
                             }
                             else
@@ -2556,7 +2556,7 @@ namespace RockWeb.Blocks.Event
                                 feeName = "(Previous Cost)";
                                 if ( feeInfo.FeeLabel.IsNotNullOrWhiteSpace() )
                                 {
-                                    feeName += "-" + feeInfo.FeeLabel;
+                                    feeName += "-" + feeInfo.FeeLabel.EncodeHtml();
                                 }
                             }
 
@@ -3053,7 +3053,7 @@ namespace RockWeb.Blocks.Event
                         <small>Signed by {2}</small>",
                         FileUrlHelper.GetFileUrl( registrant.SignatureDocumentId.Value ),
                         registrant.SignatureDocumentSignedDateTime?.ToString( "dddd, MMMM dd, yyyy" ),
-                        registrant.SignatureDocumentSignedName );
+                        System.Web.HttpUtility.HtmlDecode( registrant.SignatureDocumentSignedName ).EncodeHtml() );
 
                     borderColor = "#16C98D";
                     backgroundColor = "#D6FFF1";

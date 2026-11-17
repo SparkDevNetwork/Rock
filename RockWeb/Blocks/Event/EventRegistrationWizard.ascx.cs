@@ -412,7 +412,7 @@ namespace RockWeb.Blocks.Event
                     pnlCheckinOptions.Visible = GroupTypeIsCheckinGroup( registrationTemplate.GroupTypeId.Value, rockContext );
                 }
 
-                lTemplateDescription.Text = registrationTemplate.Description;
+                lTemplateDescription.Text = registrationTemplate.Description.EncodeHtml();
                 dpPaymentDeadline.Required = registrationTemplate.IsPaymentPlanAllowed == true;
                 dpPaymentDeadline.Visible = registrationTemplate.IsPaymentPlanAllowed == true;
             }
