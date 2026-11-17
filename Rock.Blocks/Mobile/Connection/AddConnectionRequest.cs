@@ -96,6 +96,18 @@ namespace Rock.Blocks.Mobile.Connection
             /// When present the shell skips the Type and Opportunity steps.
             /// </summary>
             public const string ConnectionOpportunity = "ConnectionOpportunity";
+
+            /// <summary>
+            /// The Guid of a note to move onto the new request, passed by the
+            /// My Notes block's Add Connection action.
+            /// </summary>
+            public const string LinkedNoteGuid = "LinkedNoteGuid";
+
+            /// <summary>
+            /// The Guid of the connection request note type the linked note
+            /// is changed to when it is moved onto the new request.
+            /// </summary>
+            public const string LinkedNoteTypeGuid = "LinkedNoteTypeGuid";
         }
 
         #endregion
@@ -512,11 +524,53 @@ namespace Rock.Blocks.Mobile.Connection
                 connectionRequest.SaveAttributeValues( RockContext );
             } );
 
+            LinkNoteToConnectionRequest( connectionRequest.Id );
+
             return ActionOk( new SaveConnectionRequestResponseBag
             {
                 ConnectionRequestIdKey = connectionRequest.IdKey,
                 PostSaveAction = GetPostSaveAction()
             } );
+        }
+
+        /// <summary>
+        /// Moves the note named by the <c>LinkedNoteGuid</c> page parameter
+        /// onto the new connection request, changing it to the note type named
+        /// by <c>LinkedNoteTypeGuid</c>. Does nothing when either parameter is
+        /// missing or the move is not allowed.
+        /// </summary>
+        /// <param name="connectionRequestId">The identifier of the new connection request.</param>
+        private void LinkNoteToConnectionRequest( int connectionRequestId )
+        {
+            var linkedNoteGuid = PageParameter( PageParameterKey.LinkedNoteGuid ).AsGuidOrNull();
+            var linkedNoteTypeGuid = PageParameter( PageParameterKey.LinkedNoteTypeGuid ).AsGuidOrNull();
+
+            if ( !linkedNoteGuid.HasValue || !linkedNoteTypeGuid.HasValue || RequestContext.CurrentPerson == null )
+            {
+                return;
+            }
+
+            var note = new NoteService( RockContext ).Get( linkedNoteGuid.Value );
+            var noteType = NoteTypeCache.Get( linkedNoteTypeGuid.Value );
+
+            if ( note == null || noteType == null )
+            {
+                return;
+            }
+
+            // The note and note type come from page parameters, so only move
+            // a note the person can edit into a connection request note type.
+            var isConnectionRequestNoteType = noteType.EntityTypeId == EntityTypeCache.GetId<ConnectionRequest>();
+
+            if ( !isConnectionRequestNoteType || !note.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return;
+            }
+
+            note.EntityId = connectionRequestId;
+            note.NoteTypeId = noteType.Id;
+
+            RockContext.SaveChanges();
         }
 
         #endregion
