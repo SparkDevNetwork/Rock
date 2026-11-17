@@ -2982,6 +2982,18 @@ describe("following a thread", () => {
         return w;
     }
 
+    // The drawer waits on its loader to know when a page is in, so a page too short to fill it
+    // asks again; it can only wait on the thread's own loader, never on a fire-and-forget event.
+    test("the drawer loads older replies through the thread's own loader, and waits on it", async () => {
+        const w = await openDrawer();
+        const loadOlder = w.findComponent(ThreadDrawerComponent).props("loadOlder") as (() => Promise<void>) | null;
+
+        expect(typeof loadOlder).toBe("function");
+        const asked = loadOlder!();
+        expect(threadsOf().loadOlderReplies).toHaveBeenCalledTimes(1);
+        expect(asked).toBeInstanceOf(Promise);
+    });
+
     test("a follow that lands shows no toast, and an unfollow that lands says what it means", async () => {
         const w = await openDrawer();
 
