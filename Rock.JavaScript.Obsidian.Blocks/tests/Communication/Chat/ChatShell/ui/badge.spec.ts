@@ -110,6 +110,14 @@ describe("the badge's look", () => {
         expect(ruleOf(style, ".chat-badge.is-neutral")).not.toMatch(/--chat-pill-bg/);
     });
 
+    // The approved tag's words are semibold, a step under a count's bold digits, so a tag reads as
+    // a quiet word beside a name; the "+N" keeps the count's bold, as the approved look draws it.
+    test("a tag's words are semibold, under a count's bold", () => {
+        expect(ruleOf(style, ".chat-badge")).toMatch(/font-weight:\s*700/);
+        expect(ruleOf(style, ".chat-badge.is-tag")).toMatch(/font-weight:\s*600/);
+        expect(ruleOf(style, ".chat-badge.is-neutral")).not.toMatch(/font-weight/);
+    });
+
     test("holds no motion, priority, reach or capitals of its own", () => {
         expect(partRuleBreaks("badge.partial.obs")).toEqual([]);
     });
