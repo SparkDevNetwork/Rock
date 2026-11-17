@@ -13,6 +13,7 @@
          :data-position="position"
          :data-hot-id="isBarOffered ? message?.id : undefined"
          @click="onRowClick"
+         @keydown.enter="onRowEnter"
          @animationend="onAnimationEnd">
 
         <!-- A system line: quiet, unattributed, centred in bubbles and in the text column in Community. -->
@@ -45,10 +46,16 @@
         <!--
             A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet
             over the whole chat. The phone has no hover bar, so the sheet carries the quick
-            reactions, first, at a finger's size.
+            reactions, first, at a finger's size. A tap's open lands focus on their row, so none
+            is ringed as if chosen; a keyboard's starts on the first.
         -->
         <Sheet v-if="isSheetSurface" ref="sheet" :isOpen="isSheetOpen && !!message" label="Message actions" @dismiss="onSheetClose">
-            <div class="chat-sheet-react" data-testid="action-sheet-reactions">
+            <div class="chat-sheet-react"
+                 role="group"
+                 aria-label="Quick reactions"
+                 tabindex="-1"
+                 :data-autofocus="isSheetFromKeyboard ? undefined : ''"
+                 data-testid="action-sheet-reactions">
                 <button v-for="favorite in quickReactions"
                         :key="favorite.code"
                         type="button"
@@ -341,7 +348,11 @@
     display: inline;
 }
 
-/* The sheet's six reactions spread across it as 44px circles, over a rule that sets them apart from its items. */
+/*
+    The sheet's six reactions spread across it as 44px rounded squares, over a rule that sets them
+    apart from its items. Their row is only where a tap's open lands focus, never a control, so it
+    draws no ring.
+*/
 .chat-sheet-react {
     display: flex;
     gap: 4px;
@@ -349,6 +360,10 @@
     padding: 0 2px 10px;
     margin-bottom: 6px;
     border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-sheet-react:focus {
+    outline: none;
 }
 
 .chat-sheet-react button {
@@ -361,7 +376,7 @@
     line-height: 1;
     background: var(--chat-sidebar);
     border: 0;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-surface);
 }
 
 .chat-sheet-react button[aria-pressed="true"] {
@@ -572,6 +587,9 @@ img.chat-sheet-glyph {
     const session = useChatSession();
 
     const isSheetOpen = ref(false);
+
+    /** The sheet was opened from the keyboard, so its focus starts on the first reaction. */
+    const isSheetFromKeyboard = ref(false);
     const sheet = ref<InstanceType<typeof Sheet>>();
 
     /**
@@ -704,7 +722,7 @@ img.chat-sheet-glyph {
             list.push({ key: "reply", label: "Reply in thread", icon: "thread" });
         }
 
-        list.push({ key: "quote", label: "Quote", icon: "reply" });
+        list.push({ key: "quote", label: "Quote", icon: "quote" });
 
         if (props.isOwn && isEditableMessage(message)) {
             list.push({ key: "edit", label: "Edit message", icon: "pencil" });
@@ -877,6 +895,18 @@ img.chat-sheet-glyph {
             return;
         }
 
+        isSheetFromKeyboard.value = false;
+        isSheetOpen.value = true;
+    }
+
+    /** Enter on the message itself opens the sheet from the keyboard; on something inside it, that thing answers. */
+    function onRowEnter(event: KeyboardEvent): void {
+        if (!isSheetOffered.value || event.target !== rowElement.value || event.isComposing) {
+            return;
+        }
+
+        event.preventDefault();
+        isSheetFromKeyboard.value = true;
         isSheetOpen.value = true;
     }
 
