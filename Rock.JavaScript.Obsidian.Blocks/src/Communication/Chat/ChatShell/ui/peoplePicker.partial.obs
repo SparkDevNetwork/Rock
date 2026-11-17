@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-pk" :class="{ 'is-inline': isInline }">
+    <div class="chat-pk" :class="{ 'is-inline': isInline }" @focusout="onFocusout">
         <div class="chat-pk-field chat-field" @mousedown="onFieldMousedown">
             <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
             <span class="chat-pk-chips" role="list" aria-label="Chosen people">
@@ -32,8 +32,8 @@
                    type="text"
                    role="combobox"
                    aria-autocomplete="list"
-                   :aria-expanded="isListOpen ? 'true' : 'false'"
-                   :aria-controls="listId"
+                   :aria-expanded="isListboxShown ? 'true' : 'false'"
+                   :aria-controls="isListboxShown ? listId : undefined"
                    :aria-labelledby="labelId"
                    :aria-describedby="noteId"
                    :aria-activedescendant="activeOptionId"
@@ -46,18 +46,19 @@
                    :data-testid="inputTestId"
                    @input="onInput"
                    @focus="isFocused = true; isListClosed = false"
-                   @blur="isFocused = false"
                    @keydown="onKeydown" />
             <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
             <span v-if="count" class="chat-pk-count" :data-testid="`${prefix}-count`">{{ count }}</span>
         </div>
 
-        <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
+        <!--
+            The list's place: the listbox of people found, or the words standing in for it, which
+            sit beside the listbox since a listbox holds options alone. Choosing from it keeps
+            focus in the field, so typing carries on.
+        -->
         <div v-if="isListOpen"
-             :id="listId"
+             ref="listElement"
              class="chat-pk-list"
-             role="listbox"
-             aria-label="People"
              :data-testid="listTestId"
              @mousedown.prevent>
             <template v-if="!isDisabled">
@@ -69,30 +70,31 @@
                                 :actionLabel="!!retry ? 'Try again' : ''"
                                 :actionAttrs="{ 'data-testid': `${prefix}-search-retry` }"
                                 :data-testid="`${prefix}-search-error`"
-                                @action="retry?.()" />
+                                @action="onRetry" />
                     <div v-else-if="results === null" class="chat-pk-msg" :data-testid="`${prefix}-searching`">Searching…</div>
                     <div v-else-if="options.length === 0" class="chat-pk-msg" :data-testid="`${prefix}-none`">{{ noneText }}</div>
-                    <div v-for="(option, index) in options"
-                         v-else
-                         :id="optionId(option.person)"
-                         :key="option.person.person_alias_guid"
-                         class="chat-pk-opt"
-                         :class="{ 'is-active': index === activeIndex }"
-                         role="option"
-                         :aria-selected="index === activeIndex ? 'true' : 'false'"
-                         :aria-disabled="option.why ? 'true' : undefined"
-                         :data-person="option.person.person_alias_guid"
-                         :data-testid="`${prefix}-option`"
-                         @mousedown.prevent="choose(option.person)"
-                         @mouseenter="onOptionEnter(index)">
-                        <Avatar class="chat-pk-o-face" :people="[faceOf(option.person)]" :size="32" :status="statusOf(option.person.person_alias_guid)" />
-                        <span class="chat-pk-o-main">
-                            <b><MatchText :text="option.name" :query="isMatchMarked ? query : ''" /></b>
-                            <span v-if="statusOf(option.person.person_alias_guid)" class="chat-sr-only">{{ statusOf(option.person.person_alias_guid)?.label }}</span>
-                            <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
-                            <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
-                        </span>
-                        <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                    <div v-else :id="listId" role="listbox" aria-label="People">
+                        <div v-for="(option, index) in options"
+                             :id="optionId(option.person)"
+                             :key="option.person.person_alias_guid"
+                             class="chat-pk-opt"
+                             :class="{ 'is-active': index === activeIndex }"
+                             role="option"
+                             :aria-selected="index === activeIndex ? 'true' : 'false'"
+                             :aria-disabled="option.why ? 'true' : undefined"
+                             :data-person="option.person.person_alias_guid"
+                             :data-testid="`${prefix}-option`"
+                             @mousedown.prevent="choose(option.person)"
+                             @mouseenter="onOptionEnter(index)">
+                            <Avatar class="chat-pk-o-face" :people="[faceOf(option.person)]" :size="32" :status="statusOf(option.person.person_alias_guid)" />
+                            <span class="chat-pk-o-main">
+                                <b><MatchText :text="option.name" :query="isMatchMarked ? query : ''" /></b>
+                                <span v-if="statusOf(option.person.person_alias_guid)" class="chat-sr-only">{{ statusOf(option.person.person_alias_guid)?.label }}</span>
+                                <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
+                                <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
+                            </span>
+                            <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                        </div>
                     </div>
                 </template>
                 <div v-else class="chat-pk-msg" :data-testid="`${prefix}-idle`">{{ idleText }}</div>
@@ -242,7 +244,6 @@
     animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
     scrollbar-width: thin;
 }
-
 
 .chat-shell .chat-pk-opt {
     display: flex;
@@ -567,9 +568,15 @@
 
     const inputElement = ref<HTMLInputElement>();
 
+    const listElement = ref<HTMLElement>();
+
     /** The option Enter would pick, by its place in the list. */
     const activeIndex = ref(0);
 
+    /**
+     * Focus is in the field or in the list under it, as on a failed search's Try again, so the
+     * list stays while Tab moves between them.
+     */
     const isFocused = ref(false);
 
     /** Escape or a pick closed the list; typing opens it again. */
@@ -613,6 +620,22 @@
         && props.query.trim() !== ""
         && !isFull.value));
 
+    /** The list has people in it to pick, which the field is expanded over. */
+    const isListboxShown = computed((): boolean => isListOpen.value
+        && !props.isDisabled
+        && !isFull.value
+        && props.query.trim() !== ""
+        && !props.searchError
+        && options.value.length > 0);
+
+    /** The list says the search failed and offers Try again, a stop of its own for Tab. */
+    const isRetryShown = computed((): boolean => isListOpen.value
+        && !props.isDisabled
+        && !isFull.value
+        && props.query.trim() !== ""
+        && !!props.searchError
+        && !!props.retry);
+
     const activeOptionId = computed((): string | undefined => {
         const option = isListOpen.value ? options.value[activeIndex.value] : undefined;
         return option && !option.why ? optionId(option.person) : undefined;
@@ -628,6 +651,23 @@
             event.preventDefault();
             inputElement.value?.focus();
         }
+    }
+
+    /** Focus going anywhere but the field or the list closes the list over the page. */
+    function onFocusout(event: FocusEvent): void {
+        const next = event.relatedTarget;
+        if (!(next instanceof Node && (next === inputElement.value || listElement.value?.contains(next)))) {
+            isFocused.value = false;
+        }
+    }
+
+    /**
+     * Asks the failed search again and puts focus back in the field, where the answer lands; the
+     * button it was pressed on goes as the search starts.
+     */
+    function onRetry(): void {
+        props.retry?.();
+        inputElement.value?.focus({ preventScroll: true });
     }
 
     function onInput(event: Event): void {
@@ -678,6 +718,10 @@
             }
         }
         else if (event.key === "Tab") {
+            // Tab goes on to the list's Try again first, the browser's own move; the owner's after.
+            if (!event.shiftKey && isRetryShown.value) {
+                return;
+            }
             emit("tab", event);
         }
         else if (event.key === "Backspace" && !props.query && props.chosen.length > 0) {
