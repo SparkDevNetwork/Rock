@@ -151,7 +151,21 @@ namespace Rock.Obsidian.UI
         /// <returns>A reference to the original <see cref="GridBuilder{T}"/> object that can be used to chain calls.</returns>
         public static GridBuilder<T> AddAttributeFieldsFrom<T>( this GridBuilder<T> builder, Func<T, IHasAttributes> selector, IEnumerable<AttributeCache> attributes, string fieldKeyPrefix )
         {
-            foreach ( var attribute in attributes )
+            /*
+                11/16/2026 - MSE
+
+                Attribute columns and values are sent only for attributes the
+                person making the request can view. Every Obsidian list grid adds
+                its attribute columns here, so this one check covers the cell
+                values, the column titles and the column filter definitions.
+                With no request context the person is null and the check runs as
+                an anonymous visitor, which fails closed for secured attributes.
+
+                Reason: Grid attribute values must honor attribute VIEW security.
+            */
+            var currentPerson = RockRequestContextAccessor.Current?.CurrentPerson;
+
+            foreach ( var attribute in attributes.Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, currentPerson ) ) )
             {
                 var key = attribute.Key;
                 var fieldKey = $"{fieldKeyPrefix}{key}";
