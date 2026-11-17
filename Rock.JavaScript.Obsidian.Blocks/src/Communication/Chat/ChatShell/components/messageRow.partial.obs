@@ -11,6 +11,7 @@
          :data-state="state"
          :data-blocked-ids="state === 'blocked' ? blockedIds : undefined"
          :data-position="position"
+         :data-message-id="message?.id"
          :data-hot-id="isBarOffered ? message?.id : undefined"
          @click="onRowClick"
          @keydown.enter="onRowEnter"

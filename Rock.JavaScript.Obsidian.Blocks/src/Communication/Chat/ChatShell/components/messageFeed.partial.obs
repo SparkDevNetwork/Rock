@@ -90,7 +90,6 @@
                                     :isChannel="isChannel"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
-                                    :data-message-id="item.messages[item.messages.length - 1].id"
                                     @openThread="emit('openThread', $event)"
                                     @messageAction="emit('messageAction', $event)" />
 
@@ -100,7 +99,6 @@
                                     :isFlashing="item.message.id === flashingId"
                                     :reactionHost="reactionHost"
                                     :data-row-key="item.key"
-                                    :data-message-id="item.message.id"
                                     @messageAction="emit('messageAction', $event)" />
 
                         <div v-else class="chat-grp" :class="{ 'is-own': item.isOwn }">
@@ -125,7 +123,6 @@
                                         :isEditSaving="isEditSaving"
                                         :reactionHost="reactionHost"
                                         :data-row-key="row.key"
-                                        :data-message-id="row.message?.id"
                                         @openThread="emit('openThread', $event)"
                                         @jump="emit('jump', $event)"
                                         @messageAction="emit('messageAction', $event)"
