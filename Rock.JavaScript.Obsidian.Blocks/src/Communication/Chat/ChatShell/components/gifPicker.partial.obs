@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- Its own popover beside the "+", or a page of the sheet the plus menu turns, drawing no surface of its own. -->
     <component :is="isPage ? 'div' : Popover" v-bind="surfaceAttrs" data-testid="gif-picker" @keydown="onKeydown">
         <div class="chat-picker chat-gif" :class="{ 'is-sheet': isSheetBody }">
             <!--

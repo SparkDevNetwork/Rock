@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- The surface's own body, set aside while a page is turned to over it. -->
     <div v-if="isFirst"
          ref="pageElement"
          class="chat-surface-page"
@@ -33,19 +32,20 @@
 /*
     A page fills what its surface gives the pages, laid out as the surface's body is. It moves by
     the whole sheet's slide distance and fades as it goes, so where less motion is asked for, the
-    distance is nothing and a turn is a fade.
+    distance is nothing and a turn is a fade. Visibility, moving with them, is visible at every
+    step but a hidden end, so a page set aside hides once it is there and shows at once as it returns.
 */
 .chat-surface-page {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
-    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility 0s;
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
 }
 
 /*
-    Under a page turned to over it: a quarter of the way to the left, faded, and hidden once it is
-    there. Out of the flow, so the page on top sets the surface's height.
+    Under a page turned to over it: a quarter of the way to the left, faded, and out of reach.
+    Out of the flow, so the page on top sets the surface's height.
 */
 .chat-surface-page.is-covered {
     position: absolute;
@@ -53,7 +53,6 @@
     visibility: hidden;
     opacity: 0;
     transform: translateX(calc(var(--chat-rise-sheet) / -4));
-    transition-delay: 0s, 0s, var(--chat-t-panel);
 }
 
 /* Where a page comes in from as it is turned to, and goes back to: the surface's right edge. */
@@ -73,7 +72,8 @@
     import { computed, onBeforeUnmount, ref, watch } from "vue";
     import { SurfacePageEntry, useSurfacePages } from "./surfacePages.partial";
 
-    // One page of a sheet or a panel dialog. The surface draws its own body as its first page;
+    // One page of a sheet or a panel dialog. The surface draws its own body as its first page,
+    // set aside while a page is turned to over it;
     // a page a choice leads to is drawn in the surface's pages slot and opened by its owner, who
     // closes it again on back. The surface's head shows Back and the page's title meanwhile.
 

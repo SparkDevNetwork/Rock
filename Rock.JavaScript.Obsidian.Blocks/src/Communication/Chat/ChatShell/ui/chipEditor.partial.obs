@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <!-- A phone's keyboard shows Send on its Enter key, as Enter sends, and starts each sentence with a capital. -->
     <div ref="editorElement"
          class="chat-ed"
          :class="{ 'is-phone': isPhone }"
@@ -174,7 +173,11 @@
 
     const editorElement = ref<HTMLElement>();
 
-    /** Whether the chat is a phone's, where the text is drawn large enough that focusing the box does not zoom the page. */
+    /**
+     * Whether the chat is a phone's, where the text is drawn large enough that focusing the box
+     * does not zoom the page. A phone's keyboard is told besides that Enter sends, so its key
+     * reads Send, and that each sentence starts with a capital.
+     */
     const { isPhone } = useChatSession();
 
     /** A mention token in any letter case, as the server reads it. */
