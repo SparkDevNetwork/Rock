@@ -1650,6 +1650,23 @@ describe("the reactions row", () => {
         expect(root(w).classList.contains("has-reactions")).toBe(true);
     });
 
+    // The chips sit half over the bubble's lower edge, on the bubble's side, seated by the bubble's
+    // own rule on the chips' single root; the bubble grows only its foot, never its width. Under a
+    // message's files there is no bubble edge to sit on, so the chips stand 4px under the files.
+    test("sits half over the bubble's lower edge, or 4px under the files", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const ruleOf = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        expect(ruleOf(".chat-reacts")).toMatch(/margin-top:\s*-11px/);
+        expect(ruleOf(".chat-reacts")).not.toMatch(/:deep/);
+        expect(ruleOf(".has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo), .has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo)")).toMatch(/padding-bottom:\s*15px/);
+        expect(ruleOf(".has-files .chat-reacts")).toMatch(/margin-top:\s*4px/);
+    });
+
     test("draws nothing for a message with no reactions and no thread", () => {
         const w = draw({ message: message(), reactionHost: host([]) });
 
@@ -1919,6 +1936,49 @@ describe("a message's files", () => {
         expect(wrapper.find("[data-testid='attachment-grid']").exists()).toBe(true);
         expect(wrapper.find(".chat-bubble").exists()).toBe(false);
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Sending…");
+    });
+
+    // A text bubble is as wide as its words: the bubble and its files stand in one column, each its
+    // own width, the files under the words on the sender's side and the time under the files.
+    describe("in a bubble", () => {
+        const bubbleStyle = (): string => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        };
+        const ruleOf = (style: string, selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()[\]:*+]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        test("the bubble's width ignores the files: they stack in a column, each its own width", () => {
+            const anchor = ruleOf(bubbleStyle(), ".chat-bub-anchor");
+
+            expect(anchor).toMatch(/flex-direction:\s*column/);
+            expect(anchor).toMatch(/align-items:\s*flex-start/);
+            expect(ruleOf(bubbleStyle(), ".is-own .chat-bub-anchor")).toMatch(/align-items:\s*flex-end/);
+        });
+
+        test("the files follow the bubble, and the time follows the files", () => {
+            const wrapper = draw({ message: message({ attachments: [photo] }) });
+            const bubble = wrapper.get(".chat-bubble").element;
+            const files = wrapper.get(".chat-msg-files").element;
+            const time = wrapper.get("[data-testid='message-meta']").element;
+
+            expect(bubble.parentElement).toBe(files.parentElement);
+            expect(bubble.compareDocumentPosition(files) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            expect(files.compareDocumentPosition(time) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            expect(ruleOf(bubbleStyle(), ".chat-msg-files")).toMatch(/margin-top:\s*4px/);
+        });
+
+        test("a message with files says so, and stands 12px before the next message of its run", () => {
+            expect(root(draw({ message: message({ attachments: [photo] }) })).classList.contains("has-files")).toBe(true);
+            expect(root(draw({ message: message() })).classList.contains("has-files")).toBe(false);
+            expect(root(draw({ message: message({ body: null, attachments: [photo], deleted_at: nineOhTwo }) })).classList.contains("has-files")).toBe(false);
+
+            const rowSource = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const next = ruleOf(rowSource.slice(rowSource.indexOf("<style"), rowSource.indexOf("</style>")), ".chat-msg.is-conversational.has-files + .chat-msg");
+            expect(next).toMatch(/margin-top:\s*calc\(12px - var\(--chat-grp-gap, 0px\)\)/);
+        });
     });
 });
 
