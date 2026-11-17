@@ -144,6 +144,12 @@
     --chat-r-field: var(--rounded-large, 12px);
     --chat-r-surface: var(--rounded-large, 12px);
     --chat-r-full: var(--rounded-full, 9999px);
+    /*
+        A text badge (a count, a tag such as Leader, the NEW marker) has square-ish corners, the
+        inset corner, not the round family's pill: the corner keeps a badge apart from the round
+        faces and dots beside it. The "+N" on a pile of faces stays round, since it counts them.
+    */
+    --chat-r-badge: var(--chat-r-inset);
     --chat-r-bubble: 20px;
     --chat-r-tail: 6px;
     /* A quoted message drawn inside a bubble, its corners the bubble's less its padding. */
