@@ -34,15 +34,16 @@
 /*
     A page fills what its surface gives the pages, laid out as the surface's body is. It moves by
     the whole sheet's slide distance and fades as it goes, so where less motion is asked for, the
-    distance is nothing and a turn is a fade. Visibility, moving with them, is visible at every
-    step but a hidden end, so a page set aside hides once it is there and shows at once as it returns.
+    distance is nothing and a turn is a fade. Coming back it is visible at once: a visibility
+    transition is drawn at its hidden start on the frame it begins, and focus given back to a
+    control on the page in that frame would find it hidden.
 */
 .chat-surface-page {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
-    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in);
 }
 
 /* A page holding focus as it is turned to draws no ring around itself, as a dialog holding focus draws none. */
@@ -50,11 +51,16 @@
     outline: none;
 }
 
-/* Under a page turned to over it: a quarter of the way to the left, faded, and out of reach. */
+/*
+    Under a page turned to over it: a quarter of the way to the left, faded, and out of reach. Its
+    visibility steps with the slide, visible at every step but the hidden end, so it is seen as it
+    slides away and hides once it is there.
+*/
 .chat-surface-page.is-covered {
     visibility: hidden;
     opacity: 0;
     transform: translateX(calc(var(--chat-rise-sheet) / -4));
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
 }
 
 /*
