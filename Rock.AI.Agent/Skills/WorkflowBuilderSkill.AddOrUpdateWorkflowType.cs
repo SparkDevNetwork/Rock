@@ -25,6 +25,7 @@ using Rock.Configuration;
 using Rock.Model;
 using Rock.Security;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills;
 
@@ -169,6 +170,14 @@ internal sealed partial class WorkflowBuilderSkill
             if ( category == null )
             {
                 return helper.ErrorResult
+                    .WithInstructions( $"Call the {nameof( CoreAdministrationSkill.ListCategories )} function with the WorkflowType entity type to determine the available categories." );
+            }
+
+            // The category decides which security rules the workflow type inherits,
+            // so only accept a category that belongs to the WorkflowType entity type.
+            if ( category.EntityTypeId != EntityTypeCache.GetId<Rock.Model.WorkflowType>() )
+            {
+                return Error( $"The category '{category.Name}' is not a workflow type category." )
                     .WithInstructions( $"Call the {nameof( CoreAdministrationSkill.ListCategories )} function with the WorkflowType entity type to determine the available categories." );
             }
 
