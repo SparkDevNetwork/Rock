@@ -3688,7 +3688,7 @@ describe("reactions", () => {
     });
 
     // The bar turns into the tray in place, so the tray leads with the bar's quick reactions, then
-    // the rest in their order (the Feed's E1-A, D-816: "the three quick reactions first, five more").
+    // the rest in their order (the Feed's E1-A: "the three quick reactions first, five more").
     test("asked for by a bar's Add reaction, opens on a tray that leads with the bar's quick reactions", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);

@@ -309,7 +309,7 @@ describe("the quick tray", () => {
     });
 
     // The bar turns into the tray in place, so the bar's quick reactions are gone from the screen
-    // once it opens: the tray leads with them, then five more (the Feed's E1-A, D-816: "the three
+    // once it opens: the tray leads with them, then five more (the Feed's E1-A: "the three
     // quick reactions first, five more, then All emoji").
     test("leads with the quick reactions the control that opened it showed, then fills from the recents then the favorites", async () => {
         await open({ startsOn: "tray", offered: ["thumbsup", "heart", "joy"], recents: ["fire", "heart", "grinning"] });
