@@ -97,6 +97,50 @@ describe("the sheet", () => {
         expect(document.activeElement).toBe(find("one"));
     });
 
+    // Focus goes back once, by one owner. A sheet gives it back to what had focus as it opened;
+    // a sheet whose owner gives it back itself, as a popover drawn as a sheet hands it to the
+    // composer's field after an emoji is put in, leaves it where its owner put it.
+    describe("as it closes", () => {
+        /** The composer's emoji button opening the sheet, and its field, which the owner may hand focus to on close. */
+        async function closing(props: Record<string, unknown>): Promise<{ opener: HTMLElement, field: HTMLElement }> {
+            const isOpen = ref(false);
+            const Host = defineComponent({
+                setup() {
+                    return () => [
+                        h("button", { "data-testid": "opener", onClick: () => {
+                            isOpen.value = true;
+                        } }, "Emoji"),
+                        h("textarea", { "data-testid": "field" }),
+                        h(Sheet, { isOpen: isOpen.value, label: "Emoji", ...props }, () => h("button", { "data-testid": "smile", onClick: () => {
+                            // the owner closes and puts focus where the person goes on typing
+                            (find("field") as HTMLElement).focus();
+                            isOpen.value = false;
+                        } }, "smile"))
+                    ];
+                }
+            });
+
+            wrapper = mount(Host, { attachTo: document.body });
+            const opener = find("opener") as HTMLElement;
+            opener.focus();
+            opener.click();
+            await settle();
+            (find("smile") as HTMLElement).click();
+            await settle();
+            return { opener, field: find("field") as HTMLElement };
+        }
+
+        it("gives focus back to what opened it", async () => {
+            const { opener } = await closing({});
+            expect(document.activeElement).toBe(opener);
+        });
+
+        it("leaves focus where its owner put it when its owner gives focus back itself", async () => {
+            const { field } = await closing({ isFocusReturnedByOwner: true });
+            expect(document.activeElement).toBe(field);
+        });
+    });
+
     it("keeps Tab inside, wrapping from its last control to its first and back", async () => {
         sheet();
         await settle();
