@@ -14,8 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
-// The block's frame, as one owner: what each column shows, how the block moves between them, the
-// landings on one message, and where focus goes as each move ends.
+// The block's frame, as one owner: what each column shows, how the block moves between them, and
+// where focus goes as each move ends.
 //
 // The panel column holds one panel at a time (the threads list, the mentions inbox, the members
 // panel or a thread in its drawer), with the way back from a thread to the list it came from and
@@ -23,19 +23,16 @@
 // message) take the conversation's place. On a phone one of the three panes is in front, worked
 // out in one place from everything that can take a column.
 //
-// A landing finds one message that may not be drawn yet: a reply a push's tap or a link names,
-// opened in its thread, the original a quote jumps to, and a mention the inbox opens in its
-// conversation. All of them fetch at most a few older pages through one loop, and each look checks
-// that the view it started in is still there and that no landing has been asked for since, so only
-// the newest lands.
+// Focus has one owner here. A move asks where focus should go; once the frame has drawn the change,
+// and every part fading out is out of reach, one settle puts it there, else leaves it where it is
+// while that is still drawn, else gives it to the start of the column that last held it.
+//
+// The landings on one message that may not be drawn yet are their own, in useLandings, made here
+// since they open and close the drawer the frame owns.
 //
 // The panels' wiring to the shell lives here too: the members panel and its two dialogs, the
 // threads list and the drawer's older replies, since which panel shows and what it asks of the
 // shell change together.
-//
-// Size: about 1,480 lines. The next addition that takes this past 1,500 splits the landings back
-// out to their own file, since they are the one part with a lifetime of their own (a landing
-// outlives the move that asked for it).
 
 import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef, ShallowRef, StyleValue, watch, watchEffect } from "vue";
 import { ToastNotice } from "../components/errorToast.partial.obs";
@@ -44,6 +41,7 @@ import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration, tokenLength } from "../ui/brand.partial";
 import { EscapeLayer, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
+import { Landings, ReplyLanding, useLandings } from "./useLandings.partial";
 import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 import { useRoomsView } from "./useRoomsView.partial";
 import { FollowError, OpenThreadState, ThreadListState, ThreadListTab, ThreadPlace, unfollowNotice } from "./useThreads.partial";
@@ -77,14 +75,8 @@ export type MainViewKind = "directory" | "newdm";
 /** Which pane a phone shows in front. */
 export type FramePane = "list" | "conversation" | "panel";
 
-/** A thread to open in a conversation, at a reply when it names one: from a push's tap, a link, or a message's own thread. */
-export type ReplyLanding = ThreadPlace & { channelId: string };
-
 /** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
 export type ThreadOrigin = "threads" | "activity" | null;
-
-/** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
-export type LandingCheck = "held" | "more" | "stop";
 
 /**
  * A place focus can go, tried in its order: a stop by its mark, a stop narrowed where it repeats
@@ -135,7 +127,7 @@ export type FrameViewDependencies = {
 };
 
 /** What the template draws of the frame, and the ways the block moves between its columns. */
-export type Frame = MembersPanelViews & ThreadsPanelWiring & {
+export type Frame = MembersPanelViews & ThreadsPanelWiring & Landings & {
     /** Whether the block itself is narrower than a phone's layout allows, wherever it sits in the window. */
     isPhone: Ref<boolean>;
 
@@ -208,12 +200,6 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** What the frame draws of rooms: the open conversation's, the open thread's and the one New message found. */
     rooms: ReturnType<typeof useRoomsView>;
 
-    /** The reply the drawer scrolls to and flashes once it holds it, or null. */
-    landingReplyId: Ref<number | null>;
-
-    /** The message the feed scrolls to and flashes once its timeline holds it, or null. */
-    landingMessageId: Ref<number | null>;
-
     onResize: (entries: ResizeObserverEntry[]) => void;
 
     /** Focus came into the frame: the column it is in is where focus lost from it goes back to. */
@@ -279,17 +265,6 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** Counts every thread opened or left, so a landing can tell the drawer it started in is gone. */
     threadOpenCount: () => number;
 
-    landOnReply: (landing: ReplyLanding, origin?: ThreadOrigin) => Promise<void>;
-
-    onJump: (messageId: number, isFromThread: boolean) => Promise<void>;
-
-    /**
-     * Opens a conversation, as a sidebar row does, and lands on a message in it. Answers "more"
-     * when the pages a landing fetches ran out still looking, so the caller can say the message
-     * is too far back; "held" once it landed; "stop" when it did not and is not still looking.
-     */
-    landInConversation: (channelId: string, messageId: number) => Promise<LandingCheck>;
-
     /**
      * Puts focus on the first place of an order that is drawn, each stop found by its mark. A
      * phone skips the composer, whose focus would raise the keyboard over what the person came to
@@ -316,9 +291,6 @@ const fallbackPaneSlideMs = 300;
 const fallbackSidePx = 296;
 const fallbackPanelPx = 392;
 const fallbackMainMinPx = 480;
-
-/** A landing fetches at most this many older pages before it stays at the newest. */
-const maxLandingOlderPages = 2;
 
 /**
  * Creates the block's frame. Its watches of the open conversation are made here in the order they
@@ -396,11 +368,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      */
     let linkedReply = dependencies.linkedReply;
 
-    const landingReplyId = ref<number | null>(null);
-    const landingMessageId = ref<number | null>(null);
-
-    /** Counts every landing asked for, so one a newer landing replaced stops looking. */
-    let landingCount = 0;
+    // Made from the drawer's open and close below, which are hoisted, and read by them in turn.
+    const landings = useLandings({ shell, activeChannelId, isPhone, openThreadDrawer, closeThreadDrawer, threadOpenCount: () => threadOpenCount });
+    const { landingReplyId, landOnReply } = landings;
 
     /** The sidebar laid over the conversation on the Escape stack, under anything opened over it since. */
     const sidebarLayer: EscapeLayer = { takeEscape: () => onSidebarAway() };
@@ -558,6 +528,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         panelKind.value = kind;
         shownPanel.value = kind;
         const opened = openList(kind);
+        // The column may still be 0px wide, so a focus that scrolled would drag the content in
+        // from its edge; a back chevron or X takes focus without its tooltip, as nobody reached for it.
         await askFocus(["panel-start"], { preventScroll: true, isQuiet: true });
 
         // A first control that comes with the list's first page, as a phone's first member, takes
@@ -739,37 +711,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         isPaneMotionOn.value = true;
         await shell.value.selectChannel(channelId);
         await askFocus(["join", "composer", "header"], { within: "main" });
-    }
-
-    /**
-     * A quote asked to jump to the message it quotes. In a thread, a reply the drawer holds is
-     * landed on there; anything else is in the conversation, which a phone brings back to the
-     * front. The original is usually recent, so the timeline nearly always holds it; when not, a
-     * few older pages are fetched, as for a reply a push opened, and past them the jump does nothing.
-     */
-    async function onJump(messageId: number, isFromThread: boolean): Promise<void> {
-        const thisLanding = ++landingCount;
-        const thread = shell.value.threads.state.thread;
-        if (isFromThread && thread?.replies.some(reply => reply.id === messageId)) {
-            // Let go first, so a second jump to the reply the drawer last landed on lands again.
-            landingReplyId.value = null;
-            await nextTick();
-            if (thisLanding === landingCount) {
-                landingReplyId.value = messageId;
-            }
-            return;
-        }
-
-        const channelId = activeChannelId.value;
-        if (!channelId) {
-            return;
-        }
-
-        if (isFromThread && isPhone.value) {
-            closeThreadDrawer();
-        }
-
-        await landInFeed(channelId, messageId, thisLanding);
     }
 
     // #endregion Event Handlers
@@ -1113,85 +1054,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         focusStop([...start, "header"], { preventScroll: true, isQuiet: true });
     }
 
-    /**
-     * Opens a thread at a reply. A push or a link is about a recent reply, so the newest page
-     * nearly always holds it; when not, a few older pages are fetched before the drawer simply
-     * stays at the newest. Each await checks the drawer is still the one this opened, so one
-     * closed or replaced meanwhile asks for nothing more and flashes nothing. A reply opened from
-     * a list keeps the list to go back to.
-     */
-    async function landOnReply(landing: ReplyLanding, origin: ThreadOrigin = null): Promise<void> {
-        const thisLanding = ++landingCount;
-        // Let go first, and let the drawer see it before landing, so a landing on the reply it
-        // last landed on lands again, in the thread already open as in one newly opened.
-        landingReplyId.value = null;
-        const opened = openThreadDrawer(landing.channelId, landing.rootId, origin);
-        const thisOpen = threadOpenCount;
-        await opened;
-        await nextTick();
-
-        const threads = shell.value.threads;
-        await loadUntilHeld(() => {
-            const thread = threads.state.thread;
-            if (thisLanding !== landingCount || thisOpen !== threadOpenCount || !thread || thread.rootId !== landing.rootId || landing.messageId === null) {
-                return "stop";
-            }
-
-            if (thread.replies.some(reply => reply.id === landing.messageId)) {
-                landingReplyId.value = landing.messageId;
-                return "held";
-            }
-
-            // A failed page is shown in the drawer; trying again here would only repeat it.
-            return !thread.hasMore || thread.error || thread.olderError ? "stop" : "more";
-        }, () => threads.loadOlderReplies());
-    }
-
-    /**
-     * Looks for a message in the conversation on screen, fetching a few older pages while it may
-     * be further back, and lands on it once held. Stops when the person has left the conversation
-     * or asked for another landing meanwhile.
-     *
-     * @param thisLanding The landing's number, which must still be the newest at every look.
-     */
-    async function landInFeed(channelId: string, messageId: number, thisLanding: number): Promise<LandingCheck> {
-        // Let go first, so a second landing on the message the feed last landed on lands again.
-        landingMessageId.value = null;
-        await nextTick();
-
-        let oldestSeen: number | undefined;
-        return loadUntilHeld(() => {
-            const timeline = shell.value.timelines.state(channelId);
-            const oldest = timeline.messages[0]?.id;
-            if (thisLanding !== landingCount || activeChannelId.value !== channelId || oldest === undefined) {
-                return "stop";
-            }
-
-            if (timeline.messages.some(message => message.id === messageId)) {
-                landingMessageId.value = messageId;
-                return "held";
-            }
-
-            // An older page that failed or was dropped moved nothing, and one past the message
-            // without it means the conversation does not show it, as a reply kept to its thread
-            // or a message since deleted: neither is too far back.
-            const isStuck = oldest === oldestSeen || oldest < messageId;
-            oldestSeen = oldest;
-            return isStuck || !timeline.hasMore ? "stop" : "more";
-        }, () => shell.value.loadOlder().catch(() => undefined)); // the shell has said why; the look above stops on it
-    }
-
-    /**
-     * Opens a conversation as a sidebar row does, waiting for an open of it already under way,
-     * then lands on a message in it. The landing is numbered as it is asked, before the open, so
-     * one asked for later is never overtaken by this one's open finishing after it.
-     */
-    async function landInConversation(channelId: string, messageId: number): Promise<LandingCheck> {
-        const thisLanding = ++landingCount;
-        await shell.value.selectChannel(channelId);
-        return thisLanding === landingCount ? landInFeed(channelId, messageId, thisLanding) : "stop";
-    }
-
     // #endregion Functions
 
     // #region Watchers
@@ -1336,8 +1198,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         drawnThread,
         threadOrigin,
         rooms,
-        landingReplyId,
-        landingMessageId,
         onResize,
         onFocusIn,
         onSelect,
@@ -1362,10 +1222,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         openFromMainView,
         openAddPeople,
         threadOpenCount: () => threadOpenCount,
-        landOnReply,
-        onJump,
-        landInConversation,
         focusStop,
+        ...landings,
         ...membersPanelViews(shell, rooms, dependencies.campuses),
         ...threadsPanelWiring(shell, activeChannelId, drawnThread, dependencies.showNotice)
     };
@@ -1382,26 +1240,6 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
  */
 function firstDrawn(place: ParentNode | undefined, selector: string): HTMLElement | null {
     return Array.from(place?.querySelectorAll<HTMLElement>(selector) ?? []).find(isDrawn) ?? null;
-}
-
-/**
- * Looks for a landing's message, fetching at most a few older pages while the check says one
- * may hold it. The check lands the message itself once it is held, in the same step that
- * found the view unchanged, so a view replaced meanwhile is never landed in.
- *
- * @param check Looks once and says where the landing stands.
- * @param loadOlder Fetches the next older page.
- *
- * @returns The last look's answer: "more" when the pages ran out still looking.
- */
-async function loadUntilHeld(check: () => LandingCheck, loadOlder: () => Promise<void>): Promise<LandingCheck> {
-    let last = check();
-    for (let olderPages = 0; last === "more" && olderPages < maxLandingOlderPages; olderPages++) {
-        await loadOlder();
-        last = check();
-    }
-
-    return last;
 }
 
 /**

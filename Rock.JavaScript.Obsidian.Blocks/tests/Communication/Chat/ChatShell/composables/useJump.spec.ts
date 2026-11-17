@@ -21,8 +21,8 @@
 // asked before it, still fetching, never scrolls or flashes once the newer has, and nor does one
 // whose conversation the person left.
 //
-// The landings these tests are written to, the frame's in useFrameView.partial.ts, mounted in a
-// bare host since the frame lives as long as the block does:
+// The landings these tests are written to, the frame's in useLandings.partial.ts, reached through
+// useFrameView.partial.ts and mounted in a bare host since the frame lives as long as the block does:
 //
 //   useFrameView(dependencies: { shell, activeChannelId, rootElement, linkedReply, campuses, showNotice }): {
 //       landingReplyId: Ref<number | null>, landingMessageId: Ref<number | null>,
