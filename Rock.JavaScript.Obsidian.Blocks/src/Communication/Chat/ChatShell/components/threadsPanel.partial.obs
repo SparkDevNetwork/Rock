@@ -86,6 +86,7 @@
                         <IconButton :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
                                     :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
                                     data-testid="thread-row-follow"
+                                    :data-follow-of="drawn.rootId"
                                     tabindex="-1"
                                     :aria-pressed="drawn.isFollowing ? 'true' : 'false'"
                                     @click="onFollow(drawn)" />
@@ -415,10 +416,7 @@
     async function onFollowRetry(rootId: number): Promise<void> {
         listKeys.current.value = rootId;
         await nextTick();
-        listElement.value?.querySelector<HTMLElement>(`[data-testid='thread-row-open'][data-root-id='${rootId}']`)
-            ?.closest(".chat-ls-row")
-            ?.querySelector<HTMLElement>("[data-testid='thread-row-follow']")
-            ?.focus();
+        listElement.value?.querySelector<HTMLElement>(`[data-follow-of='${rootId}']`)?.focus();
     }
 
     /**
@@ -428,7 +426,7 @@
     function onListKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement | null;
         const row = target?.closest<HTMLElement>(".chat-ls-row");
-        const hit = row?.querySelector<HTMLElement>("[data-testid='thread-row-open']");
+        const hit = row?.querySelector<HTMLElement>("[data-focus-stop='threads-row']");
         if (!row || !hit) {
             return;
         }
@@ -436,7 +434,7 @@
         const isOnHit = target === hit;
         if (event.key === "ArrowRight" && isOnHit) {
             event.preventDefault();
-            row.querySelector<HTMLElement>("[data-testid='thread-row-follow']")?.focus();
+            row.querySelector<HTMLElement>("[data-follow-of]")?.focus();
         }
         else if (event.key === "ArrowLeft" && !isOnHit) {
             event.preventDefault();
