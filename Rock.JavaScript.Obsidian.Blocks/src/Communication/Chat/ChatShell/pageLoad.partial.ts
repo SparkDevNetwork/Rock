@@ -138,6 +138,55 @@ export function writeRememberedKind(storage: StorageLike | null, channelKey: str
 }
 
 /**
+ * The key beside the remembered channel that holds the sidebar foot's shape, whether online
+ * status was on, so a reload draws the foot as it will stay from the first paint.
+ *
+ * @param channelKey The remembered channel's key.
+ *
+ * @returns The key.
+ */
+function rememberedStatusShownKey(channelKey: string): string {
+    return `${channelKey}:online`;
+}
+
+/**
+ * Reads whether the sidebar's foot showed online status at the person's last load. Only a sign-in
+ * kept since then reads it, so a sign-out forgets it; a first visit or blocked storage reads off.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ * @param isSignInKept Whether the person has stayed signed in on this browser since it was written.
+ *
+ * @returns Whether online status showed.
+ */
+export function readRememberedStatusShown(storage: StorageLike | null, channelKey: string, isSignInKept: boolean): boolean {
+    try {
+        return isSignInKept && storage?.getItem(rememberedStatusShownKey(channelKey)) === "on";
+    }
+    catch {
+        // Intentionally ignored: storage blocked by the browser only loses the memory.
+        return false;
+    }
+}
+
+/**
+ * Remembers whether the sidebar's foot shows online status. Storage that is blocked or missing
+ * only loses the memory.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey The remembered channel's key.
+ * @param isShown Whether online status shows.
+ */
+export function writeRememberedStatusShown(storage: StorageLike | null, channelKey: string, isShown: boolean): void {
+    try {
+        storage?.setItem(rememberedStatusShownKey(channelKey), isShown ? "on" : "off");
+    }
+    catch {
+        // Intentionally ignored: storage blocked or full only loses the memory.
+    }
+}
+
+/**
  * How long a first load waits before drawing the skeleton's marks. An estimate to measure on the
  * sandbox: a load faster than this never shows them, so a quick load does not flash grey.
  */

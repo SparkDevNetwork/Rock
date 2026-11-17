@@ -46,7 +46,7 @@ import { createMembers, MemberDoors, Members } from "./composables/useMembers.pa
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
 import { createPresence, Presence } from "./composables/usePresence.partial";
-import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, rememberedChannelKey } from "./pageLoad.partial";
+import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, readRememberedStatusShown, rememberedChannelKey, writeRememberedStatusShown } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import type { Politeness } from "./ui/announcer.partial";
@@ -349,6 +349,13 @@ export type ChatShell = {
  * @returns The shell.
  */
 export function createChatShell(options: ShellOptions): ChatShell {
+    const tenantId = options.session.tenantId ?? "";
+    const personAliasGuid = options.session.personAliasGuid ?? "";
+    const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
+
+    // Without the sign-in mark a sign-out cannot be told, so the device keeps nothing of the foot.
+    const footStorage = options.signInMark ? options.storage : null;
+
     const state = reactive<ShellState>({
         phase: "starting",
         startWait: null,
@@ -361,7 +368,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         service: { state: "normal", banner: null },
         isUpdateRequired: false,
         isComposerOpen: true,
-        isStatusShown: false,
+        // the foot as the person's last load left it, read before the drafts set the mark again
+        isStatusShown: readRememberedStatusShown(footStorage, storageKey, options.signInMark?.isSet() === true),
         // the platform's, from the first exchange; nothing is drawn from them before it answers
         limits: readSettings(undefined).limits,
         isPushOffered: false,
@@ -371,8 +379,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
     }) as ShellState;
     const projectUrl = (options.session.projectUrl ?? "").replace(/\/+$/, "");
     const publishableKey = options.session.publishableKey ?? "";
-    const tenantId = options.session.tenantId ?? "";
-    const personAliasGuid = options.session.personAliasGuid ?? "";
 
     let client: PlatformClientLike | null = null;
     let hub: RealtimeHub | null = null;
@@ -443,6 +449,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
         state.isUpdateRequired = settings.client.update_required;
         state.isComposerOpen = isComposerOpen(settings.service.state);
         state.isStatusShown = settings.flags.online;
+        writeRememberedStatusShown(footStorage, storageKey, settings.flags.online);
         state.limits = settings.limits;
     }
 
@@ -1039,8 +1046,6 @@ export function createChatShell(options: ShellOptions): ChatShell {
         holdText: (channelId, text) => drafts.append(quoteKey(channelId), text),
         mask: message => blocks.mask(message)
     });
-
-    const storageKey = rememberedChannelKey(tenantId, personAliasGuid);
 
     // From the shell's creation, which is the block's mount: the skeleton's wait and the ceiling run
     // from here. It draws the look of the room opened last, as nothing else is known yet.
