@@ -48,8 +48,12 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
     let isAsking = false;
     let isPromised = false;
 
+    // Set once the list has gone, so a page settling after it, as one asked before a switch to
+    // another conversation does, asks nothing more of a loader that now reads the new one.
+    let isDisposed = false;
+
     function ask(): void {
-        if (isAsking || !isInView || !enabled()) {
+        if (isDisposed || isAsking || !isInView || !enabled()) {
             return;
         }
 
@@ -102,6 +106,7 @@ export function usePagingTrigger(sentinel: Ref<HTMLElement | undefined>, loadMor
     }, { flush: "post" });
 
     onScopeDispose(() => {
+        isDisposed = true;
         observer?.disconnect();
         observer = null;
     });
