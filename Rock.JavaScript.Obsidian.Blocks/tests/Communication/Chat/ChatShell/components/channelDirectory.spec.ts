@@ -810,6 +810,56 @@ describe("the preview", () => {
         expect(w.emitted("preview")).toBeUndefined();
     });
 
+    // Over the list, the list goes out of reach: focus on the row pressed moves into the preview, to
+    // its Back, and Back or Escape gives it back to that row, rather than leaving it on the page.
+    test.each([["in a narrow view", false, 800], ["on a phone", true, 390]])("%s, moves focus from the row pressed to the preview's Back, and back to the row as Back closes it", async (_, isPhone, width) => {
+        const w = mountDirectory({ isPhone });
+        await layOut(w, width as number);
+        const row = rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id]]);
+
+        await w.setProps({ previewId: outreach.channel_id });
+        await nextTick();
+        const back = w.get("[data-testid='directory-preview-back']");
+        expect(document.activeElement).toBe(back.element);
+
+        await back.trigger("click");
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id], [null]]);
+        await w.setProps({ previewId: null });
+        await nextTick();
+        expect(document.activeElement).toBe(rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']").element);
+    });
+
+    test("gives focus back to the row pressed when Escape closes the preview lying over the list", async () => {
+        const w = mountDirectory();
+        await layOut(w, 800);
+        const row = rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        await w.setProps({ previewId: worship.channel_id });
+        await nextTick();
+
+        await w.get("[data-testid='directory-preview-back']").trigger("keydown", { key: "Escape" });
+        await w.setProps({ previewId: null });
+        await nextTick();
+
+        expect(document.activeElement).toBe(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").element);
+    });
+
+    test("leaves focus on the row beside the preview in a wide view, where the list stays in reach", async () => {
+        const w = mountDirectory();
+        await layOut(w, 1200);
+        const row = rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        await w.setProps({ previewId: outreach.channel_id });
+        await nextTick();
+
+        expect(document.activeElement).toBe(row.element);
+    });
+
     test("Escape in a preview lying over the list closes the preview, not the view", async () => {
         const w = mountDirectory({ previewId: volunteers.channel_id });
         await layOut(w, 800);
