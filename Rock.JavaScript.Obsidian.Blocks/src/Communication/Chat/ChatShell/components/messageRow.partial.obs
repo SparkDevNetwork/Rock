@@ -248,7 +248,7 @@
 */
 .chat-msg.is-community.is-mention-me {
     /* An @all chip that reached the reader rings itself in the church's line, standing off the wash, as the reader's own chip always does. */
-    --chat-mn-ring: 0 0 0 1px var(--chat-mention-ring);
+    --chat-mn-ring: inset 0 0 0 1px var(--chat-mention-ring);
     margin-inline: var(--chat-cm-inset);
     padding-block: calc(var(--chat-cm-row-pad) - 1px);
     padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));

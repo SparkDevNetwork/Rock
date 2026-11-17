@@ -1111,7 +1111,7 @@ describe("the components' own styles", () => {
         // an amber chip read as a warning, and as another church's color.
         expect(declared(".chat-mn.is-you", "color")).toBe("");
         expect(declared(".chat-mn.is-you", "background")).toBe("");
-        expect(declared(".chat-mn.is-you", "box-shadow")).toBe(normalize("0 0 0 1px var(--chat-mention-ring)"));
+        expect(declared(".chat-mn.is-you", "box-shadow")).toBe(normalize("inset 0 0 0 1px var(--chat-mention-ring)"));
     });
 
     // A chip that is a button must take the sheet's line, not its parent's, or the pill grows
