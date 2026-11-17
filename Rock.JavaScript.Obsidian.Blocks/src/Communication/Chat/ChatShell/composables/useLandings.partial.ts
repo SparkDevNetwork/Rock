@@ -95,20 +95,33 @@ export function useLandings(dependencies: LandingDependencies): Landings {
     const landingReplyId = ref<number | null>(null);
     const landingMessageId = ref<number | null>(null);
 
-    /** The conversation the named message is in, which the landing belongs to. */
+    /** The conversation the newest landing was asked in, which it belongs to. */
     let landingChannelId: string | null = null;
 
-    /** Counts every landing asked for, so one a newer landing replaced stops looking. */
+    /** Counts every landing asked for, so one that a newer landing or a leave ended stops looking. */
     let landingCount = 0;
 
-    // A landing belongs to its conversation: once the person leaves it the message goes, so a feed
-    // drawn for the conversation again later neither waits for it nor lands on it again.
+    // A landing belongs to its conversation: once the person leaves it the landing ends and its
+    // message goes, so coming back before its look finishes, or a feed drawn for the conversation
+    // again later, neither waits for it nor lands on it.
     watch(activeChannelId, channelId => {
         if (landingChannelId !== null && channelId !== landingChannelId) {
+            landingCount++;
             landingMessageId.value = null;
             landingChannelId = null;
         }
     });
+
+    /**
+     * Numbers a new landing and records the conversation it belongs to, before anything it awaits,
+     * so the open it asks for is not a leave. The message an earlier landing named goes, since
+     * only the newest lands.
+     */
+    function beginLanding(channelId: string | null): number {
+        landingChannelId = channelId;
+        landingMessageId.value = null;
+        return ++landingCount;
+    }
 
     /**
      * A quote asked to jump to the message it quotes. In a thread, a reply the drawer holds is
@@ -117,7 +130,7 @@ export function useLandings(dependencies: LandingDependencies): Landings {
      * few older pages are fetched, as for a reply a push opened, and past them the jump does nothing.
      */
     async function onJump(messageId: number, isFromThread: boolean): Promise<void> {
-        const thisLanding = ++landingCount;
+        const thisLanding = beginLanding(activeChannelId.value);
         const thread = shell.value.threads.state.thread;
         if (isFromThread && thread?.replies.some(reply => reply.id === messageId)) {
             // Let go first, so a second jump to the reply the drawer last landed on lands again.
@@ -149,7 +162,7 @@ export function useLandings(dependencies: LandingDependencies): Landings {
      * a list keeps the list to go back to.
      */
     async function landOnReply(landing: ReplyLanding, origin: ThreadOrigin = null): Promise<void> {
-        const thisLanding = ++landingCount;
+        const thisLanding = beginLanding(landing.channelId);
         // Let go first, and let the drawer see it before landing, so a landing on the reply it
         // last landed on lands again, in the thread already open as in one newly opened.
         landingReplyId.value = null;
@@ -183,8 +196,8 @@ export function useLandings(dependencies: LandingDependencies): Landings {
      * @param thisLanding The landing's number, which must still be the newest at every look.
      */
     async function landInFeed(channelId: string, messageId: number, thisLanding: number): Promise<LandingCheck> {
-        // Let go first, so a second landing on the message the feed last landed on lands again.
-        landingMessageId.value = null;
+        // The feed sees the message let go first, so a second landing on the message it last
+        // landed on lands again.
         await nextTick();
 
         return findInFeed(channelId, messageId, thisLanding);
@@ -205,7 +218,6 @@ export function useLandings(dependencies: LandingDependencies): Landings {
             }
 
             if (timeline.messages.some(message => message.id === messageId)) {
-                landingChannelId = channelId;
                 landingMessageId.value = messageId;
                 return "held";
             }
@@ -228,15 +240,14 @@ export function useLandings(dependencies: LandingDependencies): Landings {
      * the feed paints the newest page.
      */
     async function landInConversation(channelId: string, messageId: number): Promise<LandingCheck> {
-        const thisLanding = ++landingCount;
-        // Let go first, so a landing on the message the feed last landed on lands again.
-        landingMessageId.value = null;
+        const thisLanding = beginLanding(channelId);
+        // The feed sees the message let go first, so a landing on the message it last landed on
+        // lands again.
         await nextTick();
         if (thisLanding !== landingCount) {
             return "stop";
         }
 
-        landingChannelId = channelId;
         landingMessageId.value = messageId;
         await shell.value.selectChannel(channelId);
         const check = thisLanding === landingCount ? await findInFeed(channelId, messageId, thisLanding) : "stop";
@@ -246,7 +257,6 @@ export function useLandings(dependencies: LandingDependencies): Landings {
 
         return check;
     }
-
 
     return { landingReplyId, landingMessageId, landOnReply, onJump, landInConversation };
 }

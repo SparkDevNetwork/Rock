@@ -855,9 +855,14 @@
     /** The newest id the timeline held when the feed last looked, which what arrives since is counted from. */
     let newestSeenInTimeline: number | null = null;
 
-
     /** The message flashing now, cleared once its flash ends so a row drawn again does not replay it. */
     const flashingId = ref<number | null>(null);
+
+    /**
+     * The message already landed on, so a landing scrolls and flashes once: the timeline letting
+     * the message go and holding it again later, as a reader scrolling back past it, is not asked.
+     */
+    let landedId: number | null = null;
 
     /**
      * Whether the feed plays its entrance. A feed whose page is held enters only on a switch, read
@@ -1111,6 +1116,11 @@
      * there; in an open feed the reader glides to it.
      */
     async function land(id: number, isFirstPaint: boolean): Promise<void> {
+        if (id === landedId) {
+            return;
+        }
+
+        landedId = id;
         flashingId.value = null;
         await nextTick();
         flashingId.value = id;
@@ -1291,6 +1301,13 @@
             paint();
         }
     }, { flush: "post" });
+
+    // A landing the shell lets go of is done, so the next one, on the same message too, lands again.
+    watch(() => props.landOnId, id => {
+        if (id === null) {
+            landedId = null;
+        }
+    });
 
     // The rows' first paint already holds the landing in view; a landing in the open feed glides.
     watch([heldLandingId, isDrawn], ([id], [, wasDrawn]) => {
