@@ -372,6 +372,17 @@ describe("a sheet turned into another page", () => {
         expect(style).not.toMatch(/@keyframes/);
     });
 
+    // Visibility steps with the slide over the panel's own duration, seen at every step but a hidden
+    // end: a page set aside is seen as it slides away and hides once it is there, and a page coming
+    // back is seen from its first frame. No delay of its own can drift from the slide's duration.
+    it("hides a page set aside only once it has slid away, and shows it at once as it comes back", () => {
+        const style = styleOf("surfacePage.partial.obs");
+
+        expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*visibility var\(--chat-t-panel\)/);
+        expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/visibility:\s*hidden/);
+        expect(ruleOf(style, ".chat-surface-page.is-covered")).not.toMatch(/transition/);
+    });
+
     // A turn is one motion: as the pages slide, the same sheet grows or shrinks from the height of
     // the page it leaves to the height of the page it turns to, the handle riding on its top edge.
     describe("its height", () => {
