@@ -353,6 +353,8 @@ const namedLiterals: Named[] = [
 
     // Durations.
     { name: "d-flash", value: "2.2s" },
+    // A mention arriving live greets the reader with the flash, shorter than a jump's.
+    { name: "d-greet", value: "1.2s" },
     { name: "d-move", value: "220ms", reduced: "0ms" },
     { name: "d-roll", value: "220ms" },
     { name: "d-tools-show", value: "90ms" },

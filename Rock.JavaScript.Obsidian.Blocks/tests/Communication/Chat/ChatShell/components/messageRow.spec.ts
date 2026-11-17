@@ -2255,6 +2255,59 @@ describe("a row's one-off motion", () => {
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
     });
+
+    // A mention of the reader heard arriving live greets them once with the jump's flash, shorter;
+    // one loaded with a page, or one that does not name them, arrives quietly.
+    describe("a mention arriving live", () => {
+        const naming = (): TimelineMessage => message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] });
+
+        test.each([["a direct message", false], ["a channel", true]] as const)("flashes once as it is drawn in %s, and not again on a re-render", async (_kind, isChannel) => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), isChannel, position: "single" }, motion);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
+
+            const outside = jest.fn();
+            const holder = root(wrapper).parentElement!;
+            holder.addEventListener("animationend", outside);
+            animationEnd(wrapper, "chat-flash");
+            await nextTick();
+            holder.removeEventListener("animationend", outside);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+            // The greeting's end is the row's own; a feed letting its jump's flash go on any flash
+            // ending must not hear it.
+            expect(outside).not.toHaveBeenCalled();
+
+            await wrapper.setProps({ message: naming(), position: "first" });
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("a mention loaded with a page, with no arrival heard, does not flash", () => {
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, createMessageMotion());
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("a live message that does not name the reader does not flash", () => {
+            const motion = createMessageMotion();
+            motion.arrived(message(), "conversation");
+            const wrapper = draw({ message: message(), isChannel: true, position: "single" }, motion);
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("plays the flash's own shape at the greeting's length, in both looks", () => {
+            const read = (file: string): string => {
+                const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+                return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+            };
+            const row = read("messageRow.partial.obs");
+            const bubble = read("messageRowBubble.partial.obs");
+
+            expect(row).toMatch(/\.chat-msg\.is-community\.is-greeting::before\s*\{[^}]*animation:\s*chat-flash var\(--chat-d-greet\)/);
+            expect(bubble).toMatch(/\.chat-msg\.is-greeting \.chat-bub-anchor::before\s*\{[^}]*animation:\s*chat-flash var\(--chat-d-greet\)/);
+        });
+    });
 });
 
 // Which motion a row plays is the record's to say: a delete crossfades without sliding Edited in,
