@@ -96,6 +96,7 @@ function draw(given: Record<string, unknown> = {}): VueWrapper {
             refusal: null,
             query: "",
             searchStatus: null,
+            loadMore: waitingLoader(),
             ...props
         },
         global: { provide: providedSession({ isPhone: isPhone as boolean, me: { personAliasGuid: personAliasGuid as string } }) },

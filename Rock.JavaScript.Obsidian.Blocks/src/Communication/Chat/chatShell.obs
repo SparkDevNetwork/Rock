@@ -344,7 +344,7 @@
                         <MembersPanel v-else-if="shownList === 'members'"
                                       v-bind="membersView"
                                       @query="shell.members.setQuery"
-                                      @loadMore="shell.members.loadMore"
+                                      :loadMore="shell.members.loadMore"
                                       @retry="shell.members.retry"
                                       @retrySearch="shell.members.retrySearch"
                                       @message="onMemberMessage"

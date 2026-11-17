@@ -434,6 +434,12 @@
             default: false
         },
 
+        /** Fetches the next page, settling once it is in or its failure is the roster's; the load-more row waits on it. */
+        loadMore: {
+            type: Function as PropType<() => Promise<void>>,
+            required: true
+        },
+
         /** The first page is on its way. */
         isLoading: {
             type: Boolean,
@@ -503,7 +509,6 @@
 
     const emit = defineEmits<{
         (e: "query", text: string): void;
-        (e: "loadMore"): void;
         (e: "retry"): void;
         (e: "retrySearch"): void;
         (e: "message", personAliasGuid: string): void;
@@ -652,11 +657,6 @@
     function onRowBeforeLeave(element: Element): void {
         const row = element as HTMLElement;
         row.style.setProperty("--chat-mb-row-h", `${row.offsetHeight}px`);
-    }
-
-    /** The next page, which the roster says is out through isLoadingMore until it lands. */
-    function loadMore(): void {
-        emit("loadMore");
     }
 
     /** A full group's button is reached and heard, but asks for nothing. */
