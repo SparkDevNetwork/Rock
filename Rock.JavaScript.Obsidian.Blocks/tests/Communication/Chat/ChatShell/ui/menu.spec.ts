@@ -294,6 +294,88 @@ describe("an item that cannot be chosen", () => {
     });
 });
 
+// A sheet that turns into the menu's page, as Chat settings into Status on a phone, draws the
+// same rows in place: no button and no surface of its own, since the page is already one.
+describe("the menu as a page", () => {
+    let wrapper: VueWrapper | null = null;
+
+    const choices = [
+        { key: "auto", label: "Automatic", isChecked: false },
+        { key: "busy", label: "Busy", isChecked: true },
+        { key: "hidden", label: "Appear offline", isChecked: false }
+    ];
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    function mountPage(props: Record<string, unknown> = {}): VueWrapper {
+        wrapper = mount(Menu, { props: { label: "Change your status", items: choices, isPage: true, ...props }, attachTo: document.body });
+        return wrapper;
+    }
+
+    function rows(): HTMLElement[] {
+        return Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+    }
+
+    test("draws its items in place as the sheet's rows, named by its label, with no button, scrim or surface of its own", () => {
+        mountPage();
+
+        expect(menu()?.getAttribute("aria-label")).toBe("Change your status");
+        expect(rows().map(row => row.textContent!.trim())).toEqual(["Automatic", "Busy", "Appear offline"]);
+        expect(rows().every(row => row.classList.contains("chat-sheet-item"))).toBe(true);
+        expect(document.querySelector("[aria-haspopup='menu']")).toBeNull();
+        expect(document.querySelector("[data-testid='scrim']")).toBeNull();
+        expect(document.querySelector("[data-testid='sheet']")).toBeNull();
+    });
+
+    test("starts on the one checked, its one Tab stop, which the page focuses as it turns; the arrows move from there", async () => {
+        mountPage();
+
+        const start = rows()[1];
+        expect(start.hasAttribute("data-autofocus")).toBe(true);
+        expect(rows().map(row => row.tabIndex)).toEqual([-1, 0, -1]);
+
+        start.focus();
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(rows()[2]);
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(rows()[0]);
+    });
+
+    test("starts on the first where none is checked", () => {
+        mountPage({ items: choices.map(item => ({ ...item, isChecked: false })) });
+
+        expect(rows()[0].hasAttribute("data-autofocus")).toBe(true);
+        expect(rows().map(row => row.tabIndex)).toEqual([0, -1, -1]);
+    });
+
+    test("tells a choice by a click or Enter and stays, since its page's owner turns back", async () => {
+        const w = mountPage();
+
+        rows()[2].click();
+        await settle();
+        rows()[0].focus();
+        await press("Enter");
+
+        expect(w.emitted("select")).toEqual([["hidden"], ["auto"]]);
+        expect(menu()).not.toBeNull();
+    });
+
+    test("draws its note after the rows, describing the list, and chooses nothing marked disabled", async () => {
+        const w = mountPage({ note: "Read only until 9.", items: choices.map(item => ({ ...item, isDisabled: true })) });
+
+        expect(document.querySelector("[role='menu'] [data-testid='menu-note']")?.textContent?.trim()).toBe("Read only until 9.");
+        expect(menu()?.getAttribute("aria-describedby")).toBe(document.querySelector("[data-testid='menu-note']")?.id);
+
+        rows()[0].click();
+        await settle();
+        expect(w.emitted("select")).toBeUndefined();
+    });
+});
+
 describe("the menu as a sheet", () => {
     let wrapper: VueWrapper | null = null;
 

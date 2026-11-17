@@ -33,6 +33,7 @@ import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleto
 import { readFileSync } from "fs";
 import { join } from "path";
 import { badgesIn, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, viewer } from "../statusStore";
+import { providedSession } from "../sessionShapes";
 
 // #region Helpers
 
@@ -40,8 +41,10 @@ let wrapper: VueWrapper | null = null;
 
 const me = { show_profile_details: true, is_open_dm_allowed: false, reaction_push: true };
 
-function mountSettings(props: Record<string, unknown> = {}): VueWrapper {
+/** Mounts the dialog; on a phone, as the session reads its width, it rises as a sheet. */
+function mountSettings(props: Record<string, unknown> = {}, isPhone = false): VueWrapper {
     wrapper = mount(ChatSettings, {
+        global: isPhone ? { provide: providedSession({ isPhone }) } : {},
         props: {
             isOpen: true,
             personName: "Jordan Lee",
@@ -752,6 +755,58 @@ describe("Status", () => {
         (document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']"))!.click();
         await settle();
         expect(w.emitted("status")).toEqual([[{ busy_until: null, appear_offline: true }]]);
+    });
+
+    // On a phone the dialog is a sheet, and a second sheet over it would hide where she came from:
+    // Change turns the one sheet into Status, as the Privacy row turns it into Blocked people.
+    test("on a phone, Change turns the one sheet into Status, starting on what is checked; Back returns to Change", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: true } }, true);
+        await settle();
+        (w.get("[data-testid='status-change']").element as HTMLElement).focus();
+        await openChange(w);
+
+        expect(w.get("[data-testid='dialog-scrim']").classes()).toContain("is-sheet");
+        expect(document.querySelectorAll("[role='dialog']")).toHaveLength(1);
+        expect(document.querySelector("[data-testid='sheet']")).toBeNull();
+        expect(w.get("[data-testid='page-title']").text()).toBe("Status");
+        expect(document.querySelector("[role='menu']")?.closest("[role='dialog']")).not.toBeNull();
+        expect(menuKeys()).toEqual(["auto", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
+        expect(document.activeElement).toBe(document.querySelector("[role='menu'] [data-key='appear_offline']"));
+
+        await w.get("[data-testid='page-back']").trigger("click");
+        await settle();
+        expect(w.find("[data-testid='page-title']").exists()).toBe(false);
+        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(w.emitted("close")).toBeUndefined();
+        expect(document.activeElement).toBe(w.get("[data-testid='status-change']").element);
+    });
+
+    test("on a phone, a choice on the Status page is told to the block and turns back to Change", async () => {
+        const w = mountSettings({ statusChoice: { busy_until: null, appear_offline: false } }, true);
+        await settle();
+        (w.get("[data-testid='status-change']").element as HTMLElement).focus();
+        await openChange(w);
+
+        document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']")!.click();
+        await settle();
+
+        expect(w.emitted("status")).toEqual([[{ busy_until: null, appear_offline: true }]]);
+        expect(w.find("[data-testid='page-title']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='status-change']").element);
+    });
+
+    test("on a phone, Escape on the Status page goes back to settings, not out of them", async () => {
+        const w = mountSettings({}, true);
+        await settle();
+        (w.get("[data-testid='status-change']").element as HTMLElement).focus();
+        await openChange(w);
+
+        (document.activeElement as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+
+        expect(w.find("[data-testid='page-title']").exists()).toBe(false);
+        expect(w.emitted("close")).toBeUndefined();
+        expect(document.activeElement).toBe(w.get("[data-testid='status-change']").element);
     });
 
     test("reads no online switch, so with it off the group stays with every choice in it", async () => {

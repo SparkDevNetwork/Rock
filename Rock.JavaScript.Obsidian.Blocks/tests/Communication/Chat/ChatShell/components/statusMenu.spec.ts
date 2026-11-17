@@ -532,6 +532,59 @@ describe("its triggers", () => {
     });
 });
 
+// On a phone Chat settings is a sheet, so its Change turns that sheet into a Status page rather
+// than raising a second sheet over it; the page draws the same items in place.
+describe("on a phone, inside Chat settings", () => {
+    test("Change asks its sheet to turn to Status, opening no menu or sheet of its own", async () => {
+        const w = mountMenu({ trigger: "change", isPhone: true });
+
+        expect(trigger(w).hasAttribute("aria-haspopup")).toBe(false);
+        expect(trigger(w).getAttribute("aria-label")).toBe("Change your status");
+        await openMenu(w);
+
+        expect(w.emitted("turn")).toHaveLength(1);
+        expect(menu()).toBeNull();
+        expect(document.querySelector("[data-testid='sheet']")).toBeNull();
+    });
+
+    test("Change on a desktop opens the menu beside itself and asks for no page", async () => {
+        const w = mountMenu({ trigger: "change" });
+        await openMenu(w);
+
+        expect(w.emitted("turn")).toBeUndefined();
+        expect(keys()).toHaveLength(6);
+    });
+
+    test("as the page, draws the same six items in place, checked by her settings, starting on the one checked", () => {
+        const w = mountMenu({ trigger: "page", isPhone: true, choice: { busy_until: null, appear_offline: true } });
+
+        expect(w.findComponent(Menu).props("isPage")).toBe(true);
+        expect(w.find("[data-testid='status-change']").exists()).toBe(false);
+        expect(keys()).toEqual(["auto", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
+        expect(checked()).toEqual(["appear_offline"]);
+        expect(itemOf("appear_offline").hasAttribute("data-autofocus")).toBe(true);
+        expect(document.querySelector("[data-testid='sheet']")).toBeNull();
+    });
+
+    test("as the page, a choice is told with its end worked out at the choice", async () => {
+        const w = mountMenu({ trigger: "page", isPhone: true });
+
+        itemOf("busy-1h").click();
+        await settle();
+
+        expect(chosen(w)).toEqual({ busy_until: new Date(evening.getTime() + 3_600_000).toISOString(), appear_offline: false });
+    });
+
+    test("as the page while the church is read only, every item is drawn but never chosen, the reason its note", async () => {
+        const w = mountMenu({ trigger: "page", isPhone: true, closedReason: reason });
+
+        expect(plain(document.querySelector("[role='menu'] [data-testid='menu-note']")!.textContent!)).toBe(reason);
+        itemOf("busy-1h").click();
+        await settle();
+        expect(w.emitted("choose")).toBeUndefined();
+    });
+});
+
 describe("the sidebar foot's face", () => {
     const online: FaceStatus = { state: "online", label: ", online", tip: "Online", busyUntil: null, revision: 1 };
 
