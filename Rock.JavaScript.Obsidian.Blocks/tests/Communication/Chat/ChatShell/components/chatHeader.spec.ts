@@ -146,6 +146,8 @@ describe("a channel's own image", () => {
         const w = mountHeader({ title: "Greeters", kind: "channel", isPublic: true, iconUrl: "https://church.example/GetImage.ashx?guid=team" });
         expect(w.get(".chat-header-ic [data-testid='channel-mark-image']").attributes("src")).toBe("https://church.example/GetImage.ashx?guid=team");
         expect(hasIcon(w, w.get(".chat-header-ic"), "hash")).toBe(false);
+        // The photo arrives over the channel's letter, as the sidebar's tile does, never into an empty box.
+        expect(w.get(".chat-header-ic [data-testid='channel-mark-letter']").text()).toBe("G");
 
         await w.setProps({ iconUrl: null });
         expect(w.find("[data-testid='channel-mark-image']").exists()).toBe(false);
