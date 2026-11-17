@@ -33,7 +33,7 @@ import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShe
 import { ChatPerson, FaceStatus, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { harness, Harness, picked, settle } from "../attachmentFakes";
 import { providedSession } from "../sessionShapes";
-import { busyNow, createStatusStore, onlineNow, StatusStore, told, viewer } from "../statusStore";
+import { busyNow, createStatusStore, onlineNow, shellFolder, StatusStore, styleRules, told, viewer } from "../statusStore";
 
 /** The composer's own style block, for the rules jsdom cannot lay out. */
 function composerStyle(): string {
@@ -145,6 +145,18 @@ describe("the composer's box", () => {
 
         expect(wrapper.emitted("mention")).toEqual([[{ type: "mention", text: "@Anna Kim", person_alias_guid: "a0000002-0000-4000-8000-000000000000", avatar_url: "https://x/anna.jpg" }]]);
         wrapper.unmount();
+    });
+
+    // One control height for the row: the box sets the icon button's size and Send reads the same
+    // value, so emoji, add and Send are one square beside the text, each centred on the others,
+    // where a 32px emoji beside a 34px Send sat a pixel low on the box's bottom edge.
+    test("gives its icon buttons and Send one control height", () => {
+        const file = join(shellFolder, "components/composer.partial.obs");
+
+        expect(styleRules(file, /^\.chat-composer-box$/).join(";")).toMatch(/--chat-icon-btn-s:\s*34px/);
+        const send = styleRules(file, /^\.chat-composer-send$/).join(";");
+        expect(send).toMatch(/(^|;|\s)width:\s*var\(--chat-icon-btn-s\)/);
+        expect(send).toMatch(/(^|;|\s)height:\s*var\(--chat-icon-btn-s\)/);
     });
 });
 
