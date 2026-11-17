@@ -58,16 +58,21 @@ async function settle(): Promise<void> {
     }
 }
 
-/** A conversation's history: ids 100 down to 1, the newest page first, ten to a page. */
-function fetchPage(_channelId: string, options: { limit: number, beforeId?: number }): Promise<HistoryPage> {
-    const top = options.beforeId !== undefined ? options.beforeId - 1 : 100;
+/**
+ * A conversation's history, the newest page first, ten to a page: ids 100 down to 1, and in the
+ * other conversation 200 down to 101, since a message's id is unique across conversations.
+ */
+function fetchPage(channelId: string, options: { limit: number, beforeId?: number }): Promise<HistoryPage> {
+    const newest = channelId === otherChannel ? 200 : 100;
+    const top = options.beforeId !== undefined ? options.beforeId - 1 : newest;
     const ids: number[] = [];
-    for (let id = top; id > top - 10 && id > 0; id--) {
+    for (let id = top; id > top - 10 && id > newest - 100; id--) {
         ids.push(id);
     }
     const messages = ids.map(id => ({ id, parent_id: null, person_alias_guid: "a0000002-0000-4000-8000-000000000000", message_type: "text", body: `m${id}`, created_at: "2026-10-18T09:00:00Z" }) as unknown as TimelineMessage);
-    return Promise.resolve({ messages, read_cursor: 100, unread_count: 0, has_more: top - 10 > 0 });
+    return Promise.resolve({ messages, read_cursor: newest, unread_count: 0, has_more: top - 10 > newest - 100 });
 }
+
 
 let host: VueWrapper | null = null;
 
@@ -86,6 +91,7 @@ async function setup(): Promise<{
     timelines: ReturnType<typeof createTimelines>,
     active: { value: string | null },
     landed: number[],
+    namedAtOpen: Array<number | null>,
     olderPages: Array<Deferred<void>>,
     holdOlderPages: () => void
 }> {
@@ -96,11 +102,15 @@ async function setup(): Promise<{
     const olderPages: Array<Deferred<void>> = [];
     let isHolding = false;
     let opening: Promise<void> = Promise.resolve();
+    // the message named for the feed as each open starts, which the room's feed is drawn with
+    const namedAtOpen: Array<number | null> = [];
+    let jump!: Frame;
     const shell = {
         state: reactive({ hiddenPanes: { conversation: false, thread: false } }),
         timelines,
         // a second select of the conversation still opening waits for that open, as the shell's does
         selectChannel: async (channelId: string): Promise<void> => {
+            namedAtOpen.push(jump.landingMessageId.value);
             if (channelId !== active.value) {
                 active.value = channelId;
                 opening = timelines.loadNewest(channelId);
@@ -119,7 +129,6 @@ async function setup(): Promise<{
         threads: { state: { thread: null }, loadOlderReplies: async () => undefined }
     };
 
-    let jump!: Frame;
     host = mount(defineComponent({
         setup() {
             jump = useFrameView({
@@ -134,14 +143,20 @@ async function setup(): Promise<{
         }
     }));
 
+    // Landed is named and held in the conversation on screen: a landing is named as its room opens,
+    // before the room holds it, and the feed lands on it once it does.
     const landed: number[] = [];
-    watch(jump.landingMessageId, id => {
+    watch(() => {
+        const id = jump.landingMessageId.value;
+        const channelId = active.value;
+        return id !== null && channelId !== null && timelines.state(channelId).messages.some(message => message.id === id) ? id : null;
+    }, id => {
         if (id !== null) {
             landed.push(id);
         }
     }, { flush: "sync" });
 
-    return { jump, timelines, active, landed, olderPages, holdOlderPages: () => isHolding = true };
+    return { jump, timelines, active, landed, namedAtOpen, olderPages, holdOlderPages: () => isHolding = true };
 }
 
 // #endregion Fixtures
@@ -186,11 +201,21 @@ describe("a landing in a conversation from elsewhere", () => {
     test("opens the conversation and lands on the message", async () => {
         const h = await setup();
 
-        const check = await h.jump.landInConversation(otherChannel, 95);
+        const check = await h.jump.landInConversation(otherChannel, 195);
 
         expect(h.active.value).toBe(otherChannel);
-        expect(h.landed).toEqual([95]);
+        expect(h.landed).toEqual([195]);
         expect(check).toBe("held");
+    });
+
+    // The room's feed is drawn with the message it opens at, so it keeps its skeleton until the
+    // message is held rather than painting the newest page first and leaving it.
+    test("names its message before the conversation opens", async () => {
+        const h = await setup();
+
+        await h.jump.landInConversation(otherChannel, 195);
+
+        expect(h.namedAtOpen).toEqual([195]);
     });
 
     test("past two older pages, stays at the newest and answers that it was still looking", async () => {
@@ -200,9 +225,34 @@ describe("a landing in a conversation from elsewhere", () => {
 
         expect(check).toBe("more");
         expect(h.landed).toEqual([]);
+        // let go, so the feed paints the newest page
+        expect(h.jump.landingMessageId.value).toBeNull();
         // the newest page and two older ones, ten each
         expect(h.timelines.state(channel).messages.length).toBe(30);
     });
+
+    // A message the conversation does not show, as a reply kept to its thread, ends the landing.
+    test("that stops lets its message go, so the feed paints the newest page", async () => {
+        const h = await setup();
+
+        const check = await h.jump.landInConversation(otherChannel, 1000);
+
+        expect(check).toBe("stop");
+        expect(h.jump.landingMessageId.value).toBeNull();
+    });
+
+    // A feed drawn again for the conversation later would otherwise hold its skeleton for it.
+    test("lets its message go once the person leaves its conversation", async () => {
+        const h = await setup();
+        await h.jump.landInConversation(otherChannel, 195);
+        expect(h.jump.landingMessageId.value).toBe(195);
+
+        h.active.value = channel;
+        await settle();
+
+        expect(h.jump.landingMessageId.value).toBeNull();
+    });
+
 
     test("overtaken by the person opening another conversation, never lands there, even once its page comes", async () => {
         const h = await setup();
@@ -239,11 +289,12 @@ describe("a landing in a conversation from elsewhere", () => {
     test("asked twice for the same message, as a double click asks, lands once the conversation is in", async () => {
         const h = await setup();
 
-        const first = h.jump.landInConversation(otherChannel, 95);
-        const second = h.jump.landInConversation(otherChannel, 95);
+        const first = h.jump.landInConversation(otherChannel, 195);
+        const second = h.jump.landInConversation(otherChannel, 195);
 
         expect(await second).toBe("held");
         expect(await first).toBe("stop");
-        expect(h.jump.landingMessageId.value).toBe(95);
+        expect(h.jump.landingMessageId.value).toBe(195);
+
     });
 });
