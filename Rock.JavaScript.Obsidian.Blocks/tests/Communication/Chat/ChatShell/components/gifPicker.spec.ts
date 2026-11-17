@@ -184,6 +184,45 @@ describe("the GIF picker", () => {
         expect(style).not.toMatch(/prefers-reduced-motion/);
     });
 
+    // A cover can be white where the plate sits, so the word must read at 4.5 to 1 over white, in
+    // the colours the plate itself names, in every theme the token sheet sets them for.
+    test("a topic's word reads 4.5 to 1 on its plate over a white cover", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs"), "utf8");
+        const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const plate = /\.chat-gif-plate\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+        const tokenIn = (property: string): string => new RegExp(`(?:^|;|\\s)${property}:\\s*var\\(--([\\w-]+)\\)`).exec(plate)?.[1] ?? "";
+        const valuesOf = (token: string): string[] => [...sheet.matchAll(new RegExp(`--${token}:\\s*([^;]+);`, "g"))].map(match => match[1].trim());
+        const rgbaOf = (value: string): number[] => {
+            const rgba = /rgba?\(([\d.\s,]+)\)/.exec(value);
+            if (rgba) {
+                const [r, g, b, a = 1] = rgba[1].split(",").map(Number);
+                return [r, g, b, a];
+            }
+            const hex = /#([0-9a-f]{6})/i.exec(value)?.[1] ?? "000000";
+            return [0, 2, 4].map(at => parseInt(hex.slice(at, at + 2), 16)).concat(1);
+        };
+        const luminance = (rgb: number[]): number => {
+            const [r, g, b] = rgb.map(channel => {
+                const c = channel / 255;
+                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        };
+
+        const backgrounds = valuesOf(tokenIn("background"));
+        const inks = valuesOf(tokenIn("color"));
+        expect(backgrounds.length).toBeGreaterThan(0);
+        expect(inks.length).toBeGreaterThan(0);
+        for (const background of backgrounds) {
+            const [r, g, b, a] = rgbaOf(background);
+            const ground = [r, g, b].map(channel => channel * a + 255 * (1 - a));
+            for (const ink of inks) {
+                const [high, low] = [luminance(rgbaOf(ink)), luminance(ground)].sort((x, y) => y - x);
+                expect((high + 0.05) / (low + 0.05)).toBeGreaterThanOrEqual(4.5);
+            }
+        }
+    });
+
     test("typing asks once after the person stops, and shows the loading tiles meanwhile", async () => {
         jest.useFakeTimers();
         const gifs = fakeGifs();
