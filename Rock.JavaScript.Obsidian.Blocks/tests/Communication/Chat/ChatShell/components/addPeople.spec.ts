@@ -132,10 +132,12 @@ describe("the dialog", () => {
         expect(text(w, "ap-none")).toBe("No one found for “zz”.");
     });
 
+    // In the chat's one voice for a failure to try again, in the same words as New message's own
+    // search for people.
     test("a search that failed says so, with its Try again", async () => {
         const w = draw({ query: "an", error: { code: "rpc.transport", severity: "failed" } });
 
-        expect(text(w, "ap-search-error")).toBe("Couldn't search right now. Try again");
+        expect(text(w, "ap-search-error")).toBe("Couldn't search people. Try again");
     });
 
     // The shared failure drew no way on here, as it does in New message: Try again asks the
