@@ -217,11 +217,8 @@ const tokens: Token[] = [
     { name: "presence-away", light: "#A86400", dark: "#C27400" },
     { name: "presence-busy", light: "#D70015", dark: "#F0303F" },
     { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
-    // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
-    { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
-    // The ring on the reader's own chip in that row: warning at 35 percent, written out, since the
-    // browsers Rock supports cannot mix it.
-    { name: "mention-ring", light: "rgba(229,134,0,.35)", dark: "rgba(229,134,0,.35)" },
+    // A row that names the reader and the ring on its chip name the church's tint and line, in
+    // every theme; "draws a mention's wash and ring from the church color" holds them.
 
     // An initials avatar's saturation and lightness; the hue is the person's own.
     { name: "av-sat", light: "70%", dark: "28%" },

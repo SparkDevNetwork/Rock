@@ -736,7 +736,7 @@ describe("Community, in a channel", () => {
         const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\),\s*\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-all\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
-        expect(style).not.toMatch(/amber|warning/i);
+        expect(style).not.toMatch(/amber|--chat-warning/i);
     });
 
     // A mention and a jump are one idea, "this is for you, here": the jump flashes the wash's own

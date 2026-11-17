@@ -267,7 +267,7 @@
     align-items: center;
     font-size: var(--chat-fs-small);
     font-weight: 600;
-    color: var(--chat-warning-ink);
+    color: var(--chat-brand-ink);
     white-space: nowrap;
 }
 

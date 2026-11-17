@@ -44,7 +44,7 @@
                                v-on="on.editor" />
                 <div v-else-if="isBubbleShown"
                      class="chat-bubble"
-                     data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
+                     data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading }">
                     <div v-if="view.isAnnouncement" class="chat-bubble-label">
                         <Badge tone="brand" icon="speaker" label="Announcement" isSpoken data-testid="announcement-pill" />
                     </div>
@@ -107,20 +107,22 @@
 }
 
 /*
-    A bubble jumped to fades a wash laid just past its edge, held for most of its length and then
-    let go. Reduced motion keeps it, being a color fade only.
+    A message jumped to flashes the row's highlight behind its bubble and files, 4px clear of them,
+    held for most of its length and then let go; the box holds its own layers only while it
+    flashes. Reduced motion keeps it, being a fade only.
 */
-.chat-bubble.is-flashing {
-    position: relative;
+.chat-msg.is-flashing .chat-bub-anchor {
+    isolation: isolate;
 }
 
-.chat-bubble.is-flashing::after {
+.chat-msg.is-flashing .chat-bub-anchor::before {
     position: absolute;
-    inset: -3px;
+    inset: -4px;
+    z-index: -1;
     pointer-events: none;
     content: "";
     background: var(--chat-flash);
-    border-radius: inherit;
+    border-radius: calc(var(--chat-r-bubble) + 4px);
     animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
@@ -519,12 +521,6 @@
          * corners, as her message will, and the time stays here under her newest message.
          */
         isTypingNext: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The message was jumped to, so its bubble flashes. */
-        isFlashing: {
             type: Boolean,
             default: false
         },

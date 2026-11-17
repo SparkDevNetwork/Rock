@@ -40,7 +40,7 @@
         <MessageRowCommunity v-else-if="layout === 'community'" :view="view" :on="on" :isPersonLeader="isPersonLeader" />
 
         <!-- Conversational: bubbles, the name over another person's group, their face at its last. -->
-        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" :isFlashing="isFlashing" />
+        <MessageRowBubble v-else :view="view" :on="on" :isDirectMessage="isDirectMessage" :position="position" :isTypingNext="isTypingNext" :groupKey="groupKey" />
 
         <!--
             A phone's actions, from a tap on the message: the bar's and the menu's choices as a sheet
@@ -119,12 +119,30 @@
 }
 
 /*
-    A message jumped to flashes the church's wash, held for most of its length and then let go, so
-    the eye finds it before it fades. A channel's row fades it out of its own background; a bubble
-    fades its own. Reduced motion keeps it, being a color fade only.
+    A message jumped to flashes the mention wash's own shape, stood in from the feed's edges and
+    rounded, at the flash's strength: held for most of its length and then let go back to whatever
+    the row is at rest, so a mention and a jump read as one idea. It is drawn under the words, the
+    row holding its own layers only while it flashes; a bubble flashes behind itself, in its own
+    sheet. Reduced motion keeps it, being a fade only.
 */
 .chat-msg.is-community.is-flashing {
-    animation: chat-cm-flash var(--chat-d-flash) var(--chat-ease-state);
+    isolation: isolate;
+}
+
+.chat-msg.is-community.is-flashing::before {
+    position: absolute;
+    inset: 1px var(--chat-cm-inset);
+    z-index: -1;
+    pointer-events: none;
+    content: "";
+    background: var(--chat-flash);
+    border-radius: var(--chat-r-row);
+    animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
+}
+
+/* A washed row already stands in by the inset, so its flash fills it. */
+.chat-msg.is-community.is-mention-me.is-flashing::before {
+    inset: 0;
 }
 
 /* Conversational. */
@@ -213,7 +231,7 @@
     border-radius: var(--chat-cm-radius);
 }
 
-/* The chip that reached the reader, theirs or @all, takes a thin amber ring, so it stands off the wash. */
+/* The chip that reached the reader, theirs or @all, takes a thin ring in the church's line, so it stands off the wash. */
 .chat-msg.is-community.is-mention-me :deep(.chat-mn.is-you),
 .chat-msg.is-community.is-mention-me :deep(.chat-mn.is-all) {
     box-shadow: 0 0 0 1px var(--chat-mention-ring);
