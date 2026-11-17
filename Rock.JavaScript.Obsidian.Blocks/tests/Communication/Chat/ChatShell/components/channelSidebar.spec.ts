@@ -176,6 +176,75 @@ afterEach(() => {
 });
 
 describe("the sidebar's top", () => {
+    // The Activity inbox, Mentions and the Threads the person follows, opens from the head beside
+    // New message, and carries the new-mention dot that used to sit in the conversation's header.
+    test("offers Activity beside New message, which asks for the inbox", async () => {
+        const w = mountSidebar({ isActivityOffered: true });
+        const top = w.get("[data-testid='sidebar-top']");
+        const buttons = top.findAll("button").map(b => b.attributes("data-testid"));
+
+        expect(buttons.indexOf("sidebar-activity")).toBe(buttons.indexOf("new-message") - 1);
+        const activity = w.get("[data-testid='sidebar-activity']");
+        expect(activity.attributes("aria-label")).toBe("Activity");
+        expect(activity.attributes("aria-expanded")).toBe("false");
+        expect(w.find("[data-testid='sidebar-activity-dot']").exists()).toBe(false);
+
+        await activity.trigger("click");
+        expect(w.emitted("activity")).toHaveLength(1);
+    });
+
+    test("draws the church-colour dot on Activity while a mention waits, and says so", async () => {
+        const w = mountSidebar({ isActivityOffered: true, hasMentionDot: true });
+
+        const activity = w.get("[data-testid='sidebar-activity']");
+        expect(activity.attributes("aria-label")).toBe("Activity, new mentions");
+        const dot = activity.get("[data-testid='sidebar-activity-dot']");
+        expect(dot.classes()).not.toContain("is-warning");
+
+        await w.setProps({ isActivityOpen: true });
+        expect(activity.attributes("aria-expanded")).toBe("true");
+    });
+
+    // Laid over the conversation in a narrow window, the sidebar covers the header's own button,
+    // so its head carries the button that puts it away, where the header's stood.
+    test("while laid over the conversation, leads its head with a button that puts it away", async () => {
+        const w = mountSidebar({ isActivityOffered: true });
+        expect(w.find("[data-testid='sidebar-hide']").exists()).toBe(false);
+
+        await w.setProps({ isOver: true });
+        const hide = w.get("[data-testid='sidebar-hide']");
+        expect(hide.attributes("aria-label")).toBe("Hide conversations");
+        expect(hide.attributes("aria-expanded")).toBe("true");
+        expect(w.get("[data-testid='sidebar-top']").element.firstElementChild).toBe(hide.element);
+
+        await hide.trigger("click");
+        expect(w.emitted("hide")).toHaveLength(1);
+    });
+
+    test("leaves Activity out until it is offered, and keeps it in the list's head on a phone", () => {
+        expect(mountSidebar().find("[data-testid='sidebar-activity']").exists()).toBe(false);
+        wrapper?.unmount();
+
+        const phone = mountSidebar({ isPhone: true, isActivityOffered: true });
+        expect(phone.get("[data-testid='sidebar-top']").find("[data-testid='sidebar-activity']").exists()).toBe(true);
+    });
+
+    // The head has no rule of its own until rows scroll under it, so a scrolled list is never cut
+    // mid-row against nothing.
+    test("rules off the head once the list scrolls under it", async () => {
+        const w = mountSidebar();
+        const list = w.get(".chat-side-list").element as HTMLElement;
+        expect(w.get("[data-testid='sidebar-top']").classes()).not.toContain("is-scrolled");
+
+        list.scrollTop = 40;
+        await w.get(".chat-side-list").trigger("scroll");
+        expect(w.get("[data-testid='sidebar-top']").classes()).toContain("is-scrolled");
+
+        list.scrollTop = 0;
+        await w.get(".chat-side-list").trigger("scroll");
+        expect(w.get("[data-testid='sidebar-top']").classes()).not.toContain("is-scrolled");
+    });
+
     // The page above the block already names the church and Rock's rail shows its logo, so the head
     // is one row for finding a conversation and starting one.
     test("draws no church name or mark: the head is the search beside the compose button", () => {
@@ -370,7 +439,7 @@ describe("a row's states", () => {
         expect(w.emitted("select")).toEqual([[youth.channel_id]]);
     });
 
-    test("flashes a row that arrives, and not the rows a fresh sidebar puts in a new order", async () => {
+    test("washes no row that arrives, nor the rows a fresh sidebar puts in a new order", async () => {
         const w = mountSidebar({ rows: [team, youth, dmAnna] });
         expect(w.findAll(".is-flash")).toHaveLength(0);
 
@@ -378,13 +447,13 @@ describe("a row's states", () => {
         await w.setProps({ rows: [youth, team, dmAnna, starred] });
         await nextTick();
 
-        expect(rowOf(w, starred.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, starred.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("flashes nothing when a room leaves, though every row below it climbs a place", async () => {
+    test("washes nothing when a room leaves, though every row below it climbs a place", async () => {
         const w = mountSidebar({ rows: [team, youth, starred] });
 
         await w.setProps({ rows: [youth, starred] });
@@ -393,7 +462,7 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("flashes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
+    test("washes nothing when the top room is unstarred, though every room it drops past climbs a place", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [{ ...team, is_favorite: true }, youth, prayer] });
 
@@ -428,14 +497,14 @@ describe("a row's states", () => {
         expect(w.findAll(".is-flash")).toHaveLength(0);
     });
 
-    test("flashes only the room the person stars, which moves up into Starred", async () => {
+    test("washes not even the room the person stars, which moves up into Starred keeping its element", async () => {
         const prayer = { ...starred, is_favorite: false };
         const w = mountSidebar({ rows: [team, youth, prayer] });
 
         await w.setProps({ rows: [{ ...prayer, is_favorite: true }, team, youth] });
         await nextTick();
 
-        expect(rowOf(w, prayer.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, prayer.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, team.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, youth.channel_id).classes()).not.toContain("is-flash");
     });
@@ -668,6 +737,23 @@ describe("the loading sidebar", () => {
         expect(w.findAll("[data-testid='sidebar-section']")).toHaveLength(0);
     });
 
+    // The list opens with 44px channel rows under Channels, then 52px conversation rows under
+    // Direct messages, so its loading rows take those shapes under those headings and nothing
+    // changes shape as the rows land.
+    test("draws channel rows under Channels and conversation rows under Direct messages while loading", () => {
+        const w = mountSidebar({ rows: [], loadState: "loading" });
+        const list = w.get(".chat-side-list").element;
+        const drawn = Array.from(list.querySelectorAll("[data-testid='sidebar-skeleton-heading'], [data-testid='sidebar-skeleton']"))
+            .map(element => element.getAttribute("data-testid") === "sidebar-skeleton-heading" ? element.textContent?.trim() : element.classList.contains("is-channel") ? "channel" : element.classList.contains("is-person") ? "person" : "other");
+
+        expect(drawn[0]).toBe("Channels");
+        const dms = drawn.indexOf("Direct messages");
+        expect(dms).toBeGreaterThan(1);
+        expect(drawn.slice(1, dms).every(shape => shape === "channel")).toBe(true);
+        expect(drawn.slice(dms + 1).length).toBeGreaterThan(0);
+        expect(drawn.slice(dms + 1).every(shape => shape === "person")).toBe(true);
+    });
+
     test("tells assistive technology the list is loading, and hides the skeleton from it", () => {
         const w = mountSidebar({ rows: [], loadState: "loading" });
         const list = w.get(".chat-side-list");
@@ -700,7 +786,8 @@ describe("the loading sidebar", () => {
         const error = w.get("[data-testid='sidebar-error']");
 
         expect(error.classes()).toContain("is-error");
-        expect(error.text()).toContain("Couldn't load your conversations.");
+        // a title, so no full stop, as every heading in the chat is written
+        expect(error.get(".chat-empty-title").text()).toBe("Couldn't load your conversations");
         expect(w.find("[data-testid='sidebar-empty']").exists()).toBe(false);
         expect(w.find("[data-testid='sidebar-skeleton']").exists()).toBe(false);
 
@@ -708,12 +795,56 @@ describe("the loading sidebar", () => {
         expect(w.emitted("retry")).toHaveLength(1);
     });
 
-    test("glows nothing when the first sidebar lands after a previewed room's row", async () => {
+    test("washes nothing when the first sidebar lands after a previewed room's row", async () => {
         const w = mountSidebar({ rows: [team], loadState: "loading" });
 
         await w.setProps({ rows: [youth, team, dmAnna], loadState: "loaded" });
 
         expect(w.findAll(".is-flash")).toHaveLength(0);
+    });
+});
+
+// A search that matches nothing says so, rather than leaving bare headings with their plus buttons.
+describe("the search", () => {
+    test("says No results when nothing matches, with no bare headings, Browse channels kept", async () => {
+        const w = mountSidebar();
+
+        await w.get("[data-testid='sidebar-search']").setValue("zzzz");
+
+        expect(w.get("[data-testid='sidebar-no-results']").text()).toContain("No results");
+        expect(w.findAll("[data-testid='section-heading']")).toHaveLength(0);
+        expect(w.find("[data-testid='section-browse']").exists()).toBe(false);
+        expect(w.find("[data-testid='section-new-message']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-browse']").exists()).toBe(true);
+    });
+
+    // A name cut short by the column's width shows whole in a tooltip on a resting pointer.
+    test("shows a cut-short name whole in a tooltip, and nothing for a name that fits", async () => {
+        const w = mountSidebar();
+        const names = w.findAll("[data-testid='row-name']");
+        const cut = names[names.length - 1].element as HTMLElement;
+        Object.defineProperty(cut, "scrollWidth", { configurable: true, value: 300 });
+        Object.defineProperty(cut, "clientWidth", { configurable: true, value: 120 });
+        const row = cut.closest("[data-testid='channel-row']") as HTMLElement;
+
+        jest.useFakeTimers();
+        try {
+            row.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(document.querySelector("[role='tooltip']")?.textContent?.trim()).toBe(cut.textContent?.trim());
+
+            row.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            const fits = names[0].element.closest("[data-testid='channel-row']") as HTMLElement;
+            fits.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(document.querySelector("[role='tooltip']")).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 });
 
@@ -786,8 +917,9 @@ describe("a previewed room", () => {
     });
 });
 
-// The live sidebar: the reader's own last message reads "You: " in any direct message, and a row
-// glows once when a message from someone else reaches it, as the design's incoming message does.
+// The live sidebar: the reader's own last message reads "You: " in any direct message. A row a
+// message moves glides to its place, keeping its element and its face; nothing washes it, since
+// its bold, dot and badge already say what is new.
 describe("the reader's own last message", () => {
     test("reads as the platform's line says, its 'You: ' included, the row adding nothing of its own", () => {
         const ownPair = { ...dmAnna, last_message_is_own: true, last_sender_nick_name: "Jordan", last_sender_last_name: "Ellis", is_unread: false, preview_line: "You: Do you have a minute after rehearsal?" };
@@ -799,14 +931,14 @@ describe("the reader's own last message", () => {
     });
 });
 
-describe("the flash on a live message", () => {
-    test("a direct message's row glows on a message from someone else, even where it does not move", async () => {
+describe("a live message, which moves a row and never washes it", () => {
+    test("a direct message's row is not washed by a message from someone else, its bold and dot saying it", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup] });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
@@ -819,17 +951,17 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a conversation new to the list glows with someone else's first message, not with the reader's own, as from another of their devices", async () => {
+    test("a conversation new to the list is not washed, whoever wrote its first message", async () => {
         const w = mountSidebar({ rows: [dmGroup] });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_is_own: true }, { ...dmAnna, is_unread: true }, dmGroup] });
         await nextTick();
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
-        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("on a post Rock made in the reader's name, which is news to them as its bold says", async () => {
+    test("nor on a post Rock made in the reader's name, which its bold says", async () => {
         const w = mountSidebar({ rows: [dmGroup, dmRead] });
 
         await w.setProps({
@@ -837,7 +969,7 @@ describe("the flash on a live message", () => {
         });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
     test("not on an edit of the newest message, nor a walk-back after a delete", async () => {
@@ -850,34 +982,49 @@ describe("the flash on a live message", () => {
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("glows for its own whole length, not ending when the dot it gains finishes its own animation", async () => {
-        const w = mountSidebar({ rows: [dmRead, dmGroup] });
+    // One step: the bold and the mark arrive in the same frame, the badge never popping in after.
+    test("turns bold and gains its mark in one step, the mention badge not popping in after", async () => {
+        const w = mountSidebar({ rows: [team, dmRead] });
 
-        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
+        await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true, mention_count: 1 }, { ...dmRead, last_message_id: 12, is_unread: true }] });
         await nextTick();
-        // the dot's animation ends first, and its event bubbles up through the row
-        rowOf(w, dmRead.channel_id).get("[data-testid='row-dot']").element.dispatchEvent(new Event("animationend", { bubbles: true }));
-        await nextTick();
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
 
-        // the row's own glow ending is what clears it
-        rowOf(w, dmRead.channel_id).element.dispatchEvent(new Event("animationend", { bubbles: true }));
-        await nextTick();
-        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
+        expect(rowOf(w, team.channel_id).classes()).toContain("is-unread");
+        const badge = rowOf(w, team.channel_id).get("[data-testid='row-mention-badge']");
+        expect(badge.classes()).not.toContain("is-pop");
+        expect(rowOf(w, dmRead.channel_id).find("[data-testid='row-dot']").exists()).toBe(true);
     });
 
-    test("not the conversation on screen, which a message from someone else reaches without glowing", async () => {
+    // A row a live message moves to the top glides there by the list's one move, keeping its
+    // element, so its face is never drawn again and never fades back in.
+    test("a direct message moved to the top keeps its element and its face, gliding by the list's one move", async () => {
+        const w = mountSidebar({ rows: [dmGroup, dmAnna, dmRead] });
+        const row = rowOf(w, dmRead.channel_id).element;
+        const face = rowOf(w, dmRead.channel_id).get(".chat-av").element;
+
+        await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup, dmAnna] });
+        await nextTick();
+
+        expect(rowIdsIn(w, "dms")[0]).toBe(dmRead.channel_id);
+        expect(rowOf(w, dmRead.channel_id).element).toBe(row);
+        expect(rowOf(w, dmRead.channel_id).get(".chat-av").element).toBe(face);
+        const groups = w.findAllComponents({ name: "TransitionGroup" });
+        expect(groups.length).toBeGreaterThan(0);
+        expect(groups.every(group => group.props("moveClass") === "chat-move")).toBe(true);
+    });
+
+    test("not the conversation on screen, nor another reached at the same time", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup, team], activeChannelId: dmRead.channel_id });
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way" }, team, { ...dmGroup, last_message_id: 12, last_message_preview: "Hello", is_unread: true }] });
         await nextTick();
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
-        // another conversation reached at the same time still glows
-        expect(rowOf(w, dmGroup.channel_id).classes()).toContain("is-flash");
+        // nor is another conversation reached at the same time
+        expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a direct message a reread sidebar shows newer messages for does not glow, as after a reconnect; a live one after it does", async () => {
+    test("a direct message is not washed by a reread sidebar, nor by a live message after it", async () => {
         const w = mountSidebar({ rows: [dmRead, dmGroup], sidebarReads: 1 });
 
         await w.setProps({
@@ -888,16 +1035,16 @@ describe("the flash on a live message", () => {
 
         expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
         expect(rowOf(w, dmGroup.channel_id).classes()).not.toContain("is-flash");
-        // a room the reread brings that was not listed is still news
-        expect(rowOf(w, dmAnna.channel_id).classes()).toContain("is-flash");
+        // nor a room the reread brings that was not listed
+        expect(rowOf(w, dmAnna.channel_id).classes()).not.toContain("is-flash");
 
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 13, last_message_preview: "Here", is_unread: true }, { ...dmGroup, last_message_id: 12, is_unread: true }, dmAnna] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a direct message glows on its first live message after the page's first sidebar, which glows nothing", async () => {
+    test("a direct message is not washed by its first live message after the page's first sidebar", async () => {
         const w = mountSidebar({ rows: [], sidebarReads: 0, loadState: "loading" });
 
         await w.setProps({ rows: [dmRead, dmGroup], sidebarReads: 1, loadState: "loaded" });
@@ -907,10 +1054,10 @@ describe("the flash on a live message", () => {
         await w.setProps({ rows: [{ ...dmRead, last_message_id: 11, last_message_preview: "On my way", is_unread: true }, dmGroup] });
         await nextTick();
 
-        expect(rowOf(w, dmRead.channel_id).classes()).toContain("is-flash");
+        expect(rowOf(w, dmRead.channel_id).classes()).not.toContain("is-flash");
     });
 
-    test("a channel's row does not glow on turning unread where it does not move: its bold and darker mark say it", async () => {
+    test("a channel's row is not washed on turning unread: its bold and darker mark say it", async () => {
         const w = mountSidebar({ rows: [team, dmRead] });
 
         await w.setProps({ rows: [{ ...team, last_message_id: 11, is_unread: true }, dmRead] });

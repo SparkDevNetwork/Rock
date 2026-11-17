@@ -39,7 +39,8 @@
 //          labelled), thread-row-follow (aria-pressed, changed at once), thread-row-mentions,
 //          thread-row-status ("Following" or "Not following"), thread-row-error, thread-skeleton,
 //          threads-empty (the shared empty state's title and line), threads-error, threads-refresh;
-//          the tabs are role="tab" with aria-selected. The panel host's marks are threadDrawer.spec's.
+//          the panel draws no tabs: its scope is the tab it is given. The panel host's marks are
+//          threadDrawer.spec's.
 //
 // A refusal shows the server's sentence; a call that never reached the platform has none, and
 // shows the design's offline sentence.
@@ -195,26 +196,35 @@ describe("the header", () => {
     });
 });
 
-describe("the tabs", () => {
+// The panel shows the one scope it is given: the open conversation's threads from the header,
+// or every thread the reader follows from Activity, which holds the tabs between Mentions and
+// Threads. It draws no tabs of its own.
+describe("the scope", () => {
     test.each([
-        ["channel", "This channel"],
-        ["person", "This conversation"],
-        ["group", "This conversation"]
-    ])("name a %s's tab %s, beside All", (kind, words) => {
-        const w = draw({ kind });
+        ["channel", "channel"],
+        ["person", "channel"],
+        ["group", "channel"],
+        ["channel", "all"]
+    ])("in a %s, on the %s scope, draws no tabs of its own", (kind, tab) => {
+        const w = draw({ kind, tab });
 
-        expect(w.findAll("[role='tab']").map(t => t.text())).toEqual([words, "All"]);
+        expect(w.find("[role='tablist']").exists()).toBe(false);
+        expect(w.findAll("[role='tab']")).toHaveLength(0);
+        expect(w.find("[role='tabpanel']").exists()).toBe(false);
     });
 
-    test("mark the tab shown and ask for the other", async () => {
-        const w = draw();
-        const [here, all] = w.findAll("[role='tab']");
+    test("lists across rooms on the scope of every thread followed, each row naming its room", () => {
+        const w = draw({ tab: "all", rows: [row(40), row(30, { channel_id: worship })] });
 
-        expect(here.attributes("aria-selected")).toBe("true");
-        expect(all.attributes("aria-selected")).toBe("false");
+        expect(rowsOf(w).map(drawn => plain(drawn.get(".chat-ls-sub").text()))).toEqual(["young-adults", "Worship Team"]);
+    });
 
-        await all.trigger("click");
-        expect(w.emitted("tab")).toEqual([["all"]]);
+    // The threads list asks for no first focus of its own: the panel's X takes it as the list
+    // opens, before any row is there, as the design asks of a list with no field.
+    test("marks no row to take focus as it opens", () => {
+        const w = draw({ rows: [row(40), row(30)] });
+
+        expect(w.findAll("[data-testid='thread-row-open']").some(open => open.attributes("data-autofocus") !== undefined)).toBe(false);
     });
 });
 
@@ -346,6 +356,29 @@ describe("a row", () => {
 
         expect(w.get("[data-testid='thread-row-status']").text()).toContain("Following");
     });
+
+    // One date per thread: its last reply's, at the row's end, which is the list's order, as the
+    // sidebar's. The day it started is not drawn beside it as a second, unlabelled date.
+    test("draws one date, its last reply's, and no day it started", () => {
+        const yesterday = new Date(todayAtNineFortyOne);
+        yesterday.setDate(yesterday.getDate() - 1);
+        const w = draw({ rows: [row(40, {}, { created_at: yesterday.toISOString() })] });
+
+        const drawn = rowsOf(w)[0];
+        expect(drawn.findAll("time").map(time => plain(time.text()))).toEqual(["9:41 AM"]);
+        expect(plain(drawn.text())).not.toMatch(/Started|Yesterday/);
+    });
+
+    // On a phone a row keeps its time and draws no bell: a column of bells would hide every
+    // row's time, and a thread is followed or unfollowed from its own drawer.
+    test("on a phone keeps its time and draws no follow bell, saying no Right arrow to one", () => {
+        const w = draw({ isPhone: true, tab: "all", rows: [row(40, { following: false }), row(30)] });
+
+        expect(w.find("[data-testid='thread-row-follow']").exists()).toBe(false);
+        expect(rowsOf(w).map(drawn => plain(drawn.get("time").text()))).toEqual(["9:41 AM", "9:41 AM"]);
+        expect(w.findAll(".chat-lrow-actions")).toHaveLength(0);
+        expect(plain(w.get("[aria-describedby]").element.ownerDocument.getElementById(String(w.get("[data-testid='thread-row-open']").attributes("aria-describedby")))?.textContent)).toBe("Up and down arrows move between rows.");
+    });
 });
 
 describe("following from a row", () => {
@@ -384,13 +417,16 @@ describe("following from a row", () => {
         expect(followed.classes()).not.toContain("is-off");
     });
 
-    test("a refused change shows its sentence and Try again on its row only, said at once", () => {
-        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 40, isFollowing: false, failure: { alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true } } });
+    test("a refused change shows its sentence and Try again on its row only, said at once through the chat's one voice", async () => {
+        const w = draw({ rows: [row(40), row(30)] });
+        await w.setProps({ followError: { rootId: 40, isFollowing: false, failure: { alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true } } });
+        await nextTick();
 
         const [failed, other] = rowsOf(w);
         const error = failed.get("[data-testid='thread-row-error']");
         expect(plain(error.text())).toBe("Something went wrong in chat. Try again");
-        expect(error.attributes("role")).toBe("alert");
+        expect(error.attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Something went wrong in chat. Try again in a moment.");
         expect(other.find("[data-testid='thread-row-error']").exists()).toBe(false);
     });
 
@@ -444,7 +480,7 @@ describe("loading, empty and failed", () => {
 
         expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-title").text())).toBe(title);
         expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-text").text())).toBe(
-            "Reply to any message to start one. Threads you follow from every conversation are under All.");
+            "Reply to any message to start one. Threads you follow from every conversation are in Activity.");
 
         const seeAll = w.findAll("[data-testid='threads-empty'] button").find(b => plain(b.text()) === "See all followed threads");
         expect(seeAll).toBeDefined();
@@ -540,7 +576,8 @@ describe("a row's text", () => {
     /** The panel's own style rules, selector and body, read from the component's source. */
     function panelRules(): Array<{ selector: string, body: string }> {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        // the rules after the opening tag, so the first rule's selector is its own
+        const style = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
         return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
     }
 
@@ -552,13 +589,13 @@ describe("a row's text", () => {
     });
 });
 
-// The list waterfalls in when the panel opens with its first page: each row carries the panel's
-// one entrance and its place in the list, and the host enters from the first page alone.
+// The list waterfalls in when the panel opens with its first page, and again after a refresh:
+// each row carries the panel's one entrance, and the host places the rows in sight in order.
 describe("the list's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll("[data-testid='thread-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+            order: w.findAll("[data-testid='thread-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-at") : "none")
         };
     }
 
@@ -570,12 +607,24 @@ describe("the list's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
     });
 
-    test("a thread that moves in live, or a refresh's new row, does not rise in, and the first page's rows go on rising", async () => {
+    test("a thread that moves in live does not rise in, and the first page's rows go on rising", async () => {
         const w = draw({ rows: [row(40), row(41)] });
 
         await w.setProps({ rows: [row(43), row(40), row(41)] });
         expect(entered(w).isEntering).toBe(true);
         expect(w.findAll("[data-testid='thread-row']").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([true, false, false]);
+    });
+
+    // A refresh asks the list again, so it lands as a first page: every row in sight rises again.
+    test("a refresh replays the entrance over every row it brings", async () => {
+        const w = draw({ rows: [row(40), row(41)] });
+
+        await w.setProps({ isRefreshing: true });
+        expect(entered(w).isEntering).toBe(false);
+        await w.setProps({ isRefreshing: false, rows: [row(43), row(40), row(41)] });
+
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+        expect(w.findAll("[data-testid='thread-row']").some(r => r.attributes("data-chat-settled") !== undefined)).toBe(false);
     });
 
     test("the other tab's first page rises in as the list's own", async () => {
@@ -684,6 +733,22 @@ describe("loading more", () => {
         await landed();
 
         expect(loadMore).toHaveBeenCalledTimes(2);
+    });
+
+    // The keyboard reaches the end of the list without scrolling it, so the end is also a button:
+    // Load older threads, and Try again while the list's failure strip shows.
+    test("ends in a Load older threads button while more wait, Try again while the list's failure shows", async () => {
+        const loadMore = loader();
+        const w = draw({ hasMore: true, loadMore });
+
+        const more = w.get("[data-testid='threads-more']");
+        expect(more.text()).toBe("Load older threads");
+        await more.trigger("click");
+        expect(loadMore).toHaveBeenCalledTimes(1);
+        w.unmount();
+
+        const failed = draw({ hasMore: true, error: offline, loadMore: loader() });
+        expect(failed.get("[data-testid='threads-more']").text()).toBe("Try again");
     });
 
     // A failed page says so in place, with its way to try again; asking again by itself would

@@ -38,8 +38,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
     const state = reactive({ activeChannelId: null as string | null, hiddenPanes: { conversation: false, thread: false } });
     const threads = {
         state: reactive({ thread: null as { channelId: string, rootId: number } | null }),
-        openList: jest.fn(async () => {
-            calls.push("threads.openList");
+        openList: jest.fn(async (_channelId: string, tab?: string) => {
+            calls.push(tab === "all" ? "threads.openList:all" : "threads.openList");
         }),
         closeList: jest.fn(() => {
             calls.push("threads.closeList");
@@ -61,7 +61,7 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
         }),
         threads,
         mentions: {
-            state: { inbox: { rows: [] } },
+            state: { inbox: { rows: [] }, hasDot: false },
             openInbox: jest.fn(async () => {
                 calls.push("mentions.openInbox");
             }),
@@ -115,11 +115,13 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
 
 type Mounted = {
     frame: Frame;
+    shell: ChatShell;
     calls: Calls;
     state: ReturnType<typeof fakeShell>["state"];
     wrapper: VueWrapper;
     hasJoinBar: { value: boolean };
     hasPanelField: { value: boolean };
+    hasPanelRow: { value: boolean };
 };
 
 /**
@@ -132,6 +134,7 @@ function mountFrame(): Mounted {
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
     const hasPanelField = ref(false);
+    const hasPanelRow = ref(false);
     let frame!: Frame;
 
     const Host = defineComponent({
@@ -149,7 +152,7 @@ function mountFrame(): Mounted {
             return () => h("div", { ref: rootElement }, [
                 h("button", { "data-testid": "browse-channels" }, "Browse channels"),
                 h("section", { ref: frame.mainElement, "data-testid": "frame-main" }, [
-                    h("button", { "data-testid": "header-title", "data-header-focus": "" }, "Title"),
+                    h("button", { "data-testid": "header-title", "data-focus-stop": "header" }, "Title"),
                     h("button", { "data-testid": "header-threads", "data-focus-stop": "threads-button" }, "Threads"),
                     hasJoinBar.value
                         ? h("button", { "data-testid": "join-channel", "data-focus-stop": "join" }, "Join channel")
@@ -160,14 +163,15 @@ function mountFrame(): Mounted {
                 ]),
                 h("aside", { ref: frame.panelElement }, [
                     hasPanelField.value ? h("input", { "data-testid": "panel-field", "data-autofocus": "" }) : null,
-                    h("button", { "data-testid": "panel-close", "data-focus-stop": "panel-close" }, "Close")
+                    h("button", { "data-testid": "panel-close", "data-focus-stop": "panel-close" }, "Close"),
+                    hasPanelRow.value ? h("button", { "data-testid": "panel-row" }, "A row") : null
                 ])
             ]);
         }
     });
 
     const wrapper = mount(Host, { attachTo: document.body });
-    return { frame, calls, state, wrapper, hasJoinBar, hasPanelField };
+    return { frame, shell, calls, state, wrapper, hasJoinBar, hasPanelField, hasPanelRow };
 }
 
 async function settle(): Promise<void> {
@@ -201,9 +205,10 @@ describe("the panel column", () => {
         await settle();
 
         await frame.onListPanel("threads");
-        await frame.onListPanel("mentions");
+        await frame.onListPanel("activity");
 
-        expect(frame.panelKind.value).toBe("mentions");
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("mentions");
         expect(calls).toEqual(["threads.openList", "threads.closeList", "mentions.openInbox"]);
     });
 
@@ -270,7 +275,9 @@ describe("the panel column", () => {
         expect(frame.shownPanel.value).toBeNull();
     });
 
-    test("the members list belongs to its conversation, so opening another closes it, focus inside it going to the title", async () => {
+    // Members, like Threads, is about the open conversation, so another conversation keeps it open
+    // and lists its own people, focus staying where the person has it.
+    test("the members list stays open and re-points at another conversation, focus kept inside it", async () => {
         mounted = mountFrame();
         const { frame, calls, state, wrapper } = mounted;
         state.activeChannelId = team;
@@ -282,9 +289,53 @@ describe("the panel column", () => {
         await settle();
         await wrapper.vm.$nextTick();
 
+        expect(frame.panelKind.value).toBe("members");
+        expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`]);
+        expect(focused()).toBe("panel-close");
+    });
+
+    // The header offers Members only where a room has a roster to show, never in a conversation
+    // of two, so the list does not follow the person there: it closes, as the header's own does.
+    test("the members list closes rather than following into a conversation of two, which offers none", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+        expect(frame.isMembersOffered.value).toBe(true);
+
+        state.activeChannelId = pairWithAnna;
+        await settle();
+
+        expect(frame.isMembersOffered.value).toBe(false);
         expect(frame.panelKind.value).toBeNull();
         expect(calls).toEqual([`members.open:${team}`, "members.close"]);
-        expect(focused()).toBe("header-title");
+
+        await frame.onListPanel("members");
+        expect(frame.panelKind.value).toBeNull();
+    });
+
+    // The roster read afresh for another conversation takes its old rows away, so focus on one
+    // goes where the panel starts, its filter, rather than with the row off the page.
+    test("a list re-pointed at another conversation keeps focus in the panel when the row that had it goes", async () => {
+        mounted = mountFrame();
+        const { frame, shell, state, wrapper, hasPanelField, hasPanelRow } = mounted;
+        state.activeChannelId = team;
+        hasPanelField.value = true;
+        hasPanelRow.value = true;
+        await settle();
+        await frame.onListPanel("members");
+        (shell.members.open as jest.Mock).mockImplementation(async () => {
+            hasPanelRow.value = false;
+        });
+        wrapper.get<HTMLElement>("[data-testid='panel-row']").element.focus();
+
+        state.activeChannelId = volunteers;
+        await settle();
+        await wrapper.vm.$nextTick();
+
+        expect(frame.panelKind.value).toBe("members");
+        expect(focused()).toBe("panel-field");
     });
 
     test("the threads list follows the open conversation", async () => {
@@ -299,6 +350,152 @@ describe("the panel column", () => {
 
         expect(frame.panelKind.value).toBe("threads");
         expect(calls).toEqual(["threads.openList", "threads.openList"]);
+    });
+});
+
+// Activity is the one inbox across conversations, opened from the sidebar's head: Mentions and the
+// threads the reader follows under one Segmented. It opens on Mentions while a mention waits,
+// else on the tab last chosen; it stays as it is when the conversation changes.
+describe("Activity", () => {
+    test("opens on Mentions while a mention waits, else on the tab last chosen", async () => {
+        mounted = mountFrame();
+        const { frame, shell, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("mentions");
+        frame.onActivityTab("threads");
+        await settle();
+        expect(calls).toEqual(["mentions.openInbox", "mentions.closeInbox", "threads.openList:all"]);
+
+        frame.closePanel();
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("threads");
+
+        frame.closePanel();
+        (shell.mentions.state as { hasDot: boolean }).hasDot = true;
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("mentions");
+    });
+
+    test("a thread opened from its Threads backs out to Activity on Threads", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("activity");
+        frame.onActivityTab("threads");
+        await settle();
+
+        frame.openThreadFromList(7, team);
+        await settle();
+        expect(frame.threadOrigin.value).toBe("activity");
+
+        await frame.onThreadBack();
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("threads");
+    });
+
+    test("a conversation's empty threads list asking for every followed thread opens Activity on Threads", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("threads");
+
+        frame.onThreadsTab("all");
+        await settle();
+
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("threads");
+        expect(calls).toEqual(["threads.openList", "threads.closeList", "threads.openList:all"]);
+    });
+
+    test("stays as it is when the conversation changes", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("activity");
+
+        state.activeChannelId = volunteers;
+        await settle();
+
+        expect(frame.panelKind.value).toBe("activity");
+        expect(calls).toEqual(["mentions.openInbox"]);
+    });
+});
+
+// In a window too narrow for the sidebar, the conversation and a panel side by side (narrower
+// than the sidebar, the panel and the conversation's least width, as the sheet names them), an
+// open panel folds the sidebar away; closing the panel brings it back. While folded, the header's
+// sidebar button opens it over the conversation, and choosing a conversation folds it again.
+describe("the narrow fold", () => {
+    test("folds the sidebar while a panel is open below the sidebar, panel and conversation's least width, and restores it on close", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+
+        expect(frame.sidebarFold.value).toBeNull();
+        await frame.onListPanel("members");
+        expect(frame.sidebarFold.value).toBe("folded");
+
+        frame.closePanel();
+        expect(frame.sidebarFold.value).toBeNull();
+    });
+
+    test("does not fold where all three fit, nor on a phone", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+
+        resize(frame, 1168);
+        expect(frame.sidebarFold.value).toBeNull();
+        resize(frame, 1167);
+        expect(frame.sidebarFold.value).toBe("folded");
+        resize(frame, 600);
+        expect(frame.sidebarFold.value).toBeNull();
+    });
+
+    test("the header's sidebar button opens it over the conversation, and choosing a conversation folds it again", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+        await frame.onListPanel("threads");
+
+        frame.onSidebarOver();
+        expect(frame.sidebarFold.value).toBe("over");
+
+        await frame.onSelect(volunteers);
+        expect(frame.sidebarFold.value).toBe("folded");
+        expect(frame.isSidebarHidden.value).toBe(true);
+    });
+
+    // The row chosen folds away with the sidebar and out of reach, so focus goes to the
+    // conversation it opened, at its title, as a phone's row hands it over.
+    test("a conversation chosen from the sidebar over the conversation gives focus to its title as the sidebar folds", async () => {
+        mounted = mountFrame();
+        const { frame, state, wrapper } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+        await frame.onListPanel("threads");
+        frame.onSidebarOver();
+        await settle();
+        (wrapper.get("[data-testid='browse-channels']").element as HTMLElement).focus();
+
+        await frame.onSelect(volunteers);
+        await settle();
+
+        expect(frame.sidebarFold.value).toBe("folded");
+        expect(focused()).toBe("header-title");
     });
 });
 
@@ -691,11 +888,11 @@ describe("focus into what is opening", () => {
 // so no lookup reads a test id. A phone skips the composer, whose focus would raise the keyboard.
 // The host here draws its stops with their marks alone, as nothing in production is found by a test id.
 describe("the one focus helper", () => {
-    type Drawn = { join: boolean, composer: boolean, threadsButton: boolean, more: boolean, message: boolean, summary: boolean };
+    type Drawn = { join: boolean, composer: boolean, threadsButton: boolean, more: boolean, message: boolean, summary: boolean, isSidebarInert: boolean };
 
     function mountMarked(): { frame: Frame, state: ReturnType<typeof fakeShell>["state"], wrapper: VueWrapper, drawn: Drawn } {
         const { shell, state } = fakeShell([]);
-        const drawn = reactive<Drawn>({ join: false, composer: true, threadsButton: true, more: false, message: true, summary: true });
+        const drawn = reactive<Drawn>({ join: false, composer: true, threadsButton: true, more: false, message: true, summary: true, isSidebarInert: false });
         let frame!: Frame;
 
         const Host = defineComponent({
@@ -711,9 +908,13 @@ describe("the one focus helper", () => {
                 });
 
                 return () => h("div", { ref: rootElement }, [
-                    h("button", { "data-focus-stop": "new-message" }, "New message"),
+                    // the sidebar's head, out of reach as a phone's list behind the conversation is
+                    h("div", { inert: drawn.isSidebarInert || undefined }, [
+                        h("button", { "data-focus-stop": "activity-button" }, "Activity"),
+                        h("button", { "data-focus-stop": "new-message" }, "New message")
+                    ]),
                     h("section", { ref: frame.mainElement }, [
-                        h("b", { tabindex: -1, "data-header-focus": "" }, "Title"),
+                        h("b", { tabindex: -1, "data-focus-stop": "header" }, "Title"),
                         drawn.threadsButton ? h("button", { "data-focus-stop": "threads-button" }, "Threads") : null,
                         drawn.more ? h("span", { "data-focus-stop": "more" }, [h("button", "More")]) : null,
                         drawn.message
@@ -729,7 +930,7 @@ describe("the one focus helper", () => {
         });
 
         const wrapper = mount(Host, { attachTo: document.body });
-        mounted = { frame, calls: [], state, wrapper, hasJoinBar: { value: false }, hasPanelField: { value: false } };
+        mounted = { frame, calls: [], state, wrapper, hasJoinBar: { value: false }, hasPanelField: { value: false }, hasPanelRow: { value: false } };
         return { frame, state, wrapper, drawn };
     }
 
@@ -741,7 +942,7 @@ describe("the one focus helper", () => {
         }
 
         return active.closest("[data-focus-stop]")?.getAttribute("data-focus-stop")
-            ?? (active.hasAttribute("data-header-focus") ? "header" : active.hasAttribute("data-message-id") ? "message" : null);
+            ?? (active.hasAttribute("data-message-id") ? "message" : null);
     }
 
     test("focuses Join when drawn, the composer on desktop when not, the header otherwise, and on a phone skips the composer", async () => {
@@ -840,6 +1041,28 @@ describe("the one focus helper", () => {
         await frame.onListPanel("threads");
         frame.closePanel();
         await settle();
+        expect(focusedStop()).toBe("header");
+    });
+
+    // A stop in a pane out of reach, as the list behind a phone's conversation, cannot take focus,
+    // so the order goes on past it rather than ending on a focus that silently fails.
+    test("passes over a stop in a pane out of reach and goes on down its order", async () => {
+        const { frame, state, drawn } = mountMarked();
+        state.activeChannelId = team;
+        drawn.more = true;
+        await settle();
+
+        frame.focusStop(["activity-button", "more", "header"]);
+        expect(focusedStop()).toBe("activity-button");
+
+        drawn.isSidebarInert = true;
+        await nextTick();
+        frame.focusStop(["activity-button", "more", "header"]);
+        expect(focusedStop()).toBe("more");
+
+        drawn.more = false;
+        await nextTick();
+        frame.focusStop(["activity-button", "more", "header"]);
         expect(focusedStop()).toBe("header");
     });
 

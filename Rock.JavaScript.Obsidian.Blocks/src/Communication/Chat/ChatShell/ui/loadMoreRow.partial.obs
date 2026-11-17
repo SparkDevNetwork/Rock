@@ -1,0 +1,140 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="rowElement" class="chat-more">
+        <span v-if="isFailed && failure" class="chat-more-err" :data-testid="`${name}-more-error`"><Icon name="alert" size="xs" />{{ failure }}</span>
+        <Button ref="buttonPart"
+                size="sm"
+                :data-testid="`${name}-more`"
+                :busy="isBusy"
+                @click="onPress">{{ isBusy ? "Loading" : isFailed ? "Try again" : label }}</Button>
+    </div>
+</template>
+
+<style scoped>
+/* The row under a list's last row: a failure's words, then the button, centred. */
+.chat-more {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px 4px;
+}
+
+.chat-more-err {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-danger-ink);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import Button from "./button.partial.obs";
+    import Icon from "./icon.partial.obs";
+    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+
+    // Loading more at a list's end, the one way every list does it: the row asks for the next page
+    // as it comes into view a little before the end of its scroller, and is a button for the
+    // keyboard, which reaches the end without scrolling. The list draws it while more wait.
+
+    const props = defineProps({
+        /** What the list holds, as its marks name it: "members" marks the button members-more. */
+        name: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** The button's words while nothing is out: "Load more", "Load older mentions". */
+        label: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * Asks for the next page. Its promise settles once the page is in or its failure is the
+         * list's; a list that only says so through isLoading returns nothing, and the row asks
+         * again once that says the page is in.
+         */
+        load: {
+            type: Function as PropType<() => Promise<void> | void>,
+            required: true
+        },
+
+        /** Whether the list says a page is out, asked by this row or from elsewhere. */
+        isLoading: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the last page failed: the row says Try again and asks again only when pressed. */
+        isFailed: {
+            type: Boolean,
+            default: false
+        },
+
+        /** The failure's words beside the button; none where the list says it elsewhere. */
+        failure: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    // #region Values
+
+    const rowElement = ref<HTMLElement>();
+
+    /** Whether a page this row asked for is still out. */
+    const isAsking = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isBusy = computed((): boolean => isAsking.value || props.isLoading);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** Asks for a page, holding the row busy until its promise settles. */
+    function ask(): Promise<void> | void {
+        const asked = props.load();
+        if (asked instanceof Promise) {
+            isAsking.value = true;
+            return asked.finally(() => {
+                isAsking.value = false;
+            });
+        }
+    }
+
+    /** Whether focus is on the row, for the list to move it to the first of the rows the page brought. */
+    function hasFocus(): boolean {
+        return !!rowElement.value?.contains(document.activeElement);
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onPress(): void {
+        if (!isBusy.value) {
+            void ask();
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // Watched against the scroller the row is in, so the next page is asked a little before the
+    // reader reaches the end. A failed page holds the row until it is pressed or arrives anew,
+    // since asking again at once would only fail again.
+    usePagingTrigger(rowElement, ask, {
+        enabled: () => !isBusy.value && !props.isFailed,
+        root: () => rowElement.value?.closest<HTMLElement>("[data-chat-scroller]") ?? null,
+        margin: "0px 0px 240px 0px"
+    });
+
+    defineExpose({ hasFocus });
+</script>

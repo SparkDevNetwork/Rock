@@ -15,12 +15,13 @@
 // </copyright>
 //
 // The mentions inbox: where people named the reader, newest first, under day headings. A row is
-// one button whose label says the whole row; it draws the author's face with an @ badge, their
-// name, the room's name from the sidebar, the time, the text in three lines as the message body
-// draws it, and on a reply a "Reply in a thread" tag. A row newer than the last visit is New with
+// one button whose label says the whole row; it draws the author's face, their name, the room's
+// name from the sidebar, the time, the text in three lines as the message body draws it less a
+// leading mention of the reader, and on a reply "Reply in a thread" in quiet words. A row newer than the last visit is New with
 // a dot, until it is opened; the row just opened is marked current. A channel row jumps to the
 // message and a reply opens its thread. Paging is "Load older mentions", "Loading" while busy,
-// then "That's every mention"; a failed page and a failed refresh each say so in place.
+// and the list simply ends, with no end line (the clean bar); a failed page and a failed refresh
+// each say so in place.
 //
 // The component these tests are written to, mentionsPanel.partial.obs, in the shared panel host:
 //
@@ -34,10 +35,11 @@
 //   marks: mentions-panel (the panel), mention-row (each row, class is-new and is-current),
 //          mention-row-open (the row's button, labelled), mention-row-new (a New row's dot),
 //          mention-row-thread (the reply tag), mentions-day (each day heading), mentions-more
-//          (Load older mentions), mentions-end (the end note), mentions-error (a refresh's
-//          failure, with Try again), mentions-older-error, mentions-empty, mentions-refresh,
+//          (Load older mentions), mentions-end (an end note, never drawn), mentions-error (a refresh's
+//          failure, with Try again), mentions-more-error (an older page's failure), mentions-empty, mentions-refresh,
 //          mention-skeleton. The panel host's marks are threadDrawer.spec's.
 import { mount, VueWrapper } from "@vue/test-utils";
+import { nextTick } from "vue";
 import MentionsPanel from "../../../../../src/Communication/Chat/ChatShell/components/mentionsPanel.partial.obs";
 import MessageBody from "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
@@ -66,7 +68,7 @@ function at(hours: number, minutes: number, daysAgo = 0): string {
 const offline: ChatError = { code: "rpc.transport", severity: "failed" };
 
 /** One row of chat_list_mentions, exactly its keys, its message as a history page carries it. */
-function row(id: number, extra: { channel_id?: string, parent_id?: number | null, created_at?: string, body?: string } = {}): MentionRow {
+function row(id: number, extra: { channel_id?: string, parent_id?: number | null, created_at?: string, body?: string, pieces?: Array<Record<string, unknown>> } = {}): MentionRow {
     const parentId = extra.parent_id ?? null;
     const body = extra.body ?? "are you in for Saturday?";
     return {
@@ -85,7 +87,7 @@ function row(id: number, extra: { channel_id?: string, parent_id?: number | null
             sender_listed: true,
             message_type: "text",
             body: `<@${me}> ${body}`,
-            pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ` ${body}` }],
+            pieces: extra.pieces ?? [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ` ${body}` }],
             blocks: null,
             metadata: null,
             visibility: "visible",
@@ -184,20 +186,48 @@ describe("the rows", () => {
         expect(rowsOf(w)).toHaveLength(3);
     });
 
-    test("draw the author's face with its @ badge, the name, the room, the time and the text through the message body", () => {
+    test("draw the author's face with no @ mark, the name, the room, the time and the text through the message body", () => {
         const w = draw();
         expect(rowsOf(w)).toHaveLength(1);
         const drawn = rowsOf(w)[0];
 
         expect(drawn.find("[data-testid='avatar']").exists()).toBe(true);
-        expect(drawn.findAllComponents(Icon).some(i => i.props("name") === "at")).toBe(true);
+        expect(drawn.findAllComponents(Icon).some(i => i.props("name") === "at")).toBe(false);
         expect(plain(drawn.text())).toContain("Sam Ortiz");
         expect(plain(drawn.text())).toContain("young-adults");
         expect(plain(drawn.text())).toContain("9:12 AM");
 
         const body = drawn.findComponent(MessageBody);
         expect(body.exists()).toBe(true);
-        expect(plain(body.text())).toContain("@Jordan Ellis are you in for Saturday?");
+        expect(plain(body.text())).toContain("Are you in for Saturday?");
+    });
+
+    // Every row here is where someone named the reader, so a mention of them leading the words
+    // says nothing the inbox does not: it is left off, and the words start with a capital.
+    test("leave off a leading mention of the reader, starting the words with a capital", () => {
+        const w = draw({ rows: [row(60, { pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: ", can you cover the welcome table?" }] })] });
+
+        const body = rowsOf(w)[0].getComponent(MessageBody);
+        expect(plain(body.text())).toBe("Can you cover the welcome table?");
+        expect(body.find(".chat-mn").exists()).toBe(false);
+    });
+
+    test("keep a mention of the reader that is the whole message, or that comes later in the words", () => {
+        const w = draw({ rows: [
+            row(60, { pieces: [{ type: "mention", text: "@Jordan Ellis", person_alias_guid: me }] }),
+            row(50, { pieces: [{ type: "text", text: "Thanks " }, { type: "mention", text: "@Jordan Ellis", person_alias_guid: me }, { type: "text", text: "!" }] })
+        ] });
+
+        const [alone, later] = rowsOf(w).map(drawn => drawn.getComponent(MessageBody));
+        expect(plain(alone.text())).toBe("@Jordan Ellis");
+        expect(alone.find(".chat-mn").exists()).toBe(true);
+        expect(plain(later.text())).toBe("Thanks @Jordan Ellis!");
+    });
+
+    test("keep a leading mention of someone else", () => {
+        const w = draw({ rows: [row(60, { pieces: [{ type: "mention", text: "@Sam Ortiz", person_alias_guid: sam }, { type: "text", text: " and you are on coffee." }] })] });
+
+        expect(plain(rowsOf(w)[0].getComponent(MessageBody).text())).toBe("@Sam Ortiz and you are on coffee.");
     });
 
     test("tag a reply Reply in a thread, and only a reply", () => {
@@ -286,19 +316,44 @@ describe("paging", () => {
         expect(w.emitted("loadOlder")).toBeUndefined();
     });
 
-    test("ends with That's every mention", () => {
+    // The clean bar (F8-A): a list that has no more simply ends, as Members and Threads do.
+    test("simply ends, with no end line, once there is no more", () => {
         const w = draw({ hasMore: false });
 
-        expect(plain(w.get("[data-testid='mentions-end']").text())).toBe("That's every mention");
+        expect(w.find("[data-testid='mentions-end']").exists()).toBe(false);
+        expect(w.text()).not.toContain("That's every mention");
         expect(w.find("[data-testid='mentions-more']").exists()).toBe(false);
     });
 
-    test("says an older page failed offline, keeping the rows and the button", () => {
+    // Pressed, the row hands focus to the first older mention so the keyboard carries on; asked by
+    // scrolling, it leaves focus where the reader has it.
+    test("an older page asked from its button gives its first row focus; one asked by scrolling does not", async () => {
+        const pressed = draw({ hasMore: true, rows: [row(52), row(51)] });
+        (pressed.get("[data-testid='mentions-more']").element as HTMLElement).focus();
+        await pressed.setProps({ isLoadingOlder: true });
+        await pressed.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50)] });
+        await nextTick();
+        expect(document.activeElement).toBe(pressed.findAll("[data-testid='mention-row-open']")[2].element);
+        pressed.unmount();
+
+        const scrolled = draw({ hasMore: true, rows: [row(52), row(51)] });
+        const first = scrolled.findAll("[data-testid='mention-row-open']")[0].element as HTMLElement;
+        first.focus();
+        await scrolled.setProps({ isLoadingOlder: true });
+        await scrolled.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50)] });
+        await nextTick();
+        expect(document.activeElement).toBe(first);
+    });
+
+    test("says an older page failed offline, keeping the rows, its button now Try again", async () => {
         const w = draw({ hasMore: true, olderError: offline });
 
-        expect(plain(w.get("[data-testid='mentions-older-error']").text())).toBe("Couldn't load older mentions. You're offline.");
+        expect(plain(w.get("[data-testid='mentions-more-error']").text())).toBe("Couldn't load older mentions. You're offline.");
         expect(rowsOf(w)).toHaveLength(1);
-        expect(w.find("[data-testid='mentions-more']").exists()).toBe(true);
+        const more = w.get("[data-testid='mentions-more']");
+        expect(plain(more.text())).toBe("Try again");
+        await more.trigger("click");
+        expect(w.emitted("loadOlder")).toHaveLength(1);
     });
 });
 
@@ -363,13 +418,13 @@ describe("loading, empty and failed", () => {
     });
 });
 
-// The inbox waterfalls in when the panel opens with its first page, one row after another across
-// its day headings; an older page and a live mention are simply there.
+// The inbox waterfalls in when the panel opens with its first page, and again after a refresh,
+// one row after another across its day headings; an older page and a live mention are simply there.
 describe("the inbox's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll(".chat-ls-row").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+            order: w.findAll(".chat-ls-row").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-at") : "none")
         };
     }
 
@@ -388,6 +443,18 @@ describe("the inbox's entrance", () => {
         await w.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50, { created_at: at(9, 0, 1) })] });
         expect(entered(w).isEntering).toBe(true);
         expect(w.findAll(".chat-ls-row").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([false, false, true]);
+    });
+
+    // A refresh asks the inbox again, so it lands as a first page: every row in sight rises again.
+    test("a refresh replays the entrance over every row it brings", async () => {
+        const w = draw({ rows: [row(52), row(51)] });
+
+        await w.setProps({ isRefreshing: true });
+        expect(entered(w).isEntering).toBe(false);
+        await w.setProps({ isRefreshing: false, rows: [row(53), row(52), row(51)] });
+
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+        expect(w.findAll(".chat-ls-row").some(r => r.attributes("data-chat-settled") !== undefined)).toBe(false);
     });
 });
 

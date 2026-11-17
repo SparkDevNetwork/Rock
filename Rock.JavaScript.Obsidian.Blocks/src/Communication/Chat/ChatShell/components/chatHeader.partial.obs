@@ -1,6 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <header v-if="!isEmpty" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+    <header v-if="!isEmpty" ref="headerElement" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
+        <!--
+            The sidebar folded away while a panel is open in a narrow window comes back from here,
+            and focus comes back here as it is put away again.
+        -->
+        <IconButton v-if="isSidebarFolded && !isPhone"
+                    icon="sidebar"
+                    label="Show conversations"
+                    aria-expanded="false"
+                    data-testid="header-sidebar"
+                    data-focus-stop="sidebar-button"
+                    @click="emit('sidebar')" />
         <IconButton v-if="isPhone"
                     class="chat-header-back"
                     icon="left"
@@ -8,27 +19,33 @@
                     data-testid="header-back"
                     @click="emit('back')" />
 
-        <!-- A room's mark and title open its details; with no room there is nothing to open. -->
-        <component :is="kind ? 'button' : 'div'"
-                   class="chat-header-id"
-                   v-bind="detailsAttributes"
-                   @click="kind && emit('details')">
+        <div class="chat-header-id">
             <ChannelMark v-if="kind === 'channel'" class="chat-header-ic" :isPublic="isPublic" :imageUrl="iconUrl" />
             <Avatar v-else-if="kind === 'person' && faces.length > 0" :key="otherAlias ?? undefined" :people="faces" :size="36" :status="otherStatus" />
             <GroupFace v-else-if="kind === 'group'" :people="faces" :count="groupOtherCount" :size="36" />
 
             <span class="chat-header-title">
-                <span class="chat-header-name-row">
-                    <!--
-                        Where focus goes when a conversation slides in on a phone: the button around
-                        it, which holds nothing focusable, or with no room to open, the title itself.
-                    -->
+                <!--
+                    The title, which opens the room's details as a button only as wide as itself; with
+                    no room there is nothing to open. Where focus goes when a conversation slides in on
+                    a phone: the button, which holds nothing focusable, or with no room, the title.
+                -->
+                <component :is="kind ? 'button' : 'span'"
+                           ref="titleElement"
+                           class="chat-header-name-row"
+                           v-bind="detailsAttributes"
+                           @click="onTitleClick"
+                           @mouseenter="titleTip.onPointerEnter"
+                           @mouseleave="titleTip.hideTip"
+                           @pointerdown="titleTip.onPointerDown"
+                           @focus="titleTip.onFocus"
+                           @blur="titleTip.onBlur">
                     <b class="chat-header-name"
                        data-testid="header-title"
                        :tabindex="kind ? undefined : -1"
-                       :data-header-focus="kind ? undefined : ''">{{ title }}</b>
+                       :data-focus-stop="kind ? undefined : 'header'">{{ title }}</b>
                     <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
-                </span>
+                </component>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
                     <Dot class="chat-header-live" tone="warning" pulse data-testid="connection-dot" />Reconnecting…
                 </span>
@@ -37,21 +54,25 @@
                 </span>
                 <span v-else-if="shownSubtitle" class="chat-header-sub" data-testid="header-subtitle">{{ shownSubtitle }}</span>
             </span>
-        </component>
+        </div>
 
         <div class="chat-header-actions">
-            <!-- A channel's or a group's other people then "+N", or the people icon and the head count where none can be shown. -->
+            <!-- A channel's other people then "+N", or the people icon and the head count where no face is drawn. -->
             <button v-if="membersButton && !isPhone"
+                    ref="pileElement"
                     type="button"
                     class="chat-header-pile"
                     data-testid="header-members"
                     data-focus-stop="members-button"
                     :aria-label="membersButton.label"
                     :aria-expanded="isMembersOpen ? 'true' : 'false'"
+                    @mouseenter="pileTip.onPointerEnter"
+                    @mouseleave="pileTip.hideTip"
                     @pointerenter="emit('membersIntent')"
-                    @focus="emit('membersIntent')"
-                    @pointerdown="emit('membersIntent')"
-                    @click="emit('members')">
+                    @focus="onPileFocus"
+                    @blur="pileTip.onBlur"
+                    @pointerdown="onPilePointerDown"
+                    @click="onPileClick">
                 <Avatar v-if="membersButton.faces.length > 0" :people="membersButton.faces" :size="26" />
                 <span v-else class="chat-header-pile-ic"><Icon name="users" size="sm" /></span>
                 <span v-if="membersButton.count" class="chat-header-pile-count" data-testid="header-members-count" aria-hidden="true">{{ membersButton.count }}</span>
@@ -59,23 +80,11 @@
 
             <IconButton v-if="isThreadsOffered && !isPhone"
                         icon="thread"
-                        label="Threads"
+                        :label="threadsWords"
                         data-testid="header-threads"
                         data-focus-stop="threads-button"
                         :aria-expanded="isThreadsOpen ? 'true' : 'false'"
                         @click="emit('threads')" />
-
-            <IconButton v-if="isMentionsOffered && !isPhone"
-                        class="chat-header-dotted"
-                        icon="at"
-                        :label="hasMentionDot ? 'Mentions, new mentions' : 'Mentions'"
-                        tooltip="Mentions"
-                        data-testid="header-mentions"
-                        data-focus-stop="mentions-button"
-                        :aria-expanded="isMentionsOpen ? 'true' : 'false'"
-                        @click="emit('mentions')">
-                <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-mentions-dot" />
-            </IconButton>
 
             <!-- A worded pill with no glyph, so the room's notify menu stays the header's only bell. -->
             <Button v-if="isPushOffered && !isPhone"
@@ -85,10 +94,10 @@
                     data-testid="push-offer"
                     @click="emit('turnOnPush')">Turn on notifications</Button>
 
-            <!-- The room's notify menu, the bell drawn as its mode; kept on a phone, where Star moves into More. -->
+            <!-- The room's notify menu, the bell drawn as its mode and named by it; kept on a phone, where Star moves into More. -->
             <span v-if="isPrefsOffered" class="chat-header-menu" data-testid="header-notify">
                 <Menu :icon="notifyIcon"
-                      label="Notifications"
+                      :label="notifyWords"
                       heading="Notify me about"
                       :items="notifyItems"
                       @select="onNotifySelect" />
@@ -102,21 +111,31 @@
                         @click="emit('star')" />
 
             <span v-if="isPhone && moreItems.length > 0" class="chat-header-more" data-testid="header-more" data-focus-stop="more">
-                <Menu icon="dots" :label="hasMentionDot ? 'More, new mentions' : 'More'" :items="moreItems" @select="onMoreSelect" @openChange="onMoreOpenChange" />
-                <!-- Over the menu's button, which draws no mark of its own. -->
-                <Dot v-if="hasMentionDot" class="chat-header-dot" ringed data-testid="header-more-dot" />
+                <Menu icon="dots" label="More" :items="moreItems" @select="onMoreSelect" @openChange="onMoreOpenChange" />
             </span>
         </div>
     </header>
+
+    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+        <div v-if="isTitleTipShown"
+             ref="titleTipElement"
+             class="chat-tip"
+             role="tooltip"
+             :style="titleTip.floatingStyles.value">{{ detailsWords }}</div>
+        <div v-if="isPileTipShown"
+             ref="pileTipElement"
+             class="chat-tip"
+             role="tooltip"
+             :style="pileTip.floatingStyles.value">{{ membersButton?.tip }}</div>
+    </Teleport>
 
     <Transition name="chat-banner" @enter="onBannerEnter" @afterEnter="onBannerSettled" @leave="onBannerLeave">
         <div v-if="connectionBanner"
              class="chat-conn-banner"
              data-testid="connection-banner"
-             :data-tone="connectionBanner"
-             :role="connectionBanner === 'warning' ? 'alert' : 'status'">
+             :data-tone="connectionBanner">
             <div v-if="connectionBanner === 'warning'" class="chat-conn-banner-row">
-                <Icon name="wifi-off" size="sm" />
+                <span class="chat-conn-ic"><Icon name="wifi-off" size="sm" /></span>
                 <span><b>You're offline.</b> Reconnecting now. You can send again once you're back.</span>
             </div>
             <div v-else class="chat-conn-banner-row">
@@ -129,9 +148,8 @@
     <div v-if="banner"
          class="chat-service-banner"
          data-testid="service-banner"
-         :data-tone="isUpdateRequired ? 'info' : 'warning'"
-         role="status">
-        <Icon :name="isUpdateRequired ? 'refresh' : 'alert'" />
+         :data-tone="isUpdateRequired ? 'info' : 'warning'">
+        <span class="chat-service-ic"><Icon :name="isUpdateRequired ? 'refresh' : 'alert'" /></span>
         <span>{{ banner }}</span>
     </div>
 
@@ -164,45 +182,45 @@
     margin-left: -8px;
 }
 
-/*
-    The room's mark and title, the button that opens the room's details, pulled back by its left
-    padding so the mark still lines up with the feed's edge.
-*/
+/* The room's mark, then its title over the line under it; a face's badge rings in the bar's fill. */
 .chat-header-id {
-    /* the button's fill, set by its state alone, which a face's badge and a group's mark ring in over the bar */
-    --chat-header-id-fill: transparent;
     --chat-av-ring: var(--chat-surface);
-    --chat-av-ring-over: var(--chat-header-id-fill);
+    --chat-av-ring-over: transparent;
 
     display: flex;
     flex: 0 1 auto;
     gap: 12px;
     align-items: center;
     min-width: 0;
-    padding: 4px 10px 4px 6px;
-    margin-left: -6px;
-    font: inherit;
-    color: inherit;
-    text-align: left;
-    background: var(--chat-header-id-fill);
-    border: 0;
-    border-radius: var(--chat-r-surface);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-button.chat-header-id:hover {
-    --chat-header-id-fill: var(--chat-hover);
-}
-
-button.chat-header-id:active {
-    --chat-header-id-fill: var(--chat-press);
-}
-
+/*
+    The title and its chevron, the button that opens the room's details, only as wide as the title:
+    pulled back by its own padding, so the words still line up with the line under them.
+*/
 .chat-header-name-row {
     display: flex;
     gap: 4px;
     align-items: center;
+    max-width: 100%;
     min-width: 0;
+    padding: 2px 6px;
+    margin: -2px -6px;
+    font: inherit;
+    color: inherit;
+    text-align: left;
+    background: transparent;
+    border: 0;
+    border-radius: var(--chat-r-control);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+button.chat-header-name-row:hover {
+    background: var(--chat-hover);
+}
+
+button.chat-header-name-row:active {
+    background: var(--chat-press);
 }
 
 /* The chevron says the title opens something, and nudges down on hover. */
@@ -214,14 +232,13 @@ button.chat-header-id:active {
     transition: transform var(--chat-t-fast) var(--chat-ease-in), opacity var(--chat-t-fast) var(--chat-ease-state);
 }
 
-button.chat-header-id:hover .chat-header-chev {
+button.chat-header-name-row:hover .chat-header-chev {
     opacity: 1;
     transform: translateY(var(--chat-nudge));
 }
 
 .is-phone .chat-header-id {
     gap: 10px;
-    padding-right: 6px;
 }
 
 .chat-header-ic {
@@ -238,6 +255,7 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-header-title {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     min-width: 0;
     line-height: 1.25;
 }
@@ -252,6 +270,7 @@ button.chat-header-id:hover .chat-header-chev {
 }
 
 .chat-header-sub {
+    max-width: 100%;
     overflow: hidden;
     font-size: var(--chat-fs-ui);
     color: var(--chat-muted);
@@ -281,18 +300,6 @@ button.chat-header-id:hover .chat-header-chev {
 .chat-header-live {
     margin-right: 6px;
     vertical-align: 1px;
-}
-
-.chat-header-actions :deep(.chat-header-dotted) {
-    position: relative;
-}
-
-/* A new mention, over the button's corner, ringed in the bar's color so it reads apart from the icon. */
-.chat-header-dot {
-    position: absolute;
-    top: 6px;
-    right: 6px;
-    pointer-events: none;
 }
 
 /*
@@ -374,7 +381,8 @@ button.chat-header-id:hover .chat-header-chev {
     border-bottom: 1px solid var(--chat-conn-line-warning);
 }
 
-.chat-conn-banner-row :deep(.chat-ic) {
+.chat-conn-ic {
+    display: inline-flex;
     color: var(--chat-warning-ink);
 }
 
@@ -406,7 +414,8 @@ button.chat-header-id:hover .chat-header-chev {
     border-radius: var(--chat-r-surface);
 }
 
-.chat-service-banner :deep(.chat-ic) {
+.chat-service-ic {
+    display: inline-flex;
     color: var(--chat-warning-ink);
 }
 
@@ -414,7 +423,7 @@ button.chat-header-id:hover .chat-header-chev {
     background: var(--chat-info-soft);
 }
 
-.chat-service-banner[data-tone="info"] :deep(.chat-ic) {
+.chat-service-banner[data-tone="info"] .chat-service-ic {
     color: var(--chat-info-ink);
 }
 
@@ -457,8 +466,8 @@ button.chat-header-id:hover .chat-header-chev {
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
-    import { notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { NotifyMode, notifyIconFor, notifyOptionsFor } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChannelFacts, ChatError, ChatPerson, RoomKind } from "../types.partial";
     import { useChatSession } from "../chatSession.partial";
@@ -471,6 +480,8 @@ button.chat-header-id:hover .chat-header-chev {
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
+    import { useAnnouncer } from "../ui/announcer.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     // #region Types
 
@@ -484,15 +495,16 @@ button.chat-header-id:hover .chat-header-chev {
         (e: "back"): void,
         (e: "backOnline"): void,
         (e: "threads"): void,
-        (e: "mentions"): void,
         (e: "members"): void,
         /** The person is reaching for the members button, so what the panel needs can be read first. */
         (e: "membersIntent"): void,
         (e: "details"): void,
         /** A notify mode other than the room's own was chosen from the bell's menu. */
-        (e: "notify", mode: "all" | "mentions" | "silent"): void,
+        (e: "notify", mode: NotifyMode): void,
         /** Star or Unstar, from the header or the phone's More. */
-        (e: "star"): void
+        (e: "star"): void,
+        /** The sidebar folded away while a panel is open is asked back over the conversation. */
+        (e: "sidebar"): void
     }>();
 
     // The one-pane phone layout leads with Back and folds the actions into a menu.
@@ -612,12 +624,6 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether to offer the mentions inbox, which needs the person's chat to be loaded. */
-        isMentionsOffered: {
-            type: Boolean,
-            default: false
-        },
-
         /**
          * Whether to offer the members panel, which needs a conversation that exists; a channel's
          * facepile, a group's Members button, never in a conversation of two.
@@ -633,20 +639,14 @@ button.chat-header-id:hover .chat-header-chev {
             default: false
         },
 
-        /** Whether the mentions inbox is open, which its button shows as expanded. */
-        isMentionsOpen: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether a mention, by name or with @all, is newer than the person's last look at the inbox. */
-        hasMentionDot: {
-            type: Boolean,
-            default: false
-        },
-
         /** Whether no conversation or draft is open, which leaves the bar out and keeps only the banners. */
         isEmpty: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the sidebar is folded away for an open panel, which draws the button that brings it back. */
+        isSidebarFolded: {
             type: Boolean,
             default: false
         }
@@ -656,6 +656,21 @@ button.chat-header-id:hover .chat-header-chev {
 
     /** Set while the connection is lost and kept until the catch-up after it is done, so "Back online" follows only an outage. */
     const wasOffline = ref(!!props.connection);
+
+    const { announce } = useAnnouncer();
+
+    const headerElement = ref<HTMLElement>();
+    const titleElement = ref<HTMLElement>();
+    const pileElement = ref<HTMLElement>();
+
+    // The title's and the members button's tooltips, which the icon buttons draw for themselves.
+    const titleTip = useTooltip(titleElement, () => !props.kind);
+    const pileTip = useTooltip(pileElement);
+    const { tipElement: titleTipElement, isTipShown: isTitleTipShown } = titleTip;
+    const { tipElement: pileTipElement, isTipShown: isPileTipShown } = pileTip;
+
+    /** The chat's root, which the tips are drawn in; null where the header is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -724,7 +739,7 @@ button.chat-header-id:hover .chat-header-chev {
      * and only for someone in it; a group's are the people the header already has. Null leaves
      * the button out, as for a channel whose facts are not read yet.
      */
-    const membersButton = computed((): { faces: AvatarPerson[], count: string | null, label: string } | null => {
+    const membersButton = computed((): { faces: AvatarPerson[], count: string | null, label: string, tip: string } | null => {
         let total: number;
         let shown: AvatarPerson[];
 
@@ -733,49 +748,56 @@ button.chat-header-id:hover .chat-header-chev {
             shown = props.facts.is_member ? (props.facts.faces ?? []).slice(0, 3).map(personFace) : [];
         }
         else if (membersKind.value === "group") {
+            // The group's face beside the title already draws its people and a "+N" of its own,
+            // so the button counts heads rather than drawing a second "+N" that counts otherwise.
             total = props.facts?.member_count ?? (props.otherCount ?? props.people.length) + 1;
-            shown = faces.value.slice(0, 3);
+            shown = [];
         }
         else {
             return null;
         }
 
-        const label = `${total.toLocaleString()} ${total === 1 ? "member" : "members"}, open member list`;
+        const tip = `${total.toLocaleString()} ${total === 1 ? "member" : "members"}`;
+        const label = `${tip}, open member list`;
         if (shown.length === 0) {
-            return { faces: [], count: shortCount(total), label };
+            return { faces: [], count: shortCount(total), label, tip };
         }
 
         // Faces are drawn only for someone in the room, so the reader is one of the total.
         const rest = total - 1 - shown.length;
-        return { faces: shown, count: rest > 0 ? `+${shortCount(rest)}` : null, label };
+        return { faces: shown, count: rest > 0 ? `+${shortCount(rest)}` : null, label, tip };
     });
+
+    /** What the title button opens, said in its tooltip. */
+    const detailsWords = computed((): string => props.kind === "channel" ? "Channel details" : "Conversation details");
+
+    /** This room's threads, as Threads names them. */
+    const threadsWords = computed((): string => `Threads in ${props.title}`);
 
     /** The title button's name and role, for a room; the plain title of no room has none. */
     const detailsAttributes = computed((): Record<string, string> => props.kind
         ? {
             "type": "button",
             "aria-haspopup": "dialog",
-            "aria-label": `${props.title}${otherStatus.value?.label ?? ""}, ${props.kind === "channel" ? "channel" : "conversation"} details`,
+            "aria-label": `${props.title}${otherStatus.value?.label ?? ""}, ${detailsWords.value.toLowerCase()}`,
             "data-testid": "header-details",
-            "data-focus-stop": "details-button",
-            "data-header-focus": ""
+            "data-focus-stop": "header"
         }
         : {});
 
-    /** The phone's overflow menu; empty leaves the button out, since a menu of nothing is a dead end. */
+    /**
+     * The phone's overflow menu, this conversation's own controls; empty leaves the button out,
+     * since a menu of nothing is a dead end.
+     */
     const moreItems = computed((): MenuItem[] => {
         const items: MenuItem[] = [];
 
-        if (props.isMentionsOffered) {
-            items.push({ key: "mentions", label: "Mentions", icon: "at", hasDot: props.hasMentionDot });
+        if (props.isThreadsOffered) {
+            items.push({ key: "threads", label: "Threads", icon: "thread" });
         }
 
         if (membersKind.value) {
             items.push({ key: "members", label: "Members", icon: "users" });
-        }
-
-        if (props.isThreadsOffered) {
-            items.push({ key: "threads", label: "Threads", icon: "thread" });
         }
 
         if (props.isPushOffered) {
@@ -788,14 +810,23 @@ button.chat-header-id:hover .chat-header-chev {
 
         // Last, as the title opens the same details on a phone too.
         if (props.kind) {
-            items.push({ key: "details", label: props.kind === "channel" ? "Channel details" : "Conversation details", icon: "settings" });
+            items.push({ key: "details", label: detailsWords.value, icon: "settings" });
         }
 
         return items;
     });
 
+    /** The room's mode, all where it has none. */
+    const shownNotifyMode = computed((): NotifyMode => props.notifyMode === "silent" || props.notifyMode === "mentions" ? props.notifyMode : "all");
+
     /** The bell as the room's mode: on, mentions only, or off. */
-    const notifyIcon = computed((): string => notifyIconFor(props.notifyMode === "silent" || props.notifyMode === "mentions" ? props.notifyMode : "all"));
+    const notifyIcon = computed((): string => notifyIconFor(shownNotifyMode.value));
+
+    /** The bell's name and tooltip, which say the mode in the menu's own words, so the glyph is never the only sign. */
+    const notifyWords = computed((): string => {
+        const title = notifyOptionsFor(props.kind).find(option => option.value === shownNotifyMode.value)?.title ?? "";
+        return `Notifications: ${title.toLowerCase()}`;
+    });
 
     /** "Notify me about": the three modes with what each means, the room's own checked, then its details. */
     const notifyItems = computed((): MenuItem[] => [
@@ -805,7 +836,7 @@ button.chat-header-id:hover .chat-header-chev {
             description: option.description,
             isChecked: option.value === props.notifyMode
         })),
-        { key: "details", label: props.kind === "channel" ? "Channel details" : "Conversation details", icon: "settings", isSeparatorBefore: true }
+        { key: "details", label: detailsWords.value, icon: "settings", isSeparatorBefore: true }
     ]);
 
     /** Which banner the connection opens: offline while lost, then back online while catching up after it. */
@@ -856,9 +887,6 @@ button.chat-header-id:hover .chat-header-chev {
         else if (key === "threads") {
             emit("threads");
         }
-        else if (key === "mentions") {
-            emit("mentions");
-        }
         else if (key === "members") {
             emit("members");
         }
@@ -874,6 +902,29 @@ button.chat-header-id:hover .chat-header-chev {
         else if (key !== props.notifyMode && (key === "all" || key === "mentions" || key === "silent")) {
             emit("notify", key);
         }
+    }
+
+    function onTitleClick(): void {
+        titleTip.hideTip();
+        if (props.kind) {
+            emit("details");
+        }
+    }
+
+    /** Reaching for the members button reads what the panel needs first, as a hover does. */
+    function onPileFocus(): void {
+        emit("membersIntent");
+        pileTip.onFocus();
+    }
+
+    function onPilePointerDown(): void {
+        emit("membersIntent");
+        pileTip.onPointerDown();
+    }
+
+    function onPileClick(): void {
+        pileTip.hideTip();
+        emit("members");
     }
 
     /** Opens from no height to the banner's own, measured now since its text wraps to the width. */
@@ -901,6 +952,23 @@ button.chat-header-id:hover .chat-header-chev {
 
     // #region Watchers
 
+    // The banners are said through the chat's one voice as they come: the outage assertively, its
+    // end and the service's sentence politely.
+    watch(connectionBanner, (banner, was) => {
+        if (banner === "warning" && was !== "warning") {
+            announce("You're offline. Reconnecting now. You can send again once you're back.", "assertive");
+        }
+        else if (banner === "info" && was !== "info") {
+            announce("Back online. Catching up on new messages…");
+        }
+    });
+
+    watch(() => props.banner, banner => {
+        if (banner) {
+            announce(banner);
+        }
+    });
+
     watch(() => [props.connection, props.isBehind] as const, ([connection, isBehind]) => {
         if (connection) {
             wasOffline.value = true;
@@ -914,4 +982,8 @@ button.chat-header-id:hover .chat-header-chev {
     });
 
     // #endregion Watchers
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(headerElement.value);
+    });
 </script>

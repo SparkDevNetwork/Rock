@@ -182,7 +182,8 @@ describe("a group's face ring", () => {
     }
 
     test("lays the owner's fill over its base in every ring", () => {
-        const rings = rules("ui/groupFace.partial.obs", /./).filter(body => /box-shadow/.test(body));
+        // a bubble rings its face through the face's halo hook, which the sheet's face rule draws
+        const rings = rules("ui/groupFace.partial.obs", /./).filter(body => /box-shadow|--chat-av-halo/.test(body));
 
         expect(rings.length).toBeGreaterThan(0);
         for (const body of rings) {
@@ -190,9 +191,18 @@ describe("a group's face ring", () => {
         }
     });
 
+    // The header's title button hugs the title alone, so the face beside it sits on the bar, whose
+    // fill never changes: its ring is the bar's, over nothing.
+    test("on the header sits on the bar beside the title button, ringed in the bar's fill", () => {
+        const states = rules("components/chatHeader.partial.obs", /^\.chat-header-id(\[|:|$)/);
+
+        expect(states.some(body => /--chat-av-ring:\s*var\(--chat-surface\)/.test(body))).toBe(true);
+        expect(states.some(body => /--chat-av-ring-over:\s*transparent/.test(body))).toBe(true);
+        expect(states.some(body => /background/.test(body))).toBe(false);
+    });
+
     test.each([
-        ["a sidebar row", "components/channelSidebar.partial.obs", /^\.chat-row(\[|:|$)/, "--chat-row-fill"],
-        ["the header's title button", "components/chatHeader.partial.obs", /^(button)?\.chat-header-id(\[|:|$)/, "--chat-header-id-fill"]
+        ["a sidebar row", "components/channelSidebar.partial.obs", /^\.chat-row(\[|:|$)/, "--chat-row-fill"]
     ])("follows %s's hover and current state through its fill", (_name, file, selector, fill) => {
         const states = rules(file, selector);
         const backgrounds = states.flatMap(body => Array.from(body.matchAll(/(?:^|[;\s])background(?:-color)?:\s*([^;]+);/g)).map(match => match[1].trim()));
@@ -202,19 +212,14 @@ describe("a group's face ring", () => {
         expect(backgrounds.every(value => value === `var(${fill})`)).toBe(true);
     });
 
-    test("follows a sidebar row's arrival flash, its fill registered as a color so it fades", () => {
+    // A row a message moves glides to its place and is never washed, so its ring has no arrival
+    // fill to follow: no flash in the sheet, no fill registered to fade.
+    test("has no sidebar row's arrival wash to follow: no flash in the sheet, no fill registered to fade", () => {
         const text = readFileSync(join(shell, "components/channelSidebar.partial.obs"), "utf8");
-        // the keyframes are the token sheet's, where every motion lives; the fill is registered beside the row
         const sheet = readFileSync(join(shell, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
-        const flash = /@keyframes chat-row-flash\s*\{((?:[^{}]*\{[^{}]*\})*)\s*\}/.exec(sheet);
-        const registered = /@property --chat-row-fill\s*\{([^{}]*)\}/.exec(text);
 
-        expect(flash).not.toBeNull();
-        expect(flash![1]).not.toMatch(/background/);
-        expect(flash![1]).toMatch(/0%\s*\{\s*--chat-row-fill: var\(--chat-flash\);/);
-        expect(flash![1]).toMatch(/100%\s*\{\s*--chat-row-fill: transparent;/);
-        expect(registered).not.toBeNull();
-        expect(registered![1]).toMatch(/syntax: "<color>";/);
-        expect(registered![1]).toMatch(/initial-value: transparent;/);
+        expect(sheet).not.toMatch(/@keyframes chat-row-flash/);
+        expect(text).not.toMatch(/@property --chat-row-fill/);
+        expect(text).not.toMatch(/chat-row-flash/);
     });
 });

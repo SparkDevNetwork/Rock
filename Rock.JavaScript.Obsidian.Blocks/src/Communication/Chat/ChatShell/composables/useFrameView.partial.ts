@@ -33,7 +33,7 @@
 // threads list and the drawer's older replies, since which panel shows and what it asks of the
 // shell change together.
 //
-// Size: about 1,260 lines. The next addition that takes this past 1,500 splits the landings back
+// Size: about 1,480 lines. The next addition that takes this past 1,500 splits the landings back
 // out to their own file, since they are the one part with a lifetime of their own (a landing
 // outlives the move that asked for it).
 
@@ -41,8 +41,8 @@ import { computed, ComputedRef, nextTick, onBeforeUnmount, ref, Ref, shallowRef,
 import { ToastNotice } from "../components/errorToast.partial.obs";
 import { ChatShell } from "../shell.partial";
 import { FocusStop, PersonRow } from "../types.partial";
-import { tokenDuration } from "../ui/brand.partial";
-import { focusQuietly } from "../ui/focusTrap.partial";
+import { tokenDuration, tokenLength } from "../ui/brand.partial";
+import { EscapeLayer, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 import { useRoomsView } from "./useRoomsView.partial";
@@ -50,11 +50,26 @@ import { FollowError, OpenThreadState, ThreadListState, ThreadListTab, ThreadPla
 
 // #region Types
 
-/** What the panel column can hold: the threads list, the mentions inbox, the members panel, or one thread in its drawer. */
-export type PanelKind = "threads" | "mentions" | "members" | "thread";
+/**
+ * What the panel column can hold: the open conversation's threads, Activity (the mentions inbox
+ * and every thread followed, across conversations), the members panel, or one thread in its drawer.
+ */
+export type PanelKind = "threads" | "activity" | "members" | "thread";
 
 /** The panels that list something, which a thread can be opened from or which take a thread's place. */
-export type ListPanelKind = "threads" | "mentions" | "members";
+export type ListPanelKind = "threads" | "activity" | "members";
+
+/** Activity's two lists: the mentions inbox, and every thread the reader follows. */
+export type ActivityTab = "mentions" | "threads";
+
+/** The list the column draws: Activity's shown tab, or the open panel itself. */
+export type ShownList = "threads" | "mentions" | "members" | "thread";
+
+/**
+ * Where the sidebar is while a window too narrow for three columns holds a panel: folded away, or
+ * opened over the conversation; null while it stands in its own column.
+ */
+export type SidebarFold = "folded" | "over";
 
 /** A view that takes the conversation's place in the main column: Browse channels or New message. */
 export type MainViewKind = "directory" | "newdm";
@@ -66,7 +81,7 @@ export type FramePane = "list" | "conversation" | "panel";
 export type ReplyLanding = ThreadPlace & { channelId: string };
 
 /** The list a thread was opened from, which its back chevron returns to, or null when it was opened from the conversation. */
-export type ThreadOrigin = "threads" | "mentions" | null;
+export type ThreadOrigin = "threads" | "activity" | null;
 
 /** Where a landing stands after a look: its message is held, an older page may hold it, or it is over. */
 export type LandingCheck = "held" | "more" | "stop";
@@ -152,6 +167,18 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** What the column draws: the open panel, kept through its close so it narrows over its content. */
     shownPanel: Ref<PanelKind | null>;
 
+    /** Activity's shown tab, kept while it is closed, so it opens again where it was. */
+    activityTab: Ref<ActivityTab>;
+
+    /** The list the column draws, Activity's by its tab. */
+    shownList: ComputedRef<ShownList | null>;
+
+    /** Where the sidebar is while a narrow window holds a panel, or null while it has its column. */
+    sidebarFold: ComputedRef<SidebarFold | null>;
+
+    /** Whether the open conversation has Members to offer: a channel or a group, never a conversation of two. */
+    isMembersOffered: ComputedRef<boolean>;
+
     panelElement: Ref<HTMLElement | undefined>;
 
     /** The conversation's column, which holds its header, feed and composer. */
@@ -182,6 +209,24 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     onBack: () => Promise<void>;
 
     onListPanel: (kind: ListPanelKind) => Promise<void>;
+
+    /** Activity's Segmented chose its other tab. */
+    onActivityTab: (tab: ActivityTab) => void;
+
+    /**
+     * The column's crossfade began to fade a panel out: it is out of reach from then on, so the
+     * keyboard and focus go only into the panel coming in.
+     */
+    onPanelLeave: (element: Element) => void;
+
+    /** The header's sidebar button, while the sidebar is folded away: it opens over the conversation. */
+    onSidebarOver: () => void;
+
+    /** The sidebar's own button, while it is laid over the conversation: it folds away again. */
+    onSidebarAway: () => void;
+
+    /** The threads list asked for every thread followed, its empty state's way there: Activity on Threads. */
+    onThreadsTab: (tab: ThreadListTab) => void;
 
     openThreadFromList: (rootId: number, channelId: string) => void;
 
@@ -252,6 +297,11 @@ const phoneWidth = 760;
 /** The design's pane slide, used when the sheet is not on the page. */
 const fallbackPaneSlideMs = 300;
 
+/** The sheet's sidebar and panel widths and the conversation's least width, used when the sheet is not on the page. */
+const fallbackSidePx = 296;
+const fallbackPanelPx = 392;
+const fallbackMainMinPx = 480;
+
 /** A landing fetches at most this many older pages before it stays at the newest. */
 const maxLandingOlderPages = 2;
 
@@ -270,6 +320,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     const isPhone = ref(false);
 
+    /** Whether the block is narrower than the sidebar, a panel and the conversation's least width side by side. */
+    const isNarrow = ref(false);
+
+    /** Set by the header's sidebar button while the sidebar is folded, until a conversation is chosen. */
+    const isSidebarOver = ref(false);
+
     /** Set by Back on a phone, so the list shows while the conversation stays open behind it. */
     const isListChosen = ref(false);
 
@@ -287,6 +343,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     const panelKind = ref<PanelKind | null>(null);
 
     const shownPanel = ref<PanelKind | null>(null);
+
+    const activityTab = ref<ActivityTab>("mentions");
 
     const panelElement = ref<HTMLElement>();
 
@@ -327,6 +385,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     /** Counts every landing asked for, so one a newer landing replaced stops looking. */
     let landingCount = 0;
 
+    /** The sidebar laid over the conversation on the Escape stack, under anything opened over it since. */
+    const sidebarLayer: EscapeLayer = { takeEscape: () => onSidebarAway() };
+
     // #endregion Values
 
     // #region Computed Values
@@ -336,6 +397,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      * until Back asks for the list, and an open panel over the conversation.
      */
     const pane = computed((): FramePane => {
+        // Activity is opened from the list's head, and slides in over the list.
+        if (panelKind.value === "activity" && !mainView.value) {
+            return "panel";
+        }
+
         if (!(activeChannelId.value || mainView.value) || isListChosen.value) {
             return "list";
         }
@@ -343,7 +409,31 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         return panelKind.value && !mainView.value ? "panel" : "conversation";
     });
 
-    const isSidebarHidden = computed((): boolean => isPhone.value && pane.value !== "list");
+    /**
+     * A panel open in a window too narrow for three columns folds the sidebar away, and the header
+     * offers it back over the conversation; a phone has panes instead, and a full view no panel.
+     */
+    const sidebarFold = computed((): SidebarFold | null => {
+        if (isPhone.value || !isNarrow.value || !panelKind.value || mainView.value) {
+            return null;
+        }
+
+        return isSidebarOver.value ? "over" : "folded";
+    });
+
+    const isSidebarHidden = computed((): boolean => (isPhone.value && pane.value !== "list") || sidebarFold.value === "folded");
+
+    /**
+     * Members is offered where a room has a roster to show: a channel or a group, never a
+     * conversation of two, which Rock keeps as it is. The header offers it by this, and the panel
+     * opens and follows a conversation change by it too.
+     */
+    const isMembersOffered = computed((): boolean => {
+        const channelId = activeChannelId.value;
+        return !!channelId && shell.value.channels.roomKindOf(channelId) !== "person";
+    });
+
+    const shownList = computed((): ShownList | null => shownPanel.value === "activity" ? activityTab.value : shownPanel.value);
 
     const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
 
@@ -359,21 +449,25 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         const width = entries[entries.length - 1]?.contentRect.width;
         if (width !== undefined) {
             isPhone.value = width < phoneWidth;
+            isNarrow.value = width < foldWidth();
         }
     }
 
     async function onSelect(channelId: string): Promise<void> {
         // Choosing the conversation already open behind the list or a full view brings it back too.
+        const isFolding = sidebarFold.value === "over";
         leaveMainView();
         isListChosen.value = false;
+        isSidebarOver.value = false;
         isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
 
-        // The row that had focus has slid out of view and out of reach, so focus goes to what
-        // slid in: the conversation's title, never its composer, which would raise the keyboard.
-        // The pane is still off to the right as it starts to slide, so the focus must not scroll
-        // the frame to it, which a browser that cannot clip the frame would do.
-        if (isPhone.value) {
+        // The row that had focus has slid out of view and out of reach, on a phone or with the
+        // sidebar folding away, so focus goes to what it opened: the conversation's title, never
+        // its composer, which would raise a phone's keyboard. A phone's pane is still off to the
+        // right as it starts to slide, so the focus must not scroll the frame to it, which a
+        // browser that cannot clip the frame would do.
+        if (isPhone.value || isFolding) {
             await nextTick();
             focusStop(["header"], { preventScroll: true });
         }
@@ -399,8 +493,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     }
 
     /**
-     * The header's Threads opens the open conversation's threads, its Mentions the inbox, and
-     * Members the open conversation's roster; each closes its list when it is the one open.
+     * The header's Threads opens the open conversation's threads and Members its roster; the
+     * sidebar's Activity opens the inbox across conversations. Each closes its list when it is the
+     * one open.
      */
     async function onListPanel(kind: ListPanelKind): Promise<void> {
         if (panelKind.value === kind) {
@@ -408,8 +503,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return;
         }
 
-        const channelId = activeChannelId.value;
-        if (kind !== "mentions" && !channelId) {
+        // A mention waiting is what Activity is opened for, so it opens on Mentions; else where it was.
+        await openPanel(kind, kind === "activity" && shell.value.mentions.state.hasDot ? "mentions" : activityTab.value);
+    }
+
+    /** Opens a list in the column, Activity on the tab given, with focus on its first control. */
+    async function openPanel(kind: ListPanelKind, tab: ActivityTab): Promise<void> {
+        if ((kind !== "activity" && !activeChannelId.value) || (kind === "members" && !isMembersOffered.value)) {
             return;
         }
 
@@ -417,28 +517,70 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         releasePanel();
         window.clearTimeout(panelClearTimer);
         isPaneMotionOn.value = true;
+        if (kind === "activity") {
+            activityTab.value = tab;
+        }
         panelKind.value = kind;
         shownPanel.value = kind;
-        void (!channelId || kind === "mentions" ? shell.value.mentions.openInbox()
-            : kind === "threads" ? shell.value.threads.openList(channelId) : shell.value.members.open(channelId));
+        const opened = openList(kind);
 
-        // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
-        // without that button's tooltip, as a list whose first control is a tab shows none. The
-        // column is still 0px wide here, so a focus that scrolled would scroll the column to the
-        // control and drag the content in from its edge instead of letting it slide.
         await nextTick();
-        const first = panelElement.value?.querySelector<HTMLElement>("[data-autofocus]");
-        if (first) {
-            first.focus({ preventScroll: true });
-        }
-        else {
-            // the back chevron is drawn before the X, so it is the one found first when both are
-            focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
+        const start = focusPanelStart();
+
+        // A first control that comes with the list's first page, as a phone's first member, takes
+        // focus once that page is drawn, while focus is still where the panel opened it.
+        if (start && !start.hasAttribute("data-autofocus")) {
+            void opened.then(() => nextTick()).then(() => {
+                if (document.activeElement === start) {
+                    firstDrawn(panelElement.value, "[data-autofocus]")?.focus({ preventScroll: true });
+                }
+            });
         }
     }
 
+    /** Activity's Segmented chose a tab: its list takes the other's place. */
+    function onActivityTab(tab: ActivityTab): void {
+        if (panelKind.value !== "activity" || tab === activityTab.value) {
+            return;
+        }
+
+        releasePanel();
+        activityTab.value = tab;
+        void openList("activity");
+    }
+
+    /** The panel fading out is out of reach and unread while the next fades in over its place. */
+    function onPanelLeave(element: Element): void {
+        element.setAttribute("inert", "");
+        element.setAttribute("aria-hidden", "true");
+    }
+
+    /** The conversation's empty threads list asked for every thread followed, which Activity's Threads lists. */
+    function onThreadsTab(tab: ThreadListTab): void {
+        if (tab === "all") {
+            void openPanel("activity", "threads");
+        }
+    }
+
+    /** The header's sidebar button, shown while the sidebar is folded: it opens over the conversation, with focus in it. */
+    function onSidebarOver(): void {
+        isSidebarOver.value = true;
+        const channelId = activeChannelId.value;
+        void nextTick(() => focusStop([channelId ? { stop: "row", match: `[data-channel-id='${channelId}']` } : null, "new-message"]));
+    }
+
     /**
-     * A row of the threads list chose its thread: its conversation opens behind the drawer, as a
+     * The sidebar laid over the conversation goes back out of the way, as a sheet does: its own
+     * button, Escape or a press on the shade over what it covers, focus going back to the
+     * header's button, which brings it back.
+     */
+    function onSidebarAway(): void {
+        isSidebarOver.value = false;
+        void nextTick(() => focusStop(["sidebar-button", "header"]));
+    }
+
+    /**
+     * A row of a threads list chose its thread: its conversation opens behind the drawer, as a
      * sidebar row would open it, and the thread opens in the panel column in the list's place,
      * with a back chevron that returns to the list and the row that opened it.
      */
@@ -446,7 +588,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        void openThreadDrawer(channelId, rootId, "threads");
+        // Activity's list is opened from a phone's list, and the thread is over its conversation.
+        isListChosen.value = false;
+        void openThreadDrawer(channelId, rootId, panelKind.value === "activity" ? "activity" : "threads");
     }
 
     /**
@@ -469,7 +613,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         // The inbox marks the row opened as its current one.
         await nextTick();
-        focusStop([origin === "threads"
+        focusStop([shownList.value === "threads"
             ? { stop: "threads-row", match: `[data-root-id='${rootId}']` }
             : { stop: "mentions-row", match: "[aria-current='true']" }], { within: "panel" });
     }
@@ -643,7 +787,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         if (channelId !== activeChannelId.value) {
             void shell.value.selectChannel(channelId);
         }
-        await landOnReply({ channelId, rootId, messageId }, "mentions");
+        isListChosen.value = false;
+        await landOnReply({ channelId, rootId, messageId }, "activity");
     }
 
     /**
@@ -681,9 +826,28 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     }
 
+    /**
+     * Asks the shell for a list the column now shows: Activity's by its tab, else the open
+     * conversation's. Resolves once its first page is in, or with nothing to ask for at once; the
+     * shell says a failure itself.
+     */
+    function openList(kind: ListPanelKind): Promise<void> {
+        const channelId = activeChannelId.value;
+        if (kind === "activity") {
+            return activityTab.value === "mentions" ? shell.value.mentions.openInbox() : shell.value.threads.openList(channelId ?? "", "all");
+        }
+
+        if (channelId) {
+            return kind === "threads" ? shell.value.threads.openList(channelId, "channel") : shell.value.members.open(channelId);
+        }
+
+        return Promise.resolve();
+    }
+
     /** Lets go of whatever the column holds: an open thread, and the list it was opened from or the list open. */
     function releasePanel(): void {
-        const list = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
+        const kind = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
+        const list = kind === "activity" ? activityTab.value : kind;
         leaveThread();
         if (list === "threads") {
             shell.value.threads.closeList();
@@ -694,6 +858,14 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         else if (list === "members") {
             shell.value.members.close();
         }
+    }
+
+    /** The width under which a panel folds the sidebar: the sidebar, the panel and the conversation's least width, as the sheet names them. */
+    function foldWidth(): number {
+        const root = rootElement.value;
+        return root
+            ? tokenLength(root, "--chat-w-side", fallbackSidePx) + tokenLength(root, "--chat-w-panel", fallbackPanelPx) + tokenLength(root, "--chat-w-main-min", fallbackMainMinPx)
+            : fallbackSidePx + fallbackPanelPx + fallbackMainMinPx;
     }
 
     /**
@@ -708,6 +880,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         const closed = panelKind.value;
         releasePanel();
         panelKind.value = null;
+        isSidebarOver.value = false;
         finishClosing();
 
         // a thread is opened from a message or a list, never from a header button of its own
@@ -727,7 +900,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return shell.value.threads.openThread(channelId, rootId);
         }
 
-        if (origin === null && (panelKind.value === "threads" || panelKind.value === "mentions" || panelKind.value === "members")) {
+        if (origin === null && (panelKind.value === "threads" || panelKind.value === "activity" || panelKind.value === "members")) {
             releasePanel();
         }
         shell.value.mentions.threadOpened(channelId, rootId);
@@ -806,7 +979,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
         const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
         for (const target of order) {
-            const element = target instanceof HTMLElement ? target : stopElement(target, place, options);
+            // A place in a pane out of reach takes no focus, so the order goes on to the next.
+            const element = target instanceof HTMLElement ? (isDrawn(target) ? target : null) : stopElement(target, place, options);
             if (!element) {
                 continue;
             }
@@ -839,13 +1013,32 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return null;
         }
 
-        const mark = stop === "header" ? "[data-header-focus]" : `[data-focus-stop='${stop}']`;
-        const marked = (within ?? place)?.querySelector<HTMLElement>(`${mark}${match ?? ""}`) ?? null;
+        const marked = firstDrawn(within ?? place, `[data-focus-stop='${stop}']${match ?? ""}`);
         if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
             return marked;
         }
 
         return marked.querySelector<HTMLElement>("button") ?? marked;
+    }
+
+    /**
+     * Puts focus where the panel the column shows starts: its first control, or its back chevron
+     * or X when it has none yet, without that button's tooltip, as a list whose first control is
+     * a tab shows none. A panel fading out of the column is out of reach, so only the one coming
+     * in is looked in. The column may still be 0px wide, so a focus that scrolled would scroll the
+     * column to the control and drag the content in from its edge instead of letting it slide.
+     *
+     * @returns The element focused, or null when the column draws nothing to focus.
+     */
+    function focusPanelStart(): HTMLElement | null {
+        const first = firstDrawn(panelElement.value, "[data-autofocus]");
+        if (first) {
+            first.focus({ preventScroll: true });
+            return first;
+        }
+
+        // the back chevron is drawn before the X, so it is the one found first when both are
+        return focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
     }
 
     /**
@@ -1009,25 +1202,41 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     });
 
-    // The threads list follows the open conversation; a draft has none, so it closes. The roster
-    // belongs to the room it was opened for, so another conversation closes it, and focus inside it
-    // goes to the title of what replaced it rather than to a header button the person did not press.
+    // The threads list and the roster are the open conversation's, so each follows it, re-pointing
+    // at the conversation now open; a draft has neither, and a conversation of two no roster, so
+    // they close there, as the header offers them. A list read afresh takes its old rows away, so
+    // focus on one goes where the panel starts rather than with the row; focus anywhere else
+    // stays. Activity spans every conversation, so it stays as it is.
     watch(activeChannelId, channelId => {
-        if (panelKind.value === "threads" && channelId) {
-            void shell.value.threads.openList(channelId);
+        const kind = panelKind.value;
+        if (kind !== "threads" && kind !== "members") {
+            return;
         }
-        else if (panelKind.value === "threads") {
-            closePanel();
-        }
-        else if (panelKind.value === "members") {
-            const hadFocus = !!panelElement.value?.contains(document.activeElement);
-            releasePanel();
-            panelKind.value = null;
-            finishClosing();
 
-            if (hadFocus) {
-                void nextTick(() => focusStop(["header"]));
-            }
+        if (!channelId || (kind === "members" && !isMembersOffered.value)) {
+            closePanel();
+            return;
+        }
+
+        const hadFocus = !!panelElement.value?.contains(document.activeElement);
+        void openList(kind);
+        if (hadFocus) {
+            void nextTick(() => {
+                if (!panelElement.value?.contains(document.activeElement)) {
+                    focusPanelStart();
+                }
+            });
+        }
+    });
+
+    // Laid over the conversation, the sidebar is on the Escape stack until it folds or takes its
+    // column back; the shade the frame draws under it answers a press.
+    watch(() => sidebarFold.value === "over", isOver => {
+        if (isOver) {
+            pushEscapeLayer(sidebarLayer);
+        }
+        else {
+            pullEscapeLayer(sidebarLayer);
         }
     });
 
@@ -1036,6 +1245,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     onBeforeUnmount(() => {
         window.clearTimeout(paneGoneTimer);
         window.clearTimeout(panelClearTimer);
+        pullEscapeLayer(sidebarLayer);
     });
 
     const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
@@ -1054,6 +1264,10 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         panelKind,
         mainView,
         shownPanel,
+        activityTab,
+        shownList,
+        sidebarFold,
+        isMembersOffered,
         panelElement,
         mainElement,
         mainViewElement,
@@ -1066,6 +1280,11 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         onSelect,
         onBack,
         onListPanel,
+        onActivityTab,
+        onPanelLeave,
+        onSidebarOver,
+        onSidebarAway,
+        onThreadsTab,
         openThreadFromList,
         onOpenThread,
         onThreadBack,
@@ -1087,6 +1306,19 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         ...membersPanelViews(shell, rooms, dependencies.campuses),
         ...threadsPanelWiring(shell, activeChannelId, drawnThread, dependencies.showNotice)
     };
+}
+
+/**
+ * The first element in a place that matches and is drawn for the keyboard, past any in a pane out
+ * of reach, as a phone's panes behind the front one and a panel fading out are.
+ *
+ * @param place Where to look.
+ * @param selector What to look for.
+ *
+ * @returns The element, or null when none is drawn.
+ */
+function firstDrawn(place: ParentNode | undefined, selector: string): HTMLElement | null {
+    return Array.from(place?.querySelectorAll<HTMLElement>(selector) ?? []).find(isDrawn) ?? null;
 }
 
 /**
@@ -1217,17 +1449,6 @@ function threadsPanelWiring(shell: Readonly<Ref<ChatShell>>, activeChannelId: Re
     });
     const listFollowError = computed((): FollowError | null => drawerFollowError.value ? null : shell.value.threads.state.followError);
 
-    function onThreadsTab(tab: ThreadListTab): void {
-        // A thread opened from the All tab may have moved the conversation, so the list's own
-        // tab is opened for the conversation open now.
-        if (tab === "channel" && activeChannelId.value && threadList.value.channelId !== activeChannelId.value) {
-            void shell.value.threads.openList(activeChannelId.value, tab);
-            return;
-        }
-
-        void shell.value.threads.switchTab(tab);
-    }
-
     function onThreadsRefresh(): void {
         void shell.value.threads.refresh();
     }
@@ -1260,5 +1481,5 @@ function threadsPanelWiring(shell: Readonly<Ref<ChatShell>>, activeChannelId: Re
         void shell.value.threads.loadOlderReplies();
     }
 
-    return { threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies };
+    return { threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies };
 }

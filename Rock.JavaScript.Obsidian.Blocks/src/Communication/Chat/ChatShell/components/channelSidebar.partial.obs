@@ -2,7 +2,14 @@
 <template>
     <div class="chat-side" :class="{ 'is-phone': isPhone }" data-testid="channel-sidebar">
         <!-- One row to find a conversation or start one; the page above already names the church. -->
-        <div class="chat-side-top" data-testid="sidebar-top">
+        <div class="chat-side-top" :class="{ 'is-scrolled': isScrolled }" data-testid="sidebar-top">
+            <!-- Laid over the conversation, the sidebar covers the header's button, so this one, in its place, puts it away. -->
+            <IconButton v-if="isOver"
+                        icon="sidebar"
+                        label="Hide conversations"
+                        aria-expanded="true"
+                        data-testid="sidebar-hide"
+                        @click="emit('hide')" />
             <Field v-model="query"
                    class="chat-side-search"
                    :size="isPhone ? 'lg' : 'md'"
@@ -11,21 +18,36 @@
                    aria-label="Find a conversation"
                    autocomplete="off"
                    data-testid="sidebar-search" />
-            <IconButton v-if="isNewMessageShown"
-                        class="chat-side-new"
-                        icon="compose"
-                        label="New message"
-                        data-testid="new-message"
-                        data-focus-stop="new-message"
-                        :inert="isNewMessageInert || undefined"
-                        :aria-pressed="isNewMessageOpen ? 'true' : 'false'"
-                        @click="emit('newMessage')" />
+            <span class="chat-side-acts">
+                <!-- Everything across conversations: Mentions and the Threads the person follows. -->
+                <IconButton v-if="isActivityOffered"
+                            icon="inbox"
+                            :label="hasMentionDot ? 'Activity, new mentions' : 'Activity'"
+                            tooltip="Activity"
+                            data-testid="sidebar-activity"
+                            data-focus-stop="activity-button"
+                            :aria-expanded="isActivityOpen ? 'true' : 'false'"
+                            @click="emit('activity')">
+                    <Dot v-if="hasMentionDot" class="chat-side-dot" ringed data-testid="sidebar-activity-dot" />
+                </IconButton>
+                <IconButton v-if="isNewMessageShown"
+                            isOutlined
+                            icon="compose"
+                            label="New message"
+                            data-testid="new-message"
+                            data-focus-stop="new-message"
+                            :inert="isNewMessageInert || undefined"
+                            :aria-pressed="isNewMessageOpen ? 'true' : 'false'"
+                            @click="emit('newMessage')" />
+            </span>
         </div>
 
-        <nav class="chat-side-list"
+        <nav ref="listElement"
+             class="chat-side-list"
              aria-label="Conversations"
              :aria-busy="loadState === 'loading' || isVeiled ? 'true' : undefined"
-             :inert="isVeiled || undefined">
+             :inert="isVeiled || undefined"
+             @scroll.passive="onListScroll">
             <!--
                 The first load's veil over the list, which the frame supplies. The rows under it are
                 out of reach until it goes; the search and compose above are the frame's own.
@@ -37,12 +59,17 @@
             -->
             <div v-if="loadState === 'loading'">
                 <span class="chat-sr-only">Loading conversations</span>
-                <Skeleton v-for="width in skeletonWidths" :key="width" class="chat-side-skel" shape="person" :widths="[width, 32]" data-testid="sidebar-skeleton" />
+                <div aria-hidden="true">
+                    <div class="chat-sec"><h3 data-testid="sidebar-skeleton-heading">Channels</h3></div>
+                    <Skeleton v-for="width in channelSkeletonWidths" :key="`channel-${width}`" class="chat-side-skel-ch" shape="channel" :widths="[width]" data-testid="sidebar-skeleton" />
+                    <div class="chat-sec"><h3 data-testid="sidebar-skeleton-heading">Direct messages</h3></div>
+                    <Skeleton v-for="width in personSkeletonWidths" :key="`person-${width}`" class="chat-side-skel-dm" shape="person" :widths="[width, 32]" data-testid="sidebar-skeleton" />
+                </div>
             </div>
 
             <EmptyState v-else-if="loadState === 'failed'"
                         tone="error"
-                        title="Couldn't load your conversations."
+                        title="Couldn't load your conversations"
                         actionLabel="Try again"
                         data-testid="sidebar-error"
                         @action="emit('retry')" />
@@ -57,11 +84,12 @@
             </div>
 
             <template v-else>
+                <EmptyState v-if="isNoResults" title="No results" data-testid="sidebar-no-results" />
                 <div v-for="section in sections"
                      :key="section.key"
                      data-testid="sidebar-section"
                      :data-section="section.key">
-                    <div class="chat-sec">
+                    <div v-if="!isNoResults" class="chat-sec">
                         <h3 data-testid="section-heading">{{ section.title }}</h3>
                         <IconButton v-if="section.key === 'channels'"
                                     class="chat-sec-btn"
@@ -79,81 +107,99 @@
                                     @click="emit('newMessage')" />
                     </div>
 
-                    <button v-for="row in section.rows"
-                            :key="row.channel_id"
-                            type="button"
-                            class="chat-row"
-                            :class="rowClasses(row)"
-                            data-testid="channel-row"
-                            data-focus-stop="row"
-                            :data-channel-id="row.channel_id"
-                            :data-layout="lookOf(row)"
-                            :data-unread="isUnread(row) ? 'true' : 'false'"
-                            :data-muted="isMuted(row) ? 'true' : 'false'"
-                            :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
-                            :aria-current="isActive(row) && !isBrowseOpen && !isNewMessageOpen ? 'true' : undefined"
-                            @click="emit('select', row.channel_id)"
-                            @animationend.self="onFlashEnd(row.channel_id)">
-                        <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
-                        <template v-if="lookOf(row) === 'community'">
-                            <span class="chat-row-face" aria-hidden="true">
-                                <ChannelMark class="chat-ch-tile" :isPublic="row.is_public" :imageUrl="row.icon_url" :tileName="row.title" />
-                            </span>
-                            <span class="chat-row-title">
-                                <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
-                                <Icon v-if="!row.is_public" name="lock" class="chat-row-lock" data-testid="row-lock" />
-                                <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
-                            </span>
-                        </template>
-
-                        <!-- A direct message: the face, the name and time over the preview and the end mark. -->
-                        <template v-else>
-                            <span class="chat-row-face" aria-hidden="true">
-                                <Avatar v-if="row.room_kind === 'person'" :people="[personFaceOf(row)]" :size="36" :status="rowStatus(row)" />
-                                <GroupFace v-else :people="rowPeople(row).map(personFace)" :count="row.dm_other_count" />
-                            </span>
-                            <span class="chat-row-main">
-                                <span class="chat-row-top">
-                                    <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
-                                    <!-- The person's status is heard as part of their name, before the time and the preview. -->
-                                    <span v-if="row.room_kind === 'person' && rowStatus(row)" class="chat-sr-only" data-testid="row-status-words">{{ rowStatus(row)?.label }}</span>
-                                    <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
-                                    <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
+                    <!--
+                        A room a message moves glides to its place by the list's one move, keeping
+                        its element and its face; its bold, dot and badge say what is new. After every
+                        channel, a room only previewed included, comes the way to the ones not listed.
+                    -->
+                    <TransitionGroup moveClass="chat-move">
+                        <button v-for="row in section.rows"
+                                :key="row.channel_id"
+                                type="button"
+                                class="chat-row"
+                                :class="rowClasses(row)"
+                                data-testid="channel-row"
+                                data-focus-stop="row"
+                                :data-channel-id="row.channel_id"
+                                :data-layout="lookOf(row)"
+                                :data-unread="isUnread(row) ? 'true' : 'false'"
+                                :data-muted="isMuted(row) ? 'true' : 'false'"
+                                :data-mentioned="mentionsOf(row) > 0 ? 'true' : 'false'"
+                                :aria-current="isActive(row) && !isBrowseOpen && !isNewMessageOpen ? 'true' : undefined"
+                                @mouseenter="onRowEnter($event, row)"
+                                @mouseleave="nameTip.hideTip"
+                                @focus="onRowFocus($event, row)"
+                                @blur="nameTip.onBlur"
+                                @click="emit('select', row.channel_id)">
+                            <!-- A channel: one dense line, its icon, its name, and bold when unread. -->
+                            <template v-if="lookOf(row) === 'community'">
+                                <span class="chat-row-face" aria-hidden="true">
+                                    <ChannelMark class="chat-ch-tile" :isPublic="row.is_public" :imageUrl="row.icon_url" :tileName="row.title" />
                                 </span>
-                                <span class="chat-row-sub">
-                                    <span class="chat-row-prev" data-testid="row-preview">{{ row.preview_line }}</span>
-                                    <span class="chat-row-end">
-                                        <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" isPopping data-testid="row-mention-badge" />
-                                        <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
+                                <span class="chat-row-title">
+                                    <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
+                                    <Icon v-if="!row.is_public" name="lock" class="chat-row-lock" data-testid="row-lock" />
+                                    <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
+                                </span>
+                            </template>
+
+                            <!-- A direct message: the face, the name and time over the preview and the end mark. -->
+                            <template v-else>
+                                <span class="chat-row-face" aria-hidden="true">
+                                    <Avatar v-if="row.room_kind === 'person'" :people="[personFaceOf(row)]" :size="36" :status="rowStatus(row)" />
+                                    <GroupFace v-else :people="rowPeople(row).map(personFace)" :count="row.dm_other_count" />
+                                </span>
+                                <span class="chat-row-main">
+                                    <span class="chat-row-top">
+                                        <span class="chat-row-name" data-testid="row-name">{{ row.title }}</span>
+                                        <!-- The person's status is heard as part of their name, before the time and the preview. -->
+                                        <span v-if="row.room_kind === 'person' && rowStatus(row)" class="chat-sr-only" data-testid="row-status-words">{{ rowStatus(row)?.label }}</span>
+                                        <Icon v-if="isMuted(row)" :name="mutedIcon" class="chat-row-mute" data-testid="row-muted-icon" />
+                                        <span class="chat-row-time" data-testid="row-time">{{ timeOf(row) }}</span>
+                                    </span>
+                                    <span class="chat-row-sub">
+                                        <span class="chat-row-prev" data-testid="row-preview">{{ row.preview_line }}</span>
+                                        <span class="chat-row-end">
+                                            <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" data-testid="row-mention-badge" />
+                                            <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
+                                        </span>
                                     </span>
                                 </span>
+                            </template>
+
+                            <span v-if="lookOf(row) === 'community'" class="chat-row-end">
+                                <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" data-testid="row-mention-badge" />
+                                <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
                             </span>
-                        </template>
 
-                        <span v-if="lookOf(row) === 'community'" class="chat-row-end">
-                            <Badge v-if="mentionsOf(row) > 0" icon="at" :count="mentionsOf(row)" :tone="isMuted(row) ? 'muted' : 'brand'" isPopping data-testid="row-mention-badge" />
-                            <Dot v-else-if="isDotShown(row)" data-testid="row-dot" />
-                        </span>
+                            <span class="chat-sr-only" data-testid="row-label-suffix">{{ labelSuffixOf(row) }}</span>
+                        </button>
 
-                        <span class="chat-sr-only" data-testid="row-label-suffix">{{ labelSuffixOf(row) }}</span>
-                    </button>
-
-                    <!-- After every channel, a room only previewed included: the way to the ones not listed. -->
-                    <button v-if="section.key === 'channels'"
-                            type="button"
-                            class="chat-row is-cs is-browse"
-                            data-testid="sidebar-browse"
-                            data-layout="community"
-                            :aria-current="isBrowseOpen ? 'true' : undefined"
-                            @click="emit('browse')">
-                        <span class="chat-row-face" aria-hidden="true">
-                            <span class="chat-ch-tile is-browse"><Icon name="search" size="sm" /></span>
-                        </span>
-                        <span class="chat-row-title"><span class="chat-row-name">Browse channels</span></span>
-                    </button>
+                        <button v-if="section.key === 'channels'"
+                                key="browse"
+                                type="button"
+                                class="chat-row is-cs is-browse"
+                                data-testid="sidebar-browse"
+                                data-layout="community"
+                                :aria-current="isBrowseOpen ? 'true' : undefined"
+                                @click="emit('browse')">
+                            <span class="chat-row-face" aria-hidden="true">
+                                <span class="chat-ch-tile is-browse"><Icon name="search" size="sm" /></span>
+                            </span>
+                            <span class="chat-row-title"><span class="chat-row-name">Browse channels</span></span>
+                        </button>
+                    </TransitionGroup>
                 </div>
             </template>
         </nav>
+
+        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+            <div v-if="isNameTipShown"
+                 ref="nameTipElement"
+                 class="chat-tip"
+                 role="tooltip"
+                 :style="nameTip.floatingStyles.value">{{ nameTipText }}</div>
+        </Teleport>
 
         <!-- Who the person is, and their settings; with online status, their face sets their status. -->
         <div class="chat-side-me">
@@ -168,6 +214,7 @@
                     aria-haspopup="dialog"
                     :aria-label="`Chat settings, ${me.name}`"
                     data-testid="sidebar-me"
+                    data-focus-stop="sidebar-me"
                     @click="emit('settings')">
                 <Avatar v-if="!isStatusShown" :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" />
                 <span class="chat-me-who">
@@ -196,7 +243,10 @@
     border-right: 0;
 }
 
-/* As tall as the conversation's header, so the two columns' tops line up. */
+/*
+    As tall as the conversation's header, so the two columns' tops line up. Its rule shows only once
+    rows scroll under it, so a scrolled list is never cut mid-row against nothing.
+*/
 .chat-side-top {
     display: flex;
     flex: none;
@@ -204,6 +254,12 @@
     align-items: center;
     height: 64px;
     padding: 0 12px;
+    border-bottom: 1px solid transparent;
+    transition: border-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-side-top.is-scrolled {
+    border-bottom-color: var(--chat-line);
 }
 
 /* The search takes the head's width beside the compose button. */
@@ -212,28 +268,28 @@
     min-width: 0;
 }
 
-/* The compose button is a ring square as tall as the search's field beside it, so the head reads as one row. */
-.chat-side-top :deep(.chat-side-new) {
+/* Activity and the compose square are as tall as the search's field beside them, so the head reads as one row. */
+.chat-side-acts {
+    --chat-icon-btn-s: 36px;
     --chat-ic-size: 18px;
-    width: 36px;
-    height: 36px;
-    color: var(--chat-text-2);
-    background: var(--chat-surface);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-control);
+
+    display: flex;
+    flex: none;
+    gap: 4px;
+    align-items: center;
 }
 
-/* The ring keeps its fill on hover, as the design's ring rule outranks the plain button's. */
-.chat-side-top :deep(.chat-side-new.chat-icon-btn:hover) {
-    color: var(--chat-text-2);
-    background: var(--chat-surface);
-    border-color: var(--chat-line-strong);
+/* A phone's large field, a finger's target, and the squares beside it its height. */
+.is-phone .chat-side-acts {
+    --chat-icon-btn-s: 44px;
 }
 
-/* A phone's large field, a finger's target, and the square beside it its height. */
-.is-phone .chat-side-top :deep(.chat-side-new) {
-    width: 44px;
-    height: 44px;
+/* A mention waiting, over Activity's corner, ringed in the head's fill so it reads apart from the icon. */
+.chat-side-dot {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    pointer-events: none;
 }
 
 .chat-side-list {
@@ -346,9 +402,9 @@
     letter-spacing: .07em;
 }
 
-.chat-sec :deep(.chat-sec-btn) {
-    width: 26px;
-    height: 26px;
+/* A heading's plus, smaller than the head's buttons. */
+.chat-sec {
+    --chat-icon-btn-s: 26px;
 }
 
 /*
@@ -489,21 +545,6 @@
     color: var(--chat-brand-ink);
 }
 
-/*
-    A room that arrives or moves up glows once in the church color and fades. The glow is the row's
-    fill, so a group's ring glows with it; registered as a color so it fades, and where a browser
-    cannot register it the glow steps off at the end instead.
-*/
-@property --chat-row-fill {
-    syntax: "<color>";
-    inherits: false;
-    initial-value: transparent;
-}
-
-.chat-row.is-flash {
-    animation: chat-row-flash var(--chat-d-row-flash) var(--chat-ease-state);
-}
-
 .is-phone .chat-row {
     height: 56px;
 }
@@ -578,12 +619,12 @@
     border: 1.5px dashed var(--chat-line-strong);
 }
 
-/* A loading row in a conversation row's place, as tall as the row it stands in for. */
-.chat-side-skel {
-    height: 52px;
+/* A loading row stands in for the row a phone draws taller, a finger's height. */
+.is-phone .chat-side-skel-ch {
+    height: 48px;
 }
 
-.is-phone .chat-side-skel {
+.is-phone .chat-side-skel-dm {
     height: 56px;
 }
 
@@ -601,7 +642,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import StatusMenu from "./statusMenu.partial.obs";
     import Badge from "../ui/badge.partial.obs";
@@ -618,14 +659,15 @@
     import { dayLabel, FeedLayout, timeLabel } from "../feedLayout.partial";
     import { notifyIconFor, StatusChoice } from "../composables/usePrefs.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
-    import { isTypedByReader, SidebarLoadState } from "../stores/channelStore.partial";
+    import { SidebarLoadState } from "../stores/channelStore.partial";
     import { FaceStatus, SidebarRow } from "../types.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { useChatSession } from "../chatSession.partial";
 
     // #region Types
 
     /** One of the sidebar's sections and the rooms under it. */
-    type Section = {
+    type SidebarSection = {
         key: "starred" | "channels" | "dms";
         title: string;
         rows: SidebarRow[];
@@ -642,12 +684,6 @@
         activeChannelId: {
             type: String as PropType<string | null>,
             default: null
-        },
-
-        /** How many fresh sidebars the rows have come from; a change that comes with a new one is a reread, not live. */
-        sidebarReads: {
-            type: Number as PropType<number>,
-            default: 0
         },
 
         isNewMessageShown: {
@@ -722,6 +758,30 @@
         isNewMessageOpen: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether the Activity inbox is offered, which needs the person's chat to be loaded. */
+        isActivityOffered: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the Activity inbox is open, which its button shows as expanded. */
+        isActivityOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether a mention, by name or with @all, is newer than the person's last look at Activity. */
+        hasMentionDot: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the sidebar is laid over the conversation in a narrow window, which its head offers to put away. */
+        isOver: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -734,7 +794,11 @@
         /** A choice in the foot's status menu, for the block to save. */
         (e: "status", choice: StatusChoice): void,
         /** Try again on a first sidebar that failed. */
-        (e: "retry"): void
+        (e: "retry"): void,
+        /** Activity was pressed: Mentions and the Threads the person follows. */
+        (e: "activity"): void,
+        /** The sidebar laid over the conversation was asked to go back out of the way. */
+        (e: "hide"): void
     }>();
 
     // #region Values
@@ -747,13 +811,26 @@
     const query = ref("");
 
     /** The name line's width in each loading row, varied so the rows read as a list. */
-    const skeletonWidths = [58, 44, 66, 50, 40, 62, 48];
+    const channelSkeletonWidths = [52, 38, 60, 44];
+    const personSkeletonWidths = [58, 44, 66, 50];
+
+    const listElement = ref<HTMLElement>();
+
+    /** Whether rows have scrolled under the head, which then rules itself off. */
+    const isScrolled = ref(false);
+
+    // One tooltip for the rows, anchored to the name the pointer or keyboard is on, shown only
+    // where the column cut that name short.
+    const nameAnchor = ref<HTMLElement>();
+    const nameTipText = ref("");
+    const nameTip = useTooltip(nameAnchor, () => !isCutShort(nameAnchor.value));
+    const { tipElement: nameTipElement, isTipShown: isNameTipShown } = nameTip;
+
+    /** The chat's root, which the tip is drawn in; null where the sidebar is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
 
     /** A muted room's mark, the glyph Off is drawn with everywhere. */
     const mutedIcon = notifyIconFor("silent");
-
-    /** The rooms glowing for news: they just arrived, moved up, or took a message from someone else. */
-    const flashIds = ref(new Set<string>());
 
     // Every two-person row's other person, after the open conversation and any card, and before a panel's or a search's people, since these stay on screen.
     const statusOf = useFaceStatus(() => props.rows.filter(row => row.room_kind === "person").map(otherAliasOf).filter(alias => alias !== ""), 2);
@@ -767,42 +844,64 @@
      * shows only while it holds a room; a channel the person has not joined follows the ones they
      * have, as the design lists a pinned room after the person's own.
      */
-    const sections = computed((): Section[] => {
+    const sections = computed((): SidebarSection[] => {
         const needle = query.value.trim().toLowerCase();
         const shown = needle ? props.rows.filter(row => row.title.toLowerCase().includes(needle)) : props.rows;
         const channels = shown.filter(row => !row.is_favorite && row.room_kind === "channel");
 
-        const list: Section[] = [];
+        const list: SidebarSection[] = [];
         const starred = shown.filter(row => row.is_favorite);
         if (starred.length > 0) {
             list.push({ key: "starred", title: "Starred", rows: starred });
         }
 
+        // Channels stays under a search, holding Browse channels as the way to one not listed;
+        // Direct messages goes when the search leaves it nothing.
         list.push({ key: "channels", title: "Channels", rows: [...channels.filter(row => row.is_member), ...channels.filter(row => !row.is_member)] });
-        list.push({ key: "dms", title: "Direct messages", rows: shown.filter(row => !row.is_favorite && row.room_kind !== "channel") });
+        const dms = shown.filter(row => !row.is_favorite && row.room_kind !== "channel");
+        if (!needle || dms.length > 0) {
+            list.push({ key: "dms", title: "Direct messages", rows: dms });
+        }
 
         return list;
     });
+
+    /** A search that matches nothing, which says so rather than leaving bare headings. */
+    const isNoResults = computed((): boolean => query.value.trim() !== "" && sections.value.every(section => section.rows.length === 0));
 
     // #endregion Computed Values
 
     // #region Event Handlers
 
-    /**
-     * The row's own glow has ended. Bound to the row alone: the dot or badge a row gains animates
-     * too, and its end bubbling up would cut the glow short.
-     */
-    function onFlashEnd(channelId: string): void {
-        if (flashIds.value.has(channelId)) {
-            const next = new Set(flashIds.value);
-            next.delete(channelId);
-            flashIds.value = next;
-        }
+    function onListScroll(): void {
+        isScrolled.value = (listElement.value?.scrollTop ?? 0) > 0;
+    }
+
+    /** The pointer rests on a row: its name is the tip's anchor, shown whole if the column cut it. */
+    function onRowEnter(event: MouseEvent, row: SidebarRow): void {
+        anchorNameTip(event.currentTarget, row);
+        nameTip.onPointerEnter();
+    }
+
+    function onRowFocus(event: FocusEvent, row: SidebarRow): void {
+        anchorNameTip(event.currentTarget, row);
+        nameTip.onFocus();
     }
 
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Anchors the rows' one tip to a row's name, with the name's whole words. */
+    function anchorNameTip(target: EventTarget | null, row: SidebarRow): void {
+        nameAnchor.value = target instanceof HTMLElement ? target.querySelector<HTMLElement>(".chat-row-name") ?? undefined : undefined;
+        nameTipText.value = row.title;
+    }
+
+    /** Whether the column cut a name short, its words wider than the room it was given. */
+    function isCutShort(element: HTMLElement | undefined): boolean {
+        return !!element && element.scrollWidth > element.clientWidth;
+    }
 
     /** A channel's row is Community's one dense line; a direct message's is Conversational's two lines. */
     function lookOf(row: SidebarRow): FeedLayout {
@@ -862,8 +961,7 @@
             "is-unread": isUnread(row),
             "is-muted": isMuted(row),
             "is-mention": mentionsOf(row) > 0,
-            "is-out": !row.is_member,
-            "is-flash": flashIds.value.has(row.channel_id)
+            "is-out": !row.is_member
         };
     }
 
@@ -897,53 +995,9 @@
 
     // #region Watchers
 
-    // A row glows once for news: a room new to the list, but not a direct message whose last message
-    // the person typed, as one they began on another device; a direct message reached live by a
-    // message the person did not type (someone else's, or Rock's post in their name), moved or not,
-    // as the design's incoming message glows; a channel turning starred. Every star control acts
-    // on the room on screen, which never glows, so that last is a star made on another device
-    // and seen when the sidebar is read again. A sidebar is read again for reasons of its own (a
-    // reconnect, a membership change, a rename) and shows at once every message that landed since,
-    // so what a reread changes is not news: a direct message's newer message, a channel's new
-    // place, or a channel turning unread, which its bold and darker mark say anyway. A room leaving
-    // or being unstarred shifts the others without any of them moving. The person's own send, an
-    // edit and a walk-back after a delete are not news, nor the conversation on screen, and the
-    // first list a page loads glows nothing.
-    let readsSeen = props.sidebarReads;
-    watch([() => props.rows.map(row => ({ id: row.channel_id, isDm: row.room_kind !== "channel", lastId: row.last_message_id, isTyped: isTypedByReader(row), isStarred: row.is_favorite })), () => props.loadState], ([rows, loadState], [previous, wasLoadState]) => {
-        // the first sidebar is not news, though a previewed room may have had a row before it
-        if (!previous || wasLoadState !== "loaded" || loadState !== "loaded") {
-            return;
-        }
-
-        const isReread = props.sidebarReads !== readsSeen;
-        const before = new Map(previous.map(row => [row.id, row]));
-        const flashed = rows.filter(row => {
-            // the conversation on screen is where the news is already shown, as in the design
-            if (row.id === props.activeChannelId) {
-                return false;
-            }
-            const was = before.get(row.id);
-            if (!was) {
-                // a direct message joins the list with its first message, no news to the one who typed it
-                return !(row.isDm && row.isTyped);
-            }
-            if (row.isDm) {
-                return !isReread && !row.isTyped && row.lastId !== null && (was.lastId === null || row.lastId > was.lastId);
-            }
-            return row.isStarred && !was.isStarred;
-        }).map(row => row.id);
-
-        if (flashed.length > 0) {
-            flashIds.value = new Set([...flashIds.value, ...flashed]);
-        }
-    });
-
-    // Taken after the glow above has judged the change, every time, so a read it skipped (the
-    // page's first list) is not mistaken for a reread at the next live change.
-    watch(() => props.sidebarReads, reads => {
-        readsSeen = reads;
-    }, { flush: "post" });
-
     // #endregion Watchers
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(listElement.value);
+    });
 </script>

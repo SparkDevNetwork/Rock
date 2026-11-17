@@ -355,7 +355,7 @@ const namedLiterals: Named[] = [
 
     // Durations.
     { name: "d-flash", value: "2.2s" },
-    { name: "d-row-flash", value: "1.2s" },
+    { name: "d-move", value: "220ms", reduced: "0ms" },
     { name: "d-roll", value: "220ms" },
     { name: "d-tools-show", value: "90ms" },
     { name: "d-tools-move", value: "140ms", reduced: "0ms" },
@@ -371,6 +371,13 @@ const namedLiterals: Named[] = [
     { name: "d-view", value: "220ms", reduced: "0ms" },
     { name: "d-tab-thumb", value: "240ms", reduced: "0ms" },
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
+    { name: "d-cascade", value: "180ms", reduced: "0ms" },
+    // One panel giving way to the next: a fade, kept under reduced motion as every short fade is.
+    { name: "d-swap", value: "180ms" },
+    // The frame's columns, which the narrow fold reads too.
+    { name: "w-side", value: "296px" },
+    { name: "w-panel", value: "392px" },
+    { name: "w-main-min", value: "480px" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-read-fade", value: "400ms" },
@@ -982,11 +989,15 @@ describe("the components' own styles", () => {
         expect(declarationOf(resolve(components, "conversationDetails.partial.obs"), ".chat-leave-box", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
     });
 
+    // The cascade has a budget, not a cap: each row in sight waits its place among them times
+    // 26ms, or less where many are in sight, so the last starts by 180ms however long the list;
+    // the panel host counts them and places each.
     test("panel rows rise in by the sheet's one staggered entrance, and by nothing else", () => {
         const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled])";
         expect(declarationOf(sheetPath, selector, "animation")).toBe(normalize("chat-enter var(--chat-t-msg) var(--chat-ease-in) both"));
-        expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger))"));
-        expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("8");
+        expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(var(--chat-enter-at, 0) * min(var(--chat-d-stagger), var(--chat-d-cascade) / var(--chat-enter-n, 1)))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("");
+        expect(readFileSync(sheetPath, "utf8")).not.toMatch(/chat-enter-cap/);
 
         const frames = normalize(keyframesBody(sheetPath, "chat-enter") ?? "");
         expect(frames).toContain("opacity:0");
@@ -1128,11 +1139,12 @@ describe("the components' own styles", () => {
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring", isReducedMotion)).toBe(normalize("var(--chat-t-fast)"));
         });
 
-        test("pops in the sidebar, where a new mention arrives, and not in the threads list, where it was already seen", () => {
+        // A sidebar row turns bold and gains its badge in one step, so its badge does not pop in after.
+        test("pops neither in the sidebar, where a row turns bold and gains it in one step, nor in the threads list, where it was already seen", () => {
             const sidebar = badgeTags(sidebarPath);
             expect(sidebar.length).toBeGreaterThan(0);
             for (const tag of sidebar) {
-                expect(tag).toMatch(/\sisPopping\b/);
+                expect(tag).not.toMatch(/isPopping/);
             }
             const threads = badgeTags(threadsPath);
             expect(threads).toHaveLength(1);
@@ -1163,28 +1175,39 @@ describe("the components' own styles", () => {
             }
         });
 
-        // A long foot (three faces, a count, the start time, Following and the badge) once ran past
-        // the panel and cut the badge off at the window's edge. The start time is the one part that
-        // gives way, and it gives way whole: it wraps onto a second line the foot hides, so a time
-        // is never shown clipped ("Started 2:..."); every other part keeps its width.
-        test("the threads list's foot gives way at its start time whole, so its badge is always drawn whole", () => {
+        // A thread has one date, its last reply's at the row's end, which is the list's order. The
+        // foot once also said "Started <day>", a second date with no label, and had to give way at
+        // it to keep the badge whole; with it gone the foot is faces, count, Following and the
+        // badge, each kept whole.
+        test("the threads list's foot holds no start day, a second date, and keeps every part whole", () => {
             const source = readFileSync(threadsPath, "utf8");
-            expect(source).toContain('<span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>');
-            expect(declarationOf(threadsPath, ".chat-ls-started", "min-width")).toBe("0");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "display")).toBe("flex");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "flex-wrap")).toBe("wrap");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "height")).toBe("20px");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "overflow")).toBe("hidden");
-            expect(declarationOf(threadsPath, ".chat-ls-started", "text-overflow")).toBe("");
-            // The unit never breaks inside itself, so it is shown whole or on the hidden line.
-            expect(declarationOf(threadsPath, ".chat-ls-unit", "white-space")).toBe("nowrap");
-            // An empty item as tall as the box holds the first line, so the unit has a line to wrap from
-            // (a lone item never wraps) and the line it wraps to is the hidden one.
-            expect(declarationOf(threadsPath, ".chat-ls-started::before", "height")).toBe("100%");
-            expect(declarationOf(threadsPath, ".chat-ls-started::before", "content")).toMatch(/^(""|'')$/);
+            expect(source).not.toMatch(/Started|chat-ls-started|chat-ls-unit/);
             for (const part of [".chat-ls-faces", ".chat-ls-count", ".chat-ls-end"]) {
                 expect([part, declarationOf(threadsPath, part, "flex")]).toEqual([part, "none"]);
             }
+        });
+
+        // Every row of the three panels starts its face on the list row's own lead edge, so a
+        // face never shifts as one panel gives way to another. A mention's face carries no "@"
+        // mark, since every row there is a mention, and its New dot sits in the gutter beside it.
+        test("the three panels start their faces on one edge, a mention's face with no @ mark", () => {
+            const mentionsPath = resolve(components, "mentionsPanel.partial.obs");
+            expect(readFileSync(mentionsPath, "utf8")).not.toMatch(/chat-ls-at\b/);
+            for (const property of ["padding-left", "padding", "margin-left", "margin"]) {
+                expect([property, declarationOf(mentionsPath, ".chat-ls-face", property)]).toEqual([property, ""]);
+                expect([property, declarationOf(sheetPath, ".chat-shell .chat-ls-avw", property)]).toEqual([property, ""]);
+            }
+        });
+
+        // "Reply in a thread" says where the mention is; it is not a button (the whole row is), so it
+        // is a line of quiet words with its mark, not an outlined pill.
+        test("a mention's Reply in a thread is quiet words, not a pill", () => {
+            const mentionsPath = resolve(components, "mentionsPanel.partial.obs");
+            for (const property of ["border", "background", "border-radius", "padding", "height"]) {
+                expect([property, declarationOf(mentionsPath, ".chat-ls-inthread", property)]).toEqual([property, ""]);
+            }
+            expect(declarationOf(mentionsPath, ".chat-ls-inthread", "color")).toBe(normalize("var(--chat-muted)"));
+            expect(declarationOf(mentionsPath, ".chat-ls-inthread", "font-weight")).toBe("");
         });
 
         test("the threads list's badge, which skips the pop, sits on a pinned line too", () => {
@@ -1214,11 +1237,14 @@ describe("the components' own styles", () => {
             expect(declarationOf(fieldPath, ".chat-fld-box", "min-height")).toBe("36px");
             expect(declarationOf(fieldPath, ".chat-fld.is-lg .chat-fld-box", "min-height")).toBe("44px");
             expect(declarationOf(fieldPath, ".chat-fld-box", "border-radius")).toBe(normalize("var(--chat-r-field)"));
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "width")).toBe("36px");
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "height")).toBe("36px");
-            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "width")).toBe("44px");
-            expect(declarationOf(sidebarPath, ".is-phone .chat-side-top :deep(.chat-side-new)", "height")).toBe("44px");
-            expect(declarationOf(sidebarPath, ".chat-side-top :deep(.chat-side-new)", "border-radius")).toBe(normalize("var(--chat-r-control)"));
+            // the squares take their size from the hook the icon button reads, set by what holds them
+            const iconButtonPath = resolve(components, "../ui/iconButton.partial.obs");
+            expect(declarationOf(sidebarPath, ".chat-side-acts", "--chat-icon-btn-s")).toBe("36px");
+            expect(declarationOf(sidebarPath, ".is-phone .chat-side-acts", "--chat-icon-btn-s")).toBe("44px");
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "width")).toBe(normalize("var(--chat-icon-btn-s, 32px)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "height")).toBe(normalize("var(--chat-icon-btn-s, 32px)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn", "border-radius")).toBe(normalize("var(--chat-r-control)"));
+            expect(declarationOf(iconButtonPath, ".chat-icon-btn.is-outlined", "border")).toBe(normalize("1px solid var(--chat-line)"));
         });
 
         test("a channel's tile is 32px with the control corner", () => {

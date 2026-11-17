@@ -61,7 +61,7 @@
                     <Icon name="alert" size="xs" />Couldn't search right now.
                     <button type="button" class="chat-mb-link" data-testid="members-search-retry" @click="emit('retrySearch')">Try again</button>
                 </p>
-                <p v-else-if="searchStatus" class="chat-mb-hint" role="status" data-testid="members-hint">
+                <p v-else-if="searchStatus" class="chat-mb-hint" data-testid="members-hint">
                     <template v-if="searchStatus === 'searching'"><span class="chat-spinner" aria-hidden="true"></span>Searching everyone in {{ channelName }}</template>
                     <template v-else><Icon name="search" size="xs" />{{ foundLine }}</template>
                 </p>
@@ -82,11 +82,16 @@
                             :key="row.guid"
                             class="chat-mb-row chat-enter"
                             :data-hot-id="row.guid"
-                            :style="{ '--chat-enter-i': entranceOrder.get(row.guid) }"
                             data-testid="member-row">
                             <ListRow interactive
                                      :label="labelOf(row)"
-                                     :hitAttrs="{ 'data-testid': 'member-who', 'data-person': row.guid }"
+                                     :hitAttrs="{
+                                         'data-testid': 'member-who',
+                                         'data-focus-stop': 'member',
+                                         'data-person': row.guid,
+                                         'data-member': row.guid,
+                                         'data-autofocus': row.guid === phoneFocusGuid ? '' : undefined
+                                     }"
                                      :actionsShown="row.isRemoving || isHot(row)"
                                      :instant="hover.isInstant.value"
                                      :dimmed="row.isRemoving"
@@ -97,17 +102,16 @@
                                 <span class="chat-mb-name">
                                     <b data-testid="member-name">{{ row.name }}</b>
                                     <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
-                                    <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
                                 </span>
                                 <template #actions>
-                                    <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
+                                    <span v-if="row.isRemoving" class="chat-mb-busy" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
                                     <template v-else>
-                                        <Button v-if="row.canMessage"
-                                                size="sm"
-                                                icon="message"
-                                                data-testid="member-message"
-                                                :aria-label="`Message ${row.name}`"
-                                                @click="emit('message', row.guid)">Message</Button>
+                                        <IconButton v-if="row.canMessage"
+                                                    icon="message"
+                                                    :label="`Message ${row.name}`"
+                                                    tooltip="Message"
+                                                    data-testid="member-message"
+                                                    @click="emit('message', row.guid)" />
                                         <Menu v-if="row.menu"
                                               icon="dots"
                                               :label="`More for ${row.name}`"
@@ -118,8 +122,8 @@
                                     </template>
                                 </template>
                             </ListRow>
-                            <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
-                                <Icon name="alert" size="xs" />
+                            <div v-if="row.refusal" class="chat-mb-err" data-testid="member-refusal">
+                                <span class="chat-mb-err-mark"><Icon name="alert" size="xs" /></span>
                                 <span>{{ row.refusal }}</span>
                                 <IconButton icon="x"
                                             size="sm"
@@ -133,15 +137,14 @@
 
                 <div v-if="isNoneShown" class="chat-mb-none" data-testid="members-none">No one in {{ channelName }} matches &ldquo;{{ query.trim() }}&rdquo;.</div>
 
-                <!-- Asks for the next page as it scrolls into view; pressed, it asks too, and after a failure only a press asks again. -->
-                <div v-if="isMoreShown" ref="moreElement" class="chat-mb-more">
-                    <span v-if="moreError" class="chat-mb-more-err" data-testid="members-more-error"><Icon name="alert" size="xs" />Couldn't load more.</span>
-                    <Button size="sm"
-                            data-testid="members-more"
-                            :busy="isLoadingMore"
-                            @click="emit('loadMore')">{{ isLoadingMore ? "Loading" : moreError ? "Try again" : "Load more" }}</Button>
-                </div>
-                <div v-else-if="isEndShown" class="chat-mb-end" data-testid="members-end">That's everyone.</div>
+                <LoadMoreRow v-if="isMoreShown"
+                             ref="moreRow"
+                             name="members"
+                             label="Load more"
+                             :load="loadMore"
+                             :isLoading="isLoadingMore"
+                             :isFailed="!!moreError"
+                             failure="Couldn't load more." />
             </div>
         </div>
 
@@ -263,12 +266,15 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in) both;
 }
 
-.chat-mb-err > .chat-ic {
+/* The mark keeps the first line's height, so it sits on that line however many the sentence takes. */
+.chat-mb-err-mark {
+    display: inline-flex;
     flex: none;
-    margin-top: 2px;
+    align-items: center;
+    height: 1lh;
 }
 
-.chat-mb-err span {
+.chat-mb-err > span:not(.chat-mb-err-mark) {
     flex: 1;
     min-width: 0;
 }
@@ -338,49 +344,26 @@
     text-align: center;
 }
 
-.chat-mb-more {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 8px 4px;
-}
-
-.chat-mb-more-err {
-    display: inline-flex;
-    gap: 6px;
-    align-items: center;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-danger-ink);
-}
-
-.chat-mb-end {
-    padding: 16px 0 4px;
-    font-size: var(--chat-fs-small);
-    color: var(--chat-muted);
-    text-align: center;
-}
-
 </style>
 
 <script setup lang="ts">
     import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar from "../ui/avatar.partial.obs";
-    import Badge from "../ui/badge.partial.obs";
     import Button from "../ui/button.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Field from "../ui/field.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
-    import { MemberRemoval } from "../composables/useMembers.partial";
+    import { MemberRemoval, RosterRefusal } from "../composables/useMembers.partial";
+    // the roster's own reading of where a search is, named apart from the prop it types
+    import type { searchStatus as rosterSearchStatus } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatError, FaceStatus, RosterMember } from "../types.partial";
     import { useAnnouncer } from "../ui/announcer.partial";
@@ -451,6 +434,12 @@
             default: false
         },
 
+        /** Fetches the next page, settling once it is in or its failure is the roster's; the load-more row waits on it. */
+        loadMore: {
+            type: Function as PropType<() => Promise<void>>,
+            required: true
+        },
+
         /** The first page is on its way. */
         isLoading: {
             type: Boolean,
@@ -477,7 +466,7 @@
 
         /** Why the platform will not list the room for the reader, or null. */
         refusal: {
-            type: String as PropType<"not_member" | "no_roster_right" | null>,
+            type: String as PropType<RosterRefusal | null>,
             default: null
         },
 
@@ -489,7 +478,7 @@
 
         /** Where the search of the whole room is, or null with no query. */
         searchStatus: {
-            type: String as PropType<"searching" | "answered" | "failed" | null>,
+            type: String as PropType<ReturnType<typeof rosterSearchStatus>>,
             default: null
         },
 
@@ -520,7 +509,6 @@
 
     const emit = defineEmits<{
         (e: "query", text: string): void;
-        (e: "loadMore"): void;
         (e: "retry"): void;
         (e: "retrySearch"): void;
         (e: "message", personAliasGuid: string): void;
@@ -540,7 +528,7 @@
     const { announce } = useAnnouncer();
 
     const listElement = ref<HTMLElement>();
-    const moreElement = ref<HTMLElement>();
+    const moreRow = ref<InstanceType<typeof LoadMoreRow>>();
     const filterField = ref<InstanceType<typeof Field>>();
 
     // A row's actions show as the message action bar does: faded in once the pointer rests on a
@@ -604,8 +592,6 @@
     /** The rows in the order drawn, Leaders then Members, for the panel's entrance; none while the first page loads. */
     const entranceKeys = computed((): string[] | null => props.isLoading ? null : sections.value.flatMap(section => section.rows.map(row => row.guid)));
 
-    /** Each row's turn in the entrance. */
-    const entranceOrder = computed((): Map<string, number> => new Map((entranceKeys.value ?? []).map((guid, index) => [guid, index])));
 
     const foundLine = computed((): string => {
         const count = props.members.length;
@@ -617,7 +603,11 @@
     /** Browsing pages on while more wait; a search pages on only once its own answer filled a page. */
     const isMoreShown = computed((): boolean => props.hasMore && (!isQuery.value || props.searchStatus === "answered"));
 
-    const isEndShown = computed((): boolean => props.isChannel && !isQuery.value && !props.hasMore);
+    /**
+     * The row a phone opens on, the list's first; a desktop opens in the filter, while a phone
+     * would raise its keyboard over the list.
+     */
+    const phoneFocusGuid = computed((): string | null => isPhone.value ? sections.value[0]?.rows[0]?.guid ?? null : null);
 
     const isGroupFull = computed((): boolean => !props.isChannel && (props.memberCount ?? 0) >= groupCapacity);
 
@@ -715,8 +705,18 @@
         return `${row.name}${statusOf(row.guid)?.label ?? ""}${row.roles}. View profile`;
     }
 
+    /** A person's name as a row draws it, someone where the roster names no one. */
+    function nameOfMember(member: RosterMember | undefined): string {
+        return `${member?.nick_name ?? ""} ${member?.last_name ?? ""}`.trim() || "Someone";
+    }
+
+    /** The name of the person on a row, by their alias. */
+    function nameOf(personAliasGuid: string): string {
+        return nameOfMember(props.members.find(member => member.person_alias_guid === personAliasGuid));
+    }
+
     function drawMember(member: RosterMember): DrawnMember {
-        const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
+        const name = nameOfMember(member);
         const isSelf = member.person_alias_guid.toLowerCase() === me.value.personAliasGuid.toLowerCase();
         const isLeader = props.isChannel && member.is_leader;
         const roles = [isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p).map(p => `, ${p}`).join("");
@@ -764,8 +764,9 @@
         return at < 0 ? null : order[at + 1] ?? order[at - 1] ?? null;
     }
 
+    /** A row's own button, found by the person it names. */
     function whoOf(personAliasGuid: string): HTMLElement | null {
-        return listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
+        return listElement.value?.querySelector<HTMLElement>(`[data-member='${personAliasGuid}']`) ?? null;
     }
 
     // #endregion Functions
@@ -793,11 +794,11 @@
         }
 
         const active = document.activeElement;
-        const wasOnMore = !active || active === document.body || !!active.closest("[data-testid='members-more']");
+        const wasOnMore = !active || active === document.body || !!moreRow.value?.hasFocus();
         announce(`${added.length} more ${added.length === 1 ? "member" : "members"} loaded`);
         await nextTick();
         if (wasOnMore) {
-            listElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${added[0].person_alias_guid}']`)?.focus({ preventScroll: true });
+            whoOf(added[0].person_alias_guid)?.focus({ preventScroll: true });
         }
     });
 
@@ -838,6 +839,24 @@
         ((next ? whoOf(next) : null) ?? filterField.value?.inputElement)?.focus({ preventScroll: true });
     }, { flush: "post" });
 
+    // The chat's one voice says where a search of the whole room is, so the line under the filter
+    // is for the eye alone.
+    watch(() => props.searchStatus === "searching" ? `Searching everyone in ${props.channelName}` : props.searchStatus === "answered" ? foundLine.value : props.searchStatus === "failed" ? "Couldn't search right now." : "", (words, was) => {
+        if (words && words !== was) {
+            announce(words, props.searchStatus === "failed" ? "assertive" : "polite");
+        }
+    }, { immediate: true });
+
+    // A removal is said as it begins, and a refusal at once in the door's words, through the
+    // chat's one voice rather than a region of the row's own.
+    watch(() => Object.entries(props.removals).map(([guid, removal]) => ({ guid, words: removal.kind === "refused" ? removal.text : `Removing ${nameOf(guid)}`, isRefusal: removal.kind === "refused" })), (removals, was) => {
+        for (const removal of removals) {
+            if (!was?.some(said => said.guid === removal.guid && said.words === removal.words)) {
+                announce(removal.words, removal.isRefusal ? "assertive" : "polite");
+            }
+        }
+    }, { immediate: true });
+
     // A screen reader hears what the first page brought.
     watch(() => props.isLoading, (isLoading, wasLoading) => {
         if (wasLoading && !isLoading && !props.error && !props.refusal) {
@@ -845,10 +864,6 @@
             announce(props.hasMore ? `First ${count} members loaded` : `${count} ${count === 1 ? "member" : "members"}`);
         }
     });
-
-    // The next page is asked as the Load more row scrolls into view, as every list pages; after a
-    // failed page only the press asks again.
-    usePagingTrigger(moreElement, () => emit("loadMore"), { enabled: () => isMoreShown.value && !props.isLoadingMore && !props.moreError });
 
     // #endregion Watchers
 

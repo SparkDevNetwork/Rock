@@ -164,7 +164,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     /** Focus goes to the title button, since the phone's overflow item that may have opened the details has left with its menu. */
     function closeDetails(): void {
         isDetailsOpen.value = false;
-        void nextTick(() => focusStop(["details-button"], { within: "main" }));
+        void nextTick(() => focusStop(["header"], { within: "main" }));
     }
 
     /** The open room's notify mode, star or hide, from its details or its header. */
@@ -216,8 +216,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
                 focusStop(["header"], { within: "main" });
             }
             else {
-                // The sidebar's foot carries no focus mark yet, so it is still found by its test id.
-                rootElement.value?.querySelector<HTMLElement>("[data-testid='sidebar-me']")?.focus();
+                focusStop(["sidebar-me"]);
             }
         });
     }
@@ -246,14 +245,15 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     /** A member row's face or name: the card is anchored on the row, beside the panel, and Escape gives focus back to it. */
     function onMemberPerson(personAliasGuid: string): void {
         const channelId = shell.value.members.state.channelId;
-        const row = panelElement.value?.querySelector<HTMLElement>(`[data-testid='member-who'][data-person='${personAliasGuid}']`) ?? null;
-        if (!channelId || !row) {
+        if (!channelId) {
             return;
         }
 
         // Safari leaves a pressed button unfocused, and the card hands focus back to what held it.
-        row.focus({ preventScroll: true });
-        openCard(row, personAliasGuid, channelId);
+        const row = focusStop([{ stop: "member", match: `[data-person='${personAliasGuid}']` }], { within: "panel", preventScroll: true });
+        if (row) {
+            openCard(row, personAliasGuid, channelId);
+        }
     }
 
     /** The details dialog's member count gives way to the members panel, which takes focus. */

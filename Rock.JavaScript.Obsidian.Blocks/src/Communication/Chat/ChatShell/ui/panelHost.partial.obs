@@ -146,8 +146,8 @@
         },
 
         /**
-         * The keys of the rows the panel draws, in order, each marked chat-enter with its place as
-         * --chat-enter-i; null while its first page is still loading. The first rows drawn enter.
+         * The keys of the rows the panel draws, in order, each marked chat-enter; null while its
+         * first page is still loading, as after a refresh. The first rows drawn enter.
          */
         entranceKeys: {
             type: Array as PropType<readonly string[] | null>,
@@ -210,20 +210,19 @@
     // #region Functions
 
     /**
-     * Reads the drawn rows while an entrance is under way. The first page's rows are the ones
-     * rising; a row drawn after them, a live arrival, a later page or a filter cleared, is marked
-     * settled so it does not rise, and the rows already rising keep rising. A first-page row gone,
-     * as a filter or a removal takes it, no longer holds the entrance.
+     * Reads the drawn rows while an entrance is under way. The first page's rows in sight are the
+     * ones rising; a row drawn after them, a live arrival, a later page or a filter cleared, is
+     * marked settled so it does not rise, and the rows already rising keep rising. A first-page
+     * row gone, as a filter or a removal takes it, no longer holds the entrance.
      */
     function readRows(): void {
         if (!isEntering.value || !bodyElement.value) {
             return;
         }
 
-        const rows = Array.from(bodyElement.value.querySelectorAll(".chat-enter"));
+        const rows = Array.from(bodyElement.value.querySelectorAll<HTMLElement>(".chat-enter"));
         if (!rising) {
-            rows.forEach(row => row.removeAttribute("data-chat-settled"));
-            rising = new Set(rows);
+            rising = new Set(placeInSight(bodyElement.value, rows));
         }
         else {
             const first = rising;
@@ -231,6 +230,36 @@
             rising = new Set(Array.from(first).filter(row => row.isConnected));
         }
         endWhenRisen();
+    }
+
+    /**
+     * The cascade over the first page: the rows in the body's sight rise, each given its place
+     * among them and the body their count, from which the sheet spaces them within one budget. A
+     * row out of sight, below the fold, is settled: it is simply there when scrolled to.
+     *
+     * @returns The rows that rise.
+     */
+    function placeInSight(body: HTMLElement, rows: HTMLElement[]): HTMLElement[] {
+        const sight = body.getBoundingClientRect();
+        const inSight = rows.filter(row => {
+            const box = row.getBoundingClientRect();
+            return box.top <= sight.bottom && box.bottom >= sight.top;
+        });
+
+        rows.forEach(row => {
+            const place = inSight.indexOf(row);
+            if (place < 0) {
+                row.setAttribute("data-chat-settled", "");
+                row.style.removeProperty("--chat-enter-at");
+            }
+            else {
+                row.removeAttribute("data-chat-settled");
+                row.style.setProperty("--chat-enter-at", String(place));
+            }
+        });
+        body.style.setProperty("--chat-enter-n", String(inSight.length));
+
+        return inSight;
     }
 
     /** The mark goes once every first-page row has risen or gone, so no row's own later motion is held under it. */

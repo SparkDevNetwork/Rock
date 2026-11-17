@@ -27,10 +27,8 @@ export type RoomKind = "channel" | "person" | "group";
 
 /**
  * A place focus can be put by name: the element carrying the matching `data-focus-stop` mark, so
- * a lookup never depends on a test id or on which component draws it. The header is the one stop
- * the header marks itself, with `data-header-focus`, since which of its elements holds focus, the
- * title or the details button around it, is the header's choice, and that button already carries
- * a stop of its own.
+ * a lookup never depends on a test id or on which component draws it. Which of the header's
+ * elements is its stop, the title or the details button around it, is the header's choice.
  */
 export type FocusStop =
     | "header"
@@ -40,8 +38,10 @@ export type FocusStop =
     | "new-message"
     | "members-button"
     | "threads-button"
-    | "mentions-button"
-    | "details-button"
+    | "sidebar-me"
+    | "activity-button"
+    | "sidebar-button"
+    | "member"
     | "more"
     | "panel-close"
     | "panel-back"
