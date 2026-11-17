@@ -99,11 +99,11 @@
     --chat-row-name: #464B58;
     --chat-bubble-hover: rgba(13, 17, 23, .07);
     /*
-        A row that mentions the reader: the church's tint, and the church's line on the chip that
-        reached them, so the mention and a jump's flash read as one idea. Both follow the theme
-        through the brand tokens they name.
+        A row that mentions the reader: a wash of the church color (12 percent, 20 in dark, from
+        script), and the church's line on the chip that reached them, so the mention and a jump's
+        flash read as one idea.
     */
-    --chat-row-mention: var(--chat-brand-tint);
+    --chat-row-mention: var(--chat-row-mention-light, rgba(255, 121, 29, .12));
     --chat-mention-ring: var(--chat-brand-line);
     --chat-strip-bg: #FAEBED;
     --chat-strip-line: #E1B2BD;
@@ -349,6 +349,7 @@
     --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
     --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
+    --chat-row-mention: var(--chat-row-mention-dark, rgba(255, 121, 29, .20));
     --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
     --chat-composer-line: var(--chat-composer-line-dark, #A75824);
     --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
@@ -425,6 +426,7 @@
         --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
         --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
+        --chat-row-mention: var(--chat-row-mention-dark, rgba(255, 121, 29, .20));
         --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
         --chat-composer-line: var(--chat-composer-line-dark, #A75824);
         --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
