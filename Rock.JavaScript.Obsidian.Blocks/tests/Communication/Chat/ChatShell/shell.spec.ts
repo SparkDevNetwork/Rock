@@ -114,6 +114,10 @@ function build(options: {
     pushSettings?: Record<string, unknown>,
     personAliasGuid?: string,
     stored?: Record<string, string>,
+    // what Rock's page said of the person; ok unless a test loads a page already refused
+    gate?: string,
+    // the browser's sign-in mark; none unless a test keeps things on the device
+    signInMark?: ShellOptions["signInMark"],
     // the channel a link names; channel A unless a test asks for a first visit with null
     linkedChannelId?: string | null,
     // one tab's Web Locks and BroadcastChannel, which two builds of one person share as two tabs do
@@ -307,7 +311,7 @@ function build(options: {
     };
 
     const shell = createChatShell({
-        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
+        session: { gate: options.gate ?? "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: options.linkedChannelId === undefined ? channelA : options.linkedChannelId,
         mintChurchToken: async () => {
             await heldMint.value?.promise;
@@ -495,6 +499,7 @@ function build(options: {
             }
         },
         mark: name => marks.push(name),
+        signInMark: options.signInMark,
         startDirectMessage: options.startDirectMessage,
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
@@ -799,6 +804,33 @@ function personal(h: ReturnType<typeof build>, event: string, payload: unknown):
 // The block draws a loading state, never "Choose a conversation.", until the page load has chosen
 // the first conversation or found none it can open.
 describe("the page load", () => {
+    // The church token is the first thing every load waits on, so it is asked for as the page
+    // arrives, while the page is still being drawn, not once it is shown.
+    test("asks Rock for the church token the moment the shell is made, and the start signs in on that answer without asking again", async () => {
+        const h = build();
+        await settle();
+        expect(h.counts.mints).toBe(1);
+        expect(h.exchangeBodies).toHaveLength(0);
+
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.shell.state.phase).toBe("ready");
+        expect(h.counts.mints).toBe(1);
+        expect(h.exchangeBodies).toHaveLength(1);
+    });
+
+    test("a page Rock already turned away asks for no church token", async () => {
+        const h = build({ gate: "age_restricted" });
+        await settle();
+        await h.shell.start();
+
+        expect(h.counts.mints).toBe(0);
+        expect(h.shell.state.phase).toBe("refused");
+    });
+
     test("is opening from the start, through a first visit's sidebar read, until the channel it names opens", async () => {
         const h = build({ linkedChannelId: null });
         h.heldBootstraps.value = [];
@@ -3738,6 +3770,54 @@ describe("settings", () => {
         await settle();
         await settle();
         expect(h.shell.state.isStatusShown).toBe(false);
+    });
+
+    // The sidebar's foot has two shapes, the face that sets a status or none, so a reload draws
+    // the one the person's last load ended on from the first paint, rather than moving when the
+    // platform answers; a sign-out since forgets it.
+    test("a reload draws the sidebar foot's online status as the last load left it, before the platform answers, and forgets it after a sign-out", async () => {
+        let isMarkSet = true;
+        const signInMark = { isSet: () => isMarkSet, set: () => void (isMarkSet = true) };
+        const first = build({ signInMark });
+        first.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
+        first.bootstrap.value = { channels: [], me: { unread_mentions: [] } };
+        const starting = first.shell.start();
+        await settle();
+        answerHistory(first, channelA, 10);
+        await starting;
+        await settle();
+        expect(first.shell.state.isStatusShown).toBe(true);
+
+        const reload = build({ signInMark, stored: { ...first.stored } });
+        expect(reload.shell.state.isStatusShown).toBe(true);
+
+        // another person on this browser reads nothing of hers
+        expect(build({ signInMark, stored: { ...first.stored }, personAliasGuid: "b0000002-0000-4000-8000-000000000000" }).shell.state.isStatusShown).toBe(false);
+
+        isMarkSet = false;
+        expect(build({ signInMark, stored: { ...first.stored } }).shell.state.isStatusShown).toBe(false);
+    });
+
+    // A shared computer keeps nothing of the last person's rooms: a sign-out since deletes every
+    // remembered room on the device, and another person signing in deletes every one not theirs,
+    // when the drafts delete theirs and by the same mark.
+    test("a sign-out, or another person signing in, deletes the remembered rooms from the device as it deletes the drafts", () => {
+        const other = "b0000002-0000-4000-8000-000000000000";
+        const own = rememberedChannelKey(tenant, person);
+        const theirs = rememberedChannelKey(tenant, other);
+        const left = (): Record<string, string> => ({
+            [own]: channelA, [`${own}:kind`]: "direct", [`${own}:online`]: "on",
+            [theirs]: channelB, [`${theirs}:kind`]: "channel", [`${theirs}:online`]: "on"
+        });
+        let isMarkSet = true;
+        const signInMark = { isSet: () => isMarkSet, set: () => void (isMarkSet = true) };
+
+        const kept = build({ signInMark, stored: left() });
+        expect(Object.keys(kept.stored).sort()).toEqual([own, `${own}:kind`, `${own}:online`].sort());
+
+        isMarkSet = false;
+        const signedOut = build({ signInMark, stored: left() });
+        expect(Object.keys(signedOut.stored)).toEqual([]);
     });
 
     test("the bootstrap's me is where the person's own switches start", async () => {

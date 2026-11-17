@@ -24,7 +24,8 @@ import Attachments from "../../../../../src/Communication/Chat/ChatShell/compone
 import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 import { AttachmentTray, attachmentViewsKey, createAttachments, TrayFile } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { AttachmentItem, FileItem, GifItem } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { harness, Harness, projectUrl, settle, tenant } from "../attachmentFakes";
+import { pageRevealKey } from "../../../../../src/Communication/Chat/ChatShell/pageLoad.partial";
+import { fakeCodec, harness, Harness, picked, projectUrl, settle, tenant } from "../attachmentFakes";
 
 function image(n: number, extra: Partial<FileItem> = {}): FileItem {
     const id = `d0000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
@@ -66,6 +67,199 @@ async function mountFiles(items: AttachmentItem[], h: Harness = harness(), props
     await nextTick();
     return { wrapper, h };
 }
+
+describe("a photo's blurred preview", () => {
+    const preview = "data:image/webp;base64,UklGRhYAAABXRUJQVlA4IAoAAAAwAQCdASoBAAEAAkA=";
+
+    /** Holds every decode until the test lets it go, so a photo's wait is seen. */
+    function holdDecodes(): { release: () => void, restore: () => void } {
+        const decodes: Array<() => void> = [];
+        const original = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, "decode");
+        HTMLImageElement.prototype.decode = () => new Promise<void>(resolve => decodes.push(resolve));
+        return {
+            release: () => decodes.forEach(resolve => resolve()),
+            restore: () => {
+                if (original) {
+                    Object.defineProperty(HTMLImageElement.prototype, "decode", original);
+                }
+                else {
+                    delete (HTMLImageElement.prototype as { decode?: unknown }).decode;
+                }
+            }
+        };
+    }
+
+    // The photo's shape and colours are on screen from the first frame; the photo sharpens over
+    // it once decoded.
+    test("is drawn at once under the photo, decorative, and stays while the photo is held", async () => {
+        const decodes = holdDecodes();
+        try {
+            const { wrapper } = await mountFiles([image(1, { preview })]);
+            const tile = wrapper.get("[data-testid='attachment-image']");
+            const blur = tile.get("[data-testid='attachment-preview']");
+
+            expect(blur.attributes("src")).toBe(preview);
+            expect(blur.attributes("alt")).toBe("");
+            expect(blur.attributes("aria-hidden")).toBe("true");
+            const photo = tile.get("[data-testid='attachment-photo']");
+            expect(photo.classes()).toContain("chat-img-hold");
+
+            decodes.release();
+            await settle();
+            expect(photo.classes()).not.toContain("chat-img-hold");
+            expect(photo.classes()).toContain("chat-img-in");
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+
+    // Before any link is signed the tile already shows the photo's shape and colours.
+    test("is drawn before the photo has a link, so the tile is never empty while it is signed", () => {
+        const attachments = createAttachments(harness().dependencies);
+        wrapper = mount(Attachments, {
+            props: { items: [image(1, { preview })] },
+            global: { provide: { [attachmentViewsKey as symbol]: attachments } }
+        });
+        const tile = wrapper.get("[data-testid='attachment-image']");
+
+        expect(tile.find("[data-testid='attachment-photo']").exists()).toBe(false);
+        expect(tile.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+    });
+
+    // A photo the page sent draws from the person's own local copy, then from its signed link once
+    // the row is drawn as stored; the swap happens over the preview, never over an empty box.
+    test("stands under the photo while the sent row swaps the person's local copy for the photo's link", async () => {
+        const decodes = holdDecodes();
+        try {
+            const codec = fakeCodec();
+            const h = harness(codec);
+            const photo = picked("p.jpg", "image/jpeg");
+            codec.sizes.set(photo, { width: 400, height: 300 });
+            const attachments = createAttachments(h.dependencies);
+            const channel = "c0000001-0000-4000-8000-000000000000";
+            attachments.trayFor(channel, channel).add([photo]);
+            await settle();
+            h.requests[0].respond(200);
+            await settle();
+            const [sent] = attachments.take(channel) ?? [];
+            const copy = attachments.localCopyOf(sent.id);
+            expect(copy).toMatch(/^blob:/);
+
+            shell = document.createElement("div");
+            shell.className = "chat-shell";
+            document.body.appendChild(shell);
+            wrapper = mount(Attachments, {
+                props: { items: [{ ...sent, preview }], isPending: true },
+                attachTo: shell,
+                global: { provide: { [attachmentViewsKey as symbol]: attachments } }
+            });
+            await settle();
+            expect(wrapper.get("[data-testid='attachment-photo']").attributes("src")).toBe(copy);
+            expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+
+            await wrapper.setProps({ isPending: false });
+            await settle();
+            expect(wrapper.get("[data-testid='attachment-photo']").attributes("src")).toBe(`${projectUrl}/storage/v1/object/sign/chat-attachments/${sent.key}?token=t-${sent.key.slice(-4)}`);
+            expect(h.revoked).toEqual([copy]);
+            expect(wrapper.get("[data-testid='attachment-preview']").attributes("src")).toBe(preview);
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+
+    // A blurred stand-in never outlives a photo that cannot be drawn: the tile says what it says
+    // without a photo, never a picture the reader cannot open.
+    test("is dropped once the photo fails to load", async () => {
+        const { wrapper } = await mountFiles([image(1, { preview })]);
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(true);
+
+        await wrapper.get("[data-testid='attachment-photo']").trigger("error");
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    test("a photo sent before previews keeps the neutral tile, with no preview drawn", async () => {
+        const { wrapper } = await mountFiles([image(1)]);
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    // The first screen's reveal waits, within its grace, for what the history page carries: the
+    // previews. It never waits for a photo, whose link is signed after the page, so a slow signing
+    // delays the photo's sharpening, never the screen.
+    test("on the first load, the page's reveal waits for the preview's decode and never for the photo's", async () => {
+        const decodes = holdDecodes();
+        try {
+            const held: Array<Promise<unknown>> = [];
+            const state = reactive({ isReleased: false });
+            const page = { state, holdFace: (decoded: Promise<unknown>) => held.push(decoded) };
+            const attachments = createAttachments(harness().dependencies);
+            wrapper = mount(Attachments, {
+                props: { items: [image(1, { preview })] },
+                global: { provide: { [attachmentViewsKey as symbol]: attachments, [pageRevealKey as symbol]: page } }
+            });
+            await settle();
+            await nextTick();
+
+            expect(wrapper.find("[data-testid='attachment-photo']").exists()).toBe(true);
+            expect(held).toHaveLength(1);
+            expect(wrapper.get("[data-testid='attachment-preview']").classes()).toContain("chat-img-hold");
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+
+    // A preview is only ever a data URL of a webp or jpeg; anything else the wire carries is not drawn.
+    test.each(["https://elsewhere.example/a.webp", "data:image/svg+xml;base64,PHN2Zz4=", "javascript:alert(1)"])("a preview that is not a webp or jpeg data URL (%s) is not drawn", async bad => {
+        const { wrapper } = await mountFiles([image(1, { preview: bad })]);
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
+    // The photo fades in from nothing, so whatever is under it shows through its fade: the preview
+    // and the tile's fill stay whole for the fade's length, and the photo sharpens over them, never
+    // over the row behind. Both go after it, so a photo with clear areas ends on the row alone. Only
+    // a photo that loaded clears the fill: one that failed keeps its neutral tile.
+    test("is drawn blurred and stays whole through the photo's fade, then goes with the tile's fill, which only a loaded photo clears", () => {
+        const file = "components/attachments.partial.obs";
+        expect(ruleOf(file, ".chat-attach-blur")["filter"]).toMatch(/^blur\(/);
+        expect(ruleOf(file, ".chat-attach-blur")["transition"]).toBe("opacity var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in)");
+        expect(ruleOf(file, ".chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur")["opacity"]).toBe("0");
+        expect(ruleOf(file, ".chat-attach-tile")["transition"]).toBe("background-color var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in)");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold):not([data-broken]))")["background-color"]).toBe("transparent");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold))")).toEqual({});
+    });
+
+    // The reveal shows a broken photo as the browser draws one, so being shown is not being loaded;
+    // the photo itself says it failed, which keeps its tile's fill.
+    test("a photo that failed to load is marked as failed, and one that has not is not", async () => {
+        const { wrapper } = await mountFiles([image(1, { preview }), image(2)]);
+        const [failed, fine] = wrapper.findAll("[data-testid='attachment-photo']");
+
+        await failed.trigger("error");
+
+        expect(failed.attributes("data-broken")).toBe("true");
+        expect(fine.attributes("data-broken")).toBeUndefined();
+    });
+
+    // The tile is still while it waits (the loading rule): its photo sits in the picture's own
+    // layer, never as the tile's direct child that the old pulse looked for.
+    test("a held photo is never the tile's own child, so the tile does not pulse while it waits", async () => {
+        const decodes = holdDecodes();
+        try {
+            const { wrapper } = await mountFiles([image(1, { preview })]);
+            const photo = wrapper.get("[data-testid='attachment-photo']").element;
+
+            expect(photo.parentElement?.classList.contains("chat-attach-pic")).toBe(true);
+        }
+        finally {
+            decodes.restore();
+        }
+    });
+});
 
 describe("the photo grid", () => {
     test.each([
@@ -636,7 +830,7 @@ describe("the composer's strip", () => {
                 size: 48_000,
                 width: null,
                 height: null,
-                previewUrl: null,
+                localCopyUrl: null,
                 status: "uploaded" as const,
                 progress: 1,
                 failure: null,
@@ -690,8 +884,53 @@ describe("the composer's strip", () => {
 
         const chip = wrapper.get("[data-testid='attachment-tray-file']");
         expect(chip.get("[data-testid='attachment-tray-failure']").text()).toBe("Files can be up to 25 MB.");
-        expect(chip.get("[data-testid='attachment-tray-failure']").attributes("title")).toBe("Files can be up to 25 MB.");
         expect(chip.find("[data-testid='attachment-tray-retry']").exists()).toBe(false);
+    });
+
+    // A name or a failure the chip cut short shows whole in the chat's one tooltip on a resting
+    // pointer, never in the browser's own title, which draws in another voice and late.
+    test("shows a cut-short name or failure whole in the chat's tooltip, nothing for words that fit, and no title", async () => {
+        const tray = trayOf([
+            { name: "a-very-long-name-for-a-quarterly-report.pdf" },
+            { name: "short.pdf", status: "failed", progress: 0, failure: { alone: "Files can be up to 25 MB.", besideRetry: "Files can be up to 25 MB.", canRetry: false } }
+        ]);
+        const { wrapper } = await mountFiles([], harness(), { tray });
+        const [long, failed] = wrapper.findAll("[data-testid='attachment-tray-file']");
+        const name = long.get("[data-testid='attachment-tray-name']").element as HTMLElement;
+        const failure = failed.get("[data-testid='attachment-tray-failure']").element as HTMLElement;
+        const fits = failed.get("[data-testid='attachment-tray-name']").element as HTMLElement;
+        for (const cut of [name, failure]) {
+            Object.defineProperty(cut, "scrollWidth", { configurable: true, value: 300 });
+            Object.defineProperty(cut, "clientWidth", { configurable: true, value: 120 });
+        }
+        const tipText = (): string | null => document.querySelector("[role='tooltip']")?.textContent?.trim() ?? null;
+
+        expect(wrapper.findAll("[title]")).toHaveLength(0);
+
+        jest.useFakeTimers();
+        try {
+            name.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBe("a-very-long-name-for-a-quarterly-report.pdf");
+
+            name.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            failure.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBe("Files can be up to 25 MB.");
+
+            failure.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            fits.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 
     test("what the tray could not take is said in the inline notice, a note, across the strip", async () => {

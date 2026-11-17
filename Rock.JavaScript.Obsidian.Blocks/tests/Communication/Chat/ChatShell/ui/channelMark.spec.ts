@@ -102,6 +102,23 @@ describe("a channel's mark", () => {
         expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
     });
 
+    // A mark that is not a tile, as the header's, still has its photo arrive over the channel's
+    // letter rather than into an empty box; with no photo, or once it fails, it is the hash or lock.
+    test("given the channel's name and an image, draws the letter under the image, and the glyph once the image fails", async () => {
+        const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: picture, name: "Greeters" } });
+
+        expect(w.get("[data-testid='channel-mark-letter']").text()).toBe("G");
+        expect(w.classes()).toContain("is-letter");
+
+        await w.get("[data-testid='channel-mark-image']").trigger("error");
+        expect(w.find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+        expect(w.getComponent(Icon).props("name")).toBe("hash");
+
+        const bare = mount(ChannelMark, { props: { isPublic: false, imageUrl: null, name: "Greeters" } });
+        expect(bare.find("[data-testid='channel-mark-letter']").exists()).toBe(false);
+        expect(bare.getComponent(Icon).props("name")).toBe("lock");
+    });
+
     test("the image stays hidden until decoded, then shows through the image reveal", () => {
         const w = mount(ChannelMark, { props: { isPublic: true, imageUrl: picture, tileName: "Greeters" } });
         const image = w.get("[data-testid='channel-mark-image']");

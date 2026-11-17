@@ -362,14 +362,17 @@ type Reveal = ImageReveal & { showMember(member: Member): void };
  * one and stops with the component, so an unmounted component writes nothing.
  *
  * @param options.isShared True for faces, which reveal with every face drawn in the same frame.
+ * @param options.isAwaited False for images the first screen's reveal never waits for, as a
+ * message's photos, whose links are signed after the history page: they still wait for the
+ * reveal, and sharpen after it over the preview the page carried.
  */
-export function useImageReveal(options: { isShared?: boolean } = {}): ImageReveal {
+export function useImageReveal(options: { isShared?: boolean, isAwaited?: boolean } = {}): ImageReveal {
     // The page's reveal is read through its getter, so a rebuilt shell is followed.
     const page = inject(pageRevealKey, null);
     const reveal = createImageReveal({
         isShared: options.isShared,
         hold: page ? computed(() => !page.state.isReleased) : null,
-        reportDecode: page ? decoded => page.holdFace(decoded) : null
+        reportDecode: page && options.isAwaited !== false ? decoded => page.holdFace(decoded) : null
     });
 
     onBeforeUnmount(() => reveal.stop());

@@ -125,3 +125,45 @@ describe("the browser's push", () => {
         }
     });
 });
+
+describe("Rock's doors", () => {
+    /** The shell's options as the block builds them over an action that answers as given. */
+    function optionsAnswering(answer: unknown): { options: ShellOptions, invokeBlockAction: jest.Mock } {
+        const invokeBlockAction = jest.fn(async () => answer);
+        const build = createBrowserShellBuilder({
+            linkedChannelId: null,
+            areSharedChannelsFilteredByCampus: false,
+            isSignInPersisted: false,
+            notify: jest.fn(),
+            invokeBlockAction,
+            mentionViews: {} as never
+        });
+
+        return { options: build({} as never) as unknown as ShellOptions, invokeBlockAction };
+    }
+
+    test.each([
+        ["JoinChannel", (o: ShellOptions) => o.joinChannel?.("c1")],
+        ["LeaveChannel", (o: ShellOptions) => o.leaveChannel?.("c1")],
+        ["RenameConversation", (o: ShellOptions) => o.renameConversation?.("c1", "Name")]
+    ])("%s goes through the one membership door: Rock's answer as given, and unanswered as unreached with no words of its own", async (action, ask) => {
+        const answered = optionsAnswering({ isSuccess: true, data: { code: "ok", message: null, isPending: true } });
+        expect(await ask(answered.options)).toEqual({ code: "ok", message: null, isPending: true });
+        expect(answered.invokeBlockAction).toHaveBeenCalledWith(action, expect.objectContaining({ channelGuid: "c1" }));
+
+        const unanswered = optionsAnswering({ isSuccess: false, statusCode: 500, data: null, errorMessage: null });
+        expect(await ask(unanswered.options)).toEqual({ code: "door.unavailable", message: null, isPending: false });
+    });
+
+    test("a conversation Rock did not answer for leaves its words to the one error voice, which says Couldn't start the conversation", async () => {
+        const { options } = optionsAnswering({ isSuccess: false, statusCode: 500, data: null, errorMessage: null });
+
+        expect(await options.startDirectMessage?.(["p1"])).toEqual({
+            code: "door.unavailable",
+            channelGuid: null,
+            isPending: false,
+            message: null,
+            personAliasGuid: null
+        });
+    });
+});

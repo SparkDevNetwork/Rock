@@ -20,7 +20,7 @@
                     @click="emit('back')" />
 
         <div class="chat-header-id">
-            <ChannelMark v-if="kind === 'channel'" class="chat-header-ic" :isPublic="isPublic" :imageUrl="iconUrl" />
+            <ChannelMark v-if="kind === 'channel'" class="chat-header-ic" :isPublic="isPublic" :imageUrl="iconUrl" :name="title" />
             <Avatar v-else-if="kind === 'person' && faces.length > 0" :key="otherAlias ?? undefined" :people="faces" :size="36" :status="otherStatus" />
             <GroupFace v-else-if="kind === 'group'" :people="faces" :count="groupOtherCount" :size="36" />
 
