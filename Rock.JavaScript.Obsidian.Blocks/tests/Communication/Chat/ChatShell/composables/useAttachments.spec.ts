@@ -364,6 +364,21 @@ describe("a photo's blurred preview", () => {
         expect(h.requests).toHaveLength(1);
     });
 
+    // A browser that writes PNG for both asks sends no preview: a PNG would refuse the upload.
+    test("where neither webp nor jpeg can be written, the photo goes with no preview", async () => {
+        const codec = fakeCodec();
+        codec.encodeUrl = () => Promise.resolve("data:image/png;base64,cG5n");
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0]).not.toHaveProperty("preview");
+        expect(h.requests).toHaveLength(1);
+    });
+
     test("a GIF and a file carry none", async () => {
         const codec = fakeCodec();
         const h = harness(codec);
@@ -399,7 +414,10 @@ describe("a photo's blurred preview", () => {
         expect(isStoredPreview("data:image/jpeg;base64,/9j/4AAQ")).toBe(true);
         expect(isStoredPreview("data:image/svg+xml;base64,PHN2Zz4=")).toBe(false);
         expect(isStoredPreview("https://elsewhere.example/a.webp")).toBe(false);
-        expect(isStoredPreview(`data:image/webp;base64,${"A".repeat(1024)}`)).toBe(false);
+        // the platform refuses 1,024 characters or more, which would refuse the whole upload
+        const prefix = "data:image/webp;base64,";
+        expect(isStoredPreview(prefix + "A".repeat(1023 - prefix.length))).toBe(true);
+        expect(isStoredPreview(prefix + "A".repeat(1024 - prefix.length))).toBe(false);
         expect(isStoredPreview(null)).toBe(false);
         expect(isStoredPreview(undefined)).toBe(false);
     });

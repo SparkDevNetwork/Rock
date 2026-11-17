@@ -144,6 +144,17 @@ describe("a photo's blurred preview", () => {
         }
     });
 
+    // A blurred stand-in never outlives a photo that cannot be drawn: the tile says what it says
+    // without a photo, never a picture the reader cannot open.
+    test("is dropped once the photo fails to load", async () => {
+        const { wrapper } = await mountFiles([image(1, { preview })]);
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(true);
+
+        await wrapper.get("[data-testid='attachment-photo']").trigger("error");
+
+        expect(wrapper.find("[data-testid='attachment-preview']").exists()).toBe(false);
+    });
+
     test("a photo sent before previews keeps the neutral tile, with no preview drawn", async () => {
         const { wrapper } = await mountFiles([image(1)]);
 
