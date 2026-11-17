@@ -1197,7 +1197,8 @@ describe("the thread's action bar", () => {
             await showOn(w, 41);
 
             expect(barOn(w)).toBe(41);
-            expect(w.get("[data-testid='action-bar']").classes()).toContain("chat-tools-enter-active");
+            // The message box around the bar plays the entrance.
+            expect(w.get("[data-testid='message-box']").classes()).toContain("chat-tools-enter-active");
         });
 
         test("hides 220ms after the pointer leaves the thread, and a pointer back inside that keeps it", async () => {

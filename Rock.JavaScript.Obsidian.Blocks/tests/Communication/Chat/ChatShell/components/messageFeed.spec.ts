@@ -2676,9 +2676,10 @@ describe("the action bar", () => {
         return mounted;
     }
 
-    /** Whether the bar on screen is playing its entrance. */
+    /** Whether the bar on screen is playing its entrance, which the message box around it plays. */
     function isEntering(w: VueWrapper): boolean {
-        return bars(w)[0]?.classList.contains("chat-tools-enter-active") ?? false;
+        expect(bars(w)).toHaveLength(1);
+        return w.find("[data-testid='message-box']").element?.classList.contains("chat-tools-enter-active") ?? false;
     }
 
     /** A keyboard's focus, which a browser tells apart by :focus-visible and jsdom cannot, so is told. */
