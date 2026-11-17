@@ -1812,6 +1812,56 @@ describe("the column's bar and its picker", () => {
         }
     });
 
+    // A column can hold hundreds of rows and the bar moves on every pointer pass, so a move may
+    // wake only the row it leaves and the row it reaches; a row reading the bar's dock would redraw
+    // every row of the column on each move.
+    test("the bar moving from one message to the next redraws those two rows and no other", async () => {
+        jest.useFakeTimers();
+        try {
+            const first = message();
+            const rows = [first, ...[1, 2, 3].map(step => message({ id: first.id + step }))];
+            let bar: ReturnType<typeof useActionBar> | null = null;
+            const redrawn: number[] = [];
+            const holder = defineComponent({
+                components: { MessageRow },
+                setup() {
+                    bar = useActionBar(() => null);
+                    return { rows };
+                },
+                template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" /></div>`
+            });
+            const counting = {
+                updated(this: { $el: unknown, $props: { message?: TimelineMessage } }): void {
+                    if (this.$el instanceof HTMLElement && this.$el.dataset.testid === "message-row" && this.$props.message) {
+                        redrawn.push(this.$props.message.id);
+                    }
+                }
+            };
+            const wrapper = mount(holder, inSession({ props: { personAliasGuid: me }, global: { mixins: [counting] } }));
+            await nextTick();
+            const [rowA, rowB] = wrapper.findAll("[data-testid='message-row']").map(row => row.element as HTMLElement);
+            const over = (target: Element): void => bar!.onPointerOver({ target, pointerType: "mouse" } as unknown as PointerEvent);
+
+            over(rowA);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+            expect(rowA.classList.contains("is-hot")).toBe(true);
+
+            redrawn.length = 0;
+            over(rowB);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+
+            expect(rowB.classList.contains("is-hot")).toBe(true);
+            expect(rowA.classList.contains("is-hot")).toBe(false);
+            expect([...new Set(redrawn)].sort()).toEqual([rows[0].id, rows[1].id].sort());
+            wrapper.unmount();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
     // The person's own message has no name or face to press, so a plain one had nothing for Tab to
     // reach and its bar never showed from the keyboard; the row itself is the stop.
     test.each([false, true])("the person's own message is a Tab stop, so its bar is reached (channel: %s)", isChannel => {
