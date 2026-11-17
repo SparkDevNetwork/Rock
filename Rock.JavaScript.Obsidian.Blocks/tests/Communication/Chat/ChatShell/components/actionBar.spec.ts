@@ -48,13 +48,14 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { defineComponent, effect, h, nextTick, reactive, shallowRef } from "vue";
+import { defineComponent, effect, h, nextTick, reactive, ref, shallowRef } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { ActionBars, ColumnActionBar, provideActionBars, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { isActionCall } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
+import { PopoverControl, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
 
 const me = "a0000001-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -328,6 +329,30 @@ describe("the bar's keyboard", () => {
         expect(tools(w).map(t => t.getAttribute("tabindex"))).toEqual(["0", "-1", "-1", "-1", "-1", "-1", "-1"]);
     });
 
+    // Tab past the bar's end hides the box once focus leaves its message, but the box's place in
+    // the row keeps its stop, so Shift+Tab back from what follows the message finds the bar again:
+    // reaching the place shows the box there, and focus goes on into it once it is drawn.
+    test("its place in the row stays a stop while the box is hidden on its message, and focus there goes into the box once it shows", async () => {
+        wrapper = mount(ActionBar, { props: { message: message(), isShown: false, favorites }, attachTo: document.body });
+        await settle();
+        const guard = wrapper.get("[data-testid='action-bar-guard']").element as HTMLElement;
+        expect(bar(wrapper).exists()).toBe(false);
+        expect(guard.getAttribute("tabindex")).toBe("0");
+
+        guard.focus();
+        await wrapper.setProps({ isShown: true });
+        await settle();
+
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("React with thumbs up");
+    });
+
+    test("its place in the row is no stop while the box is on no message", async () => {
+        wrapper = mount(ActionBar, { props: { message: null, isShown: false, favorites }, attachTo: document.body });
+        await settle();
+
+        expect(wrapper.get("[data-testid='action-bar-guard']").attributes("tabindex")).toBe("-1");
+    });
+
     test("Right moves to the next tool and takes the tab stop with it; Left moves back", async () => {
         const w = await shown({ message: message() });
         const [thumbsUp, heart] = tools(w);
@@ -544,6 +569,28 @@ describe("the bar's quick reactions", () => {
         await settle();
 
         expect(box()).toBeNull();
+    });
+
+    // A chip's smile-plus opens the box from outside it. Pressed again it closes the box: the press
+    // on it counts as inside the box, not as a press elsewhere that would close the box first and
+    // leave the click to open a fresh one.
+    test("the control outside the box that opened it closes it when pressed again", async () => {
+        const { bars } = await shownInBlock();
+        const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+        const chipAdd = document.createElement("button");
+        document.body.append(chipAdd);
+
+        bars.openReactionPicker("conversation", "c1", message(), guard, chipAdd);
+        await settle();
+        expect(box()?.getAttribute("data-layer")).toBe("tray");
+
+        chipAdd.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await settle();
+        bars.openReactionPicker("conversation", "c1", message(), guard, chipAdd);
+        await settle();
+
+        expect(bars.held.value).toBeNull();
+        expect(box()?.getAttribute("data-layer")).toBe("bar");
     });
 
     // The box grows from the bar's edges to the tray's over the block's one move, as the Feed's
@@ -883,6 +930,9 @@ describe("the bar beside a bubble", () => {
         const endInset = 14;
         const insideGap = 4;
 
+        /** How near the column's inset a row's top must come before the box moves inside it. */
+        const insideBelow = 30;
+
         type Row = { left: number, right: number, top: number };
 
         /** Mounts the box on a channel's row at the box given, its column 900px wide from the window's top. */
@@ -925,14 +975,16 @@ describe("the bar beside a bubble", () => {
             expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
         });
 
-        test("keeps the lift while it stays 4px inside the column, and moves inside the row a pixel nearer the column's top", async () => {
-            const roomy = { left: 0, right: 900, top: lift + inset };
+        // As the approved demo places it: a row whose top is less than 30px under the column's 4px
+        // inset has the box inside it, so a box over the first row never presses on the feed's top.
+        test("keeps the lift on a row 30px under the column's 4px inset, and moves inside a row a pixel nearer", async () => {
+            const roomy = { left: 0, right: 900, top: inset + insideBelow };
             const lifted = await shownOnRow(roomy);
-            expect(placed(lifted, roomy).top).toBe(inset);
+            expect(placed(lifted, roomy).top).toBe(roomy.top - lift);
             lifted.unmount();
             document.body.innerHTML = "";
 
-            const tight = { left: 0, right: 900, top: lift + inset - 1 };
+            const tight = { left: 0, right: 900, top: inset + insideBelow - 1 };
             const inside = await shownOnRow(tight);
             expect(placed(inside, tight)).toEqual({ top: tight.top + insideGap, endIn: endInset });
         });
@@ -988,6 +1040,20 @@ describe("the bar's parts", () => {
         expect(tools.length).toBe(7);
         expect(tools.filter(tool => !tool.classes("chat-icon-btn"))).toHaveLength(0);
         expect(style).not.toContain(":deep(");
+    });
+
+    // A tool's focus outline is drawn outside the tool, past the box's edge, and the box's hit pad
+    // reaches 6px past it; a box that cut what overflows it would cut both. Only the grown picker
+    // has a fill that meets the box's corners, so the picker rounds and clips its own.
+    test("the box cuts nothing that overflows it, and the grown picker clips its own corners", () => {
+        const sheetOf = (file: string): string => {
+            const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        };
+        const ruleOf = (style: string, selector: string): string => style.match(new RegExp(`(?:^|\\n)${selector.replace(/[.]/g, "\\.")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
+
+        expect(ruleOf(sheetOf("actionBar.partial.obs"), ".chat-box")).not.toContain("overflow");
+        expect(ruleOf(sheetOf("emojiPicker.partial.obs"), ".chat-picker-hosted")).toMatch(/border-radius:\s*inherit;[\s\S]*overflow:\s*hidden;/);
     });
 });
 
@@ -1049,6 +1115,24 @@ describe("the block's boxes", () => {
         picker.closeReactionPicker();
         picker.openReactionPicker("conversation", team, stored(7), add);
         expect(picker.held.value?.offered).toEqual([]);
+    });
+
+    // Only a control says whether what it opens is open; the box's place in the row, which the
+    // bar's Add reaction asks from, is no control, so it carries no such state.
+    test("marks the control that opened it expanded while it is open, and never the box's place in the row", () => {
+        const picker = setUp();
+        const place = document.createElement("span");
+
+        picker.openReactionPicker("conversation", team, stored(7), place);
+        expect(place.hasAttribute("aria-expanded")).toBe(false);
+        picker.closeReactionPicker();
+        expect(place.hasAttribute("aria-expanded")).toBe(false);
+
+        const chipAdd = document.createElement("button");
+        picker.openReactionPicker("conversation", team, stored(7), place, chipAdd);
+        expect(chipAdd.getAttribute("aria-expanded")).toBe("true");
+        picker.closeReactionPicker();
+        expect(chipAdd.getAttribute("aria-expanded")).toBe("false");
     });
 
     test("opening and closing reaches only the rows of the message it is open on", () => {
@@ -1116,5 +1200,143 @@ describe("the column's box on a message", () => {
         expect(seen).toEqual({ 1: false, 2: true, 3: false, 4: false, 5: false });
 
         expect(runs).toEqual({ 1: 3, 2: 2, 3: 1, 4: 1, 5: 1 });
+    });
+});
+
+// Another floating layer open keeps the box down under the pointer. Once it closes, the box rises
+// on the message the pointer rests on, with no move needed to wake it.
+describe("the column's box under a closing layer", () => {
+    test("rises on the message the pointer rests on once the floating layer that kept it down closes", async () => {
+        const scroller = document.createElement("div");
+        const row = document.createElement("div");
+        row.dataset.hotId = "1";
+        scroller.append(row);
+        document.body.append(scroller);
+
+        let column: ColumnActionBar | null = null;
+        let layer: PopoverControl | null = null;
+        wrapper = mount(defineComponent({
+            setup() {
+                column = useActionBar(() => scroller);
+                layer = usePopover(ref<HTMLElement>(), ref<HTMLElement>());
+                return () => h("div");
+            }
+        }), { attachTo: document.body });
+        const bar = column as unknown as ColumnActionBar;
+        const card = layer as unknown as PopoverControl;
+
+        await card.open();
+        bar.onPointerOver({ pointerType: "mouse", target: row } as unknown as PointerEvent);
+        jest.advanceTimersByTime(1000);
+        expect(bar.isOn(1)).toBe(false);
+
+        card.close();
+        await settle();
+        jest.advanceTimersByTime(1000);
+
+        expect(bar.isOn(1)).toBe(true);
+    });
+});
+
+// The box grows from where the bar stood. It is placed at the tray's size first and only then
+// revealed from the bar's edges, so beside the reader's own bubble, where the box keeps its edge
+// by the bubble, it opens out away from the bubble and never jumps sideways as it grows.
+describe("growing beside the reader's own bubble", () => {
+    const animate = jest.fn();
+    let sheet: HTMLStyleElement;
+
+    /** The box's width and height for each layer, as these tests lay it out. */
+    const sizes: Record<string, [number, number]> = { bar: [200, 38], tray: [320, 44] };
+
+    const offsetWidth = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetWidth");
+    const offsetHeight = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "offsetHeight");
+    const rectOf = Element.prototype.getBoundingClientRect;
+
+    function sizeOf(element: HTMLElement): [number, number] {
+        return element.getAttribute("data-testid") === "message-box" ? sizes[element.getAttribute("data-layer") ?? "bar"] : [0, 0];
+    }
+
+    function rect(left: number, right: number, top: number, bottom: number): DOMRect {
+        return { x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) } as DOMRect;
+    }
+
+    beforeEach(() => {
+        animate.mockClear();
+        (HTMLElement.prototype as unknown as { animate: unknown }).animate = animate;
+        sheet = document.createElement("style");
+        sheet.textContent = ".chat-box { --chat-d-move: 220ms; }";
+        document.head.append(sheet);
+        Object.defineProperty(HTMLElement.prototype, "offsetWidth", { configurable: true, get(this: HTMLElement) { return sizeOf(this)[0]; } });
+        Object.defineProperty(HTMLElement.prototype, "offsetHeight", { configurable: true, get(this: HTMLElement) { return sizeOf(this)[1]; } });
+        // The box is where its floating styles put it, at its layer's size.
+        Element.prototype.getBoundingClientRect = function (this: Element): DOMRect {
+            if (this instanceof HTMLElement && this.getAttribute("data-testid") === "message-box") {
+                const [width, height] = sizeOf(this);
+                const left = parseFloat(this.style.left) || 0;
+                const top = parseFloat(this.style.top) || 0;
+                return rect(left, left + width, top, top + height);
+            }
+            return rectOf.call(this);
+        };
+        Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1200 });
+        Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
+    });
+
+    afterEach(() => {
+        delete (HTMLElement.prototype as unknown as { animate?: unknown }).animate;
+        sheet.remove();
+        Object.defineProperty(HTMLElement.prototype, "offsetWidth", offsetWidth as PropertyDescriptor);
+        Object.defineProperty(HTMLElement.prototype, "offsetHeight", offsetHeight as PropertyDescriptor);
+        Element.prototype.getBoundingClientRect = rectOf;
+        delete (document.documentElement as unknown as Record<string, unknown>).clientWidth;
+        delete (document.documentElement as unknown as Record<string, unknown>).clientHeight;
+    });
+
+    test("reveals the tray from the bar's edges, opening away from the bubble", async () => {
+        const scroller = document.createElement("div");
+        scroller.setAttribute("data-chat-scroller", "");
+        scroller.getBoundingClientRect = () => rect(0, 900, 0, 600);
+        Object.defineProperty(scroller, "clientWidth", { value: 900 });
+        Object.defineProperty(scroller, "clientHeight", { value: 600 });
+        const host = document.createElement("div");
+        scroller.append(host);
+        document.body.append(scroller);
+
+        let bars: ActionBars | null = null;
+        const shell = shallowRef({
+            reactions: { favorites, state: reactive({ catalog: null, recents: [] }), loadCatalog: jest.fn(async () => null), recordRecent: jest.fn(), toggleCode: jest.fn() },
+            timelines: { state: () => ({ messages: [] }) },
+            threads: { state: { thread: null } }
+        } as unknown as ChatShell);
+        const Host = defineComponent({
+            props: { id: { type: Number, default: 42 } },
+            setup(props) {
+                bars = provideActionBars(shell, "Cedar Hill", () => undefined);
+                return () => h(ActionBar, { message: own({ id: props.id }), isOwn: true, isShown: true, favorites });
+            }
+        });
+        wrapper = mount(Host, { attachTo: host });
+        await settle();
+
+        // The reader's bubble, at the column's right; the bar stands 6px left of it, level with its top.
+        const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+        (guard.parentElement?.parentElement as HTMLElement).getBoundingClientRect = () => rect(600, 880, 200, 260);
+        await wrapper.setProps({ id: 43 });
+        for (let i = 0; i < 40; i++) {
+            await settle();
+        }
+        const drawn = document.querySelector<HTMLElement>("[data-testid='message-box']") as HTMLElement;
+        expect([drawn.style.left, drawn.style.top]).toEqual(["394px", "200px"]);
+
+        (bars as unknown as ActionBars).openReactionPicker("conversation", "c1", own({ id: 43 }), guard, guard, { offered: ["thumbsup", "heart", "joy"] });
+        for (let i = 0; i < 40; i++) {
+            await settle();
+        }
+
+        // Placed with its right edge where the bar's was, then revealed from the bar's 200 by 38:
+        // 120px to its left and 6px at its foot grow in, nothing on its right.
+        expect([drawn.style.left, drawn.style.top]).toEqual(["274px", "200px"]);
+        expect(animate).toHaveBeenCalledTimes(1);
+        expect(animate.mock.calls[0][0][0]).toEqual({ clipPath: "inset(0px 0px 6px 120px)" });
     });
 });
