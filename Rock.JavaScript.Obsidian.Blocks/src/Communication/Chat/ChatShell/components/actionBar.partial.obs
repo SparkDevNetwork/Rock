@@ -836,6 +836,16 @@ img.chat-tool-glyph {
         }
     });
 
+    /** Lets go of the open menu's mark on its message. */
+    let releaseMenuHold: (() => void) | null = null;
+
+    // The menu open marks its message held, as the tray does, so the message's who-reacted card
+    // stays shut while the menu is over it; the mark moves or goes with the menu.
+    watch([isMenuOpen, () => props.message?.id], ([isOpen, id]) => {
+        releaseMenuHold?.();
+        releaseMenuHold = isOpen && id !== undefined && guard.value && bars ? bars.holdMessage(id, guard.value) : null;
+    });
+
     // The column keeps the box where it is while something holds it.
     watch(isHeld, isHolding => {
         emit("holdChange", isHolding);
@@ -862,6 +872,7 @@ img.chat-tool-glyph {
 
     // A box taken away while held, its column gone, lets the column go.
     onBeforeUnmount(() => {
+        releaseMenuHold?.();
         if (isHeld.value) {
             emit("holdChange", false);
         }

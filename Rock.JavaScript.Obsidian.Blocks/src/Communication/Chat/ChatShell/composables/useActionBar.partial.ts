@@ -128,6 +128,12 @@ export type ActionBars = {
 
     closeReactionPicker: () => void;
 
+    /**
+     * Marks a message held by its box, grown or with its menu open, so the message's who-reacted
+     * card stays shut under it; the release given back clears the mark while it is still its own.
+     */
+    holdMessage: (messageId: number, anchor: HTMLElement) => () => void;
+
     onPickerReact: (code: string) => void;
 };
 
@@ -163,11 +169,15 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
     const held = shallowRef<HeldBox | null>(null);
     let heldCount = 0;
 
-    // The held box's anchor by its message, which every row asks about its own message alone: a
+    // The anchor of the box holding a message, grown or with its menu open, by the message, which
+    // every row asks about its own message alone: a
     // reactive map tracks each message apart, so the box growing or closing wakes the rows of that
     // message and leaves the rest of the feed still. One reference read by every row would redraw
     // every row on each open and close.
     const anchorsByMessage = shallowReactive(new Map<number, HTMLElement>());
+
+    /** Lets go of the grown box's mark on its message. */
+    let releaseHeld: (() => void) | null = null;
 
     const reactionHost = reactive<ReactionHost>({
         get favorites() {
@@ -238,7 +248,7 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
             offered: opening.offered ?? [],
             isKeyboard: isKeyboardFocus(document.activeElement)
         };
-        anchorsByMessage.set(message.id, anchor);
+        releaseHeld = holdMessage(message.id, anchor);
         void shell.value.reactions.loadCatalog();
     }
 
@@ -255,8 +265,18 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
         }
 
         box.opener.setAttribute("aria-expanded", "false");
-        anchorsByMessage.delete(box.messageId);
+        releaseHeld?.();
+        releaseHeld = null;
         held.value = null;
+    }
+
+    function holdMessage(messageId: number, anchor: HTMLElement): () => void {
+        anchorsByMessage.set(messageId, anchor);
+        return () => {
+            if (anchorsByMessage.get(messageId) === anchor) {
+                anchorsByMessage.delete(messageId);
+            }
+        };
     }
 
     /** A choice in the tray or the picker toggles the reader's reaction and is kept as recently used. */
@@ -270,7 +290,7 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
         void shell.value.reactions.toggleCode(box.channelId, box.messageId, code);
     }
 
-    const bars: ActionBars = { held, reactionHost, emojiSource, pickerMine, kindOf, openReactionPicker, showAllEmoji, closeReactionPicker, onPickerReact };
+    const bars: ActionBars = { held, reactionHost, emojiSource, pickerMine, kindOf, openReactionPicker, showAllEmoji, closeReactionPicker, holdMessage, onPickerReact };
     provide(actionBarsKey, bars);
     return bars;
 }
