@@ -269,6 +269,8 @@
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
+    /* A mention heard arriving live: the flash, shorter, since nothing was asked for. */
+    --chat-d-greet: 1.2s;
     --chat-d-roll: 220ms;
     --chat-d-tools-show: 90ms;
     --chat-d-tools-move: 140ms;

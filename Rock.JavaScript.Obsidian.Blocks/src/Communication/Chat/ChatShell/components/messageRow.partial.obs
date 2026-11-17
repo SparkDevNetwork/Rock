@@ -123,12 +123,15 @@
     rounded, at the flash's strength: held for most of its length and then let go back to whatever
     the row is at rest, so a mention and a jump read as one idea. It is drawn under the words, the
     row holding its own layers only while it flashes; a bubble flashes behind itself, in its own
-    sheet. Reduced motion keeps it, being a fade only.
+    sheet. Reduced motion keeps it, being a fade only. A mention of the reader heard arriving live
+    greets them with the same flash, once, at its own shorter length.
 */
+.chat-msg.is-community.is-greeting,
 .chat-msg.is-community.is-flashing {
     isolation: isolate;
 }
 
+.chat-msg.is-community.is-greeting::before,
 .chat-msg.is-community.is-flashing::before {
     position: absolute;
     inset: 1px var(--chat-cm-inset);
@@ -140,7 +143,12 @@
     animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
-/* A washed row already stands in by the inset, so its flash fills it. */
+.chat-msg.is-community.is-greeting::before {
+    animation: chat-flash var(--chat-d-greet) var(--chat-ease-state) forwards;
+}
+
+/* A washed row already stands in by the inset, so its flash fills it; a greeting is always on one. */
+.chat-msg.is-community.is-greeting::before,
 .chat-msg.is-community.is-mention-me.is-flashing::before {
     inset: 0;
 }
@@ -581,7 +589,7 @@ img.chat-sheet-glyph {
      * blocked watches its newest message, though its view claims its arrival by all of them: the line
      * shows no words to crossfade, and a root with replies always stands as a line of its own.
      */
-    const { isCrossfading, isEditedNow, isThreadStartedHere, reaction } = useRowMotion(() => props.pending ? `k:${sendKey(props.pending.localId)}` : props.message ? rowKey(props.message) : null);
+    const { isCrossfading, isEditedNow, isThreadStartedHere, reaction, isArrivedLive } = useRowMotion(() => props.pending ? `k:${sendKey(props.pending.localId)}` : props.message ? rowKey(props.message) : null);
 
     // #endregion Values
 
@@ -590,6 +598,13 @@ img.chat-sheet-glyph {
     /** What the message shows, worked out once and lent to the look it draws in. */
     const facts = useMessageRowView(props);
     const { state, text, pieces, isAnnouncement, isJumbo, hasThread, isHead, displayName, authorGuid, time, readerMention, isReactable } = facts;
+
+    /**
+     * A mention of the reader heard arriving live greets them with the flash, once, as the row is
+     * first drawn. Read once here, so a re-render never plays it again; an announcement keeps its
+     * own pill and edge.
+     */
+    const isGreeting = ref(isArrivedLive.value && !!readerMention.value && !isAnnouncement.value);
 
     /** The look the conversation's kind picks, which the row draws in. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
@@ -748,6 +763,7 @@ img.chat-sheet-glyph {
         // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
         "is-flashing": props.isFlashing,
+        "is-greeting": isGreeting.value && !props.isFlashing,
         "is-hot": isBarHere.value,
         "has-thread": hasThread.value,
         "has-reactions": hasReactions.value,
@@ -930,6 +946,12 @@ img.chat-sheet-glyph {
         }
         else if (event.animationName.includes("chat-meta-in")) {
             isEditedNow.value = false;
+        }
+        else if (isGreeting.value && !props.isFlashing && event.animationName.includes("chat-flash")) {
+            // The greeting's end is the row's own: a feed lets its jump's flash go on any flash
+            // ending under it, so it never hears this one.
+            event.stopPropagation();
+            isGreeting.value = false;
         }
     }
 
