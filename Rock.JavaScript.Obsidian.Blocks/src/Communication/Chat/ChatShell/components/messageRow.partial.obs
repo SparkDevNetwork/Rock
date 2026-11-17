@@ -605,9 +605,10 @@ img.chat-sheet-glyph {
     /**
      * A mention of the reader heard arriving live greets them with the flash, once, as the row is
      * first drawn. Read once here, so a re-render never plays it again; an announcement keeps its
-     * own pill and edge.
+     * own pill and edge. A jump that lands on the row ends it for good (the watcher below): the
+     * flash takes the same layer over, and its end is the jump's.
      */
-    const isGreeting = ref(isArrivedLive.value && !!readerMention.value && !isAnnouncement.value);
+    const isGreeting = ref(isArrivedLive.value && !!readerMention.value && !isAnnouncement.value && !props.isFlashing);
 
     /** The look the conversation's kind picks, which the row draws in. */
     const layout = computed((): FeedLayout => props.isChannel ? "community" : "conversational");
@@ -766,7 +767,7 @@ img.chat-sheet-glyph {
         // An announcement owns its own tint and edge; one naming the reader keeps them and the words.
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
         "is-flashing": props.isFlashing,
-        "is-greeting": isGreeting.value && !props.isFlashing,
+        "is-greeting": isGreeting.value,
         "is-hot": isBarHere.value,
         "has-thread": hasThread.value,
         "has-reactions": hasReactions.value,
@@ -962,7 +963,7 @@ img.chat-sheet-glyph {
         else if (event.animationName.includes("chat-meta-in")) {
             isEditedNow.value = false;
         }
-        else if (isGreeting.value && !props.isFlashing && event.animationName.includes("chat-flash")) {
+        else if (isGreeting.value && event.animationName.includes("chat-flash")) {
             // The greeting's end is the row's own: a feed lets its jump's flash go on any flash
             // ending under it, so it never hears this one.
             event.stopPropagation();
@@ -973,6 +974,14 @@ img.chat-sheet-glyph {
     // #endregion Event Handlers
 
     // #region Watchers
+
+    // A jump landing mid-greeting takes the greeting's layer over, so the greeting is over: it
+    // never returns when the jump lets go, and the flash's end is the jump's for the feed to hear.
+    watch(() => props.isFlashing, isFlashing => {
+        if (isFlashing) {
+            isGreeting.value = false;
+        }
+    });
 
     // The row lends the column's bar its dock while its message can be acted on, a phone's too, so
     // a picker asked for from its sheet has a column to open in; it takes it back as the message
