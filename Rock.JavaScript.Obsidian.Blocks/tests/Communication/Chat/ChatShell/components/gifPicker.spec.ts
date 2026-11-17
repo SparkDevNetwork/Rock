@@ -21,8 +21,10 @@
 // busy search, and KLIPY named at its foot. A pick hands the GIF to the composer to stage; Escape
 // closes it and hands focus back. On a phone it is a bottom sheet.
 import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
-import { nextTick } from "vue";
+import { defineComponent, h, nextTick, ref } from "vue";
 import GifPicker from "../../../../../src/Communication/Chat/ChatShell/components/gifPicker.partial.obs";
+import Sheet from "../../../../../src/Communication/Chat/ChatShell/ui/sheet.partial.obs";
+import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
 import { readFileSync } from "fs";
 import { join } from "path";
 import { GifCovers, GifSearchAnswer, Gifs } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
@@ -464,5 +466,93 @@ describe("the GIF picker", () => {
 
         expect(picker().closest("[data-testid='sheet']")).not.toBeNull();
         expect(document.querySelector("[data-testid='scrim']")).not.toBeNull();
+    });
+});
+
+// On a phone the plus menu's sheet turns into the picker, so the picker is a page of that sheet:
+// it draws no surface of its own, the sheet's head carries Back and the page's title, and closing
+// is the sheet owner's, as a pick hands the GIF over.
+describe("the GIF picker as a page of a turned sheet", () => {
+    const original = window.matchMedia;
+
+    afterEach(() => {
+        window.matchMedia = original;
+        document.body.innerHTML = "";
+    });
+
+    /** The plus menu's sheet, turned to the GIF page as the GIF row would turn it. */
+    async function turned(gifs: Gifs, isTouch = false): Promise<VueWrapper> {
+        window.matchMedia = ((query: string) => ({ media: query, matches: isTouch && query === "(hover: none)" })) as unknown as typeof window.matchMedia;
+        const isGif = ref(false);
+        const Host = defineComponent({
+            setup() {
+                return () => h(Sheet, { isOpen: true, label: "Add to your message", height: "picker" }, {
+                    default: () => h("button", { "data-testid": "to-gif", onClick: () => {
+                        isGif.value = true;
+                    } }, "GIF"),
+                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", onBack: () => {
+                        isGif.value = false;
+                    } }, () => isGif.value ? h(GifPicker, { gifs, isPage: true }) : null)
+                });
+            }
+        });
+
+        wrapper = mount(Host, { attachTo: document.body, global: { provide: providedSession({ isPhone: true }) } });
+        await flushPromises();
+        const opener = document.querySelector<HTMLElement>("[data-testid='to-gif']") as HTMLElement;
+        opener.focus();
+        opener.click();
+        await flushPromises();
+        return wrapper;
+    }
+
+    test("draws no surface of its own: one sheet over one scrim, its search under the sheet's Back and GIF title", async () => {
+        await turned(fakeGifs());
+
+        expect(document.querySelectorAll("[data-testid='sheet']")).toHaveLength(1);
+        expect(document.querySelectorAll("[data-testid='scrim']")).toHaveLength(1);
+        expect(document.querySelector("[data-testid='page-title']")?.textContent).toBe("GIF");
+        expect(picker().closest("[data-testid='sheet']")).not.toBeNull();
+        expect(picker().getAttribute("role")).toBeNull();
+        expect(search().getAttribute("placeholder")).toBe("Search KLIPY");
+        expect(document.activeElement).toBe(search());
+    });
+
+    test("on a touch screen leaves focus on the page itself, named GIF, so no keyboard rises over the GIFs", async () => {
+        await turned(fakeGifs(), true);
+
+        expect(document.activeElement?.getAttribute("aria-label")).toBe("GIF");
+        expect(document.activeElement?.contains(picker())).toBe(true);
+    });
+
+    test("a pick hands the GIF over and leaves closing to the sheet's owner", async () => {
+        const gifs = fakeGifs();
+        const w = await turned(gifs);
+        picker().querySelector<HTMLElement>("[data-testid='gif-topic']")?.click();
+        await answered(gifs, [result("a")]);
+
+        picker().querySelector<HTMLElement>("[data-slug='a']")?.click();
+        await flushPromises();
+
+        const page = w.findComponent(GifPicker);
+        expect(page.emitted("pick")).toEqual([[result("a")]]);
+        expect(page.emitted("close")).toBeUndefined();
+        expect(document.querySelectorAll("[data-testid='sheet']")).toHaveLength(1);
+    });
+
+    test("Back returns to the plus menu and ends the search", async () => {
+        jest.useFakeTimers();
+        const gifs = fakeGifs();
+        await turned(gifs);
+        search().value = "thanks";
+        search().dispatchEvent(new Event("input"));
+        await nextTick();
+
+        document.querySelector<HTMLElement>("[data-testid='page-back']")?.click();
+        await nextTick();
+        jest.advanceTimersByTime(1000);
+
+        expect(document.querySelector("[data-testid='gif-picker']")).toBeNull();
+        expect(gifs.asked).toHaveLength(0);
     });
 });

@@ -1,0 +1,159 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isFirst"
+         ref="pageElement"
+         class="chat-surface-page"
+         :class="{ 'is-covered': isCovered }"
+         :inert="isCovered || undefined"
+         :aria-hidden="isCovered ? 'true' : undefined"
+         data-testid="surface-page">
+        <slot />
+    </div>
+    <Transition v-else
+                name="chat-page"
+                enter-from-class="is-beyond"
+                leave-to-class="is-beyond"
+                leave-active-class="is-leaving"
+                @beforeLeave="onBeforeLeave">
+        <div v-if="isOpen"
+             ref="pageElement"
+             class="chat-surface-page"
+             :class="{ 'is-covered': isCovered }"
+             role="group"
+             :aria-label="title"
+             tabindex="-1"
+             :inert="isCovered || undefined"
+             :aria-hidden="isCovered ? 'true' : undefined"
+             data-testid="surface-page">
+            <slot />
+        </div>
+    </Transition>
+</template>
+
+<style scoped>
+/*
+    A page fills what its surface gives the pages, laid out as the surface's body is. It moves by
+    the whole sheet's slide distance and fades as it goes, so where less motion is asked for, the
+    distance is nothing and a turn is a fade. Visibility, moving with them, is visible at every
+    step but a hidden end, so a page set aside hides once it is there and shows at once as it returns.
+*/
+.chat-surface-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
+}
+
+/* A page holding focus as it is turned to draws no ring around itself, as a dialog holding focus draws none. */
+.chat-surface-page:focus {
+    outline: none;
+}
+
+/* Under a page turned to over it: a quarter of the way to the left, faded, and out of reach. */
+.chat-surface-page.is-covered {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateX(calc(var(--chat-rise-sheet) / -4));
+}
+
+/*
+    Set aside or going back, a page is out of the flow, so the page in front sets the surface's
+    height, and clipped to the box of the page in front, so its own length adds nothing to the
+    scroll of a body turned from far down. The page in front is never clipped: its rings show whole.
+*/
+.chat-surface-page.is-covered,
+.chat-surface-page.is-leaving {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+/* Where a page comes in from as it is turned to, and goes back to: the surface's right edge. */
+.chat-surface-page.is-beyond {
+    opacity: 0;
+    transform: translateX(var(--chat-rise-sheet));
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { SurfacePageEntry, useSurfacePages } from "./surfacePages.partial";
+    import { SheetHeight } from "../types.partial";
+
+    // One page of a sheet or a panel dialog. The surface draws its own body as its first page,
+    // set aside while a page is turned to over it;
+    // a page a choice leads to is drawn in the surface's pages slot and opened by its owner, who
+    // closes it again on back. The surface's head shows Back and the page's title meanwhile.
+
+    const props = defineProps({
+        /** Whether the page is turned to, over the pages under it. */
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        /** What the surface's head calls the page, and what a screen reader names it. */
+        title: {
+            type: String,
+            default: ""
+        },
+
+        /** How tall the page asks its surface to be while on top: its content, or the one picker height. */
+        height: {
+            type: String as PropType<SheetHeight>,
+            default: "content"
+        },
+
+        /** Whether this is the surface's own body, which is always drawn and never registered. */
+        isFirst: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        /** Back or Escape while the page is on top: its owner closes it. */
+        (e: "back"): void;
+    }>();
+
+    const pages = useSurfacePages();
+    const pageElement = ref<HTMLElement>();
+
+    const entry: SurfacePageEntry = {
+        title: () => props.title,
+        height: () => props.height,
+        element: () => pageElement.value,
+        back: () => emit("back")
+    };
+
+    /** Whether another page lies over this one. */
+    const isCovered = computed((): boolean => pages?.isCovered(props.isFirst ? null : entry) ?? false);
+
+    /**
+     * A page going back is out of front for its whole leave, out of reach and unheard, though it
+     * still lies over the page it uncovers: no tap, Tab or screen reader lands on it as it goes.
+     * Its last drawing is kept as it leaves, so the leave itself marks it.
+     */
+    function onBeforeLeave(element: Element): void {
+        element.setAttribute("inert", "");
+        element.setAttribute("aria-hidden", "true");
+    }
+
+    // A page goes on the stack the moment its owner opens it, while focus is still on the control
+    // that turned it, which focus goes back to as it closes.
+    if (!props.isFirst) {
+        watch(() => props.isOpen, isOpen => {
+            if (isOpen) {
+                pages?.turnTo(entry);
+            }
+            else {
+                pages?.turnFrom(entry);
+            }
+        }, { immediate: true, flush: "sync" });
+
+        onBeforeUnmount(() => {
+            pages?.turnFrom(entry);
+        });
+    }
+</script>

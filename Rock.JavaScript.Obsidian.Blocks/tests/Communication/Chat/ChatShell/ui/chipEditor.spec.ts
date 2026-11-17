@@ -35,6 +35,8 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
+import { providedSession } from "../sessionShapes";
+import { ruleOf, styleOf } from "./partStyle";
 
 const lee = "a0000007-0000-4000-8000-000000000000";
 const anna = "a0000002-0000-4000-8000-000000000000";
@@ -288,6 +290,29 @@ describe("the keys", () => {
 
         expect(w.emitted("send")).toBeUndefined();
         expect(await sent(w)).toBe("ab");
+    });
+});
+
+// A phone's keyboard fits the box: its Enter key reads Send, as Enter sends; a sentence starts
+// with a capital; and the text is the 16px title size, below which iOS zooms the page into a
+// field it focuses. The composer and edit in place share this box, so both get it.
+describe("the phone's keyboard", () => {
+    test("is told Enter sends and a sentence starts with a capital", () => {
+        const box = editor(draw("", null));
+
+        expect(box.getAttribute("enterkeyhint")).toBe("send");
+        expect(box.getAttribute("autocapitalize")).toBe("sentences");
+    });
+
+    test("draws the text at the 16px title size on a phone, the 14.5px message size elsewhere", () => {
+        wrapper = mount(ChipEditor, { props: { text: "", pieces: null }, global: { provide: { ...providedSession({ isPhone: true }) } }, attachTo: document.body });
+        expect(editor(wrapper).classList.contains("is-phone")).toBe(true);
+        wrapper.unmount();
+
+        expect(editor(draw("", null)).classList.contains("is-phone")).toBe(false);
+        const style = styleOf("chipEditor.partial.obs");
+        expect(ruleOf(style, ".chat-ed")).toMatch(/font-size:\s*var\(--chat-fs-body\)/);
+        expect(ruleOf(style, ".chat-ed.is-phone")).toMatch(/font-size:\s*var\(--chat-fs-title\)/);
     });
 });
 
