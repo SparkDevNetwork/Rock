@@ -664,6 +664,18 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             workflowType.Name = tbName.Text;
             workflowType.Description = tbDescription.Text;
             workflowType.CategoryId = cpCategory.SelectedValueAsInt();
+
+            // The category decides which security rules the workflow type inherits,
+            // so only accept a category that belongs to the WorkflowType entity type.
+            if ( workflowType.CategoryId.HasValue )
+            {
+                var selectedCategory = CategoryCache.Get( workflowType.CategoryId.Value );
+                if ( selectedCategory == null || selectedCategory.EntityTypeId != EntityTypeCache.GetId<WorkflowType>() )
+                {
+                    validationErrors.Add( "Category must be a workflow type category." );
+                }
+            }
+
             workflowType.WorkTerm = tbWorkTerm.Text;
             workflowType.ModifiedByPersonAliasId = CurrentPersonAliasId;
             workflowType.ModifiedDateTime = RockDateTime.Now;
