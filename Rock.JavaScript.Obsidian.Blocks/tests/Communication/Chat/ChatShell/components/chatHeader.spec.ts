@@ -28,7 +28,7 @@ import { ChannelFacts, ChannelPerson, ChatError } from "../../../../../src/Commu
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { join } from "path";
 import { busy } from "../statusShapes";
-import { anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
+import { anna, badgesIn, ben, carl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps } from "../statusStore";
 import { providedSession } from "../sessionShapes";
 
 const lostConnection: ChatError = { code: "rt.disconnected", severity: "degraded", text: null };
@@ -461,7 +461,7 @@ describe("the Mentions button", () => {
         await more.trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", "Members", "Star", "Channel details"]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Star", "Channel details"]);
     });
 
     test("leaves the phone's menu button plain while a mention is new", () => {
@@ -521,7 +521,7 @@ describe("the details", () => {
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", label]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", label]);
 
         items[items.length - 1].click();
         await settle();
@@ -725,7 +725,7 @@ describe("the way into the members panel", () => {
         await w.get("[data-testid='header-more'] button").trigger("click");
         await settle();
         const items = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']"));
-        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads", "Members", "Channel details"]);
+        expect(items.map(i => i.querySelector(".chat-menu-label")?.textContent?.trim())).toEqual(["Threads in worship-team", "Members", "Channel details"]);
 
         items[1].click();
         await settle();
@@ -1006,6 +1006,20 @@ describe("the header is this conversation", () => {
         await settle();
         expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Chat is down for maintenance.");
         expect(w.get("[data-testid='service-banner']").attributes("role")).toBeUndefined();
+    });
+
+    // The title button's box is its words: a padding pulled back by a negative margin sized the
+    // column by the margin box while max-width clamped the border box, cutting the title short with
+    // room to spare. The hover and press wash reaches past the words on a layer of its own.
+    test("draws the title button as wide as its words, its wash on a layer past them", () => {
+        const file = join(shellFolder, "components/chatHeader.partial.obs");
+        const row = styleRules(file, /^\.chat-header-name-row$/).join(";");
+
+        expect(row).not.toMatch(/(^|;|\s)padding:/);
+        expect(row).not.toMatch(/(^|;|\s)margin:/);
+        expect(styleRules(file, /^\.chat-header-name-row::before$/).join(";")).toMatch(/inset:\s*-2px -6px/);
+        expect(styleRules(file, /^button\.chat-header-name-row:hover::before$/).join(";")).toMatch(/background:\s*var\(--chat-hover\)/);
+        expect(styleRules(file, /^button\.chat-header-name-row:active::before$/).join(";")).toMatch(/background:\s*var\(--chat-press\)/);
     });
 });
 
