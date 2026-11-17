@@ -69,7 +69,6 @@
                           @openChange="onMenuOpenChange" />
                 </div>
                 <EmojiPicker v-else
-                             isHosted
                              mode="react"
                              :startsOn="layer === 'tray' ? 'tray' : 'full'"
                              :offered="held?.offered ?? []"
@@ -85,7 +84,6 @@
 
     <Popover v-if="pop.isSheet.value" :popover="pop" label="Add reaction" sheetHeight="picker">
         <EmojiPicker v-if="held"
-                     isHosted
                      mode="react"
                      startsOn="full"
                      :source="bars?.emojiSource.value ?? emptySource"
@@ -538,9 +536,15 @@ img.chat-tool-glyph {
         }
     }
 
-    /** A choice in the tray or the picker reacts and gives the bar back, focus on Add reaction. */
-    function onChoose(code: string): void {
+    /**
+     * A choice in the tray or the picker reacts and gives the bar back, focus on what opened the
+     * box. The reaction redraws its message's chips in the patch it causes, which can take the
+     * chip that opened the box away, so the box closes once that patch is drawn and gives focus to
+     * what is there then.
+     */
+    async function onChoose(code: string): Promise<void> {
         bars?.onPickerReact(code);
+        await nextTick();
         pop.close({ isFocusReturned: true });
     }
 

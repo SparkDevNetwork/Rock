@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <component :is="isHosted ? 'div' : Popover" v-bind="frameProps" @keydown="onKeydown">
-        <div ref="rootElement" class="chat-picker" :class="{ 'is-tray': step === 'tray', 'is-sheet': isSheet }" :tabindex="isHosted ? -1 : undefined">
+    <component :is="pop ? Popover : 'div'" v-bind="frameProps" @keydown="onKeydown">
+        <div ref="rootElement" class="chat-picker" :class="{ 'is-tray': step === 'tray', 'is-sheet': isSheet }" :tabindex="pop ? undefined : -1">
             <!--
                 One surface for both steps, so the tray grows into the full picker in place. Hosted
                 in the message box, the box is that surface; a sheet on a phone is the dialog itself,
@@ -499,6 +499,11 @@ img.chat-picker-prev {
     // #endregion Types
 
     const props = defineProps({
+        /**
+         * Reacting, the picker is drawn inside the message box, which is its surface, places it and
+         * closes it: no popover of its own, the step it draws is the box's, and All emoji asks the
+         * box to grow. Inserting, from the composer, it is its own popover beside its anchor.
+         */
         mode: {
             type: String as PropType<"react" | "insert">,
             default: "react"
@@ -527,32 +532,13 @@ img.chat-picker-prev {
             default: () => []
         },
 
-        /** What the picker is placed beside, and what opened it unless an opener is given. */
+        /** Inserting, what the picker is placed beside and gives focus back to. */
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
         },
 
-        /**
-         * What opened the picker when it is not what the picker is placed beside, as a message's
-         * add chip that a choice can take away: given focus back on a close by key or choice, or
-         * the message's row once it has gone.
-         */
-        opener: {
-            type: Object as PropType<HTMLElement | null>,
-            default: null
-        },
-
-        /**
-         * Drawn inside the message box, which is its surface: no popover of its own, the step it
-         * draws is the box's, and All emoji asks the box to grow.
-         */
-        isHosted: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Hosted on a phone's sheet, opened by a keyboard: focus starts on the first emoji, ringed. */
+        /** Reacting on a phone's sheet, opened by a keyboard: focus starts on the first emoji, ringed. */
         isKeyboardOpened: {
             type: Boolean,
             default: false
@@ -598,27 +584,20 @@ img.chat-picker-prev {
     /** Names this picker's grid, so its search and tabs can say which grid they control. */
     const gridId = `chat-picker-grid-${getCurrentInstance()?.uid ?? 0}`;
 
-    /** Above what opened it, at the side of the message it belongs to: a bubble of the reader's own sits on the right, so its picker ends there. */
-    const placement = props.anchor?.closest(".chat-msg.is-conversational.is-own") ? "top-end" : "top-start";
-
     /**
-     * The popover the picker is drawn in. Placed on its anchor, it closes on a press outside the
-     * control that opened it, which may be another, as a message's add chip opening it on the
-     * bubble: the opener is its anchor, the bubble only where it is placed. Focus goes back to the
-     * opener, or to the message's row once a choice has taken the opener away. On a phone it is a
-     * bottom sheet instead, as every picker there is.
+     * Inserting, the popover the picker is drawn in: above the composer's emoji button, from its
+     * start; closed by a press outside it, focus going back to the button. On a phone it is a
+     * bottom sheet instead, as every picker there is. Reacting, the message box is its surface.
      */
     const session = useChatSession();
-    const pop = props.isHosted ? null : usePopover(computed(() => (props.opener ?? props.anchor) ?? undefined), ref<HTMLElement>(), {
-        placement,
-        isSheet: () => session.isPhone.value,
-        virtualAnchor: () => props.opener && props.anchor ? props.anchor.getBoundingClientRect() : null,
-        returnTo: () => props.opener?.isConnected === false ? props.anchor?.closest<HTMLElement>(".chat-msg") ?? null : props.opener ?? props.anchor
+    const pop = props.mode === "react" ? null : usePopover(computed(() => props.anchor ?? undefined), ref<HTMLElement>(), {
+        placement: "top-start",
+        isSheet: () => session.isPhone.value
     });
 
-    /** The surface it is drawn on: its own popover's, or what the host draws it in. */
+    /** The surface it is drawn on: its own popover's, or the message box's. */
     const frameProps = computed((): Record<string, unknown> => pop
-        ? { popover: pop, label: props.mode === "react" ? "Add reaction" : "Add emoji", role: pop.isSheet.value ? "" : "dialog", sheetHeight: step.value === "tray" ? "content" : "picker", tabindex: -1 }
+        ? { popover: pop, label: "Add emoji", role: pop.isSheet.value ? "" : "dialog", sheetHeight: "picker", tabindex: -1 }
         : { class: "chat-picker-host" });
 
     const isSheet = computed((): boolean => pop?.isSheet.value ?? session.isPhone.value);
@@ -967,17 +946,9 @@ img.chat-picker-prev {
         showSection(id);
     }
 
-    /** All emoji: the full picker in the tray's place, the search focused as on any open. */
-    async function showAll(): Promise<void> {
-        // Hosted, the box grows, and draws the picker in the tray's place.
-        if (props.isHosted) {
-            emit("showAll");
-            return;
-        }
-
-        step.value = "full";
-        await nextTick();
-        focusOnOpen();
+    /** All emoji: the box grows, and draws the full picker in the tray's place. */
+    function showAll(): void {
+        emit("showAll");
     }
 
     function onTabEnter(event: MouseEvent, label: string): void {
@@ -1079,8 +1050,8 @@ img.chat-picker-prev {
         preview.value = cell.item;
     }
 
-    async function choose(item: PickerEmoji): Promise<void> {
-        // Hosted, the box gives the bar back on the choice.
+    function choose(item: PickerEmoji): void {
+        // Reacting, the box gives the bar back on the choice.
         if (!pop) {
             emit("react", item.code);
             return;
@@ -1090,22 +1061,10 @@ img.chat-picker-prev {
             return;
         }
 
-        if (props.mode === "react") {
-            emit("react", item.code);
-        }
-        else {
-            // An image emoji has no character to put in the text, so it goes in as the code the
-            // message draws it from.
-            emit("insert", item.emoji ?? `:${item.code}:`, item.code);
-        }
-
+        // An image emoji has no character to put in the text, so it goes in as the code the
+        // message draws it from.
+        emit("insert", item.emoji ?? `:${item.code}:`, item.code);
         pop.close({ isFocusReturned: true });
-
-        // A choice can take the opener away as the page redraws, and the focus it held with it.
-        await nextTick();
-        if (props.opener?.isConnected === false) {
-            props.anchor?.closest<HTMLElement>(".chat-msg")?.focus({ preventScroll: true });
-        }
     }
 
     /**
@@ -1131,7 +1090,7 @@ img.chat-picker-prev {
     // #region Lifecycle Hooks
 
     onMounted(async () => {
-        // Hosted, the box is already drawn and placed; the picker only takes focus.
+        // Reacting, the box is already drawn and placed; the picker only takes focus.
         if (!pop) {
             focusOnOpen();
             return;
@@ -1177,9 +1136,9 @@ img.chat-picker-prev {
         }
     });
 
-    // Hosted, the box grows the tray into the picker in place, focus moving with it.
+    // Reacting, the box grows the tray into the picker in place, focus moving with it.
     watch(() => props.startsOn, async next => {
-        if (props.isHosted && props.mode === "react" && step.value !== next) {
+        if (!pop && step.value !== next) {
             step.value = next;
             await nextTick();
             focusOnOpen();

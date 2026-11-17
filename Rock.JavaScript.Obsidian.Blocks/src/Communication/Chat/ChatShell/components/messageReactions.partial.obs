@@ -149,6 +149,14 @@
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-full);
+}
+
+/*
+    The chip's own press and hover, set only while it is not moving: this sheet is added after the
+    block's, at the same weight as the block's one move, so a transition set here while the chip
+    glides would replace the move's and run the glide at the press's quick pace.
+*/
+.chat-rx:not(.chat-move) {
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
 }
 
