@@ -105,6 +105,12 @@ namespace RockWeb.Blocks.Event
 
         #endregion
 
+        #region Fields
+
+        private bool _isExporting = false;
+
+        #endregion
+
         #region Base Control Methods
 
         /// <summary>
@@ -226,9 +232,11 @@ namespace RockWeb.Blocks.Event
         /// Handles the GridRebind event of the gLinkages control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void gLinkages_GridRebind( object sender, EventArgs e )
+        /// <param name="e">The <see cref="GridRebindEventArgs"/> instance containing the event data.</param>
+        protected void gLinkages_GridRebind( object sender, GridRebindEventArgs e )
         {
+            _isExporting = e.IsExporting;
+
             var registrationInstance = this.RegistrationInstance;
 
             if ( registrationInstance == null )
@@ -253,6 +261,26 @@ namespace RockWeb.Blocks.Event
             {
                 var eventItemOccurrenceGroupMap = e.Row.DataItem as EventItemOccurrenceGroupMap;
 
+                // HyperLinkField renders its text as raw HTML, so encode the bound group name.
+                var groupLink = e.Row.Cells[2].Controls.OfType<HyperLink>().FirstOrDefault();
+
+                if ( groupLink != null )
+                {
+                    groupLink.Text = groupLink.Text.EncodeHtml();
+                }
+
+                /*
+                    11/17/26 - JMH
+
+                    The Excel export strips tags from these cells but does not decode entities,
+                    so encoded names would export as &amp; and &#39;. During an export the grid
+                    writes the file and ends the response, so the cell text never reaches a page
+                    and the names can stay unencoded.
+
+                    Reason: Keep exported names readable while the page shows them encoded.
+                */
+                Func<string, string> formatText = value => _isExporting ? value : value.EncodeHtml();
+
                 if ( eventItemOccurrenceGroupMap != null && eventItemOccurrenceGroupMap.EventItemOccurrence != null )
                 {
                     if ( eventItemOccurrenceGroupMap.EventItemOccurrence.EventItem != null )
@@ -275,11 +303,11 @@ namespace RockWeb.Blocks.Event
 
                                     if ( string.IsNullOrWhiteSpace( calendarEventUrl ) )
                                     {
-                                        calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                                        calendarItems.Add( string.Format( "{0} ({1})", formatText( calendarItem.EventItem.Name ), formatText( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) ) );
                                     }
                                     else
                                     {
-                                        calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                                        calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, formatText( calendarItem.EventItem.Name ), formatText( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) ) );
                                     }
                                 }
                             }
@@ -306,11 +334,11 @@ namespace RockWeb.Blocks.Event
 
                                     if ( string.IsNullOrWhiteSpace( contentItemUrl ) )
                                     {
-                                        contentItems.Add( contentItem.Title );
+                                        contentItems.Add( formatText( contentItem.Title ) );
                                     }
                                     else
                                     {
-                                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, contentItem.Title ) );
+                                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, formatText( contentItem.Title ) ) );
                                     }
                                 }
 

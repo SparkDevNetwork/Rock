@@ -264,11 +264,11 @@ namespace Rock.Blocks.Event
 
                     if ( string.IsNullOrWhiteSpace( contentItemUrl ) )
                     {
-                        contentItems.Add( contentItem.Title );
+                        contentItems.Add( contentItem.Title.EncodeHtml() );
                     }
                     else
                     {
-                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, contentItem.Title ) );
+                        contentItems.Add( string.Format( "<a href='{0}'>{1}</a>", contentItemUrl, contentItem.Title.EncodeHtml() ) );
                     }
                 }
             }
@@ -301,11 +301,11 @@ namespace Rock.Blocks.Event
 
                         if ( string.IsNullOrWhiteSpace( calendarEventUrl ) )
                         {
-                            calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                            calendarItems.Add( string.Format( "{0} ({1})", calendarItem.EventItem.Name.EncodeHtml(), ( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ).EncodeHtml() ) );
                         }
                         else
                         {
-                            calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name, eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ) );
+                            calendarItems.Add( string.Format( "<a href='{0}'>{1}</a> ({2})", calendarEventUrl, calendarItem.EventItem.Name.EncodeHtml(), ( eventItemOccurrenceGroupMap.EventItemOccurrence.Campus?.Name ?? "All Campuses" ).EncodeHtml() ) );
                         }
                     }
                 }
