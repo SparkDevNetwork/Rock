@@ -7,7 +7,7 @@
             <div v-if="isOpen"
                  ref="sheetElement"
                  class="chat-sheet-panel"
-                 :class="{ 'is-picker': height === 'picker' }"
+                 :class="{ 'is-picker': shownHeight === 'picker' }"
                  role="dialog"
                  aria-modal="true"
                  :aria-label="pages.isTurned.value ? pages.title.value : label"
@@ -121,7 +121,7 @@
 </style>
 
 <script setup lang="ts">
-    import { onMounted, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref } from "vue";
     import IconButton from "./iconButton.partial.obs";
     import Scrim from "./scrim.partial.obs";
     import SurfacePage from "./surfacePage.partial.obs";
@@ -136,7 +136,8 @@
     // close, a screen reader hears only it, and announcements made while it is open are spoken
     // from inside it. It has two heights: as tall as its content, or the taller picker height.
     // A choice that leads to another turns it in place into that page (the pages slot), never a
-    // second sheet over it.
+    // second sheet over it; the page asks for one of the two heights, and the sheet grows or shrinks
+    // to it as the pages slide.
 
     const props = defineProps({
         isOpen: {
@@ -170,8 +171,15 @@
 
     const backButton = ref<InstanceType<typeof IconButton>>();
 
-    /** The pages a choice in the sheet turns it into, one at a time, in this one sheet. */
-    const pages = provideSurfacePages(() => props.isOpen, () => backButton.value?.buttonElement);
+    /** The pages a choice in the sheet turns it into, one at a time, in this one sheet, which grows and shrinks to each. */
+    const pages = provideSurfacePages({
+        isOpen: () => props.isOpen,
+        surface: () => sheetElement.value,
+        backElement: () => backButton.value?.buttonElement
+    });
+
+    /** The sheet's height now: the turned-to page's own while one is, else the sheet's. */
+    const shownHeight = computed((): SheetHeight => pages.height.value ?? props.height);
 
     // Ended the moment it closes, not after it slides away, so focus is never left on a vanishing control.
     const trapped = (): HTMLElement | undefined => props.isOpen ? sheetElement.value : undefined;

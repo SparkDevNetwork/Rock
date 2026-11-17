@@ -43,16 +43,23 @@
     transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
 }
 
-/*
-    Under a page turned to over it: a quarter of the way to the left, faded, and out of reach.
-    Out of the flow, so the page on top sets the surface's height.
-*/
+/* Under a page turned to over it: a quarter of the way to the left, faded, and out of reach. */
 .chat-surface-page.is-covered {
-    position: absolute;
-    inset: 0 0 auto;
     visibility: hidden;
     opacity: 0;
     transform: translateX(calc(var(--chat-rise-sheet) / -4));
+}
+
+/*
+    Set aside or going back, a page is out of the flow, so the page in front sets the surface's
+    height, and clipped to the box of the page in front, so its own length adds nothing to the
+    scroll of a body turned from far down. The page in front is never clipped: its rings show whole.
+*/
+.chat-surface-page.is-covered,
+.chat-surface-page.is-leaving {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
 }
 
 /* Where a page comes in from as it is turned to, and goes back to: the surface's right edge. */
@@ -60,17 +67,12 @@
     opacity: 0;
     transform: translateX(var(--chat-rise-sheet));
 }
-
-/* Going back, out of the flow, so the page it uncovers sets the height at once. */
-.chat-surface-page.is-leaving {
-    position: absolute;
-    inset: 0 0 auto;
-}
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { SurfacePageEntry, useSurfacePages } from "./surfacePages.partial";
+    import { SheetHeight } from "../types.partial";
 
     // One page of a sheet or a panel dialog. The surface draws its own body as its first page,
     // set aside while a page is turned to over it;
@@ -90,6 +92,12 @@
             default: ""
         },
 
+        /** How tall the page asks its surface to be while on top: its content, or the one picker height. */
+        height: {
+            type: String as PropType<SheetHeight>,
+            default: "content"
+        },
+
         /** Whether this is the surface's own body, which is always drawn and never registered. */
         isFirst: {
             type: Boolean,
@@ -107,6 +115,7 @@
 
     const entry: SurfacePageEntry = {
         title: () => props.title,
+        height: () => props.height,
         element: () => pageElement.value,
         back: () => emit("back")
     };
