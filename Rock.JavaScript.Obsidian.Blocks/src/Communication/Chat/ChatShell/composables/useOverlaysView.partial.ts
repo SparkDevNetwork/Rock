@@ -576,7 +576,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
     });
 
     return {
-        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, openCard, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
+        isDetailsOpen, isSettingsOpen, cardAnchor, cardOpenCount, onCardMessage, onLeave, onRename, closeDetails, onRoomChoice,
         onCardToggleDetails, onCardBlock, onCardUnblock, onSettingsUnblock, onCardSettings, closeSettings, onMemberMessage, onMemberPerson, onDetailsMembers,
         conversationQuoteKey, threadQuoteKey, conversationQuote, threadQuote, confirmingDelete, deleteBody, isOwnQuote,
         editingIdIn, editErrorIn, isEditSavingIn, onEditLast, onEditLastReply, onCancelQuote, onMessageAction, onCancelDelete, onConfirmDelete,
