@@ -151,7 +151,8 @@ describe("a photo's blurred preview", () => {
     });
 
     // The first screen's reveal waits, within its grace, for what the history page carries: the
-    // previews. It never waits for a photo, whose link is signed after the page (D-832, option A).
+    // previews. It never waits for a photo, whose link is signed after the page, so a slow signing
+    // delays the photo's sharpening, never the screen.
     test("on the first load, the page's reveal waits for the preview's decode and never for the photo's", async () => {
         const decodes = holdDecodes();
         try {
