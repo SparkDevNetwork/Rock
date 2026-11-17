@@ -120,19 +120,25 @@ export function createGifs(dependencies: GifDependencies): Gifs {
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const data = (result.data ?? {}) as { words?: unknown };
-        const words = Array.isArray(data.words) ? data.words as Array<Record<string, unknown>> : [];
-        return {
-            ok: true,
-            words: words.filter(entry => typeof entry?.word === "string").map(entry => {
-                const hasCover = typeof entry.still === "string" && typeof entry.w === "number" && typeof entry.h === "number";
-                return {
-                    word: entry.word as string,
-                    still: hasCover ? entry.still as string : null,
-                    width: hasCover ? entry.w as number : 0,
-                    height: hasCover ? entry.h as number : 0
-                };
-            })
-        };
+        const entries = Array.isArray(data.words) ? data.words as Array<Record<string, unknown>> : [];
+        const words = entries.filter(entry => typeof entry?.word === "string").map((entry): GifCover => {
+            const hasCover = typeof entry.still === "string" && typeof entry.w === "number" && typeof entry.h === "number";
+            return {
+                word: entry.word as string,
+                still: hasCover ? entry.still as string : null,
+                width: hasCover ? entry.w as number : 0,
+                height: hasCover ? entry.h as number : 0
+            };
+        });
+
+        // No word to draw is no first view, so it is a failure the picker offers Try again for,
+        // and not kept, so Try again asks again.
+        if (words.length === 0) {
+            coversAsked = null;
+            return { ok: false };
+        }
+
+        return { ok: true, words };
     }
 
     return {
