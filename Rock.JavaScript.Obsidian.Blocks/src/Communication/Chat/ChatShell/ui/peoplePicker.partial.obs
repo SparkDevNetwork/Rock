@@ -66,7 +66,7 @@
                     <EmptyState v-if="searchError"
                                 tone="error"
                                 :title="searchError"
-                                :actionLabel="retry ? 'Try again' : ''"
+                                :actionLabel="!!retry ? 'Try again' : ''"
                                 :actionAttrs="{ 'data-testid': `${prefix}-search-retry` }"
                                 :data-testid="`${prefix}-search-error`"
                                 @action="retry?.()" />
@@ -509,7 +509,7 @@
 
         /** Asks the failed search again, which offers Try again beside the failure; none without it. */
         retry: {
-            type: Function as PropType<(() => void) | null>,
+            type: Function as PropType<() => void>,
             default: null
         },
 
