@@ -171,6 +171,14 @@ describe("every message row", () => {
         expect(row.getAttribute("role")).toBe("article");
         expect(plain(row.getAttribute("aria-label") ?? "")).toBe("Anna Reyes, 9:02 AM");
     });
+
+    // The row names its own message, in a feed or a thread alike, so the message box and a sheet
+    // closing find the row of the message they are on wherever it is drawn; a send on its way has
+    // no message yet and names none.
+    test.each([false, true])("carries its own message's id, in a thread too (in thread: %s)", isInThread => {
+        const drawn = message();
+        expect(root(draw({ message: drawn, isInThread })).getAttribute("data-message-id")).toBe(String(drawn.id));
+    });
 });
 
 // A message arriving is the tail's motion, played by the feed or the thread it is drawn in: the
