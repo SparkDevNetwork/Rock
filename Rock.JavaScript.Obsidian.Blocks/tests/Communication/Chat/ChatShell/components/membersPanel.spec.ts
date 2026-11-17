@@ -356,6 +356,19 @@ describe("the search", () => {
         expect(text(draw({ query: "an", searchStatus: "answered", members: [anna] }), "members-hint")).toBe("1 person in young-adults");
     });
 
+    // The chat's one voice says where the search is, so the line under the filter is for the eye
+    // and no region of the panel's own talks over the rest of the chat.
+    test("says the search and its answer through the chat's one voice, the line under the filter no live region", async () => {
+        const w = draw({ query: "a", searchStatus: "searching", members: [tom] });
+        await nextTick();
+        expect(w.get("[data-testid='members-hint']").attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Searching everyone in young-adults");
+
+        await w.setProps({ searchStatus: "answered", members: [tom, grace, anna] });
+        await nextTick();
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("3 people in young-adults");
+    });
+
     test("no one matching says so", () => {
         const w = draw({ query: "zz", searchStatus: "answered", members: [] });
 
@@ -580,13 +593,25 @@ describe("removing a row", () => {
         expect(row.find("[data-testid='member-message']").exists()).toBe(false);
     });
 
+    test("says the removal through the chat's one voice, the row's Removing no live region", async () => {
+        const w = draw({ canManageMembers: true });
+        await w.setProps({ removals: { [anna.person_alias_guid]: { kind: "removing" } } });
+        await nextTick();
+
+        expect(w.get("[data-testid='member-removing']").attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Removing Anna Reyes");
+    });
+
     test("a refusal shows under the row in the door's words, and its X dismisses it", async () => {
         const text = "You're offline. Try again when you're back.";
         const w = draw({ canManageMembers: true, removals: { [anna.person_alias_guid]: { kind: "refused", text, isStale: false } } });
 
         const refusal = w.findAll("[data-testid='member-row']")[2].get("[data-testid='member-refusal']");
         expect(read(refusal.element)).toBe(text);
-        expect(refusal.attributes("role")).toBe("alert");
+        // said at once through the chat's one voice, the row's sentence no live region of its own
+        await nextTick();
+        expect(refusal.attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(text);
 
         await refusal.get("[data-testid='member-refusal-dismiss']").trigger("click");
         expect(w.emitted("dismissRemoval")).toEqual([[anna.person_alias_guid]]);

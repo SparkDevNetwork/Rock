@@ -418,13 +418,16 @@ describe("following from a row", () => {
         expect(followed.classes()).not.toContain("is-off");
     });
 
-    test("a refused change shows its sentence and Try again on its row only, said at once", () => {
-        const w = draw({ rows: [row(40), row(30)], followError: { rootId: 40, isFollowing: false, failure: { alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true } } });
+    test("a refused change shows its sentence and Try again on its row only, said at once through the chat's one voice", async () => {
+        const w = draw({ rows: [row(40), row(30)] });
+        await w.setProps({ followError: { rootId: 40, isFollowing: false, failure: { alone: "Something went wrong in chat. Try again in a moment.", besideRetry: "Something went wrong in chat.", canRetry: true } } });
+        await nextTick();
 
         const [failed, other] = rowsOf(w);
         const error = failed.get("[data-testid='thread-row-error']");
         expect(plain(error.text())).toBe("Something went wrong in chat. Try again");
-        expect(error.attributes("role")).toBe("alert");
+        expect(error.attributes("role")).toBeUndefined();
+        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe("Something went wrong in chat. Try again in a moment.");
         expect(other.find("[data-testid='thread-row-error']").exists()).toBe(false);
     });
 
