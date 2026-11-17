@@ -720,6 +720,17 @@ describe("Community, in a channel", () => {
         expect(block(".chat-msg.is-community.is-mention-me.is-head")).toBe("");
     });
 
+    // The space between two people is a margin over the new person's head row, outside its box, so
+    // no hover, wash or flash covers it; a same-person run takes none.
+    test("a new person's head row stands the space between people above it, outside the row", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /(?:^|\n)\.chat-msg\.is-community\.is-head\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/margin-top:\s*var\(--chat-cm-person-gap\)/);
+        expect(rule).not.toMatch(/padding/);
+    });
+
     test("a channel's chips and thread pill stand 6px under the text", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
