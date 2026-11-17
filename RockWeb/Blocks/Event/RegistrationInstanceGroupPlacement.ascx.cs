@@ -544,7 +544,7 @@ namespace RockWeb.Blocks.Event
 
             var groupType = GroupTypeCache.Get( registrationTemplatePlacementGroupTypeId.Value );
 
-            _placementIconCssClass = registrationTemplatePlacement.GetIconCssClass();
+            _placementIconCssClass = registrationTemplatePlacement.GetIconCssClass().EncodeHtml();
 
             lGroupPlacementGroupTypeIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
             lAddPlacementGroupButtonIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
@@ -680,8 +680,8 @@ namespace RockWeb.Blocks.Event
                 lTabHtmlFormat,
                 activeClass, // {0}
                 pageUrl, // {1}
-                registrationTemplatePlacement.GetIconCssClass(),  // {2}
-                registrationTemplatePlacement.Name );  // {3}
+                registrationTemplatePlacement.GetIconCssClass().EncodeHtml(),  // {2}
+                registrationTemplatePlacement.Name.EncodeHtml() );  // {3}
         }
 
         private Dictionary<int, List<int>> _placementGroupIdRegistrationInstanceIds;
@@ -1136,7 +1136,7 @@ namespace RockWeb.Blocks.Event
             lGroupIconHtml.Text = string.Format( "<i class='{0}'></i>", _placementIconCssClass );
 
             var lGroupName = e.Item.FindControl( "lGroupName" ) as Literal;
-            lGroupName.Text = placementGroup.Name;
+            lGroupName.Text = placementGroup.Name.EncodeHtml();
 
             var hlGroupCampus = e.Item.FindControl( "hlGroupCampus" ) as HighlightLabel;
             if ( placementGroup.CampusId.HasValue )
