@@ -337,8 +337,8 @@ describe("a photo's blurred preview", () => {
     // A browser that cannot write webp hands back a PNG; the preview is then a JPEG.
     test("where webp cannot be written, the preview is a jpeg", async () => {
         const codec = fakeCodec();
-        const encode = codec.encode;
-        codec.encode = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve(new Blob(["png"], { type: "image/png" })) : encode(image, width, height, type, quality);
+        const encodeUrl = codec.encodeUrl;
+        codec.encodeUrl = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve("data:image/png;base64,cG5n") : encodeUrl(image, width, height, type, quality);
         const h = harness(codec);
         const photo = picked("p.jpg", "image/jpeg");
         codec.sizes.set(photo, { width: 800, height: 600 });
@@ -352,8 +352,7 @@ describe("a photo's blurred preview", () => {
     // A preview is a nicety: past the cap or failing to draw, the photo goes without one.
     test("a preview past the cap, or one that fails to draw, is left out and the photo still goes", async () => {
         const codec = fakeCodec();
-        const encode = codec.encode;
-        codec.encode = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve(new Blob(["x".repeat(2000)], { type: "image/webp" })) : encode(image, width, height, type, quality);
+        codec.encodeUrl = () => Promise.resolve(`data:image/webp;base64,${"A".repeat(2000)}`);
         const h = harness(codec);
         const photo = picked("p.jpg", "image/jpeg");
         codec.sizes.set(photo, { width: 800, height: 600 });
@@ -387,6 +386,8 @@ describe("a photo's blurred preview", () => {
         const tray = attachments.trayFor(channel, channel);
 
         tray.add([photo]);
+        await settle();
+        h.requests[0].respond(200);
         await settle();
 
         const [item] = attachments.take(channel) as FileItem[];
@@ -473,7 +474,7 @@ describe("photos", () => {
         tray.add([readable, unreadable]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type])).toEqual([[1536, 2048, "image/jpeg"]]);
+        expect(codec.encoded.map(e => [e.width, e.height, e.type])).toEqual([[1536, 2048, "image/jpeg"], [12, 16, "image/webp"]]);
         expect(h.begins.map(b => (b.p_files as Array<Record<string, unknown>>)[0].name)).toEqual(["IMG_1.jpg"]);
         expect(tray.files.map(f => [f.name, f.status, f.failure?.alone ?? null])).toEqual([
             ["IMG_1.jpg", "uploading", null],

@@ -76,6 +76,18 @@ const maxPhotoSide = 2048;
 const photoQuality = 0.82;
 
 /**
+ * A photo's blurred preview: drawn within 16 pixels on its longest side, about 600 bytes as a
+ * data URL (an estimate), and never more than the platform's cap of 1,024 characters, which
+ * refuses anything longer. Its quality hardly shows once blurred, so it is low.
+ */
+const previewSide = 16;
+const previewQuality = 0.6;
+const previewCap = 1024;
+
+/** The one form a stored preview may take: a webp or jpeg as base64, never a link or an SVG. */
+const previewForm = /^data:image\/(?:webp|jpeg);base64,[A-Za-z0-9+/]+={0,2}$/;
+
+/**
  * Begin's record of an upload lasts two hours; a retry after most of that begins again rather
  * than sending to a key the platform may no longer take.
  */
@@ -194,7 +206,42 @@ export type ImageCodec = {
 
     /** Draws a decoded photo at a size into a new file of a type. */
     encode: (image: DecodedImage, width: number, height: number, type: string, quality: number | undefined) => Promise<Blob>;
+
+    /**
+     * Draws a decoded photo at a size into a data URL of a type; a browser that cannot write the
+     * type writes a PNG, as a canvas does.
+     */
+    encodeUrl: (image: DecodedImage, width: number, height: number, type: string, quality: number | undefined) => Promise<string>;
 };
+
+/** A canvas holding a decoded photo drawn at a size, ready to write as a type. */
+function canvasOf(image: DecodedImage, width: number, height: number, type: string): HTMLCanvasElement {
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext("2d");
+    if (!context) {
+        throw new Error("no canvas");
+    }
+
+    // A JPEG has no transparency, so a transparent WebP is laid on white first, else it turns
+    // black. The white is one pixel of full channels stretched over the canvas: a matte for the
+    // photo's bytes, not a colour of the chat's, which only the token sheet names.
+    if (type === "image/jpeg") {
+        const matte = document.createElement("canvas");
+        matte.width = 1;
+        matte.height = 1;
+        const pixel = matte.getContext("2d");
+        const full = pixel?.createImageData(1, 1);
+        if (pixel && full) {
+            full.data.fill(255);
+            pixel.putImageData(full, 0, 0);
+            context.drawImage(matte, 0, 0, width, height);
+        }
+    }
+    context.drawImage(image.source, 0, 0, width, height);
+    return canvas;
+}
 
 /** The browser's decoder and canvas. Drawing to a canvas carries none of the photo's metadata. */
 export const browserImageCodec: ImageCodec = {
@@ -204,33 +251,10 @@ export const browserImageCodec: ImageCodec = {
     },
 
     encode: (image, width, height, type, quality) => new Promise((resolve, reject) => {
-        const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
-        const context = canvas.getContext("2d");
-        if (!context) {
-            reject(new Error("no canvas"));
-            return;
-        }
+        canvasOf(image, width, height, type).toBlob(blob => blob ? resolve(blob) : reject(new Error("not encoded")), type, quality);
+    }),
 
-        // A JPEG has no transparency, so a transparent WebP is laid on white first, else it turns
-        // black. The white is one pixel of full channels stretched over the canvas: a matte for the
-        // photo's bytes, not a colour of the chat's, which only the token sheet names.
-        if (type === "image/jpeg") {
-            const matte = document.createElement("canvas");
-            matte.width = 1;
-            matte.height = 1;
-            const pixel = matte.getContext("2d");
-            const full = pixel?.createImageData(1, 1);
-            if (pixel && full) {
-                full.data.fill(255);
-                pixel.putImageData(full, 0, 0);
-                context.drawImage(matte, 0, 0, width, height);
-            }
-        }
-        context.drawImage(image.source, 0, 0, width, height);
-        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("not encoded")), type, quality);
-    })
+    encodeUrl: async (image, width, height, type, quality) => canvasOf(image, width, height, type).toDataURL(type, quality)
 };
 
 /** A file ready to begin: what it is declared as and the bytes that go. */
@@ -241,7 +265,41 @@ type PreparedFile = {
     kind: FileItem["kind"];
     width: number | null;
     height: number | null;
+
+    /** A photo's blurred preview; null for a GIF, a file, or a photo whose preview could not be made. */
+    preview: string | null;
 };
+
+/**
+ * Whether a value is a stored preview in the one form one may take, so nothing else a message
+ * carries is ever drawn as one.
+ */
+export function isStoredPreview(value: string | null | undefined): value is string {
+    return typeof value === "string" && value.length <= previewCap && previewForm.test(value);
+}
+
+/**
+ * Draws a photo's blurred preview from the photo already decoded: a webp, or a jpeg where this
+ * browser cannot write webp (its canvas writes a PNG instead). A preview that fails or is past the
+ * cap is left out, since the photo goes either way.
+ */
+async function previewOf(image: DecodedImage, codec: ImageCodec): Promise<string | null> {
+    const scale = previewSide / Math.max(image.width, image.height);
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    try {
+        let url = await codec.encodeUrl(image, width, height, "image/webp", previewQuality);
+        if (!url.startsWith("data:image/webp;")) {
+            url = await codec.encodeUrl(image, width, height, "image/jpeg", previewQuality);
+        }
+
+        return isStoredPreview(url) ? url : null;
+    }
+    catch {
+        return null;
+    }
+}
 
 /**
  * Readies a picked file: typed, a photo drawn again within the longest side, a GIF measured.
@@ -261,7 +319,7 @@ async function prepare(file: File, limits: AttachmentLimits, codec: ImageCodec):
     }
 
     if (!type.startsWith("image/")) {
-        return { blob: file, name: file.name, type, kind: "file", width: null, height: null };
+        return { blob: file, name: file.name, type, kind: "file", width: null, height: null, preview: null };
     }
 
     let image: DecodedImage;
@@ -273,8 +331,9 @@ async function prepare(file: File, limits: AttachmentLimits, codec: ImageCodec):
     }
 
     try {
+        // A GIF goes as it is, with no preview: its still is KLIPY's or its own first frame.
         if (!redrawn) {
-            return { blob: file, name: file.name, type, kind: "image", width: image.width, height: image.height };
+            return { blob: file, name: file.name, type, kind: "image", width: image.width, height: image.height, preview: null };
         }
 
         if (!limits.attachment_types.includes(redrawn.type)) {
@@ -287,8 +346,9 @@ async function prepare(file: File, limits: AttachmentLimits, codec: ImageCodec):
         const blob = await codec.encode(image, width, height, redrawn.type, redrawn.type === "image/jpeg" ? photoQuality : undefined);
         const dot = file.name.lastIndexOf(".");
         const name = `${dot > 0 ? file.name.slice(0, dot) : file.name}.${redrawn.extension}`;
+        const preview = await previewOf(image, codec);
 
-        return { blob, name, type: redrawn.type, kind: "image", width, height };
+        return { blob, name, type: redrawn.type, kind: "image", width, height, preview };
     }
     catch {
         return finalWords(photoUnreadable);
@@ -525,7 +585,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
     // Per tray file, what is not drawn: its bytes, its room, when begin recorded it, and its
     // upload while one is going, so taking the file out ends it.
-    const pending = new Map<string, { blob: Blob, channelId: string, begunAt: number, request: XMLHttpRequest | null }>();
+    const pending = new Map<string, { blob: Blob, preview: string | null, channelId: string, begunAt: number, request: XMLHttpRequest | null }>();
 
     // Every upload going, from a tray or sent again, so stopping ends them all.
     const uploading = new Set<XMLHttpRequest>();
@@ -542,7 +602,8 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
     async function begin(channelId: string, files: PreparedFile[]): Promise<{ ok: true, uploads: Array<{ uploadId: string, key: string }> } | { ok: false, failure: FailureWords }> {
         const result = await dependencies.call("chat_attachment_begin", {
             p_channel_id: channelId,
-            p_files: files.map(file => ({ name: file.name, type: file.type, size: file.blob.size, width: file.width, height: file.height }))
+            // A preview goes only where one was made, so a GIF's and a file's entries are as before.
+            p_files: files.map(file => ({ name: file.name, type: file.type, size: file.blob.size, width: file.width, height: file.height, ...(file.preview ? { preview: file.preview } : {}) }))
         });
         if (!result.ok) {
             return { ok: false, failure: failureWords(result.error) };
@@ -630,7 +691,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
 
         const isBegun = !!file.key && now() - held.begunAt < beginLifetimeMs;
         if (!isBegun) {
-            const begun = await begin(held.channelId, [{ blob: held.blob, name: file.name, type: file.type, kind: file.kind, width: file.width, height: file.height }]);
+            const begun = await begin(held.channelId, [{ blob: held.blob, name: file.name, type: file.type, kind: file.kind, width: file.width, height: file.height, preview: held.preview }]);
             if (isStopped || !tray.files.includes(file)) {
                 return;
             }
@@ -687,7 +748,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
         if (prepared.kind === "image") {
             file.previewUrl = objectUrls.create(prepared.blob);
         }
-        pending.set(file.localId, { blob: markRaw(prepared.blob), channelId, begunAt: 0, request: null });
+        pending.set(file.localId, { blob: markRaw(prepared.blob), preview: prepared.preview, channelId, begunAt: 0, request: null });
         await send(tray, file);
     }
 
@@ -1032,6 +1093,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
             }
 
             const items = tray.files.map((file): FileItem => {
+                const held = pending.get(file.localId);
                 const item: FileItem = {
                     id: file.uploadId as string,
                     key: file.key as string,
@@ -1040,9 +1102,10 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                     size: file.size,
                     type: file.type,
                     width: file.width,
-                    height: file.height
+                    height: file.height,
+                    // The sender's own message draws the preview its readers get, from the first frame.
+                    ...(held?.preview ? { preview: held.preview } : {})
                 };
-                const held = pending.get(file.localId);
                 if (held) {
                     kept.set(item.id, { blob: held.blob, item });
                 }
@@ -1066,7 +1129,7 @@ export function createAttachments(dependencies: AttachmentDependencies): Attachm
                 return null;
             }
 
-            const files = (copies as KeptFile[]).map(({ blob, item }) => ({ blob, name: item.name, type: item.type, kind: item.kind, width: item.width ?? null, height: item.height ?? null }));
+            const files = (copies as KeptFile[]).map(({ blob, item }) => ({ blob, name: item.name, type: item.type, kind: item.kind, width: item.width ?? null, height: item.height ?? null, preview: item.preview ?? null }));
             const begun = await begin(channelId, files);
             if (isStopped || !begun.ok) {
                 return null;

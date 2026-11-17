@@ -58,13 +58,23 @@
                         :style="images.length === 1 ? { aspectRatio: singleStyle.aspectRatio } : undefined"
                         @click="openViewer(index)">
                     <span v-if="linkOf(item)?.isUnavailable && !imageSource(item)" class="chat-attach-unavailable"><Icon name="eye-off" size="sm" />Unavailable</span>
-                    <img v-else-if="imageSource(item)"
-                         v-reveal="reveal"
-                         :src="imageSource(item) ?? undefined"
-                         :alt="item.name"
-                         :width="item.width ?? undefined"
-                         :height="item.height ?? undefined"
-                         decoding="async" />
+                    <!--
+                        The photo's stored preview, blurred, holds its shape and colours from the
+                        first frame, before any link is signed; the photo sharpens over it once
+                        decoded. A photo sent before previews has the tile's still fill alone.
+                    -->
+                    <span v-else-if="previewOf(item) || imageSource(item)" class="chat-attach-pic">
+                        <img v-if="previewOf(item)" class="chat-attach-blur" data-testid="attachment-preview" :src="previewOf(item)!" alt="" aria-hidden="true" />
+                        <img v-if="imageSource(item)"
+                             v-reveal="reveal"
+                             class="chat-attach-shot"
+                             data-testid="attachment-photo"
+                             :src="imageSource(item) ?? undefined"
+                             :alt="item.name"
+                             :width="item.width ?? undefined"
+                             :height="item.height ?? undefined"
+                             decoding="async" />
+                    </span>
                     <span v-if="index === shownImages.length - 1 && images.length > shownImages.length" class="chat-attach-more"><Badge tone="neutral" :label="`+${images.length - shownImages.length}`" data-testid="attachment-more" /></span>
                 </button>
             </div>
@@ -359,11 +369,40 @@
     outline-offset: -2px;
 }
 
-.chat-attach-tile img {
+/* The picture's own layer, the tile's whole box: the preview under, the photo over it. */
+.chat-attach-pic {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.chat-attach-pic > img {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+/*
+    The stored preview is 16 by 12 pixels, drawn blurred and a little larger than the tile, so its
+    blurred edge never shows. It fades out as the photo fades in over it, so the two are one
+    crossfade and nothing of it stays behind a photo with clear areas.
+*/
+.chat-attach-blur {
+    filter: blur(10px);
+    transform: scale(1.2);
+    transition: opacity var(--chat-d-img-in) var(--chat-ease-state);
+}
+
+.chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur {
+    opacity: 0;
+}
+
+/* Once its photo is drawn the tile is the photo alone, so a photo's clear areas show the row behind it. */
+.chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold)) {
+    background: transparent;
 }
 
 /* A GIF: a single photo's box, sized from its stored width and height before anything loads. */
@@ -545,7 +584,7 @@ a.chat-attach-file:focus-visible {
 
 <script setup lang="ts">
     import { computed, inject, nextTick, onBeforeUnmount, PropType, reactive, ref, watch } from "vue";
-    import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, TrayFile } from "../composables/useAttachments.partial";
+    import { AttachmentLink, attachmentViewsKey, AttachmentTray, formatFileSize, isStoredPreview, TrayFile } from "../composables/useAttachments.partial";
     import { useIsMotionReduced } from "../ui/viewport.partial";
     import { AttachmentItem, FileItem, GifItem, isGifItem } from "../types.partial";
     import Badge from "../ui/badge.partial.obs";
@@ -825,6 +864,11 @@ a.chat-attach-file:focus-visible {
 
     function linkOf(item: FileItem): AttachmentLink | null {
         return props.isPending ? null : views?.links.linkOf(item) ?? null;
+    }
+
+    /** The photo's stored blurred preview, when it carries one in the one form a preview may take. */
+    function previewOf(item: FileItem): string | null {
+        return isStoredPreview(item.preview) ? item.preview : null;
     }
 
     /** What a photo draws from: the person's own copy where this page sent it, else its link. */
