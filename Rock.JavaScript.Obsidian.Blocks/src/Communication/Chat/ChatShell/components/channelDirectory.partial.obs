@@ -2,218 +2,366 @@
 <template>
     <div ref="viewElement"
          class="chat-fd"
-         :class="{ 'is-phone': isPhone }"
+         :class="{ 'is-phone': isPhone, 'is-split': isSplit }"
          role="region"
          :aria-labelledby="titleId"
          data-testid="channel-directory"
          @keydown="onKeydown">
-        <header class="chat-fd-hdr">
-            <IconButton v-if="isPhone"
-                        class="chat-fd-back"
-                        icon="left"
-                        label="Back to conversations"
-                        data-testid="directory-back"
-                        @click="emit('back')" />
-            <span class="chat-fd-hdr-ic" aria-hidden="true"><Icon name="hash" /></span>
-            <div class="chat-fd-hdr-title">
-                <b :id="titleId" data-testid="directory-title">Browse channels</b>
-                <span class="chat-fd-hdr-sub" data-testid="directory-subtitle">Public channels at {{ church.name }}</span>
-            </div>
-            <IconButton v-if="!isPhone"
-                        icon="x"
-                        label="Close Browse channels"
-                        tooltip="Close"
-                        data-testid="directory-close"
-                        @click="emit('close')" />
-        </header>
-
-        <div class="chat-fd-tools">
-            <div class="chat-fd-search chat-field">
-                <Icon name="search" size="sm" />
-                <input ref="searchInput"
-                       class="chat-field-input"
-                       type="search"
-                       placeholder="Search channels by name"
-                       aria-label="Search channels"
-                       autocomplete="off"
-                       spellcheck="false"
-                       :aria-controls="resultsId"
-                       :value="directory.query"
-                       data-autofocus
-                       data-testid="directory-search"
-                       @input="onInput" />
-                <!-- Only words typed wait in the field; a filter asked again with none waits in the rows it keeps drawn. -->
-                <span v-if="directory.isSearching && directory.query.trim() !== ''" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
-                <IconButton v-if="directory.query"
+        <!-- The list and its head, out of reach while a preview lies over them in a narrow view. -->
+        <div class="chat-fd-under" data-testid="directory-list-pane" :inert="isCovered || undefined">
+            <header class="chat-fd-hdr">
+                <IconButton v-if="isPhone"
+                            class="chat-fd-back"
+                            icon="left"
+                            label="Back to conversations"
+                            data-testid="directory-back"
+                            @click="emit('back')" />
+                <span class="chat-fd-hdr-ic" aria-hidden="true"><Icon name="hash" /></span>
+                <div class="chat-fd-hdr-title">
+                    <b :id="titleId" data-testid="directory-title">Browse channels</b>
+                    <span class="chat-fd-hdr-sub" data-testid="directory-subtitle">Public channels at {{ church.name }}</span>
+                </div>
+                <IconButton v-if="!isPhone"
                             icon="x"
-                            size="sm"
-                            label="Clear search"
-                            data-testid="directory-search-clear"
-                            @click="onClearSearch" />
-            </div>
+                            label="Close Browse channels"
+                            tooltip="Close"
+                            data-testid="directory-close"
+                            @click="emit('close')" />
+            </header>
 
-            <div class="chat-fd-filters">
-                <div v-if="directory.isCampusLimited" class="chat-fd-note" data-testid="directory-campus-note">
-                    <Icon class="chat-fd-note-ic" name="info" size="sm" />
-                    <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
-                </div>
-                <div v-else-if="campuses.length > 0"
-                     ref="chipsElement"
-                     class="chat-fd-chips"
-                     :class="{ 'is-cut-start': isChipsCutStart, 'is-cut-end': isChipsCutEnd }"
-                     role="group"
-                     aria-label="Campus"
-                     data-testid="directory-chips"
-                     @scroll="measureChips">
-                    <Pill v-for="chip in chips"
-                          :key="chip.key"
-                          data-testid="directory-chip"
-                          :data-campus="chip.key"
-                          :selected="isChipPressed(chip.campus)"
-                          @click="emit('campus', chip.campus)">
-                        {{ chip.label }}
-                    </Pill>
-                </div>
-            </div>
-        </div>
-
-        <div ref="scrollElement"
-             class="chat-fd-scroll"
-             :class="{ 'is-scrolled': isScrolled }"
-             data-testid="directory-scroll"
-             @scroll="onScroll">
-            <div :id="resultsId" class="chat-fd-wrap" data-testid="directory-results" :aria-busy="directory.isLoading ? 'true' : 'false'">
-                <template v-if="directory.isLoading">
-                    <div class="chat-fd-count"><span data-testid="directory-count">Loading channels…</span></div>
-                    <ul class="chat-fd-list" aria-hidden="true">
-                        <li v-for="(width, index) in skeletonWidths" :key="index" class="chat-fd-sk" data-testid="directory-skeleton-row">
-                            <i class="chat-skeleton is-icon"></i>
-                            <span>
-                                <i class="chat-skeleton" :style="{ width: `${width * .45}%` }"></i>
-                                <i class="chat-skeleton" :style="{ width: `${width}%` }"></i>
-                                <i class="chat-skeleton is-meta" :style="{ width: `${width * .6}%` }"></i>
-                            </span>
-                        </li>
-                    </ul>
-                </template>
-
-                <EmptyState v-else-if="directory.error"
-                            tone="error"
-                            :title="loadFailure"
-                            actionLabel="Try again"
-                            :actionAttrs="{ 'data-testid': 'directory-retry' }"
-                            data-testid="directory-error"
-                            @action="emit('retry')" />
-
-                <EmptyState v-else-if="directory.emptyKind === 'none'"
-                            title="No channels to browse yet"
-                            :text="`When ${church.name || 'your church'} opens channels to everyone, they'll show up here.`"
-                            data-testid="directory-empty"
-                            data-kind="none" />
-
-                <template v-else>
-                    <div class="chat-fd-count">
-                        <span data-testid="directory-count">{{ countText }}</span>
-                        <Segmented class="chat-fd-show"
-                                   :options="showOptions"
-                                   :modelValue="directory.show"
-                                   aria-label="Show"
-                                   optionTestId="directory-show-option"
-                                   data-testid="directory-show"
-                                   @update:modelValue="emit('show', $event as DirectoryShow)" />
+            <div class="chat-fd-col">
+                <div class="chat-fd-tools">
+                    <div class="chat-fd-search chat-field">
+                        <Icon name="search" size="sm" />
+                        <input ref="searchInput"
+                               class="chat-field-input"
+                               type="search"
+                               placeholder="Search channels by name"
+                               aria-label="Search channels"
+                               autocomplete="off"
+                               spellcheck="false"
+                               :aria-controls="resultsId"
+                               :value="directory.query"
+                               data-autofocus
+                               data-testid="directory-search"
+                               @input="onInput" />
+                        <!-- Only words typed wait in the field; a filter asked again with none waits in the rows it keeps drawn. -->
+                        <span v-if="directory.isSearching && directory.query.trim() !== ''" class="chat-fd-busy" data-testid="directory-search-busy"><span class="chat-spinner"></span></span>
+                        <IconButton v-if="directory.query"
+                                    icon="x"
+                                    size="sm"
+                                    label="Clear search"
+                                    data-testid="directory-search-clear"
+                                    @click="onClearSearch" />
                     </div>
 
-                    <EmptyState v-if="empty"
-                                :title="empty.title"
-                                :text="empty.text"
-                                :actionLabel="empty.button"
-                                :actionAttrs="{ 'data-testid': 'directory-empty-action' }"
-                                data-testid="directory-empty"
-                                :data-kind="directory.emptyKind"
-                                @action="empty.act" />
+                    <div class="chat-fd-filters">
+                        <div v-if="directory.isCampusLimited" class="chat-fd-note" data-testid="directory-campus-note">
+                            <Icon class="chat-fd-note-ic" name="info" size="sm" />
+                            <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
+                        </div>
+                        <div v-else-if="campuses.length > 0"
+                             ref="chipsElement"
+                             class="chat-fd-chips"
+                             :class="{ 'is-cut-start': isChipsCutStart, 'is-cut-end': isChipsCutEnd }"
+                             role="group"
+                             aria-label="Campus"
+                             data-testid="directory-chips"
+                             @scroll="measureChips">
+                            <Pill v-for="chip in chips"
+                                  :key="chip.key"
+                                  data-testid="directory-chip"
+                                  :data-campus="chip.key"
+                                  :selected="isChipPressed(chip.campus)"
+                                  @click="emit('campus', chip.campus)">
+                                {{ chip.label }}
+                            </Pill>
+                        </div>
+                    </div>
+                </div>
 
-                    <ul v-else class="chat-fd-list" aria-label="Channels" data-testid="directory-list">
-                        <li v-for="row in drawnRows"
-                            :key="row.id"
-                            class="chat-fd-row"
-                            :class="{ 'is-member': row.isMember }"
-                            data-testid="directory-row"
-                            :data-channel-id="row.id"
-                            :data-member="row.isMember ? 'true' : 'false'">
-                            <button type="button"
-                                    class="chat-fd-open"
-                                    data-testid="directory-row-open"
-                                    :aria-label="row.label"
-                                    @click="emit('open', row.id)">
-                                <ChannelMark class="chat-fd-ic" isPublic :imageUrl="row.iconUrl" :tileName="row.name" />
-                                <span class="chat-fd-main">
-                                    <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
-                                    <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
-                                    <span class="chat-fd-meta" data-testid="directory-row-meta">
-                                        <span v-for="part in row.meta" :key="part">{{ part }}</span>
+                <div ref="scrollElement"
+                     class="chat-fd-scroll"
+                     :class="{ 'is-scrolled': isScrolled }"
+                     data-chat-scroller
+                     data-testid="directory-scroll"
+                     @scroll="onScroll">
+                    <div :id="resultsId" class="chat-fd-wrap" data-testid="directory-results" :aria-busy="directory.isLoading ? 'true' : 'false'">
+                        <template v-if="directory.isLoading">
+                            <div class="chat-fd-count"><span data-testid="directory-count">Loading channels…</span></div>
+                            <ul class="chat-fd-list" aria-hidden="true">
+                                <li v-for="(width, index) in skeletonWidths" :key="index" class="chat-fd-sk" data-testid="directory-skeleton-row">
+                                    <i class="chat-skeleton is-icon"></i>
+                                    <span>
+                                        <i class="chat-skeleton" :style="{ width: `${width * .45}%` }"></i>
+                                        <i class="chat-skeleton" :style="{ width: `${width}%` }"></i>
+                                        <i class="chat-skeleton is-meta" :style="{ width: `${width * .6}%` }"></i>
                                     </span>
-                                    <span v-if="row.join.kind === 'refused'" class="chat-fd-err" role="note" data-testid="directory-row-refused">
-                                        <Icon class="chat-fd-err-ic" name="alert" size="xs" /><span>{{ row.join.text }}</span>
-                                    </span>
-                                    <span v-else-if="row.join.kind === 'failed'" class="chat-fd-err" role="note" data-testid="directory-row-failed">
-                                        <Icon class="chat-fd-err-ic" name="alert" size="xs" /><span>{{ row.join.text }}</span>
-                                    </span>
-                                    <span v-else-if="row.join.kind === 'pending'" class="chat-fd-wait" data-testid="directory-row-wait">Setting up, a few seconds</span>
-                                </span>
-                            </button>
+                                </li>
+                            </ul>
+                        </template>
 
-                            <div class="chat-fd-act">
-                                <span v-if="row.join.kind === 'pending'" class="chat-fd-joined is-pending" data-testid="directory-pending">
-                                    <span class="chat-spinner"></span>Finishing up
-                                </span>
-                                <span v-else-if="row.isMember && row.join.kind !== 'joining'"
-                                      class="chat-fd-joined"
-                                      :class="{ 'is-fresh': row.join.kind === 'joined' && row.join.isFresh }"
-                                      data-testid="directory-joined">
-                                    <Icon class="chat-fd-joined-ic" name="check" size="xs" />Joined
-                                </span>
-                                <!--
-                                    One button through Join, Joining and a refusal, so focus stays on it while the
-                                    door is out. Joining is the spinner alone in Join's box, named for a screen
-                                    reader, so the row never shifts.
-                                -->
-                                <Button v-else
-                                        class="chat-fd-join"
-                                        size="sm"
-                                        :data-testid="row.join.kind === 'joining' ? 'directory-joining' : 'directory-join'"
-                                        :aria-label="row.join.kind === 'joining' ? 'Joining' : `Join ${row.name}`"
-                                        :busy="row.join.kind === 'joining'"
-                                        :disabled="row.join.kind === 'refused'"
-                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "" : "Join" }}</Button>
+                        <EmptyState v-else-if="directory.error"
+                                    tone="error"
+                                    :title="loadFailure"
+                                    actionLabel="Try again"
+                                    :actionAttrs="{ 'data-testid': 'directory-retry' }"
+                                    data-testid="directory-error"
+                                    @action="emit('retry')" />
+
+                        <EmptyState v-else-if="directory.emptyKind === 'none'"
+                                    title="No channels to browse yet"
+                                    :text="`When ${church.name || 'your church'} opens channels to everyone, they'll show up here.`"
+                                    data-testid="directory-empty"
+                                    data-kind="none" />
+
+                        <template v-else>
+                            <div class="chat-fd-count">
+                                <span data-testid="directory-count">{{ countText }}</span>
+                                <Segmented class="chat-fd-show"
+                                           :options="showOptions"
+                                           :modelValue="directory.show"
+                                           aria-label="Show"
+                                           optionTestId="directory-show-option"
+                                           data-testid="directory-show"
+                                           @update:modelValue="emit('show', $event as DirectoryShow)" />
                             </div>
-                        </li>
-                    </ul>
 
-                    <!-- The list's end, which asks for the next page as it nears the scroller's view. -->
-                    <div v-if="!empty" ref="endElement" aria-hidden="true"></div>
+                            <EmptyState v-if="empty"
+                                        :title="empty.title"
+                                        :text="empty.text"
+                                        :actionLabel="empty.button"
+                                        :actionAttrs="{ 'data-testid': 'directory-empty-action' }"
+                                        data-testid="directory-empty"
+                                        :data-kind="directory.emptyKind"
+                                        @action="empty.act" />
 
-                    <div v-if="directory.isLoadingMore" class="chat-fd-more" data-testid="directory-more">
-                        <span class="chat-spinner"></span>Loading more channels…
+                            <!-- One tab stop for the list; a row shows its preview, which in a wide view follows the arrows. -->
+                            <ul v-else class="chat-fd-list" aria-label="Channels" data-testid="directory-list">
+                                <li v-for="row in drawnRows"
+                                    :key="row.id"
+                                    class="chat-fd-row"
+                                    :class="{ 'is-member': row.isMember, 'is-current': row.id === previewRow?.id }"
+                                    data-testid="directory-row"
+                                    :data-channel-id="row.id"
+                                    :data-member="row.isMember ? 'true' : 'false'">
+                                    <button :ref="listKeys.itemRef(row.id)"
+                                            type="button"
+                                            class="chat-fd-open"
+                                            data-testid="directory-row-open"
+                                            :aria-label="row.label"
+                                            :aria-current="row.id === previewRow?.id ? 'true' : undefined"
+                                            v-bind="listKeys.itemAttrs(row.id)"
+                                            @focus="onRowFocus(row.id)"
+                                            @click="choose(row.id)">
+                                        <ChannelMark class="chat-fd-ic" isPublic :imageUrl="row.iconUrl" :tileName="row.name" />
+                                        <span class="chat-fd-main">
+                                            <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
+                                            <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
+                                            <span class="chat-fd-meta" data-testid="directory-row-meta">
+                                                <span v-for="part in row.meta" :key="part">{{ part }}</span>
+                                            </span>
+                                        </span>
+                                        <span v-if="row.isMember"
+                                              class="chat-fd-joined"
+                                              :class="{ 'is-fresh': row.join.kind === 'joined' && row.join.isFresh }"
+                                              title="Joined"
+                                              data-testid="directory-row-joined"><Icon name="check" size="sm" /></span>
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <LoadMoreRow v-if="!empty && directory.hasMore"
+                                         name="directory"
+                                         label="Load more channels"
+                                         :load="onLoadMore"
+                                         :isLoading="directory.isLoadingMore"
+                                         :isFailed="!!directory.moreError"
+                                         :failure="moreFailure" />
+                        </template>
                     </div>
-                    <div v-else-if="directory.moreError" class="chat-fd-error" data-testid="directory-more-error">
-                        <Icon class="chat-fd-error-ic" name="alert" size="sm" />
-                        <span>{{ moreFailure }}</span>
-                        <Button size="sm" @click="emit('retry')">Try again</Button>
-                    </div>
-                </template>
+                </div>
             </div>
         </div>
+
+        <!--
+            The chosen channel, beside the list in a wide view and over it otherwise: its summary
+            pinned at the top, its own feed, read only, filling the rest and the only part that
+            scrolls, then the join bar as its footer.
+        -->
+        <section v-if="previewRow"
+                 class="chat-fd-preview"
+                 :class="{ 'is-over': !isSplit }"
+                 :aria-label="`Preview of ${previewRow.name}`"
+                 data-testid="directory-preview"
+                 :data-channel-id="previewRow.id">
+            <header v-if="!isSplit" class="chat-fd-hdr" data-testid="directory-preview-head">
+                <IconButton class="chat-fd-back"
+                            icon="left"
+                            label="Back to Browse channels"
+                            data-testid="directory-preview-back"
+                            @click="emit('preview', null)" />
+                <div class="chat-fd-hdr-title">
+                    <b>{{ previewRow.name }}</b>
+                    <span class="chat-fd-hdr-sub">{{ previewRow.meta.join(" · ") }}</span>
+                </div>
+            </header>
+
+            <div class="chat-fd-pv-top" data-testid="directory-preview-summary">
+                <div class="chat-fd-pv-head">
+                    <ChannelMark class="chat-fd-pv-ic" isPublic :imageUrl="previewRow.iconUrl" :tileName="previewRow.name" />
+                    <span class="chat-fd-pv-title">
+                        <b data-testid="directory-preview-name">{{ previewRow.name }}</b>
+                        <span class="chat-fd-meta" data-testid="directory-preview-meta">
+                            <span v-for="part in previewRow.meta" :key="part">{{ part }}</span>
+                        </span>
+                    </span>
+                </div>
+                <p v-if="previewRow.description" class="chat-fd-pv-desc" data-testid="directory-preview-desc">{{ previewRow.description }}</p>
+            </div>
+
+            <div class="chat-fd-pv-feed" data-testid="directory-preview-feed">
+                <slot name="feed" :channelId="previewRow.id"></slot>
+            </div>
+
+            <JoinBar place="preview"
+                     :name="previewRow.name"
+                     :state="previewRow.join"
+                     :isMember="previewRow.isMember"
+                     :leave="leaves[previewRow.id] ?? idleLeave"
+                     @join="onJoin(previewRow!.id, previewRow!.join)"
+                     @open="emit('open', previewRow!.id)"
+                     @leave="emit('leave', previewRow!.id)" />
+        </section>
     </div>
 </template>
 
 <style scoped>
-/* Browse channels, in the conversation's place: its header, the tools, then the rooms scrolling under them. */
+/*
+    Browse channels, in the conversation's place: its header, then the list (the tools and the rooms
+    scrolling under them). A wide view sets the chosen channel's preview beside the list, under the
+    header; a narrow one lays the preview over the whole view.
+*/
 .chat-fd {
+    position: relative;
+    display: grid;
+    flex: 1;
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+    background: var(--chat-surface);
+}
+
+.chat-fd.is-split {
+    grid-template-columns: 400px minmax(0, 1fr);
+}
+
+/* The header and the list are the grid's own cells; this only holds them out of reach together. */
+.chat-fd-under {
+    display: contents;
+}
+
+.chat-fd-under > .chat-fd-hdr {
+    grid-column: 1 / -1;
+}
+
+.chat-fd-col {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+}
+
+.chat-fd.is-split .chat-fd-col {
+    border-right: 1px solid var(--chat-line);
+}
+
+.chat-fd.is-split .chat-fd-tools {
+    padding: 14px 16px 4px;
+}
+
+.chat-fd.is-split .chat-fd-wrap {
+    padding: 6px 8px 16px;
+}
+
+.chat-fd.is-split .chat-fd-open {
+    gap: 12px;
+    padding: 10px;
+}
+
+/* The preview: its summary, its feed, which alone scrolls, and its footer. */
+.chat-fd-preview {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--chat-surface);
+}
+
+/* Over the list, its own screen: the whole view, rising in as a view does. */
+.chat-fd-preview.is-over {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
+}
+
+.chat-fd-pv-top {
+    flex: none;
+    padding: 24px 28px 18px;
+    border-bottom: 1px solid var(--chat-line);
+}
+
+.chat-fd.is-phone .chat-fd-pv-top {
+    padding: 16px 16px 14px;
+}
+
+.chat-fd-pv-head {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    min-width: 0;
+}
+
+/* The channel's mark as its row draws it, at the summary's size. */
+.chat-fd-pv-ic {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 56px;
+    height: 56px;
+    overflow: hidden;
+    border-radius: var(--chat-r-surface);
+}
+
+.chat-fd-pv-title {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.chat-fd-pv-title b {
+    font-size: var(--chat-fs-title);
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--chat-text);
+    overflow-wrap: anywhere;
+}
+
+.chat-fd-pv-desc {
+    max-width: 60ch;
+    margin: 12px 0 0;
+    font-size: var(--chat-fs-body);
+    line-height: 1.45;
+    color: var(--chat-text-2);
+}
+
+.chat-fd-pv-feed {
     display: flex;
     flex: 1;
     flex-direction: column;
     min-height: 0;
-    background: var(--chat-surface);
 }
 
 /* The conversation header's own frame, so the rules align across the columns. */
@@ -443,6 +591,17 @@
     background: var(--chat-hover);
 }
 
+/* The row previewed, in the wash a chosen list row has everywhere. */
+.chat-fd-row.is-current,
+.chat-fd-row.is-current:hover {
+    background: var(--chat-brand-wash);
+}
+
+.chat-fd-row.is-current::before,
+.chat-fd-row.is-current + .chat-fd-row::before {
+    opacity: 0;
+}
+
 .chat-fd-row:hover::before,
 .chat-fd-row:hover + .chat-fd-row::before,
 .chat-fd-row:focus-within::before,
@@ -525,16 +684,6 @@
     padding-left: 10px;
 }
 
-.chat-fd.is-phone .chat-fd-act {
-    min-width: 0;
-    padding-right: 10px;
-}
-
-.chat-fd.is-phone .chat-fd-join,
-.chat-fd.is-phone .chat-fd-joined {
-    min-width: 64px;
-}
-
 /* A phone has the width for one line of a description only if it gives up two. */
 .chat-fd.is-phone .chat-fd-desc {
     display: -webkit-box;
@@ -563,111 +712,16 @@
     opacity: .55;
 }
 
-.chat-fd-err {
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-    margin-top: 6px;
-    font-size: var(--chat-fs-ui);
-    line-height: 1.4;
-    color: var(--chat-danger-ink);
-    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
-}
-
-.chat-fd-err-ic {
-    margin-top: 2px;
-}
-
-.chat-fd-wait {
-    margin-top: 4px;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-text-2);
-}
-
-.chat-fd-act {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: flex-end;
-    min-width: 92px;
-    padding-right: 12px;
-}
-
-/* Join, Joining and Joined hold one width, so the row does not shift as the door answers. */
-.chat-fd-join {
-    min-width: 76px;
-}
-
+/* A room the person is in: its check at the row's end, popping in once, in the church color, as a join lands. */
 .chat-fd-joined {
     display: inline-flex;
-    gap: 5px;
-    align-items: center;
-    justify-content: center;
-    min-width: 76px;
-    font-size: var(--chat-fs-ui);
-    font-weight: 600;
-    color: var(--chat-muted);
-}
-
-.chat-fd-joined-ic {
-    color: var(--chat-success);
-}
-
-.chat-fd-joined .chat-spinner {
-    width: 12px;
-    height: 12px;
-}
-
-.chat-fd-joined.is-pending {
-    color: var(--chat-text-2);
-}
-
-/* A join just made pops in, once, in the church color. */
-.chat-fd-joined.is-fresh {
-    color: var(--chat-brand-ink);
-    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
-}
-
-.chat-fd-joined.is-fresh .chat-fd-joined-ic {
-    color: var(--chat-brand-ink);
-}
-
-/* A next page that did not come: a strip under the rows held, with its Try again. */
-.chat-fd-error {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    padding: 10px 12px;
-    margin: 8px 0;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-text-2);
-    background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-control);
-}
-
-.chat-fd-error-ic {
     flex: none;
-    color: var(--chat-danger-ink);
+    align-self: center;
+    color: var(--chat-brand-ink);
 }
 
-.chat-fd-error > span {
-    flex: 1;
-    min-width: 0;
-}
-
-.chat-fd-more {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-muted);
-}
-
-.chat-fd-more .chat-spinner {
-    width: 13px;
-    height: 13px;
+.chat-fd-joined.is-fresh {
+    animation: chat-spring var(--chat-d-spring) var(--chat-ease-spring);
 }
 
 /* The same box as a real row (13px padding, 40px icon, name, description and meta lines), so nothing jumps on load. */
@@ -706,7 +760,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
+    import { computed, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { useAnnouncer } from "../ui/announcer.partial";
@@ -717,11 +771,13 @@
     import MatchText from "../ui/matchText.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import LoadMoreRow from "../ui/loadMoreRow.partial.obs";
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
+    import JoinBar from "./joinBar.partial.obs";
     import { messageOrOffline } from "../errors.partial";
-    import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
+    import { useListKeys } from "../composables/useListKeys.partial";
     import { useChatSession } from "../chatSession.partial";
-    import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState } from "../composables/useRooms.partial";
+    import { DirectoryCampus, DirectoryShow, DirectoryState, JoinState, LeaveState } from "../composables/useRooms.partial";
 
     // #region Types
 
@@ -769,6 +825,18 @@
             default: () => ({})
         },
 
+        /** Each room's Leave by its id, for the preview's footer; a room not here is idle. */
+        leaves: {
+            type: Object as PropType<Record<string, LeaveState>>,
+            default: () => ({})
+        },
+
+        /** The room whose preview is shown, as the frame holds it; null for none. */
+        previewId: {
+            type: String as PropType<string | null>,
+            default: null
+        },
+
         /** The church's campuses, for the chips and for naming each room's campus. */
         campuses: {
             type: Array as PropType<ChatCampusBag[]>,
@@ -793,7 +861,9 @@
         (e: "loadMore"): void,
         (e: "retry"): void,
         (e: "join", channelId: string): void,
-        (e: "open", channelId: string): void
+        (e: "open", channelId: string): void,
+        (e: "leave", channelId: string): void,
+        (e: "preview", channelId: string | null): void
     }>();
 
     // #region Values
@@ -804,8 +874,16 @@
     const viewElement = ref<HTMLElement>();
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
-    const endElement = ref<HTMLElement>();
     const chipsElement = ref<HTMLElement>();
+
+    /**
+     * The view's width at which the preview fits beside the list: the list's 400px column and a
+     * preview wide enough for a feed's rows. Narrower, the preview lies over the list.
+     */
+    const splitWidth = 1000;
+
+    /** Whether the view is wide enough for the preview beside the list, as last laid out. */
+    const isSplit = ref(false);
 
     /** Whether the campus chips run past the row's start or end, which fades that edge. */
     const isChipsCutStart = ref(false);
@@ -818,19 +896,15 @@
     const skeletonWidths = [62, 48, 70, 54, 40];
 
     const idle: JoinState = { kind: "idle" };
+    const idleLeave: LeaveState = { kind: "idle" };
 
     const announcer = useAnnouncer();
 
     /** Drawn at a phone's width: Back in Close's place, and narrower gutters; the church names the list. */
     const { isPhone, church } = useChatSession();
 
-    // The next page is asked about four rows before the list's end shows. The rooms drop a second
-    // ask while one is out, and ask nothing once the list has ended or a page has failed.
-    usePagingTrigger(endElement, () => emit("loadMore"), {
-        enabled: () => props.directory.hasMore && !props.directory.isLoadingMore && !props.directory.moreError,
-        root: () => scrollElement.value ?? null,
-        margin: "360px"
-    });
+    // The list is one tab stop, Up and Down between its rows; Enter on a row shows its preview.
+    const listKeys = useListKeys(() => drawnRows.value.map(row => row.id), { onPick: choose });
 
     // #endregion Values
 
@@ -858,10 +932,15 @@
         return props.directory.rows.map(row => {
             const name = row.name ?? "";
             const join = props.joins[row.channel_id] ?? idle;
-            // a join the door and the platform agree on shows as one before the row's own flag turns
-            const isMember = row.is_member || join.kind === "joined";
-            // Its campus only: Rock's group type names nothing a person picks a channel by.
+            // A join the door and the platform agree on shows as one before the row's own flag
+            // turns, and a leave the door made before the row is read again.
+            const isMember = join.kind === "joined" || (row.is_member && props.leaves[row.channel_id]?.kind !== "left");
+            // Its campus and how many are in it: Rock's group type names nothing a person picks a
+            // channel by. A platform from before the count sends none, and the campus stands alone.
             const meta = [campusNameOf(row.campus_id) ?? "Whole church"];
+            if (row.member_count !== undefined) {
+                meta.push(`${row.member_count.toLocaleString()} ${row.member_count === 1 ? "member" : "members"}`);
+            }
 
             return {
                 id: row.channel_id,
@@ -871,10 +950,16 @@
                 meta,
                 isMember,
                 join,
-                label: `${name}${isMember ? ", joined" : ""}, ${meta.join(", ")}. ${isMember ? "Open" : "Preview"} channel`
+                label: `${name}${isMember ? ", joined" : ""}, ${meta.join(", ")}. Preview channel`
             };
         });
     });
+
+    /** The row previewed, while the list holds it. */
+    const previewRow = computed((): ListedChannel | null => drawnRows.value.find(row => row.id === props.previewId) ?? null);
+
+    /** Whether the preview lies over the list, which is then out of reach. */
+    const isCovered = computed((): boolean => !!previewRow.value && !isSplit.value);
 
     /** All, or only the rooms the person is not in. */
     const showOptions: SegmentedOption[] = [
@@ -958,6 +1043,30 @@
         }
     }
 
+    /** Shows a row's preview, unless it is the one shown. */
+    function choose(channelId: string): void {
+        if (channelId !== props.previewId) {
+            emit("preview", channelId);
+        }
+    }
+
+    /** Beside the list, the preview follows the row the keys move to; over it, only a press opens it. */
+    function onRowFocus(channelId: string): void {
+        if (isSplit.value) {
+            choose(channelId);
+        }
+    }
+
+    /** The next page; the rooms say through the directory when it is out, in or failed. */
+    function onLoadMore(): void {
+        emit("loadMore");
+    }
+
+    /** Reads whether the preview fits beside the list, as the view is laid out and resized. */
+    function measureView(): void {
+        isSplit.value = !isPhone.value && (viewElement.value?.clientWidth ?? 0) >= splitWidth;
+    }
+
     /** Reads where the chip row cuts its chips off, as it scrolls or changes width. */
     function measureChips(): void {
         const row = chipsElement.value;
@@ -975,9 +1084,10 @@
     }
 
     /**
-     * Down from the search to the first row, Up and Down between rows, Up from the first row back
-     * to the search. Escape clears a search that holds words, else closes the view; it stops here
-     * so nothing behind the view closes with it.
+     * Down from the search to the first row, and Up from the first row back to the search; the
+     * list's own keys move between rows. Escape closes a preview lying over the list, else clears
+     * a search that holds words, else closes the view; it stops here so nothing behind the view
+     * closes with it.
      */
     function onKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement;
@@ -985,6 +1095,11 @@
 
         if (event.key === "Escape") {
             event.stopPropagation();
+            if (isCovered.value) {
+                emit("preview", null);
+                return;
+            }
+
             if (target === searchInput.value && props.directory.query) {
                 emit("clearQuery");
                 return;
@@ -994,30 +1109,13 @@
             return;
         }
 
-        if (event.key !== "ArrowDown" && event.key !== "ArrowUp") {
-            return;
+        if (target === searchInput.value && event.key === "ArrowDown" && rows.length > 0) {
+            event.preventDefault();
+            rows[0].focus();
         }
-
-        if (target === searchInput.value) {
-            if (event.key === "ArrowDown" && rows.length > 0) {
-                event.preventDefault();
-                rows[0].focus();
-            }
-            return;
-        }
-
-        const index = rows.indexOf(target);
-        if (index < 0) {
-            return;
-        }
-
-        event.preventDefault();
-        const next = index + (event.key === "ArrowDown" ? 1 : -1);
-        if (next < 0) {
+        else if (target === rows[0] && event.key === "ArrowUp") {
+            event.preventDefault();
             searchInput.value?.focus();
-        }
-        else {
-            rows[next]?.focus();
         }
     }
 
@@ -1048,26 +1146,20 @@
         }
     });
 
-    // A refused Join is disabled, and a browser drops focus from a disabled button to the page, so
-    // focus on it moves first to the row's own button.
-    watch(() => props.directory.rows.map(row => (props.joins[row.channel_id] ?? idle).kind), async (kinds, before) => {
-        const active = document.activeElement;
-        const refusedIndex = kinds.findIndex((kind, index) => kind === "refused" && before?.[index] !== "refused");
-        if (refusedIndex < 0 || !active) {
-            return;
+    // Beside the list there is always a preview: the first row's while none is chosen, or once a
+    // search or a filter leaves the chosen one out of the list.
+    watch([isSplit, () => drawnRows.value.map(row => row.id)], ([split, ids]) => {
+        if (split && ids.length > 0 && !ids.includes(props.previewId ?? "")) {
+            emit("preview", ids[0]);
         }
-
-        const id = props.directory.rows[refusedIndex].channel_id;
-        const row = viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id='${id}']`);
-        if (row?.querySelector(".chat-fd-act")?.contains(active)) {
-            await nextTick();
-            row.querySelector<HTMLElement>(".chat-fd-open")?.focus();
-        }
-    }, { flush: "pre" });
+    });
 
     // The chip row's cut is read as the row is drawn and each time its width changes, since a
     // narrower window cuts chips that fit before; a browser's observer reads it once on start.
     const chipsObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureChips) : null;
+
+    // The view's width is read the same way, once on start and as the window or the panels change it.
+    const viewObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureView) : null;
 
     watch(chipsElement, (element, before) => {
         if (before) {
@@ -1082,8 +1174,15 @@
 
     // #region Lifecycle Hooks
 
+    onMounted(() => {
+        if (viewElement.value) {
+            viewObserver?.observe(viewElement.value);
+        }
+    });
+
     onBeforeUnmount(() => {
         chipsObserver?.disconnect();
+        viewObserver?.disconnect();
     });
 
     // #endregion Lifecycle Hooks

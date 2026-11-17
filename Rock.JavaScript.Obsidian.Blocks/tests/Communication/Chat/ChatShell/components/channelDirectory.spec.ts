@@ -1114,14 +1114,16 @@ describe("under reduced motion", () => {
         expect(rules()).toEqual([]);
     });
 
-    test("a row's refusal or failure only fades in", () => {
+    // A refusal or a failure is said in the preview's footer now, which the join bar's cells hold;
+    // what enters here is the preview laid over the list in a narrow view.
+    test("a preview laid over the list only fades in", () => {
         // It rises by the sheet's rise, which is nothing under reduced motion, so the one
-        // enter motion is a fade there and the row's note keeps no reduced rule of its own.
+        // enter motion is a fade there and the preview keeps no reduced rule of its own.
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
-        const rule = /\n\.chat-fd-err\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+        const rule = /\n\.chat-fd-preview\.is-over\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
 
         expect(rule).not.toMatch(/--chat-rise:/);
         expect(rule).toMatch(/animation:\s*chat-enter /);
-        expect(rules().some(r => /\.chat-fd-err/.test(r.selector))).toBe(false);
+        expect(rules().some(r => /\.chat-fd-preview/.test(r.selector))).toBe(false);
     });
 });
