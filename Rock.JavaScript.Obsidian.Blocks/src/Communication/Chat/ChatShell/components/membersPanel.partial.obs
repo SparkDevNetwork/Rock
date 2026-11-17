@@ -82,7 +82,6 @@
                             :key="row.guid"
                             class="chat-mb-row chat-enter"
                             :data-hot-id="row.guid"
-                            :style="{ '--chat-enter-i': entranceOrder.get(row.guid) }"
                             data-testid="member-row">
                             <ListRow interactive
                                      :label="labelOf(row)"
@@ -582,8 +581,6 @@
     /** The rows in the order drawn, Leaders then Members, for the panel's entrance; none while the first page loads. */
     const entranceKeys = computed((): string[] | null => props.isLoading ? null : sections.value.flatMap(section => section.rows.map(row => row.guid)));
 
-    /** Each row's turn in the entrance. */
-    const entranceOrder = computed((): Map<string, number> => new Map((entranceKeys.value ?? []).map((guid, index) => [guid, index])));
 
     const foundLine = computed((): string => {
         const count = props.members.length;

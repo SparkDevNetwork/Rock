@@ -255,8 +255,8 @@
     --chat-d-view: 220ms;
     --chat-d-tab-thumb: 240ms;
     --chat-d-stagger: 26ms;
-    /* How many rows of an entrance wait their turn; the rest rise with the last of them. */
-    --chat-enter-cap: 8;
+    /* The whole of an entrance's cascade: however many rows are in sight, the last starts by then. */
+    --chat-d-cascade: 180ms;
     --chat-d-row-collapse: 200ms;
     --chat-d-move: 220ms;
     --chat-d-sent-hold: 2.2s;
@@ -467,6 +467,7 @@
         --chat-d-view: 0ms;
         --chat-d-tab-thumb: 0ms;
         --chat-d-stagger: 0ms;
+        --chat-d-cascade: 0ms;
         --chat-d-row-collapse: 0ms;
         --chat-d-move: 0ms;
         /* The message bar shows and hides by its own fades, at their own times, with no rise or sink. */
@@ -1225,12 +1226,15 @@
     the panel marks rises from the rise, a little after the row above it, so a fresh list reads as
     arriving rather than blinking. The panel host marks its body entering for that first page only,
     and marks settled a row drawn after it began, so a live arrival, a later page or a filter is
-    simply there while the first page goes on rising. Under reduced motion the rise and the
-    stagger are 0, leaving one short fade.
+    simply there while the first page goes on rising. Only the rows in sight take part: the host
+    gives each its place among them and the body their count, and each waits its place times the
+    stagger, or less where many are in sight, so the cascade fits its budget however long the
+    list; a row below the fold is settled. Under reduced motion the rise and the stagger are 0,
+    leaving one short fade.
 */
 .chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled]) {
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in) both;
-    animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
+    animation-delay: calc(var(--chat-enter-at, 0) * min(var(--chat-d-stagger), var(--chat-d-cascade) / var(--chat-enter-n, 1)));
 }
 
 /*

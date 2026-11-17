@@ -32,7 +32,6 @@
                              as="li"
                              class="chat-ls-row chat-enter"
                              :class="{ 'is-new': drawn.isNew, 'is-current': drawn.isCurrent }"
-                             :style="{ '--chat-enter-i': drawn.index }"
                              data-testid="mention-row"
                              interactive
                              :selected="drawn.isCurrent"
@@ -211,9 +210,6 @@
         isConversation: boolean;
         isNew: boolean;
         isCurrent: boolean;
-
-        /** Its place in the inbox across every day, its turn in the panel's entrance. */
-        index: number;
         label: string;
     };
 
@@ -335,7 +331,7 @@
     const days = computed((): DrawnDay[] => {
         const now = new Date();
         const drawn: DrawnDay[] = [];
-        props.rows.forEach((row, index) => {
+        props.rows.forEach(row => {
             const label = dayOf(row.message.created_at, now);
             let day = drawn[drawn.length - 1];
             if (day?.label !== label) {
@@ -343,7 +339,7 @@
                 drawn.push(day);
             }
 
-            day.rows.push(drawRow(row, index, now));
+            day.rows.push(drawRow(row, now));
         });
 
         return drawn;
@@ -356,8 +352,8 @@
         return `${count} ${count === 1 ? "mention" : "mentions"}${newCount > 0 ? `, ${newCount} new` : ""}`;
     });
 
-    /** The inbox's rows for the panel's entrance, none while its first page loads. */
-    const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.message.id)));
+    /** The inbox's rows for the panel's entrance, none while its first page loads or a refresh is out, so the refresh enters again. */
+    const entranceKeys = computed((): string[] | null => props.isLoading || props.isRefreshing ? null : props.rows.map(row => String(row.message.id)));
 
     // #endregion Computed Values
 
@@ -443,7 +439,7 @@
         return rest.length > 0 ? rest : pieces;
     }
 
-    function drawRow(row: MentionRow, index: number, now: Date): DrawnMention {
+    function drawRow(row: MentionRow, now: Date): DrawnMention {
         const message = row.message;
         const display = messageDisplay(message);
         const isShown = display.kind === "message" || display.kind === "system";
@@ -477,7 +473,6 @@
             isConversation: roomKind === "person" || roomKind === "group",
             isNew,
             isCurrent,
-            index,
             label
         };
     }

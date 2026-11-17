@@ -28,7 +28,6 @@
                 :key="drawn.rootId"
                 class="chat-ls-row chat-enter"
                 :class="{ 'is-unread': drawn.isUnread, 'is-off': drawn.isOff }"
-                :style="{ '--chat-enter-i': index }"
                 data-testid="thread-row">
                 <!--
                     The thread is a list row named by its button alone, so what it draws is for the
@@ -399,8 +398,8 @@
     /** A page failed: the list's failure strip says why, so the load-more row says only Try again. */
     const isPageFailed = computed((): boolean => !!props.error);
 
-    /** The list's rows for the panel's entrance, none while a tab's first page loads. */
-    const entranceKeys = computed((): string[] | null => props.isLoading ? null : props.rows.map(row => String(row.root.id)));
+    /** The list's rows for the panel's entrance, none while a first page loads or a refresh is out, so the refresh enters again. */
+    const entranceKeys = computed((): string[] | null => props.isLoading || props.isRefreshing ? null : props.rows.map(row => String(row.root.id)));
 
     // #endregion Computed Values
 
