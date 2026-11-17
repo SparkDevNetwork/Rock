@@ -110,9 +110,16 @@
     color: var(--chat-muted);
 }
 
-/* A row asking a question in place, its answer at its end, is set apart by the hover fill. */
+/*
+    A row asking a question in place, its answer at its end, is set apart by the hover fill; its line
+    is the consequence the person is weighing, so it reads in the secondary text colour, not muted.
+*/
 .chat-sg-row.is-asking {
     background: var(--chat-hover);
+}
+
+.chat-sg-row.is-asking .chat-sg-sub {
+    color: var(--chat-text-2);
 }
 
 /*
