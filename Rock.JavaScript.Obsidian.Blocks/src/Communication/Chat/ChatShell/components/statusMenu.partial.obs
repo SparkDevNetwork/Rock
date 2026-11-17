@@ -1,14 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <span class="chat-status-menu" :class="`is-${trigger}`">
-        <Menu :label="label"
+        <!-- On a phone Chat settings is a sheet: Change turns it to the Status page, never a second sheet over it. -->
+        <Button v-if="isTurn"
+                size="sm"
+                :aria-label="label"
+                data-testid="status-change"
+                @click="emit('turn')">Change</Button>
+        <Menu v-else
+              :label="label"
               :items="items"
               :placement="trigger === 'face' ? 'top-start' : 'bottom-end'"
               :note="note"
               :noteIcon="closedReason ? 'lock' : 'alert'"
+              :isPage="trigger === 'page'"
               @openChange="onOpenChange"
               @select="onSelect">
-            <template #trigger="{ attrs, isOpen }">
+            <template v-if="trigger !== 'page'" #trigger="{ attrs, isOpen }">
                 <IconButton v-if="trigger === 'face'"
                             v-bind="attrs"
                             class="chat-status-face"
@@ -84,9 +92,12 @@
             required: true
         },
 
-        /** What opens the menu: the sidebar foot's face, or the Chat settings group's Change. */
+        /**
+         * What opens the menu: the sidebar foot's face, or the Chat settings group's Change; or
+         * "page", the Status page Chat settings turns to on a phone, which draws the items in place.
+         */
         trigger: {
-            type: String as PropType<"face" | "change">,
+            type: String as PropType<"face" | "change" | "page">,
             required: true
         },
 
@@ -114,12 +125,17 @@
     const emit = defineEmits<{
         /** A choice, with any end as a server time, for the host to save. */
         (e: "choose", choice: StatusChoice): void;
+
+        /** Change on a phone: its sheet, Chat settings, turns to the Status page. */
+        (e: "turn"): void;
     }>();
 
     // #region Values
 
+    const session = useChatSession();
+
     /** Who is signed in, whose own face the foot draws and whose status it reads. */
-    const me = useChatSession().me;
+    const me = session.me;
 
     const statusOf = useFaceStatus(() => props.trigger === "face" && me.value.personAliasGuid ? [me.value.personAliasGuid] : [], 0);
 
@@ -138,6 +154,9 @@
 
     // #region Computed Values
 
+    /** Whether Change turns its sheet to the Status page, as it does on a phone, rather than opening the menu. */
+    const isTurn = computed((): boolean => props.trigger === "change" && session.isPhone.value);
+
     /** Her own face's status, which the foot's face draws and is named by. */
     const ownStatus = computed(() => props.trigger === "face" && me.value.personAliasGuid ? statusOf(me.value.personAliasGuid) : null);
 
@@ -145,7 +164,7 @@
     const note = computed((): string => props.closedReason ?? (props.isRetrying ? statusRetryingWords : ""));
 
     const label = computed((): string => {
-        if (props.trigger === "change") {
+        if (props.trigger !== "face") {
             return "Change your status";
         }
 

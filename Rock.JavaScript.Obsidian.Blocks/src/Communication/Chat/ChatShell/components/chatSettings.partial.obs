@@ -24,7 +24,8 @@
                             :choice="statusChoice"
                             :closedReason="statusClosedReason"
                             :isRetrying="isStatusRetrying"
-                            @choose="emit('status', $event)" />
+                            @choose="emit('status', $event)"
+                            @turn="isStatusOpen = true" />
             </SettingRow>
         </SettingGroup>
 
@@ -79,6 +80,13 @@
         </SettingGroup>
 
         <template #pages>
+            <SurfacePage :isOpen="isStatusOpen" title="Status" @back="isStatusOpen = false">
+                <StatusMenu trigger="page"
+                            :choice="statusChoice"
+                            :closedReason="statusClosedReason"
+                            :isRetrying="isStatusRetrying"
+                            @choose="onStatusChosen" />
+            </SurfacePage>
             <SurfacePage :isOpen="isBlockedOpen" title="Blocked people" @back="isBlockedOpen = false">
                 <EmptyState v-if="blocked.listState === 'failed'"
                             tone="error"
@@ -315,6 +323,9 @@
     /** Whether the dialog is turned to the Blocked people page. */
     const isBlockedOpen = ref(false);
 
+    /** Whether the sheet is turned to the Status page, as Change turns it on a phone. */
+    const isStatusOpen = ref(false);
+
     /** The one row asking whether to unblock its person, by alias guid in lower case; null for none. */
     const askingGuid = ref<string | null>(null);
 
@@ -488,6 +499,12 @@
         focusInRow(guid, "blocked-unblock");
     }
 
+    /** A choice on the Status page is told to the block, and the sheet turns back to Change, as a menu closes on a choice. */
+    function onStatusChosen(choice: StatusChoice): void {
+        emit("status", choice);
+        isStatusOpen.value = false;
+    }
+
     function onToggle(key: MeKey, value: boolean): void {
         emit("toggle", key, value);
     }
@@ -500,6 +517,7 @@
     watch(() => props.isOpen, () => {
         unblocking.value = [];
         isBlockedOpen.value = false;
+        isStatusOpen.value = false;
     });
 
     // Leaving the page drops its question.

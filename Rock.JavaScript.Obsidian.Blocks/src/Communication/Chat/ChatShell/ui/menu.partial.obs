@@ -1,39 +1,44 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span v-if="$slots.trigger" ref="triggerHost" class="chat-menu-trigger">
-        <!-- A trigger of the screen's own, such as a face or a button with words, in the icon button's place. -->
-        <slot name="trigger" :attrs="triggerAttrs" :isOpen="isOpen"></slot>
-    </span>
-    <IconButton v-else
-                ref="anchor"
-                v-bind="anchorAttrs"
-                :icon="icon"
-                :label="label"
-                aria-haspopup="menu"
-                :aria-expanded="isOpen ? 'true' : 'false'"
-                :isTooltipDisabled="isOpen"
-                @click="onAnchorClick">
-        <slot name="anchor"></slot>
-    </IconButton>
+    <template v-if="!isPage">
+        <span v-if="$slots.trigger" ref="triggerHost" class="chat-menu-trigger">
+            <!-- A trigger of the screen's own, such as a face or a button with words, in the icon button's place. -->
+            <slot name="trigger" :attrs="triggerAttrs" :isOpen="isOpen"></slot>
+        </span>
+        <IconButton v-else
+                    ref="anchor"
+                    v-bind="anchorAttrs"
+                    :icon="icon"
+                    :label="label"
+                    aria-haspopup="menu"
+                    :aria-expanded="isOpen ? 'true' : 'false'"
+                    :isTooltipDisabled="isOpen"
+                    @click="onAnchorClick">
+            <slot name="anchor"></slot>
+        </IconButton>
+    </template>
 
-    <Popover :popover="pop"
-             :label="label"
-             role="menu"
-             :aria-describedby="note ? noteId : undefined"
-             @keydown="onKeydown">
-        <div :class="pop.isSheet.value ? 'chat-menu-rows' : 'chat-menu'">
+    <!-- As a page, the list is drawn in place, on the surface the page already is; else on its own popover or sheet. -->
+    <component :is="isPage ? 'div' : Popover"
+               ref="listHost"
+               v-bind="isPage ? { 'aria-label': label } : { popover: pop, label }"
+               role="menu"
+               :aria-describedby="note ? noteId : undefined"
+               @keydown="onKeydown">
+        <div :class="isRows ? 'chat-menu-rows' : 'chat-menu'">
             <div v-if="heading" class="chat-menu-head chat-section-label" role="presentation">{{ heading }}</div>
             <template v-for="item in items" :key="item.key">
                 <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
                 <div v-if="item.heading" class="chat-menu-head chat-section-label" role="presentation">{{ item.heading }}</div>
                 <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                 <button type="button"
-                        :class="[pop.isSheet.value ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
+                        :class="[isRows ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
                         :role="item.isChecked === undefined ? 'menuitem' : 'menuitemradio'"
                         :aria-checked="item.isChecked === undefined ? undefined : item.isChecked ? 'true' : 'false'"
                         :data-key="item.key"
                         :aria-label="item.ariaLabel"
-                        tabindex="-1"
+                        :tabindex="item === pageStart ? 0 : -1"
+                        :data-autofocus="item === pageStart || undefined"
                         :aria-disabled="item.isDisabled || undefined"
                         @click="choose(item)">
                     <Icon v-if="item.icon" class="chat-menu-ic" :name="item.icon" />
@@ -53,7 +58,7 @@
                 <div :id="noteId" class="chat-menu-note" data-testid="menu-note"><Icon class="chat-menu-note-ic" :name="noteIcon" size="xs" />{{ note }}</div>
             </template>
         </div>
-    </Popover>
+    </component>
 </template>
 
 <style scoped>
@@ -293,6 +298,15 @@
             default: undefined
         },
 
+        /**
+         * Whether the items are drawn in place as a page's rows, with no button and no surface of
+         * their own: a sheet turned to the menu's page, as Chat settings to Status on a phone,
+         * already is the surface. Its owner turns back on a choice.
+         */
+        isPage: {
+            type: Boolean,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -320,6 +334,18 @@
     });
 
     const isOpen = pop.isOpen;
+
+    /** The list's holder: the page's own list, or the popover drawing it. */
+    const listHost = ref<HTMLElement | InstanceType<typeof Popover>>();
+
+    /** Whether the items are a sheet's rows, the sheet a popover's or the one a page turns. */
+    const isRows = computed((): boolean => props.isPage || pop.isSheet.value);
+
+    /**
+     * Where a page starts and its one Tab stop, as a menu opens: the item checked in a set of
+     * choices, else the first. The page's surface focuses it as it turns to the page.
+     */
+    const pageStart = computed((): MenuItem | null => props.isPage ? props.items.find(item => item.isChecked) ?? props.items[0] ?? null : null);
 
     /** The note's own element, which the open menu is described by. */
     const noteId = `chat-menu-note-${newGuid()}`;
@@ -397,7 +423,8 @@
     }
 
     function menuItems(): HTMLElement[] {
-        return Array.from(pop.floating.value?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
+        const list = props.isPage ? listHost.value as HTMLElement | undefined : pop.floating.value;
+        return Array.from(list?.querySelectorAll<HTMLElement>("[role='menuitem'], [role='menuitemradio']") ?? []);
     }
 
     function choose(item: MenuItem): void {
@@ -406,7 +433,9 @@
         }
 
         emit("select", item.key);
-        pop.close({ isFocusReturned: true });
+        if (!props.isPage) {
+            pop.close({ isFocusReturned: true });
+        }
     }
 
     // #endregion Functions
