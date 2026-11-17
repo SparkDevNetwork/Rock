@@ -379,8 +379,12 @@ export function createChannelStore(dependencies: ChannelStoreDependencies): Chan
         if (!isKept && result.last_message_id !== null) {
             row.last_message_id = result.last_message_id;
         }
-        row.read_cursor = result.read_cursor;
-        const saved: MarkReadResult = { read_cursor: result.read_cursor, last_message_id: row.last_message_id };
+        // A read position only ever moves forward, so one behind what the row holds, from a tab
+        // that saw less or an answer overtaken on its way, takes nothing back.
+        if (row.read_cursor === null || (result.read_cursor !== null && result.read_cursor > row.read_cursor)) {
+            row.read_cursor = result.read_cursor;
+        }
+        const saved: MarkReadResult = { read_cursor: row.read_cursor, last_message_id: row.last_message_id };
 
         // A save that comes back after the person has returned to the channel leaves it read:
         // they are looking at it, and their next save settles it.
