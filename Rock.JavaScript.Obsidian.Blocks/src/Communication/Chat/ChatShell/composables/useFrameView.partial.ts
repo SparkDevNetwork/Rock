@@ -436,17 +436,19 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     async function onSelect(channelId: string): Promise<void> {
         // Choosing the conversation already open behind the list or a full view brings it back too.
+        const isFolding = sidebarFold.value === "over";
         leaveMainView();
         isListChosen.value = false;
         isSidebarOver.value = false;
         isPaneMotionOn.value = true;
         void shell.value.selectChannel(channelId);
 
-        // The row that had focus has slid out of view and out of reach, so focus goes to what
-        // slid in: the conversation's title, never its composer, which would raise the keyboard.
-        // The pane is still off to the right as it starts to slide, so the focus must not scroll
-        // the frame to it, which a browser that cannot clip the frame would do.
-        if (isPhone.value) {
+        // The row that had focus has slid out of view and out of reach, on a phone or with the
+        // sidebar folding away, so focus goes to what it opened: the conversation's title, never
+        // its composer, which would raise a phone's keyboard. A phone's pane is still off to the
+        // right as it starts to slide, so the focus must not scroll the frame to it, which a
+        // browser that cannot clip the frame would do.
+        if (isPhone.value || isFolding) {
             await nextTick();
             focusStop(["header"], { preventScroll: true });
         }
