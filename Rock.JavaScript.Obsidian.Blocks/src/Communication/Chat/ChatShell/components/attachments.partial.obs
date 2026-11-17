@@ -87,6 +87,7 @@
                              :alt="item.name"
                              :width="item.width ?? undefined"
                              :height="item.height ?? undefined"
+                             :data-broken="brokenPhotos.has(item.id) ? 'true' : undefined"
                              decoding="async"
                              @error="brokenPhotos.add(item.id)" />
                     </span>
@@ -377,6 +378,7 @@
     cursor: zoom-in;
     background: var(--chat-bubble);
     border: 0;
+    transition: background-color var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in);
 }
 
 .chat-attach-tile:focus-visible {
@@ -402,22 +404,27 @@
 
 /*
     The stored preview is 16 by 12 pixels, drawn blurred and a little larger than the tile, so its
-    blurred edge never shows. It fades out as the photo fades in over it, so the two are one
-    crossfade and nothing of it stays behind a photo with clear areas.
+    blurred edge never shows. The photo fades in from nothing over it, so the preview stays whole
+    for the length of that fade (its delay) and the photo sharpens over it, never over the row
+    behind; it goes after, so nothing of it stays behind a photo with clear areas.
 */
 .chat-attach-blur {
     filter: blur(10px);
     transform: scale(1.2);
-    transition: opacity var(--chat-d-img-in) var(--chat-ease-state);
+    transition: opacity var(--chat-d-img-in) var(--chat-ease-state) var(--chat-d-img-in);
 }
 
 .chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur {
     opacity: 0;
 }
 
-/* Once its photo is drawn the tile is the photo alone, so a photo's clear areas show the row behind it. */
-.chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold)) {
-    background: transparent;
+/*
+    Once its photo has loaded and faded in the tile is the photo alone, so a photo's clear areas
+    show the row behind it; the fill waits out the fade as the preview does. The reveal shows a
+    broken photo too, so only one not marked broken clears it: a failed photo keeps its tile.
+*/
+.chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold):not([data-broken])) {
+    background-color: transparent;
 }
 
 /* A GIF: a single photo's box, sized from its stored width and height before anything loads. */
