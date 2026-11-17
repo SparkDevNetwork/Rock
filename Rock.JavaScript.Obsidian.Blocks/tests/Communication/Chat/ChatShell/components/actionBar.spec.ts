@@ -501,7 +501,7 @@ describe("the bar's quick reactions", () => {
     });
 
     // The box is placed against its place in the message's row, a guard of no size, which the
-    // grown box stays beside (the box design's A1); so Add reaction asks from there.
+    // grown box stays beside, so the bar can turn into it in place; so Add reaction asks from there.
     test("Add reaction opens the picker from the box's own place, its tooltip saying Add reaction", async () => {
         const target = message();
         const w = await shown({ message: target });
@@ -593,8 +593,8 @@ describe("the bar's quick reactions", () => {
         expect(box()?.getAttribute("data-layer")).toBe("bar");
     });
 
-    // The box grows from the bar's edges to the tray's over the block's one move, as the Feed's
-    // E1-A grows it (220ms, easing in); asked for less motion, the token sheet takes that move to
+    // The box grows from the bar's edges to the tray's over the block's one move, the
+    // approved grow (220ms, easing in); asked for less motion, the token sheet takes that move to
     // nothing and the tray is simply there.
     describe("growing", () => {
         const animate = jest.fn();
@@ -698,7 +698,7 @@ function barRules(): Map<string, Record<string, string>> {
 // reaction alone, then the tools alone. Only where even that does not fit does it stand over the
 // bubble's top, at the bubble's own edge, in the column's form; and under the bubble where the
 // column's top leaves no room over it. It is never drawn over its own message's text. The box is
-// kept 4px inside its column (E6-A: the bar is drawn in its own layer, kept 4 px inside the feed),
+// kept 4px inside its column, as every box drawn in its own layer is kept inside the feed,
 // so the room it fits in is measured from 4px inside the column's edges.
 describe("the bar beside a bubble", () => {
     /** The bar's width as these tests lay it out: 6px of padding, 32px a quick reaction, 28px a tool, 9px the separator, 2px between. */
@@ -922,9 +922,9 @@ describe("the bar beside a bubble", () => {
     // A channel's flat row has no bubble to stand beside: its box stands at the row's top right,
     // 14px in from the row's end and lifted 18px over the row's top, so it straddles the row's top
     // edge and covers the least of the words; only where the column's top leaves no room for that
-    // lift does it move inside the row, 4px under the row's top. The Feed's approved E1-A places it
-    // so ("position as today"; its demo draws the box at the row's top less 18, or the top plus 4
-    // near the feed's top edge), kept 4px inside the column as E6-A keeps every box.
+    // lift does it move inside the row, 4px under the row's top. The approved design places it
+    // so, where the box has always stood on a channel's row: the row's top less 18, or the top plus 4
+    // near the feed's top edge, kept 4px inside the column as every box is.
     describe("on a channel's row", () => {
         /** How far the box is lifted over a channel row's top, in from the row's end, and inside the row near the column's top. */
         const lift = 18;
@@ -1029,7 +1029,7 @@ describe("the bar under reduced motion", () => {
     });
 });
 
-// One look for every tool (J-08): each is the shared icon button at its one size, a quick reaction
+// One look for every tool: each is the shared icon button at its one size, a quick reaction
 // its glyph inside one, so the bar restyles nothing from outside its parts.
 describe("the bar's parts", () => {
     test("every tool is the shared icon button, and the bar's sheet reaches into no part", async () => {

@@ -309,8 +309,8 @@ describe("the quick tray", () => {
     });
 
     // The bar turns into the tray in place, so the bar's quick reactions are gone from the screen
-    // once it opens: the tray leads with them, then five more (the Feed's E1-A: "the three
-    // quick reactions first, five more, then All emoji").
+    // once it opens: the tray leads with them, then five more, and All emoji last, so
+    // none of the three is lost as the bar turns into it.
     test("leads with the quick reactions the control that opened it showed, then fills from the recents then the favorites", async () => {
         await open({ startsOn: "tray", offered: ["thumbsup", "heart", "joy"], recents: ["fire", "heart", "grinning"] });
 
@@ -699,7 +699,8 @@ describe("the tabs", () => {
     });
 });
 
-// Every control names itself in a tip, never the browser's title (T-27); the hosted form, drawn
+// Every control names itself in a tip, never the browser's title, which shows late and
+// unstyled; the hosted form, drawn
 // inside the message box, brings no popover of its own, which the box already is.
 describe("its names and its host", () => {
     test("the tabs and All emoji carry tips and no title", async () => {

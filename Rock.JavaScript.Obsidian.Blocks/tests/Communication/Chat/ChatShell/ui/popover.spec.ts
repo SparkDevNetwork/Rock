@@ -348,7 +348,7 @@ describe("the popover", () => {
     });
 });
 
-// One floating layer at a time (A-22): while any popover, menu or card is open, a message's bar
+// One floating layer at a time, so two never cover each other: while any popover, menu or card is open, a message's bar
 // rises for no hover. A tip, which shows on its own timers and takes no press, is not one.
 describe("the open layer", () => {
     const wrappers: VueWrapper[] = [];
@@ -416,7 +416,7 @@ describe("the popover surface", () => {
     });
 
     // One family of floating surfaces, each with the surface's own corners: the emoji tray is now
-    // the message box's own layer, so no surface is drawn as a pill any more (E1-A, one 12 px box).
+    // the message box's own layer, so no surface is drawn as a pill any more: the box is one 12px surface.
     it("draws every surface with the surface's own corners, never a pill", async () => {
         const wrapper = mount(SurfaceHost, { attachTo: document.body });
         const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;

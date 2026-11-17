@@ -1816,7 +1816,7 @@ describe("the panel column", () => {
         expect(document.activeElement).toBe(chosen.element);
     });
 
-    // F6-A's one sliding pill: Activity's Segmented stays through a change of tab, so its pill
+    // One sliding pill: Activity's Segmented stays through a change of tab, so its pill
     // slides to the tab chosen as the list under it changes.
     test("keeps one Activity Segmented through a change of tab, its pill sliding to the tab chosen", async () => {
         const w = await mountBlock(1200);
@@ -3688,7 +3688,7 @@ describe("reactions", () => {
     });
 
     // The bar turns into the tray in place, so the tray leads with the bar's quick reactions, then
-    // the rest in their order (the Feed's E1-A: "the three quick reactions first, five more").
+    // the rest in their order, so none of the three is lost as the bar turns into it.
     test("asked for by a bar's Add reaction, opens on a tray that leads with the bar's quick reactions", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
@@ -5212,7 +5212,7 @@ describe("the members panel", () => {
         expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
     });
 
-    // P-24: on a phone the panel opens on its first row, which comes with the roster's first page,
+    // On a phone the panel opens on its first row, which comes with the roster's first page,
     // after the panel opened with focus on its back chevron; focus moves to the row as it lands,
     // while the person has not moved it.
     test("on a phone, gives focus to the first row as the roster's first page lands", async () => {

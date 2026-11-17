@@ -691,7 +691,7 @@ describe("the reader's own change", () => {
     });
 });
 
-// Four or more kinds on a bubble fold into one summary chip (the Feed's E2-C): the three most used
+// Four or more kinds on a bubble fold into one summary chip, so a busy row stays one line: the three most used
 // emoji, ties by the order the page carries them, and the total. A press opens the full row in
 // place and the chevron folds it again, by pointer or keyboard, focus kept on what replaced the
 // control pressed. A row opened stays open while it is drawn. A channel's flat row never folds.

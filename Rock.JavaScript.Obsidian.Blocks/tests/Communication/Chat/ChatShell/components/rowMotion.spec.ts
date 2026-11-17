@@ -657,7 +657,7 @@ describe("what happens while a row is on screen plays once", () => {
         expect(feed.wrapper.findAll(tailPlayed("chat-tail-in")).map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"))).toEqual(["2"]);
     });
 
-    // The Feed's approved motion: another person's reaction moves its chip as the reader's does.
+    // Another person's reaction moves its chip as the reader's does, so a reaction reads the same whoever made it.
     test("a reaction heard live pops its new chip, the reader's from another device and someone else's alike", async () => {
         const w = wire();
         await open(w, [pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna })]);
