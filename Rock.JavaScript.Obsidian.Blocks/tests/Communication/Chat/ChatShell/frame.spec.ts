@@ -3607,6 +3607,18 @@ describe("a channel the person has not joined", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='composer-input']").element);
     });
 
+    test("on a wide screen moves focus from the join bar to the conversation's title when the room cannot be posted in, as there is no input to take it", async () => {
+        const w = await openVolunteers();
+        (w.get("[data-testid='join-channel']").element as HTMLElement).focus();
+
+        const rows = (mockShell!.channels as { rows: SidebarRow[] }).rows;
+        rows.splice(rows.findIndex(r => r.channel_id === volunteers.channel_id), 1, { ...volunteers, is_member: true, can_post: false, can_post_code: "rpc.not_allowed", can_post_reason: "Only leaders can post in Volunteers." });
+        await settle();
+
+        expect(w.find("[data-testid='frame-main'] [data-testid='composer-input']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-testid='header-details']").element);
+    });
+
     test("on a phone moves focus from the join bar to the conversation's title, never raising the keyboard", async () => {
         const w = await mountBlock(390);
         (mockShell!.channels as { rows: SidebarRow[] }).rows.push(volunteers);
