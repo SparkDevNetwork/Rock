@@ -15,8 +15,9 @@
 // </copyright>
 //
 // A settings group: its label over a rounded group of rows. A group that is a list of people is a
-// list, and a row taken out of it leaves by the Leave motion: it fades and shrinks where it stood
-// while the rows below glide up by the list's one move.
+// list, and a row taken out of it leaves by the Leave motion: it fades and shrinks where it stands,
+// still holding its place, and only once it has gone does the box close and the rows below glide
+// up by the list's one move. The last row's going is told, so an empty list's words follow it.
 import { mount } from "@vue/test-utils";
 import { defineComponent, h, nextTick, ref, TransitionGroup } from "vue";
 import SettingGroup from "../../../../../src/Communication/Chat/ChatShell/ui/settingGroup.partial.obs";
@@ -58,6 +59,75 @@ describe("a settings group", () => {
 
     test("holds its leaving rows inside it while they fade", () => {
         expect(ruleOf(styleOf("settingGroup.partial.obs"), ".chat-sg")).toMatch(/position:\s*relative/);
+    });
+
+    describe("the Leave motion's order", () => {
+        /** A browser's layout in one respect: each row 44 px tall, stacked from the group's top. */
+        const rowHeight = 44;
+
+        beforeEach(() => {
+            jest.spyOn(HTMLElement.prototype, "offsetTop", "get").mockImplementation(function (this: HTMLElement) {
+                return Array.from(this.parentElement?.children ?? []).indexOf(this) * rowHeight;
+            });
+        });
+
+        afterEach(() => {
+            jest.restoreAllMocks();
+        });
+
+        /** Waits out a leave: Vue ends it a frame after its last class goes on. */
+        async function leaveEnds(): Promise<void> {
+            for (let frame = 0; frame < 3; frame++) {
+                await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+            }
+            await nextTick();
+        }
+
+        function rowOf(wrapper: ReturnType<typeof mount>, name: string): HTMLElement | null {
+            return wrapper.element.querySelector<HTMLElement>(`[data-name='${name}']`);
+        }
+
+        test("a middle row fades holding its place, and only once it has gone do the rows below glide up", async () => {
+            const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+
+            names.value = ["Sam", "Ana"];
+            await nextTick();
+            // while it fades it is still a row of the list, and nothing has moved
+            expect(rowOf(wrapper, "Ben")?.classList).toContain("is-leaving");
+            expect(rowOf(wrapper, "Ana")?.classList).not.toContain("chat-move");
+
+            await leaveEnds();
+            expect(rowOf(wrapper, "Ben")).toBeNull();
+            expect(rowOf(wrapper, "Ana")?.classList).toContain("chat-move");
+            expect(rowOf(wrapper, "Sam")?.classList).not.toContain("chat-move");
+            expect(wrapper.getComponent(SettingGroup).emitted("empty")).toBeUndefined();
+        });
+
+        test("the last row fades holding its place, and nothing glides once it has gone", async () => {
+            const { names, wrapper } = mountList(["Sam", "Ben", "Ana"]);
+
+            names.value = ["Sam", "Ben"];
+            await nextTick();
+            expect(rowOf(wrapper, "Ana")?.classList).toContain("is-leaving");
+
+            await leaveEnds();
+            expect(rowOf(wrapper, "Ana")).toBeNull();
+            expect(wrapper.element.querySelectorAll(".chat-move")).toHaveLength(0);
+            expect(wrapper.getComponent(SettingGroup).emitted("empty")).toBeUndefined();
+        });
+
+        test("the only row fades holding its place, and the list says it is empty only once it has gone", async () => {
+            const { names, wrapper } = mountList(["Sam"]);
+
+            names.value = [];
+            await nextTick();
+            expect(rowOf(wrapper, "Sam")?.classList).toContain("is-leaving");
+            expect(wrapper.getComponent(SettingGroup).emitted("empty")).toBeUndefined();
+
+            await leaveEnds();
+            expect(rowOf(wrapper, "Sam")).toBeNull();
+            expect(wrapper.getComponent(SettingGroup).emitted("empty")).toHaveLength(1);
+        });
     });
 
     // A group spaces itself from what comes before it, so a page that opens on a group, as Blocked
