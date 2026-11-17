@@ -370,6 +370,7 @@ describe("the composer's send button", () => {
         jest.useFakeTimers();
         const wrapper = mountComposer({ attachTo: document.body });
         try {
+            await type(wrapper, "hello");
             const send = wrapper.get("[data-testid='composer-send']");
 
             await send.trigger("mouseenter");

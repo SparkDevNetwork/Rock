@@ -125,9 +125,8 @@
                     </div>
                 </div>
 
-                <!-- The conversation's own composer; its key hint gives way to this view's hint below it. -->
-                <Composer class="chat-nd-comp"
-                          :title="isFound ? foundTitle : startTitle"
+                <!-- The conversation's own composer, this view's hint in its foot in place of the key hint. -->
+                <Composer :title="isFound ? foundTitle : startTitle"
                           :isDisabled="isLocked"
                           :isLocked="isServiceLocked"
                           :lockedReason="lockedReason"
@@ -144,14 +143,15 @@
                           @send="onSend"
                           @update:text="onText"
                           @emojiPickerOpen="emit('emojiPickerOpen')"
-                          @emojiChosen="emit('emojiChosen', $event)" />
-                <div class="chat-nd-foot">
-                    <span class="chat-nd-hint" data-testid="nd-hint">
-                        <template v-if="isLocked">You can send more once the conversation starts.</template>
-                        <template v-else-if="isFound"><kbd>Enter</kbd> sends to your conversation with {{ foundTitle }}</template>
-                        <template v-else>Your first message starts the conversation.</template>
-                    </span>
-                </div>
+                          @emojiChosen="emit('emojiChosen', $event)">
+                    <template #hint>
+                        <span data-testid="nd-hint">
+                            <template v-if="isLocked">You can send more once the conversation starts.</template>
+                            <template v-else-if="isFound"><kbd>Enter</kbd> sends to your conversation with {{ foundTitle }}</template>
+                            <template v-else>Your first message starts the conversation.</template>
+                        </span>
+                    </template>
+                </Composer>
             </template>
         </div>
     </div>
@@ -446,48 +446,6 @@
 .chat-nd-refused-t {
     flex: 1;
     min-width: 0;
-}
-
-/* This view's hint takes the place of the composer's own, in the same foot under the box. */
-.chat-nd-comp :deep(.chat-composer-foot) {
-    display: none;
-}
-
-.chat-nd .chat-nd-comp.chat-composer {
-    padding-bottom: 0;
-}
-
-.chat-nd-foot {
-    display: flex;
-    flex: none;
-    gap: 10px;
-    align-items: center;
-    min-height: 16px;
-    padding: 6px 34px 14px;
-    font-size: var(--chat-fs-small);
-    color: var(--chat-muted);
-}
-
-.chat-nd.is-phone .chat-nd-foot {
-    padding-right: 26px;
-    padding-left: 26px;
-}
-
-/* A phone has no room for the key hint under the box. */
-.chat-nd.is-phone .chat-nd-hint {
-    display: none;
-}
-
-/* Rock's theme draws a kbd as a dark key cap; here it is only the key's name in a heavier weight. */
-.chat-nd-hint kbd {
-    padding: 0;
-    font: inherit;
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: none;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
 }
 </style>
 
