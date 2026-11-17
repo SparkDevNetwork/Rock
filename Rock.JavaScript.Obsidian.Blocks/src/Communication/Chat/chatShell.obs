@@ -282,6 +282,9 @@
                 <ErrorToast v-if="!isPhone && mainView" :errors="shell.state.errors" :notices="notices" @dismiss="shell.dismissError" @dismissNotice="onDismissNotice" />
             </section>
 
+            <!-- Under the sidebar laid over the conversation, the shade that puts it away, as a sheet's does. -->
+            <Scrim v-if="sidebarFold === 'over'" @dismiss="onSidebarAway" />
+
             <!--
                 The panel column, closed until a thread or a list opens in it. It holds one panel
                 at a time, each drawn in the shared panel host; what it held stays while it closes,
@@ -623,7 +626,9 @@
     transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
+/* Over the shade that sets it apart from the conversation, as a sheet stands over its own. */
 .chat-frame[data-sidebar="over"] .chat-frame-side {
+    z-index: var(--chat-z-sheet);
     box-shadow: var(--chat-shadow-pop);
     opacity: 1;
     transform: none;
@@ -856,6 +861,7 @@
     import { provideChatSession } from "./ChatShell/chatSession.partial";
     import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
+    import Scrim from "./ChatShell/ui/scrim.partial.obs";
     import Segmented, { SegmentedOption } from "./ChatShell/ui/segmented.partial.obs";
 
     // #region Types

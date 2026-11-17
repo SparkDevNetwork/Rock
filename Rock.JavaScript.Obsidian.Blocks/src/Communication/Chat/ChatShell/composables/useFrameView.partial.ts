@@ -570,21 +570,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     }
 
     /**
-     * The sidebar laid over the conversation goes back out of the way, as the block's other
-     * overlays close: its own button and Escape give focus back to the header's button, which
-     * brings it back; a press on what it covers leaves focus where the press put it.
+     * The sidebar laid over the conversation goes back out of the way, as a sheet does: its own
+     * button, Escape or a press on the shade over what it covers, focus going back to the
+     * header's button, which brings it back.
      */
     function onSidebarAway(): void {
         isSidebarOver.value = false;
         void nextTick(() => focusStop(["sidebar-button", "header"]));
-    }
-
-    /** A press on the conversation or the panel, which the sidebar is laid over, puts it away. */
-    function onDocumentPointerDown(event: Event): void {
-        const target = event.target as Node | null;
-        if (target && (mainElement.value?.contains(target) || panelElement.value?.contains(target))) {
-            isSidebarOver.value = false;
-        }
     }
 
     /**
@@ -1237,30 +1229,23 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     });
 
-    // Laid over the conversation, the sidebar is an overlay: on the Escape stack and put away by a
-    // press on what it covers, until it folds or takes its column back.
+    // Laid over the conversation, the sidebar is on the Escape stack until it folds or takes its
+    // column back; the shade the frame draws under it answers a press.
     watch(() => sidebarFold.value === "over", isOver => {
         if (isOver) {
             pushEscapeLayer(sidebarLayer);
-            document.addEventListener("pointerdown", onDocumentPointerDown, true);
         }
         else {
-            releaseSidebarOver();
+            pullEscapeLayer(sidebarLayer);
         }
     });
 
     // #endregion Watchers
 
-    /** Takes the sidebar laid over the conversation off the Escape stack and stops listening for presses. */
-    function releaseSidebarOver(): void {
-        pullEscapeLayer(sidebarLayer);
-        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
-    }
-
     onBeforeUnmount(() => {
         window.clearTimeout(paneGoneTimer);
         window.clearTimeout(panelClearTimer);
-        releaseSidebarOver();
+        pullEscapeLayer(sidebarLayer);
     });
 
     const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
