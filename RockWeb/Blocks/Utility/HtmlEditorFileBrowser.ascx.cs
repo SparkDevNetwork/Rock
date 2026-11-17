@@ -525,6 +525,10 @@ namespace RockWeb.Blocks.Utility
                 sb.AppendLine( "<ul class='js-rocklist rocklist'>" );
 
                 string editFilePage = PageParameter( PageParameterKey.EditFilePage );
+                if ( !RockPage.Site.IsSafeRedirectUrl( editFilePage, Request.UrlProxySafe() ) )
+                {
+                    editFilePage = string.Empty;
+                }
 
                 foreach ( var filePath in fileList )
                 {
@@ -539,7 +543,7 @@ namespace RockWeb.Blocks.Utility
                     {
                         string url = editFilePage + "?RelativeFilePath=" + HttpUtility.UrlEncode( imagePath );
 
-                        editHtml = $"<a data-href='{url}' title='Edit' class='btn btn-xs btn-square btn-default js-edit-file action'><i class='ti ti-pencil'></i></a>";
+                        editHtml = $"<a data-href='{url.EncodeHtml()}' title='Edit' class='btn btn-xs btn-square btn-default js-edit-file action'><i class='ti ti-pencil'></i></a>";
                     }
 
                     string nameHtmlFormat = @"
@@ -1029,7 +1033,7 @@ namespace RockWeb.Blocks.Utility
         /// <param name="friendlyMessage">The friendly message.</param>
         private void ShowErrorMessage( Exception ex, string friendlyMessage )
         {
-            nbErrorMessage.Text = friendlyMessage;
+            nbErrorMessage.Text = friendlyMessage.EncodeHtml();
             nbErrorMessage.Visible = true;
             ExceptionLogService.LogException( ex, this.Context );
         }
