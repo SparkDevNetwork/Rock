@@ -172,15 +172,19 @@
                                       data-testid="directory-joined">
                                     <Icon class="chat-fd-joined-ic" name="check" size="xs" />Joined
                                 </span>
-                                <!-- One button through Join, Joining and a refusal, so focus stays on it while the door is out. -->
+                                <!--
+                                    One button through Join, Joining and a refusal, so focus stays on it while the
+                                    door is out. Joining is the spinner alone in Join's box, named for a screen
+                                    reader, so the row never shifts.
+                                -->
                                 <Button v-else
                                         class="chat-fd-join"
                                         size="sm"
                                         :data-testid="row.join.kind === 'joining' ? 'directory-joining' : 'directory-join'"
-                                        :aria-label="row.join.kind === 'joining' ? undefined : `Join ${row.name}`"
+                                        :aria-label="row.join.kind === 'joining' ? 'Joining' : `Join ${row.name}`"
                                         :busy="row.join.kind === 'joining'"
                                         :disabled="row.join.kind === 'refused'"
-                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "Joining" : "Join" }}</Button>
+                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "" : "Join" }}</Button>
                             </div>
                         </li>
                     </ul>
