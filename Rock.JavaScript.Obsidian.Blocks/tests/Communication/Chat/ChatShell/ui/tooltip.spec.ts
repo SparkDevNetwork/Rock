@@ -101,3 +101,26 @@ describe("where a tip is drawn", () => {
         expect(parseFloat(tip.floatingStyles.value.top)).toBeLessThan(790);
     });
 });
+
+// Where nothing can hover, a finger's tap arrives as the pointer entering, and a tip shown then
+// stands over the screen until something else is tapped; every tip in the chat goes through here.
+describe("on a screen that cannot hover", () => {
+    const original = window.matchMedia;
+
+    afterEach(() => {
+        window.matchMedia = original;
+    });
+
+    it("never shows a tip, for the pointer arriving or for a focus", async () => {
+        window.matchMedia = ((query: string) => ({ media: query, matches: query === "(hover: none)" })) as unknown as typeof window.matchMedia;
+        const tip = (wrapper?.vm as unknown as { tip: ChatTooltip }).tip;
+
+        tip.onPointerEnter();
+        jest.advanceTimersByTime(1000);
+        tip.onFocus();
+        jest.advanceTimersByTime(1000);
+        await nextTick();
+
+        expect(tip.isTipShown.value).toBe(false);
+    });
+});
