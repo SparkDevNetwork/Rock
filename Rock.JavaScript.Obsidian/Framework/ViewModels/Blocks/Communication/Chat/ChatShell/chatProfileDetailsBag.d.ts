@@ -28,7 +28,7 @@
 export type ChatProfileDetailsBag = {
     /**
      * Gets or sets whether the person shows their details to the person asking. False wherever
-     * chat would not show this person, and then nothing else is set.
+     * chat would not show this person, and then nothing else is set but the profile page's link.
      */
     isShown: boolean;
 
@@ -49,4 +49,11 @@ export type ChatProfileDetailsBag = {
      * safe to draw, or null when there is no template or it rendered nothing.
      */
     lavaHtml?: string | null;
+
+    /**
+     * Gets or sets the address of the person's page in Rock, the block's person profile page,
+     * set only when the person asking may view that page and chat shows them the person;
+     * set whether or not the person shows their details, since the page has its own security.
+     */
+    personProfileUrl?: string | null;
 };

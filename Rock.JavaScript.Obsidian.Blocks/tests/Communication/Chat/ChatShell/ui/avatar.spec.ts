@@ -524,10 +524,11 @@ describe("a face's status badge", () => {
 
     // Where status shows is a short list; every other face of a person (message rows, the @
     // picker, reactions and who reacted, thread and mention faces, quotes, the typing bubble,
-    // face stacks, remove member, blocked people) draws none, so none of them asks the store.
+    // face stacks, remove member, blocked people) draws none, so none of them asks the store; the
+    // profile card and the profile panel both draw the person's status beside their words.
     // The composer asks it for the Busy note's words alone, so its faces still draw none.
     test("only the places that show status read it: every other face is passed none", () => {
-        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "peoplePicker", "statusMenu"];
+        const hosts = ["channelSidebar", "chatHeader", "chatSettings", "conversationDetails", "membersPanel", "newMessage", "profileCard", "profilePanel", "peoplePicker", "statusMenu"];
         const wordsOnly = ["composer"];
         const shell = join(__dirname, "../../../../../src/Communication/Chat/ChatShell");
         const parts = ["components", "ui"].flatMap(folder => readdirSync(join(shell, folder)).filter(name => name.endsWith(".obs")).map(name => join(shell, folder, name)));
@@ -593,11 +594,11 @@ describe("a face's status badge, sized with the face", () => {
         return wrapper.element.querySelector<HTMLElement>("[data-testid='status-badge']")!;
     }
 
-    test.each([[32, 12], [36, 12], [44, 12], [56, 15], [64, 17], [96, 26]])("on a %ipx face is %ipx", (size, badge) => {
+    test.each([[32, 12], [36, 12], [44, 12], [56, 15], [64, 17], [88, 24], [96, 26]])("on a %ipx face is %ipx", (size, badge) => {
         expect(badgeAt(size).style.getPropertyValue("--chat-status-s")).toBe(`${badge}px`);
     });
 
-    test.each([[44, 2], [63, 2], [64, 3], [96, 3]])("on a %ipx face is ringed %ipx", (size, ring) => {
+    test.each([[44, 2], [63, 2], [64, 3], [88, 3], [96, 3]])("on a %ipx face is ringed %ipx", (size, ring) => {
         expect(badgeAt(size).style.getPropertyValue("--chat-status-ring")).toBe(`${ring}px`);
     });
 

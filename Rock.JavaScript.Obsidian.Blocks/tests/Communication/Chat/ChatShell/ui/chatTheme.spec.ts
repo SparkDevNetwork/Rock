@@ -556,6 +556,13 @@ describe("the chat token sheet", () => {
         expect(valuesOf(sheet, `--chat-${name}`, isReducedMotion)).toContain(normalize(value));
     });
 
+    // A text badge (a count, a tag such as Leader) has square-ish corners, the inset corner's 6px,
+    // rather than the round family's full pill; one token so every badge changes together.
+    test("names the badge corner as the inset corner, 6px", () => {
+        expect(valuesOf(sheet, "--chat-r-badge", isLight)).toEqual([normalize("var(--chat-r-inset)")]);
+        expect(valuesOf(sheet, "--chat-r-inset", isLight).some(v => v.includes("6px"))).toBe(true);
+    });
+
     test("follows the system into dark only on a Rock theme that has a dark mode", () => {
         // Rock's older themes set no theme attribute and have no dark mode, so a page on one of them
         // matches "no theme attribute" while staying light. The block marks its root when it finds

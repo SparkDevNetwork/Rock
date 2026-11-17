@@ -1,0 +1,644 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <PanelHost title="Profile"
+               :backLabel="backLabel"
+               @close="emit('close')"
+               @back="emit('back')">
+        <div class="chat-pp" data-testid="profile-panel">
+            <!-- One column, the head centred: the face drawn large, the name with no pill, then the status words and campus. -->
+            <div class="chat-pp-id" data-testid="profile-identity">
+                <Avatar :key="alias" :people="[{ name: fullName, photoUrl: person.avatar_url }]" :size="88" :status="faceStatus" :own="person.is_self" :hasStatusTip="false" />
+                <b class="chat-pp-name" data-testid="profile-name">{{ fullName }}</b>
+                <div v-if="campusName || statusWords" class="chat-pp-line" data-testid="profile-line">
+                    <span v-if="statusWords" class="chat-pp-status" data-testid="profile-status">{{ statusWords }}</span>
+                    <span v-if="statusWords && campusName" class="chat-sr-only">, </span>
+                    <span v-if="campusName" class="chat-pp-campus" data-testid="profile-campus"><Icon class="chat-pp-ic" name="pin" size="xs" /><span class="chat-pp-place">{{ campusName }}</span></span>
+                </div>
+            </div>
+
+            <!--
+                Message first, then View profile, Rock's page for this person in a new tab where Rock
+                found this viewer may view it, then a square More for Block. Their own panel leads to
+                Chat settings alone; a blocked person's says so and keeps the More that undoes it.
+            -->
+            <div class="chat-pp-acts" data-testid="profile-actions">
+                <div v-if="person.is_blocked" class="chat-pp-muted" data-testid="profile-blocked">
+                    <Icon class="chat-pp-ic" name="ban" size="xs" />
+                    <span><b>You blocked {{ person.nick_name }}.</b> You won't see their messages, and they can't message you.</span>
+                </div>
+                <div v-else-if="!person.is_self && !person.can_message" class="chat-pp-muted" data-testid="profile-cannot-message">
+                    <Icon class="chat-pp-ic" name="mail" size="xs" />
+                    <span><b>Direct messages aren't available with {{ person.nick_name }}.</b> You can still mention them in a channel you share.</span>
+                </div>
+
+                <div class="chat-pp-row">
+                    <span v-if="person.is_self" class="chat-pp-wide">
+                        <Button block
+                                icon="settings"
+                                data-testid="profile-settings"
+                                @click="emit('settings')">Chat settings</Button>
+                    </span>
+                    <template v-else>
+                        <span v-if="person.can_message" class="chat-pp-wide">
+                            <Button kind="brand"
+                                    block
+                                    icon="message"
+                                    data-testid="profile-message"
+                                    @click="emit('message', person)">Message</Button>
+                        </span>
+                        <span v-if="profileUrl" class="chat-pp-wide">
+                            <Button block
+                                    :href="profileUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    data-testid="profile-view">View profile</Button>
+                        </span>
+                        <Menu icon="dots"
+                              label="More"
+                              :items="moreItems"
+                              :anchorAttrs="{ isOutlined: true, 'data-testid': 'profile-more' }"
+                              @select="onMoreSelect" />
+                    </template>
+                </div>
+            </div>
+
+            <!--
+                Shown only when the person shows their details. Rock's rows are reserved at their own
+                heights while it answers, and its answer fades in over them.
+            -->
+            <div v-if="isDetailsShown"
+                 class="chat-pp-details"
+                 :aria-busy="isRockLoading ? 'true' : undefined"
+                 data-testid="profile-details">
+                <section v-if="isRockLoading" class="chat-pp-sec" aria-hidden="true">
+                    <h3 class="chat-pp-h">Contact</h3>
+                    <div v-for="width in contactSkeletonWidths" :key="width" class="chat-pp-skr" data-testid="profile-contact-skeleton">
+                        <i class="chat-skeleton chat-pp-sk-ic"></i><i class="chat-skeleton chat-pp-sk-bar" :style="{ width }"></i>
+                    </div>
+                </section>
+                <section v-else-if="rockDetails && (rockDetails.email || rockDetails.mobilePhone)" class="chat-pp-sec" data-testid="profile-contact">
+                    <h3 class="chat-pp-h">Contact</h3>
+                    <a v-if="rockDetails.email"
+                       class="chat-pp-contact"
+                       :href="mailtoOf(rockDetails.email)"
+                       :class="{ 'is-arriving': wasRockLoading }"
+                       data-testid="profile-email"><Icon class="chat-pp-ic" name="mail" size="sm" /><span>{{ rockDetails.email }}</span></a>
+                    <a v-if="rockDetails.mobilePhone && rockDetails.mobilePhoneUri"
+                       class="chat-pp-contact"
+                       :href="rockDetails.mobilePhoneUri"
+                       :class="{ 'is-arriving': wasRockLoading }"
+                       data-testid="profile-phone"><Icon class="chat-pp-ic" name="phone" size="sm" /><span>{{ rockDetails.mobilePhone }}</span></a>
+                </section>
+
+                <section v-if="shownBadges.length > 0" class="chat-pp-sec">
+                    <h3 class="chat-pp-h">Badges</h3>
+                    <ul class="chat-pp-badges" aria-label="Badges" data-testid="profile-badges">
+                        <li v-for="badge in shownBadges"
+                            :key="badge.key"
+                            :class="{ 'is-toned': badge.isToned }"
+                            :style="badge.colors"
+                            data-testid="profile-badge"><i v-if="badge.iconCss" :class="badge.iconCss" aria-hidden="true"></i>{{ badge.name }}</li>
+                    </ul>
+                </section>
+
+                <section v-if="isRockLoading && isLavaConfigured" class="chat-pp-sec chat-pp-skl" aria-hidden="true" data-testid="profile-lava-skeleton">
+                    <i class="chat-skeleton is-head"></i><i class="chat-skeleton is-long"></i><i class="chat-skeleton is-short"></i>
+                </section>
+                <!-- Rock's own output, already cut to an allowlist of tags, classes and addresses on the server; whole, as long as the church made it. -->
+                <div v-else-if="rockDetails?.lavaHtml"
+                     class="chat-pp-sec chat-pp-lava"
+                     :class="{ 'is-arriving': wasRockLoading }"
+                     role="region"
+                     :aria-label="`More about ${person.nick_name}`"
+                     data-testid="profile-lava"
+                     v-html="rockDetails.lavaHtml"></div>
+            </div>
+            <p v-else-if="!person.is_self" class="chat-pp-note" data-testid="profile-note"><Icon class="chat-pp-ic" name="eye-off" size="xs" />{{ person.nick_name }} keeps profile details private.</p>
+
+            <!-- The rooms the two are both in, newest activity first as the platform sends them, each opening its room. -->
+            <section v-if="sharedRooms.length > 0" class="chat-pp-sec" data-testid="profile-shared">
+                <h3 class="chat-pp-h">Shared conversations <span class="chat-pp-count">{{ sharedTotal }}</span></h3>
+                <ul class="chat-pp-rooms">
+                    <ListRow v-for="room in sharedRooms"
+                             :key="room.channel_id"
+                             as="li"
+                             interactive
+                             :hitAttrs="{ 'data-testid': 'profile-shared-row' }"
+                             @press="emit('openRoom', room.channel_id)">
+                        <template #lead>
+                            <ChannelMark class="chat-pp-tile" :isPublic="room.kind === 'channel'" :imageUrl="room.icon_url" :tileName="room.name" />
+                        </template>
+                        <span class="chat-pp-room">{{ room.name }}</span>
+                    </ListRow>
+                </ul>
+                <p v-if="sharedTotal > sharedRooms.length" class="chat-pp-more" data-testid="profile-shared-more">and {{ sharedTotal - sharedRooms.length }} more</p>
+            </section>
+        </div>
+    </PanelHost>
+</template>
+
+<style scoped>
+.chat-pp {
+    padding: 20px 16px 16px;
+    color: var(--chat-text);
+}
+
+/* The head, centred; the face's badge rings in the panel's fill. */
+.chat-pp-id {
+    --chat-av-ring: var(--chat-surface);
+    --chat-av-ring-over: transparent;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    text-align: center;
+}
+
+.chat-pp-name {
+    margin-top: 8px;
+    overflow-wrap: anywhere;
+    font-size: var(--chat-fs-title);
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -.01em;
+}
+
+/* One line, as on the card: the words keep their width and the campus gives way first. */
+.chat-pp-line {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
+    overflow: hidden;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-text-2);
+    white-space: nowrap;
+}
+
+.chat-pp-ic {
+    flex: none;
+    color: var(--chat-icon);
+}
+
+.chat-pp-status {
+    flex: none;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-pp-campus {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    min-width: 0;
+}
+
+.chat-pp-place {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-pp-status + .chat-sr-only + .chat-pp-campus::before {
+    display: inline-block;
+    flex: none;
+    width: 3px;
+    height: 3px;
+    content: "";
+    background: var(--chat-muted);
+    border-radius: var(--chat-r-full);
+}
+
+.chat-pp-acts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+/* The wide buttons share the row equally, however long their words; the More keeps its square at the end. */
+.chat-pp-row {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.chat-pp-wide {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.chat-pp-muted {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    padding: 9px 11px;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.4;
+    color: var(--chat-muted);
+    background: var(--chat-sidebar);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-control);
+}
+
+.chat-pp-muted > .chat-pp-ic {
+    margin-top: 2px;
+}
+
+.chat-pp-muted b {
+    display: block;
+    font-weight: 600;
+    color: var(--chat-text-2);
+}
+
+/* Each part of the profile under a rule, named in the panel's small heading. */
+.chat-pp-sec {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 0 12px;
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-pp-details,
+.chat-pp-note,
+.chat-pp-details + .chat-pp-sec {
+    margin-top: 16px;
+}
+
+.chat-pp-h {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin: 0 0 6px;
+    font-size: var(--chat-fs-small);
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-pp-count {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/* A row's own height is the skeleton's, so Rock's answer lands without moving anything below it. */
+.chat-pp-contact {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 8px;
+    margin: 0 -8px;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-text);
+    text-decoration: none;
+    border-radius: var(--chat-r-control);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-pp-contact:hover {
+    background: var(--chat-hover);
+}
+
+.chat-pp-contact span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-pp-skr {
+    display: flex;
+    gap: 9px;
+    align-items: center;
+    height: 32px;
+}
+
+.chat-pp-sk-ic {
+    flex: none;
+    width: 15px;
+    height: 15px;
+    border-radius: var(--chat-r-inline);
+}
+
+.chat-pp-sk-bar {
+    height: 10px;
+}
+
+.chat-pp-skl {
+    gap: 7px;
+}
+
+.chat-pp-skl i {
+    height: 10px;
+}
+
+.chat-pp-skl .is-head {
+    width: 30%;
+    height: 8px;
+}
+
+.chat-pp-skl .is-long {
+    width: 88%;
+}
+
+.chat-pp-skl .is-short {
+    width: 72%;
+}
+
+/*
+    The church's template, whole: its own words in the panel's type, as long as it runs, the panel
+    scrolling past it. Contained, so nothing it draws can reach outside its section. What it draws
+    inside, its paragraphs, lists and headings, is drawn by the token sheet's rules for content
+    the church writes, since this part's own rules cannot reach markup it did not render.
+*/
+.chat-pp-lava {
+    display: block;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.45;
+    color: var(--chat-text-2);
+    contain: layout paint;
+}
+
+/* Rock's answer landing on rows the panel already reserved. */
+.is-arriving {
+    animation: chat-fade-in var(--chat-t-fast) var(--chat-ease-state);
+}
+
+/* The person's badges, each in its badge's colors or the plain fill where it has none, on the badge corner. */
+.chat-pp-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.chat-pp-badges li {
+    display: inline-flex;
+    gap: 5px;
+    align-items: center;
+    height: 24px;
+    padding: 0 9px 0 7px;
+    font-size: var(--chat-fs-small);
+    font-weight: 600;
+    color: var(--chat-text-2);
+    background: var(--chat-pill-bg);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-badge);
+}
+
+.chat-pp-badges li i {
+    font-size: var(--chat-fs-badge);
+    color: var(--chat-icon);
+}
+
+/*
+    The church's pale fill over the panel and its dark ink on the icon and edge, each mixed by the
+    theme's measure so a dark panel still reads; a badge with only a fill takes the text's color.
+*/
+.chat-pp-badges li.is-toned {
+    --chat-badge-tone: color-mix(in srgb, var(--chat-badge-fg, var(--chat-text-2)) var(--chat-badge-ink-mix), var(--chat-badge-bg));
+    background: color-mix(in srgb, var(--chat-badge-bg) var(--chat-badge-fill-mix), var(--chat-surface));
+    border-color: color-mix(in srgb, var(--chat-badge-tone) 22%, var(--chat-line));
+}
+
+.chat-pp-badges li.is-toned i {
+    color: var(--chat-badge-tone);
+}
+
+.chat-pp-note {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-bottom: 0;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.4;
+    color: var(--chat-muted);
+}
+
+.chat-pp-rooms {
+    padding: 0;
+    margin: 0 -8px;
+    list-style: none;
+}
+
+.chat-pp-tile {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    overflow: hidden;
+    border-radius: var(--chat-r-control);
+}
+
+.chat-pp-room {
+    overflow: hidden;
+    font-size: var(--chat-fs-ui);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.chat-pp-more {
+    margin: 6px 0 0;
+    font-size: var(--chat-fs-ui);
+    color: var(--chat-muted);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
+    import { ChatProfileDetailsBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatProfileDetailsBag";
+    import Avatar from "../ui/avatar.partial.obs";
+    import Button from "../ui/button.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
+    import Icon from "../ui/icon.partial.obs";
+    import ListRow from "../ui/listRow.partial.obs";
+    import Menu, { MenuItem } from "../ui/menu.partial.obs";
+    import PanelHost from "../ui/panelHost.partial.obs";
+    import { cardStatusWords, shownStatus } from "../ui/face.partial";
+    import { ProfileRockState } from "../composables/useRooms.partial";
+    import { useFaceStatus } from "../composables/usePresenceStatus.partial";
+    import { ChatBadge, PersonProfile, SharedConversation } from "../types.partial";
+
+    // A person's full profile in the side panel, which the card's Details opens: a panel's lifetime
+    // and slot, against the card's floating glance, so it is its own part rather than the card grown.
+    const props = defineProps({
+        /** The person as chat_get_person answered for the room the profile was opened from. */
+        person: {
+            type: Object as PropType<PersonProfile>,
+            required: true
+        },
+
+        /** The church's campuses from the init box, to name the person's campus by. */
+        campuses: {
+            type: Array as PropType<ChatCampusBag[]>,
+            default: () => []
+        },
+
+        /** The church's badges from the bootstrap, which name and color the person's badge keys. */
+        badges: {
+            type: Array as PropType<ChatBadge[]>,
+            default: () => []
+        },
+
+        /** Rock's half of the profile, its contact details, the church's template and the profile page's link, as Rock answered. */
+        rock: {
+            type: Object as PropType<ProfileRockState>,
+            default: (): ProfileRockState => ({ kind: "failed" })
+        },
+
+        /** Whether the church has a profile template, so its lines are reserved while Rock answers. */
+        isLavaConfigured: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether Rock found, while building the chat page, that this viewer may view the person profile page. */
+        mayViewProfile: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A block or unblock of this person is out, so its item waits for it. */
+        isBlockBusy: {
+            type: Boolean,
+            default: false
+        },
+
+        /** A back chevron with this label, to where the profile was opened from; null for none. */
+        backLabel: {
+            type: String as PropType<string | null>,
+            default: null
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "back"): void;
+        (e: "message", person: PersonProfile): void;
+        /** The person's own panel's Chat settings. */
+        (e: "settings"): void;
+        /** Block, which a confirmation asks first, and Unblock, which needs none. */
+        (e: "block", person: PersonProfile): void;
+        (e: "unblock", person: PersonProfile): void;
+        /** A shared conversation, to open its room. */
+        (e: "openRoom", channelId: string): void;
+    }>();
+
+    // #region Values
+
+    /** The person shown, by primary alias, which keys the face, so another person draws another face. */
+    const alias = computed((): string => props.person.person_alias_guid.toLowerCase());
+
+    const statusOf = useFaceStatus(() => [alias.value], 1);
+
+    /** The two contact rows' bars, reserved while Rock answers, each a different length as text would be. */
+    const contactSkeletonWidths = ["62%", "40%"];
+
+    /** Whether this panel has shown Rock's rows reserved, so its answer fades in over them. */
+    const wasRockLoading = ref(props.rock.kind === "loading");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /** What the face draws of the person's status: her own, her Appear offline included, on her own panel. */
+    const faceStatus = computed(() => shownStatus(statusOf(alias.value), props.person.is_self));
+
+    const statusWords = computed((): string | null => faceStatus.value ? cardStatusWords(faceStatus.value, new Date()) : null);
+
+    const fullName = computed((): string => [props.person.nick_name, props.person.last_name].filter(part => !!part).join(" "));
+
+    /** The campus by its name, whatever the person's setting, while the church still lists it. */
+    const campusName = computed((): string => {
+        const id = props.person.campus_id?.toLowerCase();
+        return id ? props.campuses.find(campus => campus.guid?.toLowerCase() === id)?.name ?? "" : "";
+    });
+
+    /** Whether the details show: as the platform answered, the person's own included. */
+    const isDetailsShown = computed((): boolean => props.person.details !== null);
+
+    const isRockLoading = computed((): boolean => props.rock.kind === "loading");
+
+    /** What Rock answered for a person it shows, or null where it has nothing to show. */
+    const rockDetails = computed((): ChatProfileDetailsBag | null => props.rock.kind === "answered" && props.rock.details.isShown ? props.rock.details : null);
+
+    /**
+     * Rock's page for the person, only where both of Rock's checks agree: the one at page build
+     * for this viewer, and the link Rock gave with this person's details.
+     */
+    const profileUrl = computed((): string => props.mayViewProfile && props.rock.kind === "answered" ? props.rock.details.personProfileUrl ?? "" : "");
+
+    /** Block for anyone else, Unblock for someone blocked; held while either is out. */
+    const moreItems = computed((): MenuItem[] => props.person.is_blocked
+        ? [{ key: "unblock", label: "Unblock", isDisabled: props.isBlockBusy }]
+        : [{ key: "block", label: "Block", icon: "ban", isDanger: true, isDisabled: props.isBlockBusy }]);
+
+    /** The conversations the two share as the platform listed them; none on the person's own panel. */
+    const sharedRooms = computed((): SharedConversation[] => props.person.is_self ? [] : props.person.shared_conversations ?? []);
+
+    /** Every conversation they share, counted past the ones listed. */
+    const sharedTotal = computed((): number => Math.max(props.person.shared_conversations_total ?? 0, sharedRooms.value.length));
+
+    /**
+     * The person's badges in the church's order, only when they show their details; a key the
+     * church's list does not know is dropped, as one retired since the person's list was synced.
+     */
+    const shownBadges = computed((): Array<{ key: string, name: string, iconCss: string, isToned: boolean, colors: Record<string, string> }> => {
+        const keys = new Set(props.person.details?.badge_keys ?? []);
+        return props.badges
+            .filter(badge => keys.has(badge.badge_key))
+            .sort((a, b) => a.sort_order - b.sort_order)
+            .map(badge => {
+                const colors: Record<string, string> = {};
+                if (badge.bg_color) {
+                    colors["--chat-badge-bg"] = badge.bg_color;
+                }
+                if (badge.fg_color) {
+                    colors["--chat-badge-fg"] = badge.fg_color;
+                }
+
+                return { key: badge.badge_key, name: badge.name, iconCss: badge.icon_css?.trim() ?? "", isToned: !!badge.bg_color, colors };
+            });
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onMoreSelect(key: string): void {
+        if (key === "block") {
+            emit("block", props.person);
+        }
+        else if (key === "unblock") {
+            emit("unblock", props.person);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    /** A mail link for an address, every part but the @ escaped so nothing in it adds to the link. */
+    function mailtoOf(email: string): string {
+        return `mailto:${encodeURIComponent(email).replace(/%40/g, "@")}`;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.rock.kind, kind => {
+        if (kind === "loading") {
+            wasRockLoading.value = true;
+        }
+    });
+
+    // #endregion Watchers
+</script>
