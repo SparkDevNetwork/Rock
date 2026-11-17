@@ -26,6 +26,7 @@ import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PeoplePicker from "../../../../../src/Communication/Chat/ChatShell/ui/peoplePicker.partial.obs";
+import Field from "../../../../../src/Communication/Chat/ChatShell/ui/field.partial.obs";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, fillsAndRings, setsBothRings, shellFolder, StatusStore, styleRules } from "../statusStore";
 
@@ -246,6 +247,22 @@ describe("the chips", () => {
 
         expect(w.get("[data-testid='pp-chip-remove']").attributes("disabled")).toBeDefined();
         expect(input(w).disabled).toBe(true);
+    });
+});
+
+// The box around the chips and the input is the one text box, the Field part, which owns its
+// border, hover and focus; a restated border here once outweighed the focus rule, so a focused To
+// field kept its grey border under the ring.
+describe("the field's box", () => {
+    test("is the Field part's large box, holding the chips and the input, with no border of the picker's own", () => {
+        const w = draw({ chosen: [aaron] });
+        const field = w.findComponent(Field);
+
+        expect(field.exists()).toBe(true);
+        expect(field.props("size")).toBe("lg");
+        expect(field.find(".chat-fld-box [data-testid='pp-chip']").exists()).toBe(true);
+        expect(field.find(".chat-fld-box [data-testid='pp-input']").exists()).toBe(true);
+        expect(styleRules(pickerFile, /chat-pk-field/).join(";")).not.toMatch(/border/);
     });
 });
 
