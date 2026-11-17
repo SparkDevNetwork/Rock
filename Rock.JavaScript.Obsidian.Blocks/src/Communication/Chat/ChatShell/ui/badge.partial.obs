@@ -71,8 +71,9 @@
     background: var(--chat-hover);
 }
 
-/* A tag such as Leader: the pill fill, lighter than the "+N" disc's, so a tag never reads as a count. */
+/* A tag such as Leader: the pill fill, lighter than the "+N" disc's, and semibold words, so a tag never reads as a count. */
 .chat-badge.is-tag {
+    font-weight: 600;
     color: var(--chat-text-2);
     background: var(--chat-pill-bg);
 }
