@@ -41,29 +41,33 @@
                            @keydown="onSearchKeydown" />
                 </div>
 
-                <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
-                    <button v-for="tab in tabs"
-                            :key="tab.id"
-                            type="button"
-                            role="tab"
-                            :aria-label="tab.label"
-                            :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
-                            :aria-controls="gridId"
-                            :tabindex="tab.id === tabStop ? 0 : -1"
-                            @mouseenter="onTabEnter($event, tab.label)"
-                            @mouseleave="onTabLeave"
-                            @pointerdown="onTabPointerDown"
-                            @focus="onTabFocus($event, tab.label)"
-                            @blur="onTabBlur"
-                            @click="onTabClick(tab.id)">
-                        <Icon v-if="tab.id === recentId" name="clock" size="sm" />
-                        <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
-                    </button>
+                <!-- One strip at one height: the tabs, or while searching the results' count, so nothing under the search field moves. -->
+                <div class="chat-picker-strip">
+                    <div class="chat-picker-tabs" role="tablist" aria-label="Emoji categories" :hidden="isSearching">
+                        <button v-for="tab in tabs"
+                                :key="tab.id"
+                                type="button"
+                                role="tab"
+                                :aria-label="tab.label"
+                                :aria-selected="tab.id === selectedTab ? 'true' : 'false'"
+                                :aria-controls="gridId"
+                                :tabindex="tab.id === tabStop ? 0 : -1"
+                                @mouseenter="onTabEnter($event, tab.label)"
+                                @mouseleave="onTabLeave"
+                                @pointerdown="onTabPointerDown"
+                                @focus="onTabFocus($event, tab.label)"
+                                @blur="onTabBlur"
+                                @click="onTabClick(tab.id)">
+                            <Icon v-if="tab.id === recentId" name="clock" size="sm" />
+                            <span v-else class="chat-picker-tab-glyph" aria-hidden="true">{{ tab.glyph }}</span>
+                        </button>
 
-                    <!-- One tip for the tabs, moved to whichever the pointer rests on or a key reaches. -->
-                    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-                        <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
-                    </Teleport>
+                        <!-- One tip for the tabs, moved to whichever the pointer rests on or a key reaches. -->
+                        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                            <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
+                        </Teleport>
+                    </div>
+                    <span v-if="isSearching" class="chat-picker-results chat-section-label" data-testid="emoji-results">{{ resultsLabel }}</span>
                 </div>
 
                 <div :id="gridId"
@@ -284,22 +288,35 @@ img.chat-picker-glyph {
     text-align: center;
 }
 
-/* Above the one section they choose, as a tab strip sits over what it switches. */
-.chat-picker-tabs {
+/*
+    Above the one section the tabs choose, as a tab strip sits over what it switches; a search
+    puts the results' count in the tabs' place at the same height.
+*/
+.chat-picker-strip {
     display: flex;
     flex: none;
-    gap: 2px;
     align-items: center;
-    justify-content: space-between;
     height: 36px;
     padding: 0 8px;
     margin-top: 6px;
     border-bottom: 1px solid var(--chat-line);
 }
 
-/* Hidden while a search draws its results; stated here, since the strip's own display would keep it drawn. */
+.chat-picker-tabs {
+    display: flex;
+    flex: 1;
+    gap: 2px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* Hidden while a search draws its results; stated here, since the tabs' own display would keep them drawn. */
 .chat-picker-tabs[hidden] {
     display: none;
+}
+
+.chat-picker-results {
+    padding: 0 4px;
 }
 
 .chat-picker-tabs button {
@@ -768,6 +785,9 @@ img.chat-picker-prev {
 
     /** The first search result, marked as the one Enter takes. */
     const firstResultKey = computed(() => isSearching.value ? results.value[0]?.key ?? null : null);
+
+    /** The strip's words while searching: how many matched, or the strip's name where none did, which the grid's own empty line explains. */
+    const resultsLabel = computed((): string => searchTotal.value > 0 ? liveLine.value : "Search results");
 
     const liveLine = computed((): string => {
         if (!isSearching.value) {
