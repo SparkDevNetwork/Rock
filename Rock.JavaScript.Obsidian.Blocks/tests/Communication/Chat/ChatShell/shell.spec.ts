@@ -3798,6 +3798,28 @@ describe("settings", () => {
         expect(build({ signInMark, stored: { ...first.stored } }).shell.state.isStatusShown).toBe(false);
     });
 
+    // A shared computer keeps nothing of the last person's rooms: a sign-out since deletes every
+    // remembered room on the device, and another person signing in deletes every one not theirs,
+    // when the drafts delete theirs and by the same mark.
+    test("a sign-out, or another person signing in, deletes the remembered rooms from the device as it deletes the drafts", () => {
+        const other = "b0000002-0000-4000-8000-000000000000";
+        const own = rememberedChannelKey(tenant, person);
+        const theirs = rememberedChannelKey(tenant, other);
+        const left = (): Record<string, string> => ({
+            [own]: channelA, [`${own}:kind`]: "direct", [`${own}:online`]: "on",
+            [theirs]: channelB, [`${theirs}:kind`]: "channel", [`${theirs}:online`]: "on"
+        });
+        let isMarkSet = true;
+        const signInMark = { isSet: () => isMarkSet, set: () => void (isMarkSet = true) };
+
+        const kept = build({ signInMark, stored: left() });
+        expect(Object.keys(kept.stored).sort()).toEqual([own, `${own}:kind`, `${own}:online`].sort());
+
+        isMarkSet = false;
+        const signedOut = build({ signInMark, stored: left() });
+        expect(Object.keys(signedOut.stored)).toEqual([]);
+    });
+
     test("the bootstrap's me is where the person's own switches start", async () => {
         const h = await startedWith({ channels: [], me: { show_profile_details: false, is_open_dm_allowed: true, reaction_push: false, unread_mentions: [] } });
 
