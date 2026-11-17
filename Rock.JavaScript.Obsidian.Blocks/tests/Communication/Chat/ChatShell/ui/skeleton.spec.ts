@@ -22,6 +22,7 @@
 import { mount } from "@vue/test-utils";
 import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
+import { providedSession } from "../sessionShapes";
 
 function bones(shape: string, extra: Record<string, unknown> = {}): HTMLElement[] {
     return mount(Skeleton, { props: { shape, ...extra } }).findAll(".chat-skel-bone").map(bone => bone.element as HTMLElement);
@@ -63,6 +64,19 @@ describe("the skeleton", () => {
         expect(mount(Skeleton, { props: { shape: "bubble", isOwn: true } }).classes()).toContain("is-own");
     });
 
+    // The feed's rows narrow their face on a phone, so the skeleton reads the session as the
+    // list row does and narrows with them; nothing jumps when the page lands.
+    test("a feed group's face is the row's own, 36px on a desktop and 32px on a phone, and the row says which", () => {
+        const desktop = mount(Skeleton, { props: { shape: "group" }, global: { provide: providedSession({ isPhone: false }) } });
+        const phone = mount(Skeleton, { props: { shape: "group" }, global: { provide: providedSession({ isPhone: true }) } });
+
+        expect((desktop.find(".chat-skel-bone.is-face").element as HTMLElement).style.width).toBe("36px");
+        expect(desktop.classes()).not.toContain("is-phone");
+        expect((phone.find(".chat-skel-bone.is-face").element as HTMLElement).style.width).toBe("32px");
+        expect((phone.find(".chat-skel-bone.is-face").element as HTMLElement).style.height).toBe("32px");
+        expect(phone.classes()).toContain("is-phone");
+    });
+
     test("a reactor row is a 28px face and a name, as the reactions list draws a person", () => {
         const drawn = bones("reactor");
 
@@ -92,6 +106,17 @@ describe("the skeleton's look", () => {
         expect(ruleOf(style, ".chat-skel.is-channel")).toMatch(/height:\s*44px/);
         expect(ruleOf(style, ".chat-skel.is-person")).toMatch(/height:\s*52px/);
         expect(ruleOf(style, ".chat-skel.is-reactor")).toMatch(/height:\s*40px/);
+    });
+
+    // The message row's gutter, gap and sides: 36, 12 and 20 on a desktop, 32, 10 and 12 on a
+    // phone; a two-person conversation's bubbles stand 20 in, 12 on a phone.
+    test("a feed group keeps the message row's gap and sides on a desktop and on a phone, and a bubble its sides", () => {
+        expect(ruleOf(style, ".chat-skel.is-group")).toMatch(/gap:\s*12px/);
+        expect(ruleOf(style, ".chat-skel.is-group")).toMatch(/padding:\s*6px 20px/);
+        expect(ruleOf(style, ".chat-skel.is-group.is-phone")).toMatch(/gap:\s*10px/);
+        expect(ruleOf(style, ".chat-skel.is-group.is-phone")).toMatch(/padding:\s*6px 12px/);
+        expect(ruleOf(style, ".chat-skel.is-bubble")).toMatch(/padding:\s*2px 20px/);
+        expect(ruleOf(style, ".chat-skel.is-bubble.is-phone")).toMatch(/padding:\s*2px 12px/);
     });
 
     test("is drawn still, with no wait and no fade in: no animation at all", () => {
