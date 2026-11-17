@@ -26,8 +26,10 @@ import Sheet from "../../../../../src/Communication/Chat/ChatShell/ui/sheet.part
 import Scrim from "../../../../../src/Communication/Chat/ChatShell/ui/scrim.partial.obs";
 import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
 import { provideAnnouncer, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
+import { SheetHeight } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { chatSheet } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
+import { panelMotion, standInHeights } from "./surfaceMotion";
 
 async function settle(): Promise<void> {
     await nextTick();
@@ -187,19 +189,33 @@ describe("a sheet turned into another page", () => {
         document.body.innerHTML = "";
     });
 
-    /** The plus menu's sheet, whose GIF row turns it into the GIF page, whose field asks for focus when asked to. */
-    function turning(hasAutofocus = false): { isGif: Ref<boolean>, wrapper: VueWrapper } {
+    /** How the plus menu's sheet is drawn for a cell. */
+    type Turning = {
+        /** Whether the GIF page's field asks for focus. */
+        hasAutofocus?: boolean;
+
+        /** The height the GIF page asks the sheet for. */
+        height?: SheetHeight;
+
+        /** Whether Vue's own transitions run, as on a page, so a page going back is still drawn as it leaves. */
+        isMoving?: boolean;
+    };
+
+    /** The plus menu's sheet, whose GIF row turns it into the GIF page. */
+    function turning(options: Turning = {}): { isGif: Ref<boolean>, isOpen: Ref<boolean>, wrapper: VueWrapper } {
+        const { hasAutofocus = false, height = "content", isMoving = false } = options;
         const isGif = ref(false);
+        const isOpen = ref(true);
         const Host = defineComponent({
             setup() {
-                return () => h(Sheet, { isOpen: true, label: "Add to your message" }, {
+                return () => h(Sheet, { isOpen: isOpen.value, label: "Add to your message" }, {
                     default: () => [
                         h("button", { "data-testid": "to-gif", onClick: () => {
                             isGif.value = true;
                         } }, "GIF"),
                         h("button", { "data-testid": "photo" }, "Photo or file")
                     ],
-                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", onBack: () => {
+                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", height, onBack: () => {
                         isGif.value = false;
                     } }, () => [
                         h("input", { "data-testid": "gif-search", "data-autofocus": hasAutofocus ? "" : undefined }),
@@ -209,8 +225,8 @@ describe("a sheet turned into another page", () => {
             }
         });
 
-        wrapper = mount(Host, { attachTo: document.body });
-        return { isGif, wrapper };
+        wrapper = mount(Host, { attachTo: document.body, global: { stubs: { transition: !isMoving } } });
+        return { isGif, isOpen, wrapper };
     }
 
     async function turn(): Promise<HTMLElement> {
@@ -251,7 +267,7 @@ describe("a sheet turned into another page", () => {
 
         wrapper?.unmount();
         document.body.innerHTML = "";
-        turning(true);
+        turning({ hasAutofocus: true });
         await settle();
         await turn();
         expect(document.activeElement).toBe(find("gif-search"));
@@ -307,5 +323,56 @@ describe("a sheet turned into another page", () => {
         expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/transform:\s*translateX\(calc\(var\(--chat-rise-sheet\) \/ -4\)\)/);
         expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)/);
         expect(style).not.toMatch(/@keyframes/);
+    });
+
+    // A turn is one motion: as the pages slide, the same sheet grows or shrinks from the height of
+    // the page it leaves to the height of the page it turns to, the handle riding on its top edge.
+    describe("its height", () => {
+        let heights: ReturnType<typeof standInHeights>;
+        const original = window.matchMedia;
+
+        beforeEach(() => {
+            heights = standInHeights();
+        });
+
+        afterEach(() => {
+            heights.restore();
+            window.matchMedia = original;
+        });
+
+        it("grows to the picker height a page asks for over the panel's duration, and shrinks back to its content on Back", async () => {
+            turning({ height: "picker" });
+            await settle();
+            const sheet = find("sheet") as HTMLElement;
+            heights.size(sheet, () => sheet.classList.contains("is-picker") ? 600 : 137);
+
+            await turn();
+
+            expect(sheet.classList.contains("is-picker")).toBe(true);
+            expect(heights.played).toEqual([{ element: sheet, from: "137px", to: "600px", ...panelMotion }]);
+            expect(sheet.firstElementChild?.classList.contains("chat-sheet-handle")).toBe(true);
+
+            (find("page-back") as HTMLElement).click();
+            await settle();
+
+            expect(sheet.classList.contains("is-picker")).toBe(false);
+            expect(heights.played).toEqual([
+                { element: sheet, from: "137px", to: "600px", ...panelMotion },
+                { element: sheet, from: "600px", to: "137px", ...panelMotion }
+            ]);
+        });
+
+        it("changes its height at once where less motion is asked for, the pages only fading", async () => {
+            window.matchMedia = ((query: string) => ({ media: query, matches: query === "(prefers-reduced-motion: reduce)" })) as unknown as typeof window.matchMedia;
+            turning({ height: "picker" });
+            await settle();
+            const sheet = find("sheet") as HTMLElement;
+            heights.size(sheet, () => sheet.classList.contains("is-picker") ? 600 : 137);
+
+            await turn();
+
+            expect(sheet.classList.contains("is-picker")).toBe(true);
+            expect(heights.played).toEqual([]);
+        });
     });
 });
