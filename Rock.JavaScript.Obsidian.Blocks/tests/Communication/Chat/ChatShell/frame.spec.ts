@@ -1674,6 +1674,70 @@ describe("the panel column", () => {
         expect(rules.some(r => r.selector.includes(".chat-panel-swap-enter-active") && /transition:\s*opacity var\(--chat-d-swap\)/.test(r.body))).toBe(true);
     });
 
+    // Through the crossfade the column holds the old panel and the new one together. The old one
+    // is out of reach as it fades, so focus goes into the panel coming in, never onto a control
+    // about to leave the page with its panel.
+    test("puts focus in the panel crossfading in, the one fading out out of reach as it goes", async () => {
+        const w = await mountBlock(1200, true);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2 } as Partial<TimelineMessage>));
+        await w.get("[data-testid='header-threads']").trigger("click");
+        await fadeOut();
+        const root = timelineOf(team.channel_id).messages[0];
+        (mockShell!.threads as { state: { list: { rows: unknown[] } } }).state.list.rows = [{
+            channel_id: team.channel_id, root, reply_count: 2, last_reply_at: root.created_at, last_reply_id: 42,
+            participant_count: 2, following: true, has_unread: false, mention_count: 0
+        }];
+        await settle();
+
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+
+        const leaving = w.get("[data-testid='frame-panel'] .chat-panel-swap-leave-active");
+        expect(leaving.attributes("inert")).toBeDefined();
+        expect(leaving.element.contains(document.activeElement)).toBe(false);
+
+        await fadeOut();
+        expect(document.activeElement).toBe(w.get("[data-testid='members-filter']").element);
+    });
+
+    // Activity's tabs are one radio group: an arrow chooses the next tab and focus moves with the
+    // choice, staying on it as the list under it changes.
+    test("keeps focus on Activity's tab an arrow chose as its list crossfades to the next", async () => {
+        const w = await mountBlock(1200, true);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await fadeOut();
+        expect(document.activeElement).toBe(w.get("[data-testid='activity-tab'][data-value='mentions']").element);
+
+        await w.get("[data-testid='activity-tab'][data-value='mentions']").trigger("keydown", { key: "ArrowRight" });
+        await fadeOut();
+
+        const chosen = w.get("[data-testid='activity-tab'][aria-checked='true']");
+        expect(chosen.attributes("data-value")).toBe("threads");
+        expect(document.activeElement).toBe(chosen.element);
+    });
+
+    // F6-A's one sliding pill: Activity's Segmented stays through a change of tab, so its pill
+    // slides to the tab chosen as the list under it changes.
+    test("keeps one Activity Segmented through a change of tab, its pill sliding to the tab chosen", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await settle();
+        const pill = w.get("[data-testid='frame-panel'] .chat-seg-pill").element as HTMLElement;
+        expect(pill.style.getPropertyValue("--chat-seg-i")).toBe("0");
+
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.findAll("[data-testid='frame-panel'] .chat-seg-pill")).toHaveLength(1);
+        expect(w.get("[data-testid='frame-panel'] .chat-seg-pill").element).toBe(pill);
+        expect(pill.style.getPropertyValue("--chat-seg-i")).toBe("1");
+    });
+
     test("draws its dividing line only while open, so the closed column is 0px wide", () => {
         const rules = frameRules();
         const closedOrAlways = rules.filter(r => /\.chat-frame-panel\s*$/.test(r.selector) && !r.selector.includes("data-panel-open=\"true\"") && !r.selector.includes("data-phone"));
