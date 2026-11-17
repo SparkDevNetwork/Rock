@@ -36,7 +36,7 @@
                 </template>
             </span>
             <!-- The bubble's box, which its bar is placed beside, level with its top. -->
-            <div class="chat-bub-anchor">
+            <div class="chat-bub-anchor" :class="{ 'is-files-only': !isBubbleShown }">
                 <MessageEditor v-if="view.isEditorShown && view.message"
                                :message="view.message"
                                :error="view.editError"
@@ -84,16 +84,19 @@
 <style scoped>
 /*
     A direct message's row: bubbles, the name over another person's group, their face at its last,
-    and the time under the group. A focus from a jump rings what the person reads, the bubble or
-    the card; the row's own sheet holds the rest of the ring's rule and why it is written twice.
+    and the time under the group. A focus, from a jump or from Tab on an own message, rings what
+    the person reads: the bubble, the card, or the files of a message that has no words. The row's
+    own sheet holds the rest of the ring's rule and why it is written twice.
 */
 .chat-msg.is-conversational:focus-visible .chat-bubble,
+.chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus-visible .chat-card {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
 }
 
 .chat-msg.is-conversational:focus .chat-bubble,
+.chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus .chat-card {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
@@ -101,6 +104,7 @@
 
 @supports selector(:focus-visible) {
     .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bubble,
+    .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bub-anchor.is-files-only,
     .chat-msg.is-conversational.is-card:focus:not(:focus-visible) .chat-card {
         outline: none;
     }
@@ -227,6 +231,11 @@
 
 .is-own .chat-bub-anchor {
     align-items: flex-end;
+}
+
+/* With no words the box is the files alone; it takes their corners, so a focus ring follows them. */
+.chat-bub-anchor.is-files-only {
+    border-radius: var(--chat-r-surface);
 }
 
 /* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble. */
