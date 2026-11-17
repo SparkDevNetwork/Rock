@@ -386,7 +386,7 @@ namespace Rock.Blocks.Engagement
         {
             return new AttributeService( RockContext ).GetByEntityTypeId( new StepType().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "StepProgramId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "StepProgramId" &&
                     a.EntityTypeQualifierValue.Equals( stepProgramId ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

@@ -688,7 +688,7 @@ namespace Rock.Blocks.Event
         {
             return new AttributeService( rockContext ).GetByEntityTypeId( new EventItemOccurrence().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "EventItemId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "EventItemId" &&
                     a.EntityTypeQualifierValue.Equals( eventIdQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

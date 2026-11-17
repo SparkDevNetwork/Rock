@@ -2125,7 +2125,7 @@ namespace Rock.Blocks.Event
                     .AsNoTracking()
                     .Count( r =>
                         r.RegistrationInstanceId == registrationInstanceId
-                        && r.DiscountCode.Equals( code, StringComparison.OrdinalIgnoreCase )
+                        && r.DiscountCode == code
                         && ( !isNewRegistration || r.Id <= registrationId ) );
 
                 if ( usageCount > maxUsage.Value )

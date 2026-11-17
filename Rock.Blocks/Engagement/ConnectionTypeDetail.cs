@@ -979,7 +979,7 @@ namespace Rock.Blocks.Engagement
             bag.ConnectionTypeAttributes = attributeService.GetByEntityTypeId( new ConnectionType().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "Id" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -990,7 +990,7 @@ namespace Rock.Blocks.Engagement
             bag.ConnectionRequestAttributes = attributeService.GetByEntityTypeId( new ConnectionRequest().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ConnectionTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1001,7 +1001,7 @@ namespace Rock.Blocks.Engagement
             bag.ConnectionOpportunityAttributes = attributeService.GetByEntityTypeId( new ConnectionOpportunity().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ConnectionTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

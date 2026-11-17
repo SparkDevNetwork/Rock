@@ -538,7 +538,7 @@ namespace RockWeb.Blocks.Core
             edtDefinedTypeAttributes.ReservedKeyNames = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) &&
                     !a.Guid.Equals( attributeGuid ) )
                 .Select( a => a.Key )
@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.Core
             var attributes = attributeService
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -716,7 +716,7 @@ namespace RockWeb.Blocks.Core
             var attributes = new AttributeService( RockApp.Current.CreateRockContext() )
                 .GetByEntityTypeId( new DefinedValue().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "DefinedTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

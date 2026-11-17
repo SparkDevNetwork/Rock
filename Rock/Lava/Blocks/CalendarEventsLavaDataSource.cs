@@ -464,7 +464,7 @@ namespace Rock.Lava.Blocks
                 if ( !string.IsNullOrWhiteSpace( calendarName ) )
                 {
                     calendar = calendarService.Queryable()
-                        .Where( x => x.Name != null && x.Name.Equals( calendarName, StringComparison.OrdinalIgnoreCase ) )
+                        .Where( x => x.Name != null && x.Name == calendarName )
                         .FirstOrDefault();
                 }
             }
@@ -516,7 +516,7 @@ namespace Rock.Lava.Blocks
                 if ( !string.IsNullOrWhiteSpace( eventName ) )
                 {
                     eventItem = eventItemService.Queryable()
-                        .Where( x => x.Name != null && x.Name.Equals( eventName, StringComparison.OrdinalIgnoreCase ) )
+                        .Where( x => x.Name != null && x.Name == eventName )
                         .FirstOrDefault();
                 }
             }

@@ -441,7 +441,7 @@ namespace Rock.Blocks.Cms
             var attributeService = new AttributeService( rockContext );
             return attributeService.GetByEntityTypeId( entityTypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ContentChannelTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ContentChannelTypeId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ToList();

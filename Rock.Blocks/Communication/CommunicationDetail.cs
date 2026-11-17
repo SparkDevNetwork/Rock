@@ -2572,7 +2572,7 @@ namespace Rock.Blocks.Communication
                 .Where( i =>
                     i.InteractionSession == null
                     || i.InteractionSession.DeviceType == null
-                    || !i.InteractionSession.DeviceType.ClientType.Equals( "robot", StringComparison.OrdinalIgnoreCase )
+                    || i.InteractionSession.DeviceType.ClientType != "robot"
                 )
                 .GroupBy( i =>
                     i.InteractionSession == null

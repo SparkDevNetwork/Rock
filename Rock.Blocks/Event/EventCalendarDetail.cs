@@ -443,7 +443,7 @@ namespace Rock.Blocks.Event
         {
             return new AttributeService( RockContext ).GetByEntityTypeId( new EventCalendarItem().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "EventCalendarId" &&
                     a.EntityTypeQualifierValue.Equals( eventIdQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

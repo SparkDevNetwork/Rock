@@ -155,7 +155,7 @@ namespace Rock.Blocks.Engagement
         {
             return new AttributeService( RockContext ).GetByEntityTypeId( new ConnectionRequest().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionOpportunityId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ConnectionOpportunityId" &&
                     a.EntityTypeQualifierValue.Equals( connectionOpportunityId ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -173,7 +173,7 @@ namespace Rock.Blocks.Engagement
 
             var inheritedAttributes = new AttributeService( RockContext ).GetByEntityTypeId( new ConnectionRequest().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ConnectionTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ConnectionTypeId" &&
                     a.EntityTypeQualifierValue.Equals( connectionTypeId ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

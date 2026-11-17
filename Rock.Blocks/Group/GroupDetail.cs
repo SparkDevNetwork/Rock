@@ -3164,7 +3164,7 @@ namespace Rock.Blocks.Group
             var attributes = new AttributeService( RockContext ).GetByEntityTypeId( new GroupMember().TypeId, false )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     qualifierValues.Contains( a.EntityTypeQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -3299,7 +3299,7 @@ namespace Rock.Blocks.Group
             var qualifierValues = groupTypeChain.Select( gt => gt.Id.ToString() ).ToList();
             var dateAttributes = new AttributeService( RockContext ).GetByEntityTypeId( new Model.Group().TypeId, false )
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" &&
                     qualifierValues.Contains( a.EntityTypeQualifierValue ) &&
                     dateFieldTypeIds.Contains( a.FieldTypeId ) )
                 .OrderBy( a => a.Order )
@@ -3474,7 +3474,7 @@ namespace Rock.Blocks.Group
             return attributeService.GetByEntityTypeId( new GroupMember().TypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "GroupId" &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

@@ -268,7 +268,7 @@ namespace Rock.Blocks.Event
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "EventCalendarId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "EventCalendarId" &&
                         a.EntityTypeQualifierValue.Equals( eventCalendar.Id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name ) )

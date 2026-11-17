@@ -52,7 +52,7 @@ namespace Rock.Utility.EntityCoding.Processors
             var items = attributeService
                 .GetByEntityTypeId( new WorkflowActivity().TypeId ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "ActivityTypeId" &&
                     a.EntityTypeQualifierValue.Equals( entity.Id.ToString() ) )
                 .ToList();
 

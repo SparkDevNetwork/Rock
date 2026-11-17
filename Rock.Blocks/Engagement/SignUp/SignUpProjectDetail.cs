@@ -508,7 +508,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var attributes = new AttributeService( RockContext ).GetByEntityTypeId( new GroupMember().TypeId, false )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
+                    a.EntityTypeQualifierColumn == "GroupTypeId"
                     && qualifierValues.Contains( a.EntityTypeQualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1164,7 +1164,7 @@ namespace Rock.Blocks.Engagement.SignUp
             return new AttributeService( RockContext ).GetByEntityTypeId( entityTypeId, true )
                 .AsNoTracking()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
+                    a.EntityTypeQualifierColumn == "GroupId"
                     && a.EntityTypeQualifierValue.Equals( qualifierValue ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )

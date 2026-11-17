@@ -942,7 +942,7 @@ namespace Rock.Model
             var matchedPersons = new List<Person>();
             if ( email.IsNotNullOrWhiteSpace() )
             {
-                var emailMatchingQry = query.Where( a => a.Email.Equals( email, StringComparison.CurrentCultureIgnoreCase ) );
+                var emailMatchingQry = query.Where( a => a.Email == email );
                 var emailMatchedPerson = emailMatchingQry.FirstOrDefault();
                 if ( emailMatchedPerson != null )
                 {

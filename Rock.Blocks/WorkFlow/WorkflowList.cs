@@ -303,7 +303,7 @@ namespace Rock.Blocks.Workflow
                     .Where( a =>
                         a.EntityTypeId == entityTypeId &&
                         a.IsGridColumn &&
-                        a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "WorkflowTypeId" &&
                         a.EntityTypeQualifierValue.Equals( workflowQualifier ) )
                     .OrderByDescending( a => a.EntityTypeQualifierColumn )
                     .ThenBy( a => a.Order )

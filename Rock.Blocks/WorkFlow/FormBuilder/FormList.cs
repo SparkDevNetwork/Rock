@@ -1110,7 +1110,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
             return attributeService
                 .GetByEntityTypeId( new Rock.Model.Workflow().TypeId, true ).AsQueryable()
                 .Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == "WorkflowTypeId" &&
                     a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) )
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
@@ -1132,7 +1132,7 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
                 var activityTypeAttributes = attributeService
                     .GetByEntityTypeId( new WorkflowActivity().TypeId, true ).AsQueryable()
                     .Where( a =>
-                        a.EntityTypeQualifierColumn.Equals( "ActivityTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierColumn == "ActivityTypeId" &&
                         a.EntityTypeQualifierValue.Equals( activityType.Id.ToString() ) )
                     .OrderBy( a => a.Order )
                     .ThenBy( a => a.Name )

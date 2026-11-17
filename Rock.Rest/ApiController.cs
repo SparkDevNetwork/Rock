@@ -270,6 +270,18 @@ namespace Rock.Rest
                 throw new HttpResponseException( new HttpResponseMessage( HttpStatusCode.Forbidden ) { ReasonPhrase = "Not authorized to view that attribute" } );
             }
 
+            /*
+                11/17/2026 - CLAUDE
+
+                This query runs on the database, and EF6 drops the StringComparison
+                argument of Equals when it translates it to SQL. The comparison always
+                follows the database collation (case-insensitive), so caseSensitive
+                effectively does nothing here. It is left in place for backward
+                compatibility with existing API callers. This controller will not be
+                ported to EF Core, where this Equals overload cannot be translated.
+
+                Reason: caseSensitive has no effect on EF6 but is kept for compatibility.
+            */
             query = query.WhereAttributeValue( rockContext,
                 a => authorizedAttributeIds.Contains( a.AttributeId ) && a.Value.Equals( value, valueComparison ) );
 

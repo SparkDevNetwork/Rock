@@ -275,7 +275,7 @@ namespace Rock.Model
         public async Task<AuthClient> GetByPostLogoutRedirectUrlAsync( string postLogoutRedirectUrl )
         {
             return await Queryable().AsNoTracking().FirstOrDefaultAsync( ac =>
-                ac.PostLogoutRedirectUri.Equals( postLogoutRedirectUrl, StringComparison.OrdinalIgnoreCase ) );
+                ac.PostLogoutRedirectUri == postLogoutRedirectUrl );
         }
 
         /// <summary>

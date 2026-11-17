@@ -324,7 +324,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 qry = qry.Where( a =>
-                    a.EntityTypeQualifierColumn.Equals( qualifierColumn, StringComparison.OrdinalIgnoreCase ) &&
+                    a.EntityTypeQualifierColumn == qualifierColumn &&
                     a.EntityTypeQualifierValue.Equals( qualifierValue ) );
             }
 
