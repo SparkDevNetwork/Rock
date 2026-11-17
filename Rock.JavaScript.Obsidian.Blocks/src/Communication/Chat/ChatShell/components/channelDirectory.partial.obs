@@ -936,9 +936,10 @@
             // turns, and a leave the door made before the row is read again.
             const isMember = join.kind === "joined" || (row.is_member && props.leaves[row.channel_id]?.kind !== "left");
             // Its campus and how many are in it: Rock's group type names nothing a person picks a
-            // channel by. A platform from before the count sends none, and the campus stands alone.
+            // channel by. The campus stands alone where no count came: a platform from before the
+            // count sends none, and a room made since its last count is sent null, never a 0.
             const meta = [campusNameOf(row.campus_id) ?? "Whole church"];
-            if (row.member_count !== undefined) {
+            if (row.member_count !== undefined && row.member_count !== null) {
                 meta.push(`${row.member_count.toLocaleString()} ${row.member_count === 1 ? "member" : "members"}`);
             }
 
