@@ -33,6 +33,7 @@ import ChannelSidebarComponent from "../../../../src/Communication/Chat/ChatShel
 import EmojiPickerComponent from "../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import MessageReactionsComponent from "../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
@@ -3905,6 +3906,30 @@ describe("the message box", () => {
 
         expect(w.find("[data-testid='action-bar']").exists()).toBe(false);
         expect(boxes()).toHaveLength(0);
+    });
+
+    test("the menu open from a message's box shuts that message's who-reacted card until it closes, and no other message's", async () => {
+        const w = await mountBlock(1200, true);
+        const prayed = { reactions: [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>;
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(7, prayed), storedMessage(8, prayed));
+        await settle();
+        const isCardShut = (id: number): unknown => w.findAllComponents(MessageReactionsComponent)
+            .find(reactions => (reactions.props("message") as TimelineMessage).id === id)?.props("isCardDisabled");
+        await rest(w, 7);
+        expect(isCardShut(7)).toBe(false);
+
+        await press(boxes()[0]?.querySelector("[data-testid='action-bar'] button[aria-label='More actions']"));
+        expect(document.querySelector("[role='menu']")).not.toBeNull();
+
+        expect(isCardShut(7)).toBe(true);
+        expect(isCardShut(8)).toBe(false);
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+
+        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(isCardShut(7)).toBe(false);
     });
 
     test("a room switch with focus in the tray takes the box away and leaves focus on something drawn and in reach", async () => {
