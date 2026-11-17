@@ -20,7 +20,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { nextTick } from "vue";
+import { Component, h, nextTick } from "vue";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
@@ -53,6 +53,20 @@ describe("the icon button", () => {
 
         expect(button.attributes("aria-label")).toBe("Turn on notifications");
         expect(button.find("svg").exists()).toBe(true);
+    });
+
+    // A holder places the button with its own scoped rules, as the composer puts a remove on a
+    // staged GIF's corner; those rules reach the button only when it is the part's one root.
+    test("takes a holder's class and the holder's style scope on its button", () => {
+        const holder = {
+            __scopeId: "data-v-holder",
+            render: () => h("div", [h(IconButton, { icon: "x", label: "Remove GIF", class: "holder-remove" })])
+        } as unknown as Component;
+        wrapper = mount(holder, { attachTo: document.body });
+        const button = wrapper.get("button");
+
+        expect(button.classes()).toContain("holder-remove");
+        expect(button.attributes()).toHaveProperty("data-v-holder");
     });
 
     test("cannot be drawn without a label", () => {
