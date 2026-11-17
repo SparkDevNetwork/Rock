@@ -51,7 +51,7 @@ import { join } from "path";
 import { defineComponent, effect, h, nextTick, reactive, shallowRef } from "vue";
 import ActionBar from "../../../../../src/Communication/Chat/ChatShell/components/actionBar.partial.obs";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
-import { ActionBars, provideActionBars } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
+import { ActionBars, ColumnActionBar, provideActionBars, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { isActionCall } from "../../../../../src/Communication/Chat/ChatShell/composables/useMessageActions.partial";
 import { ChatShell } from "../../../../../src/Communication/Chat/ChatShell/shell.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
@@ -1071,5 +1071,50 @@ describe("the block's boxes", () => {
         expect(seen[7]).toBeNull();
 
         expect(runs).toEqual({ 7: 3, 8: 1 });
+    });
+});
+
+// Every row asks whether the column's box is on its own message, so the box moving from one
+// message to the next wakes the row it leaves and the row it reaches, never the rest of the feed.
+describe("the column's box on a message", () => {
+    test("is read per message, so a move wakes only the row it leaves and the row it reaches", () => {
+        const scroller = document.createElement("div");
+        const rows = new Map<number, HTMLElement>();
+        for (const id of [1, 2, 3, 4, 5]) {
+            const row = document.createElement("div");
+            row.dataset.hotId = String(id);
+            scroller.append(row);
+            rows.set(id, row);
+        }
+        document.body.append(scroller);
+
+        let column: ColumnActionBar | null = null;
+        wrapper = mount(defineComponent({
+            setup() {
+                column = useActionBar(() => scroller);
+                return () => h("div");
+            }
+        }), { attachTo: document.body });
+        const bar = column as unknown as ColumnActionBar;
+        const hover = (id: number): void => {
+            bar.onPointerOver({ pointerType: "mouse", target: rows.get(id) } as unknown as PointerEvent);
+            jest.advanceTimersByTime(1000);
+        };
+
+        const runs: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        const seen: Record<number, boolean> = {};
+        for (const id of [1, 2, 3, 4, 5]) {
+            effect(() => {
+                seen[id] = bar.isOn(id);
+                runs[id]++;
+            });
+        }
+
+        hover(1);
+        expect(seen).toEqual({ 1: true, 2: false, 3: false, 4: false, 5: false });
+        hover(2);
+        expect(seen).toEqual({ 1: false, 2: true, 3: false, 4: false, 5: false });
+
+        expect(runs).toEqual({ 1: 3, 2: 2, 3: 1, 4: 1, 5: 1 });
     });
 });
