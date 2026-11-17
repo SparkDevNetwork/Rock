@@ -616,7 +616,7 @@ a.chat-attach-file:focus-visible {
     import SettingNote from "../ui/settingNote.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import { isCutShort, overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         /** A message's files, in the order sent: photos drawn in a grid, other files as cards. */
@@ -839,11 +839,6 @@ a.chat-attach-file:focus-visible {
     // #endregion Event Handlers
 
     // #region Functions
-
-    /** Whether the chip cut words short, wider than the room it gave them. */
-    function isCutShort(element: HTMLElement | undefined): boolean {
-        return !!element && element.scrollWidth > element.clientWidth;
-    }
 
     /**
      * A single photo's or a GIF's box, sized from its declared size before it loads, within the

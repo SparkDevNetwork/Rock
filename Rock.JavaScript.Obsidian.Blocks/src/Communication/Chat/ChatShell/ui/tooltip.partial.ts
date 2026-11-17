@@ -91,6 +91,18 @@ export function isKeyboardFocus(target: EventTarget | null | undefined): boolean
 }
 
 /**
+ * Whether an element's words were cut short, wider than the room it gave them. A tip that only
+ * repeats words already shown whole is kept away, so a name or a file's words that fit show none.
+ *
+ * @param element The element holding the words, or nothing while it is not drawn.
+ *
+ * @returns True only where the words overflow their room.
+ */
+export function isCutShort(element: HTMLElement | undefined): boolean {
+    return !!element && element.scrollWidth > element.clientWidth;
+}
+
+/**
  * The chat's tooltip for one anchor. The caller draws the tip, class chat-tip, role tooltip, at
  * the floating styles while it is shown, and binds the anchor's handlers. A tip shows once the
  * pointer has rested or a keyboard focus has arrived, never under a press, and hides on a click.
