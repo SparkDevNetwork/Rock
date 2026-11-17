@@ -19,7 +19,8 @@
             <span>{{ errorSentence }}</span>
         </div>
         <div class="chat-editor-foot" data-testid="message-editor-foot">
-            <span class="chat-editor-hint"><kbd>Esc</kbd> to cancel, <kbd>Enter</kbd> to save</span>
+            <!-- A phone has no Escape, and its Enter key is the keyboard's own, so only a keyboard's screen names them. -->
+            <span v-if="!isPhone" class="chat-editor-hint"><kbd>Esc</kbd> to cancel, <kbd>Enter</kbd> to save</span>
             <Button kind="ghost" size="sm" data-testid="edit-cancel" @click="emit('cancel')">Cancel</Button>
             <!-- Held while the save is out, so a second press does not send the same edit twice. -->
             <Button kind="brand"
@@ -80,10 +81,12 @@
     color: var(--chat-danger-ink);
 }
 
+/* Cancel and Save stand at the end, with or without the keys' names before them. */
 .chat-editor-foot {
     display: flex;
     gap: 8px;
     align-items: center;
+    justify-content: flex-end;
     padding: 0 4px;
     font-size: var(--chat-fs-small);
     color: var(--chat-muted);
@@ -108,6 +111,7 @@
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import Button from "../ui/button.partial.obs";
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
@@ -150,6 +154,8 @@
 
     const rootElement = ref<HTMLElement>();
     const editor = ref<InstanceType<typeof ChipEditor>>();
+
+    const { isPhone } = useChatSession();
 
     /**
      * What the editor opens with, read once: the same message changed from another device while

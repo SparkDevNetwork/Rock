@@ -1,7 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <!-- A phone's keyboard shows Send on its Enter key, as Enter sends, and starts each sentence with a capital. -->
     <div ref="editorElement"
          class="chat-ed"
+         :class="{ 'is-phone': isPhone }"
          :contenteditable="isDisabled ? 'false' : 'true'"
          role="textbox"
          aria-multiline="true"
@@ -10,6 +12,8 @@
          :tabindex="isDisabled ? -1 : undefined"
          :data-placeholder="placeholder"
          spellcheck="true"
+         enterkeyhint="send"
+         autocapitalize="sentences"
          data-testid="chip-editor"
          @keydown="onKeydown"
          @input="onInput"
@@ -38,6 +42,11 @@
     overflow-wrap: anywhere;
     outline: 0;
     cursor: text;
+}
+
+/* On a phone the text is the 16px title size: iOS zooms the page into a box whose text is smaller. */
+.chat-ed.is-phone {
+    font-size: var(--chat-fs-title);
 }
 
 /* Absolute, so the caret sits at the start of the line rather than after the placeholder. */
@@ -77,6 +86,7 @@
 
 <script setup lang="ts">
     import { h, onBeforeUnmount, onMounted, PropType, ref, render, watch } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import { DisplayPiece, MentionPerson } from "../types.partial";
     import Icon from "./icon.partial.obs";
     import { avatarHue } from "./brand.partial";
@@ -163,6 +173,9 @@
     // #region Values
 
     const editorElement = ref<HTMLElement>();
+
+    /** Whether the chat is a phone's, where the text is drawn large enough that focusing the box does not zoom the page. */
+    const { isPhone } = useChatSession();
 
     /** A mention token in any letter case, as the server reads it. */
     const tokenPattern = /<@([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|all)>/i;
