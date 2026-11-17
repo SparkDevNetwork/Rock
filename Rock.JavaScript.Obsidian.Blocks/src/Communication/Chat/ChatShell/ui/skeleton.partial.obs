@@ -7,7 +7,8 @@
                    'is-bubble': shape === 'bubble',
                    'is-panel': shape === 'panel',
                    'is-reactor': shape === 'reactor',
-                   'is-own': isOwn
+                   'is-own': isOwn,
+                   'is-phone': isPhone
                }" aria-hidden="true">
         <i v-if="plan.lead" class="chat-skel-bone" :class="`is-${plan.lead}`" :style="{ width: `${plan.leadSize}px`, height: `${plan.leadSize}px` }"></i>
         <span class="chat-skel-lines">
@@ -52,14 +53,25 @@
     padding: 10px;
 }
 
+/* A feed group stands as the message row does: its gutter, gap and sides, narrower on a phone. */
 .chat-skel.is-group {
     align-items: flex-start;
+    gap: 12px;
     padding: 6px 20px;
+}
+
+.chat-skel.is-group.is-phone {
+    gap: 10px;
+    padding: 6px 12px;
 }
 
 .chat-skel.is-bubble {
     align-items: flex-end;
     padding: 2px 20px;
+}
+
+.chat-skel.is-bubble.is-phone {
+    padding: 2px 12px;
 }
 
 .chat-skel.is-bubble.is-own {
@@ -105,6 +117,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import { RowElement } from "../types.partial";
 
     // #region Types
@@ -156,6 +169,9 @@
         }
     });
 
+    // A feed's rows narrow on a phone, read from the session as the list row reads it.
+    const { isPhone } = useChatSession();
+
     /** The width given for a line, or the shape's own. */
     function widthAt(index: number, fallback: number): string {
         return `${props.widths[index] ?? fallback}%`;
@@ -178,7 +194,7 @@
             case "group":
                 return {
                     lead: "face",
-                    leadSize: 36,
+                    leadSize: isPhone.value ? 32 : 36,
                     lines: [{ width: "96px", height: 10 }, { width: widthAt(0, 92), height: 9 }, { width: widthAt(1, 60), height: 9 }],
                     trail: null
                 };
