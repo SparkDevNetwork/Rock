@@ -574,7 +574,8 @@ describe("a row's text", () => {
     /** The panel's own style rules, selector and body, read from the component's source. */
     function panelRules(): Array<{ selector: string, body: string }> {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        // the rules after the opening tag, so the first rule's selector is its own
+        const style = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
         return Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).map(m => ({ selector: m[1].trim(), body: m[2] }));
     }
 
