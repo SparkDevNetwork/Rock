@@ -16,6 +16,7 @@
             <TransitionGroup moveClass="chat-move" :css="false">
                 <button v-if="isFolded"
                         key="summary"
+                        ref="summaryElement"
                         type="button"
                         class="chat-rx is-summary"
                         :class="{ 'is-mine': isAnyMine }"
@@ -363,6 +364,7 @@
 
     const addElement = ref<HTMLButtonElement>();
     const rowElement = ref<HTMLElement>();
+    const summaryElement = ref<HTMLButtonElement>();
 
     /** Four or more kinds on a bubble fold into one summary chip; a channel's flat row never folds. */
     const foldFromKinds = 4;
@@ -537,7 +539,7 @@
         isOpen.value = true;
         popping.value = new Set(reactions.value.map(reaction => reaction.code));
         await nextTick();
-        rowElement.value?.querySelector<HTMLElement>("[data-testid='reaction-chip']")?.focus({ preventScroll: true });
+        rowElement.value?.querySelector<HTMLElement>(".chat-rx[data-code]")?.focus({ preventScroll: true });
     }
 
     /** The chevron folds the row back into its summary, which then holds focus. */
@@ -545,7 +547,7 @@
         hideTip();
         isOpen.value = false;
         await nextTick();
-        rowElement.value?.querySelector<HTMLElement>("[data-testid='reaction-summary']")?.focus({ preventScroll: true });
+        summaryElement.value?.focus({ preventScroll: true });
     }
 
     function onPopEnd(code: string): void {
