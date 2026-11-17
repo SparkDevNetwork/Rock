@@ -114,6 +114,8 @@ function build(options: {
     pushSettings?: Record<string, unknown>,
     personAliasGuid?: string,
     stored?: Record<string, string>,
+    // what Rock's page said of the person; ok unless a test loads a page already refused
+    gate?: string,
     // the channel a link names; channel A unless a test asks for a first visit with null
     linkedChannelId?: string | null,
     // one tab's Web Locks and BroadcastChannel, which two builds of one person share as two tabs do
@@ -307,7 +309,7 @@ function build(options: {
     };
 
     const shell = createChatShell({
-        session: { gate: "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
+        session: { gate: options.gate ?? "ok", projectUrl: "http://platform", publishableKey: "k", tenantId: tenant, personAliasGuid: options.personAliasGuid ?? person, isChatAdministrator: options.isChatAdministrator },
         linkedChannelId: options.linkedChannelId === undefined ? channelA : options.linkedChannelId,
         mintChurchToken: async () => {
             await heldMint.value?.promise;
@@ -799,6 +801,33 @@ function personal(h: ReturnType<typeof build>, event: string, payload: unknown):
 // The block draws a loading state, never "Choose a conversation.", until the page load has chosen
 // the first conversation or found none it can open.
 describe("the page load", () => {
+    // The church token is the first thing every load waits on, so it is asked for as the page
+    // arrives, while the page is still being drawn, not once it is shown.
+    test("asks Rock for the church token the moment the shell is made, and the start signs in on that answer without asking again", async () => {
+        const h = build();
+        await settle();
+        expect(h.counts.mints).toBe(1);
+        expect(h.exchangeBodies).toHaveLength(0);
+
+        const starting = h.shell.start();
+        await settle();
+        answerHistory(h, channelA, 10);
+        await starting;
+
+        expect(h.shell.state.phase).toBe("ready");
+        expect(h.counts.mints).toBe(1);
+        expect(h.exchangeBodies).toHaveLength(1);
+    });
+
+    test("a page Rock already turned away asks for no church token", async () => {
+        const h = build({ gate: "age_restricted" });
+        await settle();
+        await h.shell.start();
+
+        expect(h.counts.mints).toBe(0);
+        expect(h.shell.state.phase).toBe("refused");
+    });
+
     test("is opening from the start, through a first visit's sidebar read, until the channel it names opens", async () => {
         const h = build({ linkedChannelId: null });
         h.heldBootstraps.value = [];
