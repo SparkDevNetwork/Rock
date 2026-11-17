@@ -599,17 +599,16 @@ describe("Blocked people", () => {
         const w = mountSettings({ blocked: list() });
         await openPage(w);
         await unblockRow(w, 0);
-        const retry = jest.fn();
+        // the blocks drop the note and hold the row as they ask again, before Try again is told on
+        const retry = jest.fn(() => void w.setProps({ blocked: list({ busy: { [sam.person_alias_guid]: true } }) }));
         await w.setProps({ blocked: list({ notes: { [sam.person_alias_guid]: { kind: "error", text: "Couldn't save.", retry } } }) });
         await settle();
 
         const again = w.get<HTMLButtonElement>("[data-testid='blocked-row'] [data-testid='note-retry']");
         again.element.focus();
         await again.trigger("click");
-        expect(retry).toHaveBeenCalledTimes(1);
-        // the blocks drop the note and hold the row as they ask again
-        await w.setProps({ blocked: list({ busy: { [sam.person_alias_guid]: true } }) });
         await settle();
+        expect(retry).toHaveBeenCalledTimes(1);
         expect(document.activeElement).toBe(w.findAll("[data-testid='blocked-unblock']")[0].element);
 
         await w.setProps({ blocked: list({ people: [gone] }) });

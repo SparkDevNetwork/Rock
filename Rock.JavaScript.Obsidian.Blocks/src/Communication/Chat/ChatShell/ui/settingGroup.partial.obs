@@ -8,18 +8,21 @@
         </h4>
         <slot v-if="isBare" :labelId="labelId"></slot>
         <!--
-            A list's rows leave by the Leave motion, the rows below gliding into the gap by the
-            list's one move; each row draws its own leaving.
+            A list's rows leave by the Leave motion: each row draws its own fade where it stands,
+            and once it has gone the list glides the rows below into the gap by its one move.
         -->
         <TransitionGroup v-else-if="isList"
+                         ref="listGroup"
                          tag="div"
                          class="chat-sg"
                          role="list"
-                         moveClass="chat-move"
+                         :moveClass="moveClass"
                          leaveActiveClass="is-leaving"
                          leaveToClass="is-left"
                          :aria-labelledby="label && !ariaLabel ? labelId : undefined"
-                         :aria-label="ariaLabel ?? undefined">
+                         :aria-label="ariaLabel ?? undefined"
+                         @beforeLeave="onRowLeaving"
+                         @afterLeave="onRowGone">
             <slot :labelId="labelId"></slot>
         </TransitionGroup>
         <div v-else
@@ -62,7 +65,7 @@
 .chat-sg {
     --chat-sg-row-min: 44px;
 
-    /* A list's leaving row stands over the rows while it fades. */
+    /* A list reads its rows' places from its own top, the one box they glide in. */
     position: relative;
 
     overflow: hidden;
@@ -77,7 +80,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, provide } from "vue";
+    import { ComponentPublicInstance, computed, PropType, provide, ref } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
@@ -112,11 +115,101 @@
         }
     });
 
+    const emit = defineEmits<{
+        /** A list's last row has finished leaving, so what stands for an empty list can take its place. */
+        (e: "empty"): void;
+    }>();
+
+    // #region Values
+
     /** Ties the label to the group, or to a bare control through the slot, once per group. */
     const labelId = `chat-sg-${newGuid()}`;
 
+    /** The block's one move, which a list's rows glide by. */
+    const moveClass = "chat-move";
+
+    /** A list's own transition, whose element holds its rows. */
+    const listGroup = ref<ComponentPublicInstance | null>(null);
+
+    /**
+     * Each row's place, from the list's top, as a row began to leave, and after each row has gone;
+     * the rows below one that went glide from it to their own.
+     */
+    const placeOf = new WeakMap<Element, number>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
     /** A named group, or no role at all, since a group with no name is only noise to a screen reader. */
     const groupRole = computed((): string | undefined => props.label || props.ariaLabel ? "group" : undefined);
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /** The list's rows as they stand, a row still fading included. */
+    function listRows(): HTMLElement[] {
+        const list = listGroup.value?.$el as HTMLElement | undefined;
+        return list ? Array.from(list.children) as HTMLElement[] : [];
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /** A row starts its fade, still holding its place: where every row stands is noted, none having moved. */
+    function onRowLeaving(): void {
+        for (const row of listRows()) {
+            placeOf.set(row, row.offsetTop);
+        }
+    }
+
+    /**
+     * A row has faded and gone, so the group's box has closed by its height. Each row it stood above
+     * is drawn back where it was seen, a glide still under way included, and glides to its place by
+     * the one move; a row still fading keeps its own fade. The last row's going is told.
+     */
+    function onRowGone(): void {
+        const rows = listRows();
+        const gliding = rows.filter(row => {
+            const before = placeOf.get(row);
+            const shift = before === undefined || row.classList.contains("is-leaving") ? 0 : before - row.offsetTop;
+            placeOf.set(row, row.offsetTop);
+            if (shift === 0) {
+                return false;
+            }
+            const seen = row.getBoundingClientRect().top;
+            // no transition, so a glide under way stops and the row stands in its new place to be read
+            row.style.transition = "none";
+            const laid = row.getBoundingClientRect().top;
+            row.style.transform = `translateY(${seen - laid + shift}px)`;
+            return true;
+        });
+
+        if (gliding.length > 0) {
+            // drawn where they were seen, then let go to glide
+            void (listGroup.value?.$el as HTMLElement).offsetHeight;
+            for (const row of gliding) {
+                row.classList.add(moveClass);
+                row.style.transition = "";
+                row.style.transform = "";
+                const onGlided = (event: TransitionEvent): void => {
+                    if (event.target === row && event.propertyName === "transform") {
+                        row.classList.remove(moveClass);
+                        row.removeEventListener("transitionend", onGlided);
+                    }
+                };
+                row.addEventListener("transitionend", onGlided);
+            }
+        }
+
+        if (rows.length === 0) {
+            emit("empty");
+        }
+    }
+
+    // #endregion Event Handlers
 
     // A list's rows are its items. Told by name rather than a typed key, since a part's file
     // exports no values and the two parts share nothing else.
