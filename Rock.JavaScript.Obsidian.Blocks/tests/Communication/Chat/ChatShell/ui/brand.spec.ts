@@ -221,6 +221,7 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#EFB999",
             "thread-unread-line": "#F0B48F",
             "row-announcement": "#FDF5F0",
+            "row-mention": "rgba(255, 121, 29, 0.12)",
             "focus-line": "#F3A97A",
             "composer-line": "#F4A470",
             "composer-glow": "rgba(255, 121, 29, 0.6)"
@@ -242,6 +243,7 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#7A4828",
             "thread-unread-line": "#854C27",
             "row-announcement": "#1C1717",
+            "row-mention": "rgba(255, 121, 29, 0.20)",
             "focus-line": "#9C5425",
             "composer-line": "#A75824",
             "composer-glow": "rgba(255, 121, 29, 0.6)"
@@ -259,7 +261,8 @@ describe("the tokens drawn from the church color", () => {
     // #0D1117); a muted room's quiet badge 14% over the sidebar (#F8F8FC, #0A0C10); the open room's
     // icon box 30% and the focused search box 55% over the line; the focused composer's border 60% over
     // the line, and its glow the church color at 60% alpha. A pressed
-    // pill's border is the church color at 45% alpha, over whatever is under it.
+    // pill's border is the church color at 45% alpha, over whatever is under it. A row that mentions
+    // the reader is washed in the church color at 12% alpha, 20% in dark, over the row's own surface.
     const forest = {
         light: {
             "brand-fill": "#198751",
@@ -278,6 +281,7 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#95C0AF",
             "thread-unread-line": "#8BBCA8",
             "row-announcement": "#F0F6F3",
+            "row-mention": "rgba(30, 138, 84, 0.12)",
             "focus-line": "#77B398",
             "composer-line": "#6DAE91",
             "composer-glow": "rgba(30, 138, 84, 0.6)"
@@ -299,6 +303,7 @@ describe("the tokens drawn from the church color", () => {
             "announcement-ring": "#204F3E",
             "thread-unread-line": "#205440",
             "row-announcement": "#0E181B",
+            "row-mention": "rgba(30, 138, 84, 0.20)",
             "focus-line": "#205D43",
             "composer-line": "#206245",
             "composer-glow": "rgba(30, 138, 84, 0.6)"

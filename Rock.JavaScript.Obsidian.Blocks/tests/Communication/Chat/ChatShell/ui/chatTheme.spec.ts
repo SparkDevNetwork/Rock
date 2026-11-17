@@ -560,23 +560,25 @@ describe("the chat token sheet", () => {
         expect(valuesOf(sheet, "--chat-r-inset", isLight).some(v => v.includes("6px"))).toBe(true);
     });
 
-    // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
-    // jump's flash covers equal air on both sides; the space between two people is outside the
-    // rows, where no highlight reaches.
-    // A mention of the reader is the church's: its wash the church's tint and its chip's ring the
-    // church's line, in light and dark alike, so no amber is left to read as a warning.
+    // A mention of the reader is the church's: its wash the church color at 12% (20% in dark),
+    // worked out per church and theme, and its chip's ring the church's line, so no amber is left
+    // to read as a warning.
     test("draws a mention's wash and ring from the church color, never amber", () => {
-        for (const isMode of [isLight, isDarkExplicit, isDarkUnthemed, isDarkFollowingSystem]) {
-            for (const value of valuesOf(sheet, "--chat-row-mention", isMode)) {
-                expect(value).toBe(normalize("var(--chat-brand-tint)"));
-            }
+        const modes = [["light", isLight], ["dark", isDarkExplicit], ["dark", isDarkUnthemed], ["dark", isDarkFollowingSystem]] as const;
+        for (const [theme, isMode] of modes) {
+            const washes = valuesOf(sheet, "--chat-row-mention", isMode);
+            expect(washes).toHaveLength(1);
+            expect(washes[0]).toBe(normalize(`var(--chat-row-mention-${theme}, rgba(255, 121, 29, .${theme === "light" ? "12" : "20"}))`));
             for (const value of valuesOf(sheet, "--chat-mention-ring", isMode)) {
                 expect(value).toBe(normalize("var(--chat-brand-line)"));
             }
         }
-        expect(valuesOf(sheet, "--chat-row-mention", isLight)).toHaveLength(1);
         expect(valuesOf(sheet, "--chat-mention-ring", isLight)).toHaveLength(1);
     });
+
+    // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
+    // jump's flash covers equal air on both sides; the space between two people is outside the
+    // rows, where no highlight reaches.
 
     test("names a channel row's equal padding, 6px, and the space between people, 8px", () => {
         expect(valuesOf(sheet, "--chat-cm-row-pad", isLight)).toEqual(["6px"]);
