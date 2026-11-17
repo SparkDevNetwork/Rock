@@ -546,6 +546,51 @@ describe("the bar's quick reactions", () => {
         expect(box()).toBeNull();
     });
 
+    // The box grows from the bar's edges to the tray's over the block's one move, as the Feed's
+    // E1-A grows it (220ms, easing in); asked for less motion, the token sheet takes that move to
+    // nothing and the tray is simply there.
+    describe("growing", () => {
+        const animate = jest.fn();
+        let sheet: HTMLStyleElement;
+
+        beforeEach(() => {
+            animate.mockClear();
+            (HTMLElement.prototype as unknown as { animate: unknown }).animate = animate;
+            sheet = document.createElement("style");
+            document.head.append(sheet);
+        });
+
+        afterEach(() => {
+            delete (HTMLElement.prototype as unknown as { animate?: unknown }).animate;
+            sheet.remove();
+        });
+
+        /** Opens the tray from a bar whose box reads the durations given. */
+        async function grownWith(durations: string): Promise<void> {
+            sheet.textContent = `.chat-box { --chat-t-base: 180ms; ${durations} }`;
+            const { bars } = await shownInBlock();
+            const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+            bars.openReactionPicker("conversation", "c1", message(), guard, guard, { offered: ["thumbsup", "heart", "joy"] });
+            for (let i = 0; i < 6; i++) {
+                await settle();
+            }
+            expect(box()?.getAttribute("data-layer")).toBe("tray");
+        }
+
+        test("over the one move", async () => {
+            await grownWith("--chat-d-move: 220ms;");
+
+            expect(animate).toHaveBeenCalledTimes(1);
+            expect(animate.mock.calls[0][1]).toMatchObject({ duration: 220 });
+        });
+
+        test("at once where the one move is nothing, as under reduced motion", async () => {
+            await grownWith("--chat-d-move: 0ms;");
+
+            expect(animate).not.toHaveBeenCalled();
+        });
+    });
+
     test("are set apart from the tools by a separator", async () => {
         const w = await shown({ message: message() });
 
