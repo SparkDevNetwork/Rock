@@ -1,0 +1,22 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="isOpen"><slot /></div>
+</template>
+
+<script setup lang="ts">
+    defineProps({
+        isOpen: {
+            type: Boolean,
+            default: false
+        },
+
+        title: {
+            type: String,
+            default: ""
+        }
+    });
+
+    defineEmits<{
+        (e: "back"): void;
+    }>();
+</script>

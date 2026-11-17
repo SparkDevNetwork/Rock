@@ -21,11 +21,13 @@
 // live region outside a modal dialog.
 import { readFileSync } from "fs";
 import { mount, VueWrapper } from "@vue/test-utils";
-import { defineComponent, h, nextTick, ref } from "vue";
+import { defineComponent, h, nextTick, Ref, ref } from "vue";
 import Sheet from "../../../../../src/Communication/Chat/ChatShell/ui/sheet.partial.obs";
 import Scrim from "../../../../../src/Communication/Chat/ChatShell/ui/scrim.partial.obs";
+import SurfacePage from "../../../../../src/Communication/Chat/ChatShell/ui/surfacePage.partial.obs";
 import { provideAnnouncer, useAnnouncer } from "../../../../../src/Communication/Chat/ChatShell/ui/announcer.partial";
 import { chatSheet } from "../statusStore";
+import { ruleOf, styleOf } from "./partStyle";
 
 async function settle(): Promise<void> {
     await nextTick();
@@ -170,5 +172,140 @@ describe("the sheet", () => {
         const live = Array.from(document.querySelectorAll<HTMLElement>("[aria-live]")).filter(region => region.textContent === "3 people found");
         expect(live).toHaveLength(1);
         expect(drawn.contains(live[0])).toBe(true);
+    });
+});
+
+// A choice that leads to another, as the plus menu's GIF, turns the same sheet into the next page
+// instead of stacking a second sheet: the handle stays, a head gains Back and the page's title,
+// and Back or Escape returns one page with focus on the control that turned it.
+describe("a sheet turned into another page", () => {
+    let wrapper: VueWrapper | null = null;
+
+    afterEach(() => {
+        wrapper?.unmount();
+        wrapper = null;
+        document.body.innerHTML = "";
+    });
+
+    /** The plus menu's sheet, whose GIF row turns it into the GIF page, whose field asks for focus when asked to. */
+    function turning(hasAutofocus = false): { isGif: Ref<boolean>, wrapper: VueWrapper } {
+        const isGif = ref(false);
+        const Host = defineComponent({
+            setup() {
+                return () => h(Sheet, { isOpen: true, label: "Add to your message" }, {
+                    default: () => [
+                        h("button", { "data-testid": "to-gif", onClick: () => {
+                            isGif.value = true;
+                        } }, "GIF"),
+                        h("button", { "data-testid": "photo" }, "Photo or file")
+                    ],
+                    pages: () => h(SurfacePage, { isOpen: isGif.value, title: "GIF", onBack: () => {
+                        isGif.value = false;
+                    } }, () => [
+                        h("input", { "data-testid": "gif-search", "data-autofocus": hasAutofocus ? "" : undefined }),
+                        h("button", { "data-testid": "gif-tile" }, "tile")
+                    ])
+                });
+            }
+        });
+
+        wrapper = mount(Host, { attachTo: document.body });
+        return { isGif, wrapper };
+    }
+
+    async function turn(): Promise<HTMLElement> {
+        const opener = find("to-gif") as HTMLElement;
+        opener.focus();
+        opener.click();
+        await settle();
+        return opener;
+    }
+
+    it("turns in one sheet over one scrim, its head drawing Back and the page's title, the first page set aside", async () => {
+        turning();
+        await settle();
+        expect(find("page-back")).toBeNull();
+
+        await turn();
+
+        expect(document.querySelectorAll("[data-testid='sheet']")).toHaveLength(1);
+        expect(document.querySelectorAll("[data-testid='scrim']")).toHaveLength(1);
+        const sheet = find("sheet") as HTMLElement;
+        expect(sheet.querySelector(".chat-sheet-handle")).not.toBeNull();
+        expect(sheet.contains(find("page-back"))).toBe(true);
+        expect(find("page-back")?.getAttribute("aria-label")).toBe("Back");
+        expect(find("page-title")?.textContent).toBe("GIF");
+        expect(sheet.contains(find("gif-search"))).toBe(true);
+
+        // the first page stays drawn under the turned one, out of reach and unheard
+        const first = (find("to-gif") as HTMLElement).closest<HTMLElement>("[data-testid='surface-page']");
+        expect(first?.hasAttribute("inert")).toBe(true);
+        expect(first?.getAttribute("aria-hidden")).toBe("true");
+    });
+
+    it("puts focus on Back as it turns, or on what the page marks to start on", async () => {
+        turning();
+        await settle();
+        await turn();
+        expect(document.activeElement).toBe(find("page-back"));
+
+        wrapper?.unmount();
+        document.body.innerHTML = "";
+        turning(true);
+        await settle();
+        await turn();
+        expect(document.activeElement).toBe(find("gif-search"));
+    });
+
+    it("goes back one page on Back, with focus on the control that turned it", async () => {
+        const { isGif } = turning();
+        await settle();
+        const opener = await turn();
+
+        (find("page-back") as HTMLElement).click();
+        await settle();
+
+        expect(isGif.value).toBe(false);
+        expect(find("page-back")).toBeNull();
+        expect(document.activeElement).toBe(opener);
+        expect(opener.closest("[inert]")).toBeNull();
+    });
+
+    it("goes back one page on Escape, and only the first page's Escape asks the sheet to close", async () => {
+        const { isGif } = turning();
+        await settle();
+        const opener = await turn();
+        const sheet = wrapper?.findComponent(Sheet);
+
+        (find("gif-tile") as HTMLElement).dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        await settle();
+        expect(isGif.value).toBe(false);
+        expect(sheet?.emitted("dismiss")).toBeUndefined();
+        expect(document.activeElement).toBe(opener);
+
+        opener.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        expect(sheet?.emitted("dismiss")).toHaveLength(1);
+    });
+
+    it("keeps Tab inside the turned page", async () => {
+        turning();
+        await settle();
+        await turn();
+
+        (find("gif-tile") as HTMLElement).focus();
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true, cancelable: true }));
+
+        expect(document.activeElement).toBe(find("page-back"));
+    });
+
+    it("slides the page in from the right while the page under moves a quarter left, a fade under reduced motion", () => {
+        const style = styleOf("surfacePage.partial.obs");
+
+        // the whole sheet's slide distance, which the reduced-motion block takes to nothing
+        expect(ruleOf(style, ".chat-surface-page.is-beyond")).toMatch(/transform:\s*translateX\(var\(--chat-rise-sheet\)\)/);
+        expect(ruleOf(style, ".chat-surface-page.is-beyond")).toMatch(/opacity:\s*0/);
+        expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/transform:\s*translateX\(calc\(var\(--chat-rise-sheet\) \/ -4\)\)/);
+        expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)/);
+        expect(style).not.toMatch(/@keyframes/);
     });
 });
