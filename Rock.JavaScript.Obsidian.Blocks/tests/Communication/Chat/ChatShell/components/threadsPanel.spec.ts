@@ -219,13 +219,12 @@ describe("the scope", () => {
         expect(rowsOf(w).map(drawn => plain(drawn.get(".chat-ls-sub").text()))).toEqual(["young-adults", "Worship Team"]);
     });
 
-    // A panel opens with focus where its work starts: here the list's one tab stop, its first row.
-    test("gives its first row focus as it opens", () => {
+    // The threads list asks for no first focus of its own: the panel's X takes it as the list
+    // opens, before any row is there, as the design asks of a list with no field.
+    test("marks no row to take focus as it opens", () => {
         const w = draw({ rows: [row(40), row(30)] });
 
-        const [first, second] = w.findAll("[data-testid='thread-row-open']");
-        expect(first.attributes("data-autofocus")).toBe("");
-        expect(second.attributes("data-autofocus")).toBeUndefined();
+        expect(w.findAll("[data-testid='thread-row-open']").some(open => open.attributes("data-autofocus") !== undefined)).toBe(false);
     });
 });
 

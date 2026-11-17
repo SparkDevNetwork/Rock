@@ -4564,6 +4564,35 @@ describe("the members panel", () => {
         expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
     });
 
+    // P-24: on a phone the panel opens on its first row, which comes with the roster's first page,
+    // after the panel opened with focus on its back chevron; focus moves to the row as it lands,
+    // while the person has not moved it.
+    test("on a phone, gives focus to the first row as the roster's first page lands", async () => {
+        const w = await mountBlock(390);
+        await openTeam(w);
+        let landFirstPage!: () => void;
+        const members = mockShell!.members as { state: { rows: unknown[], isLoading: boolean }, open: jest.Mock };
+        members.open.mockImplementation((channelId: string) => {
+            (members.state as unknown as { channelId: string }).channelId = channelId;
+            members.state.isLoading = true;
+            return new Promise<void>(resolve => {
+                landFirstPage = (): void => {
+                    members.state.rows = [annaMember];
+                    members.state.isLoading = false;
+                    resolve();
+                };
+            });
+        });
+
+        await openMembers(w);
+        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element);
+
+        landFirstPage();
+        await settle();
+
+        expect(document.activeElement).toBe(w.get("[data-testid='members-panel'] [data-testid='member-who']").element);
+    });
+
     test("opens from the details dialog's member count, closing the dialog", async () => {
         const w = await mountBlock(1200);
         await openTeam(w);
