@@ -40,6 +40,8 @@ public partial class CoreAdministrationSkillTests
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.AddOrUpdateGlobalAttribute( name: "My Attribute", fieldTypeIdKey: IdHasher.Instance.GetHash( 1 ) );
@@ -54,6 +56,8 @@ public partial class CoreAdministrationSkillTests
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
 
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
+
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
         var result = skill.AddOrUpdateGlobalAttribute( key: "MyKey", fieldTypeIdKey: IdHasher.Instance.GetHash( 1 ) );
@@ -67,6 +71,8 @@ public partial class CoreAdministrationSkillTests
     {
         using var scope = TestHelper.CreateScopedRockApp();
         var rockContext = scope.App.CreateRockContext();
+
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -83,6 +89,7 @@ public partial class CoreAdministrationSkillTests
         var rockContext = scope.App.CreateRockContext();
 
         MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -117,6 +124,7 @@ public partial class CoreAdministrationSkillTests
         var rockContext = scope.App.CreateRockContext();
 
         var attribute = MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -146,6 +154,7 @@ public partial class CoreAdministrationSkillTests
         };
 
         rockContext.Set<Category>().Add( category );
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -174,6 +183,7 @@ public partial class CoreAdministrationSkillTests
         var fieldType = MockData.CreateFieldType( rockContext, Rock.SystemGuid.FieldType.TEXT.AsGuid(), "Text", "Rock.Field.Types.TextFieldType" );
         var attribute = MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
         attribute.FieldTypeId = fieldType.Id;
+        AllowAllUsersToEdit<Rock.Model.Attribute>( rockContext );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
@@ -187,6 +197,48 @@ public partial class CoreAdministrationSkillTests
             defaultValue: new SetOrClear<string> { Value = "Updated default" } );
 
         Assert.AreEqual( ToolStatus.Success, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateGlobalAttribute_UpdateWithoutEditAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var fieldType = MockData.CreateFieldType( rockContext, Rock.SystemGuid.FieldType.TEXT.AsGuid(), "Text", "Rock.Field.Types.TextFieldType" );
+        var attribute = MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
+        attribute.FieldTypeId = fieldType.Id;
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateGlobalAttribute(
+            globalAttributeIdKey: IdHasher.Instance.GetHash( attribute.Id ),
+            name: "Renamed Global" );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "not authorized" ) ) );
+        Assert.AreEqual( "Organization Name", attribute.Name );
+    }
+
+    [TestMethod]
+    public void AddOrUpdateGlobalAttribute_AddWithoutEditAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var fieldType = MockData.CreateFieldType( rockContext, Rock.SystemGuid.FieldType.TEXT.AsGuid(), "Text", "Rock.Field.Types.TextFieldType" );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.AddOrUpdateGlobalAttribute(
+            key: "MyGlobalKey",
+            name: "My Global Attribute",
+            fieldTypeIdKey: IdHasher.Instance.GetHash( fieldType.Id ),
+            value: new SetOrClear<string> { Value = "Organization Value" } );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+        Assert.IsTrue( result.GetErrorMessages().Any( m => m.Contains( "not authorized" ) ) );
+        Assert.IsFalse( rockContext.Set<Rock.Model.Attribute>().Any( a => a.Key == "MyGlobalKey" ) );
     }
 
     #endregion

@@ -22,6 +22,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 using Rock.Tests.Shared.TestAccess.AI.Agent;
 using Rock.Tests.Shared.TestFramework;
 using Rock.Utility;
@@ -79,6 +80,22 @@ public partial class CoreAdministrationSkillTests
         };
 
         rockContext.Set<Rock.Model.Attribute>().Add( attribute );
+
+        var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
+
+        var result = skill.GetGlobalAttribute( IdHasher.Instance.GetHash( attribute.Id ) );
+
+        Assert.AreEqual( ToolStatus.Error, result.GetStatus() );
+    }
+
+    [TestMethod]
+    public void GetGlobalAttribute_WithoutViewAuthorization_ReturnsError()
+    {
+        using var scope = TestHelper.CreateScopedRockApp();
+        var rockContext = scope.App.CreateRockContext();
+
+        var attribute = MockData.CreateAttribute( rockContext, "OrganizationName", "Organization Name" );
+        MockAuthorizationHelper.DenyAllUsers<Rock.Model.Attribute>( rockContext, Authorization.VIEW, attribute.Id );
 
         var skill = CreateSkill( scope.App, CreateRequestContext( rockContext ) );
 
