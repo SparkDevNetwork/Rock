@@ -11,7 +11,7 @@
 </template>
 
 <style scoped>
-/* The row under a list's last row: a failure's words, then the button, centred. */
+/* The row at a list's growing edge: a failure's words, then the button, centred. */
 .chat-more {
     display: flex;
     flex-wrap: wrap;
@@ -124,6 +124,11 @@
         return !!rowElement.value?.contains(document.activeElement);
     }
 
+    /** Puts focus on the row's button, for a list whose focus was in a control the row replaced. */
+    function focus(): void {
+        rowElement.value?.querySelector<HTMLElement>("button")?.focus();
+    }
+
     // #endregion Functions
 
     // #region Event Handlers
@@ -138,13 +143,13 @@
     // #endregion Event Handlers
 
     // Watched against the scroller the row is in, so the next page is asked a little before the
-    // reader reaches the end, on whichever side of the row the list grows. A failed page holds the row until it is pressed or arrives anew,
-    // since asking again at once would only fail again.
+    // reader reaches the end, on whichever side of the row the list grows. A failed page holds the
+    // row until it is pressed or arrives anew, since asking again at once would only fail again.
     usePagingTrigger(rowElement, ask, {
         enabled: () => !isBusy.value && !props.isFailed,
         root: () => rowElement.value?.closest<HTMLElement>("[data-chat-scroller]") ?? null,
         margin: props.edge === "start" ? "240px 0px 0px 0px" : "0px 0px 240px 0px"
     });
 
-    defineExpose({ hasFocus });
+    defineExpose({ focus, hasFocus });
 </script>

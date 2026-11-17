@@ -47,7 +47,8 @@
              @focusin="actionBar.onFocusIn"
              @focusout="actionBar.onFocusOut">
             <!-- Older replies are asked for as this comes into view at the top, once the thread is placed at its newest. -->
-            <LoadMoreRow v-if="hasMore && isPlaced && !olderError"
+            <LoadMoreRow v-if="pagingControl === 'row'"
+                         ref="olderRow"
                          edge="start"
                          name="thread-older"
                          label="Load older replies"
@@ -55,6 +56,7 @@
 
             <!-- A failed page, the one notice, where the replies it would have brought stand; said at once. -->
             <SettingNote v-if="pageNote"
+                         ref="pageNotePart"
                          class="chat-th-err"
                          :note="pageNote"
                          data-testid="thread-error" />
@@ -496,6 +498,10 @@
     /** The reply already landed on, so it is scrolled to and flashed only once per landing. */
     let landedId: number | null = null;
 
+    const olderRow = ref<InstanceType<typeof LoadMoreRow>>();
+
+    const pageNotePart = ref<InstanceType<typeof SettingNote>>();
+
     const followPill = ref<InstanceType<typeof Pill>>();
 
     /** Follow's button, which its tip hangs on. */
@@ -607,6 +613,18 @@
         }
 
         return props.olderError ? { kind: "error", text: messageForError(props.olderError), retry: () => void loadOlderPage() } : null;
+    });
+
+    /**
+     * What asks for older replies now: the row while more wait once the thread is placed, a
+     * failed page's notice, whose Try again asks, or nothing.
+     */
+    const pagingControl = computed((): "row" | "note" | null => {
+        if (props.olderError) {
+            return "note";
+        }
+
+        return props.hasMore && isPlaced.value ? "row" : null;
     });
 
     /** Each sender's name this thread holds, so a mention in a reply not stored yet can show who it names. */
@@ -746,12 +764,36 @@
         followTipHost.value = overlayHostOf(element);
     });
 
-    // A failed page and a refused follow change are said at once, each as it first shows.
-    watch(() => pageNote.value?.text, text => {
-        if (text) {
-            announcer.announce(text, "assertive");
+    // A failed page and a refused follow change are said at once, each as it first shows. Each
+    // failure is its own error, so a retry that fails again with the same words is said again.
+    watch(() => props.error ?? props.olderError, error => {
+        if (error && pageNote.value) {
+            announcer.announce(pageNote.value.text, "assertive");
         }
     }, { immediate: true });
+
+    // The row and a failed page's notice can each be taken away by the page they asked for. Read
+    // before the render that removes it, focus held in the one going carries on where the thread
+    // grew, as the lists hand it on: to the notice's Try again for a failure, to the row while
+    // more wait, else to the first reply the page brought.
+    watch(pagingControl, async (control, was) => {
+        const noteElement: HTMLElement | undefined = pageNotePart.value?.$el;
+        const wasHeld = was === "row" ? !!olderRow.value?.hasFocus() : was === "note" && !!noteElement?.contains(document.activeElement);
+        if (!wasHeld || !isPlaced.value) {
+            return;
+        }
+
+        await nextTick();
+        if (control === "note") {
+            (pageNotePart.value?.$el as HTMLElement | undefined)?.querySelector<HTMLElement>("button")?.focus();
+        }
+        else if (control === "row") {
+            olderRow.value?.focus();
+        }
+        else if (props.replies.length > 0) {
+            bodyElement.value?.querySelector<HTMLElement>(`[data-reply-id='${props.replies[0].id}']`)?.focus({ preventScroll: true });
+        }
+    });
 
     watch(() => followNote.value?.text, text => {
         if (text) {
