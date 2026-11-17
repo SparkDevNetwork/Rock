@@ -1274,16 +1274,16 @@ describe("the New divider and the unread strip", () => {
     });
 
     // The strip's arrow takes its colour from its button, as every icon does, so the feed never
-    // restyles the inside of the icon; less motion is the token sheet's, which zeroes the entrance.
-    test("the strip's arrow is the jump's own colour, and the feed answers less motion nowhere itself", () => {
+    // restyles the inside of the icon.
+    test("the strip's arrow is the jump's own colour, and the feed restyles no part from outside it", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const jump = /\.chat-strip-jump\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(jump).toMatch(/color:\s*var\(--chat-danger-ink\)/);
         expect(style).not.toMatch(/:deep\(/);
-        expect(style).not.toMatch(/prefers-reduced-motion/);
     });
+
 
     test("the reader's own send takes the divider and the strip away, and saves no read position", async () => {
         const wrapper = unread();

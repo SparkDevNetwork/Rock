@@ -571,6 +571,14 @@
     gap: 18px;
 }
 
+/* Asked for less motion, a switch is not animated; the strip's lift is a token, so it fades where it stands. */
+@media (prefers-reduced-motion: reduce) {
+    .chat-feed.is-entering {
+        animation: none;
+    }
+}
+
+
 
 </style>
 
