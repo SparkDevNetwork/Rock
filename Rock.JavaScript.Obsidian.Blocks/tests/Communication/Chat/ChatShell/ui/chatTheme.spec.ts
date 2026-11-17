@@ -1127,11 +1127,12 @@ describe("the components' own styles", () => {
             expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-spring", isReducedMotion)).toBe(normalize("var(--chat-t-fast)"));
         });
 
-        test("pops in the sidebar, where a new mention arrives, and not in the threads list, where it was already seen", () => {
+        // A sidebar row turns bold and gains its badge in one step, so its badge does not pop in after.
+        test("pops neither in the sidebar, where a row turns bold and gains it in one step, nor in the threads list, where it was already seen", () => {
             const sidebar = badgeTags(sidebarPath);
             expect(sidebar.length).toBeGreaterThan(0);
             for (const tag of sidebar) {
-                expect(tag).toMatch(/\sisPopping\b/);
+                expect(tag).not.toMatch(/isPopping/);
             }
             const threads = badgeTags(threadsPath);
             expect(threads).toHaveLength(1);
