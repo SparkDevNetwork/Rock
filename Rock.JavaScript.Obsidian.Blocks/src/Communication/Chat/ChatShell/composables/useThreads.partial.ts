@@ -195,9 +195,6 @@ export type Threads = {
     /** Opens the list for a conversation, on the tab last chosen unless one is named. */
     openList: (channelId: string, tab?: ThreadListTab) => Promise<void>;
 
-    /** Shows the other tab, fetched afresh. */
-    switchTab: (tab: ThreadListTab) => Promise<void>;
-
     /** Fetches the list on screen again, keeping its rows until the answer replaces them. */
     refresh: () => Promise<void>;
 
@@ -979,19 +976,6 @@ export function createThreads(dependencies: ThreadsDependencies): Threads {
                 list.hasMore = false;
             }
             await fetchList(list.rows.length > 0 ? "refresh" : "fresh");
-        },
-
-        switchTab: async (tab: ThreadListTab): Promise<void> => {
-            if (isStopped) {
-                return;
-            }
-            const list = state.list;
-            list.tab = tab;
-            list.rows = [];
-            list.hasMore = false;
-            list.error = null;
-            state.followError = null;
-            await fetchList("fresh");
         },
 
         refresh: () => fetchList("refresh"),
