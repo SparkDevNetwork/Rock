@@ -160,6 +160,33 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Sync
             }
         }
 
+        [TestMethod]
+        public void ABuildThatDoesNotSendTheSecurityRoleType_StillReadsAndKeepsAGroupOfThatTypePrivate()
+        {
+            // A Rock web server built before the projection took the security role type still calls
+            // it without one when it shares the database with a newer build, and every membership
+            // door it serves reads the projection; the call must still read, by the same rule.
+            using ( var fixture = new ChatSyncProjectionFixture() )
+            {
+                var securityRoleTypeId = GroupTypeCache.GetSecurityRoleGroupType().Id;
+                var role = fixture.AddChannel( securityRoleTypeId, "Role read by an earlier build", group =>
+                {
+                    group.IsChatChannelPublicOverride = true;
+                    group.IsChatChannelAlwaysShownOverride = true;
+                    group.IsLeavingChatChannelAllowedOverride = true;
+                } );
+                fixture.EnableChatForGroupTypeOf( role );
+
+                var rows = fixture.ProjectChannelsWithout( "@SecurityRoleGroupTypeGuid" );
+                var row = rows.SingleOrDefault( r => role.Equals( r["channel_id"] ) );
+
+                Assert.IsNotNull( row, "a group of the security role type was not projected at all" );
+                Assert.AreEqual( false, row["is_public"], "is_public" );
+                Assert.AreEqual( false, row["always_shown"], "always_shown" );
+                Assert.AreEqual( false, row["leave_allowed"], "leave_allowed" );
+            }
+        }
+
         /// <summary>
         /// Asserts a channel was projected public, always shown and leavable, or none of the three.
         /// </summary>

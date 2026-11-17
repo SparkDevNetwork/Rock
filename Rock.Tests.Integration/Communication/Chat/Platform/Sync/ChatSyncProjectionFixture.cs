@@ -781,6 +781,58 @@ DROP TABLE #Seeded;",
         }
 
         /// <summary>
+        /// Reads the whole church's channel rows the way a build from before one of the procedure's
+        /// parameters existed calls it: every other parameter by name, that one not sent.
+        /// </summary>
+        /// <param name="parameterName">The parameter the earlier build does not know, such as "@SecurityRoleGroupTypeGuid".</param>
+        /// <returns>Each channel row, its columns by the names the procedure gives them.</returns>
+        /// <remarks>
+        /// Two Rock web servers of different builds can share one database, and a migration the newer
+        /// one runs replaces the procedure under the older one, which goes on calling it with the
+        /// parameters it was built with.
+        /// </remarks>
+        public IList<IDictionary<string, object>> ProjectChannelsWithout( string parameterName )
+        {
+            var parameters = ChatPlatformSyncHelper.ProjectionParameters( Configuration() );
+
+            if ( !parameters.Remove( parameterName ) )
+            {
+                throw new ArgumentException( string.Format( "the projection is not called with {0}", parameterName ), nameof( parameterName ) );
+            }
+
+            var sections = JObject.Parse( ChatWireContract.Json )["payload"]["sections"].Select( s => ( string ) s ).ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                return ChatPlatformSyncHelper.ReadProjection( rockContext, parameters, ChatPlatformSync.ProjectionTimeoutSeconds, reader =>
+                {
+                    // The moment and the identity marks come first, then one result set per section
+                    // in the contract's order.
+                    for ( var skipped = 0; skipped <= sections.IndexOf( "channels" ); skipped++ )
+                    {
+                        reader.NextResult();
+                    }
+
+                    var rows = new List<IDictionary<string, object>>();
+
+                    while ( reader.Read() )
+                    {
+                        var row = new Dictionary<string, object>( StringComparer.Ordinal );
+
+                        for ( var column = 0; column < reader.FieldCount; column++ )
+                        {
+                            row[reader.GetName( column )] = reader.IsDBNull( column ) ? null : reader.GetValue( column );
+                        }
+
+                        rows.Add( row );
+                    }
+
+                    return rows;
+                } );
+            }
+        }
+
+        /// <summary>
         /// Reads back only what one save touched, as the immediate sync does after the save commits.
         /// </summary>
         /// <param name="changes">The keys the save touched.</param>
