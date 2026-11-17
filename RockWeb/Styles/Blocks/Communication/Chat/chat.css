@@ -240,7 +240,6 @@
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
-    --chat-d-row-flash: 1.2s;
     --chat-d-roll: 220ms;
     --chat-d-tools-show: 90ms;
     --chat-d-tools-move: 140ms;
@@ -259,6 +258,7 @@
     /* How many rows of an entrance wait their turn; the rest rise with the last of them. */
     --chat-enter-cap: 8;
     --chat-d-row-collapse: 200ms;
+    --chat-d-move: 220ms;
     --chat-d-sent-hold: 2.2s;
     --chat-d-read-fade: 400ms;
     --chat-d-pulse: 1.2s;
@@ -468,6 +468,7 @@
         --chat-d-tab-thumb: 0ms;
         --chat-d-stagger: 0ms;
         --chat-d-row-collapse: 0ms;
+        --chat-d-move: 0ms;
         /* The message bar shows and hides by its own fades, at their own times, with no rise or sink. */
         --chat-d-tools-move: 0ms;
         --chat-d-img-in: 140ms;
@@ -667,16 +668,6 @@
 
     100% {
         opacity: 0;
-    }
-}
-
-@keyframes chat-row-flash {
-    0% {
-        --chat-row-fill: var(--chat-flash);
-    }
-
-    100% {
-        --chat-row-fill: transparent;
     }
 }
 
@@ -1240,6 +1231,14 @@
 .chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled]) {
     animation: chat-enter var(--chat-t-msg) var(--chat-ease-in) both;
     animation-delay: calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger));
+}
+
+/*
+    The one move: a row whose place in its list changes glides there, on both axes, by the
+    distance Vue measures before and after the change. Under reduced motion it is simply there.
+*/
+.chat-shell .chat-move {
+    transition: transform var(--chat-d-move) var(--chat-ease-in);
 }
 
 /* A hairline of air between one row's fill and the next. */
