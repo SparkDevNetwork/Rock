@@ -39,7 +39,8 @@
 //          labelled), thread-row-follow (aria-pressed, changed at once), thread-row-mentions,
 //          thread-row-status ("Following" or "Not following"), thread-row-error, thread-skeleton,
 //          threads-empty (the shared empty state's title and line), threads-error, threads-refresh;
-//          the tabs are role="tab" with aria-selected. The panel host's marks are threadDrawer.spec's.
+//          the panel draws no tabs: its scope is the tab it is given. The panel host's marks are
+//          threadDrawer.spec's.
 //
 // A refusal shows the server's sentence; a call that never reached the platform has none, and
 // shows the design's offline sentence.
@@ -195,26 +196,36 @@ describe("the header", () => {
     });
 });
 
-describe("the tabs", () => {
+// The panel shows the one scope it is given: the open conversation's threads from the header,
+// or every thread the reader follows from Activity, which holds the tabs between Mentions and
+// Threads. It draws no tabs of its own.
+describe("the scope", () => {
     test.each([
-        ["channel", "This channel"],
-        ["person", "This conversation"],
-        ["group", "This conversation"]
-    ])("name a %s's tab %s, beside All", (kind, words) => {
-        const w = draw({ kind });
+        ["channel", "channel"],
+        ["person", "channel"],
+        ["group", "channel"],
+        ["channel", "all"]
+    ])("in a %s, on the %s scope, draws no tabs of its own", (kind, tab) => {
+        const w = draw({ kind, tab });
 
-        expect(w.findAll("[role='tab']").map(t => t.text())).toEqual([words, "All"]);
+        expect(w.find("[role='tablist']").exists()).toBe(false);
+        expect(w.findAll("[role='tab']")).toHaveLength(0);
+        expect(w.find("[role='tabpanel']").exists()).toBe(false);
     });
 
-    test("mark the tab shown and ask for the other", async () => {
-        const w = draw();
-        const [here, all] = w.findAll("[role='tab']");
+    test("lists across rooms on the scope of every thread followed, each row naming its room", () => {
+        const w = draw({ tab: "all", rows: [row(40), row(30, { channel_id: worship })] });
 
-        expect(here.attributes("aria-selected")).toBe("true");
-        expect(all.attributes("aria-selected")).toBe("false");
+        expect(rowsOf(w).map(drawn => plain(drawn.get(".chat-ls-sub").text()))).toEqual(["young-adults", "Worship Team"]);
+    });
 
-        await all.trigger("click");
-        expect(w.emitted("tab")).toEqual([["all"]]);
+    // A panel opens with focus where its work starts: here the list's one tab stop, its first row.
+    test("gives its first row focus as it opens", () => {
+        const w = draw({ rows: [row(40), row(30)] });
+
+        const [first, second] = w.findAll("[data-testid='thread-row-open']");
+        expect(first.attributes("data-autofocus")).toBe("");
+        expect(second.attributes("data-autofocus")).toBeUndefined();
     });
 });
 
@@ -467,7 +478,7 @@ describe("loading, empty and failed", () => {
 
         expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-title").text())).toBe(title);
         expect(plain(w.get("[data-testid='threads-empty'] .chat-empty-text").text())).toBe(
-            "Reply to any message to start one. Threads you follow from every conversation are under All.");
+            "Reply to any message to start one. Threads you follow from every conversation are in Activity.");
 
         const seeAll = w.findAll("[data-testid='threads-empty'] button").find(b => plain(b.text()) === "See all followed threads");
         expect(seeAll).toBeDefined();
