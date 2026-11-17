@@ -1623,11 +1623,52 @@ describe("the panel column", () => {
         return w.get("[data-testid='chat-frame']").attributes("data-panel-open");
     }
 
-    test("is 0px closed and 392px open in the frame's styles", () => {
+    // The sidebar's and the panel's widths are the sheet's tokens, 296px and 392px, which the
+    // narrow fold reads too, so the two never disagree.
+    test("is 0px closed and the panel's width open in the frame's styles, the widths the sheet's", () => {
         const rules = frameRules();
+        const sheet = readFileSync(join(__dirname, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
 
-        expect(rules.some(r => /(^|,)\s*\.chat-frame\s*$/.test(r.selector) && /grid-template-columns:\s*296px minmax\(0, 1fr\) 0px/.test(r.body))).toBe(true);
-        expect(rules.some(r => r.selector.includes("data-panel-open=\"true\"") && /grid-template-columns:\s*296px minmax\(0, 1fr\) 392px/.test(r.body))).toBe(true);
+        expect(rules.some(r => /(^|,)\s*\.chat-frame\s*$/.test(r.selector) && /grid-template-columns:\s*var\(--chat-w-side\) minmax\(0, 1fr\) 0px/.test(r.body))).toBe(true);
+        expect(rules.some(r => r.selector.includes("data-panel-open=\"true\"") && /grid-template-columns:\s*var\(--chat-w-side\) minmax\(0, 1fr\) var\(--chat-w-panel\)/.test(r.body))).toBe(true);
+        expect(sheet).toMatch(/--chat-w-side: 296px;/);
+        expect(sheet).toMatch(/--chat-w-panel: 392px;/);
+        expect(sheet).toMatch(/--chat-w-main-min: 480px;/);
+    });
+
+    // Below the sidebar, the panel and the conversation's least width, an open panel folds the
+    // sidebar away and the header offers it back over the conversation.
+    test("in a 1100px window, an open panel folds the sidebar, which the header's sidebar button opens over the conversation", async () => {
+        const w = await mountBlock(1100);
+        await openRow(w, team.channel_id);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBeUndefined();
+        expect(w.find("[data-testid='header-sidebar']").exists()).toBe(false);
+
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(true);
+
+        await w.get("[data-testid='header-sidebar']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("over");
+        expect(isPaneHidden(w, "frame-sidebar")).toBe(false);
+
+        await w.get("[data-testid='panel-close']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBeUndefined();
+    });
+
+    // The column swaps one panel for another in one crossfade: the old list and title fade out
+    // over the sheet's swap as the new come in, the old one laid over so nothing jumps.
+    test("crossfades from one panel to the next through one transition on the column's slot", () => {
+        const rules = frameRules();
+        const source = readFileSync(join(__dirname, "../../../../src/Communication/Chat/chatShell.obs"), "utf8");
+
+        expect(source).toMatch(/<Transition name="chat-panel-swap">/);
+        expect(rules.some(r => r.selector.includes(".chat-panel-swap-leave-active") && /position:\s*absolute/.test(r.body))).toBe(true);
+        expect(rules.some(r => r.selector.includes(".chat-panel-swap-enter-active") && /transition:\s*opacity var\(--chat-d-swap\)/.test(r.body))).toBe(true);
     });
 
     test("draws its dividing line only while open, so the closed column is 0px wide", () => {
@@ -1643,7 +1684,7 @@ describe("the panel column", () => {
         await openRow(w, team.channel_id);
 
         const threadsButton = w.get("[data-testid='header-threads']");
-        expect(threadsButton.attributes("aria-label")).toBe("Threads");
+        expect(threadsButton.attributes("aria-label")).toBe("Threads in Worship Team");
         expect(threadsButton.attributes("aria-expanded")).toBe("false");
         expect(panelOpen(w)).toBe("false");
         expect(isPaneHidden(w, "frame-panel")).toBe(true);
@@ -1674,21 +1715,25 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='header-threads']").attributes("aria-expanded")).toBe("false");
     });
 
-    test("opens again on the tab last chosen, with focus on it", async () => {
+    // Activity's tabs are a Segmented in the shown list's top: it opens again on the tab last
+    // chosen while no mention waits, with focus on that tab.
+    test("Activity opens again on the tab last chosen, with focus on it", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
-        await w.get("[data-testid='header-threads']").trigger("click");
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
-        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "false")!.trigger("click");
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
         await settle();
         await w.get("[data-testid='panel-close']").trigger("click");
         await settle();
 
-        await w.get("[data-testid='header-threads']").trigger("click");
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
 
-        const selected = w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "true")!;
-        expect(selected.text()).toBe("All");
+        const selected = w.get("[data-testid='activity-tab'][aria-checked='true']");
+        expect(selected.attributes("data-value")).toBe("threads");
+        expect(selected.text()).toBe("Threads");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
         expect(document.activeElement).toBe(selected.element);
     });
 
@@ -1961,12 +2006,12 @@ describe("the thread drawer", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='40']").element);
     });
 
-    test("goes back from a thread opened on the All tab to the list still on All", async () => {
+    test("goes back from a thread opened on Activity's Threads to Activity still on Threads", async () => {
         const w = await mountBlock(1200);
         await openWithRoot(w);
-        await w.get("[data-testid='header-threads']").trigger("click");
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
-        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.text() === "All")!.trigger("click");
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
         await settle();
 
         const root = timelineOf(team.channel_id).messages[0];
@@ -1983,23 +2028,21 @@ describe("the thread drawer", () => {
         await settle();
 
         expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
-        const selected = w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "true")!;
-        expect(selected.text()).toBe("All");
+        expect(w.get("[data-testid='activity-tab'][aria-checked='true']").attributes("data-value")).toBe("threads");
         // the list is the one left, not fetched again on another tab
         expect(threadsOf().openList.mock.calls.length + threadsOf().switchTab.mock.calls.length).toBe(listCalls);
     });
 
-    /** Opens the threads list on its All tab over the team, holding one thread of the direct message with Anna. */
+    /** Opens Activity on its Threads, every thread followed, over the team, holding one thread of the direct message with Anna. */
     async function openAllTabWithAnnasThread(w: VueWrapper): Promise<void> {
         await openWithRoot(w);
-        if (w.find("[data-testid='header-threads']").exists()) {
-            await w.get("[data-testid='header-threads']").trigger("click");
-        }
-        else {
-            await w.get("[data-testid='header-more'] button").trigger("click");
+        if (w.find("[data-testid='header-back']").exists()) {
+            await w.get("[data-testid='header-back']").trigger("click");
             await settle();
-            Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Threads")!.click();
         }
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await settle();
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
         await settle();
 
         const root = storedMessage(70, { reply_count: 1 } as Partial<TimelineMessage>);
@@ -2013,7 +2056,7 @@ describe("the thread drawer", () => {
         await settle();
     }
 
-    test("opens a thread of another conversation from the All tab over that conversation, and goes back to the All tab", async () => {
+    test("opens a thread of another conversation from Activity's Threads over that conversation, and goes back to them", async () => {
         const w = await mountBlock(1200);
         await openAllTabWithAnnasThread(w);
 
@@ -2035,14 +2078,14 @@ describe("the thread drawer", () => {
         expect((threadsOf().state as unknown as { list: { tab: string } }).list.tab).toBe("all");
         expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='70']").element);
 
-        // The conversation behind the list is now Anna's, so its own tab lists her threads.
-        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.attributes("aria-selected") === "false")!.trigger("click");
+        // The conversation behind the list is now Anna's, so the header's Threads lists hers.
+        await w.get("[data-testid='header-threads']").trigger("click");
         await settle();
 
         expect(threadsOf().openList).toHaveBeenLastCalledWith(dmAnna.channel_id, "channel");
     });
 
-    test("marks a private channel's row on the All tab with its lock, as the sidebar does", async () => {
+    test("marks a private channel's row on Activity's Threads with its lock, as the sidebar does", async () => {
         const w = await mountBlock(1200);
         await openAllTabWithAnnasThread(w);
         const root = timelineOf(team.channel_id).messages[0];
@@ -2059,7 +2102,7 @@ describe("the thread drawer", () => {
         expect(sub.get("svg").element.innerHTML).toBe(sidebarIcon.element.innerHTML);
     });
 
-    test("on a phone, a thread of another conversation opened from the All tab keeps the panel pane shown", async () => {
+    test("on a phone, a thread of another conversation opened from Activity's Threads keeps the panel pane shown", async () => {
         const w = await mountBlock(390);
         await openAllTabWithAnnasThread(w);
 
@@ -2124,8 +2167,8 @@ describe("the thread drawer", () => {
 });
 
 describe("mentions", () => {
-    // The header's Mentions opens the shell's inbox, shell.mentions, in the panel column beside
-    // the conversation, or as the third pane on a phone. A row is opened through the shell's
+    // The sidebar's Activity opens the shell's inbox, shell.mentions, on its Mentions tab in the
+    // panel column beside the conversation, or as the third pane on a phone. A row is opened through the shell's
     // jump, which lands a channel mention in its conversation through the frame's view and opens a
     // reply's thread through it, with a way back to the inbox. The composers' @ queries search
     // the people of the conversation they are in, from the room's sidebar row.
@@ -2144,18 +2187,16 @@ describe("mentions", () => {
 
     async function openInbox(w: VueWrapper, rows: MentionRow[] = []): Promise<void> {
         mentionsOf().state.inbox.rows = rows;
-        if (w.find("[data-testid='header-mentions']").exists()) {
-            await w.get("[data-testid='header-mentions']").trigger("click");
-        }
-        else {
-            await w.get("[data-testid='header-more'] button").trigger("click");
+        // a phone shows the list's head, where Activity is, only from the list
+        if (w.find("[data-testid='header-back']").exists()) {
+            await w.get("[data-testid='header-back']").trigger("click");
             await settle();
-            Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.trim() === "Mentions")!.click();
         }
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
     }
 
-    test("the header's Mentions opens the inbox beside the conversation and closes it again", async () => {
+    test("the sidebar's Activity opens the inbox on Mentions beside the conversation and closes it again", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
 
@@ -2164,16 +2205,18 @@ describe("mentions", () => {
         expect(mentionsOf().openInbox).toHaveBeenCalledTimes(1);
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
         expect(panelTitle(w)).toBe("Mentions");
-        expect(w.get("[data-testid='header-mentions']").attributes("aria-expanded")).toBe("true");
+        expect(w.get("[data-testid='activity-tab'][aria-checked='true']").attributes("data-value")).toBe("mentions");
+        expect(w.get("[data-testid='sidebar-activity']").attributes("aria-expanded")).toBe("true");
+        expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
 
-        await w.get("[data-testid='header-mentions']").trigger("click");
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
 
         expect(mentionsOf().closeInbox).toHaveBeenCalled();
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("false");
     });
 
-    test("on a phone, opened from the overflow menu, puts focus on its back chevron with no tooltip, as the threads list shows none", async () => {
+    test("on a phone, opened from the list's head, slides in with focus on its chosen tab and no tooltip", async () => {
         const w = await mountBlock(390);
         await openRow(w, team.channel_id);
 
@@ -2182,19 +2225,38 @@ describe("mentions", () => {
         await settle();
 
         expect(panelTitle(w)).toBe("Mentions");
-        expect(document.activeElement).toBe(w.get("[data-testid='frame-panel'] [data-testid='panel-back']").element);
+        expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
+        expect(document.activeElement).toBe(w.get("[data-testid='activity-tab'][data-value='mentions']").element);
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).toEqual([]);
     });
 
-    test("the header's Mentions shows the shell's dot", async () => {
+    test("the sidebar's Activity shows the shell's dot, and the header none", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
-        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
+        expect(w.find("[data-testid='sidebar-activity-dot']").exists()).toBe(false);
 
         mentionsOf().state.hasDot = true;
         await settle();
 
-        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(true);
+        expect(w.find("[data-testid='sidebar-activity-dot']").exists()).toBe(true);
+        expect(w.find("[data-testid='header-mentions-dot']").exists()).toBe(false);
+    });
+
+    test("while a mention waits, Activity opens on Mentions whatever tab was last chosen", async () => {
+        const w = await mountBlock(1200);
+        await openRow(w, team.channel_id);
+        await openInbox(w);
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
+        await settle();
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await settle();
+
+        mentionsOf().state.hasDot = true;
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
+        await settle();
+
+        expect(panelTitle(w)).toBe("Mentions");
+        expect((mockShell!.threads as { openList: jest.Mock }).openList).toHaveBeenCalledWith(expect.anything(), "all");
     });
 
     test("the threads list takes the inbox's place, letting the inbox go", async () => {
@@ -4960,16 +5022,16 @@ describe("a shell rebuilt by a birthdate save", () => {
         expect(partOf(old, "blocks").load).not.toHaveBeenCalled();
     });
 
-    test("a threads tab switch reaches the new shell's threads", async () => {
+    test("an Activity tab switch reaches the new shell's threads", async () => {
         const { w, old } = await mountRebuilt();
 
-        await w.get("[data-testid='header-threads']").trigger("click");
+        await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
-        await w.findAll("[data-testid='frame-panel'] [role='tab']").find(t => t.text() === "All")!.trigger("click");
+        await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
         await settle();
 
-        expect(partOf(mockShell!, "threads").switchTab).toHaveBeenCalledWith("all");
-        expect(partOf(old, "threads").switchTab).not.toHaveBeenCalled();
+        expect(partOf(mockShell!, "threads").openList).toHaveBeenCalledWith(expect.anything(), "all");
+        expect(partOf(old, "threads").openList).not.toHaveBeenCalled();
     });
 
     test("a member row's Message reads the person from the new shell", async () => {

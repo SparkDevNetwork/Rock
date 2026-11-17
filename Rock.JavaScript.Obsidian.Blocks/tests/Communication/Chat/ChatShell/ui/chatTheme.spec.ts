@@ -371,6 +371,12 @@ const namedLiterals: Named[] = [
     { name: "d-tab-thumb", value: "240ms", reduced: "0ms" },
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
     { name: "d-cascade", value: "180ms", reduced: "0ms" },
+    // One panel giving way to the next: a fade, kept under reduced motion as every short fade is.
+    { name: "d-swap", value: "180ms" },
+    // The frame's columns, which the narrow fold reads too.
+    { name: "w-side", value: "296px" },
+    { name: "w-panel", value: "392px" },
+    { name: "w-main-min", value: "480px" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-read-fade", value: "400ms" },

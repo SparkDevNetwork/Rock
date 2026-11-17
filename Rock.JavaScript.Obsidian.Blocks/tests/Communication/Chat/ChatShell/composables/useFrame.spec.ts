@@ -38,8 +38,8 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
     const state = reactive({ activeChannelId: null as string | null, hiddenPanes: { conversation: false, thread: false } });
     const threads = {
         state: reactive({ thread: null as { channelId: string, rootId: number } | null }),
-        openList: jest.fn(async () => {
-            calls.push("threads.openList");
+        openList: jest.fn(async (_channelId: string, tab?: string) => {
+            calls.push(tab === "all" ? "threads.openList:all" : "threads.openList");
         }),
         closeList: jest.fn(() => {
             calls.push("threads.closeList");
@@ -61,7 +61,7 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
         }),
         threads,
         mentions: {
-            state: { inbox: { rows: [] } },
+            state: { inbox: { rows: [] }, hasDot: false },
             openInbox: jest.fn(async () => {
                 calls.push("mentions.openInbox");
             }),
@@ -115,6 +115,7 @@ function fakeShell(calls: Calls): { shell: ChatShell, state: { activeChannelId: 
 
 type Mounted = {
     frame: Frame;
+    shell: ChatShell;
     calls: Calls;
     state: ReturnType<typeof fakeShell>["state"];
     wrapper: VueWrapper;
@@ -167,7 +168,7 @@ function mountFrame(): Mounted {
     });
 
     const wrapper = mount(Host, { attachTo: document.body });
-    return { frame, calls, state, wrapper, hasJoinBar, hasPanelField };
+    return { frame, shell, calls, state, wrapper, hasJoinBar, hasPanelField };
 }
 
 async function settle(): Promise<void> {
@@ -201,9 +202,10 @@ describe("the panel column", () => {
         await settle();
 
         await frame.onListPanel("threads");
-        await frame.onListPanel("mentions");
+        await frame.onListPanel("activity");
 
-        expect(frame.panelKind.value).toBe("mentions");
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("mentions");
         expect(calls).toEqual(["threads.openList", "threads.closeList", "mentions.openInbox"]);
     });
 
@@ -270,7 +272,9 @@ describe("the panel column", () => {
         expect(frame.shownPanel.value).toBeNull();
     });
 
-    test("the members list belongs to its conversation, so opening another closes it, focus inside it going to the title", async () => {
+    // Members, like Threads, is about the open conversation, so another conversation keeps it open
+    // and lists its own people, focus staying where the person has it.
+    test("the members list stays open and re-points at another conversation, focus kept inside it", async () => {
         mounted = mountFrame();
         const { frame, calls, state, wrapper } = mounted;
         state.activeChannelId = team;
@@ -282,9 +286,9 @@ describe("the panel column", () => {
         await settle();
         await wrapper.vm.$nextTick();
 
-        expect(frame.panelKind.value).toBeNull();
-        expect(calls).toEqual([`members.open:${team}`, "members.close"]);
-        expect(focused()).toBe("header-title");
+        expect(frame.panelKind.value).toBe("members");
+        expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`]);
+        expect(focused()).toBe("panel-close");
     });
 
     test("the threads list follows the open conversation", async () => {
@@ -299,6 +303,132 @@ describe("the panel column", () => {
 
         expect(frame.panelKind.value).toBe("threads");
         expect(calls).toEqual(["threads.openList", "threads.openList"]);
+    });
+});
+
+// Activity is the one inbox across conversations, opened from the sidebar's head: Mentions and the
+// threads the reader follows under one Segmented. It opens on Mentions while a mention waits,
+// else on the tab last chosen; it stays as it is when the conversation changes.
+describe("Activity", () => {
+    test("opens on Mentions while a mention waits, else on the tab last chosen", async () => {
+        mounted = mountFrame();
+        const { frame, shell, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("mentions");
+        frame.onActivityTab("threads");
+        await settle();
+        expect(calls).toEqual(["mentions.openInbox", "mentions.closeInbox", "threads.openList:all"]);
+
+        frame.closePanel();
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("threads");
+
+        frame.closePanel();
+        (shell.mentions.state as { hasDot: boolean }).hasDot = true;
+        await frame.onListPanel("activity");
+        expect(frame.activityTab.value).toBe("mentions");
+    });
+
+    test("a thread opened from its Threads backs out to Activity on Threads", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("activity");
+        frame.onActivityTab("threads");
+        await settle();
+
+        frame.openThreadFromList(7, team);
+        await settle();
+        expect(frame.threadOrigin.value).toBe("activity");
+
+        await frame.onThreadBack();
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("threads");
+    });
+
+    test("a conversation's empty threads list asking for every followed thread opens Activity on Threads", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("threads");
+
+        frame.onThreadsTab("all");
+        await settle();
+
+        expect(frame.panelKind.value).toBe("activity");
+        expect(frame.activityTab.value).toBe("threads");
+        expect(calls).toEqual(["threads.openList", "threads.closeList", "threads.openList:all"]);
+    });
+
+    test("stays as it is when the conversation changes", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("activity");
+
+        state.activeChannelId = volunteers;
+        await settle();
+
+        expect(frame.panelKind.value).toBe("activity");
+        expect(calls).toEqual(["mentions.openInbox"]);
+    });
+});
+
+// In a window too narrow for the sidebar, the conversation and a panel side by side (narrower
+// than the sidebar, the panel and the conversation's least width, as the sheet names them), an
+// open panel folds the sidebar away; closing the panel brings it back. While folded, the header's
+// sidebar button opens it over the conversation, and choosing a conversation folds it again.
+describe("the narrow fold", () => {
+    test("folds the sidebar while a panel is open below the sidebar, panel and conversation's least width, and restores it on close", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+
+        expect(frame.sidebarFold.value).toBeNull();
+        await frame.onListPanel("members");
+        expect(frame.sidebarFold.value).toBe("folded");
+
+        frame.closePanel();
+        expect(frame.sidebarFold.value).toBeNull();
+    });
+
+    test("does not fold where all three fit, nor on a phone", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+
+        resize(frame, 1168);
+        expect(frame.sidebarFold.value).toBeNull();
+        resize(frame, 1167);
+        expect(frame.sidebarFold.value).toBe("folded");
+        resize(frame, 600);
+        expect(frame.sidebarFold.value).toBeNull();
+    });
+
+    test("the header's sidebar button opens it over the conversation, and choosing a conversation folds it again", async () => {
+        mounted = mountFrame();
+        const { frame, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        resize(frame, 1100);
+        await frame.onListPanel("threads");
+
+        frame.onSidebarOver();
+        expect(frame.sidebarFold.value).toBe("over");
+
+        await frame.onSelect(volunteers);
+        expect(frame.sidebarFold.value).toBe("folded");
+        expect(frame.isSidebarHidden.value).toBe(true);
     });
 });
 
