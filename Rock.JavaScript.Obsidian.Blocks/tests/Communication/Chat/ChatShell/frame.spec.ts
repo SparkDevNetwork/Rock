@@ -1823,11 +1823,15 @@ describe("the panel column", () => {
         await settle();
         const pill = w.get("[data-testid='frame-panel'] .chat-seg-pill").element as HTMLElement;
         expect(pill.style.getPropertyValue("--chat-seg-i")).toBe("0");
+        // One head, Activity, over the switch: the tab says which list, so the list has no title or line of its own.
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Activity");
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-subtitle']").exists()).toBe(false);
 
         await w.get("[data-testid='activity-tab'][data-value='threads']").trigger("click");
         await settle();
 
-        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Activity");
+        expect(w.find("[data-testid='frame-panel'] [data-testid='panel-subtitle']").exists()).toBe(false);
         expect(w.findAll("[data-testid='frame-panel'] .chat-seg-pill")).toHaveLength(1);
         expect(w.get("[data-testid='frame-panel'] .chat-seg-pill").element).toBe(pill);
         expect(pill.style.getPropertyValue("--chat-seg-i")).toBe("1");
@@ -1895,7 +1899,7 @@ describe("the panel column", () => {
         const selected = w.get("[data-testid='activity-tab'][aria-checked='true']");
         expect(selected.attributes("data-value")).toBe("threads");
         expect(selected.text()).toBe("Threads");
-        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Activity");
         expect(document.activeElement).toBe(selected.element);
     });
 
@@ -2535,7 +2539,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
         await settle();
 
-        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Activity");
         expect(w.get("[data-testid='activity-tab'][aria-checked='true']").attributes("data-value")).toBe("threads");
         // the list is the one left, not fetched again on another tab
         expect(threadsOf().openList.mock.calls.length).toBe(listCalls);
@@ -2582,7 +2586,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
         await settle();
 
-        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
+        expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Activity");
         expect((threadsOf().state as unknown as { list: { tab: string } }).list.tab).toBe("all");
         expect(document.activeElement).toBe(w.get("[data-testid='thread-row-open'][data-root-id='70']").element);
 
@@ -2748,7 +2752,7 @@ describe("mentions", () => {
 
         expect(mentionsOf().openInbox).toHaveBeenCalledTimes(1);
         expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
-        expect(panelTitle(w)).toBe("Mentions");
+        expect(panelTitle(w)).toBe("Activity");
         expect(w.get("[data-testid='activity-tab'][aria-checked='true']").attributes("data-value")).toBe("mentions");
         expect(w.get("[data-testid='sidebar-activity']").attributes("aria-expanded")).toBe("true");
         expect(w.find("[data-testid='header-mentions']").exists()).toBe(false);
@@ -2768,7 +2772,7 @@ describe("mentions", () => {
         await new Promise(resolve => setTimeout(resolve, 700));
         await settle();
 
-        expect(panelTitle(w)).toBe("Mentions");
+        expect(panelTitle(w)).toBe("Activity");
         expect(w.get("[data-testid='chat-frame']").attributes("data-pane")).toBe("panel");
         expect(document.activeElement).toBe(w.get("[data-testid='activity-tab'][data-value='mentions']").element);
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => tip.textContent?.trim())).toEqual([]);
@@ -2799,7 +2803,7 @@ describe("mentions", () => {
         await w.get("[data-testid='sidebar-activity']").trigger("click");
         await settle();
 
-        expect(panelTitle(w)).toBe("Mentions");
+        expect(panelTitle(w)).toBe("Activity");
         expect((mockShell!.threads as { openList: jest.Mock }).openList).toHaveBeenCalledWith(expect.anything(), "all");
     });
 
@@ -2828,7 +2832,7 @@ describe("mentions", () => {
         expect(mentionsOf().jump).toHaveBeenCalledWith(row);
         expect((mockShell!.state as { activeChannelId: string }).activeChannelId).toBe(dmAnna.channel_id);
         expect(w.findComponent(MessageFeedComponent).props("landOnId")).toBe(30);
-        expect(panelTitle(w)).toBe("Mentions");
+        expect(panelTitle(w)).toBe("Activity");
     });
 
     test("on a phone, a channel mention's row closes the inbox and shows the conversation", async () => {
@@ -2874,14 +2878,14 @@ describe("mentions", () => {
         expect(mentionsOf().threadOpened).toHaveBeenCalledWith(team.channel_id, 40);
         expect(panelTitle(w)).toBe("Thread");
         const back = w.get("[data-testid='frame-panel'] [data-testid='panel-back']");
-        expect(back.attributes("aria-label")).toBe("Back to Mentions");
+        expect(back.attributes("aria-label")).toBe("Back to Activity");
 
         await back.trigger("click");
         await settle();
 
         expect(threads.closeThread).toHaveBeenCalledTimes(1);
         expect(mentionsOf().closeInbox).not.toHaveBeenCalled();
-        expect(panelTitle(w)).toBe("Mentions");
+        expect(panelTitle(w)).toBe("Activity");
         expect(document.activeElement).toBe(w.get("[data-testid='mention-row-open']").element);
     });
 
