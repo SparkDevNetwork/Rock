@@ -298,16 +298,19 @@
                    :style="isPanelGone ? goneStyle : undefined">
                 <div class="chat-frame-panel-inner">
                     <!--
-                        Activity's tabs, Mentions and Threads across conversations, are the column's
-                        while Activity shows: one Segmented over the place each of its lists keeps
-                        under its title, so the pill slides from one list to the next and focus
-                        stays on the tab chosen. Drawn first, as where the keyboard starts.
+                        Activity's tabs, Mentions and Threads across conversations, are the column's:
+                        one Segmented over the place each of its lists keeps under its title, so the
+                        pill slides from one list to the next and focus stays on the tab chosen.
+                        Drawn for the column's life and out of reach while Activity is not shown, so
+                        the crossfade below is the one place a panel leaves. Drawn first, as where
+                        the keyboard starts.
                     -->
-                    <Transition name="chat-panel-swap">
-                        <div v-if="shownPanel === 'activity'" class="chat-frame-activity">
-                            <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
-                        </div>
-                    </Transition>
+                    <div class="chat-frame-activity"
+                         :class="{ 'is-shown': shownPanel === 'activity' }"
+                         :aria-hidden="shownPanel === 'activity' ? undefined : 'true'"
+                         :inert="shownPanel !== 'activity' || undefined">
+                        <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
+                    </div>
 
                     <!-- One panel gives way to the next in one crossfade, the old laid over the new and out of reach. -->
                     <Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">
@@ -653,14 +656,19 @@
     height: 46px;
 }
 
-/* Placed by its own sides, which a crossfade's leave rule below does not move. */
+/* Placed by its own sides, and faded in and out over the swap, as the lists under it crossfade. */
 .chat-frame-panel-inner > .chat-frame-activity {
     position: absolute;
     top: 64px;
     right: 0;
-    bottom: auto;
     left: 0;
     z-index: var(--chat-z-raised);
+    opacity: 0;
+    transition: opacity var(--chat-d-swap) var(--chat-ease-state);
+}
+
+.chat-frame-panel-inner > .chat-frame-activity.is-shown {
+    opacity: 1;
 }
 
 /* One panel gives way to the next: the old fades out laid over the new as it fades in. */
