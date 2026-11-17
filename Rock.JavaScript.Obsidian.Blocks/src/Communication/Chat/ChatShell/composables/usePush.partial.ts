@@ -205,7 +205,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         const failed = (text?: string | null): ChatError => ({
             code: "push.register_failed",
             severity: "failed",
-            text: text ?? failedWords("Notifications couldn't be turned on for this browser.").alone
+            text: text ?? failedWords("Couldn't turn on notifications for this browser.").alone
         });
 
         try {
@@ -302,7 +302,7 @@ export function createPushRegistration(dependencies: PushDependencies): PushRegi
         return {
             code: "push.unregister_failed",
             severity: "failed",
-            text: (result && !result.ok ? result.error.text : null) ?? failedWords("Notifications couldn't be turned off on this browser.").alone
+            text: (result && !result.ok ? result.error.text : null) ?? failedWords("Couldn't turn off notifications for this browser.").alone
         };
     }
 

@@ -416,15 +416,23 @@ describe("a sheet turned into another page", () => {
         expect(style).not.toMatch(/@keyframes/);
     });
 
-    // Visibility steps with the slide over the panel's own duration, seen at every step but a hidden
-    // end: a page set aside is seen as it slides away and hides once it is there, and a page coming
-    // back is seen from its first frame. No delay of its own can drift from the slide's duration.
-    it("hides a page set aside only once it has slid away, and shows it at once as it comes back", () => {
+    // Visibility steps with the slide over the panel's own duration only on the way to hidden: a page
+    // set aside is seen as it slides away and hides once it is there. A page coming back takes no
+    // visibility transition at all, since a browser draws such a transition at its hidden start on
+    // the frame it begins, and focus given back to a control on that page in that frame (Escape from
+    // a page holding focus itself) would find it hidden and fall to the body.
+    it("hides a page set aside only once it has slid away, and shows it at once as it comes back, so focus given back lands", () => {
         const style = styleOf("surfacePage.partial.obs");
+        const shown = ruleOf(style, ".chat-surface-page");
+        const covered = ruleOf(style, ".chat-surface-page.is-covered");
 
-        expect(ruleOf(style, ".chat-surface-page")).toMatch(/transition:[^;]*visibility var\(--chat-t-panel\)/);
-        expect(ruleOf(style, ".chat-surface-page.is-covered")).toMatch(/visibility:\s*hidden/);
-        expect(ruleOf(style, ".chat-surface-page.is-covered")).not.toMatch(/transition/);
+        expect(shown).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)/);
+        expect(shown).toMatch(/transition:[^;]*opacity var\(--chat-t-panel\)/);
+        expect(shown).not.toMatch(/visibility/);
+        expect(covered).toMatch(/visibility:\s*hidden/);
+        expect(covered).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)/);
+        expect(covered).toMatch(/transition:[^;]*opacity var\(--chat-t-panel\)/);
+        expect(covered).toMatch(/transition:[^;]*visibility var\(--chat-t-panel\)/);
     });
 
     // A turn is one motion: as the pages slide, the same sheet grows or shrinks from the height of

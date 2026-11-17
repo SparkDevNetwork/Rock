@@ -1063,8 +1063,10 @@ describe("the grouped list's measures", () => {
         expect(bodyOf("ui/button.partial.obs", ".chat-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\);/);
     });
 
-    test("rounds Chat settings' Turn on and Turn off as pills too", () => {
-        expect(bodyOf("components/chatSettings.partial.obs", ".chat-ms-btn")).toMatch(/border-radius:\s*var\(--chat-r-full\);/);
+    // Chat settings' Turn on and Turn off left their pills for the shared button, so one rule rounds them.
+    test("draws Chat settings' Turn on and Turn off with the shared button, rounded as every button is", () => {
+        expect(bodyOf("components/chatSettings.partial.obs", ".chat-ms-btn")).toBe("");
+        expect(bodyOf("ui/button.partial.obs", ".chat-btn")).toMatch(/border-radius:\s*var\(--chat-r-control\);/);
     });
 
     // The shared field rule sets font: inherit at the same weight as a plain class, so the rename
