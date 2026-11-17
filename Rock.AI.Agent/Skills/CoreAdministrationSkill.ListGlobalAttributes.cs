@@ -20,6 +20,7 @@ using System.Linq;
 using Rock.AI.Agent.Annotations;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CoreAdministrationSkill;
+using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -45,10 +46,11 @@ internal sealed partial class CoreAdministrationSkill
     {
         var helper = new AgentToolHelper( AgentRequestContext, _logger );
 
-        // Read from the global attributes cache. Global attributes are not secured
-        // per attribute, so there is nothing to filter by view authorization here.
+        // Read from the global attributes cache and keep only attributes the current person may VIEW.
+        var currentPerson = AgentRequestContext.CurrentPerson;
         var globalAttributes = GlobalAttributesCache.Get().Attributes
-            .AsEnumerable();
+            .AsEnumerable()
+            .Where( a => a.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
         if ( partialName.IsNotNullOrWhiteSpace() )
         {
