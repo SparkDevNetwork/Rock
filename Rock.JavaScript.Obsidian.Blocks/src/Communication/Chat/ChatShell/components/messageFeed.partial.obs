@@ -301,7 +301,8 @@
     A conversation opened in place of another rises into view, and a first page rises in as it is
     drawn; a page already held when the block first draws it is simply there. Its keyframes are in
     the token sheet, since the feed's tail finds the entrance by name to carry what lands inside it,
-    and a keyframe in a scoped block is renamed by the build.
+    and a keyframe in a scoped block is renamed by the build. Asked for less motion, the sheet takes
+    the view time to nothing, so a switch ends the frame it starts.
 */
 .chat-feed.is-entering {
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
@@ -568,13 +569,6 @@
 
 .is-community .chat-feed-skeleton {
     gap: 18px;
-}
-
-/* Asked for less motion, a switch is not animated; the strip's lift is a token, so it fades where it stands. */
-@media (prefers-reduced-motion: reduce) {
-    .chat-feed.is-entering {
-        animation: none;
-    }
 }
 
 </style>

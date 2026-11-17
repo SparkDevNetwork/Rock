@@ -17,9 +17,7 @@
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/ui/panelHost.partial.obs": 1
   },
   "S7": {},
-  "S8": {
-    "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/messageFeed.partial.obs": 1
-  },
+  "S8": {},
   "S9": {},
   "S12": {
     "Rock.JavaScript.Obsidian.Blocks/src/Communication/Chat/ChatShell/components/profileCard.partial.obs": 3,
