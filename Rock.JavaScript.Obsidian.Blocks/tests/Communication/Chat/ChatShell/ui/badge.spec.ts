@@ -88,11 +88,20 @@ describe("the badge", () => {
 describe("the badge's look", () => {
     const style = styleOf("badge.partial.obs");
 
-    test("a count is a 20px pill in the badge's type size; a label an 18px pill", () => {
+    test("a count is 20px tall in the badge's type size; a label 18px", () => {
         expect(ruleOf(style, ".chat-badge")).toMatch(/font-size:\s*var\(--chat-fs-badge\)/);
-        expect(ruleOf(style, ".chat-badge")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
         expect(ruleOf(style, ".chat-badge.is-count")).toMatch(/height:\s*20px/);
         expect(ruleOf(style, ".chat-badge.is-label")).toMatch(/height:\s*18px/);
+    });
+
+    // A text badge, a count or a tag such as Leader, has the badge's square-ish corner from the
+    // token sheet; the "+N" beside a pile of faces stays a circle, matching the faces it counts.
+    test("every tone but the +N takes the badge corner; the +N stays round", () => {
+        expect(ruleOf(style, ".chat-badge")).toMatch(/border-radius:\s*var\(--chat-r-badge\)/);
+        expect(ruleOf(style, ".chat-badge.is-neutral")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
+        for (const tone of [".chat-badge.is-brand", ".chat-badge.is-muted", ".chat-badge.is-tag", ".chat-badge.is-media", ".chat-badge.is-count", ".chat-badge.is-label"]) {
+            expect(ruleOf(style, tone)).not.toMatch(/border-radius/);
+        }
     });
 
     test("the church's tint for what is yours, one neutral for a +N, a quiet muted count, the photo's scrim", () => {

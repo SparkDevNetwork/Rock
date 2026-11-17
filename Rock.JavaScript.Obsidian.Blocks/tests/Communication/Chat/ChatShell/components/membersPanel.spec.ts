@@ -911,4 +911,9 @@ describe("the shared list row", () => {
     test("reaches into no part from its styles", () => {
         expect(styleRules(join(shellFolder, "components/membersPanel.partial.obs"), /:deep\(/)).toEqual([]);
     });
+
+    // A section's count is a text badge, so it has the badge's square-ish corner, not a pill.
+    test("draws a section's count with the badge corner", () => {
+        expect(styleRules(join(shellFolder, "components/membersPanel.partial.obs"), /^\.chat-mb-sec span$/).join(";")).toMatch(/border-radius:\s*var\(--chat-r-badge\)/);
+    });
 });
