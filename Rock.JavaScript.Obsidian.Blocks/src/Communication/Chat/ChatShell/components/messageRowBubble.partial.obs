@@ -481,8 +481,8 @@
     margin-left: 42px;
 }
 
-/* A message's files under its text, a little apart from it. */
-.chat-msg-files {
+/* A message's files under its bubble, a little apart from it; with no bubble the files stand flush in the box, so a focus ring is even. */
+.chat-bubble + .chat-msg-files {
     margin-top: 4px;
 }
 </style>

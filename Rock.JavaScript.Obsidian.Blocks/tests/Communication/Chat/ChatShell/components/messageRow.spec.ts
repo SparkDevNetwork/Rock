@@ -772,9 +772,9 @@ describe("Community, in a channel", () => {
         const own = /(?:^|\n)\.chat-mn\.is-you\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
 
         // The row hands the @all ring to the chip, which draws it itself: the row reaches into no part.
-        expect(washed).toMatch(/--chat-mn-ring:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(washed).toMatch(/--chat-mn-ring:\s*inset 0 0 0 1px var\(--chat-mention-ring\)/);
         expect(chip).toMatch(/box-shadow:\s*var\(--chat-mn-ring,\s*none\)/);
-        expect(own).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(own).toMatch(/box-shadow:\s*inset 0 0 0 1px var\(--chat-mention-ring\)/);
         expect(own).not.toMatch(/background|color/);
         expect(style).not.toMatch(/:deep\(\.chat-mn/);
         expect(style).not.toMatch(/amber|--chat-warning/i);
@@ -2199,7 +2199,7 @@ describe("a message's files", () => {
             expect(bubble.parentElement).toBe(files.parentElement);
             expect(bubble.compareDocumentPosition(files) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
             expect(files.compareDocumentPosition(time) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-            expect(ruleOf(bubbleStyle(), ".chat-msg-files")).toMatch(/margin-top:\s*4px/);
+            expect(ruleOf(bubbleStyle(), ".chat-bubble + .chat-msg-files")).toMatch(/margin-top:\s*4px/);
         });
 
         test("a message with files says so, and stands 12px before the next message of its run", () => {
@@ -2235,6 +2235,10 @@ describe("a message's files", () => {
             expect(rulesNaming(".chat-msg.is-conversational:focus:not(:focus-visible) .chat-bub-anchor.is-files-only")
                 .some(body => /outline:\s*none/.test(body))).toBe(true);
             expect(ruleOf(style, ".chat-bub-anchor.is-files-only")).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+            // The 4px that keeps files off a bubble sits between the two only: with no bubble the
+            // ring stands the same distance from the photo on every side.
+            expect(ruleOf(style, ".chat-msg-files")).not.toMatch(/margin-top/);
+            expect(ruleOf(style, ".chat-bubble + .chat-msg-files")).toMatch(/margin-top:\s*4px/);
         });
     });
 });
