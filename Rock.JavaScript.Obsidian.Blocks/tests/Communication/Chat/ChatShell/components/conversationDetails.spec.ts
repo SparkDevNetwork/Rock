@@ -425,13 +425,15 @@ describe("a group's identity", () => {
         expect(mark.get("[data-testid='group-face-more']").text()).toBe("+6");
     });
 
-    test("lists everyone in it as a row, the person included", () => {
+    // The Members panel lists who is here; the details say what the conversation is and how it
+    // reaches the person, so they list no one.
+    test("lists no people, the person included, since the Members panel does", () => {
         const w = mountGroup();
 
-        const chips = w.findAll("[data-testid='details-person']").map(chip => spoken(chip));
-        expect(chips).toEqual(["Jordan Ellis (you)", "Caleb Brooks", "Hannah Diaz", "Luis Romero"]);
-        expect(w.get("[data-testid='details-people'] [role='list']").attributes("aria-label")).toBe("People in this conversation");
-        expect(w.findAll("[data-testid='details-person']").map(row => row.attributes("role"))).toEqual(["listitem", "listitem", "listitem", "listitem"]);
+        expect(w.find("[data-testid='details-people']").exists()).toBe(false);
+        expect(w.findAll("[data-testid='details-person']")).toHaveLength(0);
+        expect(w.text()).not.toContain("(you)");
+        expect(w.text()).not.toContain("Hannah Diaz");
     });
 });
 
@@ -808,7 +810,8 @@ describe("Notifications", () => {
         const group = w.get("[data-testid='details-notify'] [role='radiogroup']");
         expect(document.getElementById(group.attributes("aria-labelledby") ?? "")?.textContent?.trim()).toBe("Notifications");
         expect(radios(w).map(r => r.getAttribute("role"))).toEqual(["radio", "radio", "radio"]);
-        expect(radios(w).map(r => plain(r.textContent ?? ""))).toEqual(["All", "Mentions", "Off"]);
+        // the bell's own words for each mode, so the two never disagree
+        expect(radios(w).map(r => plain(r.textContent ?? ""))).toEqual(["All messages", "Mentions only", "Off"]);
         expect(radios(w).map(r => w.findAllComponents(Icon).find(icon => r.contains(icon.element))?.props("name"))).toEqual(["bell", "bell-at", "bell-off"]);
         expect(radios(w).map(r => r.getAttribute("aria-checked"))).toEqual(["false", "true", "false"]);
         // one stop for Tab, on the choice made
@@ -816,10 +819,10 @@ describe("Notifications", () => {
     });
 
     test.each([
-        ["all", "Every new message."],
-        ["mentions", "Your name or @all."],
-        ["silent", "Only mentions of your name."]
-    ])("says in one line what only the chosen mode, %s, means", (mode, words) => {
+        ["all", "Every new message in this channel."],
+        ["mentions", "When someone mentions you by name or uses @all."],
+        ["silent", "Nothing, unless someone mentions you by name."]
+    ])("says in one line, as the bell says it, what only the chosen mode, %s, means", (mode, words) => {
         const w = mountDetails({ notifyMode: mode });
 
         const caption = w.get("[data-testid='notify-caption']");
@@ -831,9 +834,9 @@ describe("Notifications", () => {
         const w = mountDetails({ notifyMode: "all" });
 
         expect(radios(w).map(r => document.getElementById(r.getAttribute("aria-describedby") ?? "")?.textContent?.trim())).toEqual([
-            "Every new message.",
-            "Your name or @all.",
-            "Only mentions of your name."
+            "Every new message in this channel.",
+            "When someone mentions you by name or uses @all.",
+            "Nothing, unless someone mentions you by name."
         ]);
         expect(w.get("[data-testid='details-notify'] [role='radiogroup']").attributes("aria-describedby")).toBeUndefined();
     });
@@ -841,7 +844,7 @@ describe("Notifications", () => {
     test("with no mode of its own, says what All means, the mode Tab lands on", () => {
         const w = mountDetails({ notifyMode: null });
 
-        expect(w.get("[data-testid='notify-caption']").text()).toBe("Every new message.");
+        expect(w.get("[data-testid='notify-caption']").text()).toBe("Every new message in this channel.");
     });
 
     test("moves its line to the newly chosen mode", async () => {
@@ -849,7 +852,7 @@ describe("Notifications", () => {
 
         await w.setProps({ notifyMode: "silent" });
 
-        expect(w.get("[data-testid='notify-caption']").text()).toBe("Only mentions of your name.");
+        expect(w.get("[data-testid='notify-caption']").text()).toBe("Nothing, unless someone mentions you by name.");
     });
 
     test("no longer carries the foot about threads and badges", () => {
@@ -1092,59 +1095,40 @@ describe("online status", () => {
         expect(plain(identity.get("[data-testid='details-name']").text())).toBe("Anna Reyes, online");
     });
 
-    test("a group's People rows are 32px faces with each person's badge and words, her own row drawing her own face", () => {
+    // A group's details list no one, so they draw no one's badge: the group's face carries none.
+    test("a group draws no person's badge, its face carrying none and no People rows under it", () => {
         const w = mountGroup({ facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6), someone(carl, 7)] }), personName: "Ted Decker", personAliasGuid: viewer });
-        const rows = w.findAll("[data-testid='details-person']");
 
-        expect(rows.map(row => row.findComponent(Avatar).props("size"))).toEqual([32, 32, 32, 32]);
-        expect(rows.map(row => badgesIn(row.element).map(badge => badge.state))).toEqual([["online"], ["online"], ["busy"], []]);
-        expect(rows.map(row => spoken(row))).toEqual(["Ted Decker (you), online", "Anna Reyes, online", "Anna Reyes, busy", "Anna Reyes"]);
+        expect(w.findAll("[data-testid='details-person']")).toHaveLength(0);
+        expect(badgesIn(w.element)).toEqual([]);
         expect(badgesIn(w.get("[data-testid='details-identity']").element)).toEqual([]);
     });
 
-    test("kept mounted closed, it keeps its people asked about, since it draws them from the room's facts read at open and has no read of its own", async () => {
-        const w = mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(carl, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
-        const asked = status.store.watched();
-        expect(asked).toEqual([viewer, anna, carl]);
+    test("kept mounted closed, a group asks about no one's status, since it draws no one's", () => {
+        mountGroup({ isOpen: false, facts: groupFacts({ people: [someone(anna, 5), someone(carl, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
 
-        // an exchange while closed tells the quiet person's status, so opening draws it at once
-        status.store.exchanged(asked, exchangeAnswer(watchAnswer(1000, { [anna]: toldEntry(online(1000)), [carl]: toldEntry(online(1000)) })));
-        await w.setProps({ isOpen: true });
-        await nextTick();
-
-        const rows = w.findAll("[data-testid='details-person']");
-        expect(rows.map(row => badgesIn(row.element))).toEqual([[{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }], [{ state: "online", isMoving: false }]]);
+        expect(status.store.watched()).not.toEqual(expect.arrayContaining([anna]));
+        expect(status.store.watched()).not.toEqual(expect.arrayContaining([carl]));
     });
 
-    test("a group's People rows keep the group's one row height with their 32px faces", () => {
-        const w = mountGroup({ facts: groupFacts({ people: [someone(anna, 5), someone(ben, 6)] }), personName: "Ted Decker", personAliasGuid: viewer });
-        const rows = w.findAll("[data-testid='details-person']");
-        const rules = styleRules(join(shellFolder, "components/conversationDetails.partial.obs"), /^\.chat-sg-row\.chat-rd-prow$/);
-        const padding = rules.map(body => /padding-block:\s*(\d+)px/.exec(body)?.[1]).find(value => value !== undefined);
+    test("holds no People row recipe in its styles, there being no People rows", () => {
+        const rules = styleRules(join(shellFolder, "components/conversationDetails.partial.obs"), /chat-rd-(prow|person)\b/);
 
-        expect(rows.length).toBeGreaterThan(1);
-        expect(rows.every(row => row.classes("chat-rd-prow"))).toBe(true);
-        // the group's least row height is 44px, and every row after the first draws a 1px rule
-        expect(padding).toBeDefined();
-        expect(1 + Number(padding) * 2 + 32).toBeLessThanOrEqual(44);
+        expect(rules).toEqual([]);
     });
 
-    test("her own People row draws nothing under Appear offline, as everyone else sees her", async () => {
+    test("her own face is drawn nowhere in a group's details, so Appear offline has nothing there to hide", async () => {
         const w = mountGroup({ personName: "Ted Decker", personAliasGuid: viewer });
 
-        expect(badgesIn(w.findAll("[data-testid='details-person']")[0].element)).toHaveLength(1);
         status.mine.value = { busy_until: null, appear_offline: true };
         await afterFades();
 
-        expect(badgesIn(w.findAll("[data-testid='details-person']")[0].element)).toEqual([]);
-        expect(spoken(w.findAll("[data-testid='details-person']")[0])).toBe("Ted Decker (you)");
+        expect(w.text()).not.toContain("Ted Decker");
+        expect(badgesIn(w.element)).toEqual([]);
     });
 
-    test.each([
-        ["the identity", /^\.chat-rd-id(\[|:|$)/],
-        ["a People row", /^\.chat-rd-person(\[|:|$)/]
-    ])("rings its badge in %s's fill", (_place, selector) => {
-        expect(setsBothRings(join(shellFolder, "components/conversationDetails.partial.obs"), selector)).toBe(true);
+    test("rings its badge in the identity's fill", () => {
+        expect(setsBothRings(join(shellFolder, "components/conversationDetails.partial.obs"), /^\.chat-rd-id(\[|:|$)/)).toBe(true);
     });
 
     test.each(swaps)("the pair swapped in place to another person, %s, draws the new person's face as state", async (_case, from, to) => {
