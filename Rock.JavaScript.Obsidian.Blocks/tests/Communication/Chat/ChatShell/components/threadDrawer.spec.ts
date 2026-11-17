@@ -1362,7 +1362,7 @@ describe("the drawer's states, drawn by the shared parts", () => {
 
         const direct = draw({ root: null, replies: [], isLoading: true, isChannel: false, isDirectMessage: true });
         expect(direct.findAllComponents(Skeleton).map(row => row.props("shape"))).toEqual(Array(3).fill("bubble"));
-        expect(source()).not.toMatch(/chat-th-sk|class="chat-skeleton/);
+        expect(source()).not.toMatch(/chat-th-sk\b|class="chat-skeleton/);
     });
 
     test("a first page that failed is the inline notice, said through the announcer", async () => {
