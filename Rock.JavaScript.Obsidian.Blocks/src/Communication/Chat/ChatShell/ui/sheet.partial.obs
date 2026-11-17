@@ -155,6 +155,15 @@
         height: {
             type: String as PropType<SheetHeight>,
             default: "content"
+        },
+
+        /**
+         * Whether the sheet's owner gives focus back itself as the sheet closes, as a popover drawn
+         * as a sheet does; the sheet then leaves focus where its owner put it.
+         */
+        isFocusReturnedByOwner: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -180,7 +189,7 @@
 
     // Ended the moment it closes, not after it slides away, so focus is never left on a vanishing control.
     const trapped = (): HTMLElement | undefined => props.isOpen ? sheetElement.value : undefined;
-    useFocusTrap(trapped);
+    useFocusTrap(trapped, { isFocusReturned: () => !props.isFocusReturnedByOwner });
     useAnnouncerModal(trapped);
 
     function onKeydown(event: KeyboardEvent): void {

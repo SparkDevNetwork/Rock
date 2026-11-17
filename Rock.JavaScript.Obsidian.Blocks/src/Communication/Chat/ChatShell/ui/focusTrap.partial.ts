@@ -142,6 +142,13 @@ export type FocusTrapOptions = {
     returnTo?: () => HTMLElement | null;
 
     /**
+     * Whether the trap gives focus back as it ends; by default it does. A surface whose owner gives
+     * focus back itself answers no, so focus goes back once, by one owner, and the trap's late
+     * return never takes it from where the owner put it.
+     */
+    isFocusReturned?: () => boolean;
+
+    /**
      * What focus starts on as the trap begins; by default the control marked data-autofocus, else
      * the first. Null leaves focus where it is, for a surface that places it itself.
      */
@@ -227,7 +234,7 @@ export function useFocusTrap(element: SurfaceElement, options: FocusTrapOptions 
         pullEscapeLayer(layer);
         const target = options.returnTo?.() ?? opener;
         opener = null;
-        if (target?.isConnected) {
+        if (target?.isConnected && (options.isFocusReturned?.() ?? true)) {
             focusQuietly(target, { preventScroll: true });
         }
     }
