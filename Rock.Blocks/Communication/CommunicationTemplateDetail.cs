@@ -406,8 +406,20 @@ namespace Rock.Blocks.Communication
             {
                 if ( newCategoryGuid.HasValue )
                 {
-                    communicationTemplate.Category = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
-                    communicationTemplate.CategoryId = communicationTemplate.Category?.Id;
+                    // The template inherits its security from its category, so only
+                    // accept a category the picker would have offered.
+                    var newCategory = new CategoryService( this.RockContext ).Get( newCategoryGuid.Value );
+                    var isCategoryAllowed = newCategory != null
+                        && newCategory.EntityTypeId == EntityTypeCache.GetId<CommunicationTemplate>()
+                        && newCategory.IsAuthorized( Authorization.VIEW, currentPerson );
+
+                    if ( !isCategoryAllowed )
+                    {
+                        return ActionBadRequest( "Invalid category." );
+                    }
+
+                    communicationTemplate.Category = newCategory;
+                    communicationTemplate.CategoryId = newCategory.Id;
                 }
                 else
                 {
@@ -470,6 +482,15 @@ namespace Rock.Blocks.Communication
                 {
                     if ( newSmsFromSystemPhoneNumberGuid.HasValue )
                     {
+                        var isSmsFromNumberAllowed = SystemPhoneNumberCache.All( false )
+                            .Any( spn => spn.Guid == newSmsFromSystemPhoneNumberGuid.Value
+                                && spn.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+                        if ( !isSmsFromNumberAllowed )
+                        {
+                            return ActionBadRequest( "Invalid SMS from number." );
+                        }
+
                         communicationTemplate.SmsFromSystemPhoneNumber = new SystemPhoneNumberService( this.RockContext ).Get( newSmsFromSystemPhoneNumberGuid.Value );
                         communicationTemplate.SmsFromSystemPhoneNumberId = communicationTemplate.SmsFromSystemPhoneNumber?.Id;
                     }
