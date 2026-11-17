@@ -25,7 +25,7 @@ import { providedSession } from "../sessionShapes";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
 
-function draw(props: { text: string | null, pieces?: unknown, blocks?: unknown }): VueWrapper {
+function draw(props: { text: string | null, pieces?: unknown, blocks?: unknown, isInline?: boolean }): VueWrapper {
     return mount(MessageBody, { props });
 }
 
@@ -413,5 +413,32 @@ describe("a mention chip's face", () => {
         const face = body.get("[data-testid='piece-mention'] .chat-mn-av");
         expect(face.find("img").exists()).toBe(false);
         expect(face.attributes("data-initial")).toBe("L");
+    });
+});
+
+// A channel's text and a system line run the body inline, so (edited), Sending… and a line's time
+// ride at its end. The body flows inline itself, its text row with it, for whoever holds it.
+describe("a body drawn inline", () => {
+    test("runs its root and its text row inline, and a body held as a block stays one", async () => {
+        const { readFileSync } = await import("fs");
+        const { join } = await import("path");
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageBody.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-message-body\.is-inline,\s*\.chat-message-body\.is-inline \.chat-body-text\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/display:\s*inline/);
+        expect(draw({ text: "words", isInline: true }).get("[data-testid='message-body']").classes()).toContain("is-inline");
+        expect(draw({ text: "words" }).get("[data-testid='message-body']").classes()).not.toContain("is-inline");
+    });
+
+    test("is how a channel's text and a system line hold it, reaching into it no more", async () => {
+        const { readFileSync } = await import("fs");
+        const { join } = await import("path");
+        for (const file of ["messageRowCommunity.partial.obs", "messageRow.partial.obs"]) {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components", file), "utf8");
+
+            expect(source).toMatch(/<MessageBody [^>]*\bisInline\b/);
+            expect(source).not.toMatch(/:deep\(\.chat-(message-body|body-text)\)/);
+        }
     });
 });

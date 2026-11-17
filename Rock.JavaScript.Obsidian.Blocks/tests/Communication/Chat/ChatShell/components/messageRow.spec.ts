@@ -706,8 +706,7 @@ describe("Community, in a channel", () => {
         const rule = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
-        expect(rule).toMatch(/--chat-cm-radius:\s*var\(--chat-r-row\)/);
-        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
+        expect(rule).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
         expect(rule).toMatch(/margin-inline:\s*var\(--chat-cm-inset\)/);
         expect(rule).not.toMatch(/(^|[\s;])margin(-top|-bottom|-block)?:/);
         // The text column stays where every other row has it: the inset comes out of the padding.
@@ -766,9 +765,14 @@ describe("Community, in a channel", () => {
     test("the reader's chip and the @all chip in a washed row are ringed in the mention ring", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\),\s*\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-all\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const washed = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const chip = /(?:^|\n)\.chat-mn\.is-you,\s*\.chat-mn\.is-all\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
 
-        expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        // The row hands the ring to the chip, which draws it itself: the row reaches into no part.
+        expect(washed).toMatch(/--chat-mn-ring:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(chip).toMatch(/box-shadow:\s*var\(--chat-mn-ring,\s*none\)/);
+        expect(style).not.toMatch(/:deep\(\.chat-mn/);
         expect(style).not.toMatch(/amber|--chat-warning/i);
     });
 
@@ -822,22 +826,38 @@ describe("Community, in a channel", () => {
     // The row stands in from the feed's edge, and its bar, docked to the row, would follow it in;
     // it is pushed back out by the same inset, so the bar holds its place against the feed.
     test("a washed row's action bar keeps its place against the feed", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-tools\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()>*]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
 
-        expect(rule).toMatch(/margin-right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
-        // The bar's top is measured from inside the row's clear 1px top edge; it is lifted back by it.
-        expect(rule).toMatch(/margin-top:\s*-1px/);
+        // The dock is a box along the row's top edge, which the bar is placed against.
+        const dock = block(".chat-tools-dock");
+        expect(dock).toMatch(/position:\s*absolute/);
+        expect(dock).toMatch(/(^|[\s;])top:\s*0/);
+        expect(dock).toMatch(/(^|[\s;])right:\s*0/);
+        expect(dock).toMatch(/(^|[\s;])left:\s*0/);
+        const washed = block(".is-mention-me > .chat-tools-dock");
+        expect(washed).toMatch(/right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
+        // The bar's top is measured from inside the row's clear 1px top edge; the dock lifts it back by it.
+        expect(washed).toMatch(/top:\s*-1px/);
+        const row = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        expect(row).not.toMatch(/:deep\(\.chat-tools\)/);
     });
 
     // A click's focus drops the ring and squares an ordinary row; a washed row keeps its corners.
     test("a click's focus keeps the wash's corners", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const plain = /\.chat-msg\.is-community:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const washed = /\.chat-msg\.is-community\.is-mention-me:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius,\s*0\)/);
+        expect(plain).toMatch(/border-radius:\s*0/);
+        expect(washed).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
+        // Each corner is a radius the sheet names, never a value handed on under a name of the row's own.
+        expect(style).not.toMatch(/--chat-cm-radius/);
     });
 });
 
