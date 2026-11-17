@@ -118,6 +118,16 @@ const read = (element: Element): string => spaced(element).replace(/\s+/g, " ").
 const text = (w: VueWrapper, mark: string): string => read(w.get(`[data-testid='${mark}']`).element);
 const all = (w: VueWrapper, mark: string): string[] => w.findAll(`[data-testid='${mark}']`).map(e => read(e.element));
 
+/**
+ * What the chat's one voice says, once its words have settled: words the same as the last are
+ * blanked and said again a task later, so a screen reader hears them again.
+ */
+async function said(politeness: "polite" | "assertive"): Promise<string | null | undefined> {
+    await nextTick();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    return document.querySelector(`[data-testid='announcer-${politeness}']`)?.textContent;
+}
+
 // #endregion Fixtures
 
 describe("sections", () => {
@@ -360,13 +370,11 @@ describe("the search", () => {
     // and no region of the panel's own talks over the rest of the chat.
     test("says the search and its answer through the chat's one voice, the line under the filter no live region", async () => {
         const w = draw({ query: "a", searchStatus: "searching", members: [tom] });
-        await nextTick();
         expect(w.get("[data-testid='members-hint']").attributes("role")).toBeUndefined();
-        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Searching everyone in young-adults");
+        expect(await said("polite")).toBe("Searching everyone in young-adults");
 
         await w.setProps({ searchStatus: "answered", members: [tom, grace, anna] });
-        await nextTick();
-        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("3 people in young-adults");
+        expect(await said("polite")).toBe("3 people in young-adults");
     });
 
     test("no one matching says so", () => {
@@ -596,10 +604,9 @@ describe("removing a row", () => {
     test("says the removal through the chat's one voice, the row's Removing no live region", async () => {
         const w = draw({ canManageMembers: true });
         await w.setProps({ removals: { [anna.person_alias_guid]: { kind: "removing" } } });
-        await nextTick();
 
+        expect(await said("polite")).toBe("Removing Anna Reyes");
         expect(w.get("[data-testid='member-removing']").attributes("role")).toBeUndefined();
-        expect(document.querySelector("[data-testid='announcer-polite']")?.textContent).toBe("Removing Anna Reyes");
     });
 
     test("a refusal shows under the row in the door's words, and its X dismisses it", async () => {
@@ -609,9 +616,8 @@ describe("removing a row", () => {
         const refusal = w.findAll("[data-testid='member-row']")[2].get("[data-testid='member-refusal']");
         expect(read(refusal.element)).toBe(text);
         // said at once through the chat's one voice, the row's sentence no live region of its own
-        await nextTick();
         expect(refusal.attributes("role")).toBeUndefined();
-        expect(document.querySelector("[data-testid='announcer-assertive']")?.textContent).toBe(text);
+        expect(await said("assertive")).toBe(text);
 
         await refusal.get("[data-testid='member-refusal-dismiss']").trigger("click");
         expect(w.emitted("dismissRemoval")).toEqual([[anna.person_alias_guid]]);

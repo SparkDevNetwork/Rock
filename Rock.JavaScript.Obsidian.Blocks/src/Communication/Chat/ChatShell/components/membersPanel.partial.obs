@@ -61,7 +61,7 @@
                     <Icon name="alert" size="xs" />Couldn't search right now.
                     <button type="button" class="chat-mb-link" data-testid="members-search-retry" @click="emit('retrySearch')">Try again</button>
                 </p>
-                <p v-else-if="searchStatus" class="chat-mb-hint" role="status" data-testid="members-hint">
+                <p v-else-if="searchStatus" class="chat-mb-hint" data-testid="members-hint">
                     <template v-if="searchStatus === 'searching'"><span class="chat-spinner" aria-hidden="true"></span>Searching everyone in {{ channelName }}</template>
                     <template v-else><Icon name="search" size="xs" />{{ foundLine }}</template>
                 </p>
@@ -103,7 +103,7 @@
                                     <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
                                 </span>
                                 <template #actions>
-                                    <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
+                                    <span v-if="row.isRemoving" class="chat-mb-busy" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
                                     <template v-else>
                                         <IconButton v-if="row.canMessage"
                                                     icon="message"
@@ -121,8 +121,8 @@
                                     </template>
                                 </template>
                             </ListRow>
-                            <div v-if="row.refusal" class="chat-mb-err" role="alert" data-testid="member-refusal">
-                                <Icon name="alert" size="xs" />
+                            <div v-if="row.refusal" class="chat-mb-err" data-testid="member-refusal">
+                                <span class="chat-mb-err-mark"><Icon name="alert" size="xs" /></span>
                                 <span>{{ row.refusal }}</span>
                                 <IconButton icon="x"
                                             size="sm"
@@ -265,12 +265,15 @@
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in) both;
 }
 
-.chat-mb-err > .chat-ic {
+/* The mark keeps the first line's height, so it sits on that line however many the sentence takes. */
+.chat-mb-err-mark {
+    display: inline-flex;
     flex: none;
-    margin-top: 2px;
+    align-items: center;
+    height: 1lh;
 }
 
-.chat-mb-err span {
+.chat-mb-err > span:not(.chat-mb-err-mark) {
     flex: 1;
     min-width: 0;
 }
@@ -356,7 +359,9 @@
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import PanelHost from "../ui/panelHost.partial.obs";
     import Skeleton from "../ui/skeleton.partial.obs";
-    import { MemberRemoval } from "../composables/useMembers.partial";
+    import { MemberRemoval, RosterRefusal } from "../composables/useMembers.partial";
+    // the roster's own reading of where a search is, named apart from the prop it types
+    import type { searchStatus as rosterSearchStatus } from "../composables/useMembers.partial";
     import { useHoverIntent } from "../composables/useHoverIntent.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import { ChatError, FaceStatus, RosterMember } from "../types.partial";
@@ -454,7 +459,7 @@
 
         /** Why the platform will not list the room for the reader, or null. */
         refusal: {
-            type: String as PropType<"not_member" | "no_roster_right" | null>,
+            type: String as PropType<RosterRefusal | null>,
             default: null
         },
 
@@ -466,7 +471,7 @@
 
         /** Where the search of the whole room is, or null with no query. */
         searchStatus: {
-            type: String as PropType<"searching" | "answered" | "failed" | null>,
+            type: String as PropType<ReturnType<typeof rosterSearchStatus>>,
             default: null
         },
 
@@ -699,8 +704,18 @@
         return `${row.name}${statusOf(row.guid)?.label ?? ""}${row.roles}. View profile`;
     }
 
+    /** A person's name as a row draws it, someone where the roster names no one. */
+    function nameOfMember(member: RosterMember | undefined): string {
+        return `${member?.nick_name ?? ""} ${member?.last_name ?? ""}`.trim() || "Someone";
+    }
+
+    /** The name of the person on a row, by their alias. */
+    function nameOf(personAliasGuid: string): string {
+        return nameOfMember(props.members.find(member => member.person_alias_guid === personAliasGuid));
+    }
+
     function drawMember(member: RosterMember): DrawnMember {
-        const name = `${member.nick_name ?? ""} ${member.last_name ?? ""}`.trim() || "Someone";
+        const name = nameOfMember(member);
         const isSelf = member.person_alias_guid.toLowerCase() === me.value.personAliasGuid.toLowerCase();
         const isLeader = props.isChannel && member.is_leader;
         const roles = [isSelf ? "you" : "", isLeader ? "leader" : ""].filter(p => !!p).map(p => `, ${p}`).join("");
@@ -822,6 +837,24 @@
         gone.forEach(guid => leaving.delete(guid));
         ((next ? whoOf(next) : null) ?? filterField.value?.inputElement)?.focus({ preventScroll: true });
     }, { flush: "post" });
+
+    // The chat's one voice says where a search of the whole room is, so the line under the filter
+    // is for the eye alone.
+    watch(() => props.searchStatus === "searching" ? `Searching everyone in ${props.channelName}` : props.searchStatus === "answered" ? foundLine.value : props.searchStatus === "failed" ? "Couldn't search right now." : "", (words, was) => {
+        if (words && words !== was) {
+            announce(words, props.searchStatus === "failed" ? "assertive" : "polite");
+        }
+    }, { immediate: true });
+
+    // A removal is said as it begins, and a refusal at once in the door's words, through the
+    // chat's one voice rather than a region of the row's own.
+    watch(() => Object.entries(props.removals).map(([guid, removal]) => ({ guid, words: removal.kind === "refused" ? removal.text : `Removing ${nameOf(guid)}`, isRefusal: removal.kind === "refused" })), (removals, was) => {
+        for (const removal of removals) {
+            if (!was?.some(said => said.guid === removal.guid && said.words === removal.words)) {
+                announce(removal.words, removal.isRefusal ? "assertive" : "polite");
+            }
+        }
+    }, { immediate: true });
 
     // A screen reader hears what the first page brought.
     watch(() => props.isLoading, (isLoading, wasLoading) => {
