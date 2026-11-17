@@ -26,6 +26,7 @@ using Rock.Lava;
 using Rock.Model;
 using Rock.Tests.Integration.Communication.Chat.Platform.Sync;
 using Rock.Tests.Integration.TestFramework.Database;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatShell;
 using Rock.Web.Cache;
 
@@ -67,7 +68,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
                 using ( ChatSyncProjectionFixture.InsideRequest() )
                 using ( var rockContext = new RockContext() )
                 {
-                    AssertNothingShown( ChatDoorHelper.GetProfileDetails( null, scene.Alias( target ), scene.Configuration, null, rockContext ) );
+                    AssertNothingShown( ChatDoorHelper.GetProfileDetails( null, scene.Alias( target ), scene.Configuration, Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES, null, rockContext ) );
                 }
             }
         }
@@ -393,6 +394,128 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #endregion The church's template
 
+        #region The person's page in Rock
+
+        [TestMethod]
+        public void AViewerThePersonProfilePageLetsViewIsGivenItsLink()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+                var target = AddReachablePerson( scene, "Target" );
+
+                var details = Details( scene, viewer, scene.Alias( target ) );
+
+                Assert.IsTrue( details.IsShown );
+                Assert.AreEqual( ProfileUrlOf( target ), details.PersonProfileUrl );
+            }
+        }
+
+        [TestMethod]
+        public void AViewerThePersonProfilePageRefusesIsNotGivenItsLink()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // Anyone who can chat, with no place on Rock's staff pages.
+                var viewer = scene.AddChatPerson( "Viewer" );
+                var target = AddReachablePerson( scene, "Target" );
+
+                var details = Details( scene, viewer, scene.Alias( target ) );
+
+                Assert.IsTrue( details.IsShown, "the card itself still shows" );
+                Assert.IsNull( details.PersonProfileUrl );
+            }
+        }
+
+        [TestMethod]
+        public void TheLinkIsGivenWhenThePersonHidesTheirDetails()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                // The page asks its own security, so a person's chat setting cannot hide them from
+                // staff who may open their record anyway.
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+                var target = AddReachablePerson( scene, "Target" );
+                SetProfilePublic( target, false );
+
+                var details = Details( scene, viewer, scene.Alias( target ) );
+
+                Assert.IsFalse( details.IsShown );
+                Assert.IsNull( details.Email );
+                Assert.IsNull( details.LavaHtml );
+                Assert.AreEqual( ProfileUrlOf( target ), details.PersonProfileUrl );
+            }
+        }
+
+        [TestMethod]
+        public void NoLinkIsGivenToSomeoneChatWouldNotShow()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+
+                var stranger = scene.Fixture.AddPerson( "Stranger" );
+                var banned = AddReachablePerson( scene, "Banned" );
+                scene.AddToBanList( banned );
+
+                // The card is the only way the browser names a person here, so an alias guessed or
+                // leaked from another page must not become a way to find a record.
+                AssertNothingShown( Details( scene, viewer, scene.Alias( stranger ) ), "never in chat" );
+                AssertNothingShown( Details( scene, viewer, scene.Alias( banned ) ), "banned" );
+            }
+        }
+
+        [TestMethod]
+        public void NoLinkIsGivenToAViewerChatRefuses()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+                scene.AddToBanList( viewer );
+                var target = AddReachablePerson( scene, "Target" );
+
+                AssertNothingShown( Details( scene, viewer, scene.Alias( target ) ) );
+            }
+        }
+
+        [TestMethod]
+        public void NoLinkIsGivenWithoutAPersonProfilePage()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var viewer = scene.AddChatPerson( "Viewer" );
+                MakeRockAdministrator( scene, viewer );
+                var target = AddReachablePerson( scene, "Target" );
+
+                Assert.IsNull( Details( scene, viewer, scene.Alias( target ), personProfilePage: string.Empty ).PersonProfileUrl, "no page set" );
+                Assert.IsNull( Details( scene, viewer, scene.Alias( target ), personProfilePage: Guid.NewGuid().ToString() ).PersonProfileUrl, "a page since deleted" );
+                Assert.IsTrue( Details( scene, viewer, scene.Alias( target ), personProfilePage: string.Empty ).IsShown, "the card still shows" );
+            }
+        }
+
+        [TestMethod]
+        public void MayViewProfileAsksThePageForTheViewer()
+        {
+            using ( var scene = new ChatDoorScene() )
+            {
+                var plain = scene.AddChatPerson( "Plain" );
+                var administrator = scene.AddChatPerson( "Administrator" );
+                MakeRockAdministrator( scene, administrator );
+
+                Assert.IsTrue( MayViewProfile( administrator ), "an administrator" );
+                Assert.IsFalse( MayViewProfile( plain ), "anyone who can chat" );
+                Assert.IsFalse( MayViewProfile( null ), "nobody signed in" );
+                Assert.IsFalse( MayViewProfile( administrator, string.Empty ), "no page set" );
+                Assert.IsFalse( MayViewProfile( administrator, Guid.NewGuid().ToString() ), "a page since deleted" );
+            }
+        }
+
+        #endregion The person's page in Rock
+
         #region Who chat has seen
 
         [TestMethod]
@@ -475,15 +598,43 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
 
         #region Helpers
 
-        private static ChatProfileDetailsBag Details( ChatDoorScene scene, int viewerId, Guid personAliasGuid, Func<IDictionary<string, object>> mergeFields = null )
+        /// <summary>
+        /// The door's answer, with Rock's own person profile page as the block's setting unless a
+        /// case names another.
+        /// </summary>
+        private static ChatProfileDetailsBag Details( ChatDoorScene scene, int viewerId, Guid personAliasGuid, Func<IDictionary<string, object>> mergeFields = null, string personProfilePage = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES )
         {
             using ( ChatSyncProjectionFixture.InsideRequest() )
             using ( var rockContext = new RockContext() )
             {
                 var viewer = new PersonService( rockContext ).Get( viewerId );
 
-                return ChatDoorHelper.GetProfileDetails( viewer, personAliasGuid, scene.Configuration, mergeFields ?? ( () => LavaHelper.GetCommonMergeFields( null, viewer ) ), rockContext );
+                return ChatDoorHelper.GetProfileDetails( viewer, personAliasGuid, scene.Configuration, personProfilePage, mergeFields ?? ( () => LavaHelper.GetCommonMergeFields( null, viewer ) ), rockContext );
             }
+        }
+
+        private static bool MayViewProfile( int? viewerId, string personProfilePage = Rock.SystemGuid.Page.PERSON_PROFILE_PERSON_PAGES )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var viewer = viewerId.HasValue ? new PersonService( rockContext ).Get( viewerId.Value ) : null;
+
+                return ChatDoorHelper.MayViewProfile( personProfilePage, viewer );
+            }
+        }
+
+        /// <summary>
+        /// Puts a person in Rock's administrators, a role every page lets view, so the person
+        /// profile page does too.
+        /// </summary>
+        private static void MakeRockAdministrator( ChatDoorScene scene, int personId )
+        {
+            scene.Fixture.AddMember( Rock.SystemGuid.Group.GROUP_ADMINISTRATORS.AsGuid(), personId );
+        }
+
+        private static string ProfileUrlOf( int personId )
+        {
+            return "/Person/" + IdHasher.Instance.GetHash( personId );
         }
 
         private static void AssertNothingShown( ChatProfileDetailsBag details, string because = null )
@@ -493,6 +644,7 @@ namespace Rock.Tests.Integration.Communication.Chat.Platform.Doors
             Assert.IsNull( details.MobilePhone, because );
             Assert.IsNull( details.MobilePhoneUri, because );
             Assert.IsNull( details.LavaHtml, because );
+            Assert.IsNull( details.PersonProfileUrl, because );
         }
 
         /// <summary>

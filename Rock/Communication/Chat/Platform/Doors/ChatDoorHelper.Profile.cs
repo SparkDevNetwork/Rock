@@ -73,10 +73,11 @@ namespace Rock.Communication.Chat.Platform.Doors
         /// <param name="viewer">The person looking.</param>
         /// <param name="personAliasGuid">The person on the card, by any of their aliases.</param>
         /// <param name="configuration">The church's chat settings.</param>
+        /// <param name="personProfilePage">The block's Person Profile Page setting as Rock stores a linked page, or blank for none.</param>
         /// <param name="mergeFields">Makes the page's common merge fields for the person looking, which the template sees beside the person on the card; called only when the template runs.</param>
         /// <param name="rockContext">The context read in.</param>
         /// <returns>The details, or an empty answer wherever chat would not show this person to this viewer.</returns>
-        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, Func<IDictionary<string, object>> mergeFields, RockContext rockContext )
+        internal static ChatProfileDetailsBag GetProfileDetails( Person viewer, Guid personAliasGuid, ChatPlatformConfiguration configuration, string personProfilePage, Func<IDictionary<string, object>> mergeFields, RockContext rockContext )
         {
             // The session gates and nothing more: the Direct Message Access data view is not read,
             // since nothing here starts a conversation.
@@ -123,6 +124,18 @@ namespace Rock.Communication.Chat.Platform.Doors
                 MobilePhoneUri = mobile != null ? ToTelUri( mobile.CountryCode, mobile.Number ) : null,
                 LavaHtml = RenderProfileTemplate( configuration, mergeFields, viewer, target )
             };
+        }
+
+        /// <summary>
+        /// Whether the person looking may open the block's person profile page, which decides
+        /// whether chat offers a link to a person's page in Rock at all.
+        /// </summary>
+        /// <param name="personProfilePage">The block's Person Profile Page setting as Rock stores a linked page, or blank for none.</param>
+        /// <param name="viewer">The person looking, or null when nobody is signed in.</param>
+        /// <returns>True when the page exists and lets the person view it.</returns>
+        internal static bool MayViewProfile( string personProfilePage, Person viewer )
+        {
+            return false;
         }
 
         /// <summary>
