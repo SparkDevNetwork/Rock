@@ -496,9 +496,6 @@ function fakeThreads(): Record<string, unknown> {
             // the tab last chosen stays unless one is named, as the real list keeps it
             state.list.tab = tab ?? state.list.tab;
         }),
-        switchTab: jest.fn(async (tab: string) => {
-            state.list.tab = tab;
-        }),
         refresh: jest.fn(async () => undefined),
         loadMore: jest.fn(async () => undefined),
         closeList: jest.fn(),
@@ -2159,7 +2156,7 @@ describe("the thread drawer", () => {
         await settle();
         await w.get("[data-testid='thread-row-open'][data-root-id='40']").trigger("click");
         await settle();
-        const listCalls = threadsOf().openList.mock.calls.length + threadsOf().switchTab.mock.calls.length;
+        const listCalls = threadsOf().openList.mock.calls.length;
 
         await w.get("[data-testid='frame-panel'] [data-testid='panel-back']").trigger("click");
         await settle();
@@ -2167,7 +2164,7 @@ describe("the thread drawer", () => {
         expect(w.get("[data-testid='frame-panel'] [data-testid='panel-title']").text()).toBe("Threads");
         expect(w.get("[data-testid='activity-tab'][aria-checked='true']").attributes("data-value")).toBe("threads");
         // the list is the one left, not fetched again on another tab
-        expect(threadsOf().openList.mock.calls.length + threadsOf().switchTab.mock.calls.length).toBe(listCalls);
+        expect(threadsOf().openList.mock.calls.length).toBe(listCalls);
     });
 
     /** Opens Activity on its Threads, every thread followed, over the team, holding one thread of the direct message with Anna. */

@@ -45,7 +45,6 @@
 //                     olderError: ChatError | null } | null
 //       },
 //       openList(channelId: string, tab?: "channel" | "all"): Promise<void>,   on the tab last chosen unless one is named
-//       switchTab(tab: "channel" | "all"): Promise<void>,
 //       refresh(): Promise<void>,
 //       loadMore(): Promise<void>,           the next 30 when the list is scrolled to its end
 //       closeList(): void,
@@ -299,11 +298,11 @@ describe("the threads list is fetched", () => {
         expect(threads.state.list.tab).toBe("channel");
     });
 
-    test("when the tab switches, the All tab asking for every followed thread", async () => {
+    test("when asked for All, every followed thread", async () => {
         const { threads, callsTo } = await setup();
         await threads.openList(channel);
 
-        await threads.switchTab("all");
+        await threads.openList(channel, "all");
 
         const listCalls = callsTo("chat_list_threads");
         expect(listCalls).toHaveLength(2);
@@ -314,7 +313,7 @@ describe("the threads list is fetched", () => {
     test("when the panel opens again, on the tab last chosen", async () => {
         const { threads, callsTo } = await setup();
         await threads.openList(channel);
-        await threads.switchTab("all");
+        await threads.openList(channel, "all");
         threads.closeList();
 
         await threads.openList(channel);
@@ -331,7 +330,7 @@ describe("the threads list is fetched", () => {
         const refreshed = deferred<CallResult>();
         answers.chat_list_threads = [listAnswer([listRow(40)]), listAnswer([listRow(70, { channel_id: otherChannel }), listRow(40)]), refreshed];
         await threads.openList(channel);
-        await threads.switchTab("all");
+        await threads.openList(channel, "all");
 
         const opening = threads.openList(otherChannel);
 
@@ -418,7 +417,7 @@ describe("an answer overtaken by a newer fetch", () => {
         answers.chat_list_threads = [first, second];
 
         const opening = threads.openList(channel);
-        const switching = threads.switchTab("all");
+        const switching = threads.openList(channel, "all");
         second.resolve(listAnswer([listRow(70, { channel_id: otherChannel })]));
         await switching;
         first.resolve(listAnswer([listRow(40)]));
