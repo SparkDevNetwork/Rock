@@ -43,6 +43,8 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { providedSession } from "../sessionShapes";
 import { nextTick, reactive } from "vue";
+import { readFileSync } from "fs";
+import { join } from "path";
 import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -795,6 +797,19 @@ describe("a chip leaving", () => {
         await settle();
 
         expect(chips(w).map(c => c.classes().includes("chat-move"))).toEqual([true, true]);
+    });
+
+    // The chip's own sheet is added to the page after the block's, at the same weight as the
+    // block's one move, so a transition the chip set while it moves would replace the move's and
+    // the glide would run at the chip's quick press. Its own transitions are set only while it is
+    // not moving.
+    test("glides by the block's one move, the chip's own transitions set only while it is not moving", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs"), "utf8");
+        const sheet = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        const bodyOf = (selector: string): string => Array.from(sheet.matchAll(/([^{}]+)\{([^}]*)\}/g)).find(match => match[1].trim() === selector)?.[2] ?? "";
+
+        expect(bodyOf(".chat-rx")).not.toMatch(/\btransition\s*:/);
+        expect(bodyOf(".chat-rx:not(.chat-move)")).toMatch(/\btransition\s*:[^;]*\btransform\b/);
     });
 });
 

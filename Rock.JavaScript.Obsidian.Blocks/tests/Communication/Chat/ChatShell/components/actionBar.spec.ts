@@ -519,11 +519,19 @@ describe("the bar's quick reactions", () => {
         expect(w.emitted("openPicker")).toEqual([[target, guard, { offered: favorites.slice(0, 3).map(favorite => favorite.code) }]]);
     });
 
-    /** Mounts the bar inside a block's boxes, as its column shows it, and hands back both. */
-    async function shownInBlock(): Promise<{ w: VueWrapper, bars: ActionBars }> {
+    /**
+     * Mounts the bar inside a block's boxes, as its column shows it, and hands back both and the
+     * message's chip row. Given a row, it draws the row's smile-plus beside the bar; a row "taken"
+     * by a choice is drawn no more once a reaction is toggled, as a choice removing the last one.
+     */
+    async function shownInBlock(chipRow?: "kept" | "taken"): Promise<{ w: VueWrapper, bars: ActionBars, row: { isDrawn: boolean } }> {
         let bars: ActionBars | null = null;
+        const row = reactive({ isDrawn: !!chipRow });
+        const toggleCode = jest.fn(async () => {
+            row.isDrawn = chipRow === "kept";
+        });
         const shell = shallowRef({
-            reactions: { favorites, state: reactive({ catalog: null, recents: [] }), loadCatalog: jest.fn(async () => null), recordRecent: jest.fn(), toggleCode: jest.fn() },
+            reactions: { favorites, state: reactive({ catalog: null, recents: [] }), loadCatalog: jest.fn(async () => null), recordRecent: jest.fn(), toggleCode },
             timelines: { state: () => ({ messages: [] }) },
             threads: { state: { thread: null } }
         } as unknown as ChatShell);
@@ -531,12 +539,15 @@ describe("the bar's quick reactions", () => {
             props: { isShown: { type: Boolean, default: true } },
             setup(props) {
                 bars = provideActionBars(shell, "Cedar Hill", () => undefined);
-                return () => h(ActionBar, { message: message(), isShown: props.isShown, favorites });
+                return () => [
+                    h(ActionBar, { message: message(), isShown: props.isShown, favorites }),
+                    row.isDrawn ? h("button", { "data-testid": "chip-add" }, "Add reaction") : null
+                ];
             }
         });
         wrapper = mount(Host, { attachTo: document.body });
         await settle();
-        return { w: wrapper, bars: bars as unknown as ActionBars };
+        return { w: wrapper, bars: bars as unknown as ActionBars, row };
     }
 
     function box(): HTMLElement | null {
@@ -591,6 +602,82 @@ describe("the bar's quick reactions", () => {
 
         expect(bars.held.value).toBeNull();
         expect(box()?.getAttribute("data-layer")).toBe("bar");
+    });
+
+    /** Opens the box from the chip smile-plus outside it, focused as a press leaves it, and hands it back. */
+    async function openedFromChip(bars: ActionBars): Promise<HTMLElement> {
+        const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
+        const chipAdd = document.querySelector<HTMLElement>("[data-testid='chip-add']") as HTMLElement;
+        chipAdd.focus();
+
+        bars.openReactionPicker("conversation", "c1", message(), guard, chipAdd);
+        await settle();
+        await settle();
+        return chipAdd;
+    }
+
+    function trayGlyph(code: string): HTMLElement {
+        return document.querySelector<HTMLElement>(`[data-testid='message-box'] [role='toolbar'][aria-label='Quick reactions'] [data-code='${code}']`) as HTMLElement;
+    }
+
+    // The picker drawn in the box only asks to react; the box is what closes, and gives focus back
+    // to the control that opened it, as the picker's own popover once did.
+    test("a choice in the tray reacts, gives the bar back, and gives focus to the control outside the box that opened it", async () => {
+        const { bars } = await shownInBlock("kept");
+        const chipAdd = await openedFromChip(bars);
+        expect(box()?.getAttribute("data-layer")).toBe("tray");
+
+        trayGlyph("pray").click();
+        await settle();
+        await settle();
+
+        expect(bars.held.value).toBeNull();
+        expect(box()?.getAttribute("data-layer")).toBe("bar");
+        expect(document.activeElement).toBe(chipAdd);
+    });
+
+    test("Escape gives the bar back and focus to the control outside the box that opened it", async () => {
+        const { bars } = await shownInBlock("kept");
+        const chipAdd = await openedFromChip(bars);
+        expect(document.activeElement).toBe(trayGlyph("thumbsup"));
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+        await settle();
+
+        expect(bars.held.value).toBeNull();
+        expect(document.activeElement).toBe(chipAdd);
+    });
+
+    // A choice can take the chip row away as the page redraws, the smile-plus with it. The bar is
+    // drawn again on the message, so its Add reaction is where focus goes, never the page's body.
+    test("a choice that takes the control that opened it away gives focus to the bar's Add reaction", async () => {
+        const { bars } = await shownInBlock("taken");
+        await openedFromChip(bars);
+
+        trayGlyph("pray").click();
+        await settle();
+        await settle();
+
+        expect(document.querySelector("[data-testid='chip-add']")).toBeNull();
+        expect(bars.held.value).toBeNull();
+        expect(document.activeElement).toBe(document.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+    });
+
+    test("stays when the control outside the box that opened it goes, and Escape then gives focus to the bar's Add reaction", async () => {
+        const { bars, row } = await shownInBlock("kept");
+        await openedFromChip(bars);
+
+        row.isDrawn = false;
+        await settle();
+        expect(box()?.getAttribute("data-layer")).toBe("tray");
+
+        trayGlyph("thumbsup").dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await settle();
+        await settle();
+
+        expect(bars.held.value).toBeNull();
+        expect(document.activeElement).toBe(document.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
     });
 
     // The box grows from the bar's edges to the tray's over the block's one move, the

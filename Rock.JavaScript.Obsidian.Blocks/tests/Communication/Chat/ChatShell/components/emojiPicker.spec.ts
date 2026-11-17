@@ -27,7 +27,7 @@
 // The component these tests are written to, components/emojiPicker.partial.obs:
 //
 //   props: {
-//       mode: "react" | "insert",
+//       mode: "react" | "insert",       react: drawn in the message box, which places and closes it; insert: its own popover
 //       startsOn: "tray" | "full",          where it opens; "full" by default, the tray in react mode only
 //       offered: string[],                 the quick reactions the control that opened it already shows, left out of the tray
 //       source: {
@@ -37,14 +37,13 @@
 //           churchName: string
 //       },
 //       mine: string[],                    the codes the reader reacted with; marked in react mode only
-//       anchor: HTMLElement | null         what it is placed beside; what opened it unless opener is given
-//       opener: HTMLElement | null         what opened it, where focus returns; its row once it has gone
+//       anchor: HTMLElement | null         inserting, what it is placed beside and gives focus back to
 //   }
-//   emits: react(code), insert(text, code), close()
+//   emits: react(code), showAll(), insert(text, code), close()
 //
 // A category's id is the catalog's category: smileys, people, symbols, nature, food, activities,
-// travel, objects. The picker is drawn while mounted. It is role="dialog", "Add reaction" in react
-// mode. The tray is role="toolbar" "Quick reactions", each glyph a button with data-code, then the
+// travel, objects. The picker is drawn while mounted. Inserting it is role="dialog", "Add emoji"; reacting
+// the box is the dialog. The tray is role="toolbar" "Quick reactions", each glyph a button with data-code, then the
 // button "All emoji". The full picker's search is the input "Search emoji"; the tabs role="tablist"
 // "Emoji categories", one role="tab" per section named as it is, above the grid; the grid
 // role="grid", its one section a role="rowgroup" named for its heading, rows of eight role="row",
@@ -171,7 +170,9 @@ async function open(props: PickerProps = {}): Promise<VueWrapper> {
             ...(props.offered ? { offered: props.offered } : {}),
             source: { favorites, catalog: props.catalog === undefined ? catalog : props.catalog, recents: props.recents ?? [], churchName: "Cedar Hill" },
             mine: props.mine ?? [],
-            anchor
+            anchor,
+            // Reacting, the picker is drawn in the message box, which grows it on All emoji.
+            onShowAll: () => wrapper?.setProps({ startsOn: "full" })
         },
         attachTo: document.body,
         global: { provide: providedSession({ isPhone: props.isPhone ?? false }) }
@@ -221,7 +222,7 @@ function cells(): HTMLElement[] {
 
 /** Every emoji button in the page, tray or grid, which is what the browser has to lay out and paint. */
 function drawnGlyphs(): number {
-    return document.querySelectorAll("[role='dialog'] button[data-code]").length;
+    return document.querySelectorAll(".chat-picker button[data-code]").length;
 }
 
 function codesOf(list: HTMLElement[]): string[] {
@@ -330,10 +331,10 @@ describe("the quick tray", () => {
         expect(codesOf(trayGlyphs())).toEqual(["pray", "thumbsup", "heart", "joy", "open_mouth", "cry", "tada", "raised_hands"]);
     });
 
-    test("is a toolbar in a dialog named Add reaction, its first glyph focused on open and the one tab stop", async () => {
+    // The message box it is drawn in is the dialog named Add reaction (frame.spec reads it there).
+    test("is a toolbar, its first glyph focused on open and the one tab stop", async () => {
         await open({ startsOn: "tray" });
 
-        expect(document.querySelector("[role='dialog']")?.getAttribute("aria-label")).toBe("Add reaction");
         expect(document.activeElement).toBe(trayGlyphs()[0]);
         const stops = Array.from(document.querySelectorAll("[role='toolbar'] button")).filter(b => b.getAttribute("tabindex") === "0");
         expect(stops).toEqual([trayGlyphs()[0]]);
@@ -366,24 +367,15 @@ describe("the quick tray", () => {
         expect(trayGlyphs()[0].getAttribute("aria-pressed")).not.toBe("true");
     });
 
-    test("a glyph reacts with its code, closes, and gives focus back to what opened it", async () => {
+    // Closing, by a choice or Escape, and where focus goes then, are the message box's: its cells
+    // in actionBar.spec and frame.spec.
+    test("a glyph asks to react with its code", async () => {
         const w = await open({ startsOn: "tray" });
 
         trayGlyphs()[5].click();
         await settle();
 
         expect(w.emitted("react")).toEqual([["pray"]]);
-        expect(w.emitted("close")).toHaveLength(1);
-        expect(document.activeElement).toBe(anchor);
-    });
-
-    test("Escape closes and gives focus back", async () => {
-        const w = await open({ startsOn: "tray" });
-
-        await press(trayGlyphs()[0], "Escape");
-
-        expect(w.emitted("close")).toHaveLength(1);
-        expect(document.activeElement).toBe(anchor);
     });
 
     test("All emoji opens the full picker in its place, on the favorites, the search focused, nothing chosen or closed", async () => {
@@ -396,7 +388,7 @@ describe("the quick tray", () => {
         expect(sectionLabels()).toEqual(["Cedar Hill favorites"]);
         expect(drawnGlyphs()).toBe(24);
         expect(document.activeElement).toBe(search());
-        expect(document.querySelector("[role='dialog']")?.getAttribute("aria-label")).toBe("Add reaction");
+        expect(w.emitted("showAll")).toHaveLength(1);
         expect(w.emitted("react")).toBeUndefined();
         expect(w.emitted("close")).toBeUndefined();
     });
@@ -462,10 +454,9 @@ describe("the full picker's sections", () => {
         expect(codesOf(cells())).toEqual(["sunflower"]);
     });
 
-    test("is a dialog named Add reaction, its grid a grid, its search focused on open", async () => {
+    test("its grid is a grid, its search focused on open", async () => {
         await open();
 
-        expect(document.querySelector("[role='dialog']")?.getAttribute("aria-label")).toBe("Add reaction");
         expect(document.querySelector("[role='grid']")).not.toBeNull();
         expect(document.activeElement).toBe(search());
     });
@@ -700,8 +691,8 @@ describe("the tabs", () => {
 });
 
 // Every control names itself in a tip, never the browser's title, which shows late and
-// unstyled; the hosted form, drawn
-// inside the message box, brings no popover of its own, which the box already is.
+// unstyled; reacting, it is drawn inside the message box and brings no popover of its own, which
+// the box already is.
 describe("its names and its host", () => {
     test("the tabs and All emoji carry tips and no title", async () => {
         await open({ startsOn: "tray" });
@@ -722,9 +713,11 @@ describe("its names and its host", () => {
         expect(Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => (tip.textContent ?? "").trim())).toContain("Cedar Hill favorites");
     });
 
-    test("hosted, it draws the step it is given and no popover of its own", async () => {
+    // Reacting is done only from the message box, so the react mode is the form drawn in it; only
+    // inserting, from the composer, brings a popover of its own.
+    test("reacting, it is drawn in the message box: the step it is given and no popover of its own", async () => {
         wrapper = mount(EmojiPicker, {
-            props: { mode: "react", startsOn: "tray", isHosted: true, source: { favorites, catalog, recents: [], churchName: "Cedar Hill" } },
+            props: { mode: "react", startsOn: "tray", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" } },
             attachTo: document.body,
             global: { provide: providedSession({ isPhone: false }) }
         });
@@ -739,13 +732,14 @@ describe("its names and its host", () => {
     });
 });
 
+// Inserting, it is placed beside the composer's emoji button; reacting, the message box places
+// itself, away from the face on either side of a bubble (actionBar.spec, "the bar beside a bubble").
 describe("where it is placed", () => {
-    /** Opens the picker beside an anchor at a given box, in a window 1000 by 800. */
-    async function openAt(box: { left: number, top: number, width: number, height: number }, isOwn = false): Promise<HTMLElement> {
+    /** Opens the composer's picker beside an anchor at a given box, in a window 1000 by 800. */
+    async function openAt(box: { left: number, top: number, width: number, height: number }): Promise<HTMLElement> {
         Object.defineProperty(document.documentElement, "clientWidth", { configurable: true, value: 1000 });
         Object.defineProperty(document.documentElement, "clientHeight", { configurable: true, value: 800 });
         const row = document.createElement("div");
-        row.className = isOwn ? "chat-msg is-conversational is-own" : "chat-msg is-conversational";
         anchor = document.createElement("button");
         anchor.getBoundingClientRect = () => ({ ...box, x: box.left, y: box.top, right: box.left + box.width, bottom: box.top + box.height, toJSON: () => box }) as DOMRect;
         row.append(anchor);
@@ -759,7 +753,7 @@ describe("where it is placed", () => {
         });
 
         wrapper = mount(EmojiPicker, {
-            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor },
+            props: { mode: "insert", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, anchor },
             attachTo: document.body
         });
         await settle();
@@ -771,17 +765,11 @@ describe("where it is placed", () => {
         return document.querySelector<HTMLElement>(".chat-popover") as HTMLElement;
     }
 
-    test("starts at another's message's anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
+    test("starts at its anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
         const picker = await openAt({ left: 900, top: 500, width: 28, height: 28 });
 
         expect(picker.style.left).toBe(`${1000 - 328 - 8}px`);
         expect(picker.style.top).toBe(`${500 - 8 - 380}px`);
-    });
-
-    test("ends at the reader's own message's anchor, and with no room there keeps that alignment and shifts inside the window", async () => {
-        const picker = await openAt({ left: 20, top: 500, width: 28, height: 28 }, true);
-
-        expect(picker.style.left).toBe("8px");
     });
 
     test("with room, starts at the anchor's left edge", async () => {
@@ -810,13 +798,13 @@ describe("on a phone", () => {
         expect(document.querySelector(".chat-popover")).toBeNull();
     });
 
-    test("the reaction picker's tray is a sheet as tall as what it holds", async () => {
-        await open({ startsOn: "tray", isPhone: true });
+    // A phone's box opens the full picker as its own sheet, named Add reaction (frame.spec), so
+    // the picker drawn in it brings no second sheet.
+    test("reacting, it draws no sheet of its own, the message box's sheet holding it", async () => {
+        await open({ isPhone: true });
 
-        expect(sheet()).not.toBeNull();
-        expect(trayGlyphs()[0].closest("[data-testid='sheet']")).toBe(sheet());
-        expect(sheet()?.classList.contains("is-picker")).toBe(false);
-        expect(sheet()?.getAttribute("aria-label")).toBe("Add reaction");
+        expect(sheet()).toBeNull();
+        expect(document.querySelector(".chat-picker.is-sheet")).not.toBeNull();
     });
 
     test("beside its anchor on a wider screen it stays a popover", async () => {
@@ -827,73 +815,16 @@ describe("on a phone", () => {
     });
 });
 
+// Inserting, the picker closes itself; reacting, the message box closes (actionBar.spec: a
+// choice, Escape, and the control that opened it going).
 describe("closing", () => {
     test("closes once what opened it leaves the page, as when its row or drawer goes", async () => {
-        const w = await open();
+        const w = await open({ mode: "insert" });
 
         anchor.remove();
         await settle();
 
         expect(w.emitted("close")).toHaveLength(1);
-    });
-
-    // Opened from a message's add chip, the picker is placed on the message's bubble, since a
-    // choice that takes the message's last chip away takes the add chip with it.
-    test("placed on a message's bubble and opened from its add chip, stays when the add chip goes, and gives focus to the row once it has", async () => {
-        const row = document.createElement("div");
-        row.className = "chat-msg is-conversational";
-        row.tabIndex = -1;
-        const bubble = document.createElement("div");
-        bubble.className = "chat-bubble";
-        const add = document.createElement("button");
-        add.textContent = "Add reaction";
-        row.append(bubble, add);
-        document.body.append(row);
-        add.focus();
-
-        const w = mount(EmojiPicker, {
-            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor: bubble, opener: add },
-            attachTo: document.body
-        });
-        wrapper = w;
-        await settle();
-
-        add.remove();
-        await settle();
-        expect(w.emitted("close")).toBeUndefined();
-
-        await press(search(), "Escape");
-
-        expect(w.emitted("close")).toHaveLength(1);
-        expect(document.activeElement).toBe(row);
-    });
-
-    test("a choice that takes its add chip away as the page redraws gives focus to the message's row", async () => {
-        const row = document.createElement("div");
-        row.className = "chat-msg is-conversational";
-        row.tabIndex = -1;
-        const bubble = document.createElement("div");
-        bubble.className = "chat-bubble";
-        const add = document.createElement("button");
-        add.textContent = "Add reaction";
-        row.append(bubble, add);
-        document.body.append(row);
-        add.focus();
-
-        const w = mount(EmojiPicker, {
-            // The toggle takes the last chip back at once, and the row is redrawn without it, add
-            // chip and all, before the next tick.
-            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: ["thumbsup"], anchor: bubble, opener: add, onReact: () => queueMicrotask(() => add.remove()) },
-            attachTo: document.body
-        });
-        wrapper = w;
-        await settle();
-
-        cellAt("Cedar Hill favorites", 0, 0).click();
-        await settle();
-
-        expect(w.emitted("react")).toEqual([["thumbsup"]]);
-        expect(document.activeElement).toBe(row);
     });
 
     // The host removes the picker on the word, so the word goes at once and the shared surface
@@ -907,7 +838,7 @@ describe("closing", () => {
         document.body.append(root);
         anchor.focus();
         const w = mount(EmojiPicker, {
-            props: { mode: "react", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, mine: [], anchor },
+            props: { mode: "insert", source: { favorites, catalog, recents: [], churchName: "Cedar Hill" }, anchor },
             attachTo: document.body,
             global: { stubs: { transition: false } }
         });
@@ -927,7 +858,7 @@ describe("closing", () => {
         const prototype = HTMLElement.prototype as unknown as { getAnimations?: () => unknown[] };
         prototype.getAnimations = () => [{ finished: new Promise(() => undefined) }];
         try {
-            const w = await open();
+            const w = await open({ mode: "insert" });
 
             await press(search(), "Escape");
 
@@ -940,7 +871,7 @@ describe("closing", () => {
 });
 
 describe("choosing in react mode", () => {
-    test("asks to react with the emoji's code, closes, and gives focus back to what opened it", async () => {
+    test("asks to react with the emoji's code", async () => {
         const w = await open();
         await showSection("Smileys");
 
@@ -948,8 +879,6 @@ describe("choosing in react mode", () => {
         await settle();
 
         expect(w.emitted("react")).toEqual([["grinning"]]);
-        expect(w.emitted("close")).toHaveLength(1);
-        expect(document.activeElement).toBe(anchor);
     });
 
     test("marks the reader's own reactions, in the cell's name and the foot", async () => {
@@ -968,15 +897,6 @@ describe("choosing in react mode", () => {
         expect(foot).toContain("Folded hands");
         expect(foot).toContain("(yours)");
         expect(foot).toContain(":pray:");
-    });
-
-    test("Escape closes and gives focus back", async () => {
-        const w = await open();
-
-        await press(search(), "Escape");
-
-        expect(w.emitted("close")).toHaveLength(1);
-        expect(document.activeElement).toBe(anchor);
     });
 });
 
