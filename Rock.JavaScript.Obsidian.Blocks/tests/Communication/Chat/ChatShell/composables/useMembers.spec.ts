@@ -462,7 +462,7 @@ describe("stopping", () => {
 //            adding: { isOpen, query, people: PersonRow[] | null, isSearching, error, isAdding,
 //                      refusal: { text, personAliasGuid } | null }
 //   askRemove(guid), cancelRemove(), remove(replacementGuid?), dismissRemoval(guid),
-//   setSuccessorQuery(query), openAdd(), closeAdd(), setAddQuery(query), add(people)
+//   setSuccessorQuery(query), openAdd(), closeAdd(), setAddQuery(query), retryAdd(), add(people)
 //   successorChoices(state); state.lastLeaderPersonAliasGuid is Rock's answer on open, and
 //   state.isSuccessorAsked says the confirm asks who leads next
 
@@ -1199,6 +1199,28 @@ describe("adding people", () => {
         jest.advanceTimersByTime(searchPause);
         expect(calls).toHaveLength(3);
         expect(members.state.adding.people).toBeNull();
+    });
+
+    // Try again in the dialog asks the failed name again at once, as the other searches' Try again does.
+    test("Try again asks a failed name again at once, searching until the answer", async () => {
+        const { members, calls } = doorHarness({ calls: [page([tom]), offline, { ok: true, data: { people: [aaron] } }] });
+        await members.open(channel);
+        members.openAdd();
+        members.setAddQuery("aa");
+        jest.advanceTimersByTime(searchPause);
+        await settle();
+        expect(members.state.adding.error).toEqual({ code: "rpc.transport", severity: "failed" });
+
+        const retried = members.retryAdd();
+        expect(members.state.adding.error).toBeNull();
+        expect(members.state.adding.isSearching).toBe(true);
+        await retried;
+        await settle();
+
+        expect(calls.map(c => c.name)).toEqual(["chat_list_members", "chat_search_people", "chat_search_people"]);
+        expect(calls[2].args).toEqual(calls[1].args);
+        expect(members.state.adding.people?.map(p => p.nick_name)).toEqual(["Aaron"]);
+        expect(members.state.adding.isSearching).toBe(false);
     });
 
     test("adding asks the door for everyone chosen, busy until it answers, then closes, says who was added and reads the roster again", async () => {

@@ -27,7 +27,7 @@
 //          people: PersonRow[] | null (the search's answer for the query), isSearching,
 //          error: ChatError | null, isAdding, refusal: { text, personAliasGuid } | null,
 //          campusNames: Record<string, string>
-//   emits: close, query(text), add(people: PersonRow[])
+//   emits: close, query(text), retry, add(people: PersonRow[])
 //   marks: add-people (the dialog), ap-close, ap-sub, ap-input, ap-results, ap-option,
 //          ap-option-why, ap-idle, ap-searching, ap-none, ap-search-error, ap-cap, ap-chip,
 //          ap-chip-remove, ap-note, ap-warn, ap-refusal, ap-cancel, ap-add
@@ -136,6 +136,17 @@ describe("the dialog", () => {
         const w = draw({ query: "an", error: { code: "rpc.transport", severity: "failed" } });
 
         expect(text(w, "ap-search-error")).toBe("Couldn't search right now.");
+    });
+
+    // The shared failure drew no way on here, as it does in New message: Try again asks the
+    // roster to search the same name again.
+    test("a search that failed offers Try again, which asks for the same name again", async () => {
+        const w = draw({ query: "an", error: { code: "rpc.transport", severity: "failed" } });
+
+        await w.get("[data-testid='ap-search-retry']").trigger("click");
+
+        expect(w.emitted("retry")).toHaveLength(1);
+        expect(w.emitted("query")).toBeUndefined();
     });
 
     test("someone already in the room is dimmed with the reason and cannot be picked", async () => {
