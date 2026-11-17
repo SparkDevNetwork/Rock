@@ -121,6 +121,7 @@ type Mounted = {
     wrapper: VueWrapper;
     hasJoinBar: { value: boolean };
     hasPanelField: { value: boolean };
+    hasPanelRow: { value: boolean };
 };
 
 /**
@@ -133,6 +134,7 @@ function mountFrame(): Mounted {
     const { shell, state } = fakeShell(calls);
     const hasJoinBar = ref(false);
     const hasPanelField = ref(false);
+    const hasPanelRow = ref(false);
     let frame!: Frame;
 
     const Host = defineComponent({
@@ -161,14 +163,15 @@ function mountFrame(): Mounted {
                 ]),
                 h("aside", { ref: frame.panelElement }, [
                     hasPanelField.value ? h("input", { "data-testid": "panel-field", "data-autofocus": "" }) : null,
-                    h("button", { "data-testid": "panel-close", "data-focus-stop": "panel-close" }, "Close")
+                    h("button", { "data-testid": "panel-close", "data-focus-stop": "panel-close" }, "Close"),
+                    hasPanelRow.value ? h("button", { "data-testid": "panel-row" }, "A row") : null
                 ])
             ]);
         }
     });
 
     const wrapper = mount(Host, { attachTo: document.body });
-    return { frame, shell, calls, state, wrapper, hasJoinBar, hasPanelField };
+    return { frame, shell, calls, state, wrapper, hasJoinBar, hasPanelField, hasPanelRow };
 }
 
 async function settle(): Promise<void> {
@@ -289,6 +292,50 @@ describe("the panel column", () => {
         expect(frame.panelKind.value).toBe("members");
         expect(calls).toEqual([`members.open:${team}`, `members.open:${volunteers}`]);
         expect(focused()).toBe("panel-close");
+    });
+
+    // The header offers Members only where a room has a roster to show, never in a conversation
+    // of two, so the list does not follow the person there: it closes, as the header's own does.
+    test("the members list closes rather than following into a conversation of two, which offers none", async () => {
+        mounted = mountFrame();
+        const { frame, calls, state } = mounted;
+        state.activeChannelId = team;
+        await settle();
+        await frame.onListPanel("members");
+        expect(frame.isMembersOffered.value).toBe(true);
+
+        state.activeChannelId = pairWithAnna;
+        await settle();
+
+        expect(frame.isMembersOffered.value).toBe(false);
+        expect(frame.panelKind.value).toBeNull();
+        expect(calls).toEqual([`members.open:${team}`, "members.close"]);
+
+        await frame.onListPanel("members");
+        expect(frame.panelKind.value).toBeNull();
+    });
+
+    // The roster read afresh for another conversation takes its old rows away, so focus on one
+    // goes where the panel starts, its filter, rather than with the row off the page.
+    test("a list re-pointed at another conversation keeps focus in the panel when the row that had it goes", async () => {
+        mounted = mountFrame();
+        const { frame, shell, state, wrapper, hasPanelField, hasPanelRow } = mounted;
+        state.activeChannelId = team;
+        hasPanelField.value = true;
+        hasPanelRow.value = true;
+        await settle();
+        await frame.onListPanel("members");
+        (shell.members.open as jest.Mock).mockImplementation(async () => {
+            hasPanelRow.value = false;
+        });
+        wrapper.get<HTMLElement>("[data-testid='panel-row']").element.focus();
+
+        state.activeChannelId = volunteers;
+        await settle();
+        await wrapper.vm.$nextTick();
+
+        expect(frame.panelKind.value).toBe("members");
+        expect(focused()).toBe("panel-field");
     });
 
     test("the threads list follows the open conversation", async () => {
@@ -883,7 +930,7 @@ describe("the one focus helper", () => {
         });
 
         const wrapper = mount(Host, { attachTo: document.body });
-        mounted = { frame, calls: [], state, wrapper, hasJoinBar: { value: false }, hasPanelField: { value: false } };
+        mounted = { frame, calls: [], state, wrapper, hasJoinBar: { value: false }, hasPanelField: { value: false }, hasPanelRow: { value: false } };
         return { frame, state, wrapper, drawn };
     }
 
