@@ -1350,6 +1350,91 @@ describe("loading older replies", () => {
         await notice.get("[data-testid='note-retry']").trigger("click");
         expect(loadOlder).toHaveBeenCalledTimes(1);
     });
+
+    // A failure the retry meets again keeps the same words, and is said again all the same.
+    test("a page that fails again with the same words is said again", async () => {
+        document.body.replaceChildren();
+        const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+        await afterOpen();
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const region = document.querySelector("[data-testid='announcer-assertive']")!;
+        const writes: MutationRecord[] = [];
+        const observer = new MutationObserver(records => writes.push(...records));
+        observer.observe(region, { childList: true, characterData: true, subtree: true });
+        await w.setProps({ olderError: { code: "net.offline", severity: "degraded", text: null } });
+        await new Promise(resolve => setTimeout(resolve, 10));
+        observer.disconnect();
+
+        expect(writes.length).toBeGreaterThan(0);
+        expect(region.textContent).toBe(plain(w.get("[data-testid='thread-error'] .chat-set-note-words").text()));
+    });
+
+    // The row, or a notice's Try again, can be taken away by the page it asked for; the keyboard
+    // carries on where the thread grew instead of falling to the page's body.
+    describe("hands focus on as its control goes", () => {
+        const offline = { code: "net.offline", severity: "degraded", text: null };
+
+        function olderReplies(): TimelineMessage[] {
+            return [36, 37].map(id => message(id, { parent_id: 40, person_alias_guid: ben, sender_nick_name: "Ben", sender_last_name: "Okafor" }));
+        }
+
+        async function pressRow(w: VueWrapper): Promise<void> {
+            const button = w.get("[data-testid='thread-older-more']");
+            (button.element as HTMLElement).focus();
+            await button.trigger("click");
+        }
+
+        test("a page asked from the row that fails, to the notice's Try again", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await pressRow(w);
+
+            await w.setProps({ olderError: offline });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-testid='thread-error'] [data-testid='note-retry']").element);
+        });
+
+        test("the last page, asked from the row, to the first reply it brought", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await pressRow(w);
+
+            await w.setProps({ replies: [...olderReplies(), ...replies(3)], hasMore: false });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-reply-id='36']").element);
+        });
+
+        test("a Try again that brings a page, to the row while more wait", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            await w.setProps({ olderError: offline });
+            const retry = w.get("[data-testid='thread-error'] [data-testid='note-retry']");
+            (retry.element as HTMLElement).focus();
+            await retry.trigger("click");
+
+            await w.setProps({ olderError: null, replies: [...olderReplies(), ...replies(3)] });
+            await nextTick();
+
+            expect(document.activeElement).toBe(w.get("[data-testid='thread-older-more']").element);
+        });
+
+        test("a page asked by scrolling leaves focus where it is", async () => {
+            const w = draw({ hasMore: true, loadOlder: jest.fn((): Promise<void> => new Promise(() => undefined)) });
+            await afterOpen();
+            const composer = document.querySelector<HTMLElement>("[contenteditable], textarea")!;
+            composer.focus();
+            report(true);
+
+            await w.setProps({ olderError: offline });
+            await nextTick();
+
+            expect(document.activeElement).toBe(composer);
+        });
+    });
 });
 
 describe("the drawer's states, drawn by the shared parts", () => {
