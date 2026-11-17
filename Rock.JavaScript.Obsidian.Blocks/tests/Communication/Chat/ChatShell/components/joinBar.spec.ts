@@ -26,12 +26,25 @@ import JoinBar from "../../../../../src/Communication/Chat/ChatShell/components/
 import { JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
+import { providedSession } from "../sessionShapes";
 
 let wrapper: VueWrapper | null = null;
 
 function mountBar(state: JoinState = { kind: "idle" }, props: Record<string, unknown> = {}): VueWrapper {
-    wrapper = mount(JoinBar, { props: { name: "Volunteers", state, ...props }, attachTo: document.body });
+    wrapper = mount(JoinBar, {
+        props: { name: "Volunteers", state, ...props },
+        global: { provide: providedSession({ churchName: "Cedar Hill Church" }) },
+        attachTo: document.body
+    });
     return wrapper;
+}
+
+/** The body of the first rule in the component's styles whose selector is exactly this one, comments dropped. */
+function ruleOf(selector: string): string {
+    const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs"), "utf8");
+    const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+    const rule = Array.from(style.matchAll(/([^{}]+)\{([^{}]*)\}/g)).find(m => m[1].trim() === selector);
+    return rule ? rule[2] : "";
 }
 
 /** The rules a component's styles give under reduced motion, selector and body, read from its source. */
@@ -323,6 +336,18 @@ describe("in the preview's footer", () => {
         expect(w.find("[data-testid='join-channel']").exists()).toBe(false);
     });
 
+    // A refusal is red wherever Join stands: the composer's bar draws it as the danger notice, and
+    // the footer draws the door's sentence in the same danger ink, as a failure to reach the door.
+    test("draws the door's refusal in the danger ink, as it draws a door not reached", () => {
+        const refused = mountFooter({ kind: "refused", text: "Volunteers is full right now." });
+        expect(refused.get("[data-testid='join-bar-text']").classes()).toContain("chat-joinfoot-err");
+        refused.unmount();
+
+        const failed = mountFooter({ kind: "failed", text: "You're offline. Try again when you're back." });
+        expect(failed.get("[data-testid='join-bar-text']").classes()).toContain("chat-joinfoot-err");
+        expect(ruleOf(".chat-joinfoot-main .chat-joinfoot-err")).toMatch(/color:\s*var\(--chat-danger-ink\)/);
+    });
+
     test("says why when the door could not be reached, and offers Join channel again", () => {
         const w = mountFooter({ kind: "failed", text: "You're offline. Try again when you're back." });
 
@@ -336,9 +361,16 @@ describe("in the preview's footer", () => {
         await w.get("[data-testid='join-leave']").trigger("click");
         await nextTick();
 
-        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("confirmLeave");
+        const bar = w.get("[data-testid='join-bar']");
+        expect(bar.attributes("data-state")).toBe("confirmLeave");
         expect(w.get("[data-testid='leave-question']").text()).toBe("Leave Volunteers?");
-        expect(w.get("[data-testid='leave-body']").text()).toBe("You'll leave its Rock group too.");
+        // The question and its words are the channel details' own, for a public channel.
+        expect(w.get("[data-testid='leave-body']").text())
+            .toBe("You'll stop getting its messages and leave the group at Cedar Hill Church. You can join again from Browse channels.");
+        // One group, named by the question, holding its answers too.
+        expect(bar.attributes("role")).toBe("group");
+        expect(bar.attributes("aria-labelledby")).toBe(w.get("[data-testid='leave-question']").attributes("id"));
+        expect(bar.element.contains(w.get("[data-testid='leave-go']").element)).toBe(true);
         expect(document.activeElement).toBe(w.get("[data-testid='leave-cancel']").element);
         expect(w.find("[data-testid='join-open']").exists()).toBe(false);
         expect(w.emitted("leave")).toBeUndefined();
@@ -382,14 +414,60 @@ describe("in the preview's footer", () => {
         expect(w.get("[data-testid='leave-error']").text()).toBe("Leaders can't leave Volunteers.");
     });
 
-    test("is Join channel again once the person has left", async () => {
+    // Leave goes with the refusal, so focus moves to OK, as the details' question moves it, rather
+    // than falling to the page, and the sentence is not missed.
+    test("moves focus from Leave to OK when the door refuses, and back to Leave from OK", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await nextTick();
+        const go = w.get("[data-testid='leave-go']");
+        (go.element as HTMLElement).focus();
+        await go.trigger("click");
+        await w.setProps({ leave: { kind: "leaving" } });
+
+        await w.setProps({ leave: { kind: "refused", text: "Leaders can't leave Volunteers." } });
+        await nextTick();
+        await nextTick();
+
+        const ok = w.get("[data-testid='leave-cancel']");
+        expect(ok.text()).toBe("OK");
+        expect(document.activeElement).toBe(ok.element);
+
+        await ok.trigger("click");
+        await nextTick();
+        expect(document.activeElement).toBe(w.get("[data-testid='join-leave']").element);
+    });
+
+    test("is Join channel again once the person has left, focus moving from Leave to Join channel", async () => {
         const w = mountFooter({ kind: "idle" }, { isMember: true });
 
         await w.get("[data-testid='join-leave']").trigger("click");
-        await w.get("[data-testid='leave-go']").trigger("click");
+        await nextTick();
+        const go = w.get("[data-testid='leave-go']");
+        (go.element as HTMLElement).focus();
+        await go.trigger("click");
         await w.setProps({ leave: { kind: "left" }, isMember: false });
+        await nextTick();
+        await nextTick();
 
         expect(w.find("[data-testid='leave-question']").exists()).toBe(false);
-        expect(w.get("[data-testid='join-channel']").text()).toBe("Join channel");
+        const join = w.get("[data-testid='join-channel']");
+        expect(join.text()).toBe("Join channel");
+        expect(document.activeElement).toBe(join.element);
+    });
+
+    test("leaves focus alone when the person was elsewhere as the leave lands", async () => {
+        const w = mountFooter({ kind: "idle" }, { isMember: true });
+        const elsewhere = document.createElement("button");
+        document.body.appendChild(elsewhere);
+
+        await w.get("[data-testid='join-leave']").trigger("click");
+        await w.get("[data-testid='leave-go']").trigger("click");
+        elsewhere.focus();
+        await w.setProps({ leave: { kind: "left" }, isMember: false });
+        await nextTick();
+        await nextTick();
+
+        expect(document.activeElement).toBe(elsewhere);
     });
 });
