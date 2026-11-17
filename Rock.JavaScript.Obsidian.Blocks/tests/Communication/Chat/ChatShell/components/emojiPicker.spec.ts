@@ -308,12 +308,13 @@ describe("the quick tray", () => {
         expect(document.querySelector("input[aria-label='Search emoji']")).toBeNull();
     });
 
-    // The bar's Add reaction sits beside the bar's own quick reactions, so the tray it opens offers
-    // the next eight instead of those again.
-    test("leaves out the quick reactions the control that opened it already shows, and fills from the recents then the favorites", async () => {
+    // The bar turns into the tray in place, so the bar's quick reactions are gone from the screen
+    // once it opens: the tray leads with them, then five more (the Feed's E1-A, D-816: "the three
+    // quick reactions first, five more, then All emoji").
+    test("leads with the quick reactions the control that opened it showed, then fills from the recents then the favorites", async () => {
         await open({ startsOn: "tray", offered: ["thumbsup", "heart", "joy"], recents: ["fire", "heart", "grinning"] });
 
-        expect(codesOf(trayGlyphs())).toEqual(["fire", "grinning", ...favorites.map(f => f.code).filter(code => !["thumbsup", "heart", "joy"].includes(code)).slice(0, 6)]);
+        expect(codesOf(trayGlyphs())).toEqual(["thumbsup", "heart", "joy", "fire", "grinning", "open_mouth", "cry", "pray"]);
         expect(trayGlyphs()).toHaveLength(8);
     });
 
