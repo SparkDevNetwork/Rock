@@ -116,6 +116,8 @@ function build(options: {
     stored?: Record<string, string>,
     // what Rock's page said of the person; ok unless a test loads a page already refused
     gate?: string,
+    // the browser's sign-in mark; none unless a test keeps things on the device
+    signInMark?: ShellOptions["signInMark"],
     // the channel a link names; channel A unless a test asks for a first visit with null
     linkedChannelId?: string | null,
     // one tab's Web Locks and BroadcastChannel, which two builds of one person share as two tabs do
@@ -497,6 +499,7 @@ function build(options: {
             }
         },
         mark: name => marks.push(name),
+        signInMark: options.signInMark,
         startDirectMessage: options.startDirectMessage,
         joinChannel: options.joinChannel,
         leaveChannel: options.leaveChannel,
@@ -3767,6 +3770,32 @@ describe("settings", () => {
         await settle();
         await settle();
         expect(h.shell.state.isStatusShown).toBe(false);
+    });
+
+    // The sidebar's foot has two shapes, the face that sets a status or none, so a reload draws
+    // the one the person's last load ended on from the first paint, rather than moving when the
+    // platform answers; a sign-out since forgets it.
+    test("a reload draws the sidebar foot's online status as the last load left it, before the platform answers, and forgets it after a sign-out", async () => {
+        let isMarkSet = true;
+        const signInMark = { isSet: () => isMarkSet, set: () => void (isMarkSet = true) };
+        const first = build({ signInMark });
+        first.exchangeSettings.value = { limits: platformLimits, flags: { online: true } };
+        first.bootstrap.value = { channels: [], me: { unread_mentions: [] } };
+        const starting = first.shell.start();
+        await settle();
+        answerHistory(first, channelA, 10);
+        await starting;
+        await settle();
+        expect(first.shell.state.isStatusShown).toBe(true);
+
+        const reload = build({ signInMark, stored: { ...first.stored } });
+        expect(reload.shell.state.isStatusShown).toBe(true);
+
+        // another person on this browser reads nothing of hers
+        expect(build({ signInMark, stored: { ...first.stored }, personAliasGuid: "b0000002-0000-4000-8000-000000000000" }).shell.state.isStatusShown).toBe(false);
+
+        isMarkSet = false;
+        expect(build({ signInMark, stored: { ...first.stored } }).shell.state.isStatusShown).toBe(false);
     });
 
     test("the bootstrap's me is where the person's own switches start", async () => {
