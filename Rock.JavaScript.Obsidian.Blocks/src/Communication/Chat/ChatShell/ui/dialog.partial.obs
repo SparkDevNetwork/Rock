@@ -26,12 +26,12 @@
                     </div>
                     <!-- A panel whose rows lead to other pages draws its own body as the first of them. -->
                     <div class="chat-dialog-scroll">
-                        <template v-if="$slots.pages">
+                        <div v-if="$slots.pages" class="chat-dialog-pages">
                             <SurfacePage isFirst>
                                 <slot />
                             </SurfacePage>
                             <slot name="pages" />
-                        </template>
+                        </div>
                         <slot v-else />
                     </div>
                 </template>
@@ -125,6 +125,14 @@
     border-bottom: 1px solid var(--chat-line);
 }
 
+/*
+    The pages inside the body's padding, the one on top in the flow; a page set aside or going
+    back is placed over it there, so it does not jump into the padding as it moves.
+*/
+.chat-dialog-pages {
+    position: relative;
+}
+
 /* Back stands at the start of a turned head, nearer the edge than a title alone. */
 .chat-dialog-head.is-turned {
     gap: 4px;
@@ -138,12 +146,8 @@
     font-size: var(--chat-fs-title);
 }
 
-/*
-    The pages turn inside the body, which holds a page set aside or going back over the one on
-    top, and never scrolls sideways while one slides.
-*/
+/* The body never scrolls sideways while a page slides through it. */
 .chat-dialog-scroll {
-    position: relative;
     padding: 18px 20px 20px;
     overflow-x: hidden;
     overflow-y: auto;
