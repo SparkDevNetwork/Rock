@@ -283,8 +283,13 @@
     white-space: nowrap;
 }
 
-/* The box draws the focus for the text inside it, a ring and a soft glow in the church color. */
+/*
+    The box draws the focus for the text inside it, a ring and a soft glow in the church color. Its
+    row has one control height, the icon buttons' and Send's, so every control centres on the others.
+*/
 .chat-composer-box {
+    --chat-icon-btn-s: 34px;
+
     display: flex;
     gap: 6px;
     align-items: flex-end;
@@ -356,8 +361,8 @@
     display: grid;
     flex: none;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: var(--chat-icon-btn-s);
+    height: var(--chat-icon-btn-s);
     padding: 0;
     color: var(--chat-icon);
     background: var(--chat-hover);
