@@ -3908,6 +3908,26 @@ describe("the message box", () => {
         expect(boxes()).toHaveLength(0);
     });
 
+    test("a chip's smile-plus opens the one box at the tray on the chip's message, though the bar stood on another", async () => {
+        const w = await mountBlock(1200, true);
+        const prayed = { reactions: [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>;
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(7, prayed), storedMessage(8, prayed));
+        await settle();
+        await rest(w, 7);
+        expect(boxes().map(box => box.dataset.hotId)).toEqual(["7"]);
+
+        const smilePlus = w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='8'] [data-testid='reaction-add']").element;
+        await press(smilePlus);
+
+        expect(boxes().map(box => [box.dataset.hotId, box.dataset.layer])).toEqual([["8", "tray"]]);
+        expect(smilePlus.getAttribute("aria-expanded")).toBe("true");
+
+        // Placed against its place in the row, which the column moves to the chip's message.
+        const guard = document.querySelector("[data-testid='action-bar-guard']");
+        expect(guard?.closest("[data-message-id]")?.getAttribute("data-message-id")).toBe("8");
+    });
+
     test("the menu open from a message's box shuts that message's who-reacted card until it closes, and no other message's", async () => {
         const w = await mountBlock(1200, true);
         const prayed = { reactions: [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>;
