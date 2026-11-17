@@ -20,7 +20,7 @@
                 <div class="chat-pc-who">
                     <div class="chat-pc-name">
                         <b data-testid="profile-name">{{ fullName }}</b>
-                        <Badge v-if="person.is_leader" label="Leader" tone="neutral" isSpoken data-testid="profile-leader" />
+                        <Badge v-if="person.is_leader" label="Leader" tone="tag" isSpoken data-testid="profile-leader" />
                         <span v-if="person.is_self" class="chat-pc-you" data-testid="profile-you">You</span>
                     </div>
                     <!-- Their status first, in words, since a phone has no tooltip; the dot between is drawn for the eye and a screen reader hears a comma. -->

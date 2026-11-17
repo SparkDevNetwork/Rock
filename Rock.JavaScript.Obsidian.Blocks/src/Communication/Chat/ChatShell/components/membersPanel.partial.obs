@@ -97,7 +97,7 @@
                                 <span class="chat-mb-name">
                                     <b data-testid="member-name">{{ row.name }}</b>
                                     <span v-if="row.isSelf" class="chat-mb-you" data-testid="member-you">(you)</span>
-                                    <Badge v-if="row.isLeader" label="Leader" tone="neutral" isSpoken data-testid="member-leader" />
+                                    <Badge v-if="row.isLeader" label="Leader" tone="tag" isSpoken data-testid="member-leader" />
                                 </span>
                                 <template #actions>
                                     <span v-if="row.isRemoving" class="chat-mb-busy" role="status" data-testid="member-removing"><span class="chat-spinner" aria-hidden="true"></span>Removing</span>
