@@ -414,10 +414,12 @@
 }
 
 /*
-    The chips' row, seated by the bubble on its single root: it sits half over the bubble's lower
-    edge, the bubble's foot growing to keep the words clear, and never widens the bubble. Another
-    person's row starts 10px in from the bubble, past the face column and its gap; the reader's
-    own mirrors it from the right.
+    The chips' row, seated by the bubble on its single root: it sits exactly half over the
+    bubble's lower edge and never widens the bubble. A chip in a bubble is 26px and the thread pill
+    beside it 24px, centred in the row, so the row's first line is 26px and half of it, 13px, rides
+    over the edge. The bubble's foot grows by that 13px plus the 4px the words keep clear of the
+    chips: 17px. Another person's row starts 10px in from the bubble, past the face column and its
+    gap; the reader's own mirrors it from the right.
 */
 .chat-reacts {
     position: relative;
@@ -427,7 +429,7 @@
     gap: 4px;
     align-items: center;
     max-width: 100%;
-    margin-top: -11px;
+    margin-top: -13px;
     padding: 0 0 0 52px;
 }
 
@@ -438,7 +440,7 @@
 
 .has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo),
 .has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo) {
-    padding-bottom: 15px;
+    padding-bottom: 17px;
 }
 
 /*
