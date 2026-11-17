@@ -42,7 +42,7 @@ import { ToastNotice } from "../components/errorToast.partial.obs";
 import { ChatShell } from "../shell.partial";
 import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration, tokenLength } from "../ui/brand.partial";
-import { focusQuietly, isDrawn } from "../ui/focusTrap.partial";
+import { EscapeLayer, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 import { useRoomsView } from "./useRoomsView.partial";
@@ -219,6 +219,9 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** The header's sidebar button, while the sidebar is folded away: it opens over the conversation. */
     onSidebarOver: () => void;
 
+    /** The sidebar's own button, while it is laid over the conversation: it folds away again. */
+    onSidebarAway: () => void;
+
     /** The threads list asked for every thread followed, its empty state's way there: Activity on Threads. */
     onThreadsTab: (tab: ThreadListTab) => void;
 
@@ -379,6 +382,9 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     /** Counts every landing asked for, so one a newer landing replaced stops looking. */
     let landingCount = 0;
 
+    /** The sidebar laid over the conversation on the Escape stack, under anything opened over it since. */
+    const sidebarLayer: EscapeLayer = { takeEscape: () => onSidebarAway() };
+
     // #endregion Values
 
     // #region Computed Values
@@ -538,6 +544,24 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         isSidebarOver.value = true;
         const channelId = activeChannelId.value;
         void nextTick(() => focusStop([channelId ? { stop: "row", match: `[data-channel-id='${channelId}']` } : null, "new-message"]));
+    }
+
+    /**
+     * The sidebar laid over the conversation goes back out of the way, as the block's other
+     * overlays close: its own button and Escape give focus back to the header's button, which
+     * brings it back; a press on what it covers leaves focus where the press put it.
+     */
+    function onSidebarAway(): void {
+        isSidebarOver.value = false;
+        void nextTick(() => focusStop(["sidebar-button", "header"]));
+    }
+
+    /** A press on the conversation or the panel, which the sidebar is laid over, puts it away. */
+    function onDocumentPointerDown(event: Event): void {
+        const target = event.target as Node | null;
+        if (target && (mainElement.value?.contains(target) || panelElement.value?.contains(target))) {
+            isSidebarOver.value = false;
+        }
     }
 
     /**
@@ -1168,11 +1192,30 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     });
 
+    // Laid over the conversation, the sidebar is an overlay: on the Escape stack and put away by a
+    // press on what it covers, until it folds or takes its column back.
+    watch(() => sidebarFold.value === "over", isOver => {
+        if (isOver) {
+            pushEscapeLayer(sidebarLayer);
+            document.addEventListener("pointerdown", onDocumentPointerDown, true);
+        }
+        else {
+            releaseSidebarOver();
+        }
+    });
+
     // #endregion Watchers
+
+    /** Takes the sidebar laid over the conversation off the Escape stack and stops listening for presses. */
+    function releaseSidebarOver(): void {
+        pullEscapeLayer(sidebarLayer);
+        document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+    }
 
     onBeforeUnmount(() => {
         window.clearTimeout(paneGoneTimer);
         window.clearTimeout(panelClearTimer);
+        releaseSidebarOver();
     });
 
     const rooms = useRoomsView({ shell, activeChannelId, drawnThread });
@@ -1209,6 +1252,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         onActivityTab,
         onPanelLeave,
         onSidebarOver,
+        onSidebarAway,
         onThreadsTab,
         openThreadFromList,
         onOpenThread,

@@ -52,7 +52,9 @@
                                 :isActivityOffered="shell.state.phase === 'ready'"
                                 :isActivityOpen="panelKind === 'activity'"
                                 :hasMentionDot="shell.mentions.state.hasDot"
+                                :isOver="sidebarFold === 'over'"
                                 @activity="onListPanel('activity')"
+                                @hide="onSidebarAway"
                                 @select="onSelect"
                                 @status="onStatusChoice"
                                 @newMessage="openMainView('newdm')"
@@ -1016,7 +1018,7 @@
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, shownList, activityTab, sidebarFold, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        onResize, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,

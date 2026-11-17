@@ -3,6 +3,13 @@
     <div class="chat-side" :class="{ 'is-phone': isPhone }" data-testid="channel-sidebar">
         <!-- One row to find a conversation or start one; the page above already names the church. -->
         <div class="chat-side-top" :class="{ 'is-scrolled': isScrolled }" data-testid="sidebar-top">
+            <!-- Laid over the conversation, the sidebar covers the header's button, so this one, in its place, puts it away. -->
+            <IconButton v-if="isOver"
+                        icon="sidebar"
+                        label="Hide conversations"
+                        aria-expanded="true"
+                        data-testid="sidebar-hide"
+                        @click="emit('hide')" />
             <Field v-model="query"
                    class="chat-side-search"
                    :size="isPhone ? 'lg' : 'md'"
@@ -769,6 +776,12 @@
         hasMentionDot: {
             type: Boolean,
             default: false
+        },
+
+        /** Whether the sidebar is laid over the conversation in a narrow window, which its head offers to put away. */
+        isOver: {
+            type: Boolean,
+            default: false
         }
     });
 
@@ -783,7 +796,9 @@
         /** Try again on a first sidebar that failed. */
         (e: "retry"): void,
         /** Activity was pressed: Mentions and the Threads the person follows. */
-        (e: "activity"): void
+        (e: "activity"): void,
+        /** The sidebar laid over the conversation was asked to go back out of the way. */
+        (e: "hide"): void
     }>();
 
     // #region Values

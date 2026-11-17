@@ -1,11 +1,16 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <header v-if="!isEmpty" ref="headerElement" class="chat-header" :class="{ 'is-phone': isPhone }" data-testid="chat-header">
-        <!-- The sidebar folded away while a panel is open in a narrow window comes back from here. -->
+        <!--
+            The sidebar folded away while a panel is open in a narrow window comes back from here,
+            and focus comes back here as it is put away again.
+        -->
         <IconButton v-if="isSidebarFolded && !isPhone"
                     icon="sidebar"
                     label="Show conversations"
+                    aria-expanded="false"
                     data-testid="header-sidebar"
+                    data-focus-stop="sidebar-button"
                     @click="emit('sidebar')" />
         <IconButton v-if="isPhone"
                     class="chat-header-back"
