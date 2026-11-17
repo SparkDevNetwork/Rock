@@ -677,9 +677,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             leaveMainView();
             mainViewOpener = opener;
             if (panelKind.value) {
-                releasePanel();
-                panelKind.value = null;
-                finishClosing();
+                endPanel();
             }
             mainView.value = kind;
             if (kind === "directory") {
@@ -859,10 +857,15 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         return Promise.resolve();
     }
 
-    /** Lets go of whatever the column holds: an open thread, and the list it was opened from or the list open. */
+    /**
+     * Lets go of whatever the column holds: an open thread, and the list it was opened from or the
+     * list open. The sidebar is laid over the conversation only for the panel it made room for,
+     * so it folds again with that panel, whichever way the panel goes.
+     */
     function releasePanel(): void {
         const kind = panelKind.value === "thread" ? threadOrigin.value : panelKind.value;
         const list = kind === "activity" ? activityTab.value : kind;
+        isSidebarOver.value = false;
         leaveThread();
         if (list === "threads") {
             shell.value.threads.closeList();
@@ -893,14 +896,18 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
 
         const closed = panelKind.value;
-        releasePanel();
-        panelKind.value = null;
-        isSidebarOver.value = false;
-        finishClosing();
+        endPanel();
 
         // a thread is opened from a message or a list, never from a header button of its own
         const button: FocusStop | null = closed === "thread" ? null : `${closed}-button`;
         void askFocus([button, "more", "header"]);
+    }
+
+    /** Closes the panel column, which draws what it held while it narrows, without moving focus. */
+    function endPanel(): void {
+        releasePanel();
+        panelKind.value = null;
+        finishClosing();
     }
 
     /**
