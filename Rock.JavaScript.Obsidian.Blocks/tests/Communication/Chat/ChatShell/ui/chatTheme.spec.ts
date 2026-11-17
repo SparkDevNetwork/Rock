@@ -24,6 +24,7 @@
 import { readdirSync, readFileSync } from "fs";
 import { basename, resolve } from "path";
 import { brandTokens } from "../../../../../src/Communication/Chat/ChatShell/ui/brand.partial";
+import { styleRules } from "../statusStore";
 
 // A plain stylesheet the block links from RockWeb, so it loads with the page rather than with the script.
 const sheetPath = resolve(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css");
@@ -1329,3 +1330,40 @@ describe("the components' own styles", () => {
         expect(keyframesBody(sheetPath, "chat-reveal-lift")).toBeNull();
     });
 });
+
+// #region One section label
+
+// A group's label over its rows has one look everywhere it is drawn: the sidebar's sections, the
+// Members panel's, a menu's heading, the emoji and @ pickers' and the loading veil's. Sentence
+// case at the badge size, 600, muted, no tracking; each screen keeps only where it sits.
+describe("the section label", () => {
+    const shell = resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell");
+    const holders: Array<[string, RegExp, RegExp]> = [
+        ["components/channelSidebar.partial.obs", /<h3\b[^>]*data-testid="section-heading"/, /^\.chat-sec h3$/],
+        ["components/membersPanel.partial.obs", /<h4\b[^>]*data-testid="members-section"/, /^\.chat-mb-sec$/],
+        ["ui/menu.partial.obs", /<div v-if="heading"[^>]*>/, /^\.chat-menu-head$/],
+        ["components/emojiPicker.partial.obs", /<div\b[^>]*role="presentation">\{\{ drawnSection\.label \}\}/, /^\.chat-picker-label$/],
+        ["components/mentionPicker.partial.obs", /<div v-if="hasPeopleDrawn"[^>]*>/, /^\.chat-mention-head$/],
+        ["components/pageVeil.partial.obs", /<h3\b[^>]*data-testid="veil-heading"/, /^\.chat-veil-heading$/]
+    ];
+
+    test("is one rule in the sheet: the badge size, 600, muted, sentence case, no tracking", () => {
+        const body = styleRules(sheetPath, /^\.chat-section-label$/).join(";");
+
+        expect(body).toMatch(/font-size:\s*var\(--chat-fs-badge\)/);
+        expect(body).toMatch(/font-weight:\s*600/);
+        expect(body).toMatch(/color:\s*var\(--chat-muted\)/);
+        expect(body).toMatch(/text-transform:\s*none/);
+        expect(body).toMatch(/letter-spacing:\s*0/);
+    });
+
+    test.each(holders)("is the rule %s draws, with no face of its own", (file, tag, selector) => {
+        const path = resolve(shell, file);
+        const text = readFileSync(path, "utf8");
+
+        expect(tag.exec(text)?.[0]).toMatch(/class="[^"]*\bchat-section-label\b/);
+        expect(styleRules(path, selector).join(";")).not.toMatch(/font-size|font-weight|color:|text-transform|letter-spacing/);
+    });
+});
+
+// #endregion
