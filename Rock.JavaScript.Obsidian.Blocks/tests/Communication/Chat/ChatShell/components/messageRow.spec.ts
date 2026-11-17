@@ -2261,10 +2261,10 @@ describe("a row's one-off motion", () => {
     describe("a mention arriving live", () => {
         const naming = (): TimelineMessage => message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] });
 
-        test.each([["a direct message", false], ["a channel", true]] as const)("flashes once as it is drawn in %s, and not again on a re-render", async (_kind, isChannel) => {
+        test("flashes once as it is drawn in a channel, and not again on a re-render", async () => {
             const motion = createMessageMotion();
             motion.arrived(naming(), "conversation");
-            const wrapper = draw({ message: naming(), isChannel, position: "single" }, motion);
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, motion);
             expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
 
             const outside = jest.fn();
@@ -2282,6 +2282,16 @@ describe("a row's one-off motion", () => {
             expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
         });
 
+        // A direct message's bubbles draw no mention wash, the whole conversation reaching the
+        // reader, so they have nothing to greet with.
+        test("a direct message's mention heard live does not flash", () => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), position: "single" }, motion);
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
         test("a mention loaded with a page, with no arrival heard, does not flash", () => {
             const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, createMessageMotion());
 
@@ -2296,16 +2306,11 @@ describe("a row's one-off motion", () => {
             expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
         });
 
-        test("plays the flash's own shape at the greeting's length, in both looks", () => {
-            const read = (file: string): string => {
-                const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
-                return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-            };
-            const row = read("messageRow.partial.obs");
-            const bubble = read("messageRowBubble.partial.obs");
+        test("plays the flash's own shape at the greeting's length", () => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const row = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
 
             expect(row).toMatch(/\.chat-msg\.is-community\.is-greeting::before\s*\{[^}]*animation:\s*chat-flash var\(--chat-d-greet\)/);
-            expect(bubble).toMatch(/\.chat-msg\.is-greeting \.chat-bub-anchor::before\s*\{[^}]*animation:\s*chat-flash var\(--chat-d-greet\)/);
         });
     });
 });
