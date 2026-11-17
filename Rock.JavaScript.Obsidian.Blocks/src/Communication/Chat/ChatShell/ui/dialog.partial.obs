@@ -18,12 +18,21 @@
                  @keydown="onKeydown">
                 <!-- A panel: a fixed head with its tools, and a body that scrolls under it. -->
                 <template v-if="isPanel">
-                    <div class="chat-dialog-head">
-                        <h3 :id="titleId" class="chat-dialog-title">{{ title }}</h3>
-                        <slot name="tools" />
+                    <!-- Turned to another page, the head is Back and the page's title, which names the dialog meanwhile. -->
+                    <div class="chat-dialog-head" :class="{ 'is-turned': pages.isTurned.value }">
+                        <IconButton v-if="pages.isTurned.value" ref="backButton" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
+                        <h3 :id="titleId" class="chat-dialog-title" :data-testid="pages.isTurned.value ? 'page-title' : undefined">{{ pages.isTurned.value ? pages.title.value : title }}</h3>
+                        <slot v-if="!pages.isTurned.value" name="tools" />
                     </div>
+                    <!-- A panel whose rows lead to other pages draws its own body as the first of them. -->
                     <div class="chat-dialog-scroll">
-                        <slot />
+                        <template v-if="$slots.pages">
+                            <SurfacePage isFirst>
+                                <slot />
+                            </SurfacePage>
+                            <slot name="pages" />
+                        </template>
+                        <slot v-else />
                     </div>
                 </template>
                 <template v-else>
@@ -116,6 +125,12 @@
     border-bottom: 1px solid var(--chat-line);
 }
 
+/* Back stands at the start of a turned head, nearer the edge than a title alone. */
+.chat-dialog-head.is-turned {
+    gap: 4px;
+    padding-left: 12px;
+}
+
 .chat-dialog-head .chat-dialog-title {
     flex: 1;
     min-width: 0;
@@ -123,8 +138,14 @@
     font-size: var(--chat-fs-title);
 }
 
+/*
+    The pages turn inside the body, which holds a page set aside or going back over the one on
+    top, and never scrolls sideways while one slides.
+*/
 .chat-dialog-scroll {
+    position: relative;
     padding: 18px 20px 20px;
+    overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
     scrollbar-width: thin;
@@ -220,8 +241,11 @@
     import { newGuid } from "@Obsidian/Utility/guid";
     import { useChatSession } from "../chatSession.partial";
     import Button from "./button.partial.obs";
+    import IconButton from "./iconButton.partial.obs";
+    import SurfacePage from "./surfacePage.partial.obs";
     import { useAnnouncerModal } from "./announcer.partial";
     import { useFocusTrap } from "./focusTrap.partial";
+    import { provideSurfacePages } from "./surfacePages.partial";
 
     const props = defineProps({
         isOpen: {
@@ -311,7 +335,11 @@
 
     const dialogElement = ref<HTMLElement>();
     const cancelElement = ref<InstanceType<typeof Button>>();
+    const backButton = ref<InstanceType<typeof IconButton>>();
     const titleId = `chat-dialog-${newGuid()}`;
+
+    /** The pages a panel's row turns it into, one at a time, in this one dialog. */
+    const pages = provideSurfacePages(() => props.isOpen, () => backButton.value?.buttonElement);
 
     const session = useChatSession();
 
@@ -327,9 +355,15 @@
 
     function onKeydown(event: KeyboardEvent): void {
         if (event.key === "Escape") {
-            // The dialog's Escape is its own, never also the panel's or the menu's behind it.
+            // The dialog's Escape is its own, never also the panel's or the menu's behind it: back
+            // one page while turned, else close.
             event.stopPropagation();
-            emit("close");
+            if (pages.isTurned.value) {
+                pages.back();
+            }
+            else {
+                emit("close");
+            }
         }
     }
 
