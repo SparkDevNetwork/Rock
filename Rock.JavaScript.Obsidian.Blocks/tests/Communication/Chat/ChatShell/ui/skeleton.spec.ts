@@ -29,7 +29,7 @@ function bones(shape: string, extra: Record<string, unknown> = {}): HTMLElement[
 }
 
 describe("the skeleton", () => {
-    test.each(["channel", "person", "group", "bubble", "panel", "reactor", "media", "contact", "text", "header"])("a %s row is hidden from a screen reader and carries its shape", shape => {
+    test.each(["channel", "person", "group", "bubble", "panel", "reactor", "media", "contact", "text", "header", "directory"])("a %s row is hidden from a screen reader and carries its shape", shape => {
         const row = mount(Skeleton, { props: { shape } });
 
         expect(row.attributes("aria-hidden")).toBe("true");
@@ -128,6 +128,17 @@ describe("the skeleton", () => {
         expect(person.map(bone => bone.classList.contains("is-face"))).toEqual([true, false]);
     });
 
+    // A Browse row: its channel's 40px tile beside its name, its description and its campus line.
+    test("a Browse row is a 40px tile and three lines, the name over the description over the campus line", () => {
+        const drawn = bones("directory");
+        const given = bones("directory", { widths: [30, 70, 20] });
+
+        expect(drawn.map(bone => bone.classList.contains("is-tile"))).toEqual([true, false, false, false]);
+        expect([drawn[0].style.width, drawn[0].style.height]).toEqual(["40px", "40px"]);
+        expect(drawn.slice(1).map(bone => [bone.style.width, bone.style.height])).toEqual([["50%", "10px"], ["88%", "9px"], ["36%", "9px"]]);
+        expect(given.slice(1).map(bone => bone.style.width)).toEqual(["30%", "70%", "20%"]);
+    });
+
     // What waits in a row's last line, such as the start's status, stands in the row's own lines.
     test("draws what it holds after its lines, in the lines' column", () => {
         const row = mount(Skeleton, { props: { shape: "header", widths: [22] }, slots: { default: "<span data-testid='held'>Connecting</span>" } });
@@ -151,6 +162,12 @@ describe("the skeleton's look", () => {
         expect(ruleOf(style, ".chat-skel.is-person")).toMatch(/height:\s*52px/);
         expect(ruleOf(style, ".chat-skel.is-reactor")).toMatch(/height:\s*40px/);
         expect(ruleOf(style, ".chat-skel.is-contact")).toMatch(/height:\s*32px/);
+    });
+
+    // The Browse row's own gap and sides, so the list does not move when the rows land.
+    test("a Browse row keeps the row's 12px gap and its sides", () => {
+        expect(ruleOf(style, ".chat-skel.is-directory")).toMatch(/gap:\s*12px/);
+        expect(ruleOf(style, ".chat-skel.is-directory")).toMatch(/padding:\s*8px 10px/);
     });
 
     test("a contact row's icon takes the sheet's inline corners", () => {
