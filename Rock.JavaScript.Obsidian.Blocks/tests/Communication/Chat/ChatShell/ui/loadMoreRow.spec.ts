@@ -198,6 +198,55 @@ describe("the load-more row", () => {
         expect(load).toHaveBeenCalledTimes(2);
     });
 
+    it("at a list's end watches a little below it", async () => {
+        mountRow({ load: jest.fn(() => deferred().promise) });
+        await settle();
+
+        expect(observers[0].options?.rootMargin).toBe("0px 0px 240px 0px");
+    });
+
+    // A list that grows upward, as a conversation's older messages do, has its row at the top.
+    it("at a list's start watches a little above it, asks again after a short page, and after a failure waits for a press", async () => {
+        const first = deferred();
+        const load = jest.fn().mockReturnValueOnce(first.promise).mockReturnValue(new Promise(() => { /* Never lands. */ }));
+        const w = mountRow({ load, edge: "start" });
+        await settle();
+
+        expect(observers[0].options?.rootMargin).toBe("240px 0px 0px 0px");
+        observers[0].see(true);
+        first.resolve();
+        await settle();
+        expect(load).toHaveBeenCalledTimes(2);
+
+        w.unmount();
+        observers.length = 0;
+        const failing = jest.fn(() => Promise.reject(new Error("offline")));
+        const failed = mountRow({ load: failing, edge: "start", isFailed: true });
+        await settle();
+        observers[0].see(true);
+        await settle();
+        expect(failing).not.toHaveBeenCalled();
+        expect(failed.get("[data-testid='members-more']").text()).toBe("Try again");
+    });
+
+    // A loader that fails by rejecting, as the conversation's older page does, is the list's to say.
+    it("pressed with a loader that rejects, leaves nothing unhandled", async () => {
+        const unhandled = jest.fn();
+        process.on("unhandledRejection", unhandled);
+        try {
+            mountRow({ load: jest.fn(() => Promise.reject(new Error("offline"))) });
+            await settle();
+            button().click();
+            await settle();
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            expect(unhandled).not.toHaveBeenCalled();
+        }
+        finally {
+            process.off("unhandledRejection", unhandled);
+        }
+    });
+
     it("says whether focus is on it, for the list to move focus to the rows it brought", async () => {
         const w = mountRow({ load: jest.fn(() => Promise.resolve()) });
         await settle();
