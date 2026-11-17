@@ -51,11 +51,13 @@ describe("a settings row", () => {
         expect(row.find("[data-testid='setting-value']").exists()).toBe(false);
     });
 
-    test("a row asking a question in place is set apart by the hover fill", () => {
-        const row = mount(SettingRow, { props: { title: "Unblock Sam?", isAsking: true } });
+    test("a row asking a question in place is set apart by the hover fill, its consequence in the secondary text colour so it reads before the answer", () => {
+        const row = mount(SettingRow, { props: { title: "Unblock Sam?", sub: "They can message you, and you'll see their messages.", isAsking: true } });
 
         expect(row.classes()).toContain("is-asking");
         expect(ruleOf(styleOf("settingRow.partial.obs"), ".chat-sg-row.is-asking")).toMatch(/background:\s*var\(--chat-hover\)/);
+        expect(row.find(".chat-sg-sub").text()).toBe("They can message you, and you'll see their messages.");
+        expect(ruleOf(styleOf("settingRow.partial.obs"), ".chat-sg-row.is-asking .chat-sg-sub")).toMatch(/color:\s*var\(--chat-text-2\)/);
     });
 
     test("leaves by the Leave motion: out of the flow, fading and shrinking to the popover's scale over the fast time, its height never animated", () => {
