@@ -69,7 +69,8 @@
                        playsinline></video>
                 <Badge class="chat-composer-gif-badge" label="GIF" tone="media" data-testid="composer-gif-badge" />
                 <IconButton icon="x"
-                            icon-size="xs"
+                            size="sm"
+                            tone="media"
                             class="chat-composer-gif-remove"
                             label="Remove GIF"
                             data-testid="composer-gif-remove"
@@ -344,14 +345,11 @@
     left: 6px;
 }
 
+/* The remove at the GIF's top right, over the GIF; its size and its scrim are the icon button's. */
 .chat-composer-gif-remove {
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 26px;
-    height: 26px;
-    color: var(--chat-media-fg);
-    background: var(--chat-media-scrim);
 }
 
 .chat-composer-send {

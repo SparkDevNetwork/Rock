@@ -297,11 +297,6 @@
     transition: transform var(--chat-d-progress) var(--chat-ease-state);
 }
 
-.chat-attach-chip-remove {
-    width: 28px;
-    height: 28px;
-}
-
 /* The inline notice takes the strip's whole width, under the chips. */
 .chat-attach-notice {
     flex-basis: 100%;
