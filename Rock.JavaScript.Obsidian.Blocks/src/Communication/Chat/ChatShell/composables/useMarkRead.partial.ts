@@ -30,6 +30,7 @@
 // platform. Another device learns at the save, as before.
 import { createPlatformCall } from "../platformCall.partial";
 import { MarkReadResult } from "../types.partial";
+import type { StatusChannel } from "./statusTabs.partial";
 
 /**
  * What the tracker reaches outside itself, for what it tracks by its key (a conversation by its
@@ -230,17 +231,10 @@ export function createReadTracker<K = string, A = MarkReadResult>(dependencies: 
     };
 }
 
-/** The part of the browser's line between tabs, a BroadcastChannel, that the tabs' reads use. */
-export type TabLineLike = {
-    postMessage: (message: unknown) => void;
-    onmessage: ((event: { data: unknown }) => void) | null;
-    close: () => void;
-};
-
 /** What the person's tabs in this browser share of their reads. */
 export type TabReadsOptions = {
-    /** Opens the line of this name, or answers null in a browser without one. */
-    open: (name: string) => TabLineLike | null;
+    /** Opens a BroadcastChannel by name, as her status's tabs do; without one the tab is alone. */
+    channel?: (name: string) => StatusChannel;
     tenantId: string;
     personAliasGuid: string;
 
@@ -269,7 +263,15 @@ export type TabReads = {
  */
 export function createTabReads(options: TabReadsOptions): TabReads {
     const person = options.personAliasGuid.toLowerCase();
-    const line = options.open(`rock-chat:reads:${options.tenantId.toLowerCase()}:${person}`);
+    let line: StatusChannel | null = null;
+    try {
+        // the version of its words is in its name, so a release that changes them talks on another
+        line = options.channel?.(`rock-chat:reads:v1:${options.tenantId.toLowerCase()}:${person}`) ?? null;
+    }
+    catch {
+        // a browser that refuses the channel leaves this tab alone, as one without it
+        line = null;
+    }
 
     if (line) {
         line.onmessage = event => {

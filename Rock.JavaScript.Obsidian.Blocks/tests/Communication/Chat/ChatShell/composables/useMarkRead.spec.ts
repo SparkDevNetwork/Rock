@@ -22,9 +22,9 @@ import {
     createTabReads,
     isUnreadAfterSave,
     PageEventTargets,
-    TabLineLike,
     TabReads
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
+import type { StatusChannel } from "../../../../../src/Communication/Chat/ChatShell/composables/statusTabs.partial";
 import { MarkReadResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
 const channel = "c0000001-0000-4000-8000-000000000000";
@@ -331,8 +331,8 @@ describe("createTabReads", () => {
     const ben = "b0000002-0000-4000-8000-00000000000c";
 
     /** A browser's tabs: a line delivers to every other line of its name, never back to itself, as BroadcastChannel does. */
-    function browser(): { open: (name: string) => TabLineLike, names: string[], closed: () => number } {
-        const lines: Array<TabLineLike & { name: string, isClosed: boolean }> = [];
+    function browser(): { open: (name: string) => StatusChannel, names: string[], closed: () => number } {
+        const lines: Array<StatusChannel & { name: string, isClosed: boolean }> = [];
         const names: string[] = [];
         return {
             names,
@@ -341,11 +341,11 @@ describe("createTabReads", () => {
                 const line = {
                     name,
                     isClosed: false,
-                    onmessage: null as ((event: { data: unknown }) => void) | null,
+                    onmessage: null as StatusChannel["onmessage"],
                     postMessage: (data: unknown): void => {
                         // a copy, as the browser's structured clone makes one
                         const copy = JSON.parse(JSON.stringify(data)) as unknown;
-                        lines.filter(l => l !== line && l.name === name && !l.isClosed).forEach(l => l.onmessage?.({ data: copy }));
+                        lines.filter(l => l !== line && l.name === name && !l.isClosed).forEach(l => l.onmessage?.({ data: copy } as MessageEvent));
                     },
                     close: (): void => {
                         line.isClosed = true;
@@ -360,7 +360,7 @@ describe("createTabReads", () => {
 
     function tab(b: ReturnType<typeof browser>, person: string): { reads: TabReads, heard: string[] } {
         const heard: string[] = [];
-        const reads = createTabReads({ open: b.open, tenantId: tenant, personAliasGuid: person, onRead: (channelId, readCursor) => heard.push(`${channelId}:${readCursor}`) });
+        const reads = createTabReads({ channel: b.open, tenantId: tenant, personAliasGuid: person, onRead: (channelId, readCursor) => heard.push(`${channelId}:${readCursor}`) });
         return { reads, heard };
     }
 
@@ -386,7 +386,7 @@ describe("createTabReads", () => {
 
         annas.reads.tell(channel, 12);
 
-        expect(b.names[0]).toBe("rock-chat:reads:10000000-0000-4000-8000-00000000000a:a0000001-0000-4000-8000-00000000000b");
+        expect(b.names[0]).toBe("rock-chat:reads:v1:10000000-0000-4000-8000-00000000000a:a0000001-0000-4000-8000-00000000000b");
         expect(bens.heard).toEqual([]);
     });
 
@@ -418,12 +418,17 @@ describe("createTabReads", () => {
         expect(b.closed()).toBe(1);
     });
 
-    test("a browser without the line tells and hears nothing, and fails nothing", () => {
+    test("a browser without the line, or one that refuses it, tells and hears nothing, and fails nothing", () => {
         const heard: string[] = [];
-        const reads = createTabReads({ open: () => null, tenantId: tenant, personAliasGuid: anna, onRead: () => heard.push("read") });
+        const without = createTabReads({ tenantId: tenant, personAliasGuid: anna, onRead: () => heard.push("read") });
+        const refusing = createTabReads({ channel: () => {
+            throw new Error("SecurityError");
+        }, tenantId: tenant, personAliasGuid: anna, onRead: () => heard.push("read") });
 
-        reads.tell(channel, 12);
-        reads.close();
+        for (const reads of [without, refusing]) {
+            reads.tell(channel, 12);
+            reads.close();
+        }
 
         expect(heard).toEqual([]);
     });
