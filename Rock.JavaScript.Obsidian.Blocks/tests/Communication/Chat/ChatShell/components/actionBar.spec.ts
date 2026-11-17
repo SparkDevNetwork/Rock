@@ -618,7 +618,8 @@ describe("the bar's quick reactions", () => {
             const { bars } = await shownInBlock();
             const guard = document.querySelector<HTMLElement>("[data-testid='action-bar-guard']") as HTMLElement;
             bars.openReactionPicker("conversation", "c1", message(), guard, guard, { offered: ["thumbsup", "heart", "joy"] });
-            for (let i = 0; i < 6; i++) {
+            // The grow is revealed once the grown box is placed, a chain of promises settled a turn at a time.
+            for (let i = 0; i < 40; i++) {
                 await settle();
             }
             expect(box()?.getAttribute("data-layer")).toBe("tray");
@@ -1043,9 +1044,9 @@ describe("the bar's parts", () => {
     });
 
     // A tool's focus outline is drawn outside the tool, past the box's edge, and the box's hit pad
-    // reaches 6px past it; a box that cut what overflows it would cut both. Only the grown picker
-    // has a fill that meets the box's corners, so the picker rounds and clips its own.
-    test("the box cuts nothing that overflows it, and the grown picker clips its own corners", () => {
+    // reaches 6px past it; a box that cut what overflows it would cut both. Only the grown picker's
+    // foot has a fill that meets the box's corners, so the foot takes the box's corners as its own.
+    test("the box cuts nothing that overflows it, and the grown picker's foot rounds its own corners", () => {
         const sheetOf = (file: string): string => {
             const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
             return source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
@@ -1053,7 +1054,10 @@ describe("the bar's parts", () => {
         const ruleOf = (style: string, selector: string): string => style.match(new RegExp(`(?:^|\\n)${selector.replace(/[.]/g, "\\.")}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
 
         expect(ruleOf(sheetOf("actionBar.partial.obs"), ".chat-box")).not.toContain("overflow");
-        expect(ruleOf(sheetOf("emojiPicker.partial.obs"), ".chat-picker-hosted")).toMatch(/border-radius:\s*inherit;[\s\S]*overflow:\s*hidden;/);
+        const picker = sheetOf("emojiPicker.partial.obs");
+        expect(ruleOf(picker, ".chat-picker-host")).toMatch(/border-radius:\s*inherit;/);
+        expect(ruleOf(picker, ".chat-picker-host > .chat-picker")).toMatch(/border-radius:\s*inherit;/);
+        expect(ruleOf(picker, ".chat-picker-foot")).toMatch(/border-bottom-right-radius:\s*inherit;[\s\S]*border-bottom-left-radius:\s*inherit;/);
     });
 });
 

@@ -132,6 +132,18 @@
 </template>
 
 <style scoped>
+/*
+    Hosted in the message box, the picker takes the box's corners, which its foot rounds its fill
+    to; the box itself cuts nothing, so a focus outline at its edge is drawn whole.
+*/
+.chat-picker-host {
+    border-radius: inherit;
+}
+
+.chat-picker-host > .chat-picker {
+    border-radius: inherit;
+}
+
 /* The picker's frame is the sheet's shared one; the tray is as wide as what it holds. */
 .chat-picker.is-tray {
     width: auto;
@@ -361,6 +373,8 @@ img.chat-picker-glyph {
     padding: 0 12px;
     background: var(--chat-sidebar);
     border-top: 1px solid var(--chat-line);
+    border-bottom-right-radius: inherit;
+    border-bottom-left-radius: inherit;
 }
 
 .chat-picker-prev {

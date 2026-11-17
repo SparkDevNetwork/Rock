@@ -161,6 +161,19 @@ function hotIdAt(target: EventTarget | null): number | null {
 }
 
 /**
+ * Tells whether what a control opened is open. Only a control carries that state: the box's place
+ * in its row, which the bar's own Add reaction opens from, is no control and is left unmarked.
+ *
+ * @param opener What opened the box.
+ * @param isOpen Whether the box it opened is open.
+ */
+function markExpanded(opener: HTMLElement, isOpen: boolean): void {
+    if (opener.matches("button, [role='button']")) {
+        opener.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+}
+
+/**
  * Holds the block's boxes for its life and hands them to every column and row. The frame reads
  * the shell through, since a birthdate save replaces the shell while the rows and the boxes stay;
  * the shell's reactions hold only the reactions themselves.
@@ -242,7 +255,7 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
             return;
         }
 
-        opener.setAttribute("aria-expanded", "true");
+        markExpanded(opener, true);
         held.value = {
             key: ++heldCount,
             column,
@@ -270,7 +283,7 @@ export function provideActionBars(shell: Readonly<Ref<ChatShell>>, churchName: s
             return;
         }
 
-        box.opener.setAttribute("aria-expanded", "false");
+        markExpanded(box.opener, false);
         releaseHeld?.();
         releaseHeld = null;
         held.value = null;
@@ -538,6 +551,14 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
     watch(() => bars?.held.value ?? null, box => {
         if (box && box.messageId !== barId.value && isHeldHere(box.messageId)) {
             show(box.messageId);
+        }
+    });
+
+    // Another floating layer open kept the box down under the pointer; once the last closes, the
+    // box rises on the message the pointer rests on, with no move needed to wake it.
+    watch(isFloatingLayerOpen, isOpen => {
+        if (!isOpen && hotId !== null && !isHeld() && !(isShown.value && barId.value === hotId)) {
+            follow(hotId);
         }
     });
 

@@ -18,8 +18,8 @@
 // The one way every menu, picker, card and tip floats beside what opened it, so they all place,
 // close and give focus back alike. A surface draws itself; this owns its coming and going.
 
-import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref, shallowReactive } from "vue";
-import { autoUpdate, flip, offset, Placement, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref, shallowReactive, watch } from "vue";
+import { autoUpdate, computePosition, flip, offset, Placement, shift } from "@Obsidian/Libs/floating-ui";
 import { EscapeLayer, focusableSelector, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "./focusTrap.partial";
 
 /** How a popover is placed and closed. */
@@ -47,6 +47,12 @@ export type PopoverOptions = {
 
     returnTo?: () => HTMLElement | null;
 
+    /**
+     * A control apart from the anchor that a press counts as inside, as the chip that opened the
+     * message box: a press on it is its own to answer, which pressed again closes what it opened.
+     */
+    alsoInside?: () => Element | null | undefined;
+
     /** False for a tip, which shows and hides on its own timers and is only placed here. */
     isDismissable?: boolean;
 };
@@ -71,6 +77,12 @@ export type PopoverControl = {
 
     /** Places it now, for a surface that just changed size: its size watcher would be a frame late. */
     update: () => void;
+
+    /**
+     * Places it now and resolves once the new place is drawn, for a surface that measures itself
+     * where it lands, as the message box revealing its grown size from its old edges.
+     */
+    place: () => Promise<void>;
 };
 
 /**
@@ -211,27 +223,79 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
         return element ? { padding: boundaryInsetPx, boundary: element } : { padding: 8 };
     };
 
-    const floated = useFloating(reference, floating, {
-        placement: computed((): Placement => (typeof placement === "function" ? placement() : placement) ?? "bottom-end"),
-        strategy: "fixed",
-        transform: false,
-        middleware: [
-            offset(() => typeof distance === "function" ? distance() : distance),
-            flip(() => ({ crossAxis: false, flipAlignment: false, ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements() } : {}), ...boundary() })),
-            shift(() => boundary())
-        ],
-        whileElementsMounted: autoUpdate
-    });
+    const asked = computed((): Placement => (typeof placement === "function" ? placement() : placement) ?? "bottom-end");
+    const middleware = [
+        offset(() => typeof distance === "function" ? distance() : distance),
+        flip(() => ({ crossAxis: false, flipAlignment: false, ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements() } : {}), ...boundary() })),
+        shift(() => boundary())
+    ];
 
-    const floatingStyles = computed((): Record<string, string> => isSheet.value ? {} : floated.floatingStyles.value as Record<string, string>);
+    // Where it was last placed, and on which side its room put it. Held here rather than in the
+    // library's own reactive placing, whose update promises nothing, so a surface can wait on it.
+    const x = ref(0);
+    const y = ref(0);
+    const landed = ref<Placement>(asked.value);
+    const isPlaced = ref(false);
+
+    /** Counts each placing, so one overtaken by a later one never lands after it. */
+    let placing = 0;
+
+    /** The latest placing, which every earlier one it overtook resolves with. */
+    let latest: Promise<void> = Promise.resolve();
+
+    function place(): Promise<void> {
+        const beside = reference.value;
+        const element = floating.value;
+        if (!beside || !element) {
+            return latest;
+        }
+
+        const run = ++placing;
+        latest = computePosition(beside, element, { placement: asked.value, strategy: "fixed", middleware }).then(position => {
+            if (run !== placing) {
+                return latest;
+            }
+
+            // Rounded to the device's pixels, so its edges stay sharp.
+            const ratio = window.devicePixelRatio || 1;
+            x.value = Math.round(position.x * ratio) / ratio;
+            y.value = Math.round(position.y * ratio) / ratio;
+            landed.value = position.placement;
+            isPlaced.value = true;
+            return nextTick();
+        });
+
+        return latest;
+    }
+
+    function update(): void {
+        void place();
+    }
+
+    // Placed as it is drawn and kept beside its anchor through scrolls and resizes while both are
+    // drawn; placed again whenever the side it asks for changes.
+    watch([reference, floating], ([beside, element], _previous, onCleanup) => {
+        if (beside && element) {
+            onCleanup(autoUpdate(beside, element, update));
+        }
+    }, { flush: "sync" });
+    watch(asked, update, { flush: "sync" });
+
+    const floatingStyles = computed((): Record<string, string> => {
+        if (isSheet.value) {
+            return {};
+        }
+
+        return isPlaced.value ? { position: "fixed", left: `${x.value}px`, top: `${y.value}px` } : { position: "fixed", left: "0", top: "0" };
+    });
 
     // Grown from the anchor's middle, so one flipped above grows up from below rather than from a
     // corner it does not touch; clamped, as an anchor can sit past the surface's end.
     const origin = computed((): Record<string, string> => {
-        const isAbove = floated.placement.value.startsWith("top");
+        const isAbove = landed.value.startsWith("top");
         const box = (options.virtualAnchor?.() ?? null) ?? anchor.value?.getBoundingClientRect();
         const width = floating.value?.offsetWidth ?? 0;
-        const middle = box ? box.left + box.width / 2 - (floated.x.value ?? 0) : width / 2;
+        const middle = box ? box.left + box.width / 2 - x.value : width / 2;
         return {
             transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
             "--chat-pop-toward": isAbove ? "1" : "-1"
@@ -239,7 +303,7 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
     });
 
     const entry: OpenPopover = {
-        contains: node => !!floating.value?.contains(node) || !!anchor.value?.contains(node),
+        contains: node => !!floating.value?.contains(node) || !!anchor.value?.contains(node) || !!options.alsoInside?.()?.contains(node),
         close: isFocusReturned => close({ isFocusReturned }),
         takeEscape: () => close({ isFocusReturned: true }),
         onTab,
@@ -337,5 +401,5 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
     onScopeDispose(() => pull(entry));
 
-    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet, update: floated.update };
+    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet, update, place };
 }
