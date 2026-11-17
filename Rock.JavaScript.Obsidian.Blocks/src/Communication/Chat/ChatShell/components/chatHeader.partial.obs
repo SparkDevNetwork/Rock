@@ -195,31 +195,42 @@
 }
 
 /*
-    The title and its chevron, the button that opens the room's details, only as wide as the title:
-    pulled back by its own padding, so the words still line up with the line under them.
+    The title and its chevron, the button that opens the room's details. Its box is its words, so
+    the column sizes it to the title and the words line up with the line under them; a box padded
+    and pulled back by a negative margin was sized by its margin box and clamped by its border box,
+    cutting the title short with room to spare.
 */
 .chat-header-name-row {
+    position: relative;
+    isolation: isolate;
     display: flex;
     gap: 4px;
     align-items: center;
     max-width: 100%;
     min-width: 0;
-    padding: 2px 6px;
-    margin: -2px -6px;
+    padding: 0;
     font: inherit;
     color: inherit;
     text-align: left;
     background: transparent;
     border: 0;
+}
+
+/* The hover and press wash, a little past the words on a layer under them. */
+.chat-header-name-row::before {
+    position: absolute;
+    inset: -2px -6px;
+    z-index: -1;
+    content: "";
     border-radius: var(--chat-r-control);
     transition: background-color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-button.chat-header-name-row:hover {
+button.chat-header-name-row:hover::before {
     background: var(--chat-hover);
 }
 
-button.chat-header-name-row:active {
+button.chat-header-name-row:active::before {
     background: var(--chat-press);
 }
 
@@ -793,7 +804,7 @@ button.chat-header-name-row:hover .chat-header-chev {
         const items: MenuItem[] = [];
 
         if (props.isThreadsOffered) {
-            items.push({ key: "threads", label: "Threads", icon: "thread" });
+            items.push({ key: "threads", label: threadsWords.value, icon: "thread" });
         }
 
         if (membersKind.value) {

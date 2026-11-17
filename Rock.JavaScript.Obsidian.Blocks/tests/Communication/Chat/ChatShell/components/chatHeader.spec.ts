@@ -1015,7 +1015,7 @@ describe("the header is this conversation", () => {
         const file = join(shellFolder, "components/chatHeader.partial.obs");
         const row = styleRules(file, /^\.chat-header-name-row$/).join(";");
 
-        expect(row).not.toMatch(/(^|;|\s)padding:/);
+        expect(row).toMatch(/(^|;|\s)padding:\s*0;/);
         expect(row).not.toMatch(/(^|;|\s)margin:/);
         expect(styleRules(file, /^\.chat-header-name-row::before$/).join(";")).toMatch(/inset:\s*-2px -6px/);
         expect(styleRules(file, /^button\.chat-header-name-row:hover::before$/).join(";")).toMatch(/background:\s*var\(--chat-hover\)/);
