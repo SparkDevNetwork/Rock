@@ -1663,6 +1663,25 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBeUndefined();
     });
 
+    // The fold slides the sidebar away by a distance the sheet takes to nothing under reduced
+    // motion, and fades it, so a person who asks for less motion sees it fade and never slide.
+    test("folds the sidebar by a slide reduced motion takes to nothing, with a fade that stays", () => {
+        const rules = frameRules();
+        const sheet = readFileSync(join(__dirname, "../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+        const folded = rules.find(r => r.selector === ".chat-frame[data-sidebar] .chat-frame-side")!;
+        const over = rules.find(r => r.selector === ".chat-frame[data-sidebar=\"over\"] .chat-frame-side")!;
+
+        const distance = /transform:\s*translateX\(calc\(-1 \* var\((--chat-[a-z-]+)\)\)\)/.exec(folded.body)?.[1];
+        expect(distance).toBeDefined();
+        expect(folded.body).toMatch(/opacity:\s*0;/);
+        expect(folded.body).toMatch(/transition:[^;]*transform var\(--chat-t-panel\)[^;]*opacity var\(--chat-t-base\)/);
+        expect(over.body).toMatch(/opacity:\s*1;/);
+        expect(over.body).toMatch(/transform:\s*none/);
+
+        const reduced = sheet.slice(sheet.indexOf("@media (prefers-reduced-motion: reduce)"));
+        expect(reduced.slice(0, reduced.indexOf("}"))).toMatch(new RegExp(`${distance}:\\s*0%;`));
+    });
+
     /** A 1100px block with Members open and the sidebar laid over the conversation from the header's button. */
     async function openSidebarOver(): Promise<VueWrapper> {
         const w = await mountBlock(1100);
