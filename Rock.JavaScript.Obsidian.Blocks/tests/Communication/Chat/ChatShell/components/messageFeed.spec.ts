@@ -1096,6 +1096,15 @@ describe("the New divider and the unread strip", () => {
         expect(isBefore(divider.element, wrapper.get("[data-message-id='2']").element)).toBe(true);
     });
 
+    // The New marker is a text badge, so it has the badge's square-ish corner, not a pill.
+    test("the New marker has the badge corner", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const marker = /\.chat-new-divider span\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(marker).toMatch(/border-radius:\s*var\(--chat-r-badge\)/);
+    });
+
     // The strip lies over the feed's top, so while it may show the feed starts its content below
     // it: scrolled to the very top, the first day and message are under neither the strip nor the
     // band the label keeps. The room stays while the strip comes and goes, so nothing moves then.
