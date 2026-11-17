@@ -2127,7 +2127,8 @@ describe("focus as the frame changes what it shows", () => {
 
     // A room change re-reads Members for the room now open, taking its rows away, and closes a
     // thread of the room left: focus that was on what went goes to the start of its column, and
-    // with the column closed, to the conversation's title.
+    // with the column closed, to the conversation's title. The drawer going also takes its message
+    // box, whose fade sits in a plain element under its teleport: without it, Vue throws here.
     test("a room change gives focus on a member row to the filter, and focus in the drawer to the title", async () => {
         const w = await openTeam();
         (mockShell!.channels as { rows: SidebarRow[] }).rows.push(choir);
