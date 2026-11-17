@@ -46,7 +46,7 @@ import { createMembers, MemberDoors, Members } from "./composables/useMembers.pa
 import { AttachmentTray, Attachments, createAttachments } from "./composables/useAttachments.partial";
 import { createGifs, Gifs } from "./composables/useGifs.partial";
 import { createPresence, Presence } from "./composables/usePresence.partial";
-import { createPageReveal, createRoomOpener, PageReveal, readRememberedKind, readRememberedStatusShown, rememberedChannelKey, writeRememberedStatusShown } from "./pageLoad.partial";
+import { createPageReveal, createRoomOpener, forgetRememberedRooms, PageReveal, readRememberedKind, readRememberedStatusShown, rememberedChannelKey, writeRememberedStatusShown } from "./pageLoad.partial";
 import { ChannelStore, createChannelStore } from "./stores/channelStore.partial";
 import { ChannelFacts, ChatError, DirectoryPage, FindDmAnswer, HistoryPage, MarkReadResult, PeopleSearchAnswer, PersonProfile, ReactionFavorite, RoomKind, SendAnswer, TimelineMessage } from "./types.partial";
 import type { Politeness } from "./ui/announcer.partial";
@@ -356,6 +356,12 @@ export function createChatShell(options: ShellOptions): ChatShell {
     // Without the sign-in mark a sign-out cannot be told, so the device keeps nothing of the foot.
     const footStorage = options.signInMark ? options.storage : null;
 
+    // A sign-out, or another person signed in, deletes the remembered rooms by the mark as the
+    // drafts delete theirs, here before the drafts below set it again.
+    if (options.signInMark) {
+        forgetRememberedRooms(options.storage, storageKey, !options.signInMark.isSet());
+    }
+
     const state = reactive<ShellState>({
         phase: "starting",
         startWait: null,
@@ -368,8 +374,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
         service: { state: "normal", banner: null },
         isUpdateRequired: false,
         isComposerOpen: true,
-        // the foot as the person's last load left it, read before the drafts set the mark again
-        isStatusShown: readRememberedStatusShown(footStorage, storageKey, options.signInMark?.isSet() === true),
+        // the foot as the person's last load left it
+        isStatusShown: readRememberedStatusShown(footStorage, storageKey),
         // the platform's, from the first exchange; nothing is drawn from them before it answers
         limits: readSettings(undefined).limits,
         isPushOffered: false,

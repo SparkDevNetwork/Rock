@@ -36,6 +36,9 @@ export type StorageLike = {
     setItem: (key: string, value: string) => void;
 };
 
+/** Every remembered room's keys start with this, so a sign-out can find them all. */
+const rememberedRoomPrefix = "rock-chat:last-channel:";
+
 /**
  * The storage key for the last channel a person opened in a church, so that one person on a
  * shared computer never opens on another person's channel.
@@ -46,7 +49,35 @@ export type StorageLike = {
  * @returns The key.
  */
 export function rememberedChannelKey(tenantId: string, personAliasGuid: string): string {
-    return `rock-chat:last-channel:${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
+    return `${rememberedRoomPrefix}${tenantId.toLowerCase()}:${personAliasGuid.toLowerCase()}`;
+}
+
+/**
+ * Deletes the remembered rooms a shared computer must not keep: every one after a sign-out, and
+ * every one not this person's when someone else signed in since. The drafts are deleted by the
+ * same rule at the same moment, before either sets the sign-in mark again. Storage that cannot
+ * be listed or written holds nothing this can reach.
+ *
+ * @param storage The browser storage, or null when there is none.
+ * @param channelKey This person's remembered channel key, whose keys are kept unless signed out.
+ * @param isSignedOut Whether the sign-in mark was gone, so nobody's rooms are kept.
+ */
+export function forgetRememberedRooms(storage: StorageLike & { readonly length: number, key: (index: number) => string | null, removeItem: (key: string) => void } | null, channelKey: string, isSignedOut: boolean): void {
+    try {
+        const keys: string[] = [];
+        for (let index = 0; storage && index < storage.length; index++) {
+            const key = storage.key(index);
+            const isOwn = key === channelKey || key?.startsWith(`${channelKey}:`) === true;
+            if (key?.startsWith(rememberedRoomPrefix) && (isSignedOut || !isOwn)) {
+                keys.push(key);
+            }
+        }
+
+        keys.forEach(key => storage?.removeItem(key));
+    }
+    catch {
+        // Intentionally ignored: storage blocked by the browser holds nothing this can reach.
+    }
 }
 
 /**
@@ -150,18 +181,17 @@ function rememberedStatusShownKey(channelKey: string): string {
 }
 
 /**
- * Reads whether the sidebar's foot showed online status at the person's last load. Only a sign-in
- * kept since then reads it, so a sign-out forgets it; a first visit or blocked storage reads off.
+ * Reads whether the sidebar's foot showed online status at the person's last load. A sign-out
+ * since deleted it with the remembered rooms; a first visit or blocked storage reads off.
  *
  * @param storage The browser storage, or null when there is none.
  * @param channelKey The remembered channel's key.
- * @param isSignInKept Whether the person has stayed signed in on this browser since it was written.
  *
  * @returns Whether online status showed.
  */
-export function readRememberedStatusShown(storage: StorageLike | null, channelKey: string, isSignInKept: boolean): boolean {
+export function readRememberedStatusShown(storage: StorageLike | null, channelKey: string): boolean {
     try {
-        return isSignInKept && storage?.getItem(rememberedStatusShownKey(channelKey)) === "on";
+        return storage?.getItem(rememberedStatusShownKey(channelKey)) === "on";
     }
     catch {
         // Intentionally ignored: storage blocked by the browser only loses the memory.
