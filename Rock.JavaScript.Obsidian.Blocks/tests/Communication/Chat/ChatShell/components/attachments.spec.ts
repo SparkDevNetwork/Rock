@@ -841,8 +841,53 @@ describe("the composer's strip", () => {
 
         const chip = wrapper.get("[data-testid='attachment-tray-file']");
         expect(chip.get("[data-testid='attachment-tray-failure']").text()).toBe("Files can be up to 25 MB.");
-        expect(chip.get("[data-testid='attachment-tray-failure']").attributes("title")).toBe("Files can be up to 25 MB.");
         expect(chip.find("[data-testid='attachment-tray-retry']").exists()).toBe(false);
+    });
+
+    // A name or a failure the chip cut short shows whole in the chat's one tooltip on a resting
+    // pointer, never in the browser's own title, which draws in another voice and late.
+    test("shows a cut-short name or failure whole in the chat's tooltip, nothing for words that fit, and no title", async () => {
+        const tray = trayOf([
+            { name: "a-very-long-name-for-a-quarterly-report.pdf" },
+            { name: "short.pdf", status: "failed", progress: 0, failure: { alone: "Files can be up to 25 MB.", besideRetry: "Files can be up to 25 MB.", canRetry: false } }
+        ]);
+        const { wrapper } = await mountFiles([], harness(), { tray });
+        const [long, failed] = wrapper.findAll("[data-testid='attachment-tray-file']");
+        const name = long.get("[data-testid='attachment-tray-name']").element as HTMLElement;
+        const failure = failed.get("[data-testid='attachment-tray-failure']").element as HTMLElement;
+        const fits = failed.get("[data-testid='attachment-tray-name']").element as HTMLElement;
+        for (const cut of [name, failure]) {
+            Object.defineProperty(cut, "scrollWidth", { configurable: true, value: 300 });
+            Object.defineProperty(cut, "clientWidth", { configurable: true, value: 120 });
+        }
+        const tipText = (): string | null => document.querySelector("[role='tooltip']")?.textContent?.trim() ?? null;
+
+        expect(wrapper.findAll("[title]")).toHaveLength(0);
+
+        jest.useFakeTimers();
+        try {
+            name.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBe("a-very-long-name-for-a-quarterly-report.pdf");
+
+            name.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            failure.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBe("Files can be up to 25 MB.");
+
+            failure.dispatchEvent(new MouseEvent("mouseleave"));
+            await nextTick();
+            fits.dispatchEvent(new MouseEvent("mouseenter"));
+            jest.advanceTimersByTime(600);
+            await nextTick();
+            expect(tipText()).toBeNull();
+        }
+        finally {
+            jest.useRealTimers();
+        }
     });
 
     test("what the tray could not take is said in the inline notice, a note, across the strip", async () => {
