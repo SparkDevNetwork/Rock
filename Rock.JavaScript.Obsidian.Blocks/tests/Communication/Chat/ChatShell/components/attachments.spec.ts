@@ -160,8 +160,8 @@ describe("a photo's blurred preview", () => {
         const file = "components/attachments.partial.obs";
         expect(ruleOf(file, ".chat-attach-blur")["filter"]).toMatch(/^blur\(/);
         expect(ruleOf(file, ".chat-attach-blur")["transition"]).toBe("opacity var(--chat-d-img-in) var(--chat-ease-state)");
-        expect(ruleOf(file, ".chat-attach-pic:not(:has(> .chat-img-hold)) > .chat-attach-blur")["opacity"]).toBe("0");
-        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > img:not(.chat-img-hold))")["background"]).toBe("transparent");
+        expect(ruleOf(file, ".chat-attach-pic:has(> .chat-attach-shot:not(.chat-img-hold)) > .chat-attach-blur")["opacity"]).toBe("0");
+        expect(ruleOf(file, ".chat-attach-tile:has(> .chat-attach-pic > .chat-attach-shot:not(.chat-img-hold))")["background"]).toBe("transparent");
     });
 
     // The tile is still while it waits (the loading rule): its photo sits in the picture's own

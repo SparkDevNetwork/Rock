@@ -19,7 +19,7 @@
 // batches by the platform's signing function, each link kept until shortly before the end it answers.
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
+import { attachmentPreviewWords, attachmentsPreview, canAttach, createAttachments, declaredType, formatFileSize, isStoredPreview, isTrayReady } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { FileItem, GifItem, GifResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { fakeCodec, harness, limits, picked, projectUrl, publishableKey, settle, tenant, token } from "../attachmentFakes";
 
@@ -312,6 +312,98 @@ describe("a tray's files", () => {
     });
 });
 
+/** The fake codec's every drawing, "re-encoded", as the webp data URL a preview is sent as. */
+const reEncodedPreview = "data:image/webp;base64,cmUtZW5jb2RlZA==";
+
+describe("a photo's blurred preview", () => {
+    // The tiny copy the history page carries, so a photo's shape and colours show at once in
+    // every reader's browser: drawn from the photo already decoded, sent with its begin.
+    test("a photo's begin carries a webp data URL of it within 16 on its longest side, under the cap", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+        const attachments = createAttachments(h.dependencies);
+
+        attachments.trayFor(channel, channel).add([photo]);
+        await settle();
+
+        const preview = (h.begins[0].p_files as Array<Record<string, unknown>>)[0].preview as string;
+        expect(preview).toBe(reEncodedPreview);
+        expect(preview.length).toBeLessThanOrEqual(1024);
+        expect(codec.encoded.at(-1)).toEqual(expect.objectContaining({ width: 16, height: 12, type: "image/webp", from: photo }));
+    });
+
+    // A browser that cannot write webp hands back a PNG; the preview is then a JPEG.
+    test("where webp cannot be written, the preview is a jpeg", async () => {
+        const codec = fakeCodec();
+        const encode = codec.encode;
+        codec.encode = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve(new Blob(["png"], { type: "image/png" })) : encode(image, width, height, type, quality);
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0].preview).toBe("data:image/jpeg;base64,cmUtZW5jb2RlZA==");
+    });
+
+    // A preview is a nicety: past the cap or failing to draw, the photo goes without one.
+    test("a preview past the cap, or one that fails to draw, is left out and the photo still goes", async () => {
+        const codec = fakeCodec();
+        const encode = codec.encode;
+        codec.encode = (image, width, height, type, quality) => type === "image/webp" ? Promise.resolve(new Blob(["x".repeat(2000)], { type: "image/webp" })) : encode(image, width, height, type, quality);
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([photo]);
+        await settle();
+
+        expect((h.begins[0].p_files as Array<Record<string, unknown>>)[0]).not.toHaveProperty("preview");
+        expect(h.requests).toHaveLength(1);
+    });
+
+    test("a GIF and a file carry none", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const gif = picked("party.gif", "image/gif", 5000);
+        codec.sizes.set(gif, { width: 320, height: 240 });
+
+        createAttachments(h.dependencies).trayFor(channel, channel).add([gif, picked("notes.pdf", "application/pdf")]);
+        await settle();
+
+        expect(h.begins.flatMap(b => b.p_files as Array<Record<string, unknown>>).some(entry => "preview" in entry)).toBe(false);
+    });
+
+    // The sender's own message draws the same preview the readers get, from the first frame.
+    test("the sent photo carries its preview, so the person's own message draws it too", async () => {
+        const codec = fakeCodec();
+        const h = harness(codec);
+        const photo = picked("p.jpg", "image/jpeg");
+        codec.sizes.set(photo, { width: 800, height: 600 });
+        const attachments = createAttachments(h.dependencies);
+        const tray = attachments.trayFor(channel, channel);
+
+        tray.add([photo]);
+        await settle();
+
+        const [item] = attachments.take(channel) as FileItem[];
+        expect(item.preview).toBe(reEncodedPreview);
+    });
+
+    test("only a webp or jpeg base64 data URL under the cap is a stored preview", () => {
+        expect(isStoredPreview(reEncodedPreview)).toBe(true);
+        expect(isStoredPreview("data:image/jpeg;base64,/9j/4AAQ")).toBe(true);
+        expect(isStoredPreview("data:image/svg+xml;base64,PHN2Zz4=")).toBe(false);
+        expect(isStoredPreview("https://elsewhere.example/a.webp")).toBe(false);
+        expect(isStoredPreview(`data:image/webp;base64,${"A".repeat(1024)}`)).toBe(false);
+        expect(isStoredPreview(null)).toBe(false);
+        expect(isStoredPreview(undefined)).toBe(false);
+    });
+});
+
 describe("photos", () => {
     test("a JPEG is always re-encoded, even under the longest side, which strips its location", async () => {
         const codec = fakeCodec();
@@ -323,8 +415,8 @@ describe("photos", () => {
         attachments.trayFor(channel, channel).add([photo]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([[400, 300, "image/jpeg", 0.82]]);
-        expect(h.begins[0].p_files).toEqual([{ name: "small.jpg", type: "image/jpeg", size: "re-encoded".length, width: 400, height: 300 }]);
+        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([[400, 300, "image/jpeg", 0.82], [16, 12, "image/webp", 0.6]]);
+        expect(h.begins[0].p_files).toEqual([{ name: "small.jpg", type: "image/jpeg", size: "re-encoded".length, width: 400, height: 300, preview: reEncodedPreview }]);
         expect(h.requests[0].body).not.toBe(photo);
         expect(h.requests[0].headers["content-type"]).toBe("image/jpeg");
     });
@@ -341,13 +433,16 @@ describe("photos", () => {
         attachments.trayFor(channel, channel).add([webp, png]);
         await settle();
 
-        expect(codec.encoded.map(e => [e.width, e.height, e.type, e.quality])).toEqual([
+        // each photo, then its blurred preview within 16 on its longest side
+        const drawn = codec.encoded.map(e => [e.width, e.height, e.type, e.quality]);
+        expect(drawn.filter(([width, height]) => Math.max(width as number, height as number) > 16)).toEqual([
             [2048, 512, "image/jpeg", 0.82],
             [683, 2048, "image/png", undefined]
         ]);
+        expect(drawn.filter(([width, height]) => Math.max(width as number, height as number) <= 16)).toEqual(expect.arrayContaining([[16, 4, "image/webp", 0.6], [5, 16, "image/webp", 0.6]]));
         expect(h.begins.map(b => (b.p_files as Array<Record<string, unknown>>)[0])).toEqual([
-            { name: "wide.jpg", type: "image/jpeg", size: "re-encoded".length, width: 2048, height: 512 },
-            { name: "tall.png", type: "image/png", size: "re-encoded".length, width: 683, height: 2048 }
+            { name: "wide.jpg", type: "image/jpeg", size: "re-encoded".length, width: 2048, height: 512, preview: reEncodedPreview },
+            { name: "tall.png", type: "image/png", size: "re-encoded".length, width: 683, height: 2048, preview: reEncodedPreview }
         ]);
     });
 
