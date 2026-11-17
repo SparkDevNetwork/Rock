@@ -135,6 +135,22 @@ describe("the text button", () => {
         expect(button.attributes("data-testid")).toBe("x-save");
     });
 
+    // A way to another page, such as a person's Rock profile, is a link a person can open as one,
+    // drawn as the button beside it so the row stays one family.
+    test("with an address is a link drawn the same, taking where it opens from where it is drawn", () => {
+        wrapper = mount(Button, { props: { href: "/Person/12", block: true }, attrs: { target: "_blank", rel: "noopener noreferrer" }, slots: { default: "View profile" } });
+        const link = wrapper.get("a");
+
+        expect(wrapper.find("button").exists()).toBe(false);
+        expect(link.attributes("href")).toBe("/Person/12");
+        expect(link.attributes("target")).toBe("_blank");
+        expect(link.attributes("rel")).toBe("noopener noreferrer");
+        expect(link.attributes("type")).toBeUndefined();
+        expect(link.classes()).toEqual(expect.arrayContaining(["chat-btn", "is-line", "is-block"]));
+        expect(link.text()).toBe("View profile");
+        expect(ruleOf(styleOf("button.partial.obs"), ".chat-btn")).toMatch(/text-decoration:\s*none/);
+    });
+
     test("focuses itself when asked, for a dialog landing on it", () => {
         wrapper = draw();
         (wrapper.vm as unknown as { focus: () => void }).focus();
