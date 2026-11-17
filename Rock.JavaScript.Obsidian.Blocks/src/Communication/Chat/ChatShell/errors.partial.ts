@@ -369,6 +369,12 @@ export function failedWords(whatFailed: string): FailureWords {
 }
 
 /**
+ * A search for people that failed, as New message and Add people both say it in the list the
+ * search would have filled, so the one people picker never speaks with two voices.
+ */
+export const peopleSearchFailed: FailureWords = failedWords("Couldn't search people.");
+
+/**
  * A refusal that another try would only meet again, in the words given, with no Try again.
  *
  * @param sentence Why it was refused.

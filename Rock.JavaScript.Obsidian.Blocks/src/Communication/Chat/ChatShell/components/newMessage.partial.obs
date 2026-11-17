@@ -501,7 +501,7 @@
     import { DirectMessageDraft, DirectMessageLookup, DraftPhase, isTextKeptOnSend, PersonRow } from "../composables/useDirectMessage.partial";
     import { useLatestSearch } from "../composables/useLatestSearch.partial";
     import { SendFailure, SendFailureNews, useSlowSend } from "../composables/useSend.partial";
-    import { failedWords } from "../errors.partial";
+    import { peopleSearchFailed } from "../errors.partial";
     import { startedTitle } from "../stores/channelStore.partial";
     import { TimelineMessage } from "../types.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
@@ -684,7 +684,7 @@
         }
 
         // Said beside the list's Try again, so the words only name what failed.
-        return error instanceof Error && error.message ? error.message : failedWords("Couldn't search people.").besideRetry;
+        return error instanceof Error && error.message ? error.message : peopleSearchFailed.besideRetry;
     });
 
     /**

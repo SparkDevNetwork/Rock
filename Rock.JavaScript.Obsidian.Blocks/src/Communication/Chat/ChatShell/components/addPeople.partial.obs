@@ -121,6 +121,7 @@
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import PeoplePicker from "../ui/peoplePicker.partial.obs";
+    import { peopleSearchFailed } from "../errors.partial";
     import { ChatError, PersonRow } from "../types.partial";
 
     const props = defineProps({
@@ -235,7 +236,7 @@
         ? `A group can have up to ${maxInGroup} people, so ${props.channelName} has room for ${groupRoom.value}.`
         : `You can add up to ${maxPerAdd} people at a time.`);
 
-    const searchErrorText = "Couldn't search right now.";
+    const searchErrorText = peopleSearchFailed.besideRetry;
 
     const noneText = computed((): string => {
         const none = `No one found for “${props.query.trim()}”.`;

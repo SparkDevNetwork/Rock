@@ -42,7 +42,7 @@
 // are read to show in place, so the person sees what they would be continuing; new people get a
 // draft.
 import { reactive, toRaw } from "vue";
-import { failedWords } from "../errors.partial";
+import { failedWords, peopleSearchFailed } from "../errors.partial";
 import { computeBackoff } from "../platformCall.partial";
 import { ChatError, PersonRow, TimelineMessage } from "../types.partial";
 import { defaultRetryDelay } from "./useHistory.partial";
@@ -902,7 +902,7 @@ export function createDirectMessages(dependencies: DirectMessageDependencies): D
             // Try again, so its words only name what failed; the refused strip is for the conversation.
             const result = await dependencies.search(query);
             if (!result.ok) {
-                throw new Error(result.error.text ?? failedWords("Couldn't search people.").besideRetry);
+                throw new Error(result.error.text ?? peopleSearchFailed.besideRetry);
             }
 
             return result.people;
