@@ -29,7 +29,7 @@ import { CallResult, computeBackoff, createPlatformCall, PlatformCall } from "./
 import { createDirectMessages, DirectMessages, DoorResult, isNewMessageShown } from "./composables/useDirectMessage.partial";
 import { createTimelines, TimelineDependencies, Timelines } from "./composables/useHistory.partial";
 import { createMessageMotion, MessageMotion } from "./messageMotion.partial";
-import { createKeepaliveSave, createReadTracker, PageEventTargets, ReadTracker } from "./composables/useMarkRead.partial";
+import { createKeepaliveSave, createReadTracker, createTabReads, PageEventTargets, ReadTracker, TabReads } from "./composables/useMarkRead.partial";
 import { createRealtimeHub, RealtimeClientLike, RealtimeHub, realtimeOptions } from "./composables/useRealtimeHub.partial";
 import { createPushRegistration, PushDependencies, PushRegistration, PushState } from "./composables/usePush.partial";
 import { createPrefs, PersonSettingKey, PersonSettingResult, Prefs } from "./composables/usePrefs.partial";
@@ -414,6 +414,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
 
     let client: PlatformClientLike | null = null;
     let hub: RealtimeHub | null = null;
+    // the person's other tabs in this browser, told of each read; open from the start to the stop
+    let tabReads: TabReads | null = null;
     let detachPage: (() => void) | null = null;
     let detachThreads: (() => void) | null = null;
     let detachProblems: (() => void) | null = null;
@@ -686,7 +688,8 @@ export function createChatShell(options: ShellOptions): ChatShell {
             const sentAt = savesSentAt.get(result);
             applySave(channelId, result, sentAt);
             live.noteSave(channelId, result, sentAt);
-        }
+        },
+        tell: (channelId, messageId) => tabReads?.tell(channelId, messageId)
     });
 
     // a reply shown only in its thread lands nowhere else, so the open thread settles its send
@@ -1243,7 +1246,17 @@ export function createChatShell(options: ShellOptions): ChatShell {
             client = options.createPlatformClient(projectUrl, publishableKey, async () => session.currentToken() ?? "",
                 realtimeOptions(session.settings().limits, Math.random));
 
-            hub = createRealtimeHub({ client, tenantId, personAliasGuid, ...live.handlers });
+            hub = createRealtimeHub({ client, tenantId, personAliasGuid, page: options.pageTargets, ...live.handlers });
+            // Another tab's read is taken as one saved on another device, the same signal by the
+            // same route, so it is kept over a sidebar read in flight as that signal is.
+            tabReads = createTabReads({
+                channel: options.channel,
+                tenantId,
+                personAliasGuid,
+                // the signal's own key names
+                /* eslint-disable-next-line @typescript-eslint/naming-convention */
+                onRead: (channelId, readCursor) => live.handlers.onPersonalEvent("channel.read", { channel_id: channelId, read_cursor: readCursor })
+            });
 
             // The token is on the socket before the first join, which the hub does first.
             await hub.start();
@@ -1504,6 +1517,7 @@ export function createChatShell(options: ShellOptions): ChatShell {
             session.stop();
             await Promise.all([tracker.leave(), threadSaved]);
             signIn.detach();
+            tabReads?.close();
             detachPage?.();
             detachThreads?.();
             detachProblems?.();
