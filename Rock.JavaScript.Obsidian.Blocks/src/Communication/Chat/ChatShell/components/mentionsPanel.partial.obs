@@ -50,10 +50,7 @@
                         <template #lead>
                             <span class="chat-ls-face">
                                 <Dot v-if="drawn.isNew" class="chat-ls-new" data-testid="mention-row-new" />
-                                <span class="chat-ls-avw">
-                                    <Avatar :people="[drawn.author]" :size="32" />
-                                    <span class="chat-ls-at"><Icon name="at" /></span>
-                                </span>
+                                <span class="chat-ls-avw"><Avatar :people="[drawn.author]" :size="32" /></span>
                             </span>
                         </template>
                         <div class="chat-ls-head">
@@ -70,7 +67,7 @@
                             <div class="chat-ls-text">
                                 <MessageBody :text="drawn.text" :pieces="drawn.pieces" :blocks="drawn.blocks" :isConversation="drawn.isConversation" />
                             </div>
-                            <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="sm" />Reply in a thread</span>
+                            <span v-if="drawn.rootId !== null" class="chat-ls-inthread" data-testid="mention-row-thread"><Icon name="thread" size="xs" />Reply in a thread</span>
                         </template>
                     </ListRow>
                 </ul>
@@ -94,37 +91,22 @@
 <style scoped>
 /* The list's frame and states are the list panel's, and its row the list row; what is here is the inbox's own. */
 
-/* The face leaves room on its left for the New dot, which sits there centred on it. */
+/*
+    The face starts on the list row's lead edge, as in every panel, so faces never shift from one
+    panel to the next. The New dot sits in the row's edge beside it, centred on it, 3px clear.
+*/
 .chat-ls-face {
     position: relative;
-    padding-left: 8px;
 }
 
 .chat-ls-new {
     position: absolute;
     top: calc(50% - 4px);
-    left: -4px;
+    left: -11px;
 }
 
 .chat-ls-row.is-new .chat-ls-head b {
     font-weight: 700;
-}
-
-/* The author's face carries the @ in a small brand disc at its corner. */
-.chat-ls-at {
-    --chat-ic-size: 8px;
-    --chat-ic-stroke: 2.8;
-    position: absolute;
-    right: -5px;
-    bottom: -5px;
-    display: grid;
-    place-items: center;
-    width: 14px;
-    height: 14px;
-    color: var(--chat-on-brand);
-    background: var(--chat-brand-fill);
-    border-radius: var(--chat-r-full);
-    box-shadow: 0 0 0 2px var(--chat-surface);
 }
 
 /* Three lines here rather than the list's two: a mention is read for what it asks of the reader. */
@@ -138,31 +120,19 @@
 }
 
 /*
-    A flex box as wide as its content rather than an inline one: alone on its line, an inline box
-    would sit on the line's own strut and stand clear of the row's foot by a fraction of a pixel.
+    Where the mention is, in quiet words with the thread's mark: the whole row is the button, so
+    this is never drawn as one. A flex box as wide as its content rather than an inline one: alone
+    on its line, an inline box would sit on the line's own strut and stand clear of the row's foot
+    by a fraction of a pixel.
 */
 .chat-ls-inthread {
     display: flex;
     width: fit-content;
-    gap: 5px;
+    gap: 4px;
     align-items: center;
-    height: 22px;
-    padding: 0 9px 0 7px;
-    margin-top: 7px;
+    margin-top: 4px;
     font-size: var(--chat-fs-small);
-    font-weight: 600;
-    color: var(--chat-text-2);
-    background: var(--chat-raised);
-    border: 1px solid var(--chat-line);
-    border-radius: var(--chat-r-full);
-}
-
-.chat-ls-inthread {
-    --chat-ic-size: 13px;
-}
-
-.chat-ls-inthread :deep(.chat-ic) {
-    color: var(--chat-icon);
+    color: var(--chat-muted);
 }
 
 /* Day headings stay in view while their rows scroll under them, the rows faintly showing through. */
@@ -345,8 +315,8 @@
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
     const offlineOlder = "Couldn't load older mentions. You're offline.";
 
-    // On a phone a row's own actions always show.
-    const { isPhone } = useChatSession();
+    // The reader, whose mention leading a row's words is left off; on a phone the list's own spacing.
+    const { isPhone, me } = useChatSession();
     const { announce } = useAnnouncer();
 
     // The list is one tab stop, and the arrows move between rows across the day headings.
@@ -450,6 +420,29 @@
         return /[.!?…]$/.test(text) ? text : `${text}.`;
     }
 
+    /**
+     * The pieces a row draws: a mention of the reader leading the words is left off, since every
+     * row here is one, and the words after it start with a capital. A mention that is the whole
+     * message stays, so a row never draws empty.
+     */
+    function withoutLeadingReader(pieces: DisplayPiece[] | null): DisplayPiece[] | null {
+        const first = pieces?.[0];
+        const reader = me.value.personAliasGuid.toLowerCase();
+        const isReader = first?.type === "mention" && typeof first.person_alias_guid === "string" && !!reader && first.person_alias_guid.toLowerCase() === reader;
+        if (!pieces || !isReader) {
+            return pieces;
+        }
+
+        const rest = pieces.slice(1);
+        const lead = rest[0];
+        if (lead?.type === "text") {
+            const text = lead.text.replace(/^[\s,:;]+/, "").replace(/^\p{Ll}/u, letter => letter.toUpperCase());
+            rest.splice(0, 1, ...(text ? [{ ...lead, text }] : []));
+        }
+
+        return rest.length > 0 ? rest : pieces;
+    }
+
     function drawRow(row: MentionRow, index: number, now: Date): DrawnMention {
         const message = row.message;
         const display = messageDisplay(message);
@@ -479,7 +472,7 @@
             roomIcon: roomKind === "channel" ? (props.publicRooms[row.channel_id] ? "hash" : "lock") : roomKind === "group" ? "users" : roomKind === "person" ? "message" : null,
             time: date ? timeLabel(date) : "",
             text: display.text,
-            pieces: isShown ? message.pieces ?? null : null,
+            pieces: isShown ? withoutLeadingReader(message.pieces ?? null) : null,
             blocks: isShown ? message.blocks ?? null : null,
             isConversation: roomKind === "person" || roomKind === "group",
             isNew,

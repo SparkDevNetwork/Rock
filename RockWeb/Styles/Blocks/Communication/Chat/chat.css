@@ -1246,7 +1246,7 @@
     margin-top: 1px;
 }
 
-/* The author's face, which a mention marks at its corner. */
+/* The author's face, on the list row's lead edge as in every panel. */
 .chat-shell .chat-ls-avw {
     position: relative;
     display: block;

@@ -40,7 +40,7 @@
             </div>
         </template>
 
-        <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between rows. Right arrow reaches the row's follow switch.</span>
+        <span :id="`${uid}-hint`" class="chat-sr-only">{{ keysHint }}</span>
         <ul ref="listElement"
             class="chat-ls-list"
             :class="{ 'is-phone': isPhone }"
@@ -57,7 +57,8 @@
                     eye: its links and chips are never reached. Its follow toggle takes the time's
                     place where the row is pointed at or focused, and stays out on a row unfollowed
                     on the All tab, which is kept faded until the next fetch so taking it back is
-                    one press. A refused follow says so under the row.
+                    one press. A phone draws no toggle, so every row keeps its time; a thread is
+                    followed there from its drawer. A refused follow says so under the row.
                 -->
                 <ListRow interactive
                          :label="drawn.label"
@@ -94,7 +95,6 @@
                                 <Avatar v-if="drawn.faces.length > 0" :people="drawn.faces" :size="18" />
                             </span>
                             <span class="chat-ls-count">{{ drawn.count }}</span>
-                            <span class="chat-ls-started"><span class="chat-ls-unit"><span class="chat-ls-sep">&middot;</span> Started {{ drawn.started }}</span></span>
                             <span v-if="drawn.status || drawn.mentions" class="chat-ls-end">
                                 <span v-if="drawn.status"
                                       class="chat-ls-fol"
@@ -104,7 +104,7 @@
                             </span>
                         </div>
                     </template>
-                    <template #actions>
+                    <template v-if="!isPhone" #actions>
                         <IconButton :icon="drawn.isFollowing ? 'bell' : 'bell-off'"
                                     :label="`${drawn.isFollowing ? 'Unfollow' : 'Follow'} thread by ${drawn.spokenWho}`"
                                     data-testid="thread-row-follow"
@@ -227,35 +227,6 @@
     color: var(--chat-text-2);
 }
 
-.chat-ls-sep {
-    opacity: .7;
-}
-
-/*
-    The one part of a long foot that gives way, so the Following status and the badge stay whole
-    inside the row. It gives way whole: the separator and the time are one nowrap unit, and the
-    unit wraps onto a second line this box hides when it no longer fits, so a time is never shown
-    clipped. The empty item before it, as tall as the box, holds the first line, so the unit has a
-    line to wrap from (a lone flex item never wraps) and the line it wraps to is the hidden one.
-*/
-.chat-ls-started {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    min-width: 0;
-    height: 20px;
-    overflow: hidden;
-}
-
-.chat-ls-started::before {
-    content: "";
-    height: 100%;
-}
-
-.chat-ls-unit {
-    white-space: nowrap;
-}
-
 .chat-ls-end {
     display: inline-flex;
     flex: none;
@@ -350,7 +321,6 @@
         faces: AvatarPerson[];
         count: string;
         lastWhen: string;
-        started: string;
         status: string | null;
         mentions: number;
         isUnread: boolean;
@@ -457,7 +427,7 @@
 
     const offlineRefresh = "Couldn't refresh. You're offline, so this list may be out of date.";
 
-    // The reader, whose own root is named You; on a phone a row's follow switch always shows.
+    // The reader, whose own root is named You; on a phone a row draws no follow switch.
     const { isPhone, me } = useChatSession();
 
     // The list is one tab stop; Up, Down, Home and End move between rows, Right and Left are the row's own.
@@ -478,6 +448,11 @@
         { value: "channel", label: props.kind === "channel" ? "This channel" : "This conversation" },
         { value: "all", label: "All" }
     ]);
+
+    /** How the list's keys go; Right reaches a row's follow switch only where a row draws one. */
+    const keysHint = computed((): string => isPhone.value
+        ? "Up and down arrows move between rows."
+        : "Up and down arrows move between rows. Right arrow reaches the row's follow switch.");
 
     const listLabel = computed((): string => props.tab === "all" ? "Threads you follow" : `Threads in ${here.value}`);
 
@@ -674,7 +649,6 @@
             faces: (root.repliers ?? []).slice(0, 3).map(r => ({ name: fullName(r.nick_name, r.last_name), photoUrl: r.avatar_url ?? null })),
             count,
             lastWhen: whenOf(row.last_reply_at, false),
-            started: whenOf(root.created_at, true),
             status,
             mentions,
             isUnread: row.has_unread,
