@@ -505,7 +505,7 @@
                                 <asp:Repeater ID="rptGroupPlacements" runat="server">
                                     <ItemTemplate>
                                         <li>
-                                            <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+                                            <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# ( Eval( "Name" ) as string ).EncodeHtml() %>' />
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>
