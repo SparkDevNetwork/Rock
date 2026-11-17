@@ -136,7 +136,8 @@ describe("a panel turned into another page", () => {
         const dialog = document.querySelector<HTMLElement>("[data-testid='dialog']") as HTMLElement;
         const back = dialog.querySelector<HTMLElement>("[data-testid='page-back']");
         expect(back?.getAttribute("aria-label")).toBe("Back");
-        expect(dialog.querySelector("[data-testid='settings-close']")).toBeNull();
+        // the surface's own tools stay on every page, so Close is one press from anywhere in it
+        expect(dialog.querySelector("[data-testid='settings-close']")).not.toBeNull();
         const title = document.getElementById(dialog.getAttribute("aria-labelledby") ?? "");
         expect(title?.textContent).toBe("Blocked people");
         expect(dialog.contains(document.querySelector("[data-testid='unblock']"))).toBe(true);
