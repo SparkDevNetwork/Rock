@@ -216,12 +216,9 @@ const tokens: Token[] = [
     { name: "presence-online", light: "#008A1A", dark: "#01A11E" },
     { name: "presence-away", light: "#A86400", dark: "#C27400" },
     { name: "presence-busy", light: "#D70015", dark: "#F0303F" },
-    { name: "mn-me-bg", light: "#F7E0C0", dark: "#4E3410" },
-    // A row that names the reader: warning at 6 percent over the surface in light, 9 in dark.
-    { name: "row-mention", light: "#FCF6EE", dark: "#201C15" },
-    // The ring on the reader's own chip in that row: warning at 35 percent, written out, since the
-    // browsers Rock supports cannot mix it.
-    { name: "mention-ring", light: "rgba(229,134,0,.35)", dark: "rgba(229,134,0,.35)" },
+    // A row that names the reader and the ring on its chip name the church's tint and line, in
+    // every theme; "draws a mention's wash and ring from the church color" holds them, and the
+    // reader's own chip has no fill of its own.
 
     // An initials avatar's saturation and lightness; the hue is the person's own.
     { name: "av-sat", light: "70%", dark: "28%" },
@@ -257,11 +254,6 @@ const tokens: Token[] = [
         name: "shadow-pop",
         light: "0 0 0 1px rgba(13,17,23,.06), 0 4px 8px rgba(13,17,23,.04), 0 16px 36px -8px rgba(30,36,52,.24)",
         dark: "0 0 0 1px rgba(255,255,255,.08), 0 16px 40px -8px rgba(0,0,0,.7)"
-    },
-    {
-        name: "shadow-bar",
-        light: "0 0 0 1px var(--chat-line), 0 1px 2px rgba(13,17,23,.05), 0 6px 14px -4px rgba(30,36,52,.16)",
-        dark: "0 0 0 1px rgba(255,255,255,.08), 0 8px 18px -6px rgba(0,0,0,.65)"
     },
 
     // Motion.
@@ -356,6 +348,8 @@ const namedLiterals: Named[] = [
 
     // Durations.
     { name: "d-flash", value: "2.2s" },
+    // A mention arriving live greets the reader with the flash, shorter than a jump's.
+    { name: "d-greet", value: "1.2s" },
     { name: "d-move", value: "220ms", reduced: "0ms" },
     { name: "d-roll", value: "220ms" },
     { name: "d-tools-show", value: "90ms" },
@@ -554,6 +548,39 @@ describe("the chat token sheet", () => {
 
     test.each(namedLiterals.filter(n => n.reduced !== undefined).map(n => [n.name, n.reduced!] as const))("sets --chat-%s to %s when reduced motion is asked for", (name, value) => {
         expect(valuesOf(sheet, `--chat-${name}`, isReducedMotion)).toContain(normalize(value));
+    });
+
+    // A text badge (a count, a tag such as Leader) has square-ish corners, the inset corner's 6px,
+    // rather than the round family's full pill; one token so every badge changes together.
+    test("names the badge corner as the inset corner, 6px", () => {
+        expect(valuesOf(sheet, "--chat-r-badge", isLight)).toEqual([normalize("var(--chat-r-inset)")]);
+        expect(valuesOf(sheet, "--chat-r-inset", isLight).some(v => v.includes("6px"))).toBe(true);
+    });
+
+    // A mention of the reader is the church's: its wash the church color at 12% (20% in dark),
+    // worked out per church and theme, and its chip's ring the church's stronger line (55%, the
+    // line an own reaction wears), so no amber is left to read as a warning.
+    test("draws a mention's wash and ring from the church color, never amber", () => {
+        const modes = [["light", isLight], ["dark", isDarkExplicit], ["dark", isDarkUnthemed], ["dark", isDarkFollowingSystem]] as const;
+        for (const [theme, isMode] of modes) {
+            const washes = valuesOf(sheet, "--chat-row-mention", isMode);
+            expect(washes).toHaveLength(1);
+            expect(washes[0]).toBe(normalize(`var(--chat-row-mention-${theme}, rgba(255, 121, 29, .${theme === "light" ? "12" : "20"}))`));
+            for (const value of valuesOf(sheet, "--chat-mention-ring", isMode)) {
+                expect(value).toBe(normalize("var(--chat-reaction-mine-line)"));
+            }
+        }
+        expect(valuesOf(sheet, "--chat-mention-ring", isLight)).toHaveLength(1);
+        expect(readFileSync(sheetPath, "utf8")).not.toMatch(/--chat-mn-me-bg/);
+    });
+
+    // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
+    // jump's flash covers equal air on both sides; the space between two people is outside the
+    // rows, where no highlight reaches.
+
+    test("names a channel row's equal padding, 6px, and the space between people, 8px", () => {
+        expect(valuesOf(sheet, "--chat-cm-row-pad", isLight)).toEqual(["6px"]);
+        expect(valuesOf(sheet, "--chat-cm-person-gap", isLight)).toEqual(["8px"]);
     });
 
     test("follows the system into dark only on a Rock theme that has a dark mode", () => {
@@ -1078,6 +1105,13 @@ describe("the components' own styles", () => {
         // The @all chip is a person's chip with the mark for a face: no color of its own.
         expect(declared(".chat-mn.is-all", "color")).toBe("");
         expect(declared(".chat-mn.is-all", "background")).toBe("");
+
+        // The reader's own chip is the church's chip too, its tint and ink, ringed 1px in the
+        // church's stronger line wherever it stands, a bubble or a channel row, washed or not:
+        // an amber chip read as a warning, and as another church's color.
+        expect(declared(".chat-mn.is-you", "color")).toBe("");
+        expect(declared(".chat-mn.is-you", "background")).toBe("");
+        expect(declared(".chat-mn.is-you", "box-shadow")).toBe(normalize("0 0 0 1px var(--chat-mention-ring)"));
     });
 
     // A chip that is a button must take the sheet's line, not its parent's, or the pill grows

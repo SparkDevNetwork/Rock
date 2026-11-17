@@ -15,18 +15,20 @@
             @click="onClick"
             @animationend.self="isPopping = false">
         <!-- Icon, count and the newest repliers, the unread dot at the pill's outer top corner. -->
-        <Icon name="thread" size="sm" />
+        <Icon name="thread" size="sm" class="chat-tsum-ic" />
         <b data-testid="thread-count">{{ count }}</b>
         <span class="chat-tsum-faces" data-testid="thread-faces">
             <Avatar v-if="faces.length > 0" :people="faces" :size="18" isOneLetter />
         </span>
         <Dot v-if="isUnread" ringed class="chat-tsum-dot" :class="{ 'is-leading': isOwn }" data-testid="thread-unread-dot" />
-        <!-- Inside the pill, so the pill stays one element; fixed, so it is placed against the window. -->
-        <span v-if="isTipShown"
-              ref="tipElement"
-              class="chat-tip"
-              role="tooltip"
-              :style="floatingStyles">Last reply {{ lastTime }}</span>
+        <!-- Carried out to the chat's overlay layer, so the pill stays one element and its hover lift never holds the tip to the pill's width. -->
+        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+            <span v-if="isTipShown"
+                  ref="tipElement"
+                  class="chat-tip"
+                  role="tooltip"
+                  :style="floatingStyles">Last reply {{ lastTime }}</span>
+        </Teleport>
     </button>
 </template>
 
@@ -39,7 +41,8 @@
     display: inline-flex;
     gap: 6px;
     align-items: center;
-    height: 26px;
+    /* The chips' height, so the pill and the chips beside it read as one row. */
+    height: 24px;
     margin: 0;
     padding: 0 4px 0 8px;
     font-size: var(--chat-fs-ui);
@@ -61,7 +64,7 @@
     --chat-ic-size: 14px;
 }
 
-.chat-tsum :deep(.chat-ic) {
+.chat-tsum-ic {
     color: var(--chat-icon);
 }
 
@@ -81,7 +84,7 @@
     border-color: var(--chat-thread-unread-line);
 }
 
-.chat-tsum.is-unread :deep(.chat-ic) {
+.chat-tsum.is-unread .chat-tsum-ic {
     color: var(--chat-brand-ink);
 }
 
@@ -105,11 +108,11 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, onMounted, PropType, ref } from "vue";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dot from "../ui/dot.partial.obs";
     import Icon from "../ui/icon.partial.obs";
-    import { useTooltip } from "../ui/tooltip.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { dayLabel, replyCountText, timeLabel } from "../feedLayout.partial";
     import { TimelineMessage } from "../types.partial";
 
@@ -150,6 +153,9 @@
 
     // The chat's own tooltip rather than the browser's, which cannot be styled or timed.
     const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } = useTooltip(pillElement);
+
+    /** The chat's overlay layer the tip is drawn in, found once the pill is on the page; none when drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
 
     // #endregion Values
 
@@ -203,4 +209,8 @@
     }
 
     // #endregion Event Handlers
+
+    onMounted(() => {
+        tipHost.value = overlayHostOf(pillElement.value);
+    });
 </script>

@@ -18,7 +18,7 @@
 
 <style scoped>
 /*
-    A count or a short label on a pill. No text sits on the church's own fill, so no church colour
+    A count or a short label with the badge's corner. No text sits on the church's own fill, so no church colour
     can make it unreadable; every edge is a whole pixel. A badge that does not pop is drawn with its
     row, no layer of its own: a layer is rasterized wherever the badge was when the layer was made,
     which can be part way through a panel's slide, and the badge then draws a fraction of a pixel
@@ -34,7 +34,7 @@
     font-weight: 700;
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-badge);
     --chat-ic-size: 12px;
     --chat-ic-stroke: 2.3;
 }
@@ -59,10 +59,11 @@
     background: var(--chat-brand-tint);
 }
 
-/* A "+N": one neutral fill wherever it sits. */
+/* A "+N": one neutral fill wherever it sits, round like the faces it counts. */
 .chat-badge.is-neutral {
     color: var(--chat-text-2);
     background: var(--chat-line-strong);
+    border-radius: var(--chat-r-full);
 }
 
 /* A muted room's count: there, but never mistaken for a live mention's tint in either theme. */

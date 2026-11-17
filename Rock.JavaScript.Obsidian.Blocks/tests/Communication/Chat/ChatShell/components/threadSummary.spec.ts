@@ -34,6 +34,8 @@
 // The message row draws the summary under any root with a live reply, a tombstone included, in
 // its reactions row (.chat-reacts), and re-emits its open as openThread({ rootId, messageId: null }). In a channel
 // that row sits in the text column (.chat-cm-main), after the text.
+import { readFileSync } from "fs";
+import { join } from "path";
 import { defineComponent, h, nextTick } from "vue";
 import { DOMWrapper, mount, VueWrapper } from "@vue/test-utils";
 import ThreadSummary from "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs";
@@ -161,6 +163,43 @@ describe("the pill, in a direct message", () => {
         expect(pill.attributes("data-testid")).toBe("thread-summary");
         expect(plain(pill.attributes("aria-label"))).toBe("3 replies, last reply 9:41 AM. Open thread");
         expect(await tooltipOf(pill)).toBe("Last reply 9:41 AM");
+    });
+
+    // The pill lifts on hover, and a lifted box holds a fixed child against itself: a tip kept in
+    // the pill wrapped to the pill's width and sat over the text under it. Carried out to the
+    // chat's overlay layer, it is placed against the window, on one line.
+    test("its tip is drawn in the chat's overlay layer, out of the pill, on one line", async () => {
+        const shell = document.createElement("div");
+        shell.className = "chat-shell";
+        document.body.appendChild(shell);
+        const host = document.createElement("div");
+        shell.appendChild(host);
+        const pill = mount(ThreadSummary, { props: { message: root() }, attachTo: host });
+        await nextTick();
+
+        jest.useFakeTimers();
+        try {
+            await pill.trigger("mouseenter");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+
+        const tip = shell.querySelector("[role='tooltip']");
+        expect(plain(tip?.textContent)).toBe("Last reply 9:41 AM");
+        expect(pill.element.contains(tip)).toBe(false);
+        expect(tip?.parentElement).toBe(shell);
+        pill.unmount();
+        shell.remove();
+    });
+
+    test("is 24px tall, the chips' height", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/threadSummary.partial.obs"), "utf8");
+        const rule = /\.chat-tsum\s*\{([^}]*)\}/.exec(source.slice(source.indexOf("<style")))?.[1] ?? "";
+
+        expect(rule).toMatch(/(^|[\s;])height:\s*24px/);
     });
 
     test("a last reply from an earlier day names the day as the feed's divider does, not a time", async () => {

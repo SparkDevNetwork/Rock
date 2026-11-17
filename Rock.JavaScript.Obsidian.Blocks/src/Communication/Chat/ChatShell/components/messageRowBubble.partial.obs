@@ -19,7 +19,7 @@
                 class="chat-thread-label"
                 data-testid="thread-reply-label"
                 @click="on.openThread">
-            <Icon name="thread" size="xs" />Replied to a thread
+            <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
@@ -31,12 +31,12 @@
                             class="chat-person-opener"
                             data-testid="sender-avatar"
                             :aria-label="view.displayName"
-                            @click="on.author"><Avatar :people="[view.face]" :size="34" /></button>
-                    <Avatar v-else :people="[view.face]" :size="34" />
+                            @click="on.author"><Avatar :people="[view.face]" :size="34" class="chat-msg-face-pile" /></button>
+                    <Avatar v-else :people="[view.face]" :size="34" class="chat-msg-face-pile" />
                 </template>
             </span>
             <!-- The bubble's box, which its bar is placed beside, level with its top. -->
-            <div class="chat-bub-anchor">
+            <div class="chat-bub-anchor" :class="{ 'is-files-only': !isBubbleShown }">
                 <MessageEditor v-if="view.isEditorShown && view.message"
                                :message="view.message"
                                :error="view.editError"
@@ -44,7 +44,7 @@
                                v-on="on.editor" />
                 <div v-else-if="isBubbleShown"
                      class="chat-bubble"
-                     data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading, 'is-flashing': isFlashing }">
+                     data-tail="box" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading }">
                     <div v-if="view.isAnnouncement" class="chat-bubble-label">
                         <Badge tone="brand" icon="speaker" label="Announcement" isSpoken data-testid="announcement-pill" />
                     </div>
@@ -52,7 +52,7 @@
                     <MessageBody :text="view.text" :pieces="view.pieces" isConversation :isPersonOpenable="!!view.message" @person="on.person" />
                 </div>
                 <Attachments v-if="view.files.length > 0 && !view.isEditorShown" class="chat-msg-files" :data-tail="isBubbleShown ? undefined : 'box'" :items="view.files" :isOwn="view.isOwn" :isPending="view.isPending" />
-                <span v-if="view.isBarOffered" :ref="on.setDock" class="chat-tools-dock"></span>
+                <span v-if="view.isDockLent" :ref="on.setDock" class="chat-tools-dock"></span>
             </div>
         </div>
         <MessageReactions v-if="view.message && (view.hasThread || view.isReactable)" v-bind="view.reactionsProps" v-on="on.reactions">
@@ -84,16 +84,19 @@
 <style scoped>
 /*
     A direct message's row: bubbles, the name over another person's group, their face at its last,
-    and the time under the group. A focus from a jump rings what the person reads, the bubble or
-    the card; the row's own sheet holds the rest of the ring's rule and why it is written twice.
+    and the time under the group. A focus, from a jump or from Tab on an own message, rings what
+    the person reads: the bubble, the card, or the files of a message that has no words. The row's
+    own sheet holds the rest of the ring's rule and why it is written twice.
 */
 .chat-msg.is-conversational:focus-visible .chat-bubble,
+.chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus-visible .chat-card {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
 }
 
 .chat-msg.is-conversational:focus .chat-bubble,
+.chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only,
 .chat-msg.is-conversational.is-card:focus .chat-card {
     outline: 2px solid var(--chat-brand-ink);
     outline-offset: 2px;
@@ -101,26 +104,29 @@
 
 @supports selector(:focus-visible) {
     .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bubble,
+    .chat-msg.is-conversational:focus:not(:focus-visible) .chat-bub-anchor.is-files-only,
     .chat-msg.is-conversational.is-card:focus:not(:focus-visible) .chat-card {
         outline: none;
     }
 }
 
 /*
-    A bubble jumped to fades a wash laid just past its edge, held for most of its length and then
-    let go. Reduced motion keeps it, being a color fade only.
+    A message jumped to flashes the row's highlight behind its bubble and files, 4px clear of them,
+    held for most of its length and then let go; the box holds its own layers only while it
+    flashes. Reduced motion keeps it, being a fade only.
 */
-.chat-bubble.is-flashing {
-    position: relative;
+.chat-msg.is-flashing .chat-bub-anchor {
+    isolation: isolate;
 }
 
-.chat-bubble.is-flashing::after {
+.chat-msg.is-flashing .chat-bub-anchor::before {
     position: absolute;
-    inset: -3px;
+    inset: -4px;
+    z-index: -1;
     pointer-events: none;
     content: "";
     background: var(--chat-flash);
-    border-radius: inherit;
+    border-radius: var(--chat-r-bubble);
     animation: chat-flash var(--chat-d-flash) var(--chat-ease-state) forwards;
 }
 
@@ -165,7 +171,7 @@
     border-radius: var(--chat-r-full);
 }
 
-.chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
+.chat-msg-face > .chat-person-opener > .chat-msg-face-pile {
     position: static;
 }
 
@@ -187,7 +193,7 @@
     width: 34px;
 }
 
-.chat-msg-face > :deep(.chat-pile) {
+.chat-msg-face > .chat-msg-face-pile {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -208,12 +214,28 @@
     margin-top: 6px;
 }
 
-/* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
+/*
+    Holds the bubble, its files and its bar. The bubble and the files stand in one column on the
+    sender's side, each its own width, so a bubble is as wide as its words whatever the files under
+    it measure; the bar is placed beside the wider of the two. The zero minimum lets them shrink to
+    the line beside the face.
+*/
 .chat-bub-anchor {
     position: relative;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     min-width: 0;
     max-width: 100%;
+}
+
+.is-own .chat-bub-anchor {
+    align-items: flex-end;
+}
+
+/* With no words the box is the files alone; it takes their corners, so a focus ring follows them. */
+.chat-bub-anchor.is-files-only {
+    border-radius: var(--chat-r-surface);
 }
 
 /* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble. */
@@ -235,7 +257,8 @@
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
-.chat-msg:hover .chat-bubble:not(.is-jumbo):not(.is-tomb) {
+/* Tinted while the column's bar is on the message, not under any pointer, so one message is lit at a time. */
+.chat-msg.is-hot .chat-bubble:not(.is-jumbo):not(.is-tomb) {
     background-image: linear-gradient(var(--chat-bubble-hover), var(--chat-bubble-hover));
 }
 
@@ -391,9 +414,12 @@
 }
 
 /*
-    The row under a bubble tucks 4px up into the bubble's bottom padding, which grows to make room,
-    so it overlaps the bubble's edge and never its text. Another person's row starts 10px in from
-    the bubble, past the face column and its gap; the reader's own mirrors it from the right.
+    The chips' row, seated by the bubble on its single root: it sits exactly half over the
+    bubble's lower edge and never widens the bubble. A chip in a bubble is 26px and the thread pill
+    beside it 24px, centred in the row, so the row's first line is 26px and half of it, 13px, rides
+    over the edge. The bubble's foot grows by that 13px plus the 4px the words keep clear of the
+    chips: 17px. Another person's row starts 10px in from the bubble, past the face column and its
+    gap; the reader's own mirrors it from the right.
 */
 .chat-reacts {
     position: relative;
@@ -403,7 +429,7 @@
     gap: 4px;
     align-items: center;
     max-width: 100%;
-    margin-top: -4px;
+    margin-top: -13px;
     padding: 0 0 0 52px;
 }
 
@@ -412,12 +438,16 @@
     padding: 0 10px 0 0;
 }
 
-.has-thread.is-conversational .chat-bubble:not(.is-jumbo),
-.has-reactions.is-conversational .chat-bubble:not(.is-jumbo) {
-    padding-bottom: 10px;
+.has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo),
+.has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo) {
+    padding-bottom: 17px;
 }
 
-/* A large emoji or an announcement has no padding to tuck into, so the row sits below it. */
+/*
+    Under a message's files, a large emoji or an announcement there is no bubble foot to sit on,
+    so the row stands 4px under them, as the files stand under the bubble.
+*/
+.has-files .chat-reacts,
 .is-jumbo .chat-reacts,
 .is-announcement .chat-reacts {
     margin-top: 4px;
@@ -439,7 +469,7 @@
     transition: color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-thread-label :deep(.chat-ic) {
+.chat-thread-label-ic {
     color: var(--chat-icon);
 }
 
@@ -503,12 +533,6 @@
          * corners, as her message will, and the time stays here under her newest message.
          */
         isTypingNext: {
-            type: Boolean,
-            default: false
-        },
-
-        /** The message was jumped to, so its bubble flashes. */
-        isFlashing: {
             type: Boolean,
             default: false
         },

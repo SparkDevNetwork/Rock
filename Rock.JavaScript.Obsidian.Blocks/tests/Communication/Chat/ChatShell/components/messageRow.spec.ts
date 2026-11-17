@@ -30,6 +30,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import BlockCard from "../../../../../src/Communication/Chat/ChatShell/components/blockCard.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
+import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
@@ -460,6 +461,28 @@ describe("Community, in a channel", () => {
         expect(wrapper.findComponent(Avatar).props("size")).toBe(36);
     });
 
+    // The long time is the chat's tip, timed and drawn like every other, never the browser's title.
+    test("resting on the head's time shows the long time in the chat's tip, with no title", async () => {
+        const wrapper = mount(MessageRow, inSession({ props: { personAliasGuid: me, message: message(), isChannel: true, position: "first" }, attachTo: document.body }));
+        const time = wrapper.get("[data-testid='message-time']");
+        expect(time.attributes("title")).toBeUndefined();
+
+        jest.useFakeTimers();
+        try {
+            await time.trigger("mouseenter");
+            jest.advanceTimersByTime(500);
+            await nextTick();
+            const tips = Array.from(document.querySelectorAll("[role='tooltip']")).map(tip => plain(tip.textContent ?? ""));
+            expect(tips).toHaveLength(1);
+            expect(tips[0]).toMatch(/9:02 AM/);
+            expect(tips[0].length).toBeGreaterThan("9:02 AM".length);
+        }
+        finally {
+            jest.useRealTimers();
+            wrapper.unmount();
+        }
+    });
+
     test("the head names every group, the reader's own and another person's", () => {
         const own = draw({ message: ownConfirmed({ sender_nick_name: "Jordan", sender_last_name: "Lee" }), isOwn: true, isChannel: true, position: "single" });
         const other = draw({ message: message(), isChannel: true, position: "single" });
@@ -683,8 +706,7 @@ describe("Community, in a channel", () => {
         const rule = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
         expect(rule).toMatch(/background-color:\s*var\(--chat-row-mention\)/);
-        expect(rule).toMatch(/--chat-cm-radius:\s*var\(--chat-r-row\)/);
-        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius\)/);
+        expect(rule).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
         expect(rule).toMatch(/margin-inline:\s*var\(--chat-cm-inset\)/);
         expect(rule).not.toMatch(/(^|[\s;])margin(-top|-bottom|-block)?:/);
         // The text column stays where every other row has it: the inset comes out of the padding.
@@ -710,41 +732,136 @@ describe("Community, in a channel", () => {
         expect(washed).toMatch(/border-block:\s*1px solid transparent/);
         expect(washed).toMatch(/background-clip:\s*padding-box/);
 
+        // Every row, a head too, pads its content by the one equal padding; the washed row gives
+        // its clear 1px edge out of it, above and below alike.
         const row = block(".chat-msg.is-community");
-        const rowPad = parseFloat(/padding:\s*([\d.]+)px/.exec(row)?.[1] ?? "NaN");
-        expect(1 + px(washed, "padding-block")).toBe(rowPad);
-        expect(1 + px(block(".chat-msg.is-community.is-mention-me.is-head"), "padding-top")).toBe(px(block(".chat-msg.is-community.is-head"), "padding-top"));
+        expect(row).toMatch(/(^|[\s;])padding:\s*var\(--chat-cm-row-pad\) var\(--chat-cm-pad\)/);
+        expect(washed).toMatch(/padding-block:\s*calc\(var\(--chat-cm-row-pad\) - 1px\)/);
+        expect(px(block(".chat-msg.is-community.is-head"), "padding-top")).toBeNaN();
+        expect(block(".chat-msg.is-community.is-mention-me.is-head")).toBe("");
     });
 
-    // The chip that reached the reader, theirs or @all, takes a thin amber ring in a washed row, so
-    // it stands off the wash.
-    test("the reader's chip and the @all chip in a washed row are ringed in the warning color", () => {
+    // The space between two people is a margin over the new person's head row, outside its box, so
+    // no hover, wash or flash covers it; a same-person run takes none.
+    test("a new person's head row stands the space between people above it, outside the row", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-you\),\s*\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-mn\.is-all\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const rule = /(?:^|\n)\.chat-msg\.is-community\.is-head\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(rule).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(rule).toMatch(/margin-top:\s*var\(--chat-cm-person-gap\)/);
+        expect(rule).not.toMatch(/padding/);
+    });
+
+    test("a channel's chips and thread pill stand 6px under the text", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community \.chat-reacts\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/margin-top:\s*6px/);
+    });
+
+    // The chip that reached the reader takes a thin ring, so it stands off a wash: the reader's own
+    // chip in every row, the @all chip in a washed row. The ring is the church's line, as the wash
+    // is the church's tint.
+    test("the reader's chip is ringed everywhere and the @all chip in a washed row, in the mention ring", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const washed = /\.chat-msg\.is-community\.is-mention-me\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const sheet = readFileSync(join(__dirname, "../../../../../../RockWeb/Styles/Blocks/Communication/Chat/chat.css"), "utf8");
+        const chip = /(?:^|\n)\.chat-mn\.is-all\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
+        const own = /(?:^|\n)\.chat-mn\.is-you\s*\{([^}]*)\}/.exec(sheet)?.[1] ?? "";
+
+        // The row hands the @all ring to the chip, which draws it itself: the row reaches into no part.
+        expect(washed).toMatch(/--chat-mn-ring:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(chip).toMatch(/box-shadow:\s*var\(--chat-mn-ring,\s*none\)/);
+        expect(own).toMatch(/box-shadow:\s*0 0 0 1px var\(--chat-mention-ring\)/);
+        expect(own).not.toMatch(/background|color/);
+        expect(style).not.toMatch(/:deep\(\.chat-mn/);
+        expect(style).not.toMatch(/amber|--chat-warning/i);
+    });
+
+    // A mention and a jump are one idea, "this is for you, here": the jump flashes the wash's own
+    // inset, rounded shape at the flash's strength, under the words, held and then let go back to
+    // whatever the row is at rest, a wash or nothing.
+    test("a jump flashes the wash's shape under the words, held and let go", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.():]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        const flash = block(".chat-msg.is-community.is-flashing::before");
+        expect(flash).toMatch(/inset:\s*1px var\(--chat-cm-inset\)/);
+        expect(flash).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
+        expect(flash).toMatch(/background:\s*var\(--chat-flash\)/);
+        expect(flash).toMatch(/animation:\s*chat-flash var\(--chat-d-flash\)/);
+        expect(flash).toMatch(/z-index:\s*-1/);
+        expect(block(".chat-msg.is-community.is-flashing")).toMatch(/isolation:\s*isolate/);
+        // A washed row already stands in by the inset, so its flash fills it.
+        expect(block(".chat-msg.is-community.is-mention-me.is-flashing::before")).toMatch(/inset:\s*0/);
+        expect(style).not.toMatch(/chat-cm-flash/);
+    });
+
+    // In bubbles the flash is the same idea behind the bubble and its files, with 4px of air.
+    test("a bubble's jump flashes behind the bubble, 4px clear of it", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.():]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        const flash = block(".chat-msg.is-flashing .chat-bub-anchor::before");
+        expect(flash).toMatch(/inset:\s*-4px/);
+        expect(flash).toMatch(/z-index:\s*-1/);
+        expect(flash).toMatch(/animation:\s*chat-flash var\(--chat-d-flash\)/);
+        expect(block(".chat-msg.is-flashing .chat-bub-anchor")).toMatch(/isolation:\s*isolate/);
+        expect(style).not.toMatch(/\.chat-bubble\.is-flashing/);
+    });
+
+    test("the wash's words, Mentioned you, are in the church's ink", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
+        const rule = /\.chat-cm-mention\s*\{([^}]*)\}/.exec(source.slice(source.indexOf("<style")))?.[1] ?? "";
+
+        expect(rule).toMatch(/color:\s*var\(--chat-brand-ink\)/);
     });
 
     // The row stands in from the feed's edge, and its bar, docked to the row, would follow it in;
     // it is pushed back out by the same inset, so the bar holds its place against the feed.
     test("a washed row's action bar keeps its place against the feed", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community\.is-mention-me :deep\(\.chat-tools\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const block = (selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()>*]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
 
-        expect(rule).toMatch(/margin-right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
-        // The bar's top is measured from inside the row's clear 1px top edge; it is lifted back by it.
-        expect(rule).toMatch(/margin-top:\s*-1px/);
+        // The dock is a box along the row's top edge, which the bar is placed against.
+        const dock = block(".chat-tools-dock");
+        expect(dock).toMatch(/position:\s*absolute/);
+        expect(dock).toMatch(/(^|[\s;])top:\s*0/);
+        expect(dock).toMatch(/(^|[\s;])right:\s*0/);
+        expect(dock).toMatch(/(^|[\s;])left:\s*0/);
+        const washed = block(".is-mention-me > .chat-tools-dock");
+        expect(washed).toMatch(/right:\s*calc\(-1 \* var\(--chat-cm-inset\)\)/);
+        // The bar's top is measured from inside the row's clear 1px top edge; the dock lifts it back by it.
+        expect(washed).toMatch(/top:\s*-1px/);
+        const row = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+        expect(row).not.toMatch(/:deep\(\.chat-tools\)/);
     });
 
     // A click's focus drops the ring and squares an ordinary row; a washed row keeps its corners.
     test("a click's focus keeps the wash's corners", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const rule = /\.chat-msg\.is-community:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const plain = /\.chat-msg\.is-community:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+        const washed = /\.chat-msg\.is-community\.is-mention-me:focus:not\(:focus-visible\)\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
 
-        expect(rule).toMatch(/border-radius:\s*var\(--chat-cm-radius,\s*0\)/);
+        expect(plain).toMatch(/border-radius:\s*0/);
+        expect(washed).toMatch(/border-radius:\s*var\(--chat-r-row\)/);
+        // Each corner is a radius the sheet names, never a value handed on under a name of the row's own.
+        expect(style).not.toMatch(/--chat-cm-radius/);
     });
 });
 
@@ -1448,14 +1565,57 @@ describe("the phone's action sheet", () => {
             expect(closes).toBe(6);
         });
 
-        test("is a modal dialog named Message actions, with focus on its first reaction", async () => {
+        // A tap's open puts focus on the reactions' row itself, so no reaction is ringed as if it
+        // were already chosen; a keyboard's open, Enter on the message, starts on the first reaction.
+        test("is a modal dialog named Message actions; a tap's open focuses the reactions' row, not a reaction", async () => {
             await openSheet({ message: message() });
 
             expect(sheet()?.getAttribute("role")).toBe("dialog");
             expect(sheet()?.getAttribute("aria-modal")).toBe("true");
             expect(sheet()?.getAttribute("aria-label")).toBe("Message actions");
-            expect(document.activeElement).toBe(reactions()[0]);
+            const row = sheet()?.querySelector("[data-testid='action-sheet-reactions']");
+            expect(document.activeElement).toBe(row);
+            expect(row?.getAttribute("role")).toBe("group");
+            expect(row?.getAttribute("aria-label")).toBe("Quick reactions");
+            expect(reactions()).not.toContain(document.activeElement);
             expect(reactions()[0].getAttribute("aria-label")).toBe("React with thumbs up");
+        });
+
+        test("a keyboard's open, Enter on the message, focuses the first reaction", async () => {
+            const w = onPhone({ reactionHost: host(favorites), message: message() });
+            root(w).focus();
+            root(w).dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+            await nextTick();
+            await nextTick();
+
+            expect(sheet()).not.toBeNull();
+            expect(document.activeElement).toBe(reactions()[0]);
+        });
+
+        test("Enter from inside the message, as on a link, opens no sheet", async () => {
+            const w = onPhone({ reactionHost: host(favorites), message: message() });
+            w.get(".chat-message-body").element.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }));
+            await nextTick();
+
+            expect(sheet()).toBeNull();
+        });
+
+        test("its reactions are 44px rounded squares, the surface's corner", () => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+            const rule = /\n\.chat-sheet-react button\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+            expect(rule).toMatch(/width:\s*44px/);
+            expect(rule).toMatch(/height:\s*44px/);
+            expect(rule).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+        });
+
+        test("its Quote shows the quote mark, not the reply arrow", async () => {
+            const w = await openSheet({ message: message() });
+            const quote = sheetItem("Quote");
+            const icon = w.findAllComponents(Icon).find(found => quote.contains(found.element));
+
+            expect(icon?.props("name")).toBe("quote");
         });
 
         test("draws nothing while closed", async () => {
@@ -1552,18 +1712,15 @@ function host(favorites: unknown[], listReactors: jest.Mock = jest.fn(async () =
     return { favorites, listReactors, pickerAnchorOf: () => pickerAnchor };
 }
 
-// The bar holding the open picker stays drawn; every other row asks only about its own message,
-// so opening the picker on one message touches no other row. A row lends the column's one bar
-// its props, so the bar gets the anchor of whichever message it is on.
-describe("the open picker", () => {
-    test("is handed to the bar of the message it is open on, and to no other row's", async () => {
-        const anchor = document.createElement("button");
-        const target = message();
-        const other = message({ id: target.id + 1 });
-        const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
-
+// The column holds which message its picker is open on; a row asks the host only about its own
+// message, so opening the picker on one message touches no other row, and the dock a row lends
+// the column's bar carries no anchor of its own. A row lends that dock whenever its message can be
+// acted on, a phone's too, so a picker asked for from a phone's sheet has its column; only a
+// pointer's row marks itself for the bar to follow.
+describe("the column's bar and its picker", () => {
+    function column(rows: TimelineMessage[], reactionHost: unknown, isPhone = false): { lent: Map<number, ActionBarDock>, wrapper: VueWrapper } {
         const lent = new Map<number, ActionBarDock>();
-        const column = defineComponent({
+        const holder = defineComponent({
             components: { MessageRow },
             setup() {
                 const bar = useActionBar(() => null);
@@ -1572,15 +1729,107 @@ describe("the open picker", () => {
                     lent.set(messageId, dock);
                     offer(messageId, dock);
                 };
-                return { personAliasGuid: me, rows: [target, other], reactionHost };
+                return { rows, reactionHost };
             },
-            template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :personAliasGuid="personAliasGuid" :reactionHost="reactionHost" /></div>`
+            template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :reactionHost="reactionHost" /></div>`
         });
-        mount(column);
+        return { lent, wrapper: mount(holder, inSession({ props: { personAliasGuid: me, isPhone } })) };
+    }
+
+    test("opening the picker on a message disables only that message's who-reacted card, and lends the bar no anchor", async () => {
+        const anchor = document.createElement("button");
+        const target = message({ reactions: [heart] });
+        const other = message({ id: target.id + 1, reactions: [heart] });
+        const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
+
+        const { lent, wrapper } = column([target, other], reactionHost);
         await nextTick();
 
-        expect(lent.get(target.id)?.props.value.pickerAnchor).toBe(anchor);
-        expect(lent.get(other.id)?.props.value.pickerAnchor).toBeNull();
+        const reactions = wrapper.findAllComponents(MessageReactions);
+        expect(reactions.map(r => r.props("isCardDisabled"))).toEqual([true, false]);
+        expect(lent.get(target.id)?.props.value).not.toHaveProperty("pickerAnchor");
+    });
+
+    test("a phone's row lends the column its dock but does not mark itself for the pointer", async () => {
+        const target = message();
+
+        const { lent, wrapper } = column([target], host([]), true);
+        await nextTick();
+
+        expect(lent.has(target.id)).toBe(true);
+        expect(wrapper.get("[data-testid='message-row']").attributes("data-hot-id")).toBeUndefined();
+    });
+
+    // A row's hover tint follows the column's one bar, not the pointer, so a box held open on one
+    // message leaves the message under the pointer untinted: one message is "the one" at a time.
+    test.each([false, true])("hovering another message while the bar is held on one tints only the one it is on (channel: %s)", async isChannel => {
+        jest.useFakeTimers();
+        try {
+            const first = message();
+            const second = message({ id: first.id + 1 });
+            let bar: ReturnType<typeof useActionBar> | null = null;
+            const holder = defineComponent({
+                components: { MessageRow },
+                setup() {
+                    bar = useActionBar(() => null);
+                    return { rows: [first, second], isChannel };
+                },
+                template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :isChannel="isChannel" /></div>`
+            });
+            const wrapper = mount(holder, inSession({ props: { personAliasGuid: me } }));
+            await nextTick();
+            const [rowA, rowB] = wrapper.findAll("[data-testid='message-row']").map(row => row.element as HTMLElement);
+            const over = (target: Element): void => bar!.onPointerOver({ target, pointerType: "mouse" } as unknown as PointerEvent);
+
+            over(rowA);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+            expect(rowA.classList.contains("is-hot")).toBe(true);
+            expect(rowB.classList.contains("is-hot")).toBe(false);
+
+            bar!.onHoldChange(true);
+            over(rowB);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+            expect(rowA.classList.contains("is-hot")).toBe(true);
+            expect(rowB.classList.contains("is-hot")).toBe(false);
+
+            const style = (file: string): string => {
+                const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+                return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+            };
+            expect(style("messageRow.partial.obs")).toMatch(/\.chat-msg\.is-community\.is-hot,/);
+            expect(style("messageRow.partial.obs")).not.toMatch(/\.chat-msg\.is-community:hover/);
+            expect(style("messageRowBubble.partial.obs")).toMatch(/\.chat-msg\.is-hot \.chat-bubble/);
+            expect(style("messageRowBubble.partial.obs")).not.toMatch(/\.chat-msg:hover \.chat-bubble/);
+            // A channel's gutter time shows on the row the tint is on, by the same rule.
+            expect(style("messageRowCommunity.partial.obs")).toMatch(/\.chat-msg\.is-hot \.chat-cm-gutter-time/);
+            expect(style("messageRowCommunity.partial.obs")).not.toMatch(/\.chat-msg:hover \.chat-cm-gutter-time/);
+            wrapper.unmount();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    // The person's own message has no name or face to press, so a plain one had nothing for Tab to
+    // reach and its bar never showed from the keyboard; the row itself is the stop.
+    test.each([false, true])("the person's own message is a Tab stop, so its bar is reached (channel: %s)", isChannel => {
+        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("0");
+        expect(root(draw({ message: message(), isChannel })).getAttribute("tabindex")).toBe("-1");
+        expect(root(draw({ message: ownConfirmed({ deleted_at: nineOhTwo, body: null }), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("-1");
+        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel, isPhone: true })).getAttribute("tabindex")).toBe("-1");
+    });
+
+    test("a message that cannot be acted on lends no dock, on a phone or a pointer screen", async () => {
+        const gone = message({ deleted_at: nineOhTwo, body: null });
+
+        const wide = column([gone], host([]));
+        const phone = column([gone], host([]), true);
+        await nextTick();
+
+        expect(wide.lent.size).toBe(0);
+        expect(phone.lent.size).toBe(0);
     });
 });
 
@@ -1619,6 +1868,35 @@ describe("the reactions row", () => {
         const w = draw({ message: message({ reactions: [heart] } as Partial<TimelineMessage>), reactionHost: host([]) });
 
         expect(root(w).classList.contains("has-reactions")).toBe(true);
+    });
+
+    // The chips sit exactly half over the bubble's lower edge for their real height, on the
+    // bubble's side, seated by the bubble's own rule on the chips' single root; the bubble grows
+    // only its foot, by the half the chips cover plus the 4px the words keep clear of them, never
+    // its width. The thread pill beside them is no taller, so the row is the chips' height and its
+    // middle is theirs. Under a message's files there is no bubble edge to sit on, so the chips
+    // stand 4px under the files.
+    test("sits exactly half over the bubble's lower edge, or 4px under the files", () => {
+        const styleOf = (file: string): string => {
+            const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        };
+        const style = styleOf("messageRowBubble.partial.obs");
+        const ruleOf = (selector: string, sheet = style): string => {
+            // The selector alone or as one of a list the rule is written for.
+            const at = sheet.search(new RegExp("(^|\\n|,\\s*)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*[,{]"));
+            return at < 0 ? "" : sheet.slice(sheet.indexOf("{", at) + 1, sheet.indexOf("}", at));
+        };
+        const heightOf = (rule: string): number => Number(/(?:^|[;\s])height:\s*(\d+)px/.exec(rule)?.[1] ?? NaN);
+        const chip = heightOf(ruleOf(".chat-rx", styleOf("messageReactions.partial.obs")));
+        const pill = heightOf(ruleOf(".chat-tsum", styleOf("threadSummary.partial.obs")));
+
+        expect(chip).toBeGreaterThan(0);
+        expect(pill).toBeLessThanOrEqual(chip);
+        expect(ruleOf(".chat-reacts")).toMatch(new RegExp(`margin-top:\\s*-${chip / 2}px`));
+        expect(ruleOf(".chat-reacts")).not.toMatch(/:deep/);
+        expect(ruleOf(".has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo), .has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo)")).toMatch(new RegExp(`padding-bottom:\\s*${chip / 2 + 4}px`));
+        expect(ruleOf(".has-files .chat-reacts")).toMatch(/margin-top:\s*4px/);
     });
 
     test("draws nothing for a message with no reactions and no thread", () => {
@@ -1891,6 +2169,74 @@ describe("a message's files", () => {
         expect(wrapper.find(".chat-bubble").exists()).toBe(false);
         expect(wrapper.get("[data-testid='message-state']").text()).toBe("Sending…");
     });
+
+    // A text bubble is as wide as its words: the bubble and its files stand in one column, each its
+    // own width, the files under the words on the sender's side and the time under the files.
+    describe("in a bubble", () => {
+        const bubbleStyle = (): string => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        };
+        const ruleOf = (style: string, selector: string): string => {
+            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()[\]:*+]/g, "\\$&") + "\\s*\\{"));
+            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+        };
+
+        test("the bubble's width ignores the files: they stack in a column, each its own width", () => {
+            const anchor = ruleOf(bubbleStyle(), ".chat-bub-anchor");
+
+            expect(anchor).toMatch(/flex-direction:\s*column/);
+            expect(anchor).toMatch(/align-items:\s*flex-start/);
+            expect(ruleOf(bubbleStyle(), ".is-own .chat-bub-anchor")).toMatch(/align-items:\s*flex-end/);
+        });
+
+        test("the files follow the bubble, and the time follows the files", () => {
+            const wrapper = draw({ message: message({ attachments: [photo] }) });
+            const bubble = wrapper.get(".chat-bubble").element;
+            const files = wrapper.get(".chat-msg-files").element;
+            const time = wrapper.get("[data-testid='message-meta']").element;
+
+            expect(bubble.parentElement).toBe(files.parentElement);
+            expect(bubble.compareDocumentPosition(files) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            expect(files.compareDocumentPosition(time) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+            expect(ruleOf(bubbleStyle(), ".chat-msg-files")).toMatch(/margin-top:\s*4px/);
+        });
+
+        test("a message with files says so, and stands 12px before the next message of its run", () => {
+            expect(root(draw({ message: message({ attachments: [photo] }) })).classList.contains("has-files")).toBe(true);
+            expect(root(draw({ message: message() })).classList.contains("has-files")).toBe(false);
+            expect(root(draw({ message: message({ body: null, attachments: [photo], deleted_at: nineOhTwo }) })).classList.contains("has-files")).toBe(false);
+
+            const rowSource = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const next = ruleOf(rowSource.slice(rowSource.indexOf("<style"), rowSource.indexOf("</style>")), ".chat-msg.is-conversational.has-files + .chat-msg");
+            expect(next).toMatch(/margin-top:\s*calc\(12px - var\(--chat-grp-gap, 0px\)\)/);
+        });
+
+        // An own photo with no words is a Tab stop like any own message, and a focus rings what the
+        // person reads: with no bubble that is the files, ringed as a bubble is, on their corners.
+        test("an own message of files alone rings its files when focused, as a bubble is ringed", () => {
+            const alone = draw({ message: ownConfirmed({ body: null, attachments: [photo] }), isOwn: true });
+            const worded = draw({ message: ownConfirmed({ attachments: [photo] }), isOwn: true });
+
+            expect(root(alone).getAttribute("tabindex")).toBe("0");
+            expect(alone.get(".chat-bub-anchor").classes()).toContain("is-files-only");
+            expect(worded.get(".chat-bub-anchor").classes()).not.toContain("is-files-only");
+
+            // Every rule, by each selector in its list; comments out, so a rule's list is its own.
+            const style = bubbleStyle().replace(/\/\*[\s\S]*?\*\//g, "");
+            const rulesNaming = (selector: string): string[] => [...style.matchAll(/([^{};]+)\{([^{}]*)\}/g)]
+                .filter(m => m[1].split(",").map(s => s.trim()).includes(selector))
+                .map(m => m[2]);
+            const ringed = (selector: string): boolean => rulesNaming(selector)
+                .some(body => /outline:\s*2px solid var\(--chat-brand-ink\)/.test(body) && /outline-offset:\s*2px/.test(body));
+
+            expect(ringed(".chat-msg.is-conversational:focus-visible .chat-bub-anchor.is-files-only")).toBe(true);
+            expect(ringed(".chat-msg.is-conversational:focus .chat-bub-anchor.is-files-only")).toBe(true);
+            expect(rulesNaming(".chat-msg.is-conversational:focus:not(:focus-visible) .chat-bub-anchor.is-files-only")
+                .some(body => /outline:\s*none/.test(body))).toBe(true);
+            expect(ruleOf(style, ".chat-bub-anchor.is-files-only")).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+        });
+    });
 });
 
 // Each failed send is its own to mend: the Not sent marker is the one thing to press on the row,
@@ -2036,6 +2382,86 @@ describe("a row's one-off motion", () => {
 
         expect(wrapper.findAll(".is-crossfading").length).toBeGreaterThan(0);
         expect(wrapper.findAll(".is-swapping").length).toBeGreaterThan(0);
+    });
+
+    // A mention of the reader heard arriving live greets them once with the jump's flash, shorter;
+    // one loaded with a page, or one that does not name them, arrives quietly.
+    describe("a mention arriving live", () => {
+        const naming = (): TimelineMessage => message({ body: `hi <@${me}>`, pieces: [{ type: "text", text: "hi " }, mentionMe] });
+
+        test("flashes once as it is drawn in a channel, and not again on a re-render", async () => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, motion);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
+
+            const outside = jest.fn();
+            const holder = root(wrapper).parentElement!;
+            holder.addEventListener("animationend", outside);
+            animationEnd(wrapper, "chat-flash");
+            await nextTick();
+            holder.removeEventListener("animationend", outside);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+            // The greeting's end is the row's own; a feed letting its jump's flash go on any flash
+            // ending must not hear it.
+            expect(outside).not.toHaveBeenCalled();
+
+            await wrapper.setProps({ message: naming(), position: "first" });
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        // A direct message's bubbles draw no mention wash, the whole conversation reaching the
+        // reader, so they have nothing to greet with.
+        test("a direct message's mention heard live does not flash", () => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), position: "single" }, motion);
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("a mention loaded with a page, with no arrival heard, does not flash", () => {
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, createMessageMotion());
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("a live message that does not name the reader does not flash", () => {
+            const motion = createMessageMotion();
+            motion.arrived(message(), "conversation");
+            const wrapper = draw({ message: message(), isChannel: true, position: "single" }, motion);
+
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        // A jump that lands mid-greeting takes the flash over: the greeting is done, so it never
+        // comes back when the jump lets go, and the flash's end is the jump's for the feed to hear.
+        test("a jump landing mid-greeting ends the greeting for good, and the flash's end is the jump's", async () => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, motion);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
+
+            await wrapper.setProps({ isFlashing: true });
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+
+            const outside = jest.fn();
+            const holder = root(wrapper).parentElement!;
+            holder.addEventListener("animationend", outside);
+            animationEnd(wrapper, "chat-flash");
+            holder.removeEventListener("animationend", outside);
+            expect(outside).toHaveBeenCalledTimes(1);
+
+            await wrapper.setProps({ isFlashing: false });
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        test("plays the flash's own shape at the greeting's length", () => {
+            const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRow.partial.obs"), "utf8");
+            const row = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+
+            expect(row).toMatch(/\.chat-msg\.is-community\.is-greeting::before\s*\{[^}]*animation:\s*chat-flash var\(--chat-d-greet\)/);
+        });
     });
 });
 

@@ -22,7 +22,7 @@
 // counter as it mounts: it plays only what is above that. No clock and no timer: a switch, a remount
 // or a reload takes a new number, so everything before it is history. Typing is recorded the same
 // way, by place: where someone starts being drawn typing, and where the last typist stops and why.
-import { inject, InjectionKey, onBeforeUnmount, reactive, Ref, ref, toRaw, watch } from "vue";
+import { computed, inject, InjectionKey, onBeforeUnmount, reactive, Ref, ref, toRaw, watch } from "vue";
 import { rowKey, sendKey } from "./heldMessage.partial";
 import { TimelineMessage } from "./types.partial";
 import type { MessageChangeEvent } from "./heldMessage.partial";
@@ -323,6 +323,12 @@ export type RowMotion = {
 
     /** The reader's own reaction that landed while the row was on screen, which its chip plays. */
     reaction: Readonly<Ref<ReactionMotion | null>>;
+
+    /**
+     * The message was heard arriving live, or grew out of its sender's typing, rather than sent
+     * here or loaded with a page; a row greets such news once as it is drawn.
+     */
+    isArrivedLive: Readonly<Ref<boolean>>;
 };
 
 /**
@@ -340,7 +346,7 @@ export function useRowMotion(key: () => string | null): RowMotion {
     const isThreadStartedHere = ref(false);
     const reaction = ref<ReactionMotion | null>(null);
     if (!motion) {
-        return { isCrossfading, isEditedNow, isThreadStartedHere, reaction };
+        return { isCrossfading, isEditedNow, isThreadStartedHere, reaction, isArrivedLive: computed(() => false) };
     }
 
     const since = motion.now();
@@ -367,7 +373,12 @@ export function useRowMotion(key: () => string | null): RowMotion {
         }
     });
 
-    return { isCrossfading, isEditedNow, isThreadStartedHere, reaction };
+    const isArrivedLive = computed((): boolean => {
+        const how = events()?.arrival?.how;
+        return how === "live" || how === "handoff";
+    });
+
+    return { isCrossfading, isEditedNow, isThreadStartedHere, reaction, isArrivedLive };
 }
 
 /** A view's arrivals as its tail claims them, each once, as a row is first drawn after a change. */

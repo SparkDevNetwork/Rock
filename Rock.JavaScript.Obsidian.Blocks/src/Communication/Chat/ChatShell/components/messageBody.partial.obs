@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-message-body" data-testid="message-body">
+    <div class="chat-message-body" :class="{ 'is-inline': isInline }" data-testid="message-body">
         <template v-for="(row, rowIndex) in rows" :key="rowIndex">
             <hr v-if="row.kind === 'divider'" class="chat-block-divider" data-testid="block-divider" />
             <div v-else-if="row.kind === 'image'" class="chat-block-image" data-testid="block-image">
@@ -32,12 +32,15 @@
                           :data-initial="piece.photoUrl ? undefined : piece.initial"
                           :style="{ '--chat-av-hue': piece.hue }"
                           aria-hidden="true"><img v-if="piece.photoUrl" v-reveal="reveal" class="chat-av-photo" :src="piece.photoUrl" alt="" /></span><span class="chat-sr-only">@</span><span class="chat-mn-name">{{ piece.name }}</span></component>{{ piece.trail }}</span>
-                    <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" :title="piece.label">{{ piece.text }}</span>
-                    <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" :title="piece.label" />
+                    <span v-else-if="piece.kind === 'emoji'" class="chat-emoji" data-testid="piece-emoji" role="img" :aria-label="piece.label" @mouseenter="onEmojiEnter($event, piece.label)" @mouseleave="onPointerLeave">{{ piece.text }}</span>
+                    <img v-else-if="piece.kind === 'image'" class="chat-emoji-image" :src="piece.url" :alt="piece.label" @mouseenter="onEmojiEnter($event, piece.label)" @mouseleave="onPointerLeave" />
                     <template v-else>{{ piece.text }}</template>
                 </template>
             </div>
         </template>
+        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+            <span v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</span>
+        </Teleport>
     </div>
 </template>
 
@@ -50,6 +53,12 @@
 .chat-message-body {
     white-space: pre-wrap;
     overflow-wrap: break-word;
+}
+
+/* Inline, the text runs on in its holder's line; a block, an image or a row of buttons, still stands on its own. */
+.chat-message-body.is-inline,
+.chat-message-body.is-inline .chat-body-text {
+    display: inline;
 }
 
 /* The mention chip's look is in the sheet, shared with the editor. */
@@ -114,6 +123,7 @@ button.chat-mn {
     import { isRoomMention } from "../heldMessage.partial";
     import { useChatSession } from "../chatSession.partial";
     import { problemReportKey } from "../problemReport.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
     import { MessageAction } from "../types.partial";
 
     // #region Types
@@ -185,6 +195,12 @@ button.chat-mn {
             default: false
         },
 
+        /** Whether the body runs inline in its holder's line, so what the holder writes after it rides at its end. */
+        isInline: {
+            type: Boolean,
+            default: false
+        },
+
         /** Runs a block button's action and shows its sentence, settling once the call has answered. */
         runAction: {
             type: Function as PropType<(button: MessageAction) => Promise<void>>,
@@ -218,6 +234,16 @@ button.chat-mn {
 
     /** The buttons whose action is out, by block and button index, each held until it answers. */
     const busyKeys = ref(new Set<string>());
+
+    // An emoji's name shows in the chat's tip, not the browser's title: one tip per body, moved to
+    // the emoji under the pointer, as the bar's quick reactions share theirs, so a long feed draws
+    // no tip per emoji. A screen reader hears each emoji's own label.
+    const tipAnchor = ref<HTMLElement>();
+    const tipText = ref("");
+    const { tipElement, isTipShown, floatingStyles, onPointerEnter, onPointerLeave } = useTooltip(tipAnchor);
+
+    /** The chat's overlay layer the tip is drawn in; none when the body is drawn alone. */
+    const tipHost = computed((): HTMLElement | null => overlayHostOf(tipAnchor.value));
 
     // #endregion Values
 
@@ -260,6 +286,17 @@ button.chat-mn {
     /** Asks for the person a chip names, with the chip, so the card opens beside it. */
     function onPerson(piece: DrawnPiece, event: MouseEvent): void {
         emit("person", piece.guid ?? "", event.currentTarget as HTMLElement);
+    }
+
+    /** The body's one tip moves to the emoji under the pointer and names it; an emoji with no name has no tip. */
+    function onEmojiEnter(event: MouseEvent, label: string | undefined): void {
+        if (!label) {
+            return;
+        }
+
+        tipAnchor.value = event.currentTarget as HTMLElement;
+        tipText.value = label;
+        onPointerEnter();
     }
 
     // #endregion Event Handlers

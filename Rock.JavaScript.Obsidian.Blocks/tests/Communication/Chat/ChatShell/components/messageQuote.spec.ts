@@ -117,6 +117,24 @@ describe("the label, by who quoted whom", () => {
 });
 
 describe("the ghost quote, in a direct message", () => {
+    // A box clips what overflows at its padding's edge, so two lines clamped in the padded ghost
+    // showed the top of a third in its bottom padding. The words are clamped in a box of their own,
+    // with no padding, inside the ghost that pads them.
+    test("clamps the words to two lines in a box of their own, so no third line's top shows", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = (selector: string): string => new RegExp("(?:^|\\n)" + selector.replace(/[.-]/g, "\\$&") + "\\s*\\{([^}]*)\\}").exec(style)?.[1] ?? "";
+
+        const clamp = rule(".chat-quote-clamp");
+        expect(clamp).toMatch(/-webkit-line-clamp:\s*2/);
+        expect(clamp).toMatch(/overflow:\s*hidden/);
+        expect(clamp).not.toMatch(/padding/);
+        expect(rule(".chat-quote-body")).not.toMatch(/line-clamp/);
+
+        const w = draw(reply(ben, quoted()));
+        expect(w.get("[data-testid='quote-body'] .chat-quote-clamp").text()).toBe(plain(w.get("[data-testid='quote-body']").text()));
+    });
+
     test("previews the original's text, a mention as the person's name, never the token", () => {
         const w = draw(reply(ben, quoted({ body: `Ask <@${lee}>`, pieces: [{ type: "text", text: "Ask " }, { type: "mention", text: "@Lee Leader", person_alias_guid: lee }] })));
 

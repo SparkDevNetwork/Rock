@@ -79,7 +79,6 @@
     --chat-presence-online: #008A1A;
     --chat-presence-away: #A86400;
     --chat-presence-busy: #D70015;
-    --chat-mn-me-bg: #F7E0C0;
 
     /* The message row and the feed around it. The church color's mixes come from script, as above. */
     --chat-mn-bg: var(--chat-mn-bg-light, rgba(255, 121, 29, .11));
@@ -98,9 +97,13 @@
        bold unread name stands out beside it. */
     --chat-row-name: #464B58;
     --chat-bubble-hover: rgba(13, 17, 23, .07);
-    --chat-row-mention: #FCF6EE;
-    /* The ring on the reader's own chip in a washed row: warning at 35 percent, written out. */
-    --chat-mention-ring: rgba(229, 134, 0, .35);
+    /*
+        A row that mentions the reader: a wash of the church color (12 percent, 20 in dark, from
+        script), and the church's stronger line, the one an own reaction wears, on the chip that
+        reached them, so the mention and a jump's flash read as one idea.
+    */
+    --chat-row-mention: var(--chat-row-mention-light, rgba(255, 121, 29, .12));
+    --chat-mention-ring: var(--chat-reaction-mine-line);
     --chat-strip-bg: #FAEBED;
     --chat-strip-line: #E1B2BD;
     --chat-new-rule: rgba(215, 0, 21, .55);
@@ -144,10 +147,24 @@
     --chat-r-field: var(--rounded-large, 12px);
     --chat-r-surface: var(--rounded-large, 12px);
     --chat-r-full: var(--rounded-full, 9999px);
+    /*
+        A text badge (a count, a tag such as Leader, the NEW marker) has square-ish corners, the
+        inset corner, not the round family's pill: the corner keeps a badge apart from the round
+        faces and dots beside it. The "+N" on a pile of faces stays round, since it counts them.
+    */
+    --chat-r-badge: var(--chat-r-inset);
     --chat-r-bubble: 20px;
     --chat-r-tail: 6px;
     /* A quoted message drawn inside a bubble, its corners the bubble's less its padding. */
     --chat-r-quote: 16px;
+
+    /*
+        A channel's spacing. Each row pads its content equally above and below, so a hover, a
+        mention's wash or a jump's flash covers the same air on both sides; the space between two
+        people sits outside the rows, over a new person's head row, where no highlight reaches.
+    */
+    --chat-cm-row-pad: 6px;
+    --chat-cm-person-gap: 8px;
 
     /* Type. */
     --chat-font: var(--font-family-body, "Segoe UI", -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji");
@@ -199,7 +216,6 @@
     --chat-shadow-pop: 0 0 0 1px rgba(13, 17, 23, .06), 0 4px 8px rgba(13, 17, 23, .04), 0 16px 36px -8px rgba(30, 36, 52, .24);
     /* A floating surface's soft shadow under its one hairline, with no ring of its own. */
     --chat-shadow-float: 0 4px 8px rgba(13, 17, 23, .04), 0 16px 36px -8px rgba(30, 36, 52, .24);
-    --chat-shadow-bar: 0 0 0 1px var(--chat-line), 0 1px 2px rgba(13, 17, 23, .05), 0 6px 14px -4px rgba(30, 36, 52, .16);
     --chat-shadow-day: 0 2px 10px -4px rgba(13, 17, 23, .18);
     --chat-shadow-strip: 0 6px 12px -10px rgba(13, 17, 23, .25);
     --chat-shadow-composer: 0 1px 2px rgba(13, 17, 23, .04);
@@ -251,6 +267,8 @@
 
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
+    /* A mention heard arriving live: the flash, shorter, since nothing was asked for. */
+    --chat-d-greet: 1.2s;
     --chat-d-roll: 220ms;
     --chat-d-tools-show: 90ms;
     --chat-d-tools-move: 140ms;
@@ -331,6 +349,7 @@
     --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
     --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
     --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
+    --chat-row-mention: var(--chat-row-mention-dark, rgba(255, 121, 29, .20));
     --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
     --chat-composer-line: var(--chat-composer-line-dark, #A75824);
     --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
@@ -359,13 +378,10 @@
     --chat-warning-soft: #302413;
     --chat-info-ink: #7DB3FF;
     --chat-info-soft: #0A203D;
-    --chat-mn-me-bg: #4E3410;
     --chat-presence-online: #01A11E;
     --chat-presence-away: #C27400;
     --chat-presence-busy: #F0303F;
     --chat-bubble-hover: rgba(248, 248, 252, .07);
-    --chat-row-mention: #201C15;
-    --chat-mention-ring: rgba(229, 134, 0, .35);
     --chat-strip-bg: #1B1017;
     --chat-strip-line: #4A1E29;
     --chat-av-sat: 28%;
@@ -381,7 +397,6 @@
     --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
     --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
     --chat-shadow-float: 0 16px 40px -8px rgba(0, 0, 0, .7);
-    --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
     color-scheme: dark;
 }
 
@@ -409,6 +424,7 @@
         --chat-brand-line: var(--chat-brand-line-dark, rgba(255, 121, 29, .45));
         --chat-reaction-mine-line: var(--chat-reaction-mine-line-dark, rgba(255, 121, 29, .55));
         --chat-row-announcement: var(--chat-row-announcement-dark, #1C1717);
+        --chat-row-mention: var(--chat-row-mention-dark, rgba(255, 121, 29, .20));
         --chat-focus-line: var(--chat-focus-line-dark, #9C5425);
         --chat-composer-line: var(--chat-composer-line-dark, #A75824);
         --chat-composer-glow: var(--chat-composer-glow-dark, rgba(255, 121, 29, .6));
@@ -437,13 +453,10 @@
         --chat-warning-soft: #302413;
         --chat-info-ink: #7DB3FF;
         --chat-info-soft: #0A203D;
-        --chat-mn-me-bg: #4E3410;
         --chat-presence-online: #01A11E;
         --chat-presence-away: #C27400;
         --chat-presence-busy: #F0303F;
         --chat-bubble-hover: rgba(248, 248, 252, .07);
-        --chat-row-mention: #201C15;
-        --chat-mention-ring: rgba(229, 134, 0, .35);
         --chat-strip-bg: #1B1017;
         --chat-strip-line: #4A1E29;
         --chat-av-sat: 28%;
@@ -459,7 +472,6 @@
         --chat-shadow-card: 0 0 0 1px rgba(255, 255, 255, .04), 0 12px 24px -4px rgba(0, 0, 0, .5);
         --chat-shadow-pop: 0 0 0 1px rgba(255, 255, 255, .08), 0 16px 40px -8px rgba(0, 0, 0, .7);
         --chat-shadow-float: 0 16px 40px -8px rgba(0, 0, 0, .7);
-        --chat-shadow-bar: 0 0 0 1px rgba(255, 255, 255, .08), 0 8px 18px -6px rgba(0, 0, 0, .65);
         color-scheme: dark;
     }
 }
@@ -671,8 +683,7 @@
 
 /*
     Highlight: a jumped-to message's tint, held then faded. The feed and the thread wait on a name
-    holding "flash" to drop the mark. The sidebar row's and the community row's are drawn on a
-    different property and keep their own until the feed's highlight is one.
+    holding "flash" to drop the mark.
 */
 @keyframes chat-flash {
     0%,
@@ -682,13 +693,6 @@
 
     100% {
         opacity: 0;
-    }
-}
-
-@keyframes chat-cm-flash {
-    0%,
-    45% {
-        background-color: var(--chat-flash);
     }
 }
 
@@ -1136,9 +1140,18 @@
     background: var(--chat-mn-bg-hover);
 }
 
+/*
+    The reader's own chip is the church's chip, as everyone's is, and rings itself in the church's
+    line wherever it stands, a bubble or a channel row, washed or not: an amber fill read as a
+    warning, and as another church's color.
+*/
 .chat-mn.is-you {
-    color: var(--chat-text);
-    background: var(--chat-mn-me-bg);
+    box-shadow: 0 0 0 1px var(--chat-mention-ring);
+}
+
+/* A holder may ring the @all chip that reached the reader by --chat-mn-ring; a washed row does. */
+.chat-mn.is-all {
+    box-shadow: var(--chat-mn-ring, none);
 }
 
 /* The name alone sets the chip's baseline; the lead, centred, is never a baseline of its own. */
