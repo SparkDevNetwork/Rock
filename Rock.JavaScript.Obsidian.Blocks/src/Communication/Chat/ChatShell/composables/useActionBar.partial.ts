@@ -59,6 +59,12 @@ export type ColumnActionBar = {
     /** Whether the box shows. */
     isShown: Ref<boolean>;
 
+    /**
+     * Whether the box shows on a message, read by that message's row: kept per message, so the box
+     * moving wakes the row it leaves and the row it reaches, never every row of the column.
+     */
+    isOn: (messageId: number) => boolean;
+
     /** Whether the last show or hide skips the fade, as a scroll's or a keyboard leaving does. */
     isInstant: Ref<boolean>;
 
@@ -321,6 +327,23 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
 
     const dock = computed((): ActionBarDock | null => barId.value === null ? null : docks.get(barId.value) ?? null);
 
+    // The message the box shows on, as a set a row asks of its own message only: a computed of the
+    // one id would wake every row that reads it each time it changed.
+    const shownOn = shallowReactive(new Set<number>());
+    watch(() => isShown.value ? barId.value : null, (now, was) => {
+        if (was !== null && was !== undefined) {
+            shownOn.delete(was);
+        }
+
+        if (now !== null) {
+            shownOn.add(now);
+        }
+    }, { immediate: true, flush: "sync" });
+
+    function isOn(messageId: number): boolean {
+        return shownOn.has(messageId);
+    }
+
     const box = ref<HTMLElement>();
 
     /** The message the pointer is over, or the one a keyboard reached. */
@@ -525,7 +548,7 @@ export function useActionBar(timingElement: () => Element | null | undefined): C
         }
     });
 
-    const bar: ColumnActionBar = { dock, isShown, isInstant, box, offer, withdraw, onPointerOver, onPointerLeave, onPointerMove, onScroll, onFocusIn, onFocusOut, onHoldChange, stop };
+    const bar: ColumnActionBar = { dock, isShown, isOn, isInstant, box, offer, withdraw, onPointerOver, onPointerLeave, onPointerMove, onScroll, onFocusIn, onFocusOut, onHoldChange, stop };
     provide(actionBarKey, bar);
     return bar;
 }
