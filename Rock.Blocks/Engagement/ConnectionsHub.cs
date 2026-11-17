@@ -3602,7 +3602,7 @@ namespace Rock.Blocks.Engagement
                 DueDate = connectionRequest.DueDate?.ToRockDateTimeOffset(),
                 CompletedDateTime = connectionRequest.ConnectedDateTime?.ToRockDateTimeOffset(),
                 DueStatus = GetDueStatus(connectionRequest.DueDate, connectionRequest.DueSoonDate, connectionRequest.ConnectionState, connectionRequest.ConnectedDateTime ),
-                Comments = connectionRequest.Comments?.ConvertMarkdownToHtml().SanitizeHtml( strict: false ),
+                Comments = connectionRequest.Comments?.ConvertMarkdownToSanitizedHtml(),
                 ConnectionTypeSource = connectionRequest.ConnectionTypeSource?.Name,
                 CelebrationText = GetCelebrationText( connectionRequest.Id ),
                 ActionItems = new List<ListItemBag>(),
