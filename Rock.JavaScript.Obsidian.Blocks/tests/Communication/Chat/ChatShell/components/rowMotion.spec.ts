@@ -657,7 +657,8 @@ describe("what happens while a row is on screen plays once", () => {
         expect(feed.wrapper.findAll(tailPlayed("chat-tail-in")).map(row => row.element.closest("[data-message-id]")?.getAttribute("data-message-id"))).toEqual(["2"]);
     });
 
-    test("the reader's own reaction made on another device pops as it is heard; someone else's moves nothing", async () => {
+    // Another person's reaction moves its chip as the reader's does, so a reaction reads the same whoever made it.
+    test("a reaction heard live pops its new chip, the reader's from another device and someone else's alike", async () => {
         const w = wire();
         await open(w, [pageRow({ id: 1, sender: anna }), pageRow({ id: 2, sender: anna })]);
         const feed = drawFeed(w);
@@ -668,7 +669,27 @@ describe("what happens while a row is on screen plays once", () => {
         await settle();
 
         expect(feed.wrapper.get("[data-message-id='1'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
-        expect(feed.wrapper.findAll("[data-message-id='2'] .is-popping, [data-message-id='2'] .is-rolling")).toHaveLength(0);
+        expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-chip']").classes()).toContain("is-popping");
+    });
+
+    test("someone else joining a chip heard live rolls its count once, and the same event heard again moves nothing more", async () => {
+        const w = wire();
+        await open(w, [pageRow({ id: 2, sender: anna }, { reactions: [{ ...heart, count: 1, mine: false }] })]);
+        const feed = drawFeed(w);
+        await settle();
+
+        w.live("reaction.added", { message_id: 2, channel_id: channelId, person_alias_guid: anna, ...heart, count: 2, reactors: [] });
+        await settle();
+        const count = feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-count']");
+        expect(count.classes()).toContain("is-rolling");
+        expect(feed.wrapper.get("[data-message-id='2'] [data-testid='reaction-chip']").classes()).not.toContain("is-popping");
+        const rolled = w.motion.of("k:2")?.reaction?.seq;
+        expect(rolled).toBeDefined();
+
+        w.live("reaction.added", { message_id: 2, channel_id: channelId, person_alias_guid: anna, ...heart, count: 2, reactors: [] });
+        await settle();
+
+        expect(w.motion.of("k:2")?.reaction?.seq).toBe(rolled);
     });
 
     test("a thread's first reply heard live pops its pill once; its second moves nothing", async () => {

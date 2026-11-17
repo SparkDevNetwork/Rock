@@ -29,7 +29,7 @@ import { computed, getCurrentScope, nextTick, onBeforeUnmount, ref, Ref, shallow
 import { PickerOpening } from "../components/emojiPicker.partial.obs";
 import { isOwnMessage } from "../feedLayout.partial";
 import type { ChatShell } from "../shell.partial";
-import { ChatError, ChatPerson, PersonProfile, TimelineMessage } from "../types.partial";
+import { ChatError, ChatPerson, ColumnKind, PersonProfile, TimelineMessage } from "../types.partial";
 import { personName } from "../ui/face.partial";
 import { MessageActionRequest, MessageActionsState, quoteKey } from "./useMessageActions.partial";
 import { shownMembers } from "./useMembers.partial";
@@ -52,8 +52,8 @@ export type OverlaysViewDependencies = {
     frame: Pick<Frame, "panelKind" | "mainView" | "panelElement" | "mainElement" | "isPhone" | "drawnThread" | "rooms"
         | "closePanel" | "openFromMainView" | "openMainView" | "onListPanel" | "focusStop">;
 
-    /** Opens the reaction picker for a message, beside what asked. */
-    openReactionPicker: (channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, opening?: PickerOpening) => void;
+    /** Opens the message box of the column that asked past its bar, for a message, beside what asked. */
+    openReactionPicker: (column: ColumnKind, channelId: string, message: TimelineMessage, anchor: HTMLElement, opener?: HTMLElement, opening?: PickerOpening) => void;
 
     closeReactionPicker: () => void;
 };
@@ -351,7 +351,7 @@ export function useOverlaysView(dependencies: OverlaysViewDependencies) {
                 break;
 
             case "openPicker":
-                dependencies.openReactionPicker(channelId, request.message, request.anchor, request.opener, request.opening);
+                dependencies.openReactionPicker(rootId === null ? "conversation" : "thread", channelId, request.message, request.anchor, request.opener, request.opening);
                 break;
 
             // the person is read for the room the author or chip was pressed in

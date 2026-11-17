@@ -103,7 +103,9 @@ test("an author pressed opens their card beside what was pressed, for the room i
     expect(view.cardOpenCount.value).toBe(2);
 });
 
-test("the picker opens for the room it was asked in, with what opened it and where it starts", () => {
+// The message box is one per column, the conversation's or the thread drawer's, so the picker is
+// asked of the column it was asked in too.
+test("the picker opens for the room and the column it was asked in, with what opened it and where it starts", () => {
     const { view, openReactionPicker } = setUp(team);
     const anchor = document.createElement("div");
     const opener = document.createElement("button");
@@ -111,7 +113,11 @@ test("the picker opens for the room it was asked in, with what opened it and whe
     view.onMessageAction({ kind: "openPicker", message, anchor, opener } as MessageActionRequest, null);
     view.onMessageAction({ kind: "openPicker", message, anchor, opening: { startsOn: "full" } } as MessageActionRequest, null);
 
-    expect(openReactionPicker.mock.calls).toEqual([[team, message, anchor, opener, undefined], [team, message, anchor, undefined, { startsOn: "full" }]]);
+    expect(openReactionPicker.mock.calls).toEqual([["conversation", team, message, anchor, opener, undefined], ["conversation", team, message, anchor, undefined, { startsOn: "full" }]]);
+
+    const thread = setUp(null, { channelId: pair, rootId: 7 });
+    thread.view.onMessageAction({ kind: "openPicker", message, anchor, opener } as MessageActionRequest, 7);
+    expect(thread.openReactionPicker.mock.calls).toEqual([["thread", pair, message, anchor, opener, undefined]]);
 });
 
 test("a quote waits under its place's key, and nothing is done once that place is gone", () => {

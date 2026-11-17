@@ -471,19 +471,6 @@
             <RemoveMember v-bind="removeView" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
             <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @retry="shell.members.retryAdd" @add="shell.members.add" />
 
-            <!-- The reaction picker, one at a time, placed beside what opened it and drawn in the chat's root. -->
-            <EmojiPicker v-if="reactionPicker"
-                         :key="reactionPicker.key"
-                         mode="react"
-                         :startsOn="reactionPicker.startsOn"
-                         :offered="reactionPicker.offered"
-                         :source="emojiSource"
-                         :mine="pickerMine"
-                         :anchor="reactionPicker.anchor"
-                         :opener="reactionPicker.opener"
-                         @react="onPickerReact"
-                         @close="closeReactionPicker" />
-
             <!-- The profile card, one at a time, beside the author or chip that asked, once its person is read. -->
             <ProfileCard v-if="shell.rooms.state.card?.person"
                          :key="cardOpenCount"
@@ -841,7 +828,6 @@
     import Composer from "./ChatShell/components/composer.partial.obs";
     import ConversationDetails from "./ChatShell/components/conversationDetails.partial.obs";
     import { DirectMessageDraft } from "./ChatShell/composables/useDirectMessage.partial";
-    import EmojiPicker from "./ChatShell/components/emojiPicker.partial.obs";
     import MentionsPanel from "./ChatShell/components/mentionsPanel.partial.obs";
     import MembersPanel from "./ChatShell/components/membersPanel.partial.obs";
     import { StatusChoice } from "./ChatShell/composables/usePrefs.partial";
@@ -862,7 +848,7 @@
     import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
     import { ActivityTab, useFrameView } from "./ChatShell/composables/useFrameView.partial";
-    import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
+    import { provideActionBars } from "./ChatShell/composables/useActionBar.partial";
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { useOverlaysView } from "./ChatShell/composables/useOverlaysView.partial";
     import { lockedReason } from "./ChatShell/composables/useSend.partial";
@@ -1014,8 +1000,12 @@
     /** The join bar in the composer's place, whose focus goes to the composer once a join settles. */
     const joinBar = ref<InstanceType<typeof JoinBar>>();
 
-    /** The one reaction picker open at a time, and what every message row and emoji picker reads of the reactions. */
-    const { reactionPicker, reactionHost, emojiSource, pickerMine, openReactionPicker, closeReactionPicker, onPickerReact } = useReactionPicker(shell, organizationName);
+    /**
+     * The message boxes of the conversation and the thread drawer, one grown past its bar at a time,
+     * and what every message row and emoji picker reads of the reactions. The thread's column is the
+     * one drawn in the panel.
+     */
+    const { held: heldBox, reactionHost, emojiSource, openReactionPicker, closeReactionPicker } = provideActionBars(shell, organizationName, () => panelElement.value);
 
     // #endregion Values
 
@@ -1379,10 +1369,10 @@
         }
     });
 
-    // The panel column keeps drawing a closing drawer while it narrows, so a picker opened from
-    // the drawer would float over it, beside a message going away; the drawer's closing closes it.
+    // The panel column keeps drawing a closing drawer while it narrows, so a box grown from the
+    // drawer would float over it, beside a message going away; the drawer's closing closes it.
     watch(panelKind, () => {
-        const anchor = reactionPicker.value?.anchor;
+        const anchor = heldBox.value?.anchor;
         if (anchor && panelElement.value?.contains(anchor)) {
             closeReactionPicker();
         }

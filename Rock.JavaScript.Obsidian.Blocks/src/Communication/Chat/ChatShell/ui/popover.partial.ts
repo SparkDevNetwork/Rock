@@ -18,14 +18,26 @@
 // The one way every menu, picker, card and tip floats beside what opened it, so they all place,
 // close and give focus back alike. A surface draws itself; this owns its coming and going.
 
-import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref } from "vue";
-import { autoUpdate, flip, offset, Placement, shift, useFloating } from "@Obsidian/Libs/floating-ui";
+import { computed, ComputedRef, nextTick, onScopeDispose, Ref, ref, shallowReactive, watch } from "vue";
+import { autoUpdate, computePosition, flip, offset, Placement, shift } from "@Obsidian/Libs/floating-ui";
 import { EscapeLayer, focusableSelector, focusQuietly, isDrawn, pullEscapeLayer, pushEscapeLayer } from "./focusTrap.partial";
 
 /** How a popover is placed and closed. */
 export type PopoverOptions = {
-    placement?: Placement;
-    offset?: number;
+    /** Where it opens; a getter for a surface whose side follows what it is on, as the message box beside a bubble. */
+    placement?: Placement | (() => Placement);
+
+    /** How far off its anchor; a getter where that follows the placement, as a box moved inside a channel's row. */
+    offset?: number | (() => number);
+
+    /** Where it goes when its placement has no room, in order, read as it is placed. */
+    fallbackPlacements?: () => Placement[];
+
+    /**
+     * What it is kept inside, 4px in, as the message box is kept in its column; the window, 8px in,
+     * where none is given.
+     */
+    boundary?: () => Element | null | undefined;
 
     /** A box to place beside instead of the anchor, as a card under the whole row a face opened. */
     virtualAnchor?: () => DOMRect | null;
@@ -35,9 +47,18 @@ export type PopoverOptions = {
 
     returnTo?: () => HTMLElement | null;
 
+    /**
+     * A control apart from the anchor that a press counts as inside, as the chip that opened the
+     * message box: a press on it is its own to answer, which pressed again closes what it opened.
+     */
+    alsoInside?: () => Element | null | undefined;
+
     /** False for a tip, which shows and hides on its own timers and is only placed here. */
     isDismissable?: boolean;
 };
+
+/** How far inside a boundary a popover is kept, as the message box inside its column. */
+export const boundaryInsetPx = 4;
 
 /** One popover's state and what changes it. */
 export type PopoverControl = {
@@ -56,13 +77,57 @@ export type PopoverControl = {
 
     /** Places it now, for a surface that just changed size: its size watcher would be a frame late. */
     update: () => void;
+
+    /**
+     * Places it now and resolves once the new place is drawn, for a surface that measures itself
+     * where it lands, as the message box revealing its grown size from its old edges.
+     */
+    place: () => Promise<void>;
 };
 
 /**
  * Oldest first. A press inside a newer popover counts as inside every older one: one opened from
  * another is drawn apart from it at the chat's root, and would otherwise close its parent.
  */
-const openStack: OpenPopover[] = [];
+const openStack: OpenPopover[] = shallowReactive([]);
+
+/**
+ * Whether any menu, picker, card or sheet is open. Only one floating layer shows at a time, so a
+ * message's bar rises for no hover while this is true. A tip is never on the stack, so never counts.
+ *
+ * @returns True while one is open.
+ */
+export function isFloatingLayerOpen(): boolean {
+    return openStack.length > 0;
+}
+
+/** Where a popover opens, for a surface that names its own sides, as the message box beside a bubble. */
+export type PopoverPlacement = Placement;
+
+/**
+ * Tab past either end of a surface drawn apart from its place in the page, as a popover at the
+ * chat's root or the message box beside its row: focus goes back to that place without the key
+ * being taken, so the browser goes on from there. Tab between the surface's own controls is left
+ * to the browser.
+ *
+ * @param event The key pressed inside the surface.
+ * @param tabbable The surface's controls Tab reaches, in order.
+ * @param leave Moves focus to the surface's place in the page.
+ *
+ * @returns True for a Tab, which nothing else should take.
+ */
+export function tabPastEnd(event: KeyboardEvent, tabbable: HTMLElement[], leave: () => void): boolean {
+    if (event.key !== "Tab") {
+        return false;
+    }
+
+    const edge = event.shiftKey ? tabbable[0] : tabbable[tabbable.length - 1];
+    if (tabbable.length === 0 || document.activeElement === edge) {
+        leave();
+    }
+
+    return true;
+}
 
 type OpenPopover = EscapeLayer & {
     contains: (node: Node) => boolean;
@@ -151,23 +216,86 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
             : element;
     });
 
-    const floated = useFloating(reference, floating, {
-        placement: options.placement ?? "bottom-end",
-        strategy: "fixed",
-        transform: false,
-        middleware: [offset(options.offset ?? 8), flip({ crossAxis: false, flipAlignment: false }), shift({ padding: 8 })],
-        whileElementsMounted: autoUpdate
-    });
+    const placement = options.placement;
+    const distance = options.offset ?? 8;
+    const boundary = (): { padding: number, boundary?: Element } => {
+        const element = options.boundary?.();
+        return element ? { padding: boundaryInsetPx, boundary: element } : { padding: 8 };
+    };
 
-    const floatingStyles = computed((): Record<string, string> => isSheet.value ? {} : floated.floatingStyles.value as Record<string, string>);
+    const asked = computed((): Placement => (typeof placement === "function" ? placement() : placement) ?? "bottom-end");
+    const middleware = [
+        offset(() => typeof distance === "function" ? distance() : distance),
+        flip(() => ({ crossAxis: false, flipAlignment: false, ...(options.fallbackPlacements ? { fallbackPlacements: options.fallbackPlacements() } : {}), ...boundary() })),
+        shift(() => boundary())
+    ];
+
+    // Where it was last placed, and on which side its room put it. Held here rather than in the
+    // library's own reactive placing, whose update promises nothing, so a surface can wait on it.
+    const x = ref(0);
+    const y = ref(0);
+    const landed = ref<Placement>(asked.value);
+    const isPlaced = ref(false);
+
+    /** Counts each placing, so one overtaken by a later one never lands after it. */
+    let placing = 0;
+
+    /** The latest placing, which every earlier one it overtook resolves with. */
+    let latest: Promise<void> = Promise.resolve();
+
+    function place(): Promise<void> {
+        const beside = reference.value;
+        const element = floating.value;
+        if (!beside || !element) {
+            return latest;
+        }
+
+        const run = ++placing;
+        latest = computePosition(beside, element, { placement: asked.value, strategy: "fixed", middleware }).then(position => {
+            if (run !== placing) {
+                return latest;
+            }
+
+            // Rounded to the device's pixels, so its edges stay sharp.
+            const ratio = window.devicePixelRatio || 1;
+            x.value = Math.round(position.x * ratio) / ratio;
+            y.value = Math.round(position.y * ratio) / ratio;
+            landed.value = position.placement;
+            isPlaced.value = true;
+            return nextTick();
+        });
+
+        return latest;
+    }
+
+    function update(): void {
+        void place();
+    }
+
+    // Placed as it is drawn and kept beside its anchor through scrolls and resizes while both are
+    // drawn; placed again whenever the side it asks for changes.
+    watch([reference, floating], ([beside, element], _previous, onCleanup) => {
+        if (beside && element) {
+            onCleanup(autoUpdate(beside, element, update));
+        }
+    }, { flush: "sync" });
+    watch(asked, update, { flush: "sync" });
+
+    const floatingStyles = computed((): Record<string, string> => {
+        if (isSheet.value) {
+            return {};
+        }
+
+        return isPlaced.value ? { position: "fixed", left: `${x.value}px`, top: `${y.value}px` } : { position: "fixed", left: "0", top: "0" };
+    });
 
     // Grown from the anchor's middle, so one flipped above grows up from below rather than from a
     // corner it does not touch; clamped, as an anchor can sit past the surface's end.
     const origin = computed((): Record<string, string> => {
-        const isAbove = floated.placement.value.startsWith("top");
+        const isAbove = landed.value.startsWith("top");
         const box = (options.virtualAnchor?.() ?? null) ?? anchor.value?.getBoundingClientRect();
         const width = floating.value?.offsetWidth ?? 0;
-        const middle = box ? box.left + box.width / 2 - (floated.x.value ?? 0) : width / 2;
+        const middle = box ? box.left + box.width / 2 - x.value : width / 2;
         return {
             transformOrigin: `${Math.max(0, Math.min(width, middle))}px ${isAbove ? "100%" : "0"}`,
             "--chat-pop-toward": isAbove ? "1" : "-1"
@@ -175,7 +303,7 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
     });
 
     const entry: OpenPopover = {
-        contains: node => !!floating.value?.contains(node) || !!anchor.value?.contains(node),
+        contains: node => !!floating.value?.contains(node) || !!anchor.value?.contains(node) || !!options.alsoInside?.()?.contains(node),
         close: isFocusReturned => close({ isFocusReturned }),
         takeEscape: () => close({ isFocusReturned: true }),
         onTab,
@@ -194,13 +322,10 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
         const tabbable = Array.from(floating.value?.querySelectorAll<HTMLElement>(focusableSelector) ?? [])
             .filter(element => element.tabIndex >= 0 && isDrawn(element));
-        const edge = event.shiftKey ? tabbable[0] : tabbable[tabbable.length - 1];
-        if (tabbable.length > 0 && document.activeElement !== edge) {
-            return;
-        }
-
-        close({ isFocusReturned: false });
-        anchor.value?.focus({ preventScroll: true });
+        tabPastEnd(event, tabbable, () => {
+            close({ isFocusReturned: false });
+            anchor.value?.focus({ preventScroll: true });
+        });
     }
 
     async function open(): Promise<boolean> {
@@ -227,15 +352,42 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
         }
 
         isOpen.value = false;
-        if (isFocusReturned) {
-            // quietly: the person is leaving the surface, not reaching for its anchor, so no tip rises
-            const target = options.returnTo?.() ?? opener ?? anchor.value;
+        const openedFrom = opener;
+        opener = null;
+        if (!isFocusReturned) {
+            return;
+        }
+
+        // Quietly: the person is leaving the surface, not reaching for its anchor, so no tip rises.
+        // At once where the target is drawn, so a dialog a menu's choice opens takes the control
+        // the menu gave focus back to as its own way back.
+        const named = options.returnTo?.() ?? null;
+        if (!options.returnTo || named?.isConnected) {
+            const target = named ?? openedFrom ?? anchor.value;
             if (target?.isConnected) {
                 focusQuietly(target, { preventScroll: true });
             }
+
+            return;
         }
 
-        opener = null;
+        // A surface that turns back into the control it names, as the message box's tray into its
+        // bar's Add reaction, gives focus to that control once the patch the close causes draws it;
+        // unless what the close led to took focus first.
+        const surface = floating.value;
+        const focusedAtClose = document.activeElement;
+        void nextTick(() => {
+            const active = document.activeElement;
+            const isTaken = active !== focusedAtClose && active instanceof HTMLElement && active !== document.body && active.isConnected && !surface?.contains(active);
+            if (isTaken) {
+                return;
+            }
+
+            const target = options.returnTo?.() ?? openedFrom ?? anchor.value;
+            if (target?.isConnected) {
+                focusQuietly(target, { preventScroll: true });
+            }
+        });
     }
 
     async function toggle(): Promise<boolean> {
@@ -249,5 +401,5 @@ export function usePopover(anchor: Readonly<Ref<HTMLElement | undefined>>, float
 
     onScopeDispose(() => pull(entry));
 
-    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet, update: floated.update };
+    return { isOpen, floating, anchor, open, close, toggle, floatingStyles, origin, isSheet, update, place };
 }

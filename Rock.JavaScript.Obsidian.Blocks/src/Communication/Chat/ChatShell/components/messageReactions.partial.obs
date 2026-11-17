@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div v-if="isRowDrawn()"
+         ref="rowElement"
          class="chat-reacts"
          :class="{ 'is-community': isCommunity }"
          data-testid="message-reactions">
@@ -11,41 +12,75 @@
         -->
         <slot />
         <template v-if="isChipsDrawn">
-            <button v-for="(reaction, index) in reactions"
-                    :key="reaction.code"
-                    type="button"
-                    class="chat-rx"
-                    :class="{ 'is-popping': popping.has(reaction.code) }"
-                    data-testid="reaction-chip"
-                    :data-code="reaction.code"
-                    :aria-pressed="reaction.mine ? 'true' : 'false'"
-                    :aria-label="chipLabel(reaction)"
-                    :aria-describedby="`${uid}-who-${index}`"
-                    :aria-expanded="isCardOn(reaction.code) ? 'true' : 'false'"
-                    :aria-controls="isCardOn(reaction.code) ? `${uid}-card` : undefined"
-                    :aria-disabled="isPreviewing ? 'true' : undefined"
-                    @pointerenter="onChipEnter($event, reaction)"
-                    @pointerleave="onPointerLeave"
-                    @pointerdown="onChipPointerDown($event, reaction.code)"
-                    @pointermove="onChipPointerMove"
-                    @pointerup="cancelLongPress"
-                    @pointercancel="cancelLongPress"
-                    @contextmenu="onChipContextMenu"
-                    @focus="onChipFocus($event, reaction)"
-                    @blur="onBlur"
-                    @keydown="onAnchorKeydown"
-                    @click="onChipClick(reaction.code)"
-                    @animationend.self="onPopEnd(reaction.code)">
-                <img v-if="reaction.image_url" class="chat-rx-e is-image" :src="reaction.image_url" alt="" />
-                <span v-else class="chat-rx-e" aria-hidden="true">{{ reaction.emoji }}</span>
-                <!-- Keyed by the count, so each change remounts it and the roll plays again. -->
-                <span :key="reaction.count"
-                      class="chat-rx-n"
-                      :class="{ 'is-rolling': rolling.has(reaction.code) }"
-                      data-testid="reaction-count"
-                      aria-hidden="true"
-                      @animationend="onRollEnd(reaction.code)">{{ reaction.count }}</span>
-            </button>
+            <!-- The block's one move: a chip whose place changes, as one before it leaves, glides there. -->
+            <TransitionGroup moveClass="chat-move" :css="false">
+                <button v-if="isFolded"
+                        key="summary"
+                        ref="summaryElement"
+                        type="button"
+                        class="chat-rx is-summary"
+                        :class="{ 'is-mine': isAnyMine }"
+                        data-testid="reaction-summary"
+                        aria-expanded="false"
+                        :aria-label="summaryLabel"
+                        @click="onUnfold">
+                    <span class="chat-rx-stack" aria-hidden="true">
+                        <template v-for="reaction in summaryTop" :key="reaction.code">
+                            <img v-if="reaction.image_url" class="chat-rx-e is-image" :src="reaction.image_url" alt="" />
+                            <span v-else class="chat-rx-e">{{ reaction.emoji }}</span>
+                        </template>
+                    </span>
+                    <span :key="total"
+                          class="chat-rx-n"
+                          :class="{ 'is-rolling': rolling.has(summaryKey) }"
+                          data-testid="reaction-count"
+                          aria-hidden="true"
+                          @animationend="onRollEnd(summaryKey)">{{ total }}</span>
+                </button>
+                <button v-for="(reaction, index) in drawnReactions"
+                        :key="reaction.code"
+                        type="button"
+                        class="chat-rx"
+                        :class="{ 'is-popping': popping.has(reaction.code) }"
+                        data-testid="reaction-chip"
+                        :data-code="reaction.code"
+                        :aria-pressed="reaction.mine ? 'true' : 'false'"
+                        :aria-label="chipLabel(reaction)"
+                        :aria-describedby="`${uid}-who-${index}`"
+                        :aria-expanded="isCardOn(reaction.code) ? 'true' : 'false'"
+                        :aria-controls="isCardOn(reaction.code) ? `${uid}-card` : undefined"
+                        :aria-disabled="isPreviewing ? 'true' : undefined"
+                        @pointerenter="onChipEnter($event, reaction)"
+                        @pointerleave="onPointerLeave"
+                        @pointerdown="onChipPointerDown($event, reaction.code)"
+                        @pointermove="onChipPointerMove"
+                        @pointerup="cancelLongPress"
+                        @pointercancel="cancelLongPress"
+                        @contextmenu="onChipContextMenu"
+                        @focus="onChipFocus($event, reaction)"
+                        @blur="onBlur"
+                        @keydown="onAnchorKeydown"
+                        @click="onChipClick(reaction.code)"
+                        @animationend.self="onPopEnd(reaction.code)">
+                    <img v-if="reaction.image_url" class="chat-rx-e is-image" :src="reaction.image_url" alt="" />
+                    <span v-else class="chat-rx-e" aria-hidden="true">{{ reaction.emoji }}</span>
+                    <!-- Keyed by the count, so each change remounts it and the roll plays again. -->
+                    <span :key="reaction.count"
+                          class="chat-rx-n"
+                          :class="{ 'is-rolling': rolling.has(reaction.code) }"
+                          data-testid="reaction-count"
+                          aria-hidden="true"
+                          @animationend="onRollEnd(reaction.code)">{{ reaction.count }}</span>
+                </button>
+                <button v-if="isFoldable && !isFolded"
+                        key="fold"
+                        type="button"
+                        class="chat-rx is-fold"
+                        aria-label="Show fewer"
+                        @click="onFold">
+                    <Icon name="left" size="sm" />
+                </button>
+            </TransitionGroup>
             <!-- Who reacted with each chip in one sentence, the chip's description to a screen reader. -->
             <span v-for="(reaction, index) in reactions"
                   :id="`${uid}-who-${index}`"
@@ -114,6 +149,14 @@
     background: var(--chat-raised);
     border: 1px solid var(--chat-line);
     border-radius: var(--chat-r-full);
+}
+
+/*
+    The chip's own press and hover, set only while it is not moving: this sheet is added after the
+    block's, at the same weight as the block's one move, so a transition set here while the chip
+    glides would replace the move's and run the glide at the press's quick pace.
+*/
+.chat-rx:not(.chat-move) {
     transition: background-color var(--chat-t-fast) var(--chat-ease-state), border-color var(--chat-t-fast) var(--chat-ease-state), transform var(--chat-t-fast) var(--chat-ease-in);
 }
 
@@ -122,7 +165,8 @@
     transform: translateY(calc(var(--chat-nudge) * -1));
 }
 
-.chat-rx[aria-pressed="true"] {
+.chat-rx[aria-pressed="true"],
+.chat-rx.is-mine {
     color: var(--chat-brand-ink);
     background: var(--chat-brand-tint);
     border-color: var(--chat-reaction-mine-line);
@@ -143,6 +187,25 @@
 
 .chat-rx[aria-disabled="true"][aria-pressed="true"]:hover {
     border-color: var(--chat-reaction-mine-line);
+}
+
+/* The summary's three emoji overlap a little, read as one stack. */
+.chat-rx-stack {
+    display: inline-flex;
+}
+
+.chat-rx-stack .chat-rx-e + .chat-rx-e {
+    margin-left: -2px;
+}
+
+/* The chevron that folds the full row again is an icon chip, as the add chip is. */
+.chat-rx.is-fold {
+    padding: 0 5px;
+    color: var(--chat-icon);
+}
+
+.chat-rx.is-fold:hover {
+    color: var(--chat-text);
 }
 
 /* A long press opens who reacted, so the phone's own callout and selection stay out of it. */
@@ -225,7 +288,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, onBeforeUnmount, PropType, ref, useSlots, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, TransitionGroup, useSlots, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Icon from "../ui/icon.partial.obs";
     import ReactionCard from "./reactionCard.partial.obs";
@@ -308,6 +371,17 @@
     const longPressSlopPx = 8;
 
     const addElement = ref<HTMLButtonElement>();
+    const rowElement = ref<HTMLElement>();
+    const summaryElement = ref<HTMLButtonElement>();
+
+    /** Four or more kinds on a bubble fold into one summary chip; a channel's flat row never folds. */
+    const foldFromKinds = 4;
+
+    /** The summary chip's own key among the chips' motions, which no emoji's code can be. */
+    const summaryKey = " summary";
+
+    /** Whether the reader opened the folded row, which stays open while the row is drawn. */
+    const isOpen = ref(false);
 
     /** The chip the card belongs to: one card for the row, moved to whichever chip the pointer rests on. */
     const tipAnchor = ref<HTMLElement>();
@@ -353,6 +427,22 @@
 
     // The add chip only follows chips; a message with none is reacted to from its action bar.
     const isAddDrawn = computed((): boolean => !props.isPreviewing && !isTouch.value && reactions.value.length > 0);
+
+    const isFoldable = computed((): boolean => !props.isCommunity && reactions.value.length >= foldFromKinds);
+
+    const isFolded = computed((): boolean => isFoldable.value && !isOpen.value);
+
+    /** The chips drawn one by one: every kind, or none while the summary stands for them. */
+    const drawnReactions = computed((): Reaction[] => isFolded.value ? [] : reactions.value);
+
+    /** The summary's three emoji: the most used, ties in the order the page carries them. */
+    const summaryTop = computed((): Reaction[] => [...reactions.value].sort((a, b) => b.count - a.count).slice(0, 3));
+
+    const total = computed((): number => reactions.value.reduce((sum, reaction) => sum + reaction.count, 0));
+
+    const isAnyMine = computed((): boolean => reactions.value.some(reaction => reaction.mine));
+
+    const summaryLabel = computed((): string => `${total.value} reactions in ${reactions.value.length} kinds. Show all`);
 
     const tipReaction = computed((): Reaction | null => reactions.value.find(reaction => reaction.code === tipCode.value) ?? null);
 
@@ -449,6 +539,25 @@
         }
     }
 
+    /**
+     * The summary opens the full row in place, each chip springing in, with focus on the first
+     * chip, since the control pressed is gone.
+     */
+    async function onUnfold(): Promise<void> {
+        isOpen.value = true;
+        popping.value = new Set(reactions.value.map(reaction => reaction.code));
+        await nextTick();
+        rowElement.value?.querySelector<HTMLElement>(".chat-rx[data-code]")?.focus({ preventScroll: true });
+    }
+
+    /** The chevron folds the row back into its summary, which then holds focus. */
+    async function onFold(): Promise<void> {
+        hideTip();
+        isOpen.value = false;
+        await nextTick();
+        summaryElement.value?.focus({ preventScroll: true });
+    }
+
     function onPopEnd(code: string): void {
         popping.value = withoutCode(popping.value, code);
     }
@@ -531,17 +640,20 @@
     });
 
     /*
-        Only the reader's own reaction moves a chip, as the design draws it: a chip the reader just
-        added pops in, and the reader joining others rolls the count. Others' changes and the
-        reader taking one away change the number in place. Which it was is recorded as it lands, so
-        a page that states the chips again moves nothing. Not immediate: one that landed before this
-        part was drawn has played, or was never on screen.
+        A reaction landing moves its chip, the reader's or anyone's: a new chip pops in, joining a
+        chip rolls its count, and while the row is folded the summary's total rolls. Taking one
+        away changes the number in place. Which it was is recorded as it lands, so a page that
+        states the chips again moves nothing. Not immediate: one that landed before this part was
+        drawn has played, or was never on screen.
     */
     watch(() => props.motion, landed => {
         if (!landed || !reactions.value.some(reaction => reaction.code === landed.code)) {
             return;
         }
-        if (landed.motion === "pop") {
+        if (isFolded.value) {
+            rolling.value = new Set(rolling.value).add(summaryKey);
+        }
+        else if (landed.motion === "pop") {
             popping.value = new Set(popping.value).add(landed.code);
         }
         else {

@@ -24,7 +24,7 @@
 import { computed, ref, Ref, watch } from "vue";
 import { MentionPickerSource } from "../components/mentionPicker.partial.obs";
 import type { ChatShell } from "../shell.partial";
-import { DisplayPiece, PendingMessage, SidebarRow } from "../types.partial";
+import { ColumnKind, DisplayPiece, PendingMessage, SidebarRow } from "../types.partial";
 import { AttachmentTray, canAttach } from "./useAttachments.partial";
 import { ComposerDraft } from "./useDrafts.partial";
 import { PanelKind } from "./useFrameView.partial";
@@ -78,7 +78,7 @@ export function useComposers(dependencies: ComposersDependencies) {
     const threadDraft = computed((): ComposerDraft | null => threadQuoteKey.value ? shell.value.drafts.of(threadQuoteKey.value) : null);
 
     /** The box focus is in, if either. */
-    const focusedComposer = ref<"conversation" | "thread" | null>(null);
+    const focusedComposer = ref<ColumnKind | null>(null);
 
     // The drafts are told the place being typed in, as the room or thread under a focused box
     // changes or a birthdate builds a new shell, so another tab's write never replaces the text
@@ -140,7 +140,7 @@ export function useComposers(dependencies: ComposersDependencies) {
      * A composer took focus: the @ picker's first people are fetched now, so the first @ draws
      * them at once. Focus, not opening, so a person who only reads asks nothing.
      */
-    function onComposerFocus(row: SidebarRow | null, box: "conversation" | "thread"): void {
+    function onComposerFocus(row: SidebarRow | null, box: ColumnKind): void {
         focusedComposer.value = box;
         if (row) {
             shell.value.mentions.warm(row);

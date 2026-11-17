@@ -30,8 +30,10 @@ import { nextTick, reactive } from "vue";
 import { ChannelFacts, MentionRow, SidebarRow, TimelineMessage } from "../../../../src/Communication/Chat/ChatShell/types.partial";
 import { ShellOptions } from "../../../../src/Communication/Chat/ChatShell/shell.partial";
 import ChannelSidebarComponent from "../../../../src/Communication/Chat/ChatShell/components/channelSidebar.partial.obs";
+import EmojiPickerComponent from "../../../../src/Communication/Chat/ChatShell/components/emojiPicker.partial.obs";
 import ComposerComponent from "../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import MessageFeedComponent from "../../../../src/Communication/Chat/ChatShell/components/messageFeed.partial.obs";
+import MessageReactionsComponent from "../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/components/profileCard.partial.obs";
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
@@ -1814,7 +1816,7 @@ describe("the panel column", () => {
         expect(document.activeElement).toBe(chosen.element);
     });
 
-    // F6-A's one sliding pill: Activity's Segmented stays through a change of tab, so its pill
+    // One sliding pill: Activity's Segmented stays through a change of tab, so its pill
     // slides to the tab chosen as the list under it changes.
     test("keeps one Activity Segmented through a change of tab, its pill sliding to the tab chosen", async () => {
         const w = await mountBlock(1200);
@@ -2126,7 +2128,8 @@ describe("focus as the frame changes what it shows", () => {
 
     // A room change re-reads Members for the room now open, taking its rows away, and closes a
     // thread of the room left: focus that was on what went goes to the start of its column, and
-    // with the column closed, to the conversation's title.
+    // with the column closed, to the conversation's title. The drawer going also takes its message
+    // box, whose fade sits in a plain element under its teleport: without it, Vue throws here.
     test("a room change gives focus on a member row to the filter, and focus in the drawer to the title", async () => {
         const w = await openTeam();
         (mockShell!.channels as { rows: SidebarRow[] }).rows.push(choir);
@@ -2447,7 +2450,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='41']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
         await settle();
         await settle();
 
@@ -2464,7 +2467,7 @@ describe("the thread drawer", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='40']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='Reply in thread']").element as HTMLElement).click();
         await settle();
         await settle();
 
@@ -3684,7 +3687,9 @@ describe("reactions", () => {
         expect(pickerOf()?.querySelector("[role='grid'] [role='gridcell'][data-code='pray']")).not.toBeNull();
     });
 
-    test("asked for by a control that already shows quick reactions, as the bar's Add reaction, opens on a tray without them", async () => {
+    // The bar turns into the tray in place, so the tray leads with the bar's quick reactions, then
+    // the rest in their order, so none of the three is lost as the bar turns into it.
+    test("asked for by a bar's Add reaction, opens on a tray that leads with the bar's quick reactions", async () => {
         const w = await mountBlock(1200);
         await openRow(w, team.channel_id);
         const anchor = document.createElement("button");
@@ -3698,13 +3703,15 @@ describe("reactions", () => {
         await settle();
         expect(pickerOf()).toBeNull();
 
-        const offered = fullTray.slice(0, 1) as string[];
+        // The bar's own, as the last of the tray, so leading with it reorders the tray.
+        expect(fullTray.length).toBeGreaterThan(1);
+        const offered = fullTray.slice(-1) as string[];
         w.findComponent(MessageFeedComponent).vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(7), anchor, opening: { offered } });
         await settle();
 
         const tray = Array.from(pickerOf()?.querySelectorAll<HTMLElement>("[role='toolbar'] [data-code]") ?? []).map(cell => cell.dataset.code);
         expect(offered).toHaveLength(1);
-        expect(tray).toEqual(fullTray.slice(1));
+        expect(tray).toEqual([...offered, ...fullTray.filter(code => !offered.includes(code as string))]);
     });
 
     test("asked for again by what opened it, closes", async () => {
@@ -3789,6 +3796,217 @@ describe("reactions", () => {
         await settle();
 
         expect(pickerOf()).toBeNull();
+    });
+});
+
+// A message's actions, its quick tray and its emoji picker are one box: the bar turns into the
+// tray, the tray grows into the picker, and each step moves focus into what is now drawn. The box
+// is drawn in the chat's root, so the feed's edges never cut it, yet it belongs to its message's
+// row: the pointer or a keyboard's focus on it holds it there. Only one floating layer shows at a
+// time, and a box whose column goes leaves focus on something drawn.
+describe("the message box", () => {
+    const boxes = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElement>("[data-testid='message-box']"));
+    let focusVisible: jest.SpyInstance | null = null;
+
+    afterEach(() => {
+        focusVisible?.mockRestore();
+        focusVisible = null;
+        delete (window as { matchMedia?: unknown }).matchMedia;
+    });
+
+    /** Tells jsdom, which cannot, whether focus came from a keyboard, as :focus-visible says in a browser. */
+    function focusIsFromKeyboard(isKeyboard: boolean): void {
+        const matches = Element.prototype.matches;
+        focusVisible = jest.spyOn(Element.prototype, "matches").mockImplementation(function (this: Element, selector: string) {
+            return selector === ":focus-visible" ? isKeyboard : matches.call(this, selector);
+        });
+    }
+
+    async function openWithMessages(w: VueWrapper, ids: number[]): Promise<void> {
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(...ids.map(id => storedMessage(id)));
+        await settle();
+    }
+
+    /** The pointer rests on a message until its bar shows. */
+    async function rest(w: VueWrapper, id: number): Promise<void> {
+        await w.get(`[data-testid='frame-main'] [data-hot-id='${id}']`).trigger("pointerover");
+        await new Promise(resolve => setTimeout(resolve, 170));
+        await settle();
+    }
+
+    async function press(element: Element | null | undefined): Promise<void> {
+        (element as HTMLElement).click();
+        await settle();
+        await settle();
+    }
+
+    function isInert(element: Element | null): boolean {
+        return !!element?.closest("[inert]");
+    }
+
+    test("Add reaction turns the bar into the tray and All emoji the tray into the picker, one box throughout; Escape gives the bar back with focus on Add reaction", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+        await rest(w, 7);
+
+        const box = boxes()[0];
+        expect(box).toBeDefined();
+        expect(box.dataset.layer).toBe("bar");
+
+        await press(box.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("tray");
+        expect(document.activeElement).toBe(box.querySelector("[role='toolbar'][aria-label='Quick reactions'] button"));
+
+        await press(box.querySelector("button[aria-label='All emoji']"));
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("picker");
+        expect(document.activeElement).toBe(box.querySelector("input[aria-label='Search emoji']"));
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+
+        expect(boxes()).toEqual([box]);
+        expect(box.dataset.layer).toBe("bar");
+        expect(document.activeElement).toBe(box.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+    });
+
+    test("the pointer moving from the row onto the box keeps it past the grace, a keyboard's focus in it holds it, and focus on the next message takes it there", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7, 8]);
+        await rest(w, 7);
+        const box = boxes()[0];
+        expect(box?.dataset.hotId).toBe("7");
+
+        // Off the feed and onto the box, which the chat's root holds apart from the feed.
+        await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
+        box.dispatchEvent(new MouseEvent("pointerover", { bubbles: true }));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await settle();
+        expect(boxes()).toEqual([box]);
+
+        // A keyboard's focus inside it holds it after the pointer has gone.
+        focusIsFromKeyboard(true);
+        box.querySelector<HTMLElement>("[data-testid='action-bar'] button")?.focus();
+        box.dispatchEvent(new MouseEvent("pointerleave"));
+        await new Promise(resolve => setTimeout(resolve, 300));
+        await settle();
+        expect(boxes()).toEqual([box]);
+
+        w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='8']").element.focus();
+        await fadeOut();
+        expect(boxes().map(drawn => drawn.dataset.hotId)).toEqual(["8"]);
+    });
+
+    test("raises nothing while another floating layer is open: the composer's emoji picker, a menu, or the drawer's tray", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+
+        await press(w.get("[data-testid='frame-main'] button[aria-label='Add emoji']").element);
+        expect(document.querySelector("[role='dialog'][aria-label='Add emoji']")).not.toBeNull();
+
+        await rest(w, 7);
+
+        expect(w.find("[data-testid='action-bar']").exists()).toBe(false);
+        expect(boxes()).toHaveLength(0);
+    });
+
+    test("a chip's smile-plus opens the one box at the tray on the chip's message, though the bar stood on another", async () => {
+        const w = await mountBlock(1200, true);
+        const prayed = { reactions: [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>;
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(7, prayed), storedMessage(8, prayed));
+        await settle();
+        await rest(w, 7);
+        expect(boxes().map(box => box.dataset.hotId)).toEqual(["7"]);
+
+        const smilePlus = w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='8'] [data-testid='reaction-add']").element;
+        await press(smilePlus);
+
+        expect(boxes().map(box => [box.dataset.hotId, box.dataset.layer])).toEqual([["8", "tray"]]);
+        expect(smilePlus.getAttribute("aria-expanded")).toBe("true");
+
+        // Placed against its place in the row, which the column moves to the chip's message.
+        const guard = document.querySelector("[data-testid='action-bar-guard']");
+        expect(guard?.closest("[data-message-id]")?.getAttribute("data-message-id")).toBe("8");
+    });
+
+    test("the menu open from a message's box shuts that message's who-reacted card until it closes, and no other message's", async () => {
+        const w = await mountBlock(1200, true);
+        const prayed = { reactions: [{ code: "pray", count: 2, mine: false, emoji: "🙏", image_url: null, label: "folded hands" }] } as Partial<TimelineMessage>;
+        await openRow(w, team.channel_id);
+        timelineOf(team.channel_id).messages.push(storedMessage(7, prayed), storedMessage(8, prayed));
+        await settle();
+        const isCardShut = (id: number): unknown => w.findAllComponents(MessageReactionsComponent)
+            .find(reactions => (reactions.props("message") as TimelineMessage).id === id)?.props("isCardDisabled");
+        await rest(w, 7);
+        expect(isCardShut(7)).toBe(false);
+
+        await press(boxes()[0]?.querySelector("[data-testid='action-bar'] button[aria-label='More actions']"));
+        expect(document.querySelector("[role='menu']")).not.toBeNull();
+
+        expect(isCardShut(7)).toBe(true);
+        expect(isCardShut(8)).toBe(false);
+
+        document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+
+        expect(document.querySelector("[role='menu']")).toBeNull();
+        expect(isCardShut(7)).toBe(false);
+    });
+
+    test("a room switch with focus in the tray takes the box away and leaves focus on something drawn and in reach", async () => {
+        const w = await mountBlock(1200, true);
+        await openWithMessages(w, [7]);
+
+        // A keyboard reaches the message, then its box, then the tray.
+        focusIsFromKeyboard(true);
+        w.get<HTMLElement>("[data-testid='frame-main'] [data-message-id='7']").element.focus();
+        await settle();
+        await press(boxes()[0]?.querySelector("[data-testid='action-bar'] button[aria-label='More reactions']"));
+        expect(document.activeElement?.closest("[data-testid='message-box']")).not.toBeNull();
+
+        await openRow(w, dmAnna.channel_id);
+        await fadeOut();
+
+        expect(boxes()).toHaveLength(0);
+        expect(document.activeElement).not.toBe(document.body);
+        expect(isInert(document.activeElement)).toBe(false);
+    });
+
+    test("on a phone, the thread's sheet plus opens the thread's own box as a picker sheet; a touch rings nothing, a keyboard the first emoji", async () => {
+        window.matchMedia = ((query: string) => ({ matches: query.includes("hover: none"), media: query })) as unknown as typeof window.matchMedia;
+        const w = await mountBlock(375, true);
+        focusIsFromKeyboard(false);
+        await openWithMessages(w, []);
+        timelineOf(team.channel_id).messages.push(storedMessage(40, { reply_count: 2, last_reply_at: new Date().toISOString(), repliers: [] } as Partial<TimelineMessage>));
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='thread-summary']").trigger("click");
+        await fadeOut();
+        const drawer = w.findComponent(ThreadDrawerComponent);
+        const anchor = document.createElement("button");
+        w.get("[data-testid='frame-panel']").element.append(anchor);
+
+        drawer.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor, opening: { startsOn: "full" } });
+        await fadeOut();
+
+        const sheet = document.querySelector<HTMLElement>("[role='dialog'][aria-label='Add reaction']");
+        expect(sheet).not.toBeNull();
+        expect(drawer.findComponent(EmojiPickerComponent).exists()).toBe(true);
+        expect(w.findComponent(MessageFeedComponent).findComponent(EmojiPickerComponent).exists()).toBe(false);
+        expect(document.activeElement?.getAttribute("role")).not.toBe("gridcell");
+
+        sheet?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+        await fadeOut();
+        focusVisible?.mockRestore();
+        focusIsFromKeyboard(true);
+        anchor.focus();
+        drawer.vm.$emit("messageAction", { kind: "openPicker", message: storedMessage(40), anchor, opening: { startsOn: "full" } });
+        await fadeOut();
+
+        expect(document.activeElement?.getAttribute("role")).toBe("gridcell");
+        expect(document.activeElement?.closest("[role='dialog'][aria-label='Add reaction']")).not.toBeNull();
     });
 });
 
@@ -3904,7 +4122,7 @@ describe("delete confirm", () => {
         await w.get("[data-testid='frame-main'] [data-hot-id='7']").trigger("pointerover");
         await new Promise(resolve => setTimeout(resolve, 170));
         await settle();
-        (w.get("[data-testid='frame-main'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
+        (w.get("[data-testid='message-box'] [data-testid='action-bar'] button[aria-label='More actions']").element as HTMLElement).click();
         await settle();
         const item = Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitem']")).find(i => i.textContent?.includes("Delete message"));
         item!.click();
@@ -3914,7 +4132,7 @@ describe("delete confirm", () => {
         // The pointer leaves the message for the dialog; the bar is still up for its grace.
         await w.get("[data-testid='frame-main'] [data-testid='message-feed']").trigger("pointerleave");
         await settle();
-        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(true);
+        expect(w.find("[data-testid='message-box'] [data-testid='action-bar']").exists()).toBe(true);
         return w;
     }
 
@@ -3932,7 +4150,7 @@ describe("delete confirm", () => {
         await barLeaves();
 
         expect(messages().cancelDelete).toHaveBeenCalledTimes(1);
-        expect(w.find("[data-testid='frame-main'] [data-testid='action-bar']").exists()).toBe(false);
+        expect(w.find("[data-testid='message-box'] [data-testid='action-bar']").exists()).toBe(false);
         expect(document.activeElement).toBe(w.get("[data-testid='frame-main'] [data-message-id='7']").element);
     });
 
@@ -4994,7 +5212,7 @@ describe("the members panel", () => {
         expect(w.find("[data-testid='members-panel']").exists()).toBe(true);
     });
 
-    // P-24: on a phone the panel opens on its first row, which comes with the roster's first page,
+    // On a phone the panel opens on its first row, which comes with the roster's first page,
     // after the panel opened with focus on its back chevron; focus moves to the row as it lands,
     // while the person has not moved it.
     test("on a phone, gives focus to the first row as the roster's first page lands", async () => {

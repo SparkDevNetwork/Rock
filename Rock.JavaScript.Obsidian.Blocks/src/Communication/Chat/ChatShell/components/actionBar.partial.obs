@@ -1,194 +1,143 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Transition name="chat-tools" :css="!isInstant">
-        <div v-if="isDrawn"
-             ref="barElement"
-             class="chat-tools"
-             :class="placementClasses"
-             role="toolbar"
-             aria-orientation="horizontal"
-             :aria-label="toolbarLabel"
-             data-testid="action-bar"
-             @keydown="onKeydown"
-             @focusin="onFocusIn">
-            <div class="chat-tools-react" role="group" aria-label="Quick reactions">
-                <button v-for="favorite in quickReactions"
-                        :key="favorite.code"
-                        type="button"
-                        class="chat-tool is-glyph"
-                        :tabindex="tabIndexOf(`react ${favorite.code}`)"
-                        :aria-pressed="isMine(favorite.code) ? 'true' : 'false'"
-                        :aria-label="`${isMine(favorite.code) ? 'Remove your' : 'React with'} ${favorite.label}`"
-                        @mouseenter="onQuickEnter($event, favorite.label)"
-                        @mouseleave="onPointerLeave"
-                        @pointerdown="onPointerDown"
-                        @focus="onQuickFocus($event, favorite.label)"
-                        @blur="onBlur"
-                        @click="onReact(favorite.code)">
-                    <img v-if="!favorite.emoji && favorite.image_url" class="chat-tool-glyph" :src="favorite.image_url" alt="" />
-                    <span v-else class="chat-tool-glyph" aria-hidden="true">{{ favorite.emoji }}</span>
-                </button>
-                <IconButton ref="addTool"
-                            class="chat-tool is-add"
-                            icon="smile-plus"
-                            label="More reactions"
-                            tooltip="Add reaction"
-                            aria-haspopup="dialog"
-                            :isTooltipDisabled="isPickerOpen"
-                            :tabindex="tabIndexOf('add')"
-                            @click="onOpenPicker" />
+    <span ref="guard"
+          class="chat-box-guard"
+          :tabindex="boxMessage && !pop.isSheet.value ? 0 : -1"
+          data-testid="action-bar-guard"
+          @focus="onGuardFocus"></span>
+    <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
+        <div class="chat-box-layer">
+            <!-- A plain element between the teleport and the fade: Vue 3.3 throws on a fading child of a teleport nested in the dock's teleport as its column moves or goes. -->
+            <Transition name="chat-tools" :css="!isInstant">
+            <div v-if="isDrawn && !pop.isSheet.value"
+                 ref="boxElement"
+                 class="chat-box"
+                 :role="layer === 'bar' ? undefined : 'dialog'"
+                 :aria-label="layer === 'bar' ? undefined : 'Add reaction'"
+                 :data-layer="layer"
+                 :data-hot-id="boxMessage?.id"
+                 data-testid="message-box"
+                 :style="pop.floatingStyles.value"
+                 @pointerover="onBoxPointerOver"
+                 @pointerleave="onBoxPointerLeave"
+                 @focusin="onBoxFocusIn"
+                 @focusout="onBoxFocusOut"
+                 @keydown="onKeydown">
+                <div v-if="layer === 'bar'"
+                     ref="barElement"
+                     class="chat-tools"
+                     role="toolbar"
+                     aria-orientation="horizontal"
+                     :aria-label="toolbarLabel"
+                     data-testid="action-bar">
+                    <div class="chat-tools-react" role="group" aria-label="Quick reactions">
+                        <IconButton v-for="favorite in quickReactions"
+                                    :key="favorite.code"
+                                    class="chat-tool-quick"
+                                    :label="`${isMine(favorite.code) ? 'Remove your' : 'React with'} ${favorite.label}`"
+                                    :tooltip="favorite.label"
+                                    :tabindex="tabIndexOf(`react ${favorite.code}`)"
+                                    :aria-pressed="isMine(favorite.code) ? 'true' : 'false'"
+                                    @click="onReact(favorite.code)">
+                            <span class="chat-tool-face" :class="{ 'is-mine': isMine(favorite.code) }" aria-hidden="true">
+                                <img v-if="!favorite.emoji && favorite.image_url" class="chat-tool-glyph" :src="favorite.image_url" alt="" />
+                                <span v-else class="chat-tool-glyph">{{ favorite.emoji }}</span>
+                            </span>
+                        </IconButton>
+                        <IconButton icon="smile-plus"
+                                    label="More reactions"
+                                    tooltip="Add reaction"
+                                    aria-haspopup="dialog"
+                                    :tabindex="tabIndexOf('add')"
+                                    @click="onOpenPicker" />
+                    </div>
+                    <span v-if="form === 'full'" class="chat-tools-sep" aria-hidden="true" data-testid="action-bar-separator"></span>
+                    <IconButton v-if="!isInThread"
+                                icon="thread"
+                                label="Reply in thread"
+                                :tabindex="tabIndexOf('reply')"
+                                @click="onReplyInThread" />
+                    <IconButton icon="quote"
+                                label="Quote"
+                                :tabindex="tabIndexOf('quote')"
+                                @click="onQuote" />
+                    <Menu icon="dots"
+                          label="More actions"
+                          :items="menuItems"
+                          :anchorAttrs="{ tabindex: tabIndexOf('more'), tooltip: 'More' }"
+                          @select="onMenuSelect"
+                          @openChange="onMenuOpenChange" />
+                </div>
+                <EmojiPicker v-else
+                             mode="react"
+                             :startsOn="layer === 'tray' ? 'tray' : 'full'"
+                             :offered="held?.offered ?? []"
+                             :source="bars?.emojiSource.value ?? emptySource"
+                             :mine="bars?.pickerMine.value ?? []"
+                             :isKeyboardOpened="held?.isKeyboard ?? false"
+                             @react="onChoose"
+                             @showAll="bars?.showAllEmoji()" />
             </div>
-            <span v-if="form === 'full'" class="chat-tools-sep" aria-hidden="true" data-testid="action-bar-separator"></span>
-            <IconButton v-if="!isInThread"
-                        class="chat-tool"
-                        icon="thread"
-                        label="Reply in thread"
-                        :tabindex="tabIndexOf('reply')"
-                        @click="onReplyInThread" />
-            <IconButton class="chat-tool"
-                        icon="reply"
-                        label="Quote"
-                        :tabindex="tabIndexOf('quote')"
-                        @click="onQuote" />
-            <Menu icon="dots"
-                  label="More actions"
-                  :items="menuItems"
-                  :anchorAttrs="{ class: 'chat-tool', tabindex: tabIndexOf('more'), tooltip: 'More' }"
-                  @select="onMenuSelect"
-                  @openChange="onMenuOpenChange" />
-
-            <!-- One tip for the quick reactions, moved to whichever the pointer rests on. -->
-            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-                <div v-if="isTipShown" ref="tipElement" class="chat-tip" role="tooltip" :style="floatingStyles">{{ tipText }}</div>
-            </Teleport>
+            </Transition>
         </div>
-    </Transition>
+    </Teleport>
+
+    <Popover v-if="pop.isSheet.value" :popover="pop" label="Add reaction" sheetHeight="picker">
+        <EmojiPicker v-if="held"
+                     mode="react"
+                     startsOn="full"
+                     :source="bars?.emojiSource.value ?? emptySource"
+                     :mine="bars?.pickerMine.value ?? []"
+                     :isKeyboardOpened="held.isKeyboard"
+                     @react="onChoose" />
+    </Popover>
 </template>
 
 <style scoped>
 /*
-    Beside the bubble it acts on, its top on the bubble's top, on the side away from the face: right
-    of another person's bubble, left of the reader's own, 6px off it, in the widest form that fits
-    there, so it covers neither its own message nor the ones above and below. Where not even its
-    tools alone fit beside the bubble, it stands 4px above the bubble's top at the bubble's own edge,
-    or 4px below the bubble where the column's top leaves no room above; never over its own text.
+    The box's place in its message's row: no size, so the row lays out as if it were not there; it
+    holds the keyboard's way into the box, drawn in the chat's root, and back out to the row.
 */
-.chat-tools {
+.chat-box-guard {
     position: absolute;
-    top: 0;
-    z-index: var(--chat-z-bar);
-    display: flex;
-    gap: 2px;
-    align-items: center;
-    height: 34px;
-    padding: 3px;
-    white-space: nowrap;
-    background: var(--chat-raised);
-    border-radius: var(--chat-r-surface);
-    box-shadow: var(--chat-shadow-bar);
+    width: 0;
+    height: 0;
+    overflow: hidden;
 }
 
-.chat-tools:not(.is-own) {
-    right: auto;
-    left: 100%;
-    margin-left: 6px;
-}
-
-.chat-tools.is-own {
-    right: 100%;
-    left: auto;
-    margin-right: 6px;
-}
-
-.chat-tools.is-flush {
-    top: auto;
-    bottom: 100%;
-    margin-bottom: 4px;
-}
-
-.chat-tools.is-flush.is-low {
-    top: 100%;
-    bottom: auto;
-    margin-top: 4px;
-    margin-bottom: 0;
-}
-
-.chat-tools.is-flush:not(.is-own) {
-    right: 0;
-    left: auto;
-    margin-left: 0;
-}
-
-.chat-tools.is-flush.is-own {
-    right: auto;
-    left: 0;
-    margin-right: 0;
-}
-
-/* Community docks it on the row's top right, inside the row near the top or under the New divider. */
-.chat-tools.is-community,
-.chat-tools.is-community.is-own {
-    top: -18px;
-    right: 14px;
-    left: auto;
-    margin: 0;
-}
-
-.chat-tools.is-community.is-low {
-    top: 0;
-}
-
-.chat-tools.is-community.is-in-thread {
-    right: 10px;
-}
-
-.chat-tools.is-community.is-narrow {
-    right: 8px;
+/* No box of its own; it only stands between the teleport and the fade. */
+.chat-box-layer {
+    display: contents;
 }
 
 /*
-    Pads the bar's hit area, so the pointer moving onto it from the message never falls into a gap:
-    across the 6px to the bubble beside it, the 4px to the bubble under or over it, or down into a
-    channel's row under it.
+    One outlined surface for the bar, the tray and the picker, the popover family's look: one
+    hairline and a soft shadow. Fixed in the chat's root beside its message, so the column's edges
+    never cut it.
 */
-.chat-tools::before {
+.chat-box {
+    z-index: var(--chat-z-popover);
+    white-space: nowrap;
+    background: var(--chat-raised);
+    border: 1px solid var(--chat-line);
+    border-radius: var(--chat-r-surface);
+    box-shadow: var(--chat-shadow-float);
+}
+
+/* Pads the box's hit area, so the pointer moving onto it from the message never falls into a gap. */
+.chat-box::before {
     position: absolute;
-    inset: 0 -6px;
-    content: "";
-    border-radius: inherit;
-}
-
-.chat-tools.is-flush::before {
     inset: -6px;
+    z-index: -1;
+    content: "";
 }
 
-.chat-tools.is-community::before {
-    inset: -6px -6px -14px;
-}
-
-.chat-tools :deep(.chat-tool) {
-    --chat-ic-size: 16px;
-    position: relative;
-    width: 28px;
-    height: 28px;
-    color: var(--chat-icon);
-    border-radius: var(--chat-r-inset);
-    transition: background-color var(--chat-t-fast) var(--chat-ease-state), color var(--chat-t-fast) var(--chat-ease-state), box-shadow var(--chat-t-fast) var(--chat-ease-state);
-}
-
-.chat-tools :deep(.chat-tool:hover) {
-    color: var(--chat-text);
-    background: var(--chat-hover);
-}
-
-.chat-tools :deep(.chat-tool:active) {
-    background: var(--chat-press);
-}
-
-/* More keeps its plain look while its menu is open; the bar staying put already says which it is. */
-.chat-tools :deep(.chat-tool[aria-expanded="true"]) {
-    color: var(--chat-text);
-    background: var(--chat-hover);
+/* Each tool one shared icon button at its one size; the bar is that size and its padding. */
+.chat-tools {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+    padding: 2px;
 }
 
 .chat-tools-react {
@@ -197,21 +146,20 @@
     align-items: center;
 }
 
-.chat-tools :deep(.chat-tool.is-add) {
-    --chat-ic-size: 18px;
-}
-
-/* A quick reaction is a wider tool around its glyph, and only the glyph moves: it grows on hover and gives on a press. */
-.chat-tools .chat-tool.is-glyph {
+/* A quick reaction's glyph fills its button, so the reader's own takes the button's whole face. */
+.chat-tool-face {
+    position: absolute;
+    inset: 0;
     display: grid;
     place-items: center;
-    width: 32px;
-    padding: 0;
     font-size: var(--chat-emoji-tool);
     line-height: 1;
-    background: transparent;
-    border: 0;
-    border-radius: var(--chat-r-inset);
+    border-radius: inherit;
+}
+
+.chat-tool-face.is-mine {
+    background: var(--chat-brand-tint);
+    box-shadow: inset 0 0 0 1px var(--chat-brand-line);
 }
 
 .chat-tool-glyph {
@@ -221,23 +169,19 @@
 
 /* A church's image emoji is held to the glyph's box. */
 img.chat-tool-glyph {
-    width: 19px;
-    height: 19px;
+    width: var(--chat-emoji-tool);
+    height: var(--chat-emoji-tool);
     object-fit: contain;
 }
 
-.chat-tool.is-glyph:hover .chat-tool-glyph {
+/* Only the glyph moves: it grows on hover and gives on a press. */
+.chat-tool-quick:hover .chat-tool-glyph {
     transform: scale(var(--chat-glyph-grow));
 }
 
-.chat-tool.is-glyph:active .chat-tool-glyph {
+.chat-tool-quick:active .chat-tool-glyph {
     transform: scale(var(--chat-press-deep));
     transition-duration: var(--chat-d-glyph-press);
-}
-
-.chat-tools .chat-tool.is-glyph[aria-pressed="true"] {
-    background: var(--chat-brand-tint);
-    box-shadow: inset 0 0 0 1px var(--chat-brand-line);
 }
 
 .chat-tools-sep {
@@ -249,41 +193,10 @@ img.chat-tool-glyph {
 }
 
 /*
-    The ring hugs the tool on the bar's own fill. The oldest Safari Rock supports has no
-    :focus-visible, so every focus rings there, and a browser that can tell a click's focus apart
-    takes the ring back from it.
-*/
-.chat-tools :deep(.chat-tool:focus) {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--chat-raised), 0 0 0 4px var(--chat-brand-ring);
-}
-
-@supports selector(:focus-visible) {
-    .chat-tools :deep(.chat-tool:focus:not(:focus-visible)) {
-        box-shadow: none;
-    }
-}
-
-/*
-    A pressed quick reaction draws its ring with the same shadow the focus ring uses, so the two
-    are drawn together, the focus ring outside the pressed one, and a click's focus keeps only the
-    pressed ring.
-*/
-.chat-tools .chat-tool.is-glyph[aria-pressed="true"]:focus {
-    box-shadow: inset 0 0 0 1px var(--chat-brand-line), 0 0 0 2px var(--chat-raised), 0 0 0 4px var(--chat-brand-ring);
-}
-
-@supports selector(:focus-visible) {
-    .chat-tools .chat-tool.is-glyph[aria-pressed="true"]:focus:not(:focus-visible) {
-        box-shadow: inset 0 0 0 1px var(--chat-brand-line);
-    }
-}
-
-/*
     Shows by fading in and rising home by the small rise; hides by fading out faster, out of the pointer's way.
-    Moving from message to message plays neither, since the same bar is only moved. Animations
+    Moving from message to message plays neither, since the same box is only moved. Animations
     rather than transitions, so each starts the moment the rest or the grace runs out: a transition
-    waits two frames for its starting class to be swapped, and the bar came late.
+    waits two frames for its starting class to be swapped, and the box came late.
 */
 .chat-tools-enter-active {
     --chat-slide-from: var(--chat-rise-sm);
@@ -298,14 +211,27 @@ img.chat-tool-glyph {
 </style>
 
 <script setup lang="ts">
-    import { computed, getCurrentInstance, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, onMounted, PropType, ref, watch } from "vue";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
-    import { PickerOpening } from "./emojiPicker.partial.obs";
-    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
+    import Popover from "../ui/popoverSurface.partial.obs";
+    import { boundaryInsetPx, PopoverPlacement, tabPastEnd, usePopover } from "../ui/popover.partial";
+    import { overlayHostOf } from "../ui/tooltip.partial";
+    import EmojiPicker, { PickerSource } from "./emojiPicker.partial.obs";
+    import { useChatSession } from "../chatSession.partial";
+    import { useActionBars, useColumnActionBar } from "../composables/useActionBar.partial";
     import { isActionCall, isEditableMessage, isSenderBlockable, MessageAction } from "../composables/useMessageActions.partial";
     import { timeLabel } from "../feedLayout.partial";
-    import { ReactionFavorite, TimelineMessage } from "../types.partial";
+    import { BoxLayer, ReactionFavorite, TimelineMessage } from "../types.partial";
+
+    // A message's one box: its actions as a bar, the quick tray Add reaction turns it into, and the
+    // emoji picker All emoji grows it into. Its place in the row is a guard of no size, which keeps
+    // the keyboard's way in and out and what it is placed beside; the box itself is drawn in the
+    // chat's root. Each step focuses what it draws; leaving the tray or the picker gives the bar
+    // back, focus on Add reaction. On a phone the box is the picker alone, a sheet, as every picker
+    // there is.
+
+    defineOptions({ inheritAttrs: false });
 
     // #region Types
 
@@ -313,17 +239,20 @@ img.chat-tool-glyph {
     type Tool = `react ${string}` | "add" | "reply" | "quote" | "more";
 
     /**
-     * How much the bar draws, widest first: three quick reactions and the separator; the first quick
-     * reaction alone; or the tools alone, Add reaction still opening every reaction.
+     * How much the bar draws: three quick reactions and the separator, the first alone, or the
+     * tools alone, the widest that fits beside its bubble; a narrow column never draws all three.
      */
     type Form = "full" | "one" | "bare";
+
+    /** Where a bubble's box stands: beside the bubble, or over its top at its own edge, under it where the column's top leaves no room. */
+    type Side = "beside" | "over";
 
     // #endregion Types
 
     const props = defineProps({
         /**
-         * The stored message the column docks the bar on, carrying the actions the server listed on
-         * it; null while it is on none. Its row lends the bar a dock only while the message can be
+         * The stored message the column docks the box on, carrying the actions the server listed on
+         * it; null while it is on none. Its row lends the box a dock only while the message can be
          * acted on, so the bar draws for any message it is given.
          */
         message: {
@@ -342,19 +271,19 @@ img.chat-tool-glyph {
             default: false
         },
 
-        /** The column shows its one bar on this message: the pointer rested here, or a keyboard reached it. */
+        /** The column shows its one box on this message: the pointer rested here, or a keyboard reached it. */
         isShown: {
             type: Boolean,
             default: false
         },
 
-        /** The column showed or hid the bar without a fade, as a scroll does. */
+        /** The column showed or hid the box without a fade, as a scroll does. */
         isInstant: {
             type: Boolean,
             default: false
         },
 
-        /** Drawn on a channel's flat row, at its top right, rather than on a bubble's corner. */
+        /** Placed on a channel's flat row, at its top right, rather than beside a bubble. */
         isCommunity: {
             type: Boolean,
             default: false
@@ -370,15 +299,6 @@ img.chat-tool-glyph {
         favorites: {
             type: Array as PropType<ReactionFavorite[]>,
             default: () => []
-        },
-
-        /**
-         * What the open picker is placed beside. While that is this bar's More reactions, the bar
-         * stays; another copy of the same message, in the thread beside it, does not.
-         */
-        pickerAnchor: {
-            type: Object as PropType<HTMLElement | null>,
-            default: null
         }
     });
 
@@ -391,28 +311,47 @@ img.chat-tool-glyph {
         (e: "block", message: TimelineMessage): void;
         (e: "serverAction", action: MessageAction): void;
         (e: "react", message: TimelineMessage, code: string): void;
-        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: PickerOpening): void;
+        (e: "openPicker", message: TimelineMessage, anchor: HTMLElement, opening: { offered: string[] }): void;
         (e: "holdChange", isHeld: boolean): void;
     }>();
 
     // #region Values
 
-    /** A column this narrow or less keeps one quick reaction and takes the bar closer to its edge. */
+    /** A column this narrow or less keeps one quick reaction. */
     const narrowColumnPx = 560;
 
     /** The forms, widest first, and how many quick reactions each draws. */
     const forms: Form[] = ["full", "one", "bare"];
     const quickCounts: Record<Form, number> = { full: 3, one: 1, bare: 0 };
 
-    /** A channel's row this close to its column's top keeps its bar lower, inside the column. */
-    const nearTopPx = 30;
-
-    /** How far a bubble's bar stands off the bubble beside it, and above or below it, as its styles draw them. */
+    /** How far the box stands off the bubble beside it, and over or under it. */
     const besideGapPx = 6;
-    const aboveGapPx = 4;
+    const overGapPx = 4;
 
-    const instance = getCurrentInstance();
+    /**
+     * A channel's box: lifted over its row's top so it straddles the edge and covers the least of
+     * the words, in from the row's end, and how far inside the row it moves where the column's top
+     * leaves no room for the lift.
+     */
+    const channelLiftPx = 18;
+    const channelEndInsetPx = 14;
+    const insideGapPx = 4;
 
+    /**
+     * A channel row whose top is less than this under the column's inset has its box inside it,
+     * so the box over the feed's first rows never presses on the feed's top edge.
+     */
+    const channelInsideBelowPx = 30;
+
+    /** What a box drawn alone, outside any block, would pick from: nothing. */
+    const emptySource: PickerSource = { favorites: [], catalog: null, recents: [], churchName: "" };
+
+    const column = useColumnActionBar();
+    const bars = useActionBars();
+    const session = useChatSession();
+
+    const guard = ref<HTMLElement>();
+    const boxElement = ref<HTMLElement>();
     const barElement = ref<HTMLElement>();
 
     const isMenuOpen = ref(false);
@@ -420,39 +359,56 @@ img.chat-tool-glyph {
     /** The tool the arrows last moved to; the first tool holds the tab stop until they move. */
     const activeTool = ref<Tool | null>(null);
 
-    const addTool = ref<InstanceType<typeof IconButton>>();
-
-    const isFlush = ref(false);
-    const isLow = ref(false);
-    const isNarrow = ref(false);
     const form = ref<Form>("full");
+    const side = ref<Side>("beside");
 
-    /** Counts the placings, so one overtaken while it waits for the bar to redraw stops there. */
-    let placing = 0;
+    /** Counts the fittings, so one overtaken while it waits for the box to redraw stops there. */
+    let fitting = 0;
 
-    /** The quick reaction the one tip names, moved to whichever the pointer rests on or a key reaches. */
-    const tipAnchor = ref<HTMLElement>();
-    const tipText = ref("");
+    /** The chat's root, which the box is drawn in; null where it is drawn alone, in place. */
+    const overlayHost = ref<HTMLElement | null>(null);
 
-    /** The chat's root, which the tip is drawn in; null where the bar is drawn alone. */
-    const tipHost = ref<HTMLElement | null>(null);
-
-    const { tipElement, isTipShown, floatingStyles, hideTip, onPointerEnter, onPointerLeave, onPointerDown, onFocus, onBlur } = useTooltip(tipAnchor);
+    /**
+     * The box's floating: beside the bubble, away from the face, its top on the bubble's top; over
+     * the bubble's top at its own edge, or under the bubble, only where the column has no room
+     * beside for even the tools alone. A channel's at its row's top right, from the edge where its
+     * top goes. Kept inside its column. It is open, on the block's stack of floating layers, only
+     * while it is the tray or the picker: Escape, a press elsewhere or Tab past its end then give
+     * the bar back.
+     */
+    const pop = usePopover(guard, boxElement, {
+        placement: placementOf,
+        offset: () => props.isCommunity ? 0 : side.value === "beside" ? besideGapPx : overGapPx,
+        fallbackPlacements: fallbacksOf,
+        virtualAnchor: () => props.isCommunity ? channelEdge() : hostElement()?.getBoundingClientRect() ?? null,
+        boundary: columnElement,
+        isSheet: () => session.isPhone.value,
+        returnTo: returnTarget,
+        alsoInside: () => held.value?.opener
+    });
 
     // #endregion Values
 
     // #region Computed Values
 
-    /** The picker is up beside this bar's More reactions. */
-    const isPickerOpen = computed((): boolean => !!props.pickerAnchor && !!barElement.value?.contains(props.pickerAnchor));
+    /** The block's grown box while it is this column's. */
+    const held = computed(() => {
+        const box = bars?.held.value ?? null;
+        return box && box.column === bars?.kindOf(guard.value) ? box : null;
+    });
+
+    const layer = computed((): BoxLayer => held.value?.layer ?? "bar");
+
+    /** The message the box is on: the grown box's, else the one its column docks it on. */
+    const boxMessage = computed((): { id: number } | null => held.value ? { id: held.value.messageId } : props.message);
 
     /**
-     * A menu or a picker open from the bar keeps it, wherever the pointer went. A keyboard's focus
+     * A menu or the tray open from the box keeps it, wherever the pointer went. A keyboard's focus
      * inside it keeps it too, which its column reads from the focus events that reach it.
      */
-    const isHeld = computed((): boolean => isMenuOpen.value || isPickerOpen.value);
+    const isHeld = computed((): boolean => isMenuOpen.value || !!held.value);
 
-    const isDrawn = computed((): boolean => !!props.message && (props.isShown || isHeld.value));
+    const isDrawn = computed((): boolean => !!held.value || (!!props.message && (props.isShown || isMenuOpen.value)));
 
     /** The favorites the bar's form has room for, first first. */
     const quickReactions = computed((): ReactionFavorite[] => props.favorites.slice(0, quickCounts[form.value]));
@@ -510,15 +466,6 @@ img.chat-tool-glyph {
         return items;
     });
 
-    const placementClasses = computed((): Record<string, boolean> => ({
-        "is-own": props.isOwn,
-        "is-community": props.isCommunity,
-        "is-in-thread": props.isInThread,
-        "is-flush": isFlush.value,
-        "is-low": isLow.value,
-        "is-narrow": isNarrow.value
-    }));
-
     // #endregion Computed Values
 
     // #region Event Handlers
@@ -572,40 +519,88 @@ img.chat-tool-glyph {
         isMenuOpen.value = isOpen;
     }
 
+    /** A quick reaction keeps the bar up, so a second can follow the first. */
     function onReact(code: string): void {
-        hideTip();
         if (props.message) {
             emit("react", props.message, code);
         }
     }
 
-    /** Add reaction opens the tray past the quick reactions the bar already shows. */
+    /**
+     * Add reaction turns the box into the tray, past the quick reactions the bar already shows. It
+     * asks from the box's place in the row, which is what the box stays placed beside.
+     */
     function onOpenPicker(): void {
-        const anchor = addTool.value?.buttonElement;
-        if (props.message && anchor) {
-            emit("openPicker", props.message, anchor, { offered: quickReactions.value.map(favorite => favorite.code) });
+        if (props.message && guard.value) {
+            emit("openPicker", props.message, guard.value, { offered: quickReactions.value.map(favorite => favorite.code) });
         }
     }
 
-    function onQuickEnter(event: MouseEvent, label: string): void {
-        tipAnchor.value = event.currentTarget as HTMLElement;
-        tipText.value = label;
-        onPointerEnter();
+    /**
+     * A choice in the tray or the picker reacts and gives the bar back, focus on what opened the
+     * box. The reaction redraws its message's chips in the patch it causes, which can take the
+     * chip that opened the box away, so the box closes once that patch is drawn and gives focus to
+     * what is there then.
+     */
+    async function onChoose(code: string): Promise<void> {
+        bars?.onPickerReact(code);
+        await nextTick();
+        pop.close({ isFocusReturned: true });
     }
 
-    function onQuickFocus(event: FocusEvent, label: string): void {
-        tipAnchor.value = event.currentTarget as HTMLElement;
-        tipText.value = label;
-        onFocus();
+    /**
+     * Tab reaching the box's place in the row goes on into the box, unless it is leaving the box.
+     * A box hidden there is shown by its column as the focus reaches its message, and focus goes
+     * in once it is drawn.
+     */
+    function onGuardFocus(event: FocusEvent): void {
+        const from = event.relatedTarget;
+        if (from instanceof Node && boxElement.value?.contains(from)) {
+            return;
+        }
+
+        stopElement()?.focus({ preventScroll: true });
     }
 
-    /** The toolbar's arrows: Left and Right step between the tools and wrap, Home and End go to either end. */
+    /** The pointer on the box is on its message, as the box marks itself with its message's. */
+    function onBoxPointerOver(event: PointerEvent): void {
+        column?.onPointerOver(event);
+    }
+
+    function onBoxPointerLeave(): void {
+        column?.onPointerLeave();
+    }
+
+    function onBoxFocusOut(event: FocusEvent): void {
+        column?.onFocusOut(event);
+    }
+
+    /** A tool reached by Tab or a click holds the tab stop, so Tab back into the bar returns to it. */
+    function onBoxFocusIn(event: FocusEvent): void {
+        const index = toolElements().indexOf(event.target as HTMLElement);
+        if (index >= 0) {
+            activeTool.value = tools.value[index];
+        }
+
+        column?.onFocusIn(event);
+    }
+
+    /**
+     * The toolbar's arrows: Left and Right step between the tools and wrap, Home and End go to
+     * either end. Tab past the bar's ends goes to its place in the row and on from there, as if
+     * the box were drawn in the row.
+     */
     function onKeydown(event: KeyboardEvent): void {
         const elements = toolElements();
         const index = elements.indexOf(event.target as HTMLElement);
 
-        // A key inside the open menu is the menu's own.
+        // A key inside the open menu, the tray or the picker is theirs.
         if (index < 0) {
+            return;
+        }
+
+        // The bar is one tab stop, so Tab leaves it from whichever tool holds the stop.
+        if (tabPastEnd(event, elements.filter(element => element.tabIndex >= 0), () => guard.value?.focus({ preventScroll: true }))) {
             return;
         }
 
@@ -631,14 +626,6 @@ img.chat-tool-glyph {
         elements[next].focus();
     }
 
-    /** A tool reached by Tab or a click holds the tab stop, so Tab back into the bar returns to it. */
-    function onFocusIn(event: FocusEvent): void {
-        const index = toolElements().indexOf(event.target as HTMLElement);
-        if (index >= 0) {
-            activeTool.value = tools.value[index];
-        }
-    }
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -657,114 +644,287 @@ img.chat-tool-glyph {
         return Array.from(barElement.value?.querySelectorAll<HTMLElement>(":scope > .chat-tools-react > button, :scope > button") ?? []);
     }
 
-    /** The element the bar is drawn in, read while it is hidden too, from where its placeholder is. */
-    function hostElement(): Element | null {
-        const placeholder = instance?.proxy?.$el as Node | null | undefined;
-        return placeholder?.parentElement ?? null;
+    /** The bar's tab stop, or the first thing to focus in the tray or picker. */
+    function stopElement(): HTMLElement | null {
+        return toolElements().find(element => element.tabIndex === 0) ?? boxElement.value?.querySelector<HTMLElement>("button, input") ?? null;
+    }
+
+    /** What the box's place in the row is placed against: the bubble, or a channel's row; the dock itself draws no box. */
+    function hostElement(): HTMLElement | null {
+        return guard.value?.parentElement?.parentElement ?? null;
+    }
+
+    /** The scrolling column the box's message is in, which the box is kept inside. */
+    function columnElement(): HTMLElement | null {
+        return guard.value?.closest<HTMLElement>("[data-chat-scroller]") ?? null;
+    }
+
+    /** A bubble's box stands at the bubble's edge away from the face, over or under it. */
+    function edgeOf(vertical: "top" | "bottom"): PopoverPlacement {
+        return props.isOwn ? `${vertical}-start` : `${vertical}-end`;
     }
 
     /**
-     * Draws the bar in a form and waits for it to be drawn, so it can be measured. False when
-     * another placing began meanwhile, or the bar went, and this one should stop.
+     * Where a channel's box has its top right corner: lifted over its row's top, in from the row's
+     * end; inside the row, under its top, where the lift would cross the column's inset. A line of
+     * no height, so the bar, the tray and the picker all hang from it and grow down from it.
      */
-    async function drawForm(next: Form, run: number, bar: HTMLElement): Promise<boolean> {
+    function channelEdge(): DOMRect | null {
+        const row = hostElement()?.getBoundingClientRect();
+        if (!row) {
+            return null;
+        }
+
+        const column = columnElement()?.getBoundingClientRect();
+        const isNearTop = !!column && row.top - (column.top + boundaryInsetPx) < channelInsideBelowPx;
+        const top = isNearTop ? row.top + insideGapPx : row.top - channelLiftPx;
+        const right = row.right - channelEndInsetPx;
+        return { x: row.left, y: top, left: row.left, top, right, bottom: top, width: right - row.left, height: 0, toJSON: () => ({}) } as DOMRect;
+    }
+
+    function placementOf(): PopoverPlacement {
+        if (props.isCommunity) {
+            return "bottom-end";
+        }
+
+        if (side.value === "over") {
+            return edgeOf("top");
+        }
+
+        return props.isOwn ? "left-start" : "right-start";
+    }
+
+    /**
+     * Where the box goes when its placement has no room. A channel's bar stays at its row's top,
+     * and a bar fitted beside its bubble stays there; over the bubble it goes under it where the
+     * column's top leaves no room. The tray and the picker, grown from the bar, grow up from where
+     * a channel's bar stood, or up beside a bubble's rather than down, else over or under the
+     * bubble, as room allows.
+     */
+    function fallbacksOf(): PopoverPlacement[] {
+        if (props.isCommunity) {
+            return layer.value === "bar" ? [] : ["top-end"];
+        }
+
+        if (side.value === "over") {
+            return [edgeOf("bottom")];
+        }
+
+        if (layer.value === "bar") {
+            return [];
+        }
+
+        return [props.isOwn ? "left-end" : "right-end", edgeOf("top"), edgeOf("bottom")];
+    }
+
+    /** Draws the bar in a form and waits for it to be drawn, so it can be measured. */
+    async function drawForm(next: Form): Promise<void> {
         if (form.value !== next) {
             form.value = next;
             await nextTick();
         }
+    }
 
-        return run === placing && barElement.value === bar;
+    /** Whether a fitting is still the latest, on the box it began on, read after each wait. */
+    function isFitting(run: number, box: HTMLElement): boolean {
+        return run === fitting && boxElement.value === box;
     }
 
     /**
-     * Places the bar for the room around its message. A bubble's bar takes the widest form that fits
-     * beside the bubble, measured as drawn, all before the browser paints; where none fits it stands
-     * above the bubble's top in the column's form, or below the bubble where the column's top leaves
-     * no room above. A channel's row drops it lower near the column's top, where the feed's edge
-     * would cut it, and keeps it inside the row under the New divider, off the divider's label.
+     * Fits the bar to the room around its message, all before the browser paints: a bubble's bar
+     * takes the widest form that fits beside the bubble inside its column, measured as drawn; where
+     * none fits it stands over the bubble's top in the column's form. A column of 560px or less,
+     * the thread drawer or a feed squeezed by a panel, keeps one quick reaction at most. The tray
+     * and the picker keep the side their bar stood on.
      */
-    async function place(): Promise<void> {
-        // The row's dock draws no box of its own, so the bar is placed against what holds the dock.
-        const bar = barElement.value;
-        const host = bar?.parentElement?.parentElement;
-        const scroller = host?.closest<HTMLElement>("[data-chat-scroller]");
-        if (!bar || !host || !scroller) {
+    async function fit(): Promise<void> {
+        const box = boxElement.value;
+        const host = hostElement();
+        const column = columnElement();
+        if (!box || !host || !column) {
             return;
         }
 
-        const run = ++placing;
-        const box = scroller.getBoundingClientRect();
+        const run = ++fitting;
+        const bounds = column.getBoundingClientRect();
+        const widest: Form = bounds.width <= narrowColumnPx ? "one" : "full";
+
+        if (props.isCommunity || layer.value !== "bar") {
+            await drawForm(widest);
+            if (isFitting(run, box)) {
+                await pop.place();
+            }
+            return;
+        }
+
+        side.value = "beside";
         const anchor = host.getBoundingClientRect();
-
-        // A narrow column, the thread drawer or a feed squeezed by a panel, keeps one quick reaction at most.
-        isNarrow.value = box.width <= narrowColumnPx;
-        const widest: Form = isNarrow.value ? "one" : "full";
-
-        if (props.isCommunity) {
-            const group = host.parentElement;
-            const before = group && group.firstElementChild === host ? group.previousElementSibling : null;
-            isFlush.value = false;
-            isLow.value = !!before?.classList.contains("chat-new-divider") || anchor.top - box.top < nearTopPx;
-            await drawForm(widest, run, bar);
-            return;
-        }
-
-        isFlush.value = false;
-        isLow.value = false;
-        const room = props.isOwn ? anchor.left - box.left : box.right - anchor.right;
+        const room = (props.isOwn ? anchor.left - bounds.left : bounds.right - anchor.right) - boundaryInsetPx - besideGapPx;
         for (const candidate of forms.slice(forms.indexOf(widest))) {
-            if (!await drawForm(candidate, run, bar)) {
+            await drawForm(candidate);
+            if (!isFitting(run, box)) {
                 return;
             }
-            if (bar.offsetWidth + besideGapPx <= room) {
+
+            if (box.offsetWidth <= room) {
+                await pop.place();
                 return;
             }
         }
 
-        if (!await drawForm(widest, run, bar)) {
+        await drawForm(widest);
+        if (isFitting(run, box)) {
+            side.value = "over";
+            await pop.place();
+        }
+    }
+
+    /**
+     * Where focus goes as the tray or the picker gives the bar back: the control outside the box
+     * that opened it, as a chip's smile-plus; on a phone, the message's row; else the bar's Add
+     * reaction, drawn again by then.
+     */
+    function returnTarget(): HTMLElement | null {
+        const opener = held.value?.opener ?? lastOpener;
+        if (opener && opener !== guard.value && opener.isConnected && !boxElement.value?.contains(opener)) {
+            return opener;
+        }
+
+        if (pop.isSheet.value) {
+            return guard.value?.closest<HTMLElement>("[data-message-id]") ?? null;
+        }
+
+        return toolElements().find(element => element.getAttribute("aria-label") === "More reactions") ?? null;
+    }
+
+    /** The opener of the grown box just closed, which the focus given back after the patch still reads. */
+    let lastOpener: HTMLElement | null = null;
+
+    /**
+     * Reveals a box that changed size from its old edges out, placed once at its new size: a clip
+     * rather than a height, so it is never placed again mid-grow. Its edges glide over the block's
+     * one move, which reduced motion takes to nothing, so there the new size is simply there.
+     */
+    function reveal(box: HTMLElement, before: DOMRect): void {
+        const after = box.getBoundingClientRect();
+        const duration = parseFloat(getComputedStyle(box).getPropertyValue("--chat-d-move"));
+        if (typeof box.animate !== "function" || !duration) {
             return;
         }
-        isFlush.value = true;
-        isLow.value = anchor.top - box.top < bar.offsetHeight + aboveGapPx;
+
+        const inset = [before.top - after.top, after.right - before.right, after.bottom - before.bottom, before.left - after.left].map(side => `${Math.max(0, side)}px`).join(" ");
+        box.animate([{ clipPath: `inset(${inset})` }, { clipPath: "inset(0)" }], { duration, easing: getComputedStyle(box).getPropertyValue("--chat-ease-in").trim() || "ease-out" });
     }
 
     // #endregion Functions
 
     // #region Watchers
 
-    // The column moves the one bar from message to message, or takes it off one that can no longer
-    // be acted on, deleted or opened in the editor: the arrows start again from the first tool, the
-    // tip of the last message's quick reaction goes, and a menu left open there holds nothing.
+    // The column moves the one box from message to message, or takes it off one that can no longer
+    // be acted on, deleted or opened in the editor: the arrows start again from the first tool,
+    // and a menu left open there holds nothing.
     watch(() => props.message?.id, () => {
         activeTool.value = null;
         isMenuOpen.value = false;
-        hideTip();
     });
 
-    // Placed each time it shows or moves to another message, since the message may have moved since
-    // the last; and as it is first drawn, since the column draws it shown in the dock it first shows in.
-    watch([isDrawn, () => props.message?.id], async ([isShown]) => {
+    // Fitted each time it shows or moves to another message, since the message may have moved
+    // since the last; first fitted as it is mounted, since a column draws it shown in its first dock.
+    watch([isDrawn, () => props.message?.id], ([isShown]) => {
         if (isShown) {
-            await nextTick();
-            await place();
+            void fit();
         }
-    }, { immediate: true });
+    }, { flush: "post" });
 
-    // The column keeps the bar where it is while something holds it.
+    // Grown, the box is on the stack of floating layers; given back, it leaves it. The block's
+    // grown box changing to another of this column's messages is a fresh opening.
+    watch(held, (box, previous) => {
+        if (box && previous && box.key !== previous.key) {
+            pop.close();
+        }
+
+        if (box) {
+            void pop.open();
+        }
+        else if (previous) {
+            lastOpener = previous.opener;
+            pop.close();
+        }
+    });
+
+    // Escape, a press elsewhere or Tab past its end close the grown box; the block hears it.
+    watch(pop.isOpen, isOpen => {
+        if (!isOpen && held.value) {
+            lastOpener = held.value.opener;
+            bars?.closeReactionPicker();
+        }
+    });
+
+    // Each swap is placed at its new size before it paints, and only once that place is drawn
+    // revealed from the old edges; measured sooner, a box keeping its far edge, beside the reader's
+    // own bubble or a channel row's end, would reveal from the wrong side and jump. The bar given
+    // back is fitted to its message again.
+    watch(layer, async next => {
+        const box = boxElement.value;
+        const before = box?.getBoundingClientRect();
+        await nextTick();
+        if (next === "bar") {
+            await fit();
+        }
+        else {
+            await pop.place();
+        }
+
+        if (box && before && box === boxElement.value) {
+            reveal(box, before);
+        }
+    });
+
+    /** Lets go of the open menu's mark on its message. */
+    let releaseMenuHold: (() => void) | null = null;
+
+    // The menu open marks its message held, as the tray does, so the message's who-reacted card
+    // stays shut while the menu is over it; the mark moves or goes with the menu.
+    watch([isMenuOpen, () => props.message?.id], ([isOpen, id]) => {
+        releaseMenuHold?.();
+        releaseMenuHold = isOpen && id !== undefined && guard.value && bars ? bars.holdMessage(id, guard.value) : null;
+    });
+
+    // The column keeps the box where it is while something holds it.
     watch(isHeld, isHolding => {
         emit("holdChange", isHolding);
     });
+
+    // The column reads the pointer and focus on the box as on its message.
+    watch(boxElement, element => {
+        if (column) {
+            column.box.value = element;
+        }
+    });
+
+    // A keyboard on the box's place while the box was hidden there: its column shows the box as
+    // focus reaches the message, and focus goes on into the box as soon as it is drawn.
+    watch(boxElement, element => {
+        if (element && guard.value && document.activeElement === guard.value) {
+            stopElement()?.focus({ preventScroll: true });
+        }
+    }, { flush: "post" });
 
     // #endregion Watchers
 
     // #region Lifecycle Hooks
 
+    // The root is found once, from where the box's place is first drawn: in its column, inside the chat.
     onMounted(() => {
-        tipHost.value = overlayHostOf(hostElement());
+        overlayHost.value = overlayHostOf(guard.value);
+        if (isDrawn.value) {
+            void nextTick(fit);
+        }
     });
 
-    // A bar taken away while held, its column gone, lets the column go.
+    // A box taken away while held, its column gone, lets the column go.
     onBeforeUnmount(() => {
+        releaseMenuHold?.();
         if (isHeld.value) {
             emit("holdChange", false);
         }

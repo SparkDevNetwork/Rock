@@ -21,7 +21,7 @@
 // hold the one way, including the cases the copies got wrong.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, PropType, ref } from "vue";
-import { PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
+import { isFloatingLayerOpen, PopoverControl, PopoverOptions, usePopover } from "../../../../../src/Communication/Chat/ChatShell/ui/popover.partial";
 import Popover from "../../../../../src/Communication/Chat/ChatShell/ui/popoverSurface.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import { ruleOf, styleOf } from "./partStyle";
@@ -348,6 +348,44 @@ describe("the popover", () => {
     });
 });
 
+// One floating layer at a time, so two never cover each other: while any popover, menu or card is open, a message's bar
+// rises for no hover. A tip, which shows on its own timers and takes no press, is not one.
+describe("the open layer", () => {
+    const wrappers: VueWrapper[] = [];
+
+    afterEach(() => {
+        wrappers.splice(0).forEach(wrapper => wrapper.unmount());
+        document.body.innerHTML = "";
+    });
+
+    function host(props: Record<string, unknown> = {}): PopoverControl {
+        const wrapper = mount(Host, { props, attachTo: document.body });
+        wrappers.push(wrapper);
+        return (wrapper.vm as unknown as { pop: PopoverControl }).pop;
+    }
+
+    test("is open while a popover is, and shut once each closes, however it closes", async () => {
+        const menu = host({ name: "menu" });
+        const card = host({ name: "card" });
+        const tip = host({ name: "tip", options: { isDismissable: false } });
+        expect(isFloatingLayerOpen()).toBe(false);
+
+        await tip.open();
+        expect(isFloatingLayerOpen()).toBe(false);
+
+        await menu.open();
+        expect(isFloatingLayerOpen()).toBe(true);
+        await card.open();
+        menu.close();
+        expect(isFloatingLayerOpen()).toBe(true);
+
+        key("Escape");
+        await settle();
+        expect(card.isOpen.value).toBe(false);
+        expect(isFloatingLayerOpen()).toBe(false);
+    });
+});
+
 describe("the popover surface", () => {
     beforeAll(() => {
         if (typeof window.ResizeObserver === "undefined") {
@@ -364,7 +402,7 @@ describe("the popover surface", () => {
     });
 
     const SurfaceHost = defineComponent({
-        props: { isSheet: { type: Boolean, default: false }, isPill: { type: Boolean, default: false } },
+        props: { isSheet: { type: Boolean, default: false } },
         setup(props, { expose }) {
             const anchor = ref<HTMLElement>();
             const floating = ref<HTMLElement>();
@@ -372,23 +410,23 @@ describe("the popover surface", () => {
             expose({ pop });
             return () => [
                 h("button", { ref: anchor, "data-testid": "anchor" }, "open"),
-                h(Popover, { popover: pop, label: "Things", isPill: props.isPill }, () => h("button", { "data-testid": "inside" }, "inside"))
+                h(Popover, { popover: pop, label: "Things" }, () => h("button", { "data-testid": "inside" }, "inside"))
             ];
         }
     });
 
-    // The emoji tray's quick reactions sit on a pill as wide as they are, the surface's own shape.
-    it("draws a pill when asked, with the pill's corners, and the surface's own corners otherwise", async () => {
-        const wrapper = mount(SurfaceHost, { props: { isPill: true }, attachTo: document.body });
+    // One family of floating surfaces, each with the surface's own corners: the emoji tray is now
+    // the message box's own layer, so no surface is drawn as a pill any more: the box is one 12px surface.
+    it("draws every surface with the surface's own corners, never a pill", async () => {
+        const wrapper = mount(SurfaceHost, { attachTo: document.body });
         const pop = (wrapper.vm as unknown as { pop: PopoverControl }).pop;
         await pop.open();
         const surface = find("popover");
+        const style = styleOf("popoverSurface.partial.obs");
 
-        expect(surface.classList.contains("is-pill")).toBe(true);
-        expect(surface.hasAttribute("ispill")).toBe(false);
-        expect(ruleOf(styleOf("popoverSurface.partial.obs"), ".chat-popover.is-pill")).toMatch(/border-radius:\s*var\(--chat-r-full\)/);
-        await wrapper.setProps({ isPill: false });
         expect(surface.classList.contains("is-pill")).toBe(false);
+        expect(ruleOf(style, ".chat-popover")).toMatch(/border-radius:\s*var\(--chat-r-surface\)/);
+        expect(style).not.toMatch(/is-pill|--chat-r-full/);
         wrapper.unmount();
     });
 

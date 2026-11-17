@@ -43,6 +43,8 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { providedSession } from "../sessionShapes";
 import { nextTick, reactive } from "vue";
+import { readFileSync } from "fs";
+import { join } from "path";
 import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -688,6 +690,126 @@ describe("the reader's own change", () => {
 
         expect(w.findAll(".is-popping")).toHaveLength(0);
         expect(w.findAll(".is-rolling")).toHaveLength(0);
+    });
+});
+
+// Four or more kinds on a bubble fold into one summary chip, so a busy row stays one line: the three most used
+// emoji, ties by the order the page carries them, and the total. A press opens the full row in
+// place and the chevron folds it again, by pointer or keyboard, focus kept on what replaced the
+// control pressed. A row opened stays open while it is drawn. A channel's flat row never folds.
+describe("four or more kinds", () => {
+    const hands = (count: number): ReactionRow => ({ code: "raised_hands", count, mine: false, emoji: "🙌", image_url: null, label: "raising hands" });
+    const party = (count: number, mine = false): ReactionRow => ({ code: "tada", count, mine, emoji: "🎉", image_url: null, label: "party popper" });
+    const summary = (w: VueWrapper): ReturnType<VueWrapper["find"]> => w.find("[data-testid='reaction-summary']");
+
+    test("fold into one chip with the three most used emoji, ties by the page's order, and the total", () => {
+        const w = mountRow({ message: message([thumbsup(2), heart(5), pray(2), hands(1)]) });
+
+        expect(chips(w)).toHaveLength(0);
+        expect(summary(w).findAll(".chat-rx-e").map(glyph => glyph.text())).toEqual(["❤️", "👍", "🙏"]);
+        expect(summary(w).get("[data-testid='reaction-count']").text()).toBe("10");
+        expect(summary(w).attributes("aria-label")).toBe("10 reactions in 4 kinds. Show all");
+        expect(summary(w).attributes("aria-expanded")).toBe("false");
+    });
+
+    test("three kinds stay three chips, and a channel's row draws every kind", () => {
+        const three = mountRow({ message: message([thumbsup(2), heart(5), pray(2)]) });
+        expect(summary(three).exists()).toBe(false);
+        expect(chips(three)).toHaveLength(3);
+        three.unmount();
+
+        const channel = mountRow({ message: message([thumbsup(2), heart(5), pray(2), hands(1), party(1)]), isCommunity: true });
+        expect(summary(channel).exists()).toBe(false);
+        expect(chips(channel)).toHaveLength(5);
+    });
+
+    test("a press opens the full row in place with focus on its first chip, and the chevron folds it with focus on the summary", async () => {
+        const w = mountRow({ message: message([thumbsup(2), heart(5), pray(2), hands(1)]) });
+
+        await summary(w).trigger("click");
+        await settle();
+
+        expect(summary(w).exists()).toBe(false);
+        expect(chips(w).map(c => c.attributes("data-code"))).toEqual(["thumbsup", "heart", "pray", "raised_hands"]);
+        expect(document.activeElement).toBe(chips(w)[0].element);
+        const fold = w.get("button[aria-label='Show fewer']");
+
+        await fold.trigger("click");
+        await settle();
+
+        expect(chips(w)).toHaveLength(0);
+        expect(document.activeElement).toBe(summary(w).element);
+    });
+
+    test("an open row stays open as a kind leaves and comes back", async () => {
+        const held = reactive(message([thumbsup(2), heart(5), pray(2), hands(1)]));
+        const w = mountRow({ message: held });
+        await summary(w).trigger("click");
+        await settle();
+
+        held.reactions!.pop();
+        await settle();
+        expect(w.find("button[aria-label='Show fewer']").exists()).toBe(false);
+        held.reactions!.push(party(1));
+        await settle();
+
+        expect(summary(w).exists()).toBe(false);
+        expect(chips(w)).toHaveLength(4);
+    });
+
+    test("the summary carries the reader's mark when one of the kinds is theirs", () => {
+        const w = mountRow({ message: message([thumbsup(2), heart(5), pray(2), party(1, true)]) });
+
+        expect(summary(w).classes()).toContain("is-mine");
+    });
+});
+
+// A chip that leaves lets its neighbours glide to their new places on both axes, by the block's
+// one move, measured before and after the change.
+describe("a chip leaving", () => {
+    let rects: jest.SpyInstance | null = null;
+
+    afterEach(() => {
+        rects?.mockRestore();
+        rects = null;
+        document.head.querySelector("style[data-test-move]")?.remove();
+    });
+
+    test("glides the chips after it into place", async () => {
+        const style = document.createElement("style");
+        style.dataset.testMove = "";
+        // Longhands in seconds, as a browser reports them; jsdom reports what is declared.
+        style.textContent = ".chat-move { transition-property: transform; transition-duration: 0.22s; }";
+        document.head.append(style);
+
+        // Each chip stands one 40px step along from the one before it, so a chip leaving moves those after it.
+        rects = jest.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(function (this: Element) {
+            const step = Array.from(this.parentElement?.children ?? []).indexOf(this) * 40;
+            return { left: step, top: 0, right: step + 36, bottom: 26, width: 36, height: 26, x: step, y: 0, toJSON: () => ({}) } as DOMRect;
+        });
+        const held = reactive(message([thumbsup(2), heart(5), pray(2)]));
+
+        // The real group, which the test utils stub by default, since it is what measures the move.
+        wrapper = mount(MessageReactions, { props: { reader, listReactors: async () => null, message: held }, attachTo: document.body, global: { ...session(), stubs: { "transition-group": false } } });
+        const w = wrapper;
+
+        held.reactions!.splice(0, 1);
+        await settle();
+
+        expect(chips(w).map(c => c.classes().includes("chat-move"))).toEqual([true, true]);
+    });
+
+    // The chip's own sheet is added to the page after the block's, at the same weight as the
+    // block's one move, so a transition the chip set while it moves would replace the move's and
+    // the glide would run at the chip's quick press. Its own transitions are set only while it is
+    // not moving.
+    test("glides by the block's one move, the chip's own transitions set only while it is not moving", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs"), "utf8");
+        const sheet = source.slice(source.indexOf(">", source.indexOf("<style")) + 1, source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
+        const bodyOf = (selector: string): string => Array.from(sheet.matchAll(/([^{}]+)\{([^}]*)\}/g)).find(match => match[1].trim() === selector)?.[2] ?? "";
+
+        expect(bodyOf(".chat-rx")).not.toMatch(/\btransition\s*:/);
+        expect(bodyOf(".chat-rx:not(.chat-move)")).toMatch(/\btransition\s*:[^;]*\btransform\b/);
     });
 });
 
