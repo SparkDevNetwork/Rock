@@ -2102,6 +2102,32 @@ describe("a feed holding its reader at the newest message", () => {
             }
         });
 
+        // A timeline replaced after a reconnect far behind, or an older range let go, lets the
+        // landed message go; the person scrolling back past it later reads it there, and the feed
+        // neither glides them to it nor flashes it again.
+        test("lands once: the message let go and held again is not landed on again", async () => {
+            const spy = placeLanding();
+            try {
+                const state = timeline([1, 2, 3].map(id => message(id, anna, at(14, id))));
+                const wrapper = draw({ timeline: state, landOnId: 1 });
+                layOut(wrapper, { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 });
+                await ticks();
+                await wrapper.get("[data-message-id='1']").trigger("animationend", { animationName: "chat-flash" });
+                const requested = holdSmoothScrolls(wrapper);
+
+                state.messages.splice(0, 3, ...[7, 8, 9].map(id => message(id, anna, at(14, id))));
+                await ticks();
+                state.messages.unshift(...[1, 2, 3].map(id => message(id, anna, at(14, id))));
+                await ticks();
+
+                expect(isFlashing(wrapper, 1)).toBe(false);
+                expect(requested).toEqual([]);
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
         test("that stops, paints the newest page at the newest message with no flash", async () => {
             const wrapper = draw({ timeline: timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true }), landOnId: 1 });
             const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };

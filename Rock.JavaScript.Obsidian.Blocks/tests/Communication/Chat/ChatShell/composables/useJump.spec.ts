@@ -93,7 +93,8 @@ async function setup(): Promise<{
     landed: number[],
     namedAtOpen: Array<number | null>,
     olderPages: Array<Deferred<void>>,
-    holdOlderPages: () => void
+    holdOlderPages: () => void,
+    shell: { selectChannel: (channelId: string) => Promise<void> }
 }> {
     const timelines = createTimelines({ motion: createMessageMotion(), mask: platformMask, limits: () => ({ history_page_size: 50 }), fetchPage });
     const active = ref<string | null>(channel);
@@ -126,7 +127,16 @@ async function setup(): Promise<{
             }
             await timelines.loadOlder(channelId);
         },
-        threads: { state: { thread: null }, loadOlderReplies: async () => undefined }
+        // a thread opens holding its root's next three replies
+        threads: {
+            state: reactive({ thread: null as { channelId: string, rootId: number, replies: Array<{ id: number }>, hasMore: boolean } | null }),
+            isOpen: (): boolean => false,
+            openThread: async (channelId: string, rootId: number): Promise<void> => {
+                shell.threads.state.thread = { channelId, rootId, replies: [1, 2, 3].map(i => ({ id: rootId + i })), hasMore: false };
+            },
+            loadOlderReplies: async () => undefined
+        },
+        mentions: { threadOpened: () => undefined }
     };
 
     host = mount(defineComponent({
@@ -156,7 +166,7 @@ async function setup(): Promise<{
         }
     }, { flush: "sync" });
 
-    return { jump, timelines, active, landed, namedAtOpen, olderPages, holdOlderPages: () => isHolding = true };
+    return { jump, timelines, active, landed, namedAtOpen, olderPages, holdOlderPages: () => isHolding = true, shell };
 }
 
 // #endregion Fixtures
@@ -267,7 +277,41 @@ describe("a landing in a conversation from elsewhere", () => {
 
         expect(await landing).toBe("stop");
         expect(h.landed).toEqual([]);
+        expect(h.jump.landingMessageId.value).toBeNull();
         expect(h.olderPages).toHaveLength(1);
+    });
+
+    // Leaving the conversation ends its landing, so coming back before the look finishes opens it
+    // as a sidebar row does, at the newest, not glided off to a message asked for before.
+    test("whose conversation the person left and came back to before its look ends, never lands", async () => {
+        const h = await setup();
+        h.holdOlderPages();
+
+        const landing = h.jump.landInConversation(channel, 85);
+        await settle();
+        expect(h.olderPages).toHaveLength(1);
+
+        h.active.value = otherChannel;
+        await settle();
+        h.active.value = channel;
+        await settle();
+        h.olderPages[0].resolve();
+
+        expect(await landing).toBe("stop");
+        expect(h.landed).toEqual([]);
+        expect(h.jump.landingMessageId.value).toBeNull();
+    });
+
+    // Each landing belongs to the conversation it was asked in, so a reply opened in another
+    // conversation, as a mention's row opens one, is not ended by leaving the last landing's.
+    test("a reply opened in another conversation after a landing here still lands", async () => {
+        const h = await setup();
+        expect(await h.jump.landInConversation(channel, 95)).toBe("held");
+
+        void h.shell.selectChannel(otherChannel);
+        await h.jump.landOnReply({ channelId: otherChannel, rootId: 150, messageId: 152 });
+
+        expect(h.jump.landingReplyId.value).toBe(152);
     });
 
     test("overtaken by a quote's jump while it fetches, never lands and is not still looking", async () => {
