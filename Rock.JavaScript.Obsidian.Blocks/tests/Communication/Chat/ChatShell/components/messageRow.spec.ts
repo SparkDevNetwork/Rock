@@ -30,6 +30,7 @@ import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.pa
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import BlockCard from "../../../../../src/Communication/Chat/ChatShell/components/blockCard.partial.obs";
 import MessageQuote from "../../../../../src/Communication/Chat/ChatShell/components/messageQuote.partial.obs";
+import MessageReactions from "../../../../../src/Communication/Chat/ChatShell/components/messageReactions.partial.obs";
 import { ActionBarDock, useActionBar } from "../../../../../src/Communication/Chat/ChatShell/composables/useActionBar.partial";
 import { PendingMessage, TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { problemReportKey } from "../../../../../src/Communication/Chat/ChatShell/problemReport.partial";
@@ -1552,18 +1553,15 @@ function host(favorites: unknown[], listReactors: jest.Mock = jest.fn(async () =
     return { favorites, listReactors, pickerAnchorOf: () => pickerAnchor };
 }
 
-// The bar holding the open picker stays drawn; every other row asks only about its own message,
-// so opening the picker on one message touches no other row. A row lends the column's one bar
-// its props, so the bar gets the anchor of whichever message it is on.
-describe("the open picker", () => {
-    test("is handed to the bar of the message it is open on, and to no other row's", async () => {
-        const anchor = document.createElement("button");
-        const target = message();
-        const other = message({ id: target.id + 1 });
-        const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
-
+// The column holds which message its picker is open on; a row asks the host only about its own
+// message, so opening the picker on one message touches no other row, and the dock a row lends
+// the column's bar carries no anchor of its own. A row lends that dock whenever its message can be
+// acted on, a phone's too, so a picker asked for from a phone's sheet has its column; only a
+// pointer's row marks itself for the bar to follow.
+describe("the column's bar and its picker", () => {
+    function column(rows: TimelineMessage[], reactionHost: unknown, isPhone = false): { lent: Map<number, ActionBarDock>, wrapper: VueWrapper } {
         const lent = new Map<number, ActionBarDock>();
-        const column = defineComponent({
+        const holder = defineComponent({
             components: { MessageRow },
             setup() {
                 const bar = useActionBar(() => null);
@@ -1572,15 +1570,46 @@ describe("the open picker", () => {
                     lent.set(messageId, dock);
                     offer(messageId, dock);
                 };
-                return { personAliasGuid: me, rows: [target, other], reactionHost };
+                return { rows, reactionHost };
             },
-            template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :personAliasGuid="personAliasGuid" :reactionHost="reactionHost" /></div>`
+            template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :reactionHost="reactionHost" /></div>`
         });
-        mount(column);
+        return { lent, wrapper: mount(holder, inSession({ props: { personAliasGuid: me, isPhone } })) };
+    }
+
+    test("opening the picker on a message disables only that message's who-reacted card, and lends the bar no anchor", async () => {
+        const anchor = document.createElement("button");
+        const target = message({ reactions: [heart] });
+        const other = message({ id: target.id + 1, reactions: [heart] });
+        const reactionHost = { ...host([]), pickerAnchorOf: (messageId: number) => messageId === target.id ? anchor : null };
+
+        const { lent, wrapper } = column([target, other], reactionHost);
         await nextTick();
 
-        expect(lent.get(target.id)?.props.value.pickerAnchor).toBe(anchor);
-        expect(lent.get(other.id)?.props.value.pickerAnchor).toBeNull();
+        const reactions = wrapper.findAllComponents(MessageReactions);
+        expect(reactions.map(r => r.props("isCardDisabled"))).toEqual([true, false]);
+        expect(lent.get(target.id)?.props.value).not.toHaveProperty("pickerAnchor");
+    });
+
+    test("a phone's row lends the column its dock but does not mark itself for the pointer", async () => {
+        const target = message();
+
+        const { lent, wrapper } = column([target], host([]), true);
+        await nextTick();
+
+        expect(lent.has(target.id)).toBe(true);
+        expect(wrapper.get("[data-testid='message-row']").attributes("data-hot-id")).toBeUndefined();
+    });
+
+    test("a message that cannot be acted on lends no dock, on a phone or a pointer screen", async () => {
+        const gone = message({ deleted_at: nineOhTwo, body: null });
+
+        const wide = column([gone], host([]));
+        const phone = column([gone], host([]), true);
+        await nextTick();
+
+        expect(wide.lent.size).toBe(0);
+        expect(phone.lent.size).toBe(0);
     });
 });
 
