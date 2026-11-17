@@ -218,7 +218,7 @@
 
     /*
         Motion distances: a popover or small part rises 4 px, a view or row by the rise above, a
-        sheet its whole height. A hover nudges a control by a pixel, grows a glyph, or turns the gear.
+        sheet its whole height and a folded sidebar its whole width. A hover nudges a control by a pixel, grows a glyph, or turns the gear.
         A press is deep for a glyph or small round control and shallow for a wide surface such as a
         quote. A count rolls in from most of its own height. Each goes to nothing under reduced
         motion below, so a part that moves by these needs no reduced-motion rule of its own.

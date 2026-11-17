@@ -602,8 +602,9 @@
 
 /*
     A window too narrow for three columns folds the sidebar away while a panel is open: its column
-    closes and the sidebar waits off to the left, laid over the conversation when the header's
-    sidebar button opens it.
+    closes and the sidebar waits off to the left, faded, laid over the conversation when the
+    header's sidebar button opens it. It slides by the sheet's whole-size distance, which reduced
+    motion takes to nothing, so there it only fades.
 */
 .chat-frame[data-sidebar] {
     grid-template-columns: 0px minmax(0, 1fr) var(--chat-w-panel);
@@ -617,12 +618,14 @@
     z-index: var(--chat-z-panel);
     width: var(--chat-w-side);
     background: var(--chat-sidebar);
-    transform: translateX(-100%);
-    transition: transform var(--chat-t-panel) var(--chat-ease-in);
+    opacity: 0;
+    transform: translateX(calc(-1 * var(--chat-rise-sheet)));
+    transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-base) var(--chat-ease-state);
 }
 
 .chat-frame[data-sidebar="over"] .chat-frame-side {
     box-shadow: var(--chat-shadow-pop);
+    opacity: 1;
     transform: none;
 }
 
