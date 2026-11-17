@@ -300,8 +300,9 @@
                 <div class="chat-frame-panel-inner">
                     <!--
                         Activity's tabs, Mentions and Threads across conversations, are the column's:
-                        one Segmented over the place each of its lists keeps under its title, so the
-                        pill slides from one list to the next and focus stays on the tab chosen.
+                        one Segmented under the one head each of its lists draws, Activity, over the
+                        place each keeps for it, so the pill slides from one list to the next and
+                        focus stays on the tab chosen.
                         Drawn for the column's life and out of reach while Activity is not shown, so
                         the crossfade below is the one place a panel leaves. Drawn first, as where
                         the keyboard starts.
@@ -317,6 +318,7 @@
                     <Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">
                         <ThreadsPanel v-if="shownList === 'threads'"
                                       :key="shownPanel ?? undefined"
+                                      :heading="shownPanel === 'activity' ? 'Activity' : ''"
                                       :tab="threadList.tab"
                                       :rows="threadList.rows"
                                       :hasMore="threadList.hasMore"
@@ -341,6 +343,7 @@
                         </ThreadsPanel>
 
                         <MentionsPanel v-else-if="shownList === 'mentions'"
+                                       heading="Activity"
                                        v-bind="shell.mentions.state.inbox"
                                        :roomTitles="roomTitles"
                                        :roomKinds="roomKinds"
@@ -379,7 +382,7 @@
                                       :isChannel="threadKind === 'channel'"
                                       :isDirectMessage="threadKind === 'person'"
                                       :isFromList="threadOrigin !== null"
-                                      :listTitle="threadOrigin === 'activity' && activityTab === 'mentions' ? 'Mentions' : 'Threads'"
+                                      :listTitle="threadOrigin === 'activity' ? 'Activity' : 'Threads'"
                                       :hasMore="drawnThread.hasMore"
                                       :isLoading="drawnThread.isLoading"
                                       :error="drawnThread.error"

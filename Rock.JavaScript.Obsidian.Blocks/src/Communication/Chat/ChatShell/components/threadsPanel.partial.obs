@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ListPanel title="Threads"
-               :subtitle="subtitle"
+    <ListPanel :title="heading || 'Threads'"
+               :subtitle="heading ? null : subtitle"
                name="threads"
                itemName="thread"
                :entranceKeys="entranceKeys"
@@ -254,6 +254,15 @@
     // #endregion Types
 
     const props = defineProps({
+        /**
+         * The name of the panel holding the list, as Activity, which titles it alone over its
+         * switch; empty for the list's own title and line.
+         */
+        heading: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         /**
          * The one scope shown, as the frame gives it: the open conversation's threads from the
          * header, or every thread followed from Activity.

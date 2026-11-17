@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ListPanel title="Mentions"
-               subtitle="Where people @mentioned you"
+    <ListPanel :title="heading || 'Mentions'"
+               :subtitle="heading ? null : 'Where people @mentioned you'"
                name="mentions"
                itemName="mention"
                :entranceKeys="entranceKeys"
@@ -207,6 +207,15 @@
     // #endregion Types
 
     const props = defineProps({
+        /**
+         * The name of the panel holding the list, as Activity, which titles it alone over its
+         * switch; empty for the list's own title and line.
+         */
+        heading: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         /** The inbox's rows as chat_list_mentions answers them, newest first. */
         rows: {
             type: Array as PropType<MentionRow[]>,
