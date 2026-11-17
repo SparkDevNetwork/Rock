@@ -741,6 +741,23 @@ describe("Community, in a channel", () => {
         expect(block(".chat-msg.is-community.is-mention-me.is-head")).toBe("");
     });
 
+    // A column narrower than the feed, the thread drawer, pads its community rows less. The row
+    // reads that from the column it is drawn in, 20px where the column says nothing, so the drawer
+    // never reaches into the row's own rule to change it.
+    test("a community row pads its sides by its column's say, 20px unless the column sets it", () => {
+        const read = (file: string): string => {
+            const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        };
+        const row = /\.chat-msg\.is-community\s*\{([^}]*)\}/.exec(read("messageRow.partial.obs"))?.[1] ?? "";
+        expect(row).toMatch(/--chat-cm-pad:\s*var\(--chat-cm-column-pad,\s*20px\)/);
+
+        const drawer = read("threadDrawer.partial.obs");
+        expect(drawer).not.toMatch(/:deep\(/);
+        const drawerBody = /\.chat-th-body\.is-community:not\(\.is-phone\)\s*\{([^}]*)\}/.exec(drawer)?.[1] ?? "";
+        expect(drawerBody).toMatch(/--chat-cm-column-pad:\s*16px/);
+    });
+
     // The space between two people is a margin over the new person's head row, outside its box, so
     // no hover, wash or flash covers it; a same-person run takes none.
     test("a new person's head row stands the space between people above it, outside the row", () => {
