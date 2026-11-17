@@ -90,7 +90,7 @@
                      data-testid="sidebar-section"
                      :data-section="section.key">
                     <div v-if="!isNoResults" class="chat-sec">
-                        <h3 data-testid="section-heading">{{ section.title }}</h3>
+                        <h3 class="chat-section-label" data-testid="section-heading">{{ section.title }}</h3>
                         <IconButton v-if="section.key === 'channels'"
                                     class="chat-sec-btn"
                                     icon="plus"
@@ -392,17 +392,12 @@
     padding: 14px 8px 4px 10px;
 }
 
-/* Rock's theme styles every heading, so this one states its whole face. */
+/* Rock's theme styles every heading, so this one states its family and margin; its face is the section label's. */
 .chat-sec h3 {
     margin: 0;
     font-family: inherit;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
     /* A whole-pixel line, so nothing below it sits on a fraction. */
     line-height: 16px;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .07em;
 }
 
 /* A heading's plus, smaller than the head's buttons. */

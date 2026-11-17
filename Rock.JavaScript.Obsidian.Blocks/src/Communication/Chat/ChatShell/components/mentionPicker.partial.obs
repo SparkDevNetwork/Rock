@@ -18,7 +18,7 @@
                     as the picker closes, unless a row was chosen or it never showed.
                 -->
                 <template v-if="drawnRows.length > 0">
-                    <div v-if="hasPeopleDrawn" class="chat-mention-head" aria-hidden="true">People in this {{ place }}</div>
+                    <div v-if="hasPeopleDrawn" class="chat-mention-head chat-section-label" aria-hidden="true">People in this {{ place }}</div>
                     <div :id="listId" role="listbox" aria-label="People to mention">
                         <button v-for="(row, index) in drawnRows"
                                 :id="`${listId}-${index}`"
@@ -76,11 +76,6 @@
 
 .chat-mention-head {
     padding: 6px 10px 4px;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
 }
 
 .chat-mention-item {

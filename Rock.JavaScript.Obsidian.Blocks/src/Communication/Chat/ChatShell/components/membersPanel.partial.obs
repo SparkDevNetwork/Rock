@@ -67,7 +67,7 @@
                 </p>
 
                 <section v-for="section in sections" :key="section.title" :aria-label="section.title">
-                    <h4 class="chat-mb-sec" data-testid="members-section">{{ section.title }}<span v-if="section.count !== null" data-testid="members-section-count">{{ section.count }}</span></h4>
+                    <h4 class="chat-mb-sec chat-section-label" data-testid="members-section">{{ section.title }}<span v-if="section.count !== null" data-testid="members-section-count">{{ section.count }}</span></h4>
                     <!--
                         A removed row collapses as it leaves. Each item is the person's list row, a
                         refused removal's sentence under it; the row's actions follow the pointer
@@ -186,11 +186,6 @@
     gap: 6px;
     align-items: center;
     margin: 14px 10px 4px;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
 }
 
 .chat-mb-sec span {

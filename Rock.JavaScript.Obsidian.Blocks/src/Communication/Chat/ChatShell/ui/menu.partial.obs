@@ -22,10 +22,10 @@
              :aria-describedby="note ? noteId : undefined"
              @keydown="onKeydown">
         <div :class="pop.isSheet.value ? 'chat-menu-rows' : 'chat-menu'">
-            <div v-if="heading" class="chat-menu-head" role="presentation">{{ heading }}</div>
+            <div v-if="heading" class="chat-menu-head chat-section-label" role="presentation">{{ heading }}</div>
             <template v-for="item in items" :key="item.key">
                 <div v-if="item.isSeparatorBefore" class="chat-menu-sep" role="separator"></div>
-                <div v-if="item.heading" class="chat-menu-head" role="presentation">{{ item.heading }}</div>
+                <div v-if="item.heading" class="chat-menu-head chat-section-label" role="presentation">{{ item.heading }}</div>
                 <!-- One of a set of choices, the chosen one checked, is a radio item; any other an action. -->
                 <button type="button"
                         :class="[pop.isSheet.value ? 'chat-sheet-item' : 'chat-menu-item', { 'is-danger': item.isDanger }]"
@@ -125,11 +125,6 @@
 /* Rock's theme styles every heading, so the menu's own states its whole face. */
 .chat-menu-head {
     padding: 6px 10px 4px;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
 }
 
 .chat-menu-hint {

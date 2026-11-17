@@ -1258,6 +1258,19 @@
     transition: transform var(--chat-d-move) var(--chat-ease-in);
 }
 
+/*
+    A group's label over its rows, one look wherever it is drawn: the sidebar's and Members'
+    sections, a menu's heading, the emoji and @ pickers' groups and the loading veil's. Sentence
+    case at the badge size, quiet in the muted ink, with no tracking; each screen places it.
+*/
+.chat-shell .chat-section-label {
+    font-size: var(--chat-fs-badge);
+    font-weight: 600;
+    color: var(--chat-muted);
+    text-transform: none;
+    letter-spacing: 0;
+}
+
 /* A hairline of air between one row's fill and the next. */
 .chat-shell .chat-ls-row + .chat-ls-row {
     margin-top: 1px;

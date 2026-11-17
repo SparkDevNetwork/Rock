@@ -80,7 +80,7 @@
                          class="chat-picker-section"
                          role="rowgroup"
                          :aria-label="drawnSection.label">
-                        <div class="chat-picker-label" role="presentation">{{ drawnSection.label }}</div>
+                        <div class="chat-picker-label chat-section-label" role="presentation">{{ drawnSection.label }}</div>
                         <div class="chat-picker-grid">
                             <div v-for="(row, rowIndex) in drawnSection.rows" :key="rowIndex" class="chat-picker-row" role="row">
                                 <button v-for="cell in row"
@@ -207,12 +207,7 @@
 .chat-picker-label {
     padding: 8px 4px 4px;
     margin: 0;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
     line-height: 13px;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
 }
 
 .chat-picker-grid {

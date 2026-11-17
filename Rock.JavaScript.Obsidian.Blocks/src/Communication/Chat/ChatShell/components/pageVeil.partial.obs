@@ -25,11 +25,11 @@
                 <!-- The list's own sections, so nothing changes shape when it arrives: channels, then direct messages. -->
                 <div v-if="isMarksShown" class="chat-veil-marks" aria-hidden="true" data-testid="veil-marks">
                     <div class="chat-veil-sec" data-testid="veil-section">
-                        <h3 class="chat-veil-heading" data-testid="veil-heading">Channels</h3>
+                        <h3 class="chat-veil-heading chat-section-label" data-testid="veil-heading">Channels</h3>
                         <Skeleton v-for="width in channelWidths" :key="width" shape="channel" :widths="[width]" />
                     </div>
                     <div class="chat-veil-sec" data-testid="veil-section">
-                        <h3 class="chat-veil-heading" data-testid="veil-heading">Direct messages</h3>
+                        <h3 class="chat-veil-heading chat-section-label" data-testid="veil-heading">Direct messages</h3>
                         <Skeleton v-for="width in personWidths" :key="width" shape="person" :widths="[width, 32]" />
                     </div>
                 </div>
@@ -98,12 +98,7 @@
     margin: 0;
     padding: 19px 8px 9px 10px;
     font-family: inherit;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
     line-height: 16px;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .07em;
 }
 
 /* The marks fade in once they are due, so they never pop. */
