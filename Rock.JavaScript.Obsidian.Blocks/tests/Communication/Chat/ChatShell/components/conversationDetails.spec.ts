@@ -480,6 +480,15 @@ describe("Leave", () => {
             .toBe("The others will see that you left. To come back, someone in the conversation will need to add you.");
     });
 
+    // The question's own footer, so its buttons are a dialog footer's large ones.
+    test("asks with large Cancel and Leave buttons, as a dialog's footer does", async () => {
+        const w = mountDetails();
+        await askToLeave(w);
+
+        expect(w.get("[data-testid='leave-cancel']").classes()).toContain("is-lg");
+        expect(w.get("[data-testid='leave-go']").classes()).toContain("is-lg");
+    });
+
     test("Cancel puts the Leave button back and asks for nothing", async () => {
         const w = mountDetails();
         await askToLeave(w);
