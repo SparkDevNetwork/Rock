@@ -23,7 +23,7 @@
                         dialog meanwhile; its tools, Close among them, stay beside the title, so one tap still leaves.
                     -->
                     <div class="chat-dialog-head" :class="{ 'is-turned': pages.isTurned.value }">
-                        <IconButton v-if="pages.isTurned.value" ref="backButton" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
+                        <IconButton v-if="pages.isTurned.value" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
                         <h3 :id="titleId" class="chat-dialog-title" :data-testid="pages.isTurned.value ? 'page-title' : undefined">{{ pages.isTurned.value ? pages.title.value : title }}</h3>
                         <slot name="tools" />
                     </div>
@@ -342,7 +342,6 @@
 
     const dialogElement = ref<HTMLElement>();
     const cancelElement = ref<InstanceType<typeof Button>>();
-    const backButton = ref<InstanceType<typeof IconButton>>();
     const scrollElement = ref<HTMLElement>();
     const titleId = `chat-dialog-${newGuid()}`;
 
@@ -353,8 +352,7 @@
     const pages = provideSurfacePages({
         isOpen: () => props.isOpen,
         surface: () => dialogElement.value,
-        scroller: () => scrollElement.value,
-        backElement: () => backButton.value?.buttonElement
+        scroller: () => scrollElement.value
     });
 
     const session = useChatSession();

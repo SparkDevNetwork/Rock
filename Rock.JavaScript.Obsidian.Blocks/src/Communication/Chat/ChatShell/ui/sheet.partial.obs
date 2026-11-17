@@ -16,7 +16,7 @@
                 <div class="chat-sheet-handle" aria-hidden="true"></div>
                 <!-- Turned to another page: Back and the page's title under the handle, which stays. -->
                 <div v-if="pages.isTurned.value" class="chat-sheet-head">
-                    <IconButton ref="backButton" icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
+                    <IconButton icon="left" label="Back" data-testid="page-back" @click="pages.back()" />
                     <h3 class="chat-sheet-title" data-testid="page-title">{{ pages.title.value }}</h3>
                 </div>
                 <!-- A sheet whose choices lead to other pages draws its own body as the first of them. -->
@@ -169,13 +169,10 @@
     /** The chat's root, which the sheet covers from its bottom edge; null where it is drawn alone. */
     const overlayHost = ref<HTMLElement | null>(null);
 
-    const backButton = ref<InstanceType<typeof IconButton>>();
-
     /** The pages a choice in the sheet turns it into, one at a time, in this one sheet, which grows and shrinks to each. */
     const pages = provideSurfacePages({
         isOpen: () => props.isOpen,
-        surface: () => sheetElement.value,
-        backElement: () => backButton.value?.buttonElement
+        surface: () => sheetElement.value
     });
 
     /** The sheet's height now: the turned-to page's own while one is, else the sheet's. */

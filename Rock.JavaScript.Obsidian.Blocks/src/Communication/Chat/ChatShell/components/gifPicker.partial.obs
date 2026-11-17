@@ -4,7 +4,7 @@
         <div class="chat-picker chat-gif" :class="{ 'is-sheet': isSheetBody }">
             <!--
                 A sheet on a phone is the dialog itself; beside the "+" the popover is. On a touch
-                screen the surface takes focus, or a page's Back, as focus in the search would raise
+                screen the surface takes focus, or the page itself, as focus in the search would raise
                 the keyboard over the GIFs.
             -->
             <div class="chat-gif-head">
@@ -338,7 +338,7 @@
 
     /**
      * What the picker is drawn on: its own popover, which the touch screen's focus starts on, or a
-     * plain page, where the page's Back takes that focus.
+     * plain page, which takes that focus itself.
      */
     const surfaceAttrs = computed((): Record<string, unknown> => props.isPage
         ? { class: "chat-gif-page" }

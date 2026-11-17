@@ -22,7 +22,7 @@
 // A turn is one motion: the pages slide while the surface grows or shrinks from the height of the
 // page it leaves to the height of the page it turns to.
 
-import { computed, ComputedRef, inject, InjectionKey, nextTick, provide, shallowReactive } from "vue";
+import { computed, ComputedRef, inject, InjectionKey, nextTick, provide, shallowReactive, watch } from "vue";
 import { focusQuietly } from "./focusTrap.partial";
 import { isMotionReduced } from "./viewport.partial";
 import { SheetHeight } from "../types.partial";
@@ -38,7 +38,7 @@ export type SurfacePageEntry = {
     /** The drawn page, where focus starts as it is turned to. */
     element: () => HTMLElement | undefined;
 
-    /** Asks the page's owner to close it, for Back and Escape. */
+    /** Asks the page's owner to close it, for Back, Escape and the surface closing. */
     back: () => void;
 };
 
@@ -52,9 +52,6 @@ export type SurfaceParts = {
 
     /** The surface's scrolling body, where each page keeps its own place; none where pages do not scroll. */
     scroller?: () => HTMLElement | undefined;
-
-    /** The head's Back, drawn while a page is turned to. */
-    backElement: () => HTMLElement | undefined;
 };
 
 /** A surface's pages, the first one its own body and the rest turned to over it in order. */
@@ -89,9 +86,10 @@ const surfacePagesKey: InjectionKey<SurfacePages> = Symbol("chat-surface-pages")
 
 /**
  * Gives a surface its pages, for the pages drawn inside it. Focus as a page opens goes to the
- * control the page marks data-autofocus, else Back, quietly, since the person reached for the row
- * that turned it, not for Back; as the top page closes it goes back to the control that turned it.
- * A surface closing with its pages is left to its own trap, which returns focus to its opener.
+ * control the page marks data-autofocus, else to the page itself, which its title names, so a
+ * screen reader says where the person now is; quietly, since the person reached for the row that
+ * turned it. As the top page closes focus goes back to the control that turned it. A surface
+ * closing closes its pages with it, and its own trap returns focus to its opener.
  *
  * @param parts The surface's parts the pages move.
  *
@@ -166,10 +164,11 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
         const before = heightBefore();
         stack.push(entry);
 
-        // After the patch, when the page and the head's Back are drawn; the page starts at its top.
+        // After the patch, when the page and the head are drawn; the page starts at its top.
         void nextTick(() => {
             settleTurn(before, 0);
-            const start = entry.element()?.querySelector<HTMLElement>("[data-autofocus]") ?? parts.backElement();
+            const page = entry.element();
+            const start = page?.querySelector<HTMLElement>("[data-autofocus]") ?? page;
             if (parts.isOpen() && top.value === entry && start) {
                 focusQuietly(start, { preventScroll: true });
             }
@@ -203,6 +202,16 @@ export function provideSurfacePages(parts: SurfaceParts): SurfacePages {
             }
         });
     }
+
+    // A surface closing closes every page on it, the top one first, by each page's owner, so no
+    // owner is left holding a page open and the surface never opens again already turned.
+    watch(parts.isOpen, isOpen => {
+        if (!isOpen) {
+            for (const entry of [...stack].reverse()) {
+                entry.back();
+            }
+        }
+    }, { flush: "sync" });
 
     const pages: SurfacePages = {
         isTurned: computed(() => stack.length > 0),

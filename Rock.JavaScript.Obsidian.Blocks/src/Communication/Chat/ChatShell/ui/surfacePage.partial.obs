@@ -13,13 +13,15 @@
                 name="chat-page"
                 enter-from-class="is-beyond"
                 leave-to-class="is-beyond"
-                leave-active-class="is-leaving">
+                leave-active-class="is-leaving"
+                @beforeLeave="onBeforeLeave">
         <div v-if="isOpen"
              ref="pageElement"
              class="chat-surface-page"
              :class="{ 'is-covered': isCovered }"
              role="group"
              :aria-label="title"
+             tabindex="-1"
              :inert="isCovered || undefined"
              :aria-hidden="isCovered ? 'true' : undefined"
              data-testid="surface-page">
@@ -41,6 +43,11 @@
     flex-direction: column;
     min-height: 0;
     transition: transform var(--chat-t-panel) var(--chat-ease-in), opacity var(--chat-t-panel) var(--chat-ease-in), visibility var(--chat-t-panel);
+}
+
+/* A page holding focus as it is turned to draws no ring around itself, as a dialog holding focus draws none. */
+.chat-surface-page:focus {
+    outline: none;
 }
 
 /* Under a page turned to over it: a quarter of the way to the left, faded, and out of reach. */
@@ -122,6 +129,16 @@
 
     /** Whether another page lies over this one. */
     const isCovered = computed((): boolean => pages?.isCovered(props.isFirst ? null : entry) ?? false);
+
+    /**
+     * A page going back is out of front for its whole leave, out of reach and unheard, though it
+     * still lies over the page it uncovers: no tap, Tab or screen reader lands on it as it goes.
+     * Its last drawing is kept as it leaves, so the leave itself marks it.
+     */
+    function onBeforeLeave(element: Element): void {
+        element.setAttribute("inert", "");
+        element.setAttribute("aria-hidden", "true");
+    }
 
     // A page goes on the stack the moment its owner opens it, while focus is still on the control
     // that turned it, which focus goes back to as it closes.
