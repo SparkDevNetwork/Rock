@@ -32,7 +32,7 @@
 //          refusal: "not_member" | "no_roster_right" | null, query: string,
 //          searchStatus: "searching" | "answered" | "failed" | null; the reader and the phone
 //          flag come from the session
-//   emits: query(text), loadMore, retry, retrySearch, message(personAliasGuid),
+//   emits: query(text), retry, retrySearch, message(personAliasGuid),
 //          person(personAliasGuid), close
 //   marks: members-panel, members-filter, the filter's Clear filter, members-section (with
 //          members-section-count), member-row, member-who, member-you, member-leader,
@@ -224,12 +224,19 @@ describe("states", () => {
     });
 });
 
+// The roster's loader, as the frame binds it: a promise the load-more row waits on, here one that
+// never settles, so a page stays out for as long as a cell looks.
+function waitingLoader(): jest.Mock<Promise<void>, []> {
+    return jest.fn((): Promise<void> => new Promise(() => undefined));
+}
+
 describe("paging", () => {
     test("Load more asks for the next page, and stays focusable while it loads", async () => {
-        const w = draw({ hasMore: true });
+        const loadMore = waitingLoader();
+        const w = draw({ hasMore: true, loadMore });
 
         await w.get("[data-testid='members-more']").trigger("click");
-        expect(w.emitted("loadMore")).toHaveLength(1);
+        expect(loadMore).toHaveBeenCalledTimes(1);
 
         await w.setProps({ isLoadingMore: true });
         const busy = w.get("[data-testid='members-more']");
@@ -237,16 +244,17 @@ describe("paging", () => {
         expect(busy.attributes("aria-disabled")).toBe("true");
         expect(busy.attributes("disabled")).toBeUndefined();
         await busy.trigger("click");
-        expect(w.emitted("loadMore")).toHaveLength(1);
+        expect(loadMore).toHaveBeenCalledTimes(1);
     });
 
     test("a page that failed says so with Try again", async () => {
-        const w = draw({ hasMore: true, moreError: { code: "rpc.transport", severity: "failed" } });
+        const loadMore = waitingLoader();
+        const w = draw({ hasMore: true, moreError: { code: "rpc.transport", severity: "failed" }, loadMore });
 
         expect(text(w, "members-more-error")).toBe("Couldn't load more.");
         expect(w.get("[data-testid='members-more']").text()).toBe("Try again");
         await w.get("[data-testid='members-more']").trigger("click");
-        expect(w.emitted("loadMore")).toHaveLength(1);
+        expect(loadMore).toHaveBeenCalledTimes(1);
     });
 
     // The Load more row is the list's sentinel: it asks as it scrolls into view, once for one
@@ -263,17 +271,18 @@ describe("paging", () => {
             disconnect(): void { /* nothing to let go */ }
         } as unknown as typeof IntersectionObserver;
         try {
-            const w = draw({ hasMore: true });
+            const loadMore = waitingLoader();
+            const w = draw({ hasMore: true, loadMore });
             await nextTick();
             seen[seen.length - 1](true);
-            expect(w.emitted("loadMore")).toHaveLength(1);
+            expect(loadMore).toHaveBeenCalledTimes(1);
 
             await w.setProps({ isLoadingMore: true });
             await w.setProps({ isLoadingMore: false, moreError: { code: "rpc.transport", severity: "failed" } });
             await nextTick();
             seen[seen.length - 1](false);
             seen[seen.length - 1](true);
-            expect(w.emitted("loadMore")).toHaveLength(1);
+            expect(loadMore).toHaveBeenCalledTimes(1);
         }
         finally {
             window.IntersectionObserver = original;
