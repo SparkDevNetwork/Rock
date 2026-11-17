@@ -269,6 +269,9 @@ export type DirectoryRow = {
     can_post_code: string | null;
     description: string | null;
     group_type_name: string | null;
+
+    /** The room's present members, the count its header shows; absent from a platform before Browse showed it. */
+    member_count?: number;
 };
 
 /** What chat_list_directory answers: a page of rows, and every room matching, counted past the page. */
@@ -330,6 +333,12 @@ export type FileItem = {
     /** An image's size after its orientation, so its place is held before it loads; null for a file. */
     width?: number | null;
     height?: number | null;
+
+    /**
+     * A tiny blurred picture of a photo, a webp or jpeg data URL the sender's browser made, drawn
+     * at once while the photo loads; null for a file and for a photo sent before previews.
+     */
+    preview?: string | null;
 };
 
 /**
@@ -750,6 +759,23 @@ export type PersonProfile = PersonRow & {
 
     /** The two-person conversation the caller already has with them, or null. */
     dm_channel_id: string | null;
+
+    /**
+     * The channels and groups both the caller and this person are in today, newest activity first,
+     * capped; absent from a platform before profiles listed them.
+     */
+    shared_conversations?: SharedConversation[];
+
+    /** Every conversation they share, counted past the cap. */
+    shared_conversations_total?: number;
+};
+
+/** A conversation the caller and a person are both in, as a profile lists it; never their direct message. */
+export type SharedConversation = {
+    channel_id: string;
+    name: string;
+    kind: Exclude<RoomKind, "person">;
+    icon_url: string | null;
 };
 
 /** What chat_search_people returns. */
