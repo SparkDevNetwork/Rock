@@ -680,9 +680,10 @@ img.chat-sheet-glyph {
 
     /**
      * Whether the column's bar is shown on this row. The row's hover tint follows it rather than the
-     * pointer, so a box held open on one message leaves the message under the pointer untinted.
+     * pointer, so a box held open on one message leaves the message under the pointer untinted. Read
+     * per message, so the bar moving wakes only the row it leaves and the row it reaches.
      */
-    const isBarHere = computed((): boolean => !!columnBar && columnBar.isShown.value && !!barDock.value && columnBar.dock.value?.element === barDock.value);
+    const isBarHere = computed((): boolean => !!columnBar && !!props.message && columnBar.isOn(props.message.id));
 
     /** The rows that hold a sheet at all, kept while it slides away whatever the message became. */
     const isSheetSurface = computed((): boolean => !!props.message && !props.pending && isTouchLayout.value);
