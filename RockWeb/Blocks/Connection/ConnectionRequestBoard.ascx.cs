@@ -1285,7 +1285,7 @@ ORDER BY ct.[Name], cs.[Name]",
             // Comments can have markdown
             lRequestModalViewModeComments.Text = viewModel.Comments.IsNullOrWhiteSpace() ?
                 string.Empty :
-                viewModel.Comments.ConvertMarkdownToHtml().SanitizeHtml( strict: false );
+                viewModel.Comments.ConvertMarkdownToSanitizedHtml();
 
             // Manual workflows
             BindManualWorkflows();

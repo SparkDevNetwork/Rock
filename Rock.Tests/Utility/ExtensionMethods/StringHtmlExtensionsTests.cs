@@ -5,6 +5,8 @@ using HtmlAgilityPack;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Shared;
+
 namespace Rock.Tests.Utility.ExtensionMethods
 {
     [TestClass]
@@ -561,6 +563,58 @@ namespace Rock.Tests.Utility.ExtensionMethods
             AssertNoLavaOpener( input );
             Assert.AreEqual( "/-" + "-/{ 7 | Plus:7 }}", output );
             Assert.IsFalse( _lavaOpenerRegex.IsMatch( withoutComments ), $"Output '{output}' contains a Lava opener once comments are removed." );
+        }
+
+        #endregion
+
+        #region ConvertMarkdownToSanitizedHtml
+
+        private static string ConvertMarkdownToSanitizedHtml( string markdown )
+        {
+            using ( TestHelper.CreateScopedRockApp() )
+            {
+                return markdown.ConvertMarkdownToSanitizedHtml();
+            }
+        }
+
+        [TestMethod]
+        public void ConvertMarkdownToSanitizedHtml_KeepsTextAsTyped()
+        {
+            var html = ConvertMarkdownToSanitizedHtml( "Tom & Jerry < 5 \"quoted\" it's" );
+
+            Assert.AreEqual( "Tom & Jerry < 5 \"quoted\" it's", System.Net.WebUtility.HtmlDecode( Regex.Replace( html, "<[^>]+>", string.Empty ) ).Trim() );
+            Assert.IsFalse( html.Contains( "&amp;amp;" ), html );
+            Assert.IsFalse( html.Contains( "&amp;lt;" ), html );
+        }
+
+        [TestMethod]
+        public void ConvertMarkdownToSanitizedHtml_KeepsMarkdownFormatting()
+        {
+            var html = ConvertMarkdownToSanitizedHtml( "**bold** *italic*\n\n- one\n- two\n\n[link](https://www.rockrms.com/?a=1&b=2)" );
+
+            Assert.IsTrue( html.Contains( "<strong>bold</strong>" ), html );
+            Assert.IsTrue( html.Contains( "<em>italic</em>" ), html );
+            Assert.IsTrue( html.Contains( "<li>one</li>" ), html );
+            Assert.IsTrue( html.Contains( "<a href=\"https://www.rockrms.com/?a=1&amp;b=2\">link</a>" ), html );
+        }
+
+        [TestMethod]
+        public void ConvertMarkdownToSanitizedHtml_RemovesScript()
+        {
+            var html = ConvertMarkdownToSanitizedHtml( "<b>marker</b> <img src=x onerror=alert(1)> [x](javascript:alert(1)) <a href=\"jav&#x61;script:alert(1)\">y</a> <iframe src=x></iframe><script>alert(1)</script>" );
+
+            Assert.IsTrue( html.Contains( "<b>marker</b>" ), html );
+            Assert.IsFalse( html.Contains( "onerror" ), html );
+            Assert.IsFalse( html.Contains( "javascript" ), html );
+            Assert.IsFalse( html.Contains( "href" ), html );
+            Assert.IsFalse( html.Contains( "<iframe" ), html );
+            Assert.IsFalse( html.Contains( "<script" ), html );
+        }
+
+        [TestMethod]
+        public void ConvertMarkdownToSanitizedHtml_NullValue_ReturnsEmptyString()
+        {
+            Assert.AreEqual( string.Empty, ConvertMarkdownToSanitizedHtml( null ) );
         }
 
         #endregion
