@@ -377,6 +377,20 @@ Guid - ContentChannelItem Guid";
         [BlockAction]
         public BlockActionResult GetCustomSettings()
         {
+            /*
+                11/16/2026 - MSE
+
+                The settings include the Lava template, workflow type, cache settings and the list of
+                content channels. Only block administrators (the people who can open the settings modal)
+                may read them. This matches SaveCustomSettings and the Content Channel View block.
+
+                Reason: Require Administrate permission on the block before returning its settings.
+            */
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( GetAttributeValue( AttributeKey.ContentChannel ).AsGuidOrNull() );
         }
 
@@ -387,6 +401,19 @@ Guid - ContentChannelItem Guid";
         [BlockAction]
         public BlockActionResult GetCustomSettingsForContentChannel( Guid contentChannelGuid )
         {
+            /*
+                11/16/2026 - MSE
+
+                This action returns the same settings and option lists as GetCustomSettings for any
+                channel Guid the caller supplies, so it needs the same Administrate check.
+
+                Reason: Require Administrate permission on the block before returning its settings.
+            */
+            if ( !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden( "Not authorized to edit block settings." );
+            }
+
             return GetSettingsForContentChannel( contentChannelGuid );
         }
 
