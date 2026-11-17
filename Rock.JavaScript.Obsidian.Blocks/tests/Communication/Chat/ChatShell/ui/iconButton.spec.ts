@@ -169,6 +169,44 @@ describe("the icon button", () => {
             expect(tooltip()).not.toBeNull();
         });
     });
+
+    // A finger cannot rest on a button, and a tap that a phone reports as a pointer arriving would
+    // leave a tip standing over the screen, as Back's did; the name is still read aloud.
+    describe("on a screen that cannot hover", () => {
+        const original = window.matchMedia;
+
+        beforeEach(() => {
+            window.matchMedia = ((query: string) => ({ media: query, matches: query === "(hover: none)" })) as unknown as typeof window.matchMedia;
+        });
+
+        afterEach(() => {
+            window.matchMedia = original;
+            jest.restoreAllMocks();
+        });
+
+        test("shows no tooltip for a tap, which a phone reports as the pointer arriving, and keeps its name", async () => {
+            const button = draw().get("button");
+
+            await button.trigger("pointerdown");
+            await button.trigger("mouseenter");
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+
+            expect(tooltip()).toBeNull();
+            expect(button.attributes("aria-label")).toBe("Turn on notifications");
+        });
+
+        test("shows no tooltip for a keyboard's focus either", async () => {
+            jest.spyOn(Element.prototype, "matches").mockReturnValue(true);
+            const button = draw().get("button");
+
+            await button.trigger("focus");
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+
+            expect(tooltip()).toBeNull();
+        });
+    });
 });
 
 // Two sizes: the 32px button of every bar and panel, and the 22px close that sits inside a pill, a

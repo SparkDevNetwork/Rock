@@ -1,17 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Popover :popover="pop"
-             label="Add a GIF"
-             :role="pop.isSheet.value ? '' : 'dialog'"
-             sheetHeight="picker"
-             tabindex="-1"
-             :data-autofocus="isTouch ? '' : undefined"
-             data-testid="gif-picker"
-             @keydown="onKeydown">
-        <div class="chat-picker chat-gif" :class="{ 'is-sheet': pop.isSheet.value }">
+    <component :is="isPage ? 'div' : Popover" v-bind="surfaceAttrs" data-testid="gif-picker" @keydown="onKeydown">
+        <div class="chat-picker chat-gif" :class="{ 'is-sheet': isSheetBody }">
             <!--
                 A sheet on a phone is the dialog itself; beside the "+" the popover is. On a touch
-                screen the surface takes focus, as focus in the search would raise the keyboard over the GIFs.
+                screen the surface takes focus, or a page's Back, as focus in the search would raise
+                the keyboard over the GIFs.
             -->
             <div class="chat-gif-head">
                 <Field ref="searchField"
@@ -114,10 +108,18 @@
 
             <div class="chat-gif-foot" data-testid="gif-foot">Powered by <b>KLIPY</b></div>
         </div>
-    </Popover>
+    </component>
 </template>
 
 <style scoped>
+/* As a page the picker fills the page under the sheet's head, scrolling its GIFs inside it. */
+.chat-gif-page {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+}
+
 .chat-gif-head {
     flex: none;
     padding: 10px 10px 6px;
@@ -289,12 +291,23 @@
         anchor: {
             type: Object as PropType<HTMLElement | null>,
             default: null
+        },
+
+        /**
+         * Whether it is drawn as a page of a sheet another menu turned, as the plus menu's on a
+         * phone: no surface of its own, the sheet's head carrying Back and its title, and the
+         * sheet's owner closing it.
+         */
+        isPage: {
+            type: Boolean,
+            default: false
         }
     });
 
     const emit = defineEmits<{
         /** A GIF was chosen, for the composer to stage. */
         (e: "pick", result: GifResult): void;
+        /** Its own popover closed; a page is closed by its sheet's owner and says nothing. */
         (e: "close"): void;
     }>();
 
@@ -319,6 +332,24 @@
 
     /** Whether the screen is touch only, where the surface rather than the search takes focus as it opens. */
     const isTouch = isHoverless();
+
+    /** Whether the picker fills a sheet, its own on a phone or the one it is a page of. */
+    const isSheetBody = computed((): boolean => props.isPage || pop.isSheet.value);
+
+    /**
+     * What the picker is drawn on: its own popover, which the touch screen's focus starts on, or a
+     * plain page, where the page's Back takes that focus.
+     */
+    const surfaceAttrs = computed((): Record<string, unknown> => props.isPage
+        ? { class: "chat-gif-page" }
+        : {
+            popover: pop,
+            label: "Add a GIF",
+            role: pop.isSheet.value ? "" : "dialog",
+            sheetHeight: "picker",
+            tabindex: "-1",
+            "data-autofocus": isTouch ? "" : undefined
+        });
 
     const searchField = ref<InstanceType<typeof Field>>();
 
@@ -510,13 +541,16 @@
         element?.scrollIntoView?.({ block: "nearest" });
     }
 
+    /** Hands the GIF over; its own popover closes, a page is closed by its sheet's owner. */
     function pick(item: GifResult | undefined): void {
-        if (!item || !pop.isOpen.value) {
+        if (!item || (!props.isPage && !pop.isOpen.value)) {
             return;
         }
 
         emit("pick", item);
-        pop.close({ isFocusReturned: true });
+        if (!props.isPage) {
+            pop.close({ isFocusReturned: true });
+        }
     }
 
     // #endregion Functions
@@ -524,10 +558,11 @@
     // #region Lifecycle Hooks
 
     // Focus goes to the search, unless the screen is touch only, where it would raise the keyboard
-    // over the GIFs; the surface takes it there and Escape still reaches it.
+    // over the GIFs; the surface takes it there and Escape still reaches it. A page is already
+    // open, and its sheet places focus: the search it marks, or Back.
     onMounted(async () => {
         void loadTopics();
-        if (await pop.open()) {
+        if (!props.isPage && await pop.open()) {
             (isTouch ? pop.floating.value : searchElement.value)?.focus({ preventScroll: true });
         }
     });

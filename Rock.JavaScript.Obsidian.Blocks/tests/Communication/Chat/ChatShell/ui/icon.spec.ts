@@ -60,6 +60,15 @@ describe("the notify mode icons", () => {
     });
 });
 
+describe("the quote icon", () => {
+    test("is its own quotation mark, drawn apart from the reply arrow and the thread glyph", () => {
+        const quote = drawn("quote");
+
+        expect(quote).toHaveLength(2);
+        expect(quote.some(shape => drawn("reply").includes(shape) || drawn("thread").includes(shape))).toBe(false);
+    });
+});
+
 describe("the icon's size", () => {
     const source = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs"), "utf8");
     const style = source.slice(source.indexOf("<style"), source.indexOf("</style>")).replace(/\/\*[\s\S]*?\*\//g, "");
