@@ -18,8 +18,7 @@
 // first, the replies in the conversation's look, a Follow toggle in the header and, at its foot, the
 // reply composer its owner fills, the conversation's own Composer with isThread, whose foot offers
 // to send the reply to the conversation too. Escape closes it, or goes back to the threads list it
-// was opened from. A phone never focuses the composer on its own, since the keyboard would cover
-// the thread.
+// was opened from. Where focus goes as it opens is the frame's, tested with the frame.
 //
 // The component these tests are written to, threadDrawer.partial.obs:
 //
@@ -173,7 +172,7 @@ function plain(text: string | undefined | null): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
 }
 
-/** Longer than the drawer waits before it focuses the composer. */
+/** Lets the drawer open and place its thread, with time to spare. */
 async function afterOpen(): Promise<void> {
     await nextTick();
     await new Promise(resolve => setTimeout(resolve, 150));
@@ -956,28 +955,6 @@ describe("Escape", () => {
 
         await back.trigger("click");
         expect(w.emitted("back")).toHaveLength(2);
-    });
-});
-
-describe("focus on open", () => {
-    test("goes to the reply composer on a wide block", async () => {
-        const w = draw();
-        await afterOpen();
-
-        expect(document.activeElement).toBe(w.get("[data-testid='composer-input']").element);
-    });
-
-    test("goes to the back chevron on a phone, never the composer, and the phone has no X", async () => {
-        const w = draw({ isPhone: true });
-        await afterOpen();
-
-        expect(document.activeElement).not.toBe(w.get("[data-testid='composer-input']").element);
-        expect(document.activeElement).toBe(w.get("[data-testid='panel-back']").element);
-        expect(w.get("[data-testid='panel-back']").attributes("aria-label")).toBe("Back");
-        expect(w.find("[data-testid='panel-close']").exists()).toBe(false);
-
-        await w.get("[data-testid='panel-back']").trigger("click");
-        expect(w.emitted("close")).toHaveLength(1);
     });
 });
 

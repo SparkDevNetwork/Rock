@@ -2,9 +2,7 @@
 <template>
     <span ref="placeElement" class="chat-sheet-place" aria-hidden="true"></span>
     <Teleport :to="overlayHost ?? 'body'" :disabled="!overlayHost">
-        <Transition leave-active-class="is-leaving">
-            <Scrim v-if="isOpen" @dismiss="emit('dismiss')" />
-        </Transition>
+        <Scrim :isShown="isOpen" @dismiss="emit('dismiss')" />
         <Transition leave-active-class="is-leaving">
             <div v-if="isOpen"
                  ref="sheetElement"
