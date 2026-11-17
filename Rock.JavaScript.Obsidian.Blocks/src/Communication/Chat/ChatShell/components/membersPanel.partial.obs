@@ -87,6 +87,7 @@
                                      :label="labelOf(row)"
                                      :hitAttrs="{
                                          'data-testid': 'member-who',
+                                         'data-focus-stop': 'member',
                                          'data-person': row.guid,
                                          'data-member': row.guid,
                                          'data-autofocus': row.guid === phoneFocusGuid ? '' : undefined

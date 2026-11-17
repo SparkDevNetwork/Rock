@@ -38,7 +38,7 @@
                     <b class="chat-header-name"
                        data-testid="header-title"
                        :tabindex="kind ? undefined : -1"
-                       :data-header-focus="kind ? undefined : ''">{{ title }}</b>
+                       :data-focus-stop="kind ? undefined : 'header'">{{ title }}</b>
                     <span v-if="kind" class="chat-header-chev"><Icon name="down" size="xs" /></span>
                 </component>
                 <span v-if="connection" class="chat-header-sub" data-testid="connection-badge" data-tone="warning">
@@ -798,8 +798,7 @@ button.chat-header-name-row:hover .chat-header-chev {
             "aria-haspopup": "dialog",
             "aria-label": `${props.title}${otherStatus.value?.label ?? ""}, ${detailsWords.value.toLowerCase()}`,
             "data-testid": "header-details",
-            "data-focus-stop": "details-button",
-            "data-header-focus": ""
+            "data-focus-stop": "header"
         }
         : {});
 

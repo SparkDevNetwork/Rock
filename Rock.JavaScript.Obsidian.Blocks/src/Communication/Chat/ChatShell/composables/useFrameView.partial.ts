@@ -839,8 +839,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return null;
         }
 
-        const mark = stop === "header" ? "[data-header-focus]" : `[data-focus-stop='${stop}']`;
-        const marked = (within ?? place)?.querySelector<HTMLElement>(`${mark}${match ?? ""}`) ?? null;
+        const marked = (within ?? place)?.querySelector<HTMLElement>(`[data-focus-stop='${stop}']${match ?? ""}`) ?? null;
         if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
             return marked;
         }

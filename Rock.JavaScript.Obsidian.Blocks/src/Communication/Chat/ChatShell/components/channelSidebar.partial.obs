@@ -206,6 +206,7 @@
                     aria-haspopup="dialog"
                     :aria-label="`Chat settings, ${me.name}`"
                     data-testid="sidebar-me"
+                    data-focus-stop="sidebar-me"
                     @click="emit('settings')">
                 <Avatar v-if="!isStatusShown" :people="[{ name: me.name, photoUrl: me.photoUrl }]" :size="36" />
                 <span class="chat-me-who">
