@@ -260,10 +260,10 @@ describe("shared conversations", () => {
         const w = mountPanel(profile({ shared_conversations: [shared("Young adults"), shared("Hike planning", "group")], shared_conversations_total: 2 }));
 
         const section = w.get("[data-testid='profile-shared']");
-        expect(section.get("h3").text()).toBe("Shared conversations");
-        const rows = section.findAll("[data-testid='profile-shared-row']");
-        expect(rows.map(row => row.text())).toEqual(["Young adults", "Hike planning"]);
-        await rows[1].trigger("click");
+        expect(section.get("h3").text().replace(/\s+/g, " ")).toBe("Shared conversations 2");
+        const rows = section.findAll("li");
+        expect(rows.map(row => row.get(".chat-pp-room").text())).toEqual(["Young adults", "Hike planning"]);
+        await rows[1].get("[data-testid='profile-shared-row']").trigger("click");
 
         expect(w.emitted("openRoom")).toEqual([["c-Hike planning"]]);
         expect(section.find("[data-testid='profile-shared-more']").exists()).toBe(false);
