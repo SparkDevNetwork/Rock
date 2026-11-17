@@ -982,6 +982,16 @@ describe("the header is this conversation", () => {
         expect(w.emitted("sidebar")).toHaveLength(1);
     });
 
+    // The button is a disclosure for the sidebar, and where focus returns when the sidebar laid
+    // over the conversation is put away, found by its own mark.
+    test("names the sidebar folded away as collapsed, and is the sidebar's focus stop", async () => {
+        const w = mountHeader({ title: "Staff", kind: "channel", isSidebarFolded: true });
+
+        const button = w.get("[data-testid='header-sidebar']");
+        expect(button.attributes("aria-expanded")).toBe("false");
+        expect(button.attributes("data-focus-stop")).toBe("sidebar-button");
+    });
+
     // The chat's one voice says the outage and the service's sentence, so no banner talks over it
     // from a live region of its own.
     test("says the outage assertively and the service's sentence politely, through the chat's one voice", async () => {

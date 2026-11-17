@@ -205,6 +205,22 @@ describe("the sidebar's top", () => {
         expect(activity.attributes("aria-expanded")).toBe("true");
     });
 
+    // Laid over the conversation in a narrow window, the sidebar covers the header's own button,
+    // so its head carries the button that puts it away, where the header's stood.
+    test("while laid over the conversation, leads its head with a button that puts it away", async () => {
+        const w = mountSidebar({ isActivityOffered: true });
+        expect(w.find("[data-testid='sidebar-hide']").exists()).toBe(false);
+
+        await w.setProps({ isOver: true });
+        const hide = w.get("[data-testid='sidebar-hide']");
+        expect(hide.attributes("aria-label")).toBe("Hide conversations");
+        expect(hide.attributes("aria-expanded")).toBe("true");
+        expect(w.get("[data-testid='sidebar-top']").element.firstElementChild).toBe(hide.element);
+
+        await hide.trigger("click");
+        expect(w.emitted("hide")).toHaveLength(1);
+    });
+
     test("leaves Activity out until it is offered, and keeps it in the list's head on a phone", () => {
         expect(mountSidebar().find("[data-testid='sidebar-activity']").exists()).toBe(false);
         wrapper?.unmount();

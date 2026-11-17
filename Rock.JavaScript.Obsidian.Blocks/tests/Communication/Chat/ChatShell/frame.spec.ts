@@ -1663,6 +1663,57 @@ describe("the panel column", () => {
         expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBeUndefined();
     });
 
+    /** A 1100px block with Members open and the sidebar laid over the conversation from the header's button. */
+    async function openSidebarOver(): Promise<VueWrapper> {
+        const w = await mountBlock(1100);
+        await openRow(w, team.channel_id);
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await settle();
+        await w.get("[data-testid='frame-main'] [data-testid='header-members']").trigger("click");
+        await settle();
+        await w.get("[data-testid='header-sidebar']").trigger("click");
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("over");
+        return w;
+    }
+
+    // Laid over the conversation, the sidebar is put away as the block's other overlays are:
+    // Escape, a press on what it covers, or its own button, and the person can always get back.
+    test("puts the sidebar laid over the conversation away on Escape, focus back on the header's sidebar button", async () => {
+        const w = await openSidebarOver();
+        expect(w.get("[data-testid='frame-sidebar']").element.contains(document.activeElement)).toBe(true);
+
+        document.activeElement!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+        expect(w.get("[data-testid='chat-frame']").attributes("data-panel-open")).toBe("true");
+        expect(document.activeElement).toBe(w.get("[data-testid='header-sidebar']").element);
+    });
+
+    test("puts the sidebar laid over the conversation away on a press on the conversation, not on one inside it", async () => {
+        const w = await openSidebarOver();
+
+        w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("over");
+
+        w.get("[data-testid='frame-main'] [data-testid='header-title']").element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await settle();
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+    });
+
+    test("puts the sidebar laid over the conversation away from its own button, focus back on the header's", async () => {
+        const w = await openSidebarOver();
+
+        await w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-hide']").trigger("click");
+        await settle();
+
+        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+        expect(w.find("[data-testid='sidebar-hide']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-sidebar']").element);
+    });
+
     // The column swaps one panel for another in one crossfade: the old list and title fade out
     // over the sheet's swap as the new come in, the old one laid over so nothing jumps.
     test("crossfades from one panel to the next through one transition on the column's slot", () => {
