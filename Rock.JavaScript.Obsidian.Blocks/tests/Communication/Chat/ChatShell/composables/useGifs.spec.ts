@@ -153,6 +153,21 @@ describe("createGifs", () => {
         expect(calls).toHaveLength(2);
     });
 
+    // A first view of no tiles would be a blank sheet with no way on; an answer with no word in it
+    // is no answer, drawn as the failure with Try again, and not kept, so Try again asks again.
+    test("an answer with no topic word in it is a failure, not kept", async () => {
+        const answers: CallResult[] = [
+            { ok: true, data: { words: [] } } as CallResult,
+            { ok: true, data: { words: [{ still: "x" }] } } as CallResult,
+            { ok: true, data: { words: [{ word: "Yes", still: null, mp4: null, w: null, h: null }] } } as CallResult
+        ];
+        const gifs = createGifs({ callFunction: async () => answers.shift() as CallResult, isEnabled: () => true });
+
+        expect(await gifs.covers()).toEqual({ ok: false });
+        expect(await gifs.covers()).toEqual({ ok: false });
+        expect(await gifs.covers()).toEqual({ ok: true, words: [{ word: "Yes", still: null, width: 0, height: 0 }] });
+    });
+
     test("a refusal of the covers as off hides GIFs, as a search's does", async () => {
         const { gifs } = setup({ ok: false, status: 403, error: { code: "rpc.gifs_off", severity: "failed" }, retryAfterSeconds: null });
 
