@@ -81,7 +81,8 @@ const PATTERNS = [
   { rule: 'P8', where: 'script', re: /\b(?:key|code)\s*[!=]==?\s*(["'])Tab\1|(["'])Tab\2\s*[!=]==?\s*[\w.]*\b(?:key|code)\b|\bcase\s+(["'])Tab\3\s*:|\[[^\]\n]*(["'])Tab\4[^\]\n]*\]\s*\)?\s*\.\s*(?:includes|has)\(/g, what: 'Tab handled' },
   { rule: 'P9', where: 'template', re: /\s(?::|v-bind:)(?:isPhone|is-phone|personAliasGuid|person-alias-guid)\s*=/g, what: 'passed down as a binding' },
   { rule: 'P9', where: 'obs-script', re: /\b(?:isPhone|personAliasGuid)\s*:\s*\{\s*type\s*:/g, what: 'declared as a prop' },
-  { rule: 'P10', where: 'script', re: /\b(?:querySelector(?:All)?|closest)\s*\(\s*(["'`])[^"'`]*\[data-testid/g, what: 'an element found by its test id' },
+  // A type argument between the name and its bracket (querySelector<HTMLInputElement>) is the same lookup.
+  { rule: 'P10', where: 'script', re: /\b(?:querySelector(?:All)?|closest)\s*(?:<[^<>()]*>\s*)?\(\s*(["'`])[^"'`]*\[data-testid/g, what: 'an element found by its test id' },
   // Only the channel rows: the directory's and the threads' rows are other lists with other owners.
   { rule: 'P15', where: 'script', re: /\bchannels\s*\.\s*rows\s*\.\s*(?:find|findIndex|findLast|some)\s*\(\s*\(?\s*(\w+)\s*\)?\s*=>[^\n]*?(?:\b\1\s*\.\s*channel_id\s*===?|===?\s*\1\s*\.\s*channel_id\b)/g, what: 'a room looked up in the channel rows' },
 ];
