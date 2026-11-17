@@ -206,6 +206,19 @@ describe("the icon button's sizes and tones", () => {
         expect(ruleOf(styleOf("iconButton.partial.obs"), ".chat-icon-btn.is-open")).toMatch(/background:\s*var\(--chat-brand-wash\)/);
     });
 
+    // A close over a photo, as on a staged GIF, is drawn on the photo's own scrim in the media ink,
+    // as the GIF badge beside it is; a hover keeps that look, since the chat's wash would grey the photo.
+    test("media is the close over a photo: the media ink on the photo's scrim, kept on hover", () => {
+        wrapper = mount(IconButton, { props: { icon: "x", label: "Remove GIF", size: "sm", tone: "media" } });
+        const style = styleOf("iconButton.partial.obs");
+
+        expect(wrapper.get("button").classes()).toContain("is-media");
+        for (const selector of [".chat-icon-btn.is-media", ".chat-icon-btn.is-media:hover"]) {
+            expect(ruleOf(style, selector)).toMatch(/color:\s*var\(--chat-media-fg\)/);
+            expect(ruleOf(style, selector)).toMatch(/background:\s*var\(--chat-media-scrim\)/);
+        }
+    });
+
     test("a failure is marked as one, and keeps its name and its words for a screen reader", () => {
         wrapper = mount(IconButton, { props: { icon: "bang", label: "Not sent. Try again or delete", tone: "failure" }, slots: { default: "<span>Not sent</span>" } });
         const button = wrapper.get("button");

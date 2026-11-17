@@ -1338,20 +1338,21 @@ describe("the composer's GIFs", () => {
         expect(wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
     });
 
-    // The remove is the icon button's small close on a scrim at the GIF's top right; the composer
-    // places it and gives it the media colours, and takes the size from the part rather than its own.
-    test("the staged GIF's remove is the small close, placed on the GIF's top right by the composer", async () => {
+    // The remove is the icon button's small close in its media tone, on the GIF's scrim; the
+    // composer only places it at the GIF's top right, and its size and colours are the part's.
+    test("the staged GIF's remove is the small media close, placed on the GIF's top right by the composer", async () => {
         const { wrapper, tray } = gifTray();
         tray.stageGif(result("first"));
         await nextTick();
 
-        expect(wrapper.get("[data-testid='composer-gif-remove']").classes()).toContain("is-sm");
+        const classes = wrapper.get("[data-testid='composer-gif-remove']").classes();
+        expect(classes).toContain("is-sm");
+        expect(classes).toContain("is-media");
         const place = /\.chat-composer-gif-remove\s*\{([^}]*)\}/.exec(composerStyle())?.[1] ?? "";
         expect(place).toMatch(/position: absolute;/);
         expect(place).toMatch(/top: 6px;/);
         expect(place).toMatch(/right: 6px;/);
-        expect(place).toMatch(/background: var\(--chat-media-scrim\);/);
-        expect(place).not.toMatch(/\b(width|height):/);
+        expect(place).not.toMatch(/\b(width|height|color|background):/);
     });
 
     test("removing the staged GIF puts focus in the message box, not on the page", async () => {
