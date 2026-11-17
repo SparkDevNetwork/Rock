@@ -801,7 +801,6 @@
         }
     }, { immediate: true });
 
-
     // Older replies go in above without moving what the reader is looking at; newer ones, and
     // someone starting to type, are followed when the reader is at the bottom, and the reader's own
     // replies always are.

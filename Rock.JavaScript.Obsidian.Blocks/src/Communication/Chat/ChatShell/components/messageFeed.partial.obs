@@ -307,7 +307,6 @@
     animation: chat-feed-enter var(--chat-d-view) var(--chat-ease-in);
 }
 
-
 /* Each day is its own section, its pill where the day starts. */
 .chat-day {
     position: relative;
@@ -577,8 +576,6 @@
         animation: none;
     }
 }
-
-
 
 </style>
 
@@ -1068,7 +1065,6 @@
         }
     }
 
-
     // #endregion Event Handlers
 
     // #region Functions
@@ -1353,7 +1349,6 @@
             void land(heldLandingId.value, true);
         }
     });
-
 
     onBeforeUnmount(() => {
         actionBar.stop();

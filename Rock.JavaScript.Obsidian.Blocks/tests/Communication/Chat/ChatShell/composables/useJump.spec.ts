@@ -73,7 +73,6 @@ function fetchPage(channelId: string, options: { limit: number, beforeId?: numbe
     return Promise.resolve({ messages, read_cursor: newest, unread_count: 0, has_more: top - 10 > newest - 100 });
 }
 
-
 let host: VueWrapper | null = null;
 
 afterEach(() => {
@@ -262,7 +261,6 @@ describe("a landing in a conversation from elsewhere", () => {
 
         expect(h.jump.landingMessageId.value).toBeNull();
     });
-
 
     test("overtaken by the person opening another conversation, never lands there, even once its page comes", async () => {
         const h = await setup();

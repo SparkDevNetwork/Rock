@@ -1465,7 +1465,6 @@ describe("the drawer's states, drawn by the shared parts", () => {
         expect(source()).not.toMatch(/role="(status|alert)"|aria-live/);
     });
 
-
     test("draws Follow as the shared pill, pressed while following, with its tip", async () => {
         const w = draw({ isFollowing: true });
 
