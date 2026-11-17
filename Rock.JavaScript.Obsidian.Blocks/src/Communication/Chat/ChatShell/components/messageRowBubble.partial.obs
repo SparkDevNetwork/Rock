@@ -19,7 +19,7 @@
                 class="chat-thread-label"
                 data-testid="thread-reply-label"
                 @click="on.openThread">
-            <Icon name="thread" size="xs" />Replied to a thread
+            <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" @jump="on.jump" />
         <div class="chat-msg-line">
@@ -31,8 +31,8 @@
                             class="chat-person-opener"
                             data-testid="sender-avatar"
                             :aria-label="view.displayName"
-                            @click="on.author"><Avatar :people="[view.face]" :size="34" /></button>
-                    <Avatar v-else :people="[view.face]" :size="34" />
+                            @click="on.author"><Avatar :people="[view.face]" :size="34" class="chat-msg-face-pile" /></button>
+                    <Avatar v-else :people="[view.face]" :size="34" class="chat-msg-face-pile" />
                 </template>
             </span>
             <!-- The bubble's box, which its bar is placed beside, level with its top. -->
@@ -167,7 +167,7 @@
     border-radius: var(--chat-r-full);
 }
 
-.chat-msg-face > .chat-person-opener > :deep(.chat-pile) {
+.chat-msg-face > .chat-person-opener > .chat-msg-face-pile {
     position: static;
 }
 
@@ -189,7 +189,7 @@
     width: 34px;
 }
 
-.chat-msg-face > :deep(.chat-pile) {
+.chat-msg-face > .chat-msg-face-pile {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -458,7 +458,7 @@
     transition: color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-thread-label :deep(.chat-ic) {
+.chat-thread-label-ic {
     color: var(--chat-icon);
 }
 

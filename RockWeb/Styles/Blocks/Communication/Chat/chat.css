@@ -1151,6 +1151,12 @@
     background: var(--chat-mn-me-bg);
 }
 
+/* A holder may ring the chips that reached the reader, theirs and @all, by --chat-mn-ring; a washed row does. */
+.chat-mn.is-you,
+.chat-mn.is-all {
+    box-shadow: var(--chat-mn-ring, none);
+}
+
 /* The name alone sets the chip's baseline; the lead, centred, is never a baseline of its own. */
 .chat-mn-name {
     align-self: baseline;

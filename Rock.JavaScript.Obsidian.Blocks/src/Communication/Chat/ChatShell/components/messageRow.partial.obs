@@ -20,7 +20,7 @@
         <template v-if="state === 'system'">
             <span class="chat-sys-icon" aria-hidden="true"><Icon :name="systemIcon" :size="layout === 'community' ? 'sm' : 'xs'" /></span>
             <span class="chat-sys-text">
-                <MessageBody :text="text" :pieces="pieces" :isConversation="!isChannel" />
+                <MessageBody :text="text" :pieces="pieces" :isConversation="!isChannel" isInline />
                 <span v-if="layout === 'community'" class="chat-sys-time">{{ time }}</span>
             </span>
         </template>
@@ -119,9 +119,14 @@
         outline: none;
     }
 
+    /* A click's focus keeps the corners the row has at rest: square, or a washed row's own. */
     .chat-msg.is-community:focus:not(:focus-visible) {
         outline: none;
-        border-radius: var(--chat-cm-radius, 0);
+        border-radius: 0;
+    }
+
+    .chat-msg.is-community.is-mention-me:focus:not(:focus-visible) {
+        border-radius: var(--chat-r-row);
     }
 }
 
@@ -242,30 +247,15 @@
     any row.
 */
 .chat-msg.is-community.is-mention-me {
-    --chat-cm-radius: var(--chat-r-row);
+    /* The chip that reached the reader, theirs or @all, rings itself in the church's line, standing off the wash. */
+    --chat-mn-ring: 0 0 0 1px var(--chat-mention-ring);
     margin-inline: var(--chat-cm-inset);
     padding-block: calc(var(--chat-cm-row-pad) - 1px);
     padding-inline: calc(var(--chat-cm-pad) - var(--chat-cm-inset));
     background-color: var(--chat-row-mention);
     background-clip: padding-box;
     border-block: 1px solid transparent;
-    border-radius: var(--chat-cm-radius);
-}
-
-/* The chip that reached the reader, theirs or @all, takes a thin ring in the church's line, so it stands off the wash. */
-.chat-msg.is-community.is-mention-me :deep(.chat-mn.is-you),
-.chat-msg.is-community.is-mention-me :deep(.chat-mn.is-all) {
-    box-shadow: 0 0 0 1px var(--chat-mention-ring);
-}
-
-/*
-    The bar is docked to the row, which stands in from the feed's edge; pushed back out by the
-    same inset, it holds its place against the feed, wherever its own placement puts it. Its top
-    is measured from inside the row's clear 1px top edge, so it is lifted back by that pixel.
-*/
-.chat-msg.is-community.is-mention-me :deep(.chat-tools) {
-    margin-top: -1px;
-    margin-right: calc(-1 * var(--chat-cm-inset));
+    border-radius: var(--chat-r-row);
 }
 
 /* A system line. */
@@ -341,11 +331,6 @@
     align-items: center;
     justify-content: center;
     height: 20px;
-}
-
-.chat-sys-text :deep(.chat-message-body),
-.chat-sys-text :deep(.chat-body-text) {
-    display: inline;
 }
 
 /*

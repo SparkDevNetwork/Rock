@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-message-body" data-testid="message-body">
+    <div class="chat-message-body" :class="{ 'is-inline': isInline }" data-testid="message-body">
         <template v-for="(row, rowIndex) in rows" :key="rowIndex">
             <hr v-if="row.kind === 'divider'" class="chat-block-divider" data-testid="block-divider" />
             <div v-else-if="row.kind === 'image'" class="chat-block-image" data-testid="block-image">
@@ -53,6 +53,12 @@
 .chat-message-body {
     white-space: pre-wrap;
     overflow-wrap: break-word;
+}
+
+/* Inline, the text runs on in its holder's line; a block, an image or a row of buttons, still stands on its own. */
+.chat-message-body.is-inline,
+.chat-message-body.is-inline .chat-body-text {
+    display: inline;
 }
 
 /* The mention chip's look is in the sheet, shared with the editor. */
@@ -185,6 +191,12 @@ button.chat-mn {
 
         /** A direct message or group, whose @all chip says "conversation" rather than "channel". */
         isConversation: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Whether the body runs inline in its holder's line, so what the holder writes after it rides at its end. */
+        isInline: {
             type: Boolean,
             default: false
         },

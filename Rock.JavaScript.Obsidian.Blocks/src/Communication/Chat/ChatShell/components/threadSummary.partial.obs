@@ -15,7 +15,7 @@
             @click="onClick"
             @animationend.self="isPopping = false">
         <!-- Icon, count and the newest repliers, the unread dot at the pill's outer top corner. -->
-        <Icon name="thread" size="sm" />
+        <Icon name="thread" size="sm" class="chat-tsum-ic" />
         <b data-testid="thread-count">{{ count }}</b>
         <span class="chat-tsum-faces" data-testid="thread-faces">
             <Avatar v-if="faces.length > 0" :people="faces" :size="18" isOneLetter />
@@ -64,7 +64,7 @@
     --chat-ic-size: 14px;
 }
 
-.chat-tsum :deep(.chat-ic) {
+.chat-tsum-ic {
     color: var(--chat-icon);
 }
 
@@ -84,7 +84,7 @@
     border-color: var(--chat-thread-unread-line);
 }
 
-.chat-tsum.is-unread :deep(.chat-ic) {
+.chat-tsum.is-unread .chat-tsum-ic {
     color: var(--chat-brand-ink);
 }
 

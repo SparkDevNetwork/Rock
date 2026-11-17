@@ -5,7 +5,7 @@
         <span v-if="isGone" class="chat-quote-line is-gone">
             <span class="chat-sr-only">{{ label }}. </span>
             <Icon name="reply" size="xs" class="chat-quote-arrow" data-testid="quote-arrow" />
-            <Icon :name="goneIcon" size="xs" />
+            <Icon :name="goneIcon" size="xs" class="chat-quote-gone-ic" />
             <span class="chat-quote-text" data-testid="quote-body">{{ goneText }}</span>
         </span>
         <button v-else type="button" class="chat-quote-line" :aria-label="`${label}: ${preview}. Jump to the original`" @click="onJump">
@@ -18,7 +18,7 @@
 
     <span v-else-if="isGone" class="chat-quote is-gone" :class="{ 'is-own': isOwn }" data-testid="message-quote">
         <!-- A direct message: a quiet ghost of the original, its fill matching whose bubble it came from. -->
-        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" />{{ label }}</span>
+        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" class="chat-quote-label-ic" />{{ label }}</span>
         <span class="chat-quote-body" data-testid="quote-body"><Icon :name="goneIcon" size="xs" />{{ goneText }}</span>
     </span>
     <button v-else
@@ -28,7 +28,7 @@
             data-testid="message-quote"
             :aria-label="`Jump to ${isQuoteOfReader ? 'your message' : `${quotedName}'s message`}: ${preview}`"
             @click="onJump">
-        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" />{{ label }}</span>
+        <span class="chat-quote-label" data-testid="quote-label"><Icon name="reply" size="xs" class="chat-quote-label-ic" />{{ label }}</span>
         <span class="chat-quote-body" data-testid="quote-body"><span class="chat-quote-clamp">{{ preview }}</span></span>
     </button>
 </template>
@@ -77,7 +77,7 @@
     transition: color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-quote-label :deep(.chat-ic) {
+.chat-quote-label-ic {
     color: var(--chat-icon);
 }
 
@@ -236,8 +236,8 @@ button.chat-quote:active .chat-quote-body {
     cursor: default;
 }
 
-.chat-quote-line :deep(.chat-quote-arrow),
-.chat-quote-line.is-gone :deep(.chat-ic) {
+.chat-quote-line .chat-quote-arrow,
+.chat-quote-line .chat-quote-gone-ic {
     color: var(--chat-icon);
 }
 </style>

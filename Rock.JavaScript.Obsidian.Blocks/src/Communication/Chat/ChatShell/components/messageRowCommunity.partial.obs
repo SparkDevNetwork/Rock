@@ -19,7 +19,7 @@
                 class="chat-thread-label"
                 data-testid="thread-reply-label"
                 @click="on.openThread">
-            <Icon name="thread" size="xs" />Replied to a thread
+            <Icon name="thread" size="xs" class="chat-thread-label-ic" />Replied to a thread
         </button>
         <MessageQuote v-if="view.isQuoteShown && view.message" :message="view.message" :isOwn="view.isOwn" isCommunity @jump="on.jump" />
         <div class="chat-cm-gutter">
@@ -55,7 +55,7 @@
                            v-on="on.editor" />
             <div v-else class="chat-cm-text" :class="{ 'is-tomb': view.isTomb, 'is-jumbo': view.isJumbo, 'is-crossfading': view.isCrossfading }">
                 <Icon v-if="view.isTomb" :name="view.tombIcon" size="sm" class="chat-tomb-icon" />
-                <MessageBody :text="view.text" :pieces="view.pieces" :isPersonOpenable="!!view.message" @person="on.person" />
+                <MessageBody :text="view.text" :pieces="view.pieces" :isPersonOpenable="!!view.message" isInline @person="on.person" />
                 <span v-if="view.isEdited" class="chat-cm-edited" :class="{ 'is-swapping': view.isEditedNow }" data-testid="message-edited">(edited)</span>
                 <span v-if="view.isSendingShown" class="chat-cm-state"><Icon name="clock" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sending…</span></span>
                 <span v-else-if="view.state === 'sent'" class="chat-cm-state is-sent"><Icon name="check" size="xs" /><span class="chat-cm-state-words" data-testid="message-state">Sent</span></span>
@@ -120,11 +120,23 @@
 }
 
 /*
-    Where the column's one bar is drawn while it is on this message, on the row's top right; no
-    box, so the bar is placed against the row itself.
+    Where the column's one bar is drawn while it is on this message: a box with no height along the
+    row's top edge, which the bar's own rules place it against, on the right.
 */
 .chat-tools-dock {
-    display: contents;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+}
+
+/*
+    A washed row stands in from the feed's edge, behind a clear 1px top edge; its dock stands back
+    out by both, so the bar holds its place against the feed wherever its own placement puts it.
+*/
+.is-mention-me > .chat-tools-dock {
+    top: -1px;
+    right: calc(-1 * var(--chat-cm-inset));
 }
 
 .is-sending .chat-cm-text {
@@ -186,7 +198,7 @@
     transition: color var(--chat-t-fast) var(--chat-ease-state);
 }
 
-.chat-thread-label :deep(.chat-ic) {
+.chat-thread-label-ic {
     color: var(--chat-icon);
 }
 
@@ -305,12 +317,6 @@
     color: var(--chat-text);
     overflow-wrap: anywhere;
     transition: opacity var(--chat-t-base) var(--chat-ease-state);
-}
-
-/* The body runs inline, so (edited), Sending… and Sent ride at its end and never move the rows below. */
-.chat-cm-text :deep(.chat-message-body),
-.chat-cm-text :deep(.chat-body-text) {
-    display: inline;
 }
 
 .chat-cm-text.is-jumbo {
