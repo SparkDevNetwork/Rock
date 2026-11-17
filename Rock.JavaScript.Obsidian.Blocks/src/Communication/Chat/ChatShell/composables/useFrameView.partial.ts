@@ -42,7 +42,7 @@ import { ToastNotice } from "../components/errorToast.partial.obs";
 import { ChatShell } from "../shell.partial";
 import { FocusStop, PersonRow } from "../types.partial";
 import { tokenDuration, tokenLength } from "../ui/brand.partial";
-import { focusQuietly } from "../ui/focusTrap.partial";
+import { focusQuietly, isDrawn } from "../ui/focusTrap.partial";
 import { isMotionReduced } from "../ui/viewport.partial";
 import { searchStatus, shownMembers, successorChoices } from "./useMembers.partial";
 import { useRoomsView } from "./useRoomsView.partial";
@@ -209,6 +209,12 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
 
     /** Activity's Segmented chose its other tab. */
     onActivityTab: (tab: ActivityTab) => void;
+
+    /**
+     * The column's crossfade began to fade a panel out: it is out of reach from then on, so the
+     * keyboard and focus go only into the panel coming in.
+     */
+    onPanelLeave: (element: Element) => void;
 
     /** The header's sidebar button, while the sidebar is folded away: it opens over the conversation. */
     onSidebarOver: () => void;
@@ -497,19 +503,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         shownPanel.value = kind;
         openList(kind);
 
-        // Focus goes to the panel's first control, or its X or back chevron when it has none yet,
-        // without that button's tooltip, as a list whose first control is a tab shows none. The
-        // column is still 0px wide here, so a focus that scrolled would scroll the column to the
-        // control and drag the content in from its edge instead of letting it slide.
         await nextTick();
-        const first = panelElement.value?.querySelector<HTMLElement>("[data-autofocus]");
-        if (first) {
-            first.focus({ preventScroll: true });
-        }
-        else {
-            // the back chevron is drawn before the X, so it is the one found first when both are
-            focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
-        }
+        focusPanelStart();
     }
 
     /** Activity's Segmented chose a tab: its list takes the other's place. */
@@ -521,6 +516,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         releasePanel();
         activityTab.value = tab;
         openList("activity");
+    }
+
+    /** The panel fading out is out of reach and unread while the next fades in over its place. */
+    function onPanelLeave(element: Element): void {
+        element.setAttribute("inert", "");
+        element.setAttribute("aria-hidden", "true");
     }
 
     /** The conversation's empty threads list asked for every thread followed, which Activity's Threads lists. */
@@ -930,7 +931,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
         const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
         for (const target of order) {
-            const element = target instanceof HTMLElement ? target : stopElement(target, place, options);
+            // A place in a pane out of reach takes no focus, so the order goes on to the next.
+            const element = target instanceof HTMLElement ? (isDrawn(target) ? target : null) : stopElement(target, place, options);
             if (!element) {
                 continue;
             }
@@ -963,12 +965,32 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return null;
         }
 
-        const marked = (within ?? place)?.querySelector<HTMLElement>(`[data-focus-stop='${stop}']${match ?? ""}`) ?? null;
+        const marked = firstDrawn(within ?? place, `[data-focus-stop='${stop}']${match ?? ""}`);
         if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
             return marked;
         }
 
         return marked.querySelector<HTMLElement>("button") ?? marked;
+    }
+
+    /**
+     * Puts focus where the panel the column shows starts: its first control, or its back chevron
+     * or X when it has none yet, without that button's tooltip, as a list whose first control is
+     * a tab shows none. A panel fading out of the column is out of reach, so only the one coming
+     * in is looked in. The column may still be 0px wide, so a focus that scrolled would scroll the
+     * column to the control and drag the content in from its edge instead of letting it slide.
+     *
+     * @returns The element focused, or null when the column draws nothing to focus.
+     */
+    function focusPanelStart(): HTMLElement | null {
+        const first = firstDrawn(panelElement.value, "[data-autofocus]");
+        if (first) {
+            first.focus({ preventScroll: true });
+            return first;
+        }
+
+        // the back chevron is drawn before the X, so it is the one found first when both are
+        return focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
     }
 
     /**
@@ -1183,6 +1205,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         onBack,
         onListPanel,
         onActivityTab,
+        onPanelLeave,
         onSidebarOver,
         onThreadsTab,
         openThreadFromList,
@@ -1206,6 +1229,19 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         ...membersPanelViews(shell, rooms, dependencies.campuses),
         ...threadsPanelWiring(shell, activeChannelId, drawnThread, dependencies.showNotice)
     };
+}
+
+/**
+ * The first element in a place that matches and is drawn for the keyboard, past any in a pane out
+ * of reach, as a phone's panes behind the front one and a panel fading out are.
+ *
+ * @param place Where to look.
+ * @param selector What to look for.
+ *
+ * @returns The element, or null when none is drawn.
+ */
+function firstDrawn(place: ParentNode | undefined, selector: string): HTMLElement | null {
+    return Array.from(place?.querySelectorAll<HTMLElement>(selector) ?? []).find(isDrawn) ?? null;
 }
 
 /**

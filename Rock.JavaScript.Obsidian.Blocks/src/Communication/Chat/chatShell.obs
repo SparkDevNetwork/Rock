@@ -291,12 +291,21 @@
                    :aria-hidden="isPanelHidden ? 'true' : undefined"
                    :inert="isPanelHidden || undefined"
                    :style="isPanelGone ? goneStyle : undefined">
-                <!--
-                    One panel gives way to the next in one crossfade, the old laid over the new. Activity's
-                    Segmented, Mentions and Threads across conversations, fills its shown list's top.
-                -->
                 <div class="chat-frame-panel-inner">
+                    <!--
+                        Activity's tabs, Mentions and Threads across conversations, are the column's
+                        while Activity shows: one Segmented over the place each of its lists keeps
+                        under its title, so the pill slides from one list to the next and focus
+                        stays on the tab chosen. Drawn first, as where the keyboard starts.
+                    -->
                     <Transition name="chat-panel-swap">
+                        <div v-if="shownPanel === 'activity'" class="chat-frame-activity">
+                            <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
+                        </div>
+                    </Transition>
+
+                    <!-- One panel gives way to the next in one crossfade, the old laid over the new and out of reach. -->
+                    <Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">
                         <ThreadsPanel v-if="shownList === 'threads'"
                                       :key="shownPanel ?? undefined"
                                       :tab="threadList.tab"
@@ -318,9 +327,7 @@
                                       @follow="onFollowFromList"
                                       @close="closePanel">
                             <template v-if="shownPanel === 'activity'" #top>
-                                <div class="chat-frame-activity">
-                                    <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
-                                </div>
+                                <div class="chat-frame-activity-place" aria-hidden="true"></div>
                             </template>
                         </ThreadsPanel>
 
@@ -335,9 +342,7 @@
                                        @loadOlder="shell.mentions.loadOlder"
                                        @close="closePanel">
                             <template #top>
-                                <div class="chat-frame-activity">
-                                    <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
-                                </div>
+                                <div class="chat-frame-activity-place" aria-hidden="true"></div>
                             </template>
                         </MentionsPanel>
 
@@ -619,10 +624,33 @@
     transform: none;
 }
 
-/* Activity's two lists under its title, as a list's own tabs sat. */
-.chat-frame-activity {
+/*
+    Activity's tabs under its lists' title, where a list's own tabs sat: laid over the place each
+    list keeps for them, under the panel's 64px header, and over the crossfade, so they stay put
+    as the list under them changes. The place is the Segmented's height with this padding, so the
+    two always agree.
+*/
+.chat-frame-activity,
+.chat-frame-activity-place {
+    box-sizing: content-box;
     flex: none;
+    height: 38px;
     padding: 10px 14px 4px;
+}
+
+.chat-shell[data-phone="true"] .chat-frame-activity,
+.chat-shell[data-phone="true"] .chat-frame-activity-place {
+    height: 46px;
+}
+
+/* Placed by its own sides, which a crossfade's leave rule below does not move. */
+.chat-frame-panel-inner > .chat-frame-activity {
+    position: absolute;
+    top: 64px;
+    right: 0;
+    bottom: auto;
+    left: 0;
+    z-index: var(--chat-z-raised);
 }
 
 /* One panel gives way to the next: the old fades out laid over the new as it fades in. */
@@ -988,7 +1016,7 @@
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
         panelKind, shownPanel, shownList, activityTab, sidebarFold, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onSelect, onBack, onListPanel, onActivityTab, onSidebarOver, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        onResize, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,

@@ -1669,7 +1669,7 @@ describe("the panel column", () => {
         const rules = frameRules();
         const source = readFileSync(join(__dirname, "../../../../src/Communication/Chat/chatShell.obs"), "utf8");
 
-        expect(source).toMatch(/<Transition name="chat-panel-swap">/);
+        expect(source).toMatch(/<Transition name="chat-panel-swap" @beforeLeave="onPanelLeave">/);
         expect(rules.some(r => r.selector.includes(".chat-panel-swap-leave-active") && /position:\s*absolute/.test(r.body))).toBe(true);
         expect(rules.some(r => r.selector.includes(".chat-panel-swap-enter-active") && /transition:\s*opacity var\(--chat-d-swap\)/.test(r.body))).toBe(true);
     });
