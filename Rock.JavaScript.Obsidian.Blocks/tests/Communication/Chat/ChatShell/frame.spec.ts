@@ -1707,16 +1707,26 @@ describe("the panel column", () => {
         expect(document.activeElement).toBe(w.get("[data-testid='header-sidebar']").element);
     });
 
-    test("puts the sidebar laid over the conversation away on a press on the conversation, not on one inside it", async () => {
+    // The conversation and the panel lie under the chat's shade while the sidebar is over them, so
+    // a press there lands on the shade, which takes the whole tap and puts the sidebar away, as a
+    // sheet's shade does; a press inside the sidebar does not.
+    test("puts the sidebar laid over the conversation away on a press on the shade over the conversation, not on one inside it", async () => {
         const w = await openSidebarOver();
+        const frame = w.get("[data-testid='chat-frame']");
+        const shade = frame.get("[data-testid='scrim']");
+        expect(shade.element.parentElement).toBe(frame.element);
 
-        w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").trigger("pointerdown");
+        await w.get("[data-testid='frame-sidebar'] [data-testid='sidebar-search']").trigger("click");
         await settle();
-        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("over");
+        expect(frame.attributes("data-sidebar")).toBe("over");
 
-        w.get("[data-testid='frame-main'] [data-testid='header-title']").element.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+        await shade.trigger("pointerdown");
+        await shade.trigger("click");
         await settle();
-        expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBe("folded");
+        expect(frame.attributes("data-sidebar")).toBe("folded");
+        expect(frame.find("[data-testid='scrim']").exists()).toBe(false);
+        expect(document.activeElement).toBe(w.get("[data-testid='header-sidebar']").element);
     });
 
     test("puts the sidebar laid over the conversation away from its own button, focus back on the header's", async () => {
