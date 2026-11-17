@@ -19,7 +19,7 @@
 // where there is no room below, as every popover flips.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, nextTick, ref } from "vue";
-import { ChatTooltip, useTooltip } from "../../../../../src/Communication/Chat/ChatShell/ui/tooltip.partial";
+import { ChatTooltip, isCutShort, useTooltip } from "../../../../../src/Communication/Chat/ChatShell/ui/tooltip.partial";
 
 /** A button with a plain tip, drawn where the tooltip places it. */
 const Host = defineComponent({
@@ -122,5 +122,28 @@ describe("on a screen that cannot hover", () => {
         await nextTick();
 
         expect(tip.isTipShown.value).toBe(false);
+    });
+});
+
+// A name or a file's words that fit say everything already, so their tip is kept away; the
+// sidebar's names and the tray's chips ask the same question of their text.
+describe("whether words were cut short", () => {
+    /** An element whose words take the given width inside the given room. */
+    function wordsIn(wordsWidth: number, roomWidth: number): HTMLElement {
+        const element = document.createElement("span");
+        Object.defineProperty(element, "scrollWidth", { value: wordsWidth });
+        Object.defineProperty(element, "clientWidth", { value: roomWidth });
+
+        return element;
+    }
+
+    it("says yes only where the words are wider than their room", () => {
+        expect(isCutShort(wordsIn(180, 120))).toBe(true);
+        expect(isCutShort(wordsIn(120, 120))).toBe(false);
+        expect(isCutShort(wordsIn(80, 120))).toBe(false);
+    });
+
+    it("says no while nothing is drawn yet", () => {
+        expect(isCutShort(undefined)).toBe(false);
     });
 });
