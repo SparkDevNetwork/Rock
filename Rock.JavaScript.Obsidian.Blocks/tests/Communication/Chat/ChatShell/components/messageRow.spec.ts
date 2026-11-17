@@ -1660,6 +1660,64 @@ describe("the column's bar and its picker", () => {
         expect(wrapper.get("[data-testid='message-row']").attributes("data-hot-id")).toBeUndefined();
     });
 
+    // A row's hover tint follows the column's one bar, not the pointer, so a box held open on one
+    // message leaves the message under the pointer untinted: one message is "the one" at a time.
+    test.each([false, true])("hovering another message while the bar is held on one tints only the one it is on (channel: %s)", async isChannel => {
+        jest.useFakeTimers();
+        try {
+            const first = message();
+            const second = message({ id: first.id + 1 });
+            let bar: ReturnType<typeof useActionBar> | null = null;
+            const holder = defineComponent({
+                components: { MessageRow },
+                setup() {
+                    bar = useActionBar(() => null);
+                    return { rows: [first, second], isChannel };
+                },
+                template: `<div><MessageRow v-for="row in rows" :key="row.id" :message="row" :isChannel="isChannel" /></div>`
+            });
+            const wrapper = mount(holder, inSession({ props: { personAliasGuid: me } }));
+            await nextTick();
+            const [rowA, rowB] = wrapper.findAll("[data-testid='message-row']").map(row => row.element as HTMLElement);
+            const over = (target: Element): void => bar!.onPointerOver({ target, pointerType: "mouse" } as unknown as PointerEvent);
+
+            over(rowA);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+            expect(rowA.classList.contains("is-hot")).toBe(true);
+            expect(rowB.classList.contains("is-hot")).toBe(false);
+
+            bar!.onHoldChange(true);
+            over(rowB);
+            jest.advanceTimersByTime(1000);
+            await nextTick();
+            expect(rowA.classList.contains("is-hot")).toBe(true);
+            expect(rowB.classList.contains("is-hot")).toBe(false);
+
+            const style = (file: string): string => {
+                const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+                return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+            };
+            expect(style("messageRow.partial.obs")).toMatch(/\.chat-msg\.is-community\.is-hot,/);
+            expect(style("messageRow.partial.obs")).not.toMatch(/\.chat-msg\.is-community:hover/);
+            expect(style("messageRowBubble.partial.obs")).toMatch(/\.chat-msg\.is-hot \.chat-bubble/);
+            expect(style("messageRowBubble.partial.obs")).not.toMatch(/\.chat-msg:hover \.chat-bubble/);
+            wrapper.unmount();
+        }
+        finally {
+            jest.useRealTimers();
+        }
+    });
+
+    // The person's own message has no name or face to press, so a plain one had nothing for Tab to
+    // reach and its bar never showed from the keyboard; the row itself is the stop.
+    test.each([false, true])("the person's own message is a Tab stop, so its bar is reached (channel: %s)", isChannel => {
+        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("0");
+        expect(root(draw({ message: message(), isChannel })).getAttribute("tabindex")).toBe("-1");
+        expect(root(draw({ message: ownConfirmed({ deleted_at: nineOhTwo, body: null }), isOwn: true, isChannel })).getAttribute("tabindex")).toBe("-1");
+        expect(root(draw({ message: ownConfirmed(), isOwn: true, isChannel, isPhone: true })).getAttribute("tabindex")).toBe("-1");
+    });
+
     test("a message that cannot be acted on lends no dock, on a phone or a pointer screen", async () => {
         const gone = message({ deleted_at: nineOhTwo, body: null });
 
