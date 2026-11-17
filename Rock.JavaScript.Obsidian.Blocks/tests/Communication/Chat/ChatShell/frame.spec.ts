@@ -36,6 +36,7 @@ import ProfileCardComponent from "../../../../src/Communication/Chat/ChatShell/c
 import ThreadDrawerComponent from "../../../../src/Communication/Chat/ChatShell/components/threadDrawer.partial.obs";
 import ThreadsPanelComponent from "../../../../src/Communication/Chat/ChatShell/components/threadsPanel.partial.obs";
 import { createDrafts } from "../../../../src/Communication/Chat/ChatShell/composables/useDrafts.partial";
+import { Gifs, gifsKey } from "../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { createMessageMotion } from "../../../../src/Communication/Chat/ChatShell/messageMotion.partial";
 import { online } from "./statusShapes";
 import { badgesIn, chatSheet, createStatusStore, shellFolder, StatusStore, styleRules } from "./statusStore";
@@ -224,6 +225,8 @@ function fakeShell(): Record<string, unknown> {
             state: timelineOf
         },
         motion: createMessageMotion(),
+        // GIFs off, so no composer draws the picker; a test reads which shell its calls reach
+        gifs: { isOn: () => false, search: jest.fn(), covers: jest.fn(async () => ({ ok: true, words: [] })), turnOff: jest.fn() },
         // the latest failure, as the sender tells it, held so a test can say a send just failed; its
         // sends are reactive, as the sender's own rows are, so a test's new sends reach what reads them
         sender: reactive({ pending: (): unknown[] => [], retryAll: jest.fn(async () => true), discard: jest.fn(), lastFailure: () => mockFailureNews.last }),
@@ -5168,6 +5171,16 @@ describe("a shell rebuilt by a birthdate save", () => {
 
         expect(partOf(mockShell!, "mentions").warm).toHaveBeenCalledWith(team);
         expect(partOf(old, "mentions").warm).not.toHaveBeenCalled();
+    });
+
+    test("a composer's GIF topics are asked of the new shell", async () => {
+        const { w, old } = await mountRebuilt();
+        const provided = (w.findComponent(ComposerComponent).vm.$ as unknown as { provides: Record<symbol, Gifs> }).provides;
+
+        await provided[gifsKey as symbol].covers();
+
+        expect(partOf(mockShell!, "gifs").covers).toHaveBeenCalledTimes(1);
+        expect(partOf(old, "gifs").covers).not.toHaveBeenCalled();
     });
 
     test("the new shell's drafts are told the place of a composer focused before the save", async () => {
