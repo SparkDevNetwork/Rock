@@ -249,6 +249,74 @@ describe("the chips", () => {
     });
 });
 
+describe("a failed search", () => {
+    /** The picker over the page with a name typed and focus in the field, as the search answers. */
+    async function focused(props: Record<string, unknown>): Promise<VueWrapper> {
+        const w = draw({ query: "an", ...props });
+        input(w).focus();
+        await w.get("[data-testid='pp-input']").trigger("focus");
+        return w;
+    }
+
+    // A listbox holds options only; the failure and its button, and the list's other words, are
+    // drawn in the list's place beside it, never inside it.
+    test("is drawn in the list's place outside the listbox, which holds only the options", async () => {
+        const w = await focused({ results: null, searchError: "Couldn't search people.", retry: jest.fn() });
+
+        const failure = w.get("[data-testid='pp-list'] [data-testid='pp-search-error']");
+        expect(failure.element.closest("[role='listbox']")).toBeNull();
+        expect(w.get("[data-testid='pp-search-retry']").element.closest("[role='listbox']")).toBeNull();
+        expect(input(w).getAttribute("aria-expanded")).toBe("false");
+
+        await w.setProps({ searchError: null, isSearching: true });
+        expect(w.get("[data-testid='pp-searching']").element.closest("[role='listbox']")).toBeNull();
+
+        await answer(w, "an", [aaron, andre]);
+        const listbox = w.get("[data-testid='pp-list'] [role='listbox']");
+        expect(listbox.attributes("aria-label")).toBe("People");
+        expect(input(w).getAttribute("aria-controls")).toBe(listbox.attributes("id"));
+        expect(input(w).getAttribute("aria-expanded")).toBe("true");
+        expect(Array.from(listbox.element.children).map(child => child.getAttribute("role"))).toEqual(["option", "option"]);
+    });
+
+    // Tab from the field went to Try again, the field's blur closed the list, and the button left
+    // with it, dropping focus to the page. The list stays while focus is in the field or the list.
+    test("Tab reaches Try again with the list kept open, and Try again asks again and puts focus back in the field", async () => {
+        const retry = jest.fn();
+        const w = await focused({ chosen: [aaron], results: null, searchError: "Couldn't search people.", retry });
+
+        const tab = await press(w, "Tab");
+        expect(tab.defaultPrevented).toBe(false);
+        expect(w.emitted("tab")).toBeUndefined();
+
+        const button = w.get("[data-testid='pp-search-retry']").element as HTMLButtonElement;
+        button.focus();
+        await nextTick();
+        expect(w.find("[data-testid='pp-search-retry']").exists()).toBe(true);
+        expect(document.activeElement).toBe(button);
+
+        await w.get("[data-testid='pp-search-retry']").trigger("click");
+        expect(retry).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(input(w));
+    });
+
+    test("closes the list once focus leaves both the field and the list", async () => {
+        const w = await focused({ results: null, searchError: "Couldn't search people.", retry: jest.fn() });
+        const outside = document.createElement("button");
+        document.body.appendChild(outside);
+        try {
+            (w.get("[data-testid='pp-search-retry']").element as HTMLButtonElement).focus();
+            outside.focus();
+            await nextTick();
+
+            expect(w.find("[data-testid='pp-list']").exists()).toBe(false);
+        }
+        finally {
+            outside.remove();
+        }
+    });
+});
+
 test("an answer is said: how many can be picked, or that no one was found", async () => {
     const w = draw({ isInline: true, inRoomReason: "Already here" });
 

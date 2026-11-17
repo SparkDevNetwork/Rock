@@ -324,8 +324,9 @@ describe("the suggestions", () => {
         await typeName(w, "an");
         await afterPause();
 
-        const list = w.get("[data-testid='nd-suggestions']");
-        expect(list.attributes("role")).toBe("listbox");
+        // The options are the listbox inside the suggestions, which also hold the list's words.
+        const list = w.get("[data-testid='nd-suggestions'] [role='listbox']");
+        expect(list.attributes("aria-label")).toBe("People");
         expect(field(w).getAttribute("aria-expanded")).toBe("true");
         const options = w.findAll("[data-testid='nd-option']");
         expect(options.map(besideFace)).toEqual(["Anna Reyes", "Andre Lin"]);
