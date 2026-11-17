@@ -13,10 +13,16 @@
                         <Icon v-else name="file" />
                     </span>
                     <span class="chat-attach-chip-main">
-                        <span class="chat-attach-chip-name" data-testid="attachment-tray-name" :title="file.name">{{ file.name }}</span>
+                        <span class="chat-attach-chip-name"
+                              data-testid="attachment-tray-name"
+                              @mouseenter="onWordsEnter($event, file.name)"
+                              @mouseleave="wordsTip.hideTip">{{ file.name }}</span>
                         <!-- A failure stands where a file's size does: its words, then Try again. -->
                         <span v-if="file.status === 'failed'" class="chat-attach-chip-line">
-                            <span class="chat-attach-chip-failure" data-testid="attachment-tray-failure" :title="failureText(file)">{{ failureText(file) }}</span>
+                            <span class="chat-attach-chip-failure"
+                                  data-testid="attachment-tray-failure"
+                                  @mouseenter="onWordsEnter($event, failureText(file))"
+                                  @mouseleave="wordsTip.hideTip">{{ failureText(file) }}</span>
                             <Button v-if="file.failure?.canRetry"
                                     kind="ghost"
                                     size="sm"
@@ -44,6 +50,14 @@
                 </div>
                 <SettingNote v-if="tray.notice" class="chat-attach-notice" :note="{ kind: 'info', text: tray.notice }" data-testid="attachment-tray-notice" />
             </div>
+
+            <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+                <div v-if="isWordsTipShown"
+                     ref="wordsTipElement"
+                     class="chat-tip"
+                     role="tooltip"
+                     :style="wordsTip.floatingStyles.value">{{ wordsTipText }}</div>
+            </Teleport>
         </template>
 
         <template v-else>
@@ -595,7 +609,7 @@ a.chat-attach-file:focus-visible {
     import SettingNote from "../ui/settingNote.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import { useImageReveal, vReveal } from "../ui/imageReveal.partial";
-    import { overlayHostOf } from "../ui/tooltip.partial";
+    import { overlayHostOf, useTooltip } from "../ui/tooltip.partial";
 
     const props = defineProps({
         /** A message's files, in the order sent: photos drawn in a grid, other files as cards. */
@@ -642,6 +656,16 @@ a.chat-attach-file:focus-visible {
     /** Set at the first opening and kept, so the viewer's closing returns focus as it fades. */
     const isViewerMounted = ref(false);
     const viewerHost = ref<HTMLElement | null>(null);
+
+    // One tooltip for the strip's words, anchored to the name or failure the pointer rests on and
+    // shown only where the chip cut those words short, as the sidebar shows a room's name.
+    const wordsAnchor = ref<HTMLElement>();
+    const wordsTipText = ref("");
+    const wordsTip = useTooltip(wordsAnchor, () => !isCutShort(wordsAnchor.value));
+    const { tipElement: wordsTipElement, isTipShown: isWordsTipShown } = wordsTip;
+
+    /** The chat's root, which the tip is drawn in; null where the strip is drawn alone. */
+    const tipHost = ref<HTMLElement | null>(null);
 
     /** The card being followed by the click the chat made itself, which its handler lets through. */
     let following: HTMLAnchorElement | null = null;
@@ -718,6 +742,14 @@ a.chat-attach-file:focus-visible {
     // #endregion Computed Values
 
     // #region Event Handlers
+
+    /** The pointer rests on a chip's name or failure: those words are the tip's anchor, shown whole if the chip cut them. */
+    function onWordsEnter(event: MouseEvent, words: string): void {
+        wordsAnchor.value = event.currentTarget instanceof HTMLElement ? event.currentTarget : undefined;
+        wordsTipText.value = words;
+        tipHost.value = overlayHostOf(wordsAnchor.value);
+        wordsTip.onPointerEnter();
+    }
 
     function openViewer(index: number): void {
         viewerHost.value = overlayHostOf(document.activeElement) ?? null;
@@ -800,6 +832,11 @@ a.chat-attach-file:focus-visible {
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Whether the chip cut words short, wider than the room it gave them. */
+    function isCutShort(element: HTMLElement | undefined): boolean {
+        return !!element && element.scrollWidth > element.clientWidth;
+    }
 
     /**
      * A single photo's or a GIF's box, sized from its declared size before it loads, within the
