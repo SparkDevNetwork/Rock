@@ -484,7 +484,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             {
                 if ( field.FieldSource != RegistrationFieldSource.PersonField )
                 {
-                    literal.Text = field.Attribute == null ? "<span class=\"label label-danger\">Invalid Attribute</span>" : field.Attribute.Name;
+                    literal.Text = field.Attribute == null ? "<span class=\"label label-danger\">Invalid Attribute</span>" : field.Attribute.Name.EncodeHtml();
                 }
                 else
                 {
@@ -516,7 +516,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _lblFormName.Text = _tbFormName.Text;
+            _lblFormName.Text = _tbFormName.Text.EncodeHtml();
             _lblFormName.RenderControl( writer );
 
             // H3 tag

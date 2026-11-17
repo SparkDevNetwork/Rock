@@ -156,7 +156,7 @@ namespace RockWeb.Blocks.Event
                         var navigationPageInfo = new NavigationPageInfo
                         {
                             PageReference = groupPlacementPageReference,
-                            TabTitle = registrationTemplatePlacement.Name,
+                            TabTitle = registrationTemplatePlacement.Name.EncodeHtml(),
                             IsGroupPlacementPage = true,
                             RegistrationTemplatePlacementId = registrationTemplatePlacement.Id };
 

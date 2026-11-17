@@ -5998,7 +5998,7 @@ namespace RockWeb.Blocks.Event
                     var costSummary = new RegistrationCostSummaryInfo
                     {
                         Type = RegistrationCostSummaryType.Cost,
-                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ), registrant.GetLastName( RegistrationTemplate ) ),
+                        Description = string.Format( "{0} {1}", registrant.GetFirstName( RegistrationTemplate ).EncodeHtml(), registrant.GetLastName( RegistrationTemplate ).EncodeHtml() ),
                         RegistrationRegistrantGuid = registrant.Guid
                     };
 
@@ -6064,8 +6064,8 @@ namespace RockWeb.Blocks.Event
                                 decimal cost = feeInfo.PreviousCost > 0.0m ? feeInfo.PreviousCost : feeInfo.Cost;
                                 string desc = string.Format(
                                     "{0}{1} ({2:N0} @ {3})",
-                                    templateFee != null ? templateFee.Name : "(Previous Cost)",
-                                    string.IsNullOrWhiteSpace( feeInfo.FeeLabel ) ? string.Empty : "-" + feeInfo.FeeLabel,
+                                    templateFee != null ? templateFee.Name.EncodeHtml() : "(Previous Cost)",
+                                    string.IsNullOrWhiteSpace( feeInfo.FeeLabel ) ? string.Empty : "-" + feeInfo.FeeLabel.EncodeHtml(),
                                     feeInfo.Quantity,
                                     cost.FormatAsCurrency() );
 
