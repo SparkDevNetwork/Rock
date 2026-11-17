@@ -1802,6 +1802,9 @@ describe("the column's bar and its picker", () => {
             expect(style("messageRow.partial.obs")).not.toMatch(/\.chat-msg\.is-community:hover/);
             expect(style("messageRowBubble.partial.obs")).toMatch(/\.chat-msg\.is-hot \.chat-bubble/);
             expect(style("messageRowBubble.partial.obs")).not.toMatch(/\.chat-msg:hover \.chat-bubble/);
+            // A channel's gutter time shows on the row the tint is on, by the same rule.
+            expect(style("messageRowCommunity.partial.obs")).toMatch(/\.chat-msg\.is-hot \.chat-cm-gutter-time/);
+            expect(style("messageRowCommunity.partial.obs")).not.toMatch(/\.chat-msg:hover \.chat-cm-gutter-time/);
             wrapper.unmount();
         }
         finally {
@@ -1867,21 +1870,32 @@ describe("the reactions row", () => {
         expect(root(w).classList.contains("has-reactions")).toBe(true);
     });
 
-    // The chips sit half over the bubble's lower edge, on the bubble's side, seated by the bubble's
-    // own rule on the chips' single root; the bubble grows only its foot, never its width. Under a
-    // message's files there is no bubble edge to sit on, so the chips stand 4px under the files.
-    test("sits half over the bubble's lower edge, or 4px under the files", () => {
-        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
-        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
-        const ruleOf = (selector: string): string => {
-            // The selector alone or as one of a list the rule is written for.
-            const at = style.search(new RegExp("(^|\\n|,\\s*)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*[,{]"));
-            return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
+    // The chips sit exactly half over the bubble's lower edge for their real height, on the
+    // bubble's side, seated by the bubble's own rule on the chips' single root; the bubble grows
+    // only its foot, by the half the chips cover plus the 4px the words keep clear of them, never
+    // its width. The thread pill beside them is no taller, so the row is the chips' height and its
+    // middle is theirs. Under a message's files there is no bubble edge to sit on, so the chips
+    // stand 4px under the files.
+    test("sits exactly half over the bubble's lower edge, or 4px under the files", () => {
+        const styleOf = (file: string): string => {
+            const source = readFileSync(join(__dirname, `../../../../../src/Communication/Chat/ChatShell/components/${file}`), "utf8");
+            return source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         };
+        const style = styleOf("messageRowBubble.partial.obs");
+        const ruleOf = (selector: string, sheet = style): string => {
+            // The selector alone or as one of a list the rule is written for.
+            const at = sheet.search(new RegExp("(^|\\n|,\\s*)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*[,{]"));
+            return at < 0 ? "" : sheet.slice(sheet.indexOf("{", at) + 1, sheet.indexOf("}", at));
+        };
+        const heightOf = (rule: string): number => Number(/(?:^|[;\s])height:\s*(\d+)px/.exec(rule)?.[1] ?? NaN);
+        const chip = heightOf(ruleOf(".chat-rx", styleOf("messageReactions.partial.obs")));
+        const pill = heightOf(ruleOf(".chat-tsum", styleOf("threadSummary.partial.obs")));
 
-        expect(ruleOf(".chat-reacts")).toMatch(/margin-top:\s*-11px/);
+        expect(chip).toBeGreaterThan(0);
+        expect(pill).toBeLessThanOrEqual(chip);
+        expect(ruleOf(".chat-reacts")).toMatch(new RegExp(`margin-top:\\s*-${chip / 2}px`));
         expect(ruleOf(".chat-reacts")).not.toMatch(/:deep/);
-        expect(ruleOf(".has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo), .has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo)")).toMatch(/padding-bottom:\s*15px/);
+        expect(ruleOf(".has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo), .has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo)")).toMatch(new RegExp(`padding-bottom:\\s*${chip / 2 + 4}px`));
         expect(ruleOf(".has-files .chat-reacts")).toMatch(/margin-top:\s*4px/);
     });
 
@@ -2417,6 +2431,28 @@ describe("a row's one-off motion", () => {
             motion.arrived(message(), "conversation");
             const wrapper = draw({ message: message(), isChannel: true, position: "single" }, motion);
 
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+        });
+
+        // A jump that lands mid-greeting takes the flash over: the greeting is done, so it never
+        // comes back when the jump lets go, and the flash's end is the jump's for the feed to hear.
+        test("a jump landing mid-greeting ends the greeting for good, and the flash's end is the jump's", async () => {
+            const motion = createMessageMotion();
+            motion.arrived(naming(), "conversation");
+            const wrapper = draw({ message: naming(), isChannel: true, position: "single" }, motion);
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(true);
+
+            await wrapper.setProps({ isFlashing: true });
+            expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
+
+            const outside = jest.fn();
+            const holder = root(wrapper).parentElement!;
+            holder.addEventListener("animationend", outside);
+            animationEnd(wrapper, "chat-flash");
+            holder.removeEventListener("animationend", outside);
+            expect(outside).toHaveBeenCalledTimes(1);
+
+            await wrapper.setProps({ isFlashing: false });
             expect(root(wrapper).classList.contains("is-greeting")).toBe(false);
         });
 
