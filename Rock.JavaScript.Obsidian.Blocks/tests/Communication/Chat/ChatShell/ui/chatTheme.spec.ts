@@ -928,7 +928,10 @@ describe("the components' own styles", () => {
         expect(frames).toContain(normalize("transform: translateY(var(--chat-rise))"));
         expect(declarationOf(sheetPath, ".chat-shell", "--chat-rise")).toBe("8px");
 
-        expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("none");
+        // Under reduced motion the sheet takes the view time to nothing, so the entrance ends the
+        // frame it starts; the feed holds no reduced-motion rule of its own.
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-d-view", isReducedMotion)).toBe("0ms");
+        expect(declarationOf(feedPath, ".chat-feed.is-entering", "animation", isReducedMotion)).toBe("");
     });
 
     // A count joining others' rolls up 70% of its height as it fades in, over the roll's own
