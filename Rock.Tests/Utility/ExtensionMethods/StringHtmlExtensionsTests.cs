@@ -5,7 +5,7 @@ using HtmlAgilityPack;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 
 namespace Rock.Tests.Utility.ExtensionMethods
 {
