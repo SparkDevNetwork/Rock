@@ -28,7 +28,9 @@ export type RoomKind = "channel" | "person" | "group";
 /**
  * A place focus can be put by name: the element carrying the matching `data-focus-stop` mark, so
  * a lookup never depends on a test id or on which component draws it. Which of the header's
- * elements is its stop, the title or the details button around it, is the header's choice.
+ * elements is its stop, the title or the details button around it, is the header's choice. Two
+ * are found by the frame instead, having no one mark: where the panel shown starts, and where
+ * a full view starts.
  */
 export type FocusStop =
     | "header"
@@ -48,7 +50,9 @@ export type FocusStop =
     | "threads-row"
     | "mentions-row"
     | "thread-summary"
-    | "details-identity";
+    | "details-identity"
+    | "panel-start"
+    | "view-start";
 
 /** A bottom sheet's height: as tall as its content, or the one taller height a picker takes. */
 export type SheetHeight = "content" | "picker";

@@ -93,6 +93,9 @@ export type LandingCheck = "held" | "more" | "stop";
  */
 export type FocusTarget = FocusStop | { stop: FocusStop, match?: string, within?: HTMLElement } | HTMLElement | null | undefined;
 
+/** A column of the frame, which focus lost from it goes back to the start of. */
+type FocusRegion = "sidebar" | "main" | "panel";
+
 /** Where the focus helper looks for its stops and how it puts focus there. */
 export type FocusStopOptions = {
     /** The frame's column the stops are looked for in: the conversation's, the panel's, or the whole block's when not given. */
@@ -181,6 +184,8 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
 
     panelElement: Ref<HTMLElement | undefined>;
 
+    sidebarElement: Ref<HTMLElement | undefined>;
+
     /** The conversation's column, which holds its header, feed and composer. */
     mainElement: Ref<HTMLElement | undefined>;
 
@@ -203,6 +208,9 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     landingMessageId: Ref<number | null>;
 
     onResize: (entries: ResizeObserverEntry[]) => void;
+
+    /** Focus came into the frame: the column it is in is where focus lost from it goes back to. */
+    onFocusIn: (event: FocusEvent) => void;
 
     onSelect: (channelId: string) => Promise<void>;
 
@@ -348,6 +356,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     const panelElement = ref<HTMLElement>();
 
+    const sidebarElement = ref<HTMLElement>();
+
     const mainElement = ref<HTMLElement>();
 
     const mainViewElement = ref<HTMLElement>();
@@ -387,6 +397,15 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /** The sidebar laid over the conversation on the Escape stack, under anything opened over it since. */
     const sidebarLayer: EscapeLayer = { takeEscape: () => onSidebarAway() };
+
+    /** Where the last move asked focus to go, which the next settle puts it once the move is drawn. */
+    let askedFocus: { order: FocusTarget[], options: FocusStopOptions } | null = null;
+
+    /** The column focus was last in, as the frame's focusin notes it. */
+    let focusRegion: FocusRegion | null = null;
+
+    /** The settle due after the next draw, one however many changes ask for it. */
+    let settling: Promise<void> | null = null;
 
     // #endregion Values
 
@@ -453,6 +472,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         }
     }
 
+    function onFocusIn(event: FocusEvent): void {
+        const target = event.target as Node;
+        const columns = [["panel", panelElement], ["main", mainElement], ["sidebar", sidebarElement]] as const;
+        // focus in a dialog or popover over the frame is in none of them, and leaves the last noted
+        focusRegion = columns.find(([, element]) => element.value?.contains(target))?.[0] ?? focusRegion;
+    }
+
     async function onSelect(channelId: string): Promise<void> {
         // Choosing the conversation already open behind the list or a full view brings it back too.
         const isFolding = sidebarFold.value === "over";
@@ -468,8 +494,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // right as it starts to slide, so the focus must not scroll the frame to it, which a
         // browser that cannot clip the frame would do.
         if (isPhone.value || isFolding) {
-            await nextTick();
-            focusStop(["header"], { preventScroll: true });
+            await askFocus(["header"], { preventScroll: true });
         }
     }
 
@@ -483,9 +508,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         // message button. A full view stays behind the list, as the prototype keeps it, and focus
         // goes to what opened it.
         if (isPhone.value) {
-            await nextTick();
-            focusStop([
-                mainView.value && mainViewOpener?.isConnected ? mainViewOpener : null,
+            await askFocus([
+                mainView.value ? mainViewOpener : null,
                 leftChannelId ? { stop: "row", match: `[data-channel-id='${leftChannelId}']` } : null,
                 "new-message"
             ]);
@@ -523,13 +547,13 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         panelKind.value = kind;
         shownPanel.value = kind;
         const opened = openList(kind);
-
-        await nextTick();
-        const start = focusPanelStart();
+        await askFocus(["panel-start"], { preventScroll: true, isQuiet: true });
 
         // A first control that comes with the list's first page, as a phone's first member, takes
-        // focus once that page is drawn, while focus is still where the panel opened it.
-        if (start && !start.hasAttribute("data-autofocus")) {
+        // focus once that page is drawn, while focus is still on the back chevron or X the panel
+        // started on without it.
+        const start = document.activeElement;
+        if (start instanceof HTMLElement && panelElement.value?.contains(start) && !start.hasAttribute("data-autofocus")) {
             void opened.then(() => nextTick()).then(() => {
                 if (document.activeElement === start) {
                     firstDrawn(panelElement.value, "[data-autofocus]")?.focus({ preventScroll: true });
@@ -565,8 +589,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     /** The header's sidebar button, shown while the sidebar is folded: it opens over the conversation, with focus in it. */
     function onSidebarOver(): void {
         isSidebarOver.value = true;
-        const channelId = activeChannelId.value;
-        void nextTick(() => focusStop([channelId ? { stop: "row", match: `[data-channel-id='${channelId}']` } : null, "new-message"]));
+        void askFocus([activeRow(), "new-message"]);
     }
 
     /**
@@ -576,7 +599,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
      */
     function onSidebarAway(): void {
         isSidebarOver.value = false;
-        void nextTick(() => focusStop(["sidebar-button", "header"]));
+        void askFocus(["sidebar-button", "header"]);
     }
 
     /**
@@ -612,8 +635,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         shownPanel.value = origin;
 
         // The inbox marks the row opened as its current one.
-        await nextTick();
-        focusStop([shownList.value === "threads"
+        await askFocus([shownList.value === "threads"
             ? { stop: "threads-row", match: `[data-root-id='${rootId}']` }
             : { stop: "mentions-row", match: "[aria-current='true']" }], { within: "panel" });
     }
@@ -674,9 +696,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         // The view is still rising in, and on a phone its pane still sliding from the right, so
         // the focus leaves what holds it unscrolled; the first field is at the view's top.
-        await nextTick();
         if (!isPhone.value || kind === "newdm") {
-            mainViewElement.value?.querySelector<HTMLElement>("[data-autofocus]")?.focus({ preventScroll: true });
+            await askFocus(["view-start"], { preventScroll: true });
         }
     }
 
@@ -693,11 +714,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         const opener = mainViewOpener;
         leaveMainView();
-
-        void nextTick(() => {
-            const isOpenerShown = !!opener?.isConnected && !(isPhone.value && pane.value !== "list");
-            focusStop(["composer", isOpenerShown ? opener : null, "header"], { within: "main" });
-        });
+        void askFocus(["composer", isPhone.value && pane.value !== "list" ? null : opener, "header"], { within: "main" });
     }
 
     /**
@@ -712,9 +729,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         isListChosen.value = false;
         isPaneMotionOn.value = true;
         await shell.value.selectChannel(channelId);
-
-        await nextTick();
-        focusStop(["join", "composer", "header"], { within: "main" });
+        await askFocus(["join", "composer", "header"], { within: "main" });
     }
 
     /**
@@ -885,7 +900,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
         // a thread is opened from a message or a list, never from a header button of its own
         const button: FocusStop | null = closed === "thread" ? null : `${closed}-button`;
-        void nextTick(() => focusStop([button, "more", "header"]));
+        void askFocus([button, "more", "header"]);
     }
 
     /**
@@ -914,6 +929,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         threadChannelId = channelId;
         panelKind.value = "thread";
         shownPanel.value = "thread";
+        // A phone skips the composer, whose keyboard would cover the thread, for the back chevron.
+        void askFocus(["composer", "panel-back"], { within: "panel", preventScroll: true });
         await shell.value.threads.openThread(channelId, rootId);
     }
 
@@ -935,10 +952,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         releasePanel();
         finishClosing();
 
-        void nextTick(() => {
-            const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
-            focusStop([message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main" });
-        });
+        const message = mainElement.value?.querySelector<HTMLElement>(`[data-message-id='${rootId}']`);
+        void askFocus([message ? { stop: "thread-summary", within: message } : null, message, "header"], { within: "main" });
     }
 
     /** Keeps what the column drew until it has finished narrowing, then lets it go. */
@@ -979,8 +994,8 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     function focusStop(order: FocusTarget[], options: FocusStopOptions = {}): HTMLElement | null {
         const place = options.within === "main" ? mainElement.value : options.within === "panel" ? panelElement.value : rootElement.value;
         for (const target of order) {
-            // A place in a pane out of reach takes no focus, so the order goes on to the next.
-            const element = target instanceof HTMLElement ? (isDrawn(target) ? target : null) : stopElement(target, place, options);
+            // A place gone from the page or in a pane out of reach takes no focus, so the order goes on to the next.
+            const element = target instanceof HTMLElement ? (target.isConnected && isDrawn(target) ? target : null) : stopElement(target, place, options);
             if (!element) {
                 continue;
             }
@@ -1013,6 +1028,17 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return null;
         }
 
+        // A panel's start is its first control, else its back chevron, drawn before its X, else
+        // its X; a full view's is its first field. A part fading out is out of reach, so only
+        // the one coming in is looked in.
+        if (stop === "panel-start") {
+            return firstDrawn(panelElement.value, "[data-autofocus]") ?? firstDrawn(panelElement.value, "[data-focus-stop='panel-back'], [data-focus-stop='panel-close']");
+        }
+
+        if (stop === "view-start") {
+            return firstDrawn(mainViewElement.value, "[data-autofocus]");
+        }
+
         const marked = firstDrawn(within ?? place, `[data-focus-stop='${stop}']${match ?? ""}`);
         if (!marked || marked.matches("button, input, textarea, select, a[href], [tabindex], [contenteditable]")) {
             return marked;
@@ -1021,24 +1047,52 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         return marked.querySelector<HTMLElement>("button") ?? marked;
     }
 
+    /** The sidebar's row of the open conversation, as a place for focus. */
+    function activeRow(): FocusTarget {
+        return activeChannelId.value ? { stop: "row", match: `[data-channel-id='${activeChannelId.value}']` } : null;
+    }
+
     /**
-     * Puts focus where the panel the column shows starts: its first control, or its back chevron
-     * or X when it has none yet, without that button's tooltip, as a list whose first control is
-     * a tab shows none. A panel fading out of the column is out of reach, so only the one coming
-     * in is looked in. The column may still be 0px wide, so a focus that scrolled would scroll the
-     * column to the control and drag the content in from its edge instead of letting it slide.
+     * Asks for focus at the first drawn place of an order, put there by the settle that follows
+     * the move, once it is drawn. A move asks after it has changed what the frame shows.
      *
-     * @returns The element focused, or null when the column draws nothing to focus.
+     * @returns Resolves once focus has been put.
      */
-    function focusPanelStart(): HTMLElement | null {
-        const first = firstDrawn(panelElement.value, "[data-autofocus]");
-        if (first) {
-            first.focus({ preventScroll: true });
-            return first;
+    function askFocus(order: FocusTarget[], options: FocusStopOptions = {}): Promise<void> {
+        askedFocus = { order, options };
+        return scheduleSettle();
+    }
+
+    /** Settles focus after the next draw, once however many changes ask before it. */
+    function scheduleSettle(): Promise<void> {
+        settling ??= nextTick(() => {
+            settling = null;
+            settleFocus();
+        });
+        return settling;
+    }
+
+    /**
+     * Puts focus where a change of what the frame shows leaves it, once drawn, when every part
+     * fading out has been put out of reach: where the move asked, else where it is while that is
+     * still drawn, in the chat or out of it, else the start of the column that last held it,
+     * or the conversation's title when that column has closed.
+     */
+    function settleFocus(): void {
+        const asked = askedFocus;
+        askedFocus = null;
+        if (asked && focusStop(asked.order, asked.options)) {
+            return;
         }
 
-        // the back chevron is drawn before the X, so it is the one found first when both are
-        return focusStop(["panel-back", "panel-close"], { within: "panel", preventScroll: true, isQuiet: true });
+        const active = document.activeElement;
+        const isLost = !(active instanceof HTMLElement) || active === document.body || (!!rootElement.value?.contains(active) && !isDrawn(active));
+        if (!isLost || !focusRegion) {
+            return;
+        }
+
+        const start: FocusTarget[] = focusRegion === "panel" ? ["panel-start"] : focusRegion === "sidebar" ? [activeRow(), "new-message"] : [];
+        focusStop([...start, "header"], { preventScroll: true, isQuiet: true });
     }
 
     /**
@@ -1187,26 +1241,18 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     });
 
     // A thread belongs to its own conversation, so another conversation closes it. A
-    // thread opened from the list switches to its conversation first, which keeps it open. Focus
-    // inside the closing drawer would drop to the page as it leaves reach, so it goes to the title
-    // of what replaced it, as a phone's row does when it opens a conversation.
+    // thread opened from the list switches to its conversation first, which keeps it open.
     watch(activeChannelId, channelId => {
         if (panelKind.value === "thread" && channelId !== threadChannelId) {
-            const hadFocus = !!panelElement.value?.contains(document.activeElement);
             leaveThread();
             finishClosing();
-
-            if (hadFocus) {
-                void nextTick(() => focusStop(["header"]));
-            }
         }
     });
 
     // The threads list and the roster are the open conversation's, so each follows it, re-pointing
     // at the conversation now open; a draft has neither, and a conversation of two no roster, so
-    // they close there, as the header offers them. A list read afresh takes its old rows away, so
-    // focus on one goes where the panel starts rather than with the row; focus anywhere else
-    // stays. Activity spans every conversation, so it stays as it is.
+    // they close there, as the header offers them. Activity spans every conversation, so it stays
+    // as it is.
     watch(activeChannelId, channelId => {
         const kind = panelKind.value;
         if (kind !== "threads" && kind !== "members") {
@@ -1218,16 +1264,12 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
             return;
         }
 
-        const hadFocus = !!panelElement.value?.contains(document.activeElement);
         void openList(kind);
-        if (hadFocus) {
-            void nextTick(() => {
-                if (!panelElement.value?.contains(document.activeElement)) {
-                    focusPanelStart();
-                }
-            });
-        }
     });
+
+    // Focus is settled after every change of what the frame shows, the conversation included: a
+    // closing drawer or a list read afresh for another conversation takes focus away with it.
+    watch([pane, sidebarFold, mainView, panelKind, shownList, () => drawnThread.value?.rootId, activeChannelId], () => void scheduleSettle());
 
     // Laid over the conversation, the sidebar is on the Escape stack until it folds or takes its
     // column back; the shade the frame draws under it answers a press.
@@ -1269,6 +1311,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         sidebarFold,
         isMembersOffered,
         panelElement,
+        sidebarElement,
         mainElement,
         mainViewElement,
         drawnThread,
@@ -1277,6 +1320,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         landingReplyId,
         landingMessageId,
         onResize,
+        onFocusIn,
         onSelect,
         onBack,
         onListPanel,

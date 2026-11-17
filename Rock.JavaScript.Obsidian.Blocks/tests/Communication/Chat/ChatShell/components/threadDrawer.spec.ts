@@ -18,8 +18,7 @@
 // first, the replies in the conversation's look, a Follow toggle in the header and, at its foot, the
 // reply composer its owner fills, the conversation's own Composer with isThread, whose foot offers
 // to send the reply to the conversation too. Escape closes it, or goes back to the threads list it
-// was opened from. A phone never focuses the composer on its own, since the keyboard would cover
-// the thread.
+// was opened from. Where focus goes as it opens is the frame's, tested with the frame.
 //
 // The component these tests are written to, threadDrawer.partial.obs:
 //
@@ -173,7 +172,7 @@ function plain(text: string | undefined | null): string {
     return (text ?? "").replace(/\s+/g, " ").trim();
 }
 
-/** Longer than the drawer waits before it focuses the composer. */
+/** Lets the drawer open and place its thread, with time to spare. */
 async function afterOpen(): Promise<void> {
     await nextTick();
     await new Promise(resolve => setTimeout(resolve, 150));

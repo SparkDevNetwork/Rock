@@ -149,7 +149,8 @@ function mountFrame(): Mounted {
                 showNotice: () => undefined
             });
 
-            return () => h("div", { ref: rootElement }, [
+            // the frame notes the column focus comes into, as the block's frame does
+            return () => h("div", { ref: rootElement, onFocusin: frame.onFocusIn }, [
                 h("button", { "data-testid": "browse-channels" }, "Browse channels"),
                 h("section", { ref: frame.mainElement, "data-testid": "frame-main" }, [
                     h("button", { "data-testid": "header-title", "data-focus-stop": "header" }, "Title"),
@@ -907,7 +908,8 @@ describe("the one focus helper", () => {
                     showNotice: () => undefined
                 });
 
-                return () => h("div", { ref: rootElement }, [
+                // the frame notes the column focus comes into, as the block's frame does
+                return () => h("div", { ref: rootElement, onFocusin: frame.onFocusIn }, [
                     // the sidebar's head, out of reach as a phone's list behind the conversation is
                     h("div", { inert: drawn.isSidebarInert || undefined }, [
                         h("button", { "data-focus-stop": "activity-button" }, "Activity"),

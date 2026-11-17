@@ -31,7 +31,8 @@
              :data-sidebar="sidebarFold ?? undefined"
              @focusin="onFrameFocusIn"
              @focusout="onFrameFocusOut">
-            <div class="chat-frame-side"
+            <div ref="sidebarElement"
+                 class="chat-frame-side"
                  data-testid="frame-sidebar"
                  :aria-hidden="isSidebarHidden ? 'true' : undefined"
                  :inert="isSidebarHidden || undefined"
@@ -1034,8 +1035,8 @@
 
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, sidebarElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
+        onResize, onFocusIn, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
@@ -1195,8 +1196,10 @@
         }
     }
 
-    function onFrameFocusIn(): void {
+    /** Focus the person puts anywhere in the chat pays what is owed, and the frame notes the column it is in. */
+    function onFrameFocusIn(event: FocusEvent): void {
         isFocusOwed = false;
+        onFocusIn(event);
     }
 
     /** Says the outage is over, once, however many times the connection came and went. */

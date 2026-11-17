@@ -478,15 +478,9 @@
 
     // #region Values
 
-    /**
-     * The reader, and the phone flag: a phone leaves by the back chevron, which takes focus on
-     * open, and never focuses the composer, whose keyboard would cover the thread.
-     */
+    /** The reader, and the phone flag, which draws the thread's body for a phone. */
     const session = useChatSession();
     const isPhone = session.isPhone;
-
-    /** The design's wait before the composer takes focus, so the panel has started to open. */
-    const focusDelayMs = 60;
 
     /** The thread's one action bar, on the message the pointer rests on or a keyboard reaches. */
     const actionBar = useActionBar(() => bodyElement.value);
@@ -506,8 +500,6 @@
 
     // A reply counts as seen once any of it is on screen, the same rule as the conversation's.
     const seen = useSeenObserver(scroller, row => emit("seen", Number(row.dataset.replyId)));
-
-    let focusTimer: ReturnType<typeof setTimeout> | null = null;
 
     /**
      * What this drawer has drawn new since it opened: a reply sent here or heard arriving live
@@ -739,11 +731,6 @@
             return;
         }
 
-        if (focusTimer) {
-            clearTimeout(focusTimer);
-            focusTimer = null;
-        }
-
         // the reader is where the landing takes them from its first frame, so a reply settling on the way does not pull them back
         const element = scroller();
         if (element) {
@@ -817,23 +804,11 @@
         // A scroll does not bubble, and the scroller is the panel host's, outside this body.
         scrollElement = scroller();
         scrollElement?.addEventListener("scroll", onScroll, { passive: true });
-
-        // A phone never focuses the composer on its own, since the keyboard would rise over the
-        // thread; its back chevron takes focus instead, because the pane that opened the drawer
-        // has slid out of reach and would leave focus nowhere.
-        const firstFocus = isPhone.value ? "[data-focus-stop='panel-back']" : "[data-focus-stop='composer']";
-        focusTimer = setTimeout(() => {
-            focusTimer = null;
-            bodyElement.value?.closest(".chat-panel")?.querySelector<HTMLElement>(firstFocus)?.focus({ preventScroll: true });
-        }, focusDelayMs);
     });
 
     onBeforeUnmount(() => {
         scrollElement?.removeEventListener("scroll", onScroll);
         actionBar.stop();
-        if (focusTimer) {
-            clearTimeout(focusTimer);
-        }
     });
 
     // #endregion Lifecycle Hooks
