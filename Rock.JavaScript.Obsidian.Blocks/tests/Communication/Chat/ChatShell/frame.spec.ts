@@ -474,6 +474,7 @@ function fakeMembers(): Record<string, unknown> {
         openAdd: jest.fn(),
         closeAdd: jest.fn(),
         setAddQuery: jest.fn(),
+        retryAdd: jest.fn(async () => undefined),
         add: jest.fn(async () => undefined)
     };
 }
@@ -4802,6 +4803,11 @@ describe("the members panel", () => {
 
         await w.get("[data-testid='ap-input']").setValue("aa");
         expect(members.setAddQuery).toHaveBeenCalledWith("aa");
+
+        Object.assign(members.state.adding as Record<string, unknown>, { query: "aa", error: { code: "rpc.transport", severity: "failed" } });
+        await settle();
+        await w.get("[data-testid='ap-search-retry']").trigger("click");
+        expect(members.retryAdd).toHaveBeenCalled();
 
         await w.get("[data-testid='ap-cancel']").trigger("click");
         expect(members.closeAdd).toHaveBeenCalled();

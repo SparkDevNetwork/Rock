@@ -34,11 +34,12 @@ import NewMessage from "../../../../../src/Communication/Chat/ChatShell/componen
 import { DirectMessageDraft, DirectMessageLookup, PersonRow } from "../../../../../src/Communication/Chat/ChatShell/composables/useDirectMessage.partial";
 import { TimelineMessage } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import Avatar from "../../../../../src/Communication/Chat/ChatShell/ui/avatar.partial.obs";
+import EmptyState from "../../../../../src/Communication/Chat/ChatShell/ui/emptyState.partial.obs";
 import { join } from "path";
 import { away } from "../statusShapes";
 import { providedSession } from "../sessionShapes";
 import { searchPause } from "../../../../../src/Communication/Chat/ChatShell/composables/useLatestSearch.partial";
-import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, swaps } from "../statusStore";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, setsBothRings, shellFolder, StatusStore, styleRules, swaps } from "../statusStore";
 
 // #region Fixtures
 
@@ -196,11 +197,30 @@ describe("the header", () => {
         expect(w.emitted("back")).toHaveLength(1);
     });
 
+    // The view's own rule pulls Back out past the header's gutter; a scoped rule reaches the
+    // button only when the button carries the view's scope. The test build compiles no scope, so
+    // the view is given one here.
+    test("places Back by its own rule, which reaches the button", () => {
+        const scoped = NewMessage as unknown as { __scopeId?: string };
+        scoped.__scopeId = "data-v-nd";
+        try {
+            const back = mountView({ isPhone: true }).get("[data-testid='nd-back']");
+
+            expect(back.element.tagName).toBe("BUTTON");
+            expect(back.classes()).toContain("chat-nd-back");
+            expect(back.attributes()).toHaveProperty("data-v-nd");
+        }
+        finally {
+            delete scoped.__scopeId;
+        }
+    });
+
     test.each([
         ["nothing chosen", {}, "Choose up to 8 people"],
         ["nothing chosen where the platform's group size is 3", { maxOthers: 3 }, "Choose up to 3 people"],
         ["one person new", { chosen: [anna], lookup: fresh, draft: draftFor([anna]) }, "New conversation"],
-        ["a new group", { chosen: [anna, caleb, hannah], lookup: fresh, draft: draftFor([anna, caleb, hannah]) }, "New group of 4 people"],
+        // every count is the people chosen, never the person choosing them
+        ["a new group", { chosen: [anna, caleb, hannah], lookup: fresh, draft: draftFor([anna, caleb, hannah]) }, "You and 3 others"],
         ["a conversation they have", { chosen: [anna], lookup: found, foundTitle: "Anna Reyes" }, "You already have this conversation"]
     ])("says what the view holds under the title: %s", (_name, props, subtitle) => {
         const w = mountView(props);
@@ -304,8 +324,9 @@ describe("the suggestions", () => {
         await typeName(w, "an");
         await afterPause();
 
-        const list = w.get("[data-testid='nd-suggestions']");
-        expect(list.attributes("role")).toBe("listbox");
+        // The options are the listbox inside the suggestions, which also hold the list's words.
+        const list = w.get("[data-testid='nd-suggestions'] [role='listbox']");
+        expect(list.attributes("aria-label")).toBe("People");
         expect(field(w).getAttribute("aria-expanded")).toBe("true");
         const options = w.findAll("[data-testid='nd-option']");
         expect(options.map(besideFace)).toEqual(["Anna Reyes", "Andre Lin"]);
@@ -330,7 +351,7 @@ describe("the suggestions", () => {
         await afterPause();
 
         expect(w.get("[data-testid='nd-none']").text())
-            .toBe("No one found for “zz”. Can't find someone? They may not accept messages from everyone.");
+            .toBe("No one found for “zz”. Some people only take messages from their groups.");
     });
 
     test("an answer for text the person has since changed is dropped", async () => {
@@ -372,19 +393,31 @@ describe("the suggestions", () => {
 });
 
 describe("the notes under the field", () => {
-    test("count the people from six, of the eight a conversation can hold", () => {
+    test("count the people from six, of the eight a conversation can hold, at the field's end with no line under it", () => {
         const five = mountView({ chosen: eight.slice(0, 5), lookup: fresh, draft: draftFor(eight.slice(0, 5)) });
-        expect(plain(five.find("[data-testid='nd-note']").exists() ? five.get("[data-testid='nd-note']").text() : "")).toBe("");
+        expect(five.find("[data-testid='nd-count']").exists()).toBe(false);
         five.unmount();
 
         const six = mountView({ chosen: eight.slice(0, 6), lookup: fresh, draft: draftFor(eight.slice(0, 6)) });
-        expect(six.get("[data-testid='nd-note']").text()).toBe("6 of 8 people");
+        expect(six.get(".chat-pk-field [data-testid='nd-count']").text()).toBe("6 of 8");
+        expect(plain(six.get("[data-testid='nd-note']").text())).toBe("");
     });
 
-    test("at eight, say it is the most and how to move on", () => {
+    // At the cap there is no one left to type for: the input goes, so no empty row is left for it,
+    // and the count and the one line say so in the same numbers as the header.
+    test("at eight, the field has no input, counts 8 of 8, and says 8 is the most, as the header counts them", () => {
         const w = mountView({ chosen: eight, lookup: fresh, draft: draftFor(eight) });
 
-        expect(w.get("[data-testid='nd-note']").text()).toBe("8 people is the most for one conversation. Press Tab to write your message.");
+        expect(w.find("[data-testid='nd-to-input']").exists()).toBe(false);
+        expect(w.get("[data-testid='nd-count']").text()).toBe("8 of 8");
+        expect(w.get("[data-testid='nd-note']").text()).toBe("8 is the most for one conversation.");
+        expect(w.get("[data-testid='nd-subtitle']").text()).toBe("You and 8 others");
+    });
+
+    // The input shares the chips' line down to 80px before it wraps, so three chips at 150 percent
+    // zoom no longer leave a blank second row for a 120px input.
+    test("keeps the input on the chips' line down to 80px", () => {
+        expect(styleRules(join(shellFolder, "ui/peoplePicker.partial.obs"), /^\.chat-pk-input$/).join(";")).toMatch(/min-width:\s*80px/);
     });
 });
 
@@ -423,9 +456,12 @@ describe("the keys in the To field", () => {
         await afterPause();
 
         await press(w, "Enter");
+        await press(w, "Enter");
 
+        // the list's one line already says it; Enter adds no second note under the field
         expect(w.emitted("choose")).toBeUndefined();
-        expect(w.get("[data-testid='nd-note']").text()).toBe("No one to message for “zz”");
+        expect(w.findAll("[data-testid='nd-none']")).toHaveLength(1);
+        expect(plain(w.get("[data-testid='nd-note']").text())).toBe("");
     });
 
     test("Enter on an empty field with people chosen moves to the message", async () => {
@@ -438,13 +474,16 @@ describe("the keys in the To field", () => {
         expect(w.emitted("send")).toBeUndefined();
     });
 
-    test("Enter on an empty field at eight people keeps focus in the field", async () => {
-        const w = mountView({ chosen: eight, lookup: fresh, draft: draftFor(eight) });
-        field(w).focus();
+    test("choosing the eighth person moves focus to the message, as the input goes", async () => {
+        const chosen = reactive<PersonRow[]>(eight.slice(0, 7));
+        const w = mountView({ chosen, lookup: fresh, draft: draftFor(eight.slice(0, 7)), search: jest.fn(async () => [eight[7]]), onChoose: (picked: PersonRow) => chosen.push(picked) });
+        await typeName(w, "om");
+        await afterPause();
 
         await press(w, "Enter");
 
-        expect(document.activeElement).toBe(field(w));
+        expect(w.find("[data-testid='nd-to-input']").exists()).toBe(false);
+        expect(document.activeElement).toBe(editor(w));
     });
 
     test("Tab moves to the message editor, past the emoji button", async () => {
@@ -492,12 +531,16 @@ describe("the keys in the To field", () => {
 });
 
 describe("the body", () => {
-    test("with nothing chosen, asks the person to start a conversation", () => {
+    // The approved New message draws nothing under the field before anyone is chosen: the focused
+    // field and the subtitle, "Choose up to 8 people", say it, and words there repeated the subtitle.
+    test("with nothing chosen, draws nothing under the field, the subtitle saying what to do", () => {
         const w = mountView();
 
         const empty = w.get("[data-testid='nd-empty']");
-        expect(empty.get("b").text()).toBe("Start a conversation");
-        expect(plain(empty.get("p").text())).toBe("Choose one person for a private conversation, or up to 8 for a group. You can message people who accept messages from everyone, and people in your private groups.");
+        expect(empty.text()).toBe("");
+        expect(empty.findComponent(EmptyState).exists()).toBe(false);
+        expect(w.get("[data-testid='nd-subtitle']").text()).toBe("Choose up to 8 people");
+        expect(w.find(".chat-nd-empty-ic").exists()).toBe(false);
         expect(w.find("[data-testid='new-message-view'] [data-testid='composer-input']").exists()).toBe(false);
     });
 
@@ -538,8 +581,7 @@ describe("the body", () => {
         const start = w.get("[data-testid='nd-start']");
         expect(start.findComponent(Avatar).props("people")).toEqual([{ name: "Caleb Brooks", photoUrl: null }]);
         expect(w.get("[data-testid='nd-start-title']").text()).toBe("Caleb Brooks");
-        expect(plain(start.get("p").text())).toBe("This is the start of your conversation with Caleb. Only the two of you can see it.");
-        expect(start.get("p strong").text()).toBe("Caleb");
+        expect(plain(start.get("p").text())).toBe("Only you and Caleb can see it.");
         expect(w.get("[data-testid='nd-hint']").text()).toBe("Your first message starts the conversation.");
     });
 
@@ -551,7 +593,7 @@ describe("the body", () => {
         expect(mark.attributes("data-shape")).toBe("pair");
         expect((mark.element as HTMLElement).style.getPropertyValue("--chat-gf-s")).toBe("56px");
         expect(w.get("[data-testid='nd-start-title']").text()).toBe("Caleb and Hannah");
-        expect(plain(start.get("p").text())).toBe("This is the start of a group conversation. Only the 3 people here can see it.");
+        expect(plain(start.get("p").text())).toBe("Only the people here can see it.");
     });
 
     test("sends what is typed to the view's owner, which says where it goes", async () => {
@@ -749,11 +791,11 @@ describe("what a screen reader is told", () => {
 
         await press(w, "Enter");
 
-        expect(regionsSaying(w, "No one to message for")).toHaveLength(1);
+        expect(regionsSaying(w, "No one found for")).toHaveLength(1);
         expect(w.get("[data-testid='nd-note']").attributes("aria-live")).toBeUndefined();
     });
 
-    test("the eighth person chosen also says how to move on, since the note under the field is not read by itself", async () => {
+    test("the eighth person chosen also says it is the most, since the note under the field is not read by itself", async () => {
         const chosen = reactive<PersonRow[]>(eight.slice(0, 7));
         const w = mountView({ chosen, search: jest.fn(async () => [eight[7]]), onChoose: (picked: PersonRow) => chosen.push(picked) });
         await typeName(w, "om");
@@ -761,7 +803,7 @@ describe("what a screen reader is told", () => {
 
         await press(w, "Enter");
 
-        expect(said()).toBe("Added Omar Faris. 8 people chosen. 8 people is the most for one conversation. Press Tab to write your message.");
+        expect(said()).toBe("Added Omar Faris. 8 people chosen. 8 is the most for one conversation.");
     });
 
     test("a chip taken out says who was removed", async () => {
@@ -853,7 +895,7 @@ describe("a people search that fails", () => {
     test("says so in the suggestions, not the refused strip, and the next answer takes its place", async () => {
         const search = jest.fn()
             .mockImplementationOnce(async () => {
-                throw new Error("People could not be searched. Try again.");
+                throw new Error("Couldn't search people.");
             })
             .mockImplementationOnce(async () => [anna]);
         const w = mountView({ search, chosen: [caleb], lookup: fresh, draft: draftFor([caleb]) });
@@ -861,7 +903,9 @@ describe("a people search that fails", () => {
         await typeName(w, "an");
         await afterPause();
 
-        expect(w.get("[data-testid='nd-suggestions'] [data-testid='nd-search-error']").text()).toBe("People could not be searched. Try again.");
+        const failure = w.get("[data-testid='nd-suggestions'] [data-testid='nd-search-error']");
+        expect(failure.findComponent(EmptyState).props("tone")).toBe("error");
+        expect(failure.findComponent(EmptyState).props("title")).toBe("Couldn't search people.");
         expect(w.find("[data-testid='nd-refused']").exists()).toBe(false);
         expect(w.findAll("[data-testid='nd-option']")).toHaveLength(0);
 
@@ -870,6 +914,34 @@ describe("a people search that fails", () => {
 
         expect(w.find("[data-testid='nd-search-error']").exists()).toBe(false);
         expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Anna Reyes"]);
+    });
+
+    // One red line with no way on was all a failed search said; the list's failure is the shared
+    // error with its Try again, which asks the same name again, by a press or by Enter in the field.
+    test("offers Try again in the list, which asks for the same name again, by a press or by Enter", async () => {
+        const search = jest.fn()
+            .mockImplementationOnce(async () => {
+                throw new Error("Couldn't search people.");
+            })
+            .mockImplementationOnce(async () => {
+                throw new Error("Couldn't search people.");
+            })
+            .mockImplementationOnce(async () => [anna]);
+        const w = mountView({ search });
+
+        await typeName(w, "an");
+        await afterPause();
+        await w.get("[data-testid='nd-search-retry']").trigger("click");
+        await settle();
+
+        expect(search.mock.calls.map(call => call[0])).toEqual(["an", "an"]);
+        expect(w.find("[data-testid='nd-search-error']").exists()).toBe(true);
+
+        await press(w, "Enter");
+
+        expect(search.mock.calls.map(call => call[0])).toEqual(["an", "an", "an"]);
+        expect(w.findAll("[data-testid='nd-option']").map(besideFace)).toEqual(["Anna Reyes"]);
+        expect(w.emitted("choose")).toBeUndefined();
     });
 });
 
@@ -931,7 +1003,8 @@ describe("online status", () => {
         const start = w.get("[data-testid='nd-start']");
 
         expect(badgesIn(start.element)).toEqual([{ state: "online", isMoving: false }]);
-        expect(start.get("p").text()).toBe("This is the start of your conversation with Anna, online. Only the two of you can see it.");
+        expect(start.get("[data-testid='nd-start-title']").text()).toBe("Anna Reyes, online");
+        expect(start.get("p").text()).toBe("Only you and Anna can see it.");
     });
 
     test("one person chosen whose conversation exists: the found strip draws their badge and its words after the title", () => {

@@ -29,6 +29,7 @@
                           :idleText="idleText"
                           :capText="capText"
                           :note="note"
+                          :retry="retrySearch"
                           :campusNames="campusNames"
                           prefix="ap"
                           inputTestId="ap-input"
@@ -189,6 +190,8 @@
     const emit = defineEmits<{
         (e: "close"): void;
         (e: "query", text: string): void;
+        /** Try again on a failed search: the same name asked again. */
+        (e: "retry"): void;
         (e: "add", people: PersonRow[]): void;
     }>();
 
@@ -281,6 +284,11 @@
         if (chosen.value.length > 0 && !props.isAdding) {
             emit("add", [...chosen.value]);
         }
+    }
+
+    /** The picker's Try again on a failed search, which the roster asks again. */
+    function retrySearch(): void {
+        emit("retry");
     }
 
     // #endregion Event Handlers

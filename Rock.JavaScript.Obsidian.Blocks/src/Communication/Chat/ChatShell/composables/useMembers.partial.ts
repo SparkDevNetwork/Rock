@@ -239,6 +239,9 @@ export type Members = {
     openAdd: () => void;
     closeAdd: () => void;
     setAddQuery: (query: string) => void;
+
+    /** Asks Add people's failed name again at once, for its Try again. */
+    retryAdd: () => Promise<void>;
     add: (people: PersonRow[]) => Promise<void>;
 };
 
@@ -1003,6 +1006,18 @@ export function createMembers(dependencies: MembersDependencies): Members {
 
             state.adding.isSearching = true;
             addSearch.set(trimmed);
+        },
+
+        retryAdd: async (): Promise<void> => {
+            const query = state.adding.query.trim();
+            if (isStopped || !query || !state.channelId) {
+                return;
+            }
+
+            state.adding.error = null;
+            state.adding.isSearching = true;
+            addSearch.set(query, { isAtOnce: true });
+            await asking.add;
         },
 
         add: async (people): Promise<void> => {

@@ -1,6 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <IconButton ref="anchor"
+    <span v-if="$slots.trigger" ref="triggerHost" class="chat-menu-trigger">
+        <!-- A trigger of the screen's own, such as a face or a button with words, in the icon button's place. -->
+        <slot name="trigger" :attrs="triggerAttrs" :isOpen="isOpen"></slot>
+    </span>
+    <IconButton v-else
+                ref="anchor"
                 v-bind="anchorAttrs"
                 :icon="icon"
                 :label="label"
@@ -52,6 +57,11 @@
 </template>
 
 <style scoped>
+/* A trigger of the screen's own lays out as if drawn where the menu is. */
+.chat-menu-trigger {
+    display: contents;
+}
+
 /* The list on its surface: the popover's surface draws the box, the list its own width and spacing. */
 .chat-menu {
     display: flex;
@@ -229,7 +239,8 @@
     const props = defineProps({
         /**
          * The icon on the button that opens the menu; the anchor slot adds words beside it, as a
-         * failed send's Not sent marker does, or draws the whole button where there is no icon.
+         * failed send's Not sent marker does; a screen whose button is its own draws it in the
+         * trigger slot instead.
          */
         icon: {
             type: String as PropType<string>,
@@ -287,11 +298,6 @@
             default: undefined
         },
 
-        /** The item a press or Down opens the menu on, such as the choice a set of choices stands at; the first by default. */
-        focusKey: {
-            type: String,
-            default: ""
-        }
     });
 
     const emit = defineEmits<{
@@ -303,7 +309,13 @@
 
     const session = useChatSession();
     const anchor = ref<InstanceType<typeof IconButton>>();
-    const anchorElement = computed((): HTMLElement | undefined => anchor.value?.buttonElement ?? undefined);
+
+    /** What holds a trigger of the screen's own, whose first element is the button. */
+    const triggerHost = ref<HTMLElement>();
+
+    const anchorElement = computed((): HTMLElement | undefined => anchor.value?.buttonElement
+        ?? (triggerHost.value?.firstElementChild as HTMLElement | null)
+        ?? undefined);
 
     // Beside its button, or a sheet on a phone. Escape, a press outside, Tab and the sheet's scrim
     // close it, as every popover closes; a choice closes it here, with focus back on the button.
@@ -316,6 +328,13 @@
 
     /** The note's own element, which the open menu is described by. */
     const noteId = `chat-menu-note-${newGuid()}`;
+
+    /** What a trigger of the screen's own binds: that it opens a menu, whether it is open, and the press that opens it. */
+    const triggerAttrs = computed((): Record<string, unknown> => ({
+        "aria-haspopup": "menu",
+        "aria-expanded": isOpen.value ? "true" : "false",
+        onClick: onAnchorClick
+    }));
 
     // #endregion Values
 
@@ -330,7 +349,7 @@
         await open("first");
     }
 
-    /** Down on the closed button opens the menu on its first item, Up on its last, as a menu button does. */
+    /** Down on the closed button opens the menu on its first item, or the one checked, Up on its last, as a menu button does. */
     function onAnchorKeydown(event: KeyboardEvent): void {
         if (!isOpen.value && (event.key === "ArrowDown" || event.key === "ArrowUp")) {
             event.preventDefault();
@@ -375,9 +394,11 @@
             return;
         }
 
+        // A set of choices opens on the one checked, so Enter keeps what is so rather than
+        // choosing the first unasked.
         const items = menuItems();
-        const chosen = at === "first" && props.focusKey ? items.find(item => item.dataset.key === props.focusKey) : undefined;
-        (chosen ?? items[at === "first" ? 0 : items.length - 1])?.focus();
+        const checked = at === "first" ? items.find(item => item.getAttribute("aria-checked") === "true") : undefined;
+        (checked ?? items[at === "first" ? 0 : items.length - 1])?.focus();
     }
 
     function menuItems(): HTMLElement[] {
@@ -407,17 +428,17 @@
     // Vue drops an event at a listener attached in the same millisecond its first listener saw it,
     // so a toolbar holding the button, as a message's tools do, could miss its own arrows.
     onMounted(() => {
-        anchor.value?.buttonElement?.addEventListener("keydown", onAnchorKeydown);
+        anchorElement.value?.addEventListener("keydown", onAnchorKeydown);
     });
 
     onBeforeUnmount(() => {
-        anchor.value?.buttonElement?.removeEventListener("keydown", onAnchorKeydown);
+        anchorElement.value?.removeEventListener("keydown", onAnchorKeydown);
     });
 
     // #endregion Lifecycle Hooks
 
     /** The button that opens the menu, for what it opens next to be placed by and hand focus back to. */
-    const buttonElement = computed((): HTMLElement | null => anchor.value?.buttonElement ?? null);
+    const buttonElement = computed((): HTMLElement | null => anchorElement.value ?? null);
 
     defineExpose({ buttonElement });
 </script>

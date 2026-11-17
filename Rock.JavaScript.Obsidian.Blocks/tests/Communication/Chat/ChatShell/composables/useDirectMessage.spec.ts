@@ -118,11 +118,12 @@ describe("the picker", () => {
         expect(dm.error).toBeNull();
     });
 
-    test("a search that failed with no sentence of the server's asks to try again in the client's one wording", async () => {
+    // Said beside the list's own Try again, so the words name what failed and ask nothing more.
+    test("a search that failed with no sentence of the server's says what failed in the chat's one voice", async () => {
         const { dependencies } = setup({ search: async () => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }) });
         const dm = createDirectMessages(dependencies);
 
-        await expect(dm.search("pe")).rejects.toThrow("People could not be searched. Try again in a moment.");
+        await expect(dm.search("pe")).rejects.toThrow(/^Couldn't search people\.$/);
     });
 
     test("takes at most the people the platform's limits allow besides the person", () => {
@@ -1818,5 +1819,28 @@ describe("the first message's phase, as New message draws it on the draft", () =
 
         expect(dm.refused).toBeNull();
         expect(dm.error).toBe("Try again.");
+    });
+
+    // One voice for what failed, "Couldn't <do> <thing>.", as every failure in the chat says it.
+    test("a start refused with no sentence says it couldn't start the conversation", async () => {
+        const { dependencies } = setup({
+            startConversation: async () => ({ code: "door.unavailable", channelGuid: null, isPending: false, message: null, personAliasGuid: null })
+        });
+        const dm = await newDraft(dependencies);
+
+        await dm.sendFirst("hello");
+
+        expect(dm.error).toBe("Couldn't start the conversation. Try again in a moment.");
+    });
+
+    test("a lookup or an open that failed with no sentence says it couldn't look up, or open, the conversation", async () => {
+        const { dependencies } = setup({ findConversation: async () => ({ ok: false, error: { code: "rpc.transport", severity: "failed" } }) });
+        const dm = await newDraft(dependencies);
+
+        expect(dm.error).toBe("Couldn't look up the conversation. Try again in a moment.");
+
+        await dm.open();
+
+        expect(dm.error).toBe("Couldn't open the conversation. Try again in a moment.");
     });
 });

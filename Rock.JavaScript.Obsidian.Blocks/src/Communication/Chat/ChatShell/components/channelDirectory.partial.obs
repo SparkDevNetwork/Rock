@@ -57,7 +57,14 @@
                     <Icon class="chat-fd-note-ic" name="info" size="sm" />
                     <span>Showing channels for <b>{{ ownCampusName }}</b> and the whole church.</span>
                 </div>
-                <div v-else-if="campuses.length > 0" class="chat-fd-chips" role="group" aria-label="Campus" data-testid="directory-chips">
+                <div v-else-if="campuses.length > 0"
+                     ref="chipsElement"
+                     class="chat-fd-chips"
+                     :class="{ 'is-cut-start': isChipsCutStart, 'is-cut-end': isChipsCutEnd }"
+                     role="group"
+                     aria-label="Campus"
+                     data-testid="directory-chips"
+                     @scroll="measureChips">
                     <Pill v-for="chip in chips"
                           :key="chip.key"
                           data-testid="directory-chip"
@@ -138,9 +145,9 @@
                                     data-testid="directory-row-open"
                                     :aria-label="row.label"
                                     @click="emit('open', row.id)">
-                                <span class="chat-fd-ic" aria-hidden="true"><Icon name="hash" /></span>
+                                <ChannelMark class="chat-fd-ic" isPublic :imageUrl="row.iconUrl" :tileName="row.name" />
                                 <span class="chat-fd-main">
-                                    <span class="chat-fd-name" data-testid="directory-row-name">{{ row.before }}<mark v-if="row.match">{{ row.match }}</mark>{{ row.after }}</span>
+                                    <span class="chat-fd-name" data-testid="directory-row-name"><MatchText :text="row.name" :query="directory.query" /></span>
                                     <span v-if="row.description" class="chat-fd-desc" data-testid="directory-row-desc">{{ row.description }}</span>
                                     <span class="chat-fd-meta" data-testid="directory-row-meta">
                                         <span v-for="part in row.meta" :key="part">{{ part }}</span>
@@ -165,15 +172,19 @@
                                       data-testid="directory-joined">
                                     <Icon class="chat-fd-joined-ic" name="check" size="xs" />Joined
                                 </span>
-                                <!-- One button through Join, Joining and a refusal, so focus stays on it while the door is out. -->
+                                <!--
+                                    One button through Join, Joining and a refusal, so focus stays on it while the
+                                    door is out. Joining is the spinner alone in Join's box, named for a screen
+                                    reader, so the row never shifts.
+                                -->
                                 <Button v-else
                                         class="chat-fd-join"
                                         size="sm"
                                         :data-testid="row.join.kind === 'joining' ? 'directory-joining' : 'directory-join'"
-                                        :aria-label="row.join.kind === 'joining' ? undefined : `Join ${row.name}`"
+                                        :aria-label="row.join.kind === 'joining' ? 'Joining' : `Join ${row.name}`"
                                         :busy="row.join.kind === 'joining'"
                                         :disabled="row.join.kind === 'refused'"
-                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "Joining" : "Join" }}</Button>
+                                        @click="onJoin(row.id, row.join)">{{ row.join.kind === 'joining' ? "" : "Join" }}</Button>
                             </div>
                         </li>
                     </ul>
@@ -221,7 +232,8 @@
     padding-left: 12px;
 }
 
-.chat-fd-hdr :deep(.chat-fd-back) {
+/* Back's hover disc stands out past the header's gutter, so its glyph lines up with the title's edge. */
+.chat-fd-hdr .chat-fd-back {
     margin-left: -8px;
 }
 
@@ -322,6 +334,22 @@
 
 .chat-fd-chips::-webkit-scrollbar {
     display: none;
+}
+
+/* The end where the row cuts chips off fades, so a phone shows there is more to scroll to. */
+.chat-fd-chips.is-cut-end {
+    -webkit-mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, var(--chat-mask-solid) calc(100% - 32px), transparent);
+}
+
+.chat-fd-chips.is-cut-start {
+    -webkit-mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to left, var(--chat-mask-solid) calc(100% - 32px), transparent);
+}
+
+.chat-fd-chips.is-cut-start.is-cut-end {
+    -webkit-mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
+    mask-image: linear-gradient(to right, transparent, var(--chat-mask-solid) 32px, var(--chat-mask-solid) calc(100% - 32px), transparent);
 }
 
 .chat-fd-note {
@@ -441,23 +469,15 @@
     outline-offset: -2px;
 }
 
+/* The channel's mark as the sidebar draws it, its photo or its letter tile, in the row's 40px box. */
 .chat-fd-ic {
     display: grid;
     flex: none;
     place-items: center;
     width: 40px;
     height: 40px;
-    color: var(--chat-icon);
-    background: var(--chat-sidebar);
-    border: 1px solid var(--chat-line);
+    overflow: hidden;
     border-radius: var(--chat-r-surface);
-    transition: background-color var(--chat-t-base) var(--chat-ease-state), color var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-fd-row.is-member .chat-fd-ic {
-    color: var(--chat-brand-ink);
-    background: var(--chat-brand-tint);
-    border-color: transparent;
 }
 
 .chat-fd-main {
@@ -475,13 +495,6 @@
     line-height: 1.3;
     color: var(--chat-text);
     overflow-wrap: anywhere;
-}
-
-.chat-fd-name mark {
-    color: inherit;
-    background: var(--chat-brand-tint);
-    border-radius: var(--chat-r-inline);
-    box-shadow: 0 0 0 1px var(--chat-brand-tint);
 }
 
 .chat-fd-desc {
@@ -693,13 +706,15 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, onBeforeUnmount, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ChatCampusBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatCampusBag";
     import { useAnnouncer } from "../ui/announcer.partial";
     import Button from "../ui/button.partial.obs";
+    import ChannelMark from "../ui/channelMark.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
     import Icon from "../ui/icon.partial.obs";
+    import MatchText from "../ui/matchText.partial.obs";
     import Pill from "../ui/pill.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import Segmented, { SegmentedOption } from "../ui/segmented.partial.obs";
@@ -717,16 +732,14 @@
         campus: DirectoryCampus;
     };
 
-    /** A row as the list draws it, worked out once per answer. */
-    type DrawnRow = {
+    /** A channel as Browse lists it, worked out once per answer. */
+    type ListedChannel = {
         id: string;
         name: string;
-
-        /** The name split around the part the search matched. */
-        before: string;
-        match: string;
-        after: string;
         description: string | null;
+
+        /** The channel's own photo, or null for its letter tile. */
+        iconUrl: string | null;
         meta: string[];
         isMember: boolean;
         join: JoinState;
@@ -792,6 +805,11 @@
     const searchInput = ref<HTMLInputElement>();
     const scrollElement = ref<HTMLElement>();
     const endElement = ref<HTMLElement>();
+    const chipsElement = ref<HTMLElement>();
+
+    /** Whether the campus chips run past the row's start or end, which fades that edge. */
+    const isChipsCutStart = ref(false);
+    const isChipsCutEnd = ref(false);
 
     /** Whether rows have passed under the tools, which draws the hairline. */
     const isScrolled = ref(false);
@@ -822,7 +840,7 @@
 
     const chips = computed((): Chip[] => [
         { key: "all", label: "All campuses", campus: { kind: "all" } },
-        ...props.campuses.map(campus => ({ key: campus.guid, label: campus.shortCode?.trim() || campus.name || "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
+        ...props.campuses.map(campus => ({ key: campus.guid, label: campus.name ?? "", campus: { kind: "campus", campusId: campus.guid } as DirectoryCampus })),
         { key: "whole-church", label: "Whole church", campus: { kind: "wholeChurch" } }
     ]);
 
@@ -836,23 +854,20 @@
         return `${count} ${total === 1 ? "channel" : "channels"}`;
     });
 
-    const drawnRows = computed((): DrawnRow[] => {
-        const needle = props.directory.query.trim().toLowerCase();
+    const drawnRows = computed((): ListedChannel[] => {
         return props.directory.rows.map(row => {
             const name = row.name ?? "";
-            const at = needle ? name.toLowerCase().indexOf(needle) : -1;
             const join = props.joins[row.channel_id] ?? idle;
             // a join the door and the platform agree on shows as one before the row's own flag turns
             const isMember = row.is_member || join.kind === "joined";
-            const meta = [row.group_type_name ?? "", campusNameOf(row.campus_id) ?? "Whole church"].filter(part => part !== "");
+            // Its campus only: Rock's group type names nothing a person picks a channel by.
+            const meta = [campusNameOf(row.campus_id) ?? "Whole church"];
 
             return {
                 id: row.channel_id,
                 name,
-                before: at < 0 ? name : name.slice(0, at),
-                match: at < 0 ? "" : name.slice(at, at + needle.length),
-                after: at < 0 ? "" : name.slice(at + needle.length),
                 description: row.description?.trim() || null,
+                iconUrl: row.icon_url,
                 meta,
                 isMember,
                 join,
@@ -943,6 +958,13 @@
         }
     }
 
+    /** Reads where the chip row cuts its chips off, as it scrolls or changes width. */
+    function measureChips(): void {
+        const row = chipsElement.value;
+        isChipsCutStart.value = !!row && row.scrollLeft > 1;
+        isChipsCutEnd.value = !!row && row.scrollLeft + row.clientWidth < row.scrollWidth - 1;
+    }
+
     function onScroll(): void {
         const scroller = scrollElement.value;
         if (!scroller) {
@@ -959,7 +981,7 @@
      */
     function onKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement;
-        const rows = Array.from(viewElement.value?.querySelectorAll<HTMLElement>("[data-testid='directory-row-open']") ?? []);
+        const rows = Array.from(viewElement.value?.querySelectorAll<HTMLElement>(".chat-fd-open") ?? []);
 
         if (event.key === "Escape") {
             event.stopPropagation();
@@ -1036,12 +1058,33 @@
         }
 
         const id = props.directory.rows[refusedIndex].channel_id;
-        const row = viewElement.value?.querySelector<HTMLElement>(`[data-testid='directory-row'][data-channel-id='${id}']`);
+        const row = viewElement.value?.querySelector<HTMLElement>(`.chat-fd-row[data-channel-id='${id}']`);
         if (row?.querySelector(".chat-fd-act")?.contains(active)) {
             await nextTick();
-            row.querySelector<HTMLElement>("[data-testid='directory-row-open']")?.focus();
+            row.querySelector<HTMLElement>(".chat-fd-open")?.focus();
         }
     }, { flush: "pre" });
 
+    // The chip row's cut is read as the row is drawn and each time its width changes, since a
+    // narrower window cuts chips that fit before; a browser's observer reads it once on start.
+    const chipsObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measureChips) : null;
+
+    watch(chipsElement, (element, before) => {
+        if (before) {
+            chipsObserver?.unobserve(before);
+        }
+        if (element) {
+            chipsObserver?.observe(element);
+        }
+    });
+
     // #endregion Watchers
+
+    // #region Lifecycle Hooks
+
+    onBeforeUnmount(() => {
+        chipsObserver?.disconnect();
+    });
+
+    // #endregion Lifecycle Hooks
 </script>

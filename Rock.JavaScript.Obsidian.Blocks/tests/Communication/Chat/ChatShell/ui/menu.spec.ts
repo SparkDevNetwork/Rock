@@ -16,7 +16,7 @@
 //
 // The menu, mounted: an icon button that opens a list of actions beside it. A keyboard user must be
 // able to open it, move through it and leave it without losing their place, so focus goes to the
-// first item on open, the arrows cycle, and Escape closes it and puts focus back on the button
+// first item on open, or the one checked in a set of choices, the arrows cycle, and Escape closes it and puts focus back on the button
 // that opened it. The button says whether its menu is open, which is how a screen reader knows.
 import { readFileSync } from "fs";
 import { join } from "path";
@@ -151,6 +151,61 @@ describe("the menu", () => {
         await press("Escape");
         await press("ArrowUp");
         expect(document.activeElement).toBe(menuItems()[2]);
+    });
+
+    // A set of choices opened on its first item let Enter, Enter choose it unasked; on the checked
+    // one, Enter keeps what is so. Every menu of choices gets it, the bell's and the status's alike.
+    test("opens a set of choices on the one checked, by a press and by Down, and on the last by Up", async () => {
+        const choices = [
+            { key: "a", label: "A", isChecked: false },
+            { key: "b", label: "B", isChecked: true },
+            { key: "c", label: "C", isChecked: false }
+        ];
+        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices }, attachTo: document.body });
+        const anchor = wrapper.get("button").element as HTMLElement;
+        const radios = (): HTMLElement[] => Array.from(document.querySelectorAll<HTMLElement>("[role='menu'] [role='menuitemradio']"));
+
+        anchor.focus();
+        anchor.click();
+        await settle();
+        expect(document.activeElement).toBe(radios()[1]);
+
+        await press("Escape");
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(radios()[1]);
+
+        await press("Escape");
+        await press("ArrowUp");
+        expect(document.activeElement).toBe(radios()[2]);
+    });
+
+    // A screen with a trigger of its own, such as a face or a button with words, draws it in the
+    // icon button's place; the menu still opens from it, says so on it, and hands focus back to it.
+    test("draws the trigger it is given in its icon button's place, opening from it and returning focus to it", async () => {
+        wrapper = mount(Menu, {
+            props: { label: "More", items },
+            slots: { trigger: `<template #trigger="{ attrs }"><button type="button" class="own-trigger" v-bind="attrs">Go</button></template>` },
+            attachTo: document.body
+        });
+        const own = wrapper.get(".own-trigger").element as HTMLElement;
+
+        expect(wrapper.find(".chat-icon-btn").exists()).toBe(false);
+        expect(own.getAttribute("aria-haspopup")).toBe("menu");
+        expect(own.getAttribute("aria-expanded")).toBe("false");
+
+        own.focus();
+        own.click();
+        await settle();
+        expect(menu()).not.toBeNull();
+        expect(own.getAttribute("aria-expanded")).toBe("true");
+        expect(document.activeElement).toBe(menuItems()[0]);
+
+        await press("Escape");
+        expect(menu()).toBeNull();
+        expect(document.activeElement).toBe(own);
+
+        await press("ArrowDown");
+        expect(document.activeElement).toBe(menuItems()[0]);
     });
 
     test("goes to the next item that starts with a letter typed", async () => {
@@ -394,12 +449,12 @@ describe("a menu's note and its way out", () => {
         expect(tab.defaultPrevented).toBe(false);
     });
 
-    test("opens on the item it is told to, and draws an item's heading for the eye alone", async () => {
+    test("draws an item's heading for the eye alone, the item its own name for the ear", async () => {
         const choices = [
             { key: "a", label: "A", isChecked: false },
             { key: "b", label: "B", isChecked: true, heading: "Later ones", ariaLabel: "Later B" }
         ];
-        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices, focusKey: "b" }, attachTo: document.body });
+        wrapper = mount(Menu, { props: { icon: "dots", label: "Pick", items: choices }, attachTo: document.body });
         (wrapper.get("button").element as HTMLElement).click();
         await settle();
 

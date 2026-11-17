@@ -578,7 +578,7 @@ describe("Status", () => {
         expect(plain(change.text())).toBe("Change");
         expect(change.attributes("aria-haspopup")).toBe("menu");
         await openChange(w);
-        expect(menuKeys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+        expect(menuKeys()).toEqual(["auto", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
 
         (document.querySelector<HTMLElement>("[role='menu'] [data-key='appear_offline']"))!.click();
         await settle();
@@ -592,7 +592,7 @@ describe("Status", () => {
 
         expect(w.find("[data-testid='settings-status']").exists()).toBe(true);
         await openChange(w);
-        expect(menuKeys()).toEqual(["auto", "busy-morning", "busy-1h", "busy-2h", "busy-off", "appear_offline"]);
+        expect(menuKeys()).toEqual(["auto", "busy-1h", "busy-2h", "busy-morning", "busy-off", "appear_offline"]);
     });
 
     test("while the church is read only, Change still opens the menu, which says why nothing in it can be chosen", async () => {

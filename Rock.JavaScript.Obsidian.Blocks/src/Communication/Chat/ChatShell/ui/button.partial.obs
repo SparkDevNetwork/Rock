@@ -7,6 +7,7 @@
             :disabled="disabled || undefined"
             :aria-disabled="busy ? 'true' : undefined"
             :aria-busy="busy ? 'true' : undefined"
+            :style="restWidth === null ? undefined : { minWidth: `${restWidth}px` }"
             @click="onClick">
         <span v-if="busy" class="chat-spinner" aria-hidden="true"></span>
         <Icon v-else-if="icon" :name="icon" size="sm" />
@@ -112,7 +113,7 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { PropType, ref, watch } from "vue";
     import Icon from "./icon.partial.obs";
     import { ControlSize } from "../types.partial";
 
@@ -175,6 +176,17 @@
     }>();
 
     const buttonElement = ref<HTMLButtonElement>();
+
+    /**
+     * The width the button had at rest, held while it is busy, so shorter busy words with a
+     * spinner, as Join channel turning to Joining, never pull its end in; null when not busy.
+     */
+    const restWidth = ref<number | null>(null);
+
+    // Read before the busy words are drawn, so it is the resting button's own width.
+    watch(() => props.busy, busy => {
+        restWidth.value = busy && buttonElement.value ? buttonElement.value.getBoundingClientRect().width : null;
+    }, { flush: "pre" });
 
     function onClick(event: MouseEvent): void {
         if (props.busy) {

@@ -6,6 +6,7 @@
               'is-neutral': tone === 'neutral',
               'is-muted': tone === 'muted',
               'is-media': tone === 'media',
+              'is-tag': tone === 'tag',
               'is-label': !!label,
               'is-count': !label,
               'is-pop': isPopping
@@ -58,7 +59,7 @@
     background: var(--chat-brand-tint);
 }
 
-/* A "+N" or a label such as Leader: one neutral fill wherever it sits. */
+/* A "+N": one neutral fill wherever it sits. */
 .chat-badge.is-neutral {
     color: var(--chat-text-2);
     background: var(--chat-line-strong);
@@ -68,6 +69,12 @@
 .chat-badge.is-muted {
     color: var(--chat-muted);
     background: var(--chat-hover);
+}
+
+/* A tag such as Leader: the pill fill, lighter than the "+N" disc's, so a tag never reads as a count. */
+.chat-badge.is-tag {
+    color: var(--chat-text-2);
+    background: var(--chat-pill-bg);
 }
 
 /* A label over a photo, such as GIF, on the photo's own scrim. */
@@ -113,9 +120,12 @@
             default: ""
         },
 
-        /** The church's tint for what is yours, neutral for a "+N" or a label, muted for a quiet room, media over a photo. */
+        /**
+         * The church's tint for what is yours, neutral for a "+N", a tag such as Leader on the
+         * pill fill, muted for a quiet room, media over a photo.
+         */
         tone: {
-            type: String as PropType<"brand" | "neutral" | "muted" | "media">,
+            type: String as PropType<"brand" | "neutral" | "muted" | "media" | "tag">,
             default: "brand"
         },
 

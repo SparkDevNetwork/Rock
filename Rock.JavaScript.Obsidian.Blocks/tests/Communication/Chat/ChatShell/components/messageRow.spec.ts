@@ -1774,7 +1774,7 @@ describe("the Leader pill", () => {
 
         const pill = w.get("[data-testid='message-head'] [data-testid='leader-pill']");
         expect(pill.text()).toBe("Leader");
-        expect(pill.classes()).toContain("chat-badge");
+        expect(pill.classes()).toEqual(expect.arrayContaining(["chat-badge", "is-tag"]));
         expect(pill.element.previousElementSibling?.getAttribute("data-testid")).toBe("sender-name");
     });
 

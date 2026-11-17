@@ -22,16 +22,20 @@
 // listed last, and can be neither picked nor reached with the arrows. Enter with a name only ever
 // picks, waiting for an answer still out; Enter on an empty field is the owner's next step.
 /* eslint-disable @typescript-eslint/naming-convention */
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PeoplePicker from "../../../../../src/Communication/Chat/ChatShell/ui/peoplePicker.partial.obs";
 import { PersonRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
-import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, chatSheet, createStatusStore, provideStatus, fillsAndRings, setsBothRings, StatusStore } from "../statusStore";
+import { anna as statusAnna, badgesIn, ben as statusBen, carl as statusCarl, createStatusStore, provideStatus, fillsAndRings, setsBothRings, shellFolder, StatusStore, styleRules } from "../statusStore";
 
 /** One person as chat_search_people answers them, exactly its keys. */
 function person(n: number, nickName: string, lastName: string, inRoom?: boolean): PersonRow {
     return { person_alias_guid: `a00000${10 + n}-0000-4000-8000-000000000000`, nick_name: nickName, last_name: lastName, avatar_url: null, campus_id: null, ...(inRoom === undefined ? {} : { in_room: inRoom }) };
 }
+
+/** The picker's own file, which holds its whole look. */
+const pickerFile = join(shellFolder, "ui/peoplePicker.partial.obs");
 
 const aaron = person(1, "Aaron", "Park", false);
 const anna = person(2, "Anna", "Reyes", true);
@@ -117,6 +121,20 @@ describe("over the page", () => {
         await answer(w, "par", [aaron]);
 
         expect(w.get("[data-testid='pp-option'] mark").text()).toBe("Par");
+    });
+
+    // The wash in the active row's own tint hid the match on the row Enter would pick; the one
+    // shared mark underlines it in the church's colour on every row, the active one included.
+    test("marks the match with the one shared mark on the active row too, with no look of its own", async () => {
+        const w = draw({ isMatchMarked: true });
+        input(w).focus();
+        await w.get("[data-testid='pp-input']").trigger("focus");
+        await answer(w, "a", [aaron, andre]);
+
+        const active = w.get("[data-testid='pp-option'].is-active");
+        expect(active.get("mark").classes()).toContain("chat-match");
+        expect(active.get("mark").text()).toBe("A");
+        expect(styleRules(pickerFile, /mark/)).toEqual([]);
     });
 });
 
@@ -231,6 +249,74 @@ describe("the chips", () => {
     });
 });
 
+describe("a failed search", () => {
+    /** The picker over the page with a name typed and focus in the field, as the search answers. */
+    async function focused(props: Record<string, unknown>): Promise<VueWrapper> {
+        const w = draw({ query: "an", ...props });
+        input(w).focus();
+        await w.get("[data-testid='pp-input']").trigger("focus");
+        return w;
+    }
+
+    // A listbox holds options only; the failure and its button, and the list's other words, are
+    // drawn in the list's place beside it, never inside it.
+    test("is drawn in the list's place outside the listbox, which holds only the options", async () => {
+        const w = await focused({ results: null, searchError: "Couldn't search people.", retry: jest.fn() });
+
+        const failure = w.get("[data-testid='pp-list'] [data-testid='pp-search-error']");
+        expect(failure.element.closest("[role='listbox']")).toBeNull();
+        expect(w.get("[data-testid='pp-search-retry']").element.closest("[role='listbox']")).toBeNull();
+        expect(input(w).getAttribute("aria-expanded")).toBe("false");
+
+        await w.setProps({ searchError: null, isSearching: true });
+        expect(w.get("[data-testid='pp-searching']").element.closest("[role='listbox']")).toBeNull();
+
+        await answer(w, "an", [aaron, andre]);
+        const listbox = w.get("[data-testid='pp-list'] [role='listbox']");
+        expect(listbox.attributes("aria-label")).toBe("People");
+        expect(input(w).getAttribute("aria-controls")).toBe(listbox.attributes("id"));
+        expect(input(w).getAttribute("aria-expanded")).toBe("true");
+        expect(Array.from(listbox.element.children).map(child => child.getAttribute("role"))).toEqual(["option", "option"]);
+    });
+
+    // Tab from the field went to Try again, the field's blur closed the list, and the button left
+    // with it, dropping focus to the page. The list stays while focus is in the field or the list.
+    test("Tab reaches Try again with the list kept open, and Try again asks again and puts focus back in the field", async () => {
+        const retry = jest.fn();
+        const w = await focused({ chosen: [aaron], results: null, searchError: "Couldn't search people.", retry });
+
+        const tab = await press(w, "Tab");
+        expect(tab.defaultPrevented).toBe(false);
+        expect(w.emitted("tab")).toBeUndefined();
+
+        const button = w.get("[data-testid='pp-search-retry']").element as HTMLButtonElement;
+        button.focus();
+        await nextTick();
+        expect(w.find("[data-testid='pp-search-retry']").exists()).toBe(true);
+        expect(document.activeElement).toBe(button);
+
+        await w.get("[data-testid='pp-search-retry']").trigger("click");
+        expect(retry).toHaveBeenCalledTimes(1);
+        expect(document.activeElement).toBe(input(w));
+    });
+
+    test("closes the list once focus leaves both the field and the list", async () => {
+        const w = await focused({ results: null, searchError: "Couldn't search people.", retry: jest.fn() });
+        const outside = document.createElement("button");
+        document.body.appendChild(outside);
+        try {
+            (w.get("[data-testid='pp-search-retry']").element as HTMLButtonElement).focus();
+            outside.focus();
+            await nextTick();
+
+            expect(w.find("[data-testid='pp-list']").exists()).toBe(false);
+        }
+        finally {
+            outside.remove();
+        }
+    });
+});
+
 test("an answer is said: how many can be picked, or that no one was found", async () => {
     const w = draw({ isInline: true, inRoomReason: "Already here" });
 
@@ -276,11 +362,11 @@ describe("online status", () => {
         ["the list over the page", /^\.chat-pk-list$/],
         ["the list inline", /^\.chat-pk\.is-inline \.chat-pk-list$/]
     ])("rings its badge in %s's fill", (_place, selector) => {
-        expect(setsBothRings(chatSheet, selector)).toBe(true);
+        expect(setsBothRings(pickerFile, selector)).toBe(true);
     });
 
     test("rings its badge in each result's own fill as it changes: hover, the active option, none when dimmed", () => {
-        const states = fillsAndRings(chatSheet, /^\.chat-pk-opt(:hover|\.is-active|\[aria-disabled="true"\])$/);
+        const states = fillsAndRings(pickerFile, /^\.chat-pk-opt(:hover|\.is-active|\[aria-disabled="true"\])$/);
 
         expect(states).toHaveLength(3);
         expect(states.map(state => state.ring)).toEqual(states.map(state => state.fill));

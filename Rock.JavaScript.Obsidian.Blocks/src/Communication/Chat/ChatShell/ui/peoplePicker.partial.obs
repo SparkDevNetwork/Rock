@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-pk" :class="{ 'is-inline': isInline }">
+    <div class="chat-pk" :class="{ 'is-inline': isInline }" @focusout="onFocusout">
         <div class="chat-pk-field chat-field" @mousedown="onFieldMousedown">
             <span :id="labelId" class="chat-pk-label" :data-testid="labelTestId">{{ label }}</span>
             <span class="chat-pk-chips" role="list" aria-label="Chosen people">
@@ -22,13 +22,18 @@
                     </button>
                 </span>
             </span>
-            <input ref="inputElement"
+            <!--
+                Over the page, at the cap there is no one left to type for, so the input goes and
+                leaves no empty row; inline, the list under it says the cap and the field keeps focus.
+            -->
+            <input v-if="isInline || !isFull"
+                   ref="inputElement"
                    class="chat-pk-input chat-field-input"
                    type="text"
                    role="combobox"
                    aria-autocomplete="list"
-                   :aria-expanded="isListOpen ? 'true' : 'false'"
-                   :aria-controls="listId"
+                   :aria-expanded="isListboxShown ? 'true' : 'false'"
+                   :aria-controls="isListboxShown ? listId : undefined"
                    :aria-labelledby="labelId"
                    :aria-describedby="noteId"
                    :aria-activedescendant="activeOptionId"
@@ -41,46 +46,55 @@
                    :data-testid="inputTestId"
                    @input="onInput"
                    @focus="isFocused = true; isListClosed = false"
-                   @blur="isFocused = false"
                    @keydown="onKeydown" />
             <span v-if="isSearching" class="chat-pk-busy" aria-hidden="true"><span class="chat-spinner"></span></span>
+            <span v-if="count" class="chat-pk-count" :data-testid="`${prefix}-count`">{{ count }}</span>
         </div>
 
-        <!-- Choosing from the list keeps focus in the field, so typing carries on. -->
+        <!--
+            The list's place: the listbox of people found, or the words standing in for it, which
+            sit beside the listbox since a listbox holds options alone. Choosing from it keeps
+            focus in the field, so typing carries on.
+        -->
         <div v-if="isListOpen"
-             :id="listId"
+             ref="listElement"
              class="chat-pk-list"
-             role="listbox"
-             aria-label="People"
              :data-testid="listTestId"
              @mousedown.prevent>
             <template v-if="!isDisabled">
-                <div v-if="isFull" class="chat-pk-msg" :data-testid="`${prefix}-cap`"><Icon name="info" size="xs" />{{ capText }}</div>
+                <div v-if="isFull" class="chat-pk-msg" :data-testid="`${prefix}-cap`"><Icon class="chat-pk-msg-ic" name="info" size="xs" />{{ capText }}</div>
                 <template v-else-if="query.trim()">
-                    <div v-if="searchError" class="chat-pk-msg is-error" :data-testid="`${prefix}-search-error`">{{ searchError }}</div>
+                    <EmptyState v-if="searchError"
+                                tone="error"
+                                :title="searchError"
+                                :actionLabel="!!retry ? 'Try again' : ''"
+                                :actionAttrs="{ 'data-testid': `${prefix}-search-retry` }"
+                                :data-testid="`${prefix}-search-error`"
+                                @action="onRetry" />
                     <div v-else-if="results === null" class="chat-pk-msg" :data-testid="`${prefix}-searching`">Searching…</div>
                     <div v-else-if="options.length === 0" class="chat-pk-msg" :data-testid="`${prefix}-none`">{{ noneText }}</div>
-                    <div v-for="(option, index) in options"
-                         v-else
-                         :id="optionId(option.person)"
-                         :key="option.person.person_alias_guid"
-                         class="chat-pk-opt"
-                         :class="{ 'is-active': index === activeIndex }"
-                         role="option"
-                         :aria-selected="index === activeIndex ? 'true' : 'false'"
-                         :aria-disabled="option.why ? 'true' : undefined"
-                         :data-person="option.person.person_alias_guid"
-                         :data-testid="`${prefix}-option`"
-                         @mousedown.prevent="choose(option.person)"
-                         @mouseenter="onOptionEnter(index)">
-                        <Avatar :people="[faceOf(option.person)]" :size="32" :status="statusOf(option.person.person_alias_guid)" />
-                        <span class="chat-pk-o-main">
-                            <b>{{ option.before }}<mark v-if="option.match">{{ option.match }}</mark>{{ option.after }}</b>
-                            <span v-if="statusOf(option.person.person_alias_guid)" class="chat-sr-only">{{ statusOf(option.person.person_alias_guid)?.label }}</span>
-                            <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
-                            <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
-                        </span>
-                        <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                    <div v-else :id="listId" role="listbox" aria-label="People">
+                        <div v-for="(option, index) in options"
+                             :id="optionId(option.person)"
+                             :key="option.person.person_alias_guid"
+                             class="chat-pk-opt"
+                             :class="{ 'is-active': index === activeIndex }"
+                             role="option"
+                             :aria-selected="index === activeIndex ? 'true' : 'false'"
+                             :aria-disabled="option.why ? 'true' : undefined"
+                             :data-person="option.person.person_alias_guid"
+                             :data-testid="`${prefix}-option`"
+                             @mousedown.prevent="choose(option.person)"
+                             @mouseenter="onOptionEnter(index)">
+                            <Avatar class="chat-pk-o-face" :people="[faceOf(option.person)]" :size="32" :status="statusOf(option.person.person_alias_guid)" />
+                            <span class="chat-pk-o-main">
+                                <b><MatchText :text="option.name" :query="isMatchMarked ? query : ''" /></b>
+                                <span v-if="statusOf(option.person.person_alias_guid)" class="chat-sr-only">{{ statusOf(option.person.person_alias_guid)?.label }}</span>
+                                <span v-if="option.why" class="chat-pk-why" :data-testid="`${prefix}-option-why`">{{ option.why }}</span>
+                                <span v-else-if="option.campus" :data-testid="`${prefix}-option-campus`">{{ option.campus }}</span>
+                            </span>
+                            <span v-if="!option.why" class="chat-pk-enter" aria-hidden="true"><Icon name="plus" size="xs" /></span>
+                        </div>
                     </div>
                 </template>
                 <div v-else class="chat-pk-msg" :data-testid="`${prefix}-idle`">{{ idleText }}</div>
@@ -93,7 +107,272 @@
 </template>
 
 <style scoped>
-/* The sheet draws the picker's parts; an inline label gives up its fixed width beside "Add". */
+/*
+    The people picker, shared by New message's To field and Add people's inline search: chips for
+    the people chosen, a field to type in, and a list of who matches. Under the root, so each rule
+    outranks the base focus.
+*/
+.chat-shell .chat-pk {
+    position: relative;
+}
+
+.chat-shell .chat-pk-field {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+    min-height: 46px;
+    padding: 7px 10px 7px 14px;
+    cursor: text;
+    background: var(--chat-surface);
+    border: 1px solid var(--chat-line-strong);
+    border-radius: var(--chat-r-field);
+}
+
+.chat-shell .chat-pk-label {
+    margin-right: 4px;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* The chips flow with the input as one wrapping line. */
+.chat-shell .chat-pk-chips {
+    display: contents;
+}
+
+.chat-shell .chat-pk-chip {
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+    max-width: 100%;
+    height: 30px;
+    padding: 0 3px 0 4px;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    color: var(--chat-text);
+    background: var(--chat-brand-tint);
+    border-radius: var(--chat-r-full);
+}
+
+/* Only the chip just chosen enters, so the others stay still as one is added. */
+.chat-shell .chat-pk-chip.is-new {
+    --chat-pop-from: 0px;
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
+}
+
+
+.chat-shell .chat-pk-chip-n {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.chat-shell .chat-pk-x {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    color: var(--chat-text-2);
+    background: none;
+    border: 0;
+    border-radius: var(--chat-r-full);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-x:hover:not(:disabled) {
+    color: var(--chat-text);
+    background: var(--chat-brand-ring);
+}
+
+.chat-shell .chat-pk-x:disabled {
+    opacity: .4;
+}
+
+/* The field is a text box, kept on the chips' line down to 80px before it wraps, so a wide zoom leaves no blank row. */
+.chat-shell .chat-pk-input {
+    min-width: 80px;
+    height: 30px;
+    padding: 1px 2px;
+    font-size: var(--chat-fs-body);
+}
+
+.chat-shell .chat-pk-input:disabled {
+    cursor: default;
+}
+
+.chat-shell .chat-pk-busy {
+    display: inline-grid;
+    place-items: center;
+    width: 22px;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-busy .chat-spinner {
+    width: 13px;
+    height: 13px;
+}
+
+/* How many are chosen of the most, at the field's end, as the cap nears. */
+.chat-shell .chat-pk-count {
+    flex: none;
+    padding-right: 4px;
+    margin-left: auto;
+    font-size: var(--chat-fs-small);
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+/* A result's badge rings in the list's fill, under the result's own as it changes. */
+.chat-shell .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    left: 0;
+    z-index: var(--chat-z-bar);
+    max-height: 340px;
+    padding: 6px;
+    overflow-y: auto;
+    background: var(--chat-raised);
+    border-radius: var(--chat-r-surface);
+    box-shadow: var(--chat-shadow-pop);
+    animation: chat-pop-in var(--chat-t-base) var(--chat-ease-in);
+    scrollbar-width: thin;
+}
+
+.chat-shell .chat-pk-opt {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 7px 10px 7px 8px;
+    cursor: pointer;
+    border-radius: var(--chat-r-inset);
+    transition: background-color var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-opt:hover {
+    --chat-av-ring-over: var(--chat-hover);
+
+    background: var(--chat-hover);
+}
+
+.chat-shell .chat-pk-opt.is-active {
+    --chat-av-ring-over: var(--chat-brand-tint);
+
+    background: var(--chat-brand-tint);
+}
+
+.chat-shell .chat-pk-o-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.3;
+}
+
+/* A long name cuts off sideways only: a clip below the line would hide the match underline under it. */
+.chat-shell .chat-pk-o-main b {
+    overflow-x: clip;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The campus under the name, for a person who shows it. */
+.chat-shell .chat-pk-o-main span {
+    overflow: hidden;
+    font-size: var(--chat-fs-small);
+    color: var(--chat-muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The plus shows on the row Enter would pick, and under the pointer. */
+.chat-shell .chat-pk-enter {
+    display: grid;
+    place-items: center;
+    width: 22px;
+    height: 22px;
+    color: var(--chat-brand-ink);
+    border-radius: var(--chat-r-full);
+    opacity: 0;
+    transition: opacity var(--chat-t-fast) var(--chat-ease-state);
+}
+
+.chat-shell .chat-pk-opt.is-active .chat-pk-enter,
+.chat-shell .chat-pk-opt:hover .chat-pk-enter {
+    opacity: 1;
+}
+
+.chat-shell .chat-pk-msg {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    padding: 10px;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.45;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-note {
+    padding: 6px 4px 0;
+    font-size: var(--chat-fs-small);
+    font-weight: 600;
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-note:empty {
+    display: none;
+}
+
+/* Inline, as Add people draws it: the results listed under the field rather than over the view, on the dialog's fill. */
+.chat-shell .chat-pk.is-inline .chat-pk-list {
+    --chat-av-ring: var(--chat-raised);
+    --chat-av-ring-over: transparent;
+
+    position: static;
+    max-height: 248px;
+    padding: 0;
+    margin-top: 8px;
+    background: none;
+    border-radius: 0;
+    box-shadow: none;
+    animation: none;
+}
+
+/* Someone the room cannot take, such as a person already in it, is listed dimmed with the reason. */
+.chat-shell .chat-pk-opt[aria-disabled="true"] {
+    --chat-av-ring-over: transparent;
+
+    cursor: default;
+    background: none;
+}
+
+.chat-shell .chat-pk-opt[aria-disabled="true"] .chat-pk-o-face {
+    opacity: .45;
+}
+
+.chat-shell .chat-pk-opt[aria-disabled="true"] b {
+    color: var(--chat-muted);
+}
+
+.chat-shell .chat-pk-o-main .chat-pk-why {
+    font-style: italic;
+}
+
+.chat-shell .chat-pk-msg-ic {
+    flex: none;
+    margin-top: 2px;
+    color: var(--chat-info-ink);
+}
+
+/* An inline label gives up its fixed width beside "Add". */
 .chat-pk.is-inline .chat-pk-label {
     min-width: 0;
 }
@@ -103,18 +382,18 @@
     import { computed, PropType, ref, watch } from "vue";
     import { newGuid } from "@Obsidian/Utility/guid";
     import Avatar, { AvatarPerson } from "./avatar.partial.obs";
+    import EmptyState from "./emptyState.partial.obs";
     import Icon from "./icon.partial.obs";
+    import MatchText from "./matchText.partial.obs";
     import { PersonRow } from "../types.partial";
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
 
     // #region Types
 
-    /** A person found as drawn: the name split around the part matched, and why they cannot be picked or their campus. */
+    /** A person found as drawn: the name, and why they cannot be picked or their campus. */
     type Option = {
         person: PersonRow;
-        before: string;
-        match: string;
-        after: string;
+        name: string;
         why: string;
         campus: string;
     };
@@ -224,6 +503,18 @@
             default: ""
         },
 
+        /** How many are chosen of the most, drawn at the field's end, as "6 of 8"; none by default. */
+        count: {
+            type: String,
+            default: ""
+        },
+
+        /** Asks the failed search again, which offers Try again beside the failure; none without it. */
+        retry: {
+            type: Function as PropType<() => void>,
+            default: null
+        },
+
         /** The church's campus names by guid in lower case, which name each person's campus. */
         campusNames: {
             type: Object as PropType<Record<string, string>>,
@@ -277,9 +568,15 @@
 
     const inputElement = ref<HTMLInputElement>();
 
+    const listElement = ref<HTMLElement>();
+
     /** The option Enter would pick, by its place in the list. */
     const activeIndex = ref(0);
 
+    /**
+     * Focus is in the field or in the list under it, as on a failed search's Try again, so the
+     * list stays while Tab moves between them.
+     */
     const isFocused = ref(false);
 
     /** Escape or a pick closed the list; typing opens it again. */
@@ -304,22 +601,15 @@
 
     /** The answer, less the people already chosen, those who cannot be picked last. */
     const options = computed((): Option[] => {
-        const needle = props.isMatchMarked ? props.query.trim().toLowerCase() : "";
         const picked = new Set(props.chosen.map(person => person.person_alias_guid));
         return (props.results ?? [])
             .filter(person => !picked.has(person.person_alias_guid))
-            .map(person => {
-                const name = nameOf(person);
-                const at = matchAt(name.toLowerCase(), needle);
-                return {
-                    person,
-                    before: at < 0 ? name : name.slice(0, at),
-                    match: at < 0 ? "" : name.slice(at, at + needle.length),
-                    after: at < 0 ? "" : name.slice(at + needle.length),
-                    why: person.in_room && props.inRoomReason ? props.inRoomReason : "",
-                    campus: campusOf(person)
-                };
-            })
+            .map(person => ({
+                person,
+                name: nameOf(person),
+                why: person.in_room && props.inRoomReason ? props.inRoomReason : "",
+                campus: campusOf(person)
+            }))
             .sort((a, b) => Number(!!a.why) - Number(!!b.why));
     });
 
@@ -329,6 +619,22 @@
         && !props.isDisabled
         && props.query.trim() !== ""
         && !isFull.value));
+
+    /** The list has people in it to pick, which the field is expanded over. */
+    const isListboxShown = computed((): boolean => isListOpen.value
+        && !props.isDisabled
+        && !isFull.value
+        && props.query.trim() !== ""
+        && !props.searchError
+        && options.value.length > 0);
+
+    /** The list says the search failed and offers Try again, a stop of its own for Tab. */
+    const isRetryShown = computed((): boolean => isListOpen.value
+        && !props.isDisabled
+        && !isFull.value
+        && props.query.trim() !== ""
+        && !!props.searchError
+        && !!props.retry);
 
     const activeOptionId = computed((): string | undefined => {
         const option = isListOpen.value ? options.value[activeIndex.value] : undefined;
@@ -345,6 +651,23 @@
             event.preventDefault();
             inputElement.value?.focus();
         }
+    }
+
+    /** Focus going anywhere but the field or the list closes the list over the page. */
+    function onFocusout(event: FocusEvent): void {
+        const next = event.relatedTarget;
+        if (!(next instanceof Node && (next === inputElement.value || listElement.value?.contains(next)))) {
+            isFocused.value = false;
+        }
+    }
+
+    /**
+     * Asks the failed search again and puts focus back in the field, where the answer lands; the
+     * button it was pressed on goes as the search starts.
+     */
+    function onRetry(): void {
+        props.retry?.();
+        inputElement.value?.focus({ preventScroll: true });
     }
 
     function onInput(event: Event): void {
@@ -386,11 +709,19 @@
             else if (props.isSearching) {
                 isEnterWaiting.value = true;
             }
+            else if (props.searchError && props.retry) {
+                // The list's Try again, from the keyboard, since the field keeps focus.
+                props.retry();
+            }
             else {
                 pickWithText();
             }
         }
         else if (event.key === "Tab") {
+            // Tab goes on to the list's Try again first, the browser's own move; the owner's after.
+            if (!event.shiftKey && isRetryShown.value) {
+                return;
+            }
             emit("tab", event);
         }
         else if (event.key === "Backspace" && !props.query && props.chosen.length > 0) {
@@ -429,20 +760,6 @@
 
     function optionId(person: PersonRow): string {
         return `${idBase}-o-${person.person_alias_guid}`;
-    }
-
-    /** Where the text typed starts in a name: its start, else a word's start, else anywhere. */
-    function matchAt(name: string, needle: string): number {
-        if (!needle) {
-            return -1;
-        }
-
-        if (name.startsWith(needle)) {
-            return 0;
-        }
-
-        const word = name.indexOf(` ${needle}`);
-        return word < 0 ? name.indexOf(needle) : word + 1;
     }
 
     /** Picks the option marked, else the first that can be picked; the owner says why when none can. */

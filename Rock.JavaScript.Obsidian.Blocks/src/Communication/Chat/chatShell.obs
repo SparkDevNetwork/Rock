@@ -462,7 +462,7 @@
 
             <!-- Changing who is in the room, asked from the members panel and drawn over the frame. -->
             <RemoveMember v-bind="removeView" @close="shell.members.cancelRemove" @confirm="shell.members.remove" @query="shell.members.setSuccessorQuery" />
-            <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @add="shell.members.add" />
+            <AddPeople v-bind="addView" @close="shell.members.closeAdd" @query="shell.members.setAddQuery" @retry="shell.members.retryAdd" @add="shell.members.add" />
 
             <!-- The reaction picker, one at a time, placed beside what opened it and drawn in the chat's root. -->
             <EmojiPicker v-if="reactionPicker"
