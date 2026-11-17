@@ -511,6 +511,24 @@ describe("its triggers", () => {
 
         expect(style).not.toMatch(/:deep\(/);
     });
+
+    // The face's 40px disc and its ring over each fill are the menu's own scoped rules, which
+    // reach the button only when the button carries the menu's scope. The test build compiles no
+    // scope, so the menu is given one here.
+    test("sizes and rings its face by its own rules, which reach the face's button", () => {
+        const scoped = StatusMenu as unknown as { __scopeId?: string };
+        scoped.__scopeId = "data-v-status";
+        try {
+            const face = trigger(mountMenu({ trigger: "face" }));
+
+            expect(face.tagName).toBe("BUTTON");
+            expect(face.classList).toContain("chat-status-face");
+            expect(face.hasAttribute("data-v-status")).toBe(true);
+        }
+        finally {
+            delete scoped.__scopeId;
+        }
+    });
 });
 
 describe("the sidebar foot's face", () => {

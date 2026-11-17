@@ -214,6 +214,24 @@ describe("the header", () => {
         expect(w.emitted("close")).toBeUndefined();
     });
 
+    // Browse's own rule pulls Back out past the header's gutter; a scoped rule reaches the button
+    // only when the button carries Browse's scope. The test build compiles no scope, so Browse is
+    // given one here.
+    test("places Back by its own rule, which reaches the button", () => {
+        const scoped = ChannelDirectory as unknown as { __scopeId?: string };
+        scoped.__scopeId = "data-v-fd";
+        try {
+            const back = mountDirectory({ isPhone: true }).get("[data-testid='directory-back']");
+
+            expect(back.element.tagName).toBe("BUTTON");
+            expect(back.classes()).toContain("chat-fd-back");
+            expect(back.attributes()).toHaveProperty("data-v-fd");
+        }
+        finally {
+            delete scoped.__scopeId;
+        }
+    });
+
     test("closes from its X", async () => {
         const w = mountDirectory();
 

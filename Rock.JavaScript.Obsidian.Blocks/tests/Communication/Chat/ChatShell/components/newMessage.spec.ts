@@ -197,6 +197,24 @@ describe("the header", () => {
         expect(w.emitted("back")).toHaveLength(1);
     });
 
+    // The view's own rule pulls Back out past the header's gutter; a scoped rule reaches the
+    // button only when the button carries the view's scope. The test build compiles no scope, so
+    // the view is given one here.
+    test("places Back by its own rule, which reaches the button", () => {
+        const scoped = NewMessage as unknown as { __scopeId?: string };
+        scoped.__scopeId = "data-v-nd";
+        try {
+            const back = mountView({ isPhone: true }).get("[data-testid='nd-back']");
+
+            expect(back.element.tagName).toBe("BUTTON");
+            expect(back.classes()).toContain("chat-nd-back");
+            expect(back.attributes()).toHaveProperty("data-v-nd");
+        }
+        finally {
+            delete scoped.__scopeId;
+        }
+    });
+
     test.each([
         ["nothing chosen", {}, "Choose up to 8 people"],
         ["nothing chosen where the platform's group size is 3", { maxOthers: 3 }, "Choose up to 3 people"],
