@@ -18,6 +18,7 @@
 // they give it. The prompt's markup is a component; every decision it makes is here.
 import { ChatBirthdateResultBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatBirthdateResultBag";
 import { ChatShellSessionBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatShell/chatShellSessionBag";
+import { failedWords } from "./errors.partial";
 
 /** What the save action answered. */
 export type BirthdateSaveResult = {
@@ -42,7 +43,7 @@ const retryMessages: Record<string, string> = {
     birthdate_recorded: "Rock already has part of your birthdate, and this date does not match it. Ask your church to correct it on your profile."
 };
 
-const unsavedMessage = "Your birthdate could not be saved just now. Try again.";
+const unsavedMessage = failedWords("Couldn't save your birthdate.").alone;
 
 /**
  * Whether the shell shows the birthdate prompt rather than a refusal.

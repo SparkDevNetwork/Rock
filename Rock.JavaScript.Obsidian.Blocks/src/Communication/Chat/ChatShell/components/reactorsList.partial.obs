@@ -49,14 +49,11 @@
                 </template>
             </ListRow>
             <!-- Rows held for the people still on their way, by the count, so nothing moves when they land. -->
-            <div v-for="index in reservedCount"
-                 :key="`reserved-${index}`"
-                 class="chat-rl-row"
-                 aria-hidden="true"
-                 data-testid="reactors-reserved">
-                <span class="chat-skeleton chat-rl-sk-face"></span>
-                <span class="chat-skeleton chat-rl-sk-name"></span>
-            </div>
+            <Skeleton v-for="index in reservedCount"
+                      :key="`reserved-${index}`"
+                      shape="reactor"
+                      :widths="[reservedWidths[index % reservedWidths.length]]"
+                      data-testid="reactors-reserved" />
             <!-- The next page is asked for as this comes near, under the rows held for it. -->
             <div ref="endElement" class="chat-rl-end" aria-hidden="true" data-testid="reactors-end"></div>
             <EmptyState v-if="shown.isFailed"
@@ -132,17 +129,6 @@
     scrollbar-width: thin;
 }
 
-.chat-rl-row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    height: 40px;
-    padding: 0 12px;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-text);
-    border-radius: var(--chat-r-inset);
-}
-
 .chat-rl-end {
     height: 1px;
 }
@@ -153,18 +139,6 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-
-.chat-rl-sk-face {
-    flex: none;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--chat-r-full);
-}
-
-.chat-rl-sk-name {
-    width: 120px;
-    height: 12px;
-}
 </style>
 
 <script setup lang="ts">
@@ -173,6 +147,7 @@
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Dialog from "../ui/dialog.partial.obs";
     import EmptyState from "../ui/emptyState.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
     import ListRow from "../ui/listRow.partial.obs";
     import { personFace, personName } from "../ui/face.partial";
@@ -193,7 +168,8 @@
         isFailed: boolean;
     };
 
-    type Tab = {
+    /** One tab of the list: every emoji, or one chip's. */
+    type ReactionTab = {
         key: string;
         code: string | null;
         emoji: string | null;
@@ -263,6 +239,9 @@
     /** The most rows held for people on their way: what the list shows before it scrolls. */
     const reservedLimit = 8;
 
+    /** The held rows' name widths, in percent, so a column of them reads as names rather than stripes. */
+    const reservedWidths = [44, 30, 38, 26];
+
     /** What a failed page says, in the list and to a screen reader as it fails. */
     const failedText = "Couldn't load everyone who reacted.";
 
@@ -280,9 +259,9 @@
 
     // #region Computed Values
 
-    const tabs = computed((): Tab[] => [
+    const tabs = computed((): ReactionTab[] => [
         { key: allTab, code: null, emoji: null, imageUrl: null, count: props.reactions.reduce((sum, reaction) => sum + reaction.count, 0), label: "All" },
-        ...props.reactions.map((reaction): Tab => ({ key: reaction.code, code: reaction.code, emoji: reaction.emoji, imageUrl: reaction.image_url, count: reaction.count, label: reaction.label }))
+        ...props.reactions.map((reaction): ReactionTab => ({ key: reaction.code, code: reaction.code, emoji: reaction.emoji, imageUrl: reaction.image_url, count: reaction.count, label: reaction.label }))
     ].map(option => ({ ...option, label: `${option.label}, ${option.count}` })));
 
     const shown = computed((): TabList => lists.get(tab.value) ?? { reactors: [], hasMore: false, isLoading: false, isFailed: false });

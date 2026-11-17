@@ -6,10 +6,13 @@
                    'is-group': shape === 'group',
                    'is-bubble': shape === 'bubble',
                    'is-panel': shape === 'panel',
-                   'is-own': isOwn
-               }" aria-hidden="true">
+                   'is-reactor': shape === 'reactor',
+                   'is-media': shape === 'media',
+                   'is-own': isOwn,
+                   'is-phone': isPhone
+               }" :style="shape === 'media' ? { aspectRatio: ratio } : undefined" aria-hidden="true">
         <i v-if="plan.lead" class="chat-skel-bone" :class="`is-${plan.lead}`" :style="{ width: `${plan.leadSize}px`, height: `${plan.leadSize}px` }"></i>
-        <span class="chat-skel-lines">
+        <span v-if="plan.lines.length" class="chat-skel-lines">
             <i v-for="(line, index) in plan.lines"
                :key="index"
                class="chat-skel-bone"
@@ -41,19 +44,44 @@
     height: 52px;
 }
 
+.chat-skel.is-reactor {
+    height: 40px;
+    padding: 0 10px;
+}
+
+/* A picture still to come is itself the one bone, at the picture's own shape. */
+.chat-skel.is-media {
+    display: block;
+    width: 100%;
+    padding: 0;
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-control);
+}
+
 .chat-skel.is-panel {
     align-items: flex-start;
     padding: 10px;
 }
 
+/* A feed group stands as the message row does: its gutter, gap and sides, narrower on a phone. */
 .chat-skel.is-group {
     align-items: flex-start;
+    gap: 12px;
     padding: 6px 20px;
+}
+
+.chat-skel.is-group.is-phone {
+    gap: 10px;
+    padding: 6px 12px;
 }
 
 .chat-skel.is-bubble {
     align-items: flex-end;
     padding: 2px 20px;
+}
+
+.chat-skel.is-bubble.is-phone {
+    padding: 2px 12px;
 }
 
 .chat-skel.is-bubble.is-own {
@@ -99,12 +127,13 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { useChatSession } from "../chatSession.partial";
     import { RowElement } from "../types.partial";
 
     // #region Types
 
     /** The row a skeleton stands in for. */
-    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel";
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media";
 
     type Bone = { width: string, height: number };
 
@@ -123,7 +152,9 @@
         /**
          * A channel row (44px, a tile and its name), a conversation row (52px, a face, a name, a
          * line and a time), a feed group (a face, a name and lines), a bubble of a two-person
-         * conversation, or a panel row (a face over three lines).
+         * conversation (no face, as its rows have none), a panel row (a face over three lines), or
+         * a reactor row (40px, a 28px face and a name, as the reactions list draws a person), or
+         * a picture still to come (one fill at the picture's shape, as a GIF in the picker's grid).
          */
         shape: {
             type: String as PropType<SkeletonShape>,
@@ -136,7 +167,13 @@
             default: () => []
         },
 
-        /** A bubble the reader sent: at the far side, with no face. */
+        /** A picture's width over its height, such as "16 / 9", for a media row. */
+        ratio: {
+            type: String as PropType<string>,
+            default: "1 / 1"
+        },
+
+        /** A bubble the reader sent: at the far side. */
         isOwn: {
             type: Boolean,
             default: false
@@ -148,6 +185,9 @@
             default: "div"
         }
     });
+
+    // A feed's rows narrow on a phone, read from the session as the list row reads it.
+    const { isPhone } = useChatSession();
 
     /** The width given for a line, or the shape's own. */
     function widthAt(index: number, fallback: number): string {
@@ -171,13 +211,19 @@
             case "group":
                 return {
                     lead: "face",
-                    leadSize: 36,
+                    leadSize: isPhone.value ? 32 : 36,
                     lines: [{ width: "96px", height: 10 }, { width: widthAt(0, 92), height: 9 }, { width: widthAt(1, 60), height: 9 }],
                     trail: null
                 };
 
             case "bubble":
-                return { lead: props.isOwn ? null : "face", leadSize: 28, lines: [{ width: widthAt(0, 100), height: 40 }], trail: null };
+                return { lead: null, leadSize: 0, lines: [{ width: widthAt(0, 100), height: 40 }], trail: null };
+
+            case "reactor":
+                return { lead: "face", leadSize: 28, lines: [{ width: widthAt(0, 44), height: 10 }], trail: null };
+
+            case "media":
+                return { lead: null, leadSize: 0, lines: [], trail: null };
 
             default:
                 return {

@@ -26,6 +26,7 @@ import { flushPromises, mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, Ref, ref } from "vue";
 import Composer from "../../../../../src/Communication/Chat/ChatShell/components/composer.partial.obs";
 import ChipEditor from "../../../../../src/Communication/Chat/ChatShell/ui/chipEditor.partial.obs";
+import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 import { AttachmentTray, createAttachments } from "../../../../../src/Communication/Chat/ChatShell/composables/useAttachments.partial";
 import { Gifs, gifsKey } from "../../../../../src/Communication/Chat/ChatShell/composables/useGifs.partial";
 import { presenceStatusKey } from "../../../../../src/Communication/Chat/ChatShell/composables/usePresenceStatus.partial";
@@ -849,7 +850,11 @@ describe("the composer's strip for a failed send", () => {
 
         expect(strip(wrapper).get("[data-testid='composer-failed-lead']").text()).toBe("Your message wasn't sent");
         expect(strip(wrapper).get("[data-testid='composer-failed-reason']").text()).toBe("You're offline.");
-        expect(strip(wrapper).find(".chat-fail-mark").exists()).toBe(true);
+        // the one inline notice, a failure: its mark, its words, Try again and Delete at its end
+        const notice = wrapper.findComponent(SettingNote);
+        expect(notice.attributes("data-testid")).toBe("composer-failed");
+        expect(notice.props("note").kind).toBe("error");
+        expect(strip(wrapper).get("[data-testid='composer-failed-retry']").text()).toBe("Try again");
         const buttons = strip(wrapper).findAll("button");
         expect(buttons.map(button => button.text())).toEqual(["Try again", "Delete"]);
         expect(buttons.every(button => button.attributes("type") === "button")).toBe(true);
@@ -1215,6 +1220,7 @@ describe("the composer's GIFs", () => {
             on,
             isOn: () => on.value,
             search: jest.fn(async () => ({ ok: true as const, items: [result("first"), result("second")], hasNext: false })),
+            covers: jest.fn(async () => ({ ok: true as const, words: [{ word: "Thanks", still: null, width: 0, height: 0 }] })),
             turnOff: () => {
                 on.value = false;
             }
@@ -1330,6 +1336,23 @@ describe("the composer's GIFs", () => {
         expect(tray.gif).toBeNull();
         expect(wrapper.find("[data-testid='composer-gif']").exists()).toBe(false);
         expect(wrapper.get("[data-testid='composer-send']").classes()).not.toContain("is-ready");
+    });
+
+    // The remove is the icon button's small close in its media tone, on the GIF's scrim; the
+    // composer only places it at the GIF's top right, and its size and colours are the part's.
+    test("the staged GIF's remove is the small media close, placed on the GIF's top right by the composer", async () => {
+        const { wrapper, tray } = gifTray();
+        tray.stageGif(result("first"));
+        await nextTick();
+
+        const classes = wrapper.get("[data-testid='composer-gif-remove']").classes();
+        expect(classes).toContain("is-sm");
+        expect(classes).toContain("is-media");
+        const place = /\.chat-composer-gif-remove\s*\{([^}]*)\}/.exec(composerStyle())?.[1] ?? "";
+        expect(place).toMatch(/position: absolute;/);
+        expect(place).toMatch(/top: 6px;/);
+        expect(place).toMatch(/right: 6px;/);
+        expect(place).not.toMatch(/\b(width|height|color|background):/);
     });
 
     test("removing the staged GIF puts focus in the message box, not on the page", async () => {

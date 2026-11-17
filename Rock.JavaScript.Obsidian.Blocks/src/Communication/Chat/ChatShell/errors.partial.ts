@@ -355,6 +355,11 @@ export function failureWords(error: ChatError, isConnectionLost?: boolean): Fail
  * A place's own words for a failure that another try can pass, as "Couldn't save.": alone, it
  * also asks the person to try again in a moment.
  *
+ * The chat's one voice for such a failure: "Couldn't <do> <thing>." as a sentence, with its full
+ * stop, so the words read whole beside Try again or before the moment's wait. An empty state's
+ * title is a phrase without one ("Couldn't load members"), and anything unforeseen falls back to
+ * "Something went wrong in chat."
+ *
  * @param whatFailed What failed, in a sentence that does not ask anything.
  *
  * @returns The words.

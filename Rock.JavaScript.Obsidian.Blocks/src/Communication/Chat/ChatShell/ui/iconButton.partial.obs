@@ -4,7 +4,7 @@
             v-bind="$attrs"
             type="button"
             class="chat-icon-btn"
-            :class="[`is-${size}`, { 'is-failure': tone === 'failure', 'is-open': isOpen }]"
+            :class="[`is-${size}`, { 'is-failure': tone === 'failure', 'is-media': tone === 'media', 'is-open': isOpen }]"
             :aria-label="label"
             @mouseenter="onPointerEnter"
             @mouseleave="hideTip"
@@ -17,17 +17,17 @@
         <Icon v-else-if="icon" :name="icon" :size="drawnIconSize" />
         <!-- A mark over the icon, such as a header button's dot, placed by the part that draws it; a failure's words. -->
         <slot></slot>
+        <!-- The tip is carried out to the chat's overlay layer, so it sits inside the button only in the template: the button stays the part's one root, and the holder's class and scoped rules reach it, as with the status badge. -->
+        <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
+            <div v-if="isTipShown"
+                 ref="tipElement"
+                 class="chat-tip"
+                 role="tooltip"
+                 :style="floatingStyles">
+                {{ tooltip || label }}
+            </div>
+        </Teleport>
     </button>
-
-    <Teleport :to="tipHost ?? 'body'" :disabled="!tipHost">
-        <div v-if="isTipShown"
-             ref="tipElement"
-             class="chat-tip"
-             role="tooltip"
-             :style="floatingStyles">
-            {{ tooltip || label }}
-        </div>
-    </Teleport>
 </template>
 
 <style scoped>
@@ -60,6 +60,14 @@
 
 .chat-icon-btn:active {
     background: var(--chat-press);
+}
+
+/* A close over a photo, as the GIF badge beside it: the media ink on the photo's scrim, kept on hover, where the chat's wash would grey the photo. */
+.chat-icon-btn.is-media,
+.chat-icon-btn.is-media:hover,
+.chat-icon-btn.is-media:active {
+    color: var(--chat-media-fg);
+    background: var(--chat-media-scrim);
 }
 
 .chat-icon-btn[aria-pressed="true"] {
@@ -164,9 +172,12 @@
             default: "md"
         },
 
-        /** A failure is the Not sent marker: the red mark and its words in the slot, with no button look. */
+        /**
+         * A failure is the Not sent marker: the red mark and its words in the slot, with no button look.
+         * Media is a close over a photo, on the photo's scrim.
+         */
         tone: {
-            type: String as PropType<"default" | "failure">,
+            type: String as PropType<"default" | "failure" | "media">,
             default: "default"
         },
 

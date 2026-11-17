@@ -20,7 +20,7 @@
 import { mount, VueWrapper } from "@vue/test-utils";
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { nextTick } from "vue";
+import { Component, h, nextTick } from "vue";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
 import IconButton from "../../../../../src/Communication/Chat/ChatShell/ui/iconButton.partial.obs";
 import { partRuleBreaks, ruleOf, styleOf } from "./partStyle";
@@ -53,6 +53,20 @@ describe("the icon button", () => {
 
         expect(button.attributes("aria-label")).toBe("Turn on notifications");
         expect(button.find("svg").exists()).toBe(true);
+    });
+
+    // A holder places the button with its own scoped rules, as the composer puts a remove on a
+    // staged GIF's corner; those rules reach the button only when it is the part's one root.
+    test("takes a holder's class and the holder's style scope on its button", () => {
+        const holder = {
+            __scopeId: "data-v-holder",
+            render: () => h("div", [h(IconButton, { icon: "x", label: "Remove GIF", class: "holder-remove" })])
+        } as unknown as Component;
+        wrapper = mount(holder, { attachTo: document.body });
+        const button = wrapper.get("button");
+
+        expect(button.classes()).toContain("holder-remove");
+        expect(button.attributes()).toHaveProperty("data-v-holder");
     });
 
     test("cannot be drawn without a label", () => {
@@ -190,6 +204,19 @@ describe("the icon button's sizes and tones", () => {
 
         expect(wrapper.get("button").classes()).toContain("is-open");
         expect(ruleOf(styleOf("iconButton.partial.obs"), ".chat-icon-btn.is-open")).toMatch(/background:\s*var\(--chat-brand-wash\)/);
+    });
+
+    // A close over a photo, as on a staged GIF, is drawn on the photo's own scrim in the media ink,
+    // as the GIF badge beside it is; a hover keeps that look, since the chat's wash would grey the photo.
+    test("media is the close over a photo: the media ink on the photo's scrim, kept on hover", () => {
+        wrapper = mount(IconButton, { props: { icon: "x", label: "Remove GIF", size: "sm", tone: "media" } });
+        const style = styleOf("iconButton.partial.obs");
+
+        expect(wrapper.get("button").classes()).toContain("is-media");
+        for (const selector of [".chat-icon-btn.is-media", ".chat-icon-btn.is-media:hover"]) {
+            expect(ruleOf(style, selector)).toMatch(/color:\s*var\(--chat-media-fg\)/);
+            expect(ruleOf(style, selector)).toMatch(/background:\s*var\(--chat-media-scrim\)/);
+        }
     });
 
     test("a failure is marked as one, and keeps its name and its words for a screen reader", () => {

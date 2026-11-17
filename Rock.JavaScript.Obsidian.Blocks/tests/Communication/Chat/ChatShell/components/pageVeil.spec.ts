@@ -28,6 +28,7 @@ import { resolve } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick } from "vue";
 import PageVeil from "../../../../../src/Communication/Chat/ChatShell/components/pageVeil.partial.obs";
+import Skeleton from "../../../../../src/Communication/Chat/ChatShell/ui/skeleton.partial.obs";
 
 let wrapper: VueWrapper | null = null;
 
@@ -99,6 +100,17 @@ describe("the page veil", () => {
         const dot = readFileSync(resolve(__dirname, "../../../../../src/Communication/Chat/ChatShell/ui/dot.partial.obs"), "utf8");
         expect(dot).toMatch(/\n\.chat-dot\.is-pulse\s*\{[^}]*animation: var\(--chat-loop-stop, chat-pulse\) /);
         expect(reduced.some(block => /\.chat-shell\s*\{[^}]*--chat-loop-stop:\s*none;/.test(block))).toBe(true);
+    });
+
+    // The list arrives as headed sections, channels in 44px rows with tiles and direct messages in
+    // 52px rows with faces, so the veil over it draws the same and nothing changes shape at reveal.
+    test("over the sidebar, draws the list's headings with channel rows under Channels and conversation rows under Direct messages", () => {
+        const veil = drawVeil("sidebar");
+        const sections = veil.findAll("[data-testid='veil-section']");
+
+        expect(sections.map(section => section.get("[data-testid='veil-heading']").text())).toEqual(["Channels", "Direct messages"]);
+        const shapes = sections.map(section => [...new Set(section.findAllComponents(Skeleton).map(row => row.props("shape")))]);
+        expect(shapes).toEqual([["channel"], ["person"]]);
     });
 
     test("the status line fades in on its way onto either veil, the column's header as the list's top", () => {

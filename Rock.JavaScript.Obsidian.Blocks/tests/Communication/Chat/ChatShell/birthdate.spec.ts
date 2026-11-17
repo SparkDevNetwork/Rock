@@ -106,4 +106,12 @@ describe("birthdateOutcome", () => {
 
         expect(birthdateOutcome({ isSuccess: true, statusCode: 200, data: null }).kind).toBe("retry");
     });
+
+    // The chat's one voice for a failure that can be tried again: "Couldn't <do> <thing>.", then
+    // a moment's wait, as every other place says it.
+    it("says a failed save in the chat's one voice for a failure that can be tried again", () => {
+        const outcome = birthdateOutcome({ isSuccess: false, statusCode: 500 });
+
+        expect(outcome).toEqual({ kind: "retry", message: "Couldn't save your birthdate. Try again in a moment." });
+    });
 });

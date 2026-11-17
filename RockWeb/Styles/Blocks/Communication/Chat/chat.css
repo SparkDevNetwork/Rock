@@ -41,8 +41,11 @@
     --chat-tip-fg: #F8F8FC;
     /* The hover behind a toast's close button, a lift of the toast's own text color. */
     --chat-scrim: rgba(13, 17, 23, .38);
-    /* What is drawn over a photo or GIF, a badge or a play button: one dark veil and white in either theme. */
-    --chat-media-scrim: rgba(13, 17, 23, .55);
+    /*
+        What is drawn over a photo or GIF, a badge, a word or a play button: one dark veil and white
+        in either theme, dark enough that small white words read 4.5 to 1 over a white picture.
+    */
+    --chat-media-scrim: rgba(13, 17, 23, .66);
     --chat-media-fg: #FFFFFF;
     --chat-pill-bg: #ECECED;
     /* The threads list's tab track, text at 6 percent over the surface. */

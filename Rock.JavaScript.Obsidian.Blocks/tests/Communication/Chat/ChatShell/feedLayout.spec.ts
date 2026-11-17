@@ -31,7 +31,6 @@ import {
     newMessagesText,
     nextMidnight,
     sentHoldMs,
-    skeletonDelayMs,
     timeLabel,
     unreadStripText
 } from "../../../../src/Communication/Chat/ChatShell/feedLayout.partial";
@@ -117,10 +116,11 @@ function plain(text: string): string {
 }
 
 describe("the rules' constants", () => {
-    test("a group spans five minutes, Sent is held 2.2 seconds, the skeleton waits one second", () => {
+    // The history skeleton is drawn at once, so it has no wait to keep.
+    test("a group spans five minutes, Sent is held 2.2 seconds, and the skeleton has no wait", async () => {
         expect(groupWindowMs).toBe(5 * 60 * 1000);
         expect(sentHoldMs).toBe(2200);
-        expect(skeletonDelayMs).toBe(1000);
+        expect(Object.keys(await import("../../../../src/Communication/Chat/ChatShell/feedLayout.partial"))).not.toContain("skeletonDelayMs");
     });
 });
 

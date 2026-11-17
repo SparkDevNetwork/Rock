@@ -10,27 +10,17 @@
         -->
         <Transition name="chat-strip" :key="conversationKey">
             <div v-if="sendFailure" ref="stripElement" class="chat-composer-failed-wrap">
-                <div class="chat-composer-failed" data-testid="composer-failed">
-                    <span class="chat-composer-failed-text">
-                        <span class="chat-fail-mark"><Icon name="bang" size="xs" /></span>
-                        <b data-testid="composer-failed-lead">{{ failedLead }}</b>
-                        <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
-                    </span>
-                    <span class="chat-composer-failed-acts">
-                        <Button v-if="isRetryOffered"
-                                kind="line"
-                                tone="danger"
-                                size="sm"
-                                icon="refresh"
-                                data-testid="composer-failed-retry"
-                                @click="onRetryFailed">Try again</Button>
-                        <Button kind="line"
+                <SettingNote class="chat-composer-failed" :note="failedNote" :retryAttrs="{ 'data-testid': 'composer-failed-retry' }" data-testid="composer-failed">
+                    <b data-testid="composer-failed-lead">{{ failedLead }}</b>
+                    <span v-if="failedReason" class="chat-composer-failed-reason" data-testid="composer-failed-reason">{{ failedReason }}</span>
+                    <template #end>
+                        <Button kind="ghost"
                                 size="sm"
                                 icon="trash"
                                 data-testid="composer-failed-discard"
                                 @click="onDiscardFailed">{{ sendFailure.count > 1 ? "Delete all" : "Delete" }}</Button>
-                    </span>
-                </div>
+                    </template>
+                </SettingNote>
             </div>
         </Transition>
 
@@ -79,7 +69,8 @@
                        playsinline></video>
                 <Badge class="chat-composer-gif-badge" label="GIF" tone="media" data-testid="composer-gif-badge" />
                 <IconButton icon="x"
-                            icon-size="xs"
+                            size="sm"
+                            tone="media"
                             class="chat-composer-gif-remove"
                             label="Remove GIF"
                             data-testid="composer-gif-remove"
@@ -244,49 +235,9 @@
     opacity: 0;
 }
 
-/* The failed sends' strip: a soft danger card over the box, rising into place as it appears. */
-.chat-composer-failed {
-    --chat-fail-mark-s: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    align-items: center;
-    padding: 8px 8px 8px 12px;
-    background: var(--chat-danger-soft);
-    border-radius: var(--chat-r-surface);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--chat-danger) 28%, transparent);
-    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
-}
-
-/* The mark beside the first line, the reason under it; a long reason wraps in its own column. */
-.chat-composer-failed-text {
-    display: grid;
-    flex: 1 1 200px;
-    grid-template-columns: auto minmax(0, 1fr);
-    column-gap: 9px;
-    align-items: center;
-    min-width: 0;
-    font-size: var(--chat-fs-ui);
-    line-height: 1.35;
-}
-
-.chat-composer-failed-text b {
-    font-weight: 700;
-    color: var(--chat-danger-ink);
-}
-
+/* What happened, and the reason on its own line under it, inside the notice's words. */
 .chat-composer-failed-reason {
-    grid-column: 2;
-    font-size: var(--chat-fs-ui);
-    color: var(--chat-text-2);
-}
-
-/* At a narrow width the buttons wrap under the words, still at the strip's end. */
-.chat-composer-failed-acts {
-    display: inline-flex;
-    flex: none;
-    gap: 6px;
-    margin-left: auto;
+    display: block;
 }
 
 /* The message being quoted, above the box, rising into place as it appears. */
@@ -394,14 +345,11 @@
     left: 6px;
 }
 
+/* The remove at the GIF's top right, over the GIF; its size and its scrim are the icon button's. */
 .chat-composer-gif-remove {
     position: absolute;
     top: 6px;
     right: 6px;
-    width: 26px;
-    height: 26px;
-    color: var(--chat-media-fg);
-    background: var(--chat-media-scrim);
 }
 
 .chat-composer-send {
@@ -635,6 +583,7 @@
     import ChipEditor from "../ui/chipEditor.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
+    import SettingNote, { Note } from "../ui/settingNote.partial.obs";
     import Menu, { MenuItem } from "../ui/menu.partial.obs";
     import Switch from "../ui/switch.partial.obs";
 
@@ -933,6 +882,13 @@
         const count = props.sendFailure?.count ?? 0;
         return count > 1 ? `${count} messages weren't sent` : "Your message wasn't sent";
     });
+
+    /** The strip as the one inline notice: a failure, with Try again only where a send can pass. */
+    const failedNote = computed((): Note => ({
+        kind: "error",
+        text: failedLead.value,
+        retry: isRetryOffered.value ? onRetryFailed : undefined
+    }));
 
     /** The text's length as the platform counts it, by code point, so an emoji is one. */
     const length = computed((): number => Array.from(props.text).length);

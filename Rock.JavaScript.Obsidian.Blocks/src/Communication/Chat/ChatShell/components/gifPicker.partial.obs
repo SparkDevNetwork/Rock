@@ -34,23 +34,39 @@
                  ref="bodyElement"
                  class="chat-gif-body"
                  :aria-busy="search.status === 'loading' ? 'true' : undefined">
-                <template v-if="search.status === 'idle'">
-                    <p class="chat-gif-label">Try a search</p>
-                    <div class="chat-gif-chips">
-                        <Pill v-for="word in gifSuggestions"
-                              :key="word"
-                              data-testid="gif-suggestion"
-                              @click="onSuggestion(word)">{{ word }}</Pill>
-                    </div>
-                </template>
-
-                <div v-else-if="search.status === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
-                    <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
-                        <span v-for="shape in column" :key="shape" class="chat-gif-tile is-loading" :style="{ aspectRatio: shape }"></span>
+                <!--
+                    Before anything is typed, the platform's topic words as tiles in the results'
+                    grid: each its cover with the word on a plate, and a tile runs its word's search.
+                -->
+                <div v-if="view === 'topics'" class="chat-gif-masonry">
+                    <div v-for="(column, columnIndex) in topicColumns" :key="columnIndex" class="chat-gif-column" data-testid="gif-topic-column">
+                        <button v-for="tile in column"
+                                :key="tile.item.word"
+                                type="button"
+                                class="chat-gif-tile"
+                                data-testid="gif-topic"
+                                :data-index="tile.index"
+                                :aria-label="`Search ${tile.item.word}`"
+                                :tabindex="tile.index === stop ? 0 : -1"
+                                :style="{ aspectRatio: `1 / ${tile.height}` }"
+                                @click="onTopic(tile.item.word)">
+                            <img v-if="tile.item.still"
+                                 :src="tile.item.still"
+                                 alt=""
+                                 referrerpolicy="no-referrer"
+                                 decoding="async" />
+                            <span class="chat-gif-plate" data-testid="gif-topic-plate">{{ tile.item.word }}</span>
+                        </button>
                     </div>
                 </div>
 
-                <div v-else-if="search.status === 'results'" class="chat-gif-masonry">
+                <div v-else-if="view === 'loading'" class="chat-gif-masonry" data-testid="gif-loading" aria-hidden="true">
+                    <div v-for="column in loadingColumns" :key="column[0]" class="chat-gif-column">
+                        <Skeleton v-for="shape in column" :key="shape" shape="media" :ratio="shape" />
+                    </div>
+                </div>
+
+                <div v-else-if="view === 'results'" class="chat-gif-masonry">
                     <div v-for="(column, columnIndex) in columns" :key="columnIndex" class="chat-gif-column" data-testid="gif-column">
                         <button v-for="tile in column"
                                 :key="tile.item.slug"
@@ -73,21 +89,24 @@
                     </div>
                 </div>
 
-                <EmptyState v-else-if="search.status === 'empty'"
+                <EmptyState v-else-if="view === 'empty'"
                             title="No GIFs found"
                             text="Try another word, like Thanks or Amen."
                             data-testid="gif-empty" />
 
-                <!-- A busy search says KLIPY's own sentence; any other failure says why in general. -->
+                <!--
+                    A busy search says KLIPY's own sentence; any other failure, a search's or the
+                    topics', says why in general, and Try again asks the same again.
+                -->
                 <EmptyState v-else
                             tone="error"
-                            :title="search.status === 'busy' ? search.busyText ?? '' : failedTitle"
-                            :text="search.status === 'busy' ? '' : 'Check your connection, then try again.'"
+                            :title="view === 'busy' ? search.busyText ?? '' : failedTitle"
+                            :text="view === 'busy' ? '' : 'Check your connection, then try again.'"
                             actionLabel="Try again"
                             actionIcon="refresh"
                             :actionAttrs="{ 'data-testid': 'gif-retry' }"
                             data-testid="gif-error"
-                            @action="search.retry()" />
+                            @action="onRetry" />
 
                 <!-- The end of the GIFs, which asks the next page as it comes into view. -->
                 <span v-if="search.status === 'results'" ref="endElement" class="chat-gif-end" aria-hidden="true"></span>
@@ -125,28 +144,15 @@
     padding: 2px 12px 8px;
 }
 
-.chat-gif-label {
-    padding: 6px 2px 8px;
-    margin: 0;
-    font-size: var(--chat-fs-badge);
-    font-weight: 700;
-    line-height: 13px;
-    color: var(--chat-muted);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-}
-
-.chat-gif-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* Two columns, each GIF whole at its own shape, the next one going in the shorter column. */
+/*
+    Two columns, each GIF whole at its own shape, the next one going in the shorter column. Each
+    view comes in by the sheet's enter, a rise the token sheet turns to a fade under reduced motion.
+*/
 .chat-gif-masonry {
     display: flex;
     gap: 4px;
     align-items: flex-start;
+    animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-gif-column {
@@ -157,7 +163,7 @@
     min-width: 0;
 }
 
-/* KLIPY's blurred stand-in fills the tile while its preview loads, pulsing until it does. */
+/* KLIPY's blurred stand-in fills the tile, still, while its preview loads, and the preview fades in over it. */
 .chat-gif-tile {
     position: relative;
     display: block;
@@ -178,10 +184,6 @@
     height: 100%;
     object-fit: cover;
     transition: opacity var(--chat-t-base) var(--chat-ease-state);
-}
-
-.chat-gif-tile.is-loading {
-    animation: var(--chat-loop-stop, chat-skeleton-pulse) var(--chat-d-skeleton) var(--chat-ease-state) infinite alternate;
 }
 
 .chat-gif-tile.is-loading img {
@@ -205,6 +207,28 @@
 
 .chat-gif-tile:focus-visible {
     outline: none;
+}
+
+/*
+    A topic's word on a solid plate at its tile's foot, the veil every badge over a photo or a GIF
+    takes, so the word reads on any cover; a word with no cover is the plate on the tile's ground.
+*/
+.chat-gif-plate {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    z-index: 1;
+    max-width: calc(100% - 12px);
+    padding: 4px 8px;
+    overflow: hidden;
+    font-size: var(--chat-fs-ui);
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--chat-media-fg);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: var(--chat-media-scrim);
+    border-radius: var(--chat-r-control);
 }
 
 /* Where the GIFs end, a line the paging watches for. */
@@ -246,12 +270,12 @@
     import Field from "../ui/field.partial.obs";
     import { useAnnouncer } from "../ui/announcer.partial";
     import EmptyState from "../ui/emptyState.partial.obs";
-    import Pill from "../ui/pill.partial.obs";
     import { usePopover } from "../ui/popover.partial";
     import Popover from "../ui/popoverSurface.partial.obs";
+    import Skeleton from "../ui/skeleton.partial.obs";
     import { isHoverless } from "../ui/viewport.partial";
     import { usePagingTrigger } from "../composables/usePagingTrigger.partial";
-    import { createGifSearch, Gifs, gifSuggestions, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
+    import { createGifSearch, GifCover, gifHeight, Gifs, masonry, MasonryTile, nextInMasonry } from "../composables/useGifs.partial";
     import { GifResult } from "../types.partial";
 
     const props = defineProps({
@@ -312,19 +336,46 @@
     /** The tile the arrows move from and Tab lands on, by its place in KLIPY's order. */
     const stop = ref(0);
 
+    /** The topic words and their covers once they come, or whether asking for them failed. */
+    const topics = ref<GifCover[] | null>(null);
+    const isTopicsFailed = ref(false);
+
     // #endregion Values
 
     // #region Computed Values
 
-    const columns = computed((): MasonryTile[][] => masonry(search.items));
+    const columns = computed((): MasonryTile[][] => masonry(search.items, gifHeight));
 
-    /** What a screen reader hears as a search settles. */
-    const liveLine = computed((): string => {
-        if (search.status === "results") {
-            return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
+    /**
+     * The topics in the results' grid. A tile keeps its cover's shape, held between 5:3 and 1:1.1
+     * so every word's plate sits on enough picture; a word with no cover is 5:3.
+     */
+    const topicColumns = computed((): MasonryTile<GifCover>[][] => masonry(topics.value ?? [], cover => cover.width > 0 ? Math.min(1.1, Math.max(0.6, cover.height / cover.width)) : 0.6));
+
+    /** What the body shows: the topics before anything is typed, else where the search stands. */
+    const view = computed((): "topics" | "loading" | "results" | "empty" | "error" | "busy" => {
+        if (search.status !== "idle") {
+            return search.status;
         }
 
-        switch (search.status) {
+        if (isTopicsFailed.value) {
+            return "error";
+        }
+
+        return topics.value ? "topics" : "loading";
+    });
+
+    /** The tiles the arrows move through in the view shown. */
+    const shownColumns = computed((): MasonryTile<unknown>[][] => view.value === "topics" ? topicColumns.value : columns.value);
+
+    /**
+     * What a screen reader hears as the body settles, read from what is drawn, so a failure is
+     * heard alike whether the search or the topics failed.
+     */
+    const liveLine = computed((): string => {
+        switch (view.value) {
+            case "results":
+                return `${search.items.length} ${search.items.length === 1 ? "GIF" : "GIFs"}`;
             case "empty":
                 return "No GIFs found";
             case "busy":
@@ -345,19 +396,23 @@
         search.setQuery(query);
     }
 
-    /** Enter searches at once; Down goes to the first GIF. */
+    /** Enter searches at once; Down goes into the body, to the first tile, or to Try again on a failure. */
     function onSearchKeydown(event: KeyboardEvent): void {
         if (event.key === "Enter") {
             event.preventDefault();
             search.setQuery((event.target as HTMLInputElement).value, true);
         }
-        else if (event.key === "ArrowDown" && search.status === "results") {
+        else if (event.key === "ArrowDown" && (view.value === "results" || view.value === "topics")) {
             event.preventDefault();
             focusTile(0);
         }
+        else if (event.key === "ArrowDown" && (view.value === "error" || view.value === "busy")) {
+            event.preventDefault();
+            bodyElement.value?.querySelector<HTMLElement>("button")?.focus();
+        }
     }
 
-    /** The arrows move between GIFs by the columns, Up from the top goes back to the search, and Enter picks. */
+    /** The arrows move between tiles by the columns, Up from the top goes back to the search, and Enter picks or searches. */
     function onKeydown(event: KeyboardEvent): void {
         const target = event.target as HTMLElement;
         const index = Number(target.dataset?.index);
@@ -368,7 +423,12 @@
         if (event.key === "Enter" || event.key === " ") {
             // Handled here so the choice does not depend on the browser turning a key into a click.
             event.preventDefault();
-            pick(search.items[index]);
+            if (view.value === "topics") {
+                onTopic(topics.value?.[index]?.word ?? "");
+            }
+            else {
+                pick(search.items[index]);
+            }
             return;
         }
 
@@ -377,7 +437,7 @@
         }
 
         event.preventDefault();
-        const next = nextInMasonry(columns.value, index, event.key);
+        const next = nextInMasonry(shownColumns.value, index, event.key);
         if (next !== null) {
             focusTile(next);
         }
@@ -386,13 +446,28 @@
         }
     }
 
-    function onSuggestion(word: string): void {
+    function onTopic(word: string): void {
+        if (!word) {
+            return;
+        }
+
         stop.value = 0;
         search.setQuery(word, true);
     }
 
-    /** The field has emptied the query and kept focus in the search. */
+    /** Try again on a failure: the search's, or the topics' while nothing is typed. */
+    function onRetry(): void {
+        if (search.status === "idle") {
+            void loadTopics();
+        }
+        else {
+            search.retry();
+        }
+    }
+
+    /** The field has emptied the query and kept focus in the search, and the topics come back. */
     function onClear(): void {
+        stop.value = 0;
         search.setQuery("");
     }
 
@@ -403,6 +478,18 @@
     // #endregion Event Handlers
 
     // #region Functions
+
+    /** Asks for the topics, which the session keeps once they come, so a later open asks nothing. */
+    async function loadTopics(): Promise<void> {
+        isTopicsFailed.value = false;
+        const answer = await props.gifs.covers();
+        if (answer.ok) {
+            topics.value = answer.words;
+        }
+        else {
+            isTopicsFailed.value = true;
+        }
+    }
 
     /** A tile's shape before its preview loads, and KLIPY's blurred stand-in behind it. */
     function tileStyle(item: GifResult): Record<string, string> {
@@ -439,6 +526,7 @@
     // Focus goes to the search, unless the screen is touch only, where it would raise the keyboard
     // over the GIFs; the surface takes it there and Escape still reaches it.
     onMounted(async () => {
+        void loadTopics();
         if (await pop.open()) {
             (isTouch ? pop.floating.value : searchElement.value)?.focus({ preventScroll: true });
         }

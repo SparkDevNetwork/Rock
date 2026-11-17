@@ -25,6 +25,7 @@ import { nextTick } from "vue";
 import JoinBar from "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs";
 import { JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import Icon from "../../../../../src/Communication/Chat/ChatShell/ui/icon.partial.obs";
+import SettingNote from "../../../../../src/Communication/Chat/ChatShell/ui/settingNote.partial.obs";
 
 let wrapper: VueWrapper | null = null;
 
@@ -78,15 +79,18 @@ describe("previewing", () => {
         expect(w.emitted("join")).toHaveLength(1);
     });
 
-    test("says why when the door could not be reached, and offers Join channel again", () => {
+    test("says why when the door could not be reached, in the inline notice over the bar, and offers Join channel again", () => {
         const w = mountBar({ kind: "failed", text: "You're offline. Try again when you're back." });
 
-        expect(w.get("[data-testid='join-bar']").attributes("data-state")).toBe("failed");
+        const bar = w.get("[data-testid='join-bar']");
+        expect(bar.attributes("data-state")).toBe("failed");
         expect(w.get("[data-testid='join-bar-title']").text()).toBe("You're previewing Volunteers");
-        const text = w.get("[data-testid='join-bar-text']");
-        expect(text.text()).toBe("You're offline. Try again when you're back.");
-        expect(text.classes()).toContain("is-failed");
-        expect(w.findAllComponents(Icon).some(icon => icon.props("name") === "alert" && text.element.contains(icon.element))).toBe(true);
+        const failure = w.getComponent(SettingNote);
+        expect(failure.attributes("data-testid")).toBe("join-bar-failure");
+        expect(failure.props("note")).toEqual({ kind: "error", text: "You're offline. Try again when you're back." });
+        // over the bar, as a failed send's notice stands over the box; Join channel is its way on
+        expect(failure.element.compareDocumentPosition(bar.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(w.get("[data-testid='join-bar-text']").text()).toBe("Join this channel to post and get notifications.");
         const join = w.get("[data-testid='join-channel']");
         expect(join.text()).toBe("Join channel");
         expect(join.attributes("disabled")).toBeUndefined();
@@ -152,7 +156,10 @@ describe("refused", () => {
 
         const bar = w.get("[data-testid='join-bar']");
         expect(bar.attributes("data-state")).toBe("refused");
-        expect(bar.classes()).toContain("is-refused");
+        // the bar is the inline notice, a failure: no second red card of its own
+        const notice = w.getComponent(SettingNote);
+        expect(notice.element).toBe(bar.element);
+        expect(notice.props("note").kind).toBe("error");
         expect(w.get("[data-testid='join-bar-title']").text()).toBe("You can't join Tech Team");
         expect(w.get("[data-testid='join-bar-text']").text()).toBe("Tech Team is full right now. Ask Nathan Hughes about joining.");
         expect(w.find("[data-testid='join-channel']").exists()).toBe(false);

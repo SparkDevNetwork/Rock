@@ -1,38 +1,76 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <span class="chat-set-note" :data-kind="note.kind">
-        <!-- A line under a setting: what a change means, or why its save failed and Try again. A
-             save that lands has no line, since the control already shows it. Kept inside the root,
-             since a comment beside it makes a fragment that drops the caller's attributes. -->
-        <Icon class="chat-set-note-ic" :name="note.kind === 'error' ? 'alert' : 'info'" size="xs" />
-        <span>{{ note.text }}<template v-if="note.retry">{{ " " }}<Button class="chat-set-retry" size="sm" data-testid="note-retry" @click="onRetry">Try again</Button></template></span>
+        <!-- A note or a failure inside a view: its mark, its words and, for a failure that can be
+             asked again, Try again at the end. A save that lands has no notice, since the control
+             already shows it. Kept inside the root, since a comment beside it makes a fragment that
+             drops the caller's attributes. -->
+        <Icon class="chat-set-note-ic" :name="note.kind === 'error' ? 'alert' : 'info'" size="sm" />
+        <span class="chat-set-note-words"><slot>{{ note.text }}</slot></span>
+        <!-- A space, so the words and Try again read as two, as a screen reader gives the box's text. -->
+        <template v-if="note.retry || $slots.end">{{ " " }}</template>
+        <span v-if="note.retry || $slots.end" class="chat-set-note-end">
+            <Button v-if="note.retry"
+                    v-bind="retryAttrs"
+                    kind="ghost"
+                    size="sm"
+                    icon="refresh"
+                    @click="onRetry">Try again</Button>
+            <slot name="end"></slot>
+        </span>
     </span>
 </template>
 
 <style scoped>
+/*
+    One soft box for every note and failure inside a view: grey for a note, a red tint for a
+    failure, red only in the failure's mark, so red stays the sign that something failed.
+*/
 .chat-set-note {
     display: flex;
-    gap: 6px;
+    gap: 10px;
     align-items: flex-start;
-    font-size: var(--chat-fs-small);
-    font-weight: 600;
-    color: var(--chat-muted);
+    padding: 10px 12px;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.4;
+    color: var(--chat-text-2);
+    background: var(--chat-bubble);
+    border-radius: var(--chat-r-surface);
     --chat-enter-from: var(--chat-rise-sm);
     animation: chat-enter var(--chat-t-base) var(--chat-ease-in);
 }
 
 .chat-set-note[data-kind="error"] {
-    color: var(--chat-danger-ink);
+    color: var(--chat-text);
+    background: var(--chat-danger-soft);
 }
 
+/* The mark sits on the first line's middle. */
 .chat-set-note-ic {
     flex: none;
     margin-top: 2px;
+    color: var(--chat-icon);
 }
 
-/* Try again follows the sentence on its line. */
-.chat-set-retry {
-    vertical-align: middle;
+.chat-set-note[data-kind="error"] .chat-set-note-ic {
+    color: var(--chat-danger-ink);
+}
+
+.chat-set-note-words {
+    flex: 1;
+    min-width: 0;
+}
+
+/*
+    The actions at the end take the box's padding back, so a small button does not make the box
+    taller than a line of words; the words wrap before the actions give way.
+*/
+.chat-set-note-end {
+    display: inline-flex;
+    flex: none;
+    gap: 6px;
+    align-items: center;
+    margin: -5px -4px -5px auto;
 }
 </style>
 
@@ -41,13 +79,20 @@
     import Button from "./button.partial.obs";
     import Icon from "./icon.partial.obs";
 
-    /** A line under a setting: what a change means, or a failed save's sentence with a way to ask it again. */
+    /** A note or a failure said in place, and for a failure a way to ask it again. */
     export type Note = { kind: "info" | "error", text: string, retry?: () => void };
 
     const props = defineProps({
+        /** What the notice says: its kind, its words and, when it can be asked again, how. */
         note: {
             type: Object as PropType<Note>,
             required: true
+        },
+
+        /** Attributes for Try again, such as the test id a screen's tests find it by. */
+        retryAttrs: {
+            type: Object as PropType<Record<string, unknown>>,
+            default: () => ({ "data-testid": "note-retry" })
         }
     });
 
@@ -58,7 +103,7 @@
 
     // #region Event Handlers
 
-    /** Stopped here, so a row the note sits in does not take the press as its own. */
+    /** Stopped here, so a row the notice sits in does not take the press as its own. */
     function onRetry(event: MouseEvent): void {
         event.stopPropagation();
         props.note.retry?.();
