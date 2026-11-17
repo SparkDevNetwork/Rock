@@ -208,12 +208,23 @@
     margin-top: 6px;
 }
 
-/* Holds the bubble and its bar; the zero minimum lets both shrink to the line beside the face. */
+/*
+    Holds the bubble, its files and its bar. The bubble and the files stand in one column on the
+    sender's side, each its own width, so a bubble is as wide as its words whatever the files under
+    it measure; the bar is placed beside the wider of the two. The zero minimum lets them shrink to
+    the line beside the face.
+*/
 .chat-bub-anchor {
     position: relative;
     display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     min-width: 0;
     max-width: 100%;
+}
+
+.is-own .chat-bub-anchor {
+    align-items: flex-end;
 }
 
 /* Where the column's one bar is drawn while it is on this message; no box, so the bar is placed against the bubble. */
@@ -391,9 +402,10 @@
 }
 
 /*
-    The row under a bubble tucks 4px up into the bubble's bottom padding, which grows to make room,
-    so it overlaps the bubble's edge and never its text. Another person's row starts 10px in from
-    the bubble, past the face column and its gap; the reader's own mirrors it from the right.
+    The chips' row, seated by the bubble on its single root: it sits half over the bubble's lower
+    edge, the bubble's foot growing to keep the words clear, and never widens the bubble. Another
+    person's row starts 10px in from the bubble, past the face column and its gap; the reader's
+    own mirrors it from the right.
 */
 .chat-reacts {
     position: relative;
@@ -403,7 +415,7 @@
     gap: 4px;
     align-items: center;
     max-width: 100%;
-    margin-top: -4px;
+    margin-top: -11px;
     padding: 0 0 0 52px;
 }
 
@@ -412,12 +424,16 @@
     padding: 0 10px 0 0;
 }
 
-.has-thread.is-conversational .chat-bubble:not(.is-jumbo),
-.has-reactions.is-conversational .chat-bubble:not(.is-jumbo) {
-    padding-bottom: 10px;
+.has-thread.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo),
+.has-reactions.is-conversational:not(.has-files) .chat-bubble:not(.is-jumbo) {
+    padding-bottom: 15px;
 }
 
-/* A large emoji or an announcement has no padding to tuck into, so the row sits below it. */
+/*
+    Under a message's files, a large emoji or an announcement there is no bubble foot to sit on,
+    so the row stands 4px under them, as the files stand under the bubble.
+*/
+.has-files .chat-reacts,
 .is-jumbo .chat-reacts,
 .is-announcement .chat-reacts {
     margin-top: 4px;

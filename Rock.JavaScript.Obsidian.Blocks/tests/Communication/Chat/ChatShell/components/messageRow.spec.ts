@@ -1657,7 +1657,8 @@ describe("the reactions row", () => {
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowBubble.partial.obs"), "utf8");
         const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
         const ruleOf = (selector: string): string => {
-            const at = style.search(new RegExp("(^|\\n)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*\\{"));
+            // The selector alone or as one of a list the rule is written for.
+            const at = style.search(new RegExp("(^|\\n|,\\s*)" + selector.replace(/[.()[\]:*+,]/g, "\\$&").replace(/\s+/g, "\\s+") + "\\s*[,{]"));
             return at < 0 ? "" : style.slice(style.indexOf("{", at) + 1, style.indexOf("}", at));
         };
 

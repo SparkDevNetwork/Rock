@@ -137,6 +137,14 @@
 }
 
 /*
+    A message's files stand 12px before the next message of the run, the group's own gap included
+    where the feed sets one, so a caption always reads with the files under it, not the next words.
+*/
+.chat-msg.is-conversational.has-files + .chat-msg {
+    margin-top: calc(12px - var(--chat-grp-gap, 0px));
+}
+
+/*
     Community. The gutter, its gap to the text and the row's side padding are one set, shared with
     the system line, and narrower on a phone so the text keeps its width.
 */
@@ -712,7 +720,8 @@ img.chat-sheet-glyph {
         "is-mention-me": !!readerMention.value && !isAnnouncement.value,
         "is-flashing": props.isFlashing,
         "has-thread": hasThread.value,
-        "has-reactions": hasReactions.value
+        "has-reactions": hasReactions.value,
+        "has-files": facts.files.value.length > 0 && !isEditorShown.value
     }));
 
     // #endregion Computed Values
