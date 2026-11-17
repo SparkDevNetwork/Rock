@@ -444,8 +444,8 @@
 
     /** The row's question, by the first name it knows: "Unblock Sam?". */
     function askTitle(person: ChatPerson): string {
-        const name = person.nick_name || `${unnamedBlocked.charAt(0).toLowerCase()}${unnamedBlocked.slice(1)}`;
-        return `Unblock ${name}?`;
+        const called = person.nick_name || `${unnamedBlocked.charAt(0).toLowerCase()}${unnamedBlocked.slice(1)}`;
+        return `Unblock ${called}?`;
     }
 
     function keyOf(person: ChatPerson): string {
