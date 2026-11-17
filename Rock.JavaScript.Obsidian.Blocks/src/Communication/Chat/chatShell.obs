@@ -535,7 +535,6 @@
                           :personName="personName"
                           :personPhotoUrl="personPhotoUrl"
                           :campusName="personCampusName"
-                          :organizationName="organizationName"
                           :me="shell.prefs.state.me"
                           :statusChoice="statusChoice"
                           :statusClosedReason="statusClosedReason"
