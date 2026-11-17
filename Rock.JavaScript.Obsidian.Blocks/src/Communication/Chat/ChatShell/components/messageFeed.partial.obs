@@ -403,10 +403,11 @@
     background: var(--chat-new-rule);
 }
 
+/* A text badge, so the badge's square-ish corner rather than a pill. */
 .chat-new-divider span {
     padding: 1px 8px;
     border: 1px solid var(--chat-new-outline);
-    border-radius: var(--chat-r-full);
+    border-radius: var(--chat-r-badge);
 }
 
 .chat-new-divider.is-read {
