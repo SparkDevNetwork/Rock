@@ -162,12 +162,13 @@ describe("the items", () => {
         expect(menu()!.querySelector("[role='group']")).toBeNull();
     });
 
-    test("say what Automatic and Appear offline mean under their names", async () => {
+    // Automatic's word and its green badge say it; Appear offline keeps its line, since without it people fear missing messages.
+    test("say what Appear offline means under its name, and nothing under Automatic", async () => {
         const w = mountMenu();
         await openMenu(w);
 
         expect(titleOf(itemOf("auto"))).toBe("Automatic");
-        expect(plain(itemOf("auto").querySelector(".chat-menu-desc")!.textContent!)).toBe("Online or away, from your activity");
+        expect(itemOf("auto").querySelector(".chat-menu-desc")).toBeNull();
         expect(titleOf(itemOf("appear_offline"))).toBe("Appear offline");
         expect(plain(itemOf("appear_offline").querySelector(".chat-menu-desc")!.textContent!)).toBe("You'll look offline. Messages still arrive.");
         expect(itemOf("busy-1h").querySelector(".chat-menu-desc")).toBeNull();
@@ -178,7 +179,7 @@ describe("the items", () => {
         await openMenu(w);
 
         const heading = menu()!.querySelector("[role='presentation']")!;
-        expect(plain(heading.textContent!)).toBe("Busy · notifications paused");
+        expect(plain(heading.textContent!)).toBe("Busy, notifications paused");
         // between Automatic and the first end
         expect(heading.compareDocumentPosition(itemOf("auto")) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
         expect(heading.compareDocumentPosition(itemOf("busy-1h")) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
