@@ -2081,6 +2081,27 @@ describe("a feed holding its reader at the newest message", () => {
             }
         });
 
+        // Another row's flash or greeting ending, a live mention's among them, says nothing about
+        // the landed message's: only its own flash ending lets it go.
+        test("keeps the landed message's flash until that message's own flash ends", async () => {
+            const spy = placeLanding();
+            try {
+                const wrapper = draw({ timeline: timeline([1, 2, 3].map(id => message(id, anna, at(14, id)))), landOnId: 1 });
+                layOut(wrapper, { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 });
+                await ticks();
+                expect(isFlashing(wrapper, 1)).toBe(true);
+
+                await wrapper.get("[data-message-id='2']").trigger("animationend", { animationName: "chat-flash" });
+                expect(isFlashing(wrapper, 1)).toBe(true);
+
+                await wrapper.get("[data-message-id='1']").trigger("animationend", { animationName: "chat-flash" });
+                expect(isFlashing(wrapper, 1)).toBe(false);
+            }
+            finally {
+                spy.mockRestore();
+            }
+        });
+
         test("that stops, paints the newest page at the newest message with no flash", async () => {
             const wrapper = draw({ timeline: timeline([2, 3].map(id => message(id, anna, at(14, id))), { hasMore: true }), landOnId: 1 });
             const sizes = { scrollHeight: 2000, clientHeight: 500, scrollTop: 0 };
