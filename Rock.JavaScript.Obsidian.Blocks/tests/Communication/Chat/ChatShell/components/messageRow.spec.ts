@@ -711,10 +711,21 @@ describe("Community, in a channel", () => {
         expect(washed).toMatch(/border-block:\s*1px solid transparent/);
         expect(washed).toMatch(/background-clip:\s*padding-box/);
 
+        // Every row, a head too, pads its content by the one equal padding; the washed row gives
+        // its clear 1px edge out of it, above and below alike.
         const row = block(".chat-msg.is-community");
-        const rowPad = parseFloat(/padding:\s*([\d.]+)px/.exec(row)?.[1] ?? "NaN");
-        expect(1 + px(washed, "padding-block")).toBe(rowPad);
-        expect(1 + px(block(".chat-msg.is-community.is-mention-me.is-head"), "padding-top")).toBe(px(block(".chat-msg.is-community.is-head"), "padding-top"));
+        expect(row).toMatch(/(^|[\s;])padding:\s*var\(--chat-cm-row-pad\) var\(--chat-cm-pad\)/);
+        expect(washed).toMatch(/padding-block:\s*calc\(var\(--chat-cm-row-pad\) - 1px\)/);
+        expect(px(block(".chat-msg.is-community.is-head"), "padding-top")).toBeNaN();
+        expect(block(".chat-msg.is-community.is-mention-me.is-head")).toBe("");
+    });
+
+    test("a channel's chips and thread pill stand 6px under the text", () => {
+        const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/messageRowCommunity.partial.obs"), "utf8");
+        const style = source.slice(source.indexOf("<style"), source.indexOf("</style>"));
+        const rule = /\.chat-msg\.is-community \.chat-reacts\s*\{([^}]*)\}/.exec(style)?.[1] ?? "";
+
+        expect(rule).toMatch(/margin-top:\s*6px/);
     });
 
     // The chip that reached the reader, theirs or @all, takes a thin amber ring in a washed row, so

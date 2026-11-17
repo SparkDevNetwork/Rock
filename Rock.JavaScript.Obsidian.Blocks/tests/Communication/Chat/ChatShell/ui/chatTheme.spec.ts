@@ -563,6 +563,14 @@ describe("the chat token sheet", () => {
         expect(valuesOf(sheet, "--chat-r-inset", isLight).some(v => v.includes("6px"))).toBe(true);
     });
 
+    // A channel's row pads its content the same above and below, so a hover, a mention's wash or a
+    // jump's flash covers equal air on both sides; the space between two people is outside the
+    // rows, where no highlight reaches.
+    test("names a channel row's equal padding, 6px, and the space between people, 8px", () => {
+        expect(valuesOf(sheet, "--chat-cm-row-pad", isLight)).toEqual(["6px"]);
+        expect(valuesOf(sheet, "--chat-cm-person-gap", isLight)).toEqual(["8px"]);
+    });
+
     test("follows the system into dark only on a Rock theme that has a dark mode", () => {
         // Rock's older themes set no theme attribute and have no dark mode, so a page on one of them
         // matches "no theme attribute" while staying light. The block marks its root when it finds
