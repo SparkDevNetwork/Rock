@@ -153,6 +153,16 @@ describe("the text button's look", () => {
         expect(ruleOf(style, ".chat-btn")).toMatch(/font-size:\s*var\(--chat-fs-ui\)/);
     });
 
+    // The design's third height, a dialog footer's: 36px with 16px sides.
+    test("is 36px large, for a dialog's footer", () => {
+        const w = mount(Button, { props: { size: "lg" }, slots: { default: "Leave" } });
+
+        expect(w.classes()).toContain("is-lg");
+        expect(ruleOf(style, ".chat-btn.is-lg")).toMatch(/height:\s*36px/);
+        expect(ruleOf(style, ".chat-btn.is-lg")).toMatch(/padding:\s*0 16px/);
+        w.unmount();
+    });
+
     test("draws the church's fill, a one-pixel line, a ghost and danger from the token sheet", () => {
         expect(ruleOf(style, ".chat-btn.is-brand")).toMatch(/background:\s*var\(--chat-brand-fill\)/);
         expect(ruleOf(style, ".chat-btn.is-line")).toMatch(/border-color:\s*var\(--chat-line-strong\)/);

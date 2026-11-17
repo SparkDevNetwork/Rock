@@ -17,9 +17,13 @@
 // Where the dialog stands in the chat's frame. A question stands centred; a dialog whose body
 // grows and shrinks while it is open, as settings does when a note comes and goes, is anchored at
 // the top, so its title and its first rows never move under the person's eye.
+import { readdirSync, readFileSync } from "fs";
+import { join } from "path";
 import { mount, VueWrapper } from "@vue/test-utils";
+import Button from "../../../../../src/Communication/Chat/ChatShell/ui/button.partial.obs";
 import Dialog from "../../../../../src/Communication/Chat/ChatShell/ui/dialog.partial.obs";
 import { providedSession } from "../sessionShapes";
+import { shellFolder } from "../statusStore";
 import { ruleOf, styleOf } from "./partStyle";
 
 let wrapper: VueWrapper | null = null;
@@ -63,5 +67,28 @@ describe("the dialog's place", () => {
 
         expect(scrim.classes()).toContain("is-sheet");
         expect(scrim.classes()).not.toContain("is-placed-top");
+    });
+});
+
+// A dialog's footer is the design's large row of buttons, 36px, whether the dialog draws its own
+// Cancel and confirm or a screen hands it its own actions.
+describe("the dialog's footer", () => {
+    test("draws its Cancel and confirm large", () => {
+        const w = draw({ confirmLabel: "Delete", isDestructive: true });
+
+        expect(w.findAllComponents(Button).map(button => button.props("size"))).toEqual(["lg", "lg"]);
+    });
+
+    test("is handed large buttons by every screen that fills it", () => {
+        const files = [...readdirSync(join(shellFolder, "components")).map(file => join(shellFolder, "components", file)), join(shellFolder, "../chatShell.obs")]
+            .filter(path => path.endsWith(".obs"));
+        const footers = files.flatMap(path => {
+            const text = readFileSync(path, "utf8");
+            return text.includes("<Dialog") ? Array.from(text.matchAll(/<template #actions>([\s\S]*?)<\/template>\s*<\/Dialog>/g), match => match[1]) : [];
+        });
+        const buttons = footers.flatMap(footer => Array.from(footer.matchAll(/<Button\b[^>]*>/g), match => match[0]));
+
+        expect(buttons.length).toBeGreaterThan(3);
+        expect(buttons.filter(button => !/\bsize="lg"/.test(button))).toEqual([]);
     });
 });
