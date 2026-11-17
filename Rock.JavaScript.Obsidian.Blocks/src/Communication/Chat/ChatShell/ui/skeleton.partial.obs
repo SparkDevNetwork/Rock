@@ -11,6 +11,7 @@
                    'is-contact': shape === 'contact',
                    'is-text': shape === 'text',
                    'is-header': shape === 'header',
+                   'is-directory': shape === 'directory',
                    'is-own': isOwn,
                    'is-phone': isPhone
                }" :style="shape === 'media' ? { aspectRatio: ratio } : undefined" aria-hidden="true">
@@ -90,6 +91,12 @@
     gap: 6px;
 }
 
+/* A Browse row: the row's own gap and sides around its 40px tile and three lines. */
+.chat-skel.is-directory {
+    gap: 12px;
+    padding: 8px 10px;
+}
+
 /* A feed group stands as the message row does: its gutter, gap and sides, narrower on a phone. */
 .chat-skel.is-group {
     align-items: flex-start;
@@ -164,7 +171,7 @@
     // #region Types
 
     /** The row a skeleton stands in for. */
-    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media" | "contact" | "text" | "header";
+    export type SkeletonShape = "channel" | "person" | "group" | "bubble" | "panel" | "reactor" | "media" | "contact" | "text" | "header" | "directory";
 
     type Bone = { width: string, height: number };
 
@@ -188,7 +195,8 @@
          * a picture still to come (one fill at the picture's shape, as a GIF in the picker's grid),
          * a contact row (32px, a small icon and a line, as a profile draws a phone or an email),
          * text (lines alone, one per width given), or a room's head (its 36px mark, its name and,
-         * one per further width given, its second line).
+         * one per further width given, its second line), or a Browse row (a 40px tile beside its
+         * name, its description and its campus line).
          */
         shape: {
             type: String as PropType<SkeletonShape>,
@@ -277,6 +285,14 @@
                     lead: props.isTile ? "tile" : "face",
                     leadSize: 36,
                     lines: (props.widths.length ? props.widths : [22]).map((width, index) => ({ width: `${width}%`, height: index === 0 ? 12 : 9 })),
+                    trail: null
+                };
+
+            case "directory":
+                return {
+                    lead: "tile",
+                    leadSize: 40,
+                    lines: [{ width: widthAt(0, 50), height: 10 }, { width: widthAt(1, 88), height: 9 }, { width: widthAt(2, 36), height: 9 }],
                     trail: null
                 };
 
