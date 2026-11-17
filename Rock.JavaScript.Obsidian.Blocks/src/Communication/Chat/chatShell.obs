@@ -118,7 +118,7 @@
                                 :isStarred="!!activeRow?.is_favorite"
                                 :isEmpty="!activeChannelId"
                                 :isThreadsOffered="!!activeChannelId"
-                                :isMembersOffered="!!activeChannelId"
+                                :isMembersOffered="isMembersOffered"
                                 :isMembersOpen="panelKind === 'members'"
                                 :isThreadsOpen="panelKind === 'threads'"
                                 :isSidebarFolded="sidebarFold === 'folded'"
@@ -1017,7 +1017,7 @@
 
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, shownList, activityTab, sidebarFold, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
+        panelKind, shownPanel, shownList, activityTab, sidebarFold, isMembersOffered, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
         onResize, onSelect, onBack, onListPanel, onActivityTab, onPanelLeave, onSidebarOver, onSidebarAway, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,

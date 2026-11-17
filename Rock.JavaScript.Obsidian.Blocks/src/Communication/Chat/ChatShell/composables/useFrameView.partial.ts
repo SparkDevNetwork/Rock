@@ -176,6 +176,9 @@ export type Frame = MembersPanelViews & ThreadsPanelWiring & {
     /** Where the sidebar is while a narrow window holds a panel, or null while it has its column. */
     sidebarFold: ComputedRef<SidebarFold | null>;
 
+    /** Whether the open conversation has Members to offer: a channel or a group, never a conversation of two. */
+    isMembersOffered: ComputedRef<boolean>;
+
     panelElement: Ref<HTMLElement | undefined>;
 
     /** The conversation's column, which holds its header, feed and composer. */
@@ -420,6 +423,16 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     const isSidebarHidden = computed((): boolean => (isPhone.value && pane.value !== "list") || sidebarFold.value === "folded");
 
+    /**
+     * Members is offered where a room has a roster to show: a channel or a group, never a
+     * conversation of two, which Rock keeps as it is. The header offers it by this, and the panel
+     * opens and follows a conversation change by it too.
+     */
+    const isMembersOffered = computed((): boolean => {
+        const channelId = activeChannelId.value;
+        return !!channelId && shell.value.channels.roomKindOf(channelId) !== "person";
+    });
+
     const shownList = computed((): ShownList | null => shownPanel.value === "activity" ? activityTab.value : shownPanel.value);
 
     const isConversationHidden = computed((): boolean => isPhone.value && pane.value !== "conversation");
@@ -496,7 +509,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
 
     /** Opens a list in the column, Activity on the tab given, with focus on its first control. */
     async function openPanel(kind: ListPanelKind, tab: ActivityTab): Promise<void> {
-        if (kind !== "activity" && !activeChannelId.value) {
+        if ((kind !== "activity" && !activeChannelId.value) || (kind === "members" && !isMembersOffered.value)) {
             return;
         }
 
@@ -1181,14 +1194,29 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
     });
 
     // The threads list and the roster are the open conversation's, so each follows it, re-pointing
-    // at the conversation now open, focus staying where it is; a draft has neither, so they close.
-    // Activity spans every conversation, so it stays as it is.
+    // at the conversation now open; a draft has neither, and a conversation of two no roster, so
+    // they close there, as the header offers them. A list read afresh takes its old rows away, so
+    // focus on one goes where the panel starts rather than with the row; focus anywhere else
+    // stays. Activity spans every conversation, so it stays as it is.
     watch(activeChannelId, channelId => {
-        if ((panelKind.value === "threads" || panelKind.value === "members") && channelId) {
-            openList(panelKind.value);
+        const kind = panelKind.value;
+        if (kind !== "threads" && kind !== "members") {
+            return;
         }
-        else if (panelKind.value === "threads" || panelKind.value === "members") {
+
+        if (!channelId || (kind === "members" && !isMembersOffered.value)) {
             closePanel();
+            return;
+        }
+
+        const hadFocus = !!panelElement.value?.contains(document.activeElement);
+        openList(kind);
+        if (hadFocus) {
+            void nextTick(() => {
+                if (!panelElement.value?.contains(document.activeElement)) {
+                    focusPanelStart();
+                }
+            });
         }
     });
 
@@ -1237,6 +1265,7 @@ export function useFrameView(dependencies: FrameViewDependencies): Frame {
         activityTab,
         shownList,
         sidebarFold,
+        isMembersOffered,
         panelElement,
         mainElement,
         mainViewElement,
