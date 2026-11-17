@@ -133,7 +133,7 @@
         }
 
         if (props.modelValue.agentType === AgentType.Chat) {
-            valueBuilder.addTextValue("Model", ModelServiceRoleDescription[props.modelValue.role]);
+            valueBuilder.addTextValue("Model Tier", ModelServiceRoleDescription[props.modelValue.role]);
             valueBuilder.addTextValue("Reasoning Effort", ReasoningEffortDescription[props.modelValue.reasoningEffort]);
         }
         else if (props.modelValue.agentType === AgentType.Mcp) {

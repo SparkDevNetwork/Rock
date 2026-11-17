@@ -54,9 +54,9 @@
                     <div class="row">
                         <div class="col-md-6">
                             <ButtonGroup v-model="role"
-                                         label="Model"
+                                         label="Model Tier"
                                          formGroupClasses="d-flex flex-column align-items-start"
-                                         help="The role of the language model to use when this agent handles requests. This determines the agent's capabilities and performance."
+                                         help="The tier of language model this agent uses. High handles complex reasoning and code generation better, but is slower and costs more than Medium."
                                          :items="roleItems"
                                          :btnSize="BtnSize.Small" />
                         </div>
