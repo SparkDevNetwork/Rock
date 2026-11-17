@@ -19,8 +19,11 @@
 import {
     createKeepaliveSave,
     createReadTracker,
+    createTabReads,
     isUnreadAfterSave,
-    PageEventTargets
+    PageEventTargets,
+    TabLineLike,
+    TabReads
 } from "../../../../../src/Communication/Chat/ChatShell/composables/useMarkRead.partial";
 import { MarkReadResult } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 
@@ -236,6 +239,193 @@ describe("createReadTracker", () => {
         await t.flush();
 
         expect(saves).toEqual([3, 3]);
+    });
+});
+
+// The save waits for the person to leave, so the person's other tabs in this browser are told of
+// each message read at once instead: a room read in one tab is read in the others, with nothing
+// added at the platform.
+describe("telling the person's other tabs", () => {
+    function telling(): { tracker: ReturnType<typeof createReadTracker>, told: string[] } {
+        const told: string[] = [];
+        const t = createReadTracker({
+            save: async (_c, messageId) => ({ read_cursor: messageId, last_message_id: messageId }),
+            onSaved: () => undefined,
+            tell: (channelId, messageId) => told.push(`${channelId}:${messageId}`)
+        });
+        return { tracker: t, told };
+    }
+
+    /** The turn's seen messages, told together at its end. */
+    const turnEnds = (): Promise<void> => Promise.resolve();
+
+    test("a message that arrives in the open room and is seen is told at once, without a save", async () => {
+        const { tracker: t, told } = telling();
+        t.show(channel);
+        t.open(channel, 10);
+
+        t.seen(11);
+        await turnEnds();
+
+        expect(told).toEqual([`${channel}:11`]);
+    });
+
+    test("the messages seen in one turn are told once, the newest", async () => {
+        const { tracker: t, told } = telling();
+        t.show(channel);
+        t.open(channel, 10);
+
+        t.seen(11);
+        t.seen(12);
+        t.seen(13);
+        await turnEnds();
+
+        expect(told).toEqual([`${channel}:13`]);
+    });
+
+    test("nothing is told before the stored position is known, nor at or below it; what was seen above it is told once it is", async () => {
+        const { tracker: t, told } = telling();
+        t.show(channel);
+        t.seen(9);
+        t.seen(12);
+        await turnEnds();
+        expect(told).toEqual([]);
+
+        t.open(channel, 10);
+        await turnEnds();
+        expect(told).toEqual([`${channel}:12`]);
+
+        t.seen(12);
+        t.seen(11);
+        await turnEnds();
+        expect(told).toEqual([`${channel}:12`]);
+    });
+
+    test("a room opened with nothing new says nothing", async () => {
+        const { tracker: t, told } = telling();
+        t.show(channel);
+        t.open(channel, 10);
+        t.seen(10);
+        await turnEnds();
+
+        expect(told).toEqual([]);
+    });
+
+    test("a room left says nothing more, and the next is told from its own position", async () => {
+        const { tracker: t, told } = telling();
+        t.open(channel, 10);
+        t.seen(11);
+        void t.leave();
+        t.show(other);
+        t.open(other, 20);
+        t.seen(21);
+        await turnEnds();
+
+        expect(told).toEqual([`${other}:21`]);
+    });
+});
+
+describe("createTabReads", () => {
+    const tenant = "10000000-0000-4000-8000-00000000000A";
+    const anna = "A0000001-0000-4000-8000-00000000000B";
+    const ben = "b0000002-0000-4000-8000-00000000000c";
+
+    /** A browser's tabs: a line delivers to every other line of its name, never back to itself, as BroadcastChannel does. */
+    function browser(): { open: (name: string) => TabLineLike, names: string[], closed: () => number } {
+        const lines: Array<TabLineLike & { name: string, isClosed: boolean }> = [];
+        const names: string[] = [];
+        return {
+            names,
+            open: name => {
+                names.push(name);
+                const line = {
+                    name,
+                    isClosed: false,
+                    onmessage: null as ((event: { data: unknown }) => void) | null,
+                    postMessage: (data: unknown): void => {
+                        // a copy, as the browser's structured clone makes one
+                        const copy = JSON.parse(JSON.stringify(data)) as unknown;
+                        lines.filter(l => l !== line && l.name === name && !l.isClosed).forEach(l => l.onmessage?.({ data: copy }));
+                    },
+                    close: (): void => {
+                        line.isClosed = true;
+                    }
+                };
+                lines.push(line);
+                return line;
+            },
+            closed: () => lines.filter(l => l.isClosed).length
+        };
+    }
+
+    function tab(b: ReturnType<typeof browser>, person: string): { reads: TabReads, heard: string[] } {
+        const heard: string[] = [];
+        const reads = createTabReads({ open: b.open, tenantId: tenant, personAliasGuid: person, onRead: (channelId, readCursor) => heard.push(`${channelId}:${readCursor}`) });
+        return { reads, heard };
+    }
+
+    test("a read in one tab reaches the person's other tabs, not itself", () => {
+        const b = browser();
+        const one = tab(b, anna);
+        const two = tab(b, anna);
+        const three = tab(b, anna);
+
+        one.reads.tell(channel, 12);
+
+        expect(one.heard).toEqual([]);
+        expect(two.heard).toEqual([`${channel}:12`]);
+        expect(three.heard).toEqual([`${channel}:12`]);
+    });
+
+    // The line's name holds no more than the page's own browser keys hold: the church and the
+    // person, as the push choice is kept.
+    test("the line is named for the church and the person, so another person's tabs never hear it", () => {
+        const b = browser();
+        const annas = tab(b, anna);
+        const bens = tab(b, ben);
+
+        annas.reads.tell(channel, 12);
+
+        expect(b.names[0]).toBe("rock-chat:reads:10000000-0000-4000-8000-00000000000a:a0000001-0000-4000-8000-00000000000b");
+        expect(bens.heard).toEqual([]);
+    });
+
+    test("a message that is not a read of this person's is dropped, whatever line it came on", () => {
+        const b = browser();
+        const annas = tab(b, anna);
+        const line = b.open(b.names[0]);
+
+        line.postMessage({ person_alias_guid: ben, channel_id: channel, read_cursor: 12 });
+        line.postMessage({ person_alias_guid: anna, channel_id: channel, read_cursor: "12" });
+        line.postMessage({ person_alias_guid: anna, read_cursor: 12 });
+        line.postMessage(null);
+        line.postMessage({ person_alias_guid: anna.toLowerCase(), channel_id: channel, read_cursor: 12 });
+
+        expect(annas.heard).toEqual([`${channel}:12`]);
+    });
+
+    test("closed at sign-out, a tab neither hears nor tells", () => {
+        const b = browser();
+        const one = tab(b, anna);
+        const two = tab(b, anna);
+
+        two.reads.close();
+        one.reads.tell(channel, 12);
+        two.reads.tell(channel, 13);
+
+        expect(two.heard).toEqual([]);
+        expect(one.heard).toEqual([]);
+        expect(b.closed()).toBe(1);
+    });
+
+    test("a browser without the line tells and hears nothing, and fails nothing", () => {
+        const heard: string[] = [];
+        const reads = createTabReads({ open: () => null, tenantId: tenant, personAliasGuid: anna, onRead: () => heard.push("read") });
+
+        reads.tell(channel, 12);
+        reads.close();
+
+        expect(heard).toEqual([]);
     });
 });
 
