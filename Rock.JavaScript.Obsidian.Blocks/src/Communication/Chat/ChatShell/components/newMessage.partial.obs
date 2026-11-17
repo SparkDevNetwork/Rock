@@ -61,11 +61,8 @@
         </div>
 
         <div class="chat-nd-body">
-            <div v-if="chosen.length === 0" class="chat-nd-scroll">
-                <EmptyState title="Start a conversation"
-                            :text="`Choose one person, or up to ${maxOthers} for a group.`"
-                            data-testid="nd-empty" />
-            </div>
+            <!-- Nothing yet: the focused field and the subtitle say what to do. -->
+            <div v-if="chosen.length === 0" class="chat-nd-scroll" data-testid="nd-empty"></div>
 
             <!-- While the lookup is out nothing is guessed: a quiet line only once it is slow. -->
             <div v-else-if="!isAnswered" class="chat-nd-scroll" aria-busy="true">
@@ -510,7 +507,6 @@
     import { useFaceStatus } from "../composables/usePresenceStatus.partial";
     import Avatar, { AvatarPerson } from "../ui/avatar.partial.obs";
     import Button from "../ui/button.partial.obs";
-    import EmptyState from "../ui/emptyState.partial.obs";
     import GroupFace from "../ui/groupFace.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import IconButton from "../ui/iconButton.partial.obs";
