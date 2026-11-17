@@ -345,11 +345,10 @@ namespace Rock.Blocks.Types.Mobile.Events
             SessionContext sessionContext;
             PrayerRequest request;
             var rockContext = RockApp.Current.CreateRockContext();
+            var prayerRequestService = new PrayerRequestService( rockContext );
 
             if ( context.IsNotNullOrWhiteSpace() )
             {
-                var prayerRequestService = new PrayerRequestService( rockContext );
-
                 sessionContext = Encryption.DecryptString( context ).FromJsonOrNull<SessionContext>();
 
                 //
@@ -381,14 +380,31 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
             else
             {
-                var query = GetPrayerRequests( rockContext );
+                /*
+                    11/17/26 - CLAUDE
+
+                    The query must only be executed once. With the Random order it
+                    is sorted by NEWID() in SQL, so a second execution returns a
+                    different order. The request shown first would then not be the
+                    first request in the session, and the prayer count and Prayed
+                    interaction would be recorded against a request the person
+                    never saw.
+
+                    Reason: Keep the displayed request and the session list in sync.
+                */
+                var requestIds = GetPrayerRequests( rockContext )
+                    ?.Select( a => a.Id )
+                    .ToList()
+                    ?? new List<int>();
 
                 sessionContext = new SessionContext
                 {
-                    RequestIds = query.Select( a => a.Id ).ToList()
+                    RequestIds = requestIds
                 };
 
-                request = query.FirstOrDefault();
+                request = requestIds.Any()
+                    ? prayerRequestService.Get( requestIds[0] )
+                    : null;
             }
 
             mergeFields.Add( "PrayedButtonText", PrayedButtonText );
@@ -415,8 +431,10 @@ namespace Rock.Blocks.Types.Mobile.Events
             }
 
             // This only works because GetByCategoryIds returns an IQueryable cast to be an IEnumerable, when the desired
-            // data type is actually IQueryable.
-            var query = ( IQueryable<PrayerRequest> ) prayerRequestService.GetByCategoryIds( new List<int> { category.Id } );
+            // data type is actually IQueryable. When only a group was specified there is no category to filter by.
+            var query = category != null
+                ? ( IQueryable<PrayerRequest> ) prayerRequestService.GetByCategoryIds( new List<int> { category.Id } )
+                : prayerRequestService.GetActiveApprovedUnexpired();
 
             if ( PublicOnly )
             {
