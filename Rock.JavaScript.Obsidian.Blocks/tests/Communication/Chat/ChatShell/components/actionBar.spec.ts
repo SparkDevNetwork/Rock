@@ -825,6 +825,73 @@ describe("the bar beside a bubble", () => {
 
         expect(standing(w, bubble)).toBe("beside");
     });
+
+    // A channel's flat row has no bubble to stand beside: its box stands at the row's top right,
+    // 14px in from the row's end and lifted 18px over the row's top, so it straddles the row's top
+    // edge and covers the least of the words; only where the column's top leaves no room for that
+    // lift does it move inside the row, 4px under the row's top. The Feed's approved E1-A places it
+    // so ("position as today"; its demo draws the box at the row's top less 18, or the top plus 4
+    // near the feed's top edge), kept 4px inside the column as E6-A keeps every box.
+    describe("on a channel's row", () => {
+        /** How far the box is lifted over a channel row's top, in from the row's end, and inside the row near the column's top. */
+        const lift = 18;
+        const endInset = 14;
+        const insideGap = 4;
+
+        type Row = { left: number, right: number, top: number };
+
+        /** Mounts the box on a channel's row at the box given, its column 900px wide from the window's top. */
+        async function shownOnRow(row: Row): Promise<VueWrapper> {
+            const rect = (left: number, right: number, top: number, bottom: number): DOMRect => ({ x: left, y: top, top, left, right, bottom, width: right - left, height: bottom - top, toJSON: () => ({}) }) as DOMRect;
+            const scroller = document.createElement("div");
+            scroller.setAttribute("data-chat-scroller", "");
+            scroller.getBoundingClientRect = () => rect(0, 900, 0, 600);
+            Object.defineProperty(scroller, "clientWidth", { value: 900 });
+            Object.defineProperty(scroller, "clientHeight", { value: 600 });
+            const host = document.createElement("div");
+            scroller.append(host);
+            document.body.append(scroller);
+
+            wrapper = mount(ActionBar, { props: { message: message(), isCommunity: true, isShown: true, favorites }, attachTo: host });
+            await settle();
+
+            // The dock draws no box, so the box is placed against the row holding it.
+            const guard = wrapper.get("[data-testid='action-bar-guard']").element as HTMLElement;
+            const anchor = guard.parentElement?.parentElement as HTMLElement;
+            anchor.getBoundingClientRect = () => rect(row.left, row.right, row.top, row.top + 44);
+            await wrapper.setProps({ message: message({ id: 43 }) });
+            for (let i = 0; i < 40; i++) {
+                await settle();
+            }
+            return wrapper;
+        }
+
+        /** The box's top and its end's distance in from the row's end, as drawn. */
+        function placed(w: VueWrapper, row: Row): { top: number, endIn: number } {
+            const box = w.get("[data-testid='message-box']").element as HTMLElement;
+            return { top: parseFloat(box.style.top), endIn: row.right - (parseFloat(box.style.left) + box.offsetWidth) };
+        }
+
+        test("stands at the row's top right, lifted over the row's top edge and in from its end", async () => {
+            const row = { left: 0, right: 900, top: 200 };
+            const w = await shownOnRow(row);
+
+            expect(placed(w, row)).toEqual({ top: row.top - lift, endIn: endInset });
+            expect(toolLabels(w)).toEqual([...reactionLabels, "Reply in thread", "Quote", "More actions"]);
+        });
+
+        test("keeps the lift while it stays 4px inside the column, and moves inside the row a pixel nearer the column's top", async () => {
+            const roomy = { left: 0, right: 900, top: lift + inset };
+            const lifted = await shownOnRow(roomy);
+            expect(placed(lifted, roomy).top).toBe(inset);
+            lifted.unmount();
+            document.body.innerHTML = "";
+
+            const tight = { left: 0, right: 900, top: lift + inset - 1 };
+            const inside = await shownOnRow(tight);
+            expect(placed(inside, tight)).toEqual({ top: tight.top + insideGap, endIn: endInset });
+        });
+    });
 });
 
 // Asked for less motion, an entrance becomes a short fade rather than nothing: the bar fades in
