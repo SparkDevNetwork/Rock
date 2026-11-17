@@ -593,11 +593,11 @@ describe("a face's status badge, sized with the face", () => {
         return wrapper.element.querySelector<HTMLElement>("[data-testid='status-badge']")!;
     }
 
-    test.each([[32, 12], [36, 12], [44, 12], [56, 15], [64, 17], [96, 26]])("on a %ipx face is %ipx", (size, badge) => {
+    test.each([[32, 12], [36, 12], [44, 12], [56, 15], [64, 17], [88, 24], [96, 26]])("on a %ipx face is %ipx", (size, badge) => {
         expect(badgeAt(size).style.getPropertyValue("--chat-status-s")).toBe(`${badge}px`);
     });
 
-    test.each([[44, 2], [63, 2], [64, 3], [96, 3]])("on a %ipx face is ringed %ipx", (size, ring) => {
+    test.each([[44, 2], [63, 2], [64, 3], [88, 3], [96, 3]])("on a %ipx face is ringed %ipx", (size, ring) => {
         expect(badgeAt(size).style.getPropertyValue("--chat-status-ring")).toBe(`${ring}px`);
     });
 
