@@ -1,6 +1,69 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="chat-joinbar-place" :class="{ 'is-phone': isPhone }">
+    <div v-if="place === 'preview'"
+         ref="barElement"
+         class="chat-joinfoot"
+         :class="{ 'is-phone': isPhone }"
+         tabindex="-1"
+         data-testid="join-bar"
+         data-place="preview"
+         :data-state="footer"
+         :role="footer === 'confirmLeave' ? 'group' : undefined"
+         :aria-labelledby="footer === 'confirmLeave' ? questionId : undefined"
+         @keydown.esc="onLeaveEscape">
+        <!--
+            In Browse channels the bar is the preview's footer: one line of what the person can do,
+            and the buttons at its end, Join channel where Open channel will stand once they are in.
+        -->
+        <span class="chat-joinfoot-main">
+            <template v-if="footer === 'confirmLeave'">
+                <b v-if="leaveError" :id="questionId" class="chat-joinfoot-err" data-testid="leave-error">{{ leaveError }}</b>
+                <template v-else>
+                    <b :id="questionId" data-testid="leave-question">Leave {{ name }}?</b>
+                    <span data-testid="leave-body">{{ leaveBody }}</span>
+                </template>
+            </template>
+            <template v-else>
+                <b v-if="footerTitle" data-testid="join-bar-title">{{ footerTitle }}</b>
+                <span v-if="footer === 'pending'" data-testid="join-bar-text"><span class="chat-spinner"></span>Setting up, a few seconds</span>
+                <span v-else :class="{ 'chat-joinfoot-err': footer === 'failed' || footer === 'refused' }" data-testid="join-bar-text">{{ footerText }}</span>
+            </template>
+        </span>
+
+        <!-- Held while leaving, not disabled, since a disabled button drops the focus it holds to the page. -->
+        <template v-if="footer === 'confirmLeave'">
+            <Button ref="leaveCancelButton"
+                    kind="line"
+                    data-testid="leave-cancel"
+                    :aria-disabled="isLeaving ? 'true' : undefined"
+                    @click="onLeaveCancel">{{ leaveError ? "OK" : "Cancel" }}</Button>
+            <Button v-if="!leaveError"
+                    kind="danger"
+                    icon="door"
+                    :busy="isLeaving"
+                    data-testid="leave-go"
+                    @click="onLeaveGo">{{ isLeaving ? "Leaving" : "Leave" }}</Button>
+        </template>
+        <template v-else-if="footer === 'member'">
+            <Button ref="leaveButton"
+                    kind="ghost"
+                    data-testid="join-leave"
+                    @click="onLeaveAsk">Leave</Button>
+            <Button ref="openButton"
+                    kind="brand"
+                    data-testid="join-open"
+                    @click="emit('open')">Open channel</Button>
+        </template>
+        <!-- One button through Join and Joining, so focus stays on it while the door is out. -->
+        <Button v-else-if="footer !== 'pending' && footer !== 'refused'"
+                ref="footerJoinButton"
+                kind="brand"
+                :busy="footer === 'joining'"
+                data-testid="join-channel"
+                @click="onJoin">{{ footer === 'joining' ? 'Joining' : 'Join channel' }}</Button>
+    </div>
+
+    <div v-else class="chat-joinbar-place" :class="{ 'is-phone': isPhone }">
         <!--
             A door that refuses leaves nothing to join here, so the bar is the inline notice: the
             door's own sentence and the way back to Browse channels.
@@ -121,15 +184,69 @@
 .chat-joinbar-why {
     display: block;
 }
+
+/*
+    The preview's footer: a hairline over one line of words and the buttons at its end, the same
+    height whatever it says, so Join turning to Open channel or to the Leave question moves nothing.
+*/
+.chat-joinfoot {
+    display: flex;
+    flex: none;
+    gap: 8px;
+    align-items: center;
+    min-height: 64px;
+    padding: 12px 28px 16px;
+    background: var(--chat-surface);
+    border-top: 1px solid var(--chat-line);
+}
+
+.chat-joinfoot:focus {
+    outline: none;
+}
+
+.chat-joinfoot-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    font-size: var(--chat-fs-ui);
+    line-height: 1.35;
+    color: var(--chat-muted);
+}
+
+.chat-joinfoot-main b {
+    font-size: var(--chat-fs-ui);
+    font-weight: 650;
+    color: var(--chat-text);
+}
+
+.chat-joinfoot-main .chat-spinner {
+    width: 11px;
+    height: 11px;
+    margin-right: 6px;
+    vertical-align: -1px;
+    border-width: 1.5px;
+}
+
+/* A refusal and a door not reached, red as the composer's bar draws a refusal. */
+.chat-joinfoot-main .chat-joinfoot-err {
+    color: var(--chat-danger-ink);
+}
+
+.chat-joinfoot.is-phone {
+    padding: 10px 12px 12px;
+}
 </style>
 
 <script setup lang="ts">
     import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { useChatSession } from "../chatSession.partial";
     import Button from "../ui/button.partial.obs";
     import Icon from "../ui/icon.partial.obs";
     import SettingNote from "../ui/settingNote.partial.obs";
-    import { JoinState } from "../composables/useRooms.partial";
+    import { leaveSentence, useLeaveQuestion } from "../composables/useLeaveQuestion.partial";
+    import { JoinState, LeaveState } from "../composables/useRooms.partial";
 
     const props = defineProps({
         /** The channel's name, written with no "#". */
@@ -142,21 +259,71 @@
         state: {
             type: Object as PropType<JoinState>,
             required: true
+        },
+
+        /**
+         * Where it stands: in the composer's place in a conversation previewed there, or as the
+         * footer of the channel's preview beside the Browse channels list.
+         */
+        place: {
+            type: String as PropType<"composer" | "preview">,
+            default: "composer"
+        },
+
+        /** Whether the person is in the channel, which the footer offers to open or leave. */
+        isMember: {
+            type: Boolean,
+            default: false
+        },
+
+        /** Where the room's Leave is, as the rooms hold it, for the footer's question. */
+        leave: {
+            type: Object as PropType<LeaveState>,
+            default: () => ({ kind: "idle" })
         }
     });
 
     const emit = defineEmits<{
         (e: "join"): void,
-        (e: "browse"): void
+        (e: "browse"): void,
+        (e: "open"): void,
+        (e: "leave"): void
     }>();
 
     // #region Values
 
-    /** Whether the block is drawn one pane at a time, where the composer sits tighter. */
-    const isPhone = useChatSession().isPhone;
+    /** Whether the block is drawn one pane at a time, where the composer sits tighter; the church, which the Leave question names. */
+    const { isPhone, church } = useChatSession();
 
     const barElement = ref<HTMLElement>();
     const browseButton = ref<InstanceType<typeof Button>>();
+    const leaveButton = ref<InstanceType<typeof Button>>();
+    const openButton = ref<InstanceType<typeof Button>>();
+    const leaveCancelButton = ref<InstanceType<typeof Button>>();
+    const footerJoinButton = ref<InstanceType<typeof Button>>();
+
+    const questionId = `chat-joinfoot-q-${newGuid()}`;
+
+    // The details' question, asked in the footer's place; once the leave lands, the footer offers
+    // Join channel again and focus that was in the question goes to it.
+    const {
+        isAsking: isConfirmingLeave,
+        isLeaving,
+        error: leaveError,
+        ask: onLeaveAsk,
+        cancel: onLeaveCancel,
+        confirm: onLeaveGo,
+        end: endLeaveQuestion
+    } = useLeaveQuestion({
+        leave: () => props.leave,
+        go: () => emit("leave"),
+        cancelButton: () => leaveCancelButton.value,
+        askButton: () => leaveButton.value,
+        afterLeft: { region: () => barElement.value, next: () => footerJoinButton.value }
+    });
+
+    /** What leaving means, in the details' words: Browse lists public channels only. */
+    const leaveBody = computed((): string => leaveSentence(false, true, church.name));
 
     // #endregion Values
 
@@ -192,6 +359,52 @@
         }
     });
 
+    /**
+     * The footer's state: the bar's own until the person is in the channel, then Open channel and
+     * Leave, or the question Leave asks first. Pending is the bar's still, as the platform has not
+     * taken the membership yet.
+     */
+    const footer = computed((): "preview" | "joining" | "pending" | "refused" | "failed" | "member" | "confirmLeave" => {
+        if (isConfirmingLeave.value) {
+            return "confirmLeave";
+        }
+
+        return props.isMember && drawn.value !== "pending" ? "member" : drawn.value;
+    });
+
+    /** The footer's bold line, for news that needs one; its one quiet line says the rest. */
+    const footerTitle = computed((): string => {
+        switch (footer.value) {
+            case "pending":
+                return `You've joined ${props.name}`;
+
+            case "refused":
+                return `You can't join ${props.name}`;
+
+            default:
+                return "";
+        }
+    });
+
+    const footerText = computed((): string => {
+        switch (footer.value) {
+            case "joining":
+                return `Joining ${props.name}`;
+
+            case "refused":
+                return refusal.value;
+
+            case "failed":
+                return failure.value;
+
+            case "member":
+                return props.state.kind === "joined" ? `You joined ${props.name}` : "You're a member";
+
+            default:
+                return "Join to post and get notifications";
+        }
+    });
+
     /** The door's own sentence, as it arrived. */
     const refusal = computed((): string => props.state.kind === "refused" ? props.state.text : "");
 
@@ -209,9 +422,36 @@
         }
     }
 
+    /** Escape answers the question with Cancel and goes no further, so the view behind stays open. */
+    function onLeaveEscape(event: KeyboardEvent): void {
+        if (footer.value === "confirmLeave") {
+            event.stopPropagation();
+            event.preventDefault();
+            void onLeaveCancel();
+        }
+    }
+
     // #endregion Event Handlers
 
     // #region Watchers
+
+    // No longer in the room, however that came about, there is nothing to leave.
+    watch(() => props.isMember, isMember => {
+        if (!isMember) {
+            void endLeaveQuestion();
+        }
+    });
+
+    // Joining turned to Open channel in the footer: focus on the Join the person pressed moves to
+    // Open channel, where it stood, rather than falling to the page.
+    watch(footer, async (now, before) => {
+        if (now !== "member" || before !== "joining" || !barElement.value?.contains(document.activeElement)) {
+            return;
+        }
+
+        await nextTick();
+        openButton.value?.focus();
+    }, { flush: "pre" });
 
     // The button the person pressed leaves with a refusal or a pending join, so focus goes to the
     // way on from here, or to the bar saying the room is setting up, rather than falling to the
@@ -223,8 +463,9 @@
         }
 
         await nextTick();
-        if (now === "refused") {
-            browseButton.value?.focus();
+        // the footer has no Browse channels, being in Browse channels already: the bar takes focus
+        if (now === "refused" && browseButton.value) {
+            browseButton.value.focus();
         }
         else {
             barElement.value?.focus();

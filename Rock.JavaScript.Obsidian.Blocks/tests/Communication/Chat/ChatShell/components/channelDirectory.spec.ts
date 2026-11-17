@@ -28,7 +28,9 @@ import { mount, VueWrapper } from "@vue/test-utils";
 import { nextTick, reactive } from "vue";
 import ChannelDirectory from "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs";
 import ChannelMark from "../../../../../src/Communication/Chat/ChatShell/ui/channelMark.partial.obs";
-import { DirectoryState, JoinState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
+import JoinBar from "../../../../../src/Communication/Chat/ChatShell/components/joinBar.partial.obs";
+import LoadMoreRow from "../../../../../src/Communication/Chat/ChatShell/ui/loadMoreRow.partial.obs";
+import { DirectoryState, JoinState, LeaveState } from "../../../../../src/Communication/Chat/ChatShell/composables/useRooms.partial";
 import { DirectoryRow } from "../../../../../src/Communication/Chat/ChatShell/types.partial";
 import { providedSession } from "../sessionShapes";
 
@@ -69,8 +71,8 @@ function room(overrides: Partial<DirectoryRow> & { channel_id: string, name: str
     };
 }
 
-const volunteers = room({ channel_id: "c0000001-0000-4000-8000-000000000000", name: "Volunteers", description: "Serve teams across the church", group_type_name: "Serving Team" });
-const outreach = room({ channel_id: "c0000002-0000-4000-8000-000000000000", name: "Local Outreach", campus_id: downtown.guid, group_type_name: "Small Group" });
+const volunteers = room({ channel_id: "c0000001-0000-4000-8000-000000000000", name: "Volunteers", description: "Serve teams across the church", group_type_name: "Serving Team", member_count: 1248 });
+const outreach = room({ channel_id: "c0000002-0000-4000-8000-000000000000", name: "Local Outreach", campus_id: downtown.guid, group_type_name: "Small Group", member_count: 1 });
 const worship = room({ channel_id: "c0000003-0000-4000-8000-000000000000", name: "Worship Team", is_member: true, group_type_name: "Serving Team" });
 
 /** Browse channels as useRooms holds it with a first page landed. */
@@ -102,8 +104,9 @@ let wrapper: VueWrapper | null = null;
 
 /** Mounts the view; a phone's width comes from the session, as the shell provides it. */
 function mountDirectory(props: Record<string, unknown> = {}): VueWrapper {
-    const { isPhone = false, organizationName = "Cedar Hill Church", ...rest } = props;
+    const { isPhone = false, organizationName = "Cedar Hill Church", slots, ...rest } = props;
     wrapper = mount(ChannelDirectory, {
+        slots: slots as Record<string, string> | undefined,
         props: {
             directory: directory(),
             joins: {},
@@ -166,6 +169,23 @@ async function reachEnd(): Promise<void> {
     await nextTick();
 }
 
+/** The view's width observers, so a test can lay the view out at a width; jsdom lays nothing out. */
+const resizers: Array<{ callback: ResizeObserverCallback, watched: Element[] }> = [];
+
+/** Lays the view out at a width, as a browser would report it, and lets it redraw. */
+async function layOut(w: VueWrapper, width: number): Promise<void> {
+    const view = w.get("[data-testid='channel-directory']").element as HTMLElement;
+    Object.defineProperty(view, "clientWidth", { configurable: true, get: () => width });
+    resizers.filter(resizer => resizer.watched.includes(view)).forEach(resizer => resizer.callback([], resizer as unknown as ResizeObserver));
+    await nextTick();
+    await nextTick();
+}
+
+/** The list's row buttons, in order. */
+function rowButtons(w: VueWrapper): ReturnType<VueWrapper["findAll"]> {
+    return w.findAll("[data-testid='directory-row-open']");
+}
+
 // #endregion Helpers
 
 beforeAll(() => {
@@ -181,9 +201,28 @@ beforeAll(() => {
 
 const originalObserver = window.IntersectionObserver;
 
+const originalResizeObserver = window.ResizeObserver;
+
 beforeEach(() => {
     observers.length = 0;
     window.IntersectionObserver = FakeObserver as unknown as typeof IntersectionObserver;
+    resizers.length = 0;
+    window.ResizeObserver = class {
+        private resizer: { callback: ResizeObserverCallback, watched: Element[] };
+        constructor(callback: ResizeObserverCallback) {
+            this.resizer = { callback, watched: [] };
+            resizers.push(this.resizer);
+        }
+        observe(element: Element): void {
+            this.resizer.watched.push(element);
+        }
+        unobserve(element: Element): void {
+            this.resizer.watched = this.resizer.watched.filter(one => one !== element);
+        }
+        disconnect(): void {
+            this.resizer.watched = [];
+        }
+    } as unknown as typeof ResizeObserver;
 });
 
 afterEach(() => {
@@ -191,6 +230,7 @@ afterEach(() => {
     wrapper = null;
     document.body.innerHTML = "";
     window.IntersectionObserver = originalObserver;
+    window.ResizeObserver = originalResizeObserver;
 });
 
 describe("the header", () => {
@@ -418,22 +458,41 @@ describe("the count line", () => {
 });
 
 describe("a row", () => {
-    // Rock's group type ("Chat Shared Channel") said nothing a person picks a channel by.
-    test("draws the room's name, its description and its campus, with no group type and no member count", () => {
+    // Rock's group type ("Chat Shared Channel") said nothing a person picks a channel by; how many
+    // are in it does, counted as the room's header counts them.
+    test("draws the room's name, its description, its campus and how many are in it, with no group type", () => {
         const w = mountDirectory();
 
         const row = rowOf(w, outreach.channel_id);
         expect(row.get("[data-testid='directory-row-name']").text()).toBe("Local Outreach");
-        expect(row.findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Downtown Campus"]);
+        expect(row.findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Downtown Campus", "1 member"]);
         expect(row.text()).not.toContain("Small Group");
-        expect(row.text()).not.toContain("members");
+        expect(rowOf(w, volunteers.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church", "1,248 members"]);
         expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-desc']").text()).toBe("Serve teams across the church");
+    });
+
+    test("draws its campus alone from a platform that sends no count", () => {
+        const w = mountDirectory();
+
+        expect(rowOf(w, worship.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
+    });
+
+    // A room made since the platform last counted (up to a minute) is sent with no count yet, null,
+    // which says nothing about how many are in it, so it is never drawn as 0.
+    test("draws its campus alone, in the row and the preview, for a new room the platform has not counted yet", () => {
+        // the row type still reads a count as present or absent; null is the platform's not-yet
+        const fresh = room({ channel_id: "c0000004-0000-4000-8000-000000000000", name: "Young Adults", member_count: null as unknown as number });
+        const w = mountDirectory({ directory: directory({ rows: [fresh, volunteers] }), previewId: fresh.channel_id });
+
+        expect(rowOf(w, fresh.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
+        expect(w.get("[data-testid='directory-preview-meta']").text()).toBe("Whole church");
+        expect(rowOf(w, fresh.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Young Adults, Whole church. Preview channel");
     });
 
     test("says Whole church for a room with no campus, and draws no description line without one", () => {
         const w = mountDirectory();
 
-        expect(rowOf(w, volunteers.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church"]);
+        expect(rowOf(w, volunteers.channel_id).findAll("[data-testid='directory-row-meta'] > span").map(part => part.text())).toEqual(["Whole church", "1,248 members"]);
         expect(rowOf(w, outreach.channel_id).find("[data-testid='directory-row-desc']").exists()).toBe(false);
     });
 
@@ -470,19 +529,30 @@ describe("a row", () => {
         expect(rowOf(w, worship.channel_id).find("mark").exists()).toBe(false);
     });
 
-    test("opens the room it names, to preview it", async () => {
+    // Looking at a channel no longer leaves Browse: the row asks for its preview beside the list.
+    test("asks for the preview of the room it names, and opens nothing", async () => {
         const w = mountDirectory();
 
         await rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").trigger("click");
 
-        expect(w.emitted("open")).toEqual([[volunteers.channel_id]]);
+        expect(w.emitted("preview")).toEqual([[volunteers.channel_id]]);
+        expect(w.emitted("open")).toBeUndefined();
     });
 
-    test("tells a screen reader the room, whether it is joined, its facts and what opening does", () => {
+    test("tells a screen reader the room, whether it is joined, its facts and that it shows a preview", () => {
         const w = mountDirectory();
 
-        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Volunteers, Whole church. Preview channel");
-        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Worship Team, joined, Whole church. Open channel");
+        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Volunteers, Whole church, 1,248 members. Preview channel");
+        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").attributes("aria-label")).toBe("Worship Team, joined, Whole church. Preview channel");
+    });
+
+    test("marks a room the person is in with a check, and the row previewed as the current one", () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+
+        expect(rowOf(w, worship.channel_id).find("[data-testid='directory-row-joined']").exists()).toBe(true);
+        expect(rowOf(w, volunteers.channel_id).find("[data-testid='directory-row-joined']").exists()).toBe(false);
+        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").attributes("aria-current")).toBe("true");
+        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").attributes("aria-current")).toBeUndefined();
     });
 
     test("is a list of channels", () => {
@@ -493,121 +563,311 @@ describe("a row", () => {
     });
 });
 
-describe("Join on a row", () => {
-    test("offers Join for a room the person is not in, which asks the door for that room", async () => {
-        const w = mountDirectory();
+// Join, Open and Leave are the preview's footer, the join bar in its footer place for the room
+// previewed; the row says only that the person is in, with its check, which pops in once.
+describe("Join in the preview's footer", () => {
+    function footerOf(w: VueWrapper): ReturnType<VueWrapper["getComponent"]> {
+        return w.get("[data-testid='directory-preview']").getComponent(JoinBar);
+    }
 
-        const join = rowOf(w, volunteers.channel_id).get("[data-testid='directory-join']");
-        expect(join.text()).toBe("Join");
-        expect(join.attributes("aria-label")).toBe("Join Volunteers");
-        await join.trigger("click");
+    test("offers Join channel for a room the person is not in, which asks the door for that room", async () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+
+        const footer = footerOf(w);
+        expect(footer.props("place")).toBe("preview");
+        expect(footer.props("name")).toBe("Volunteers");
+        expect(footer.props("isMember")).toBe(false);
+        await footer.get("[data-testid='join-channel']").trigger("click");
 
         expect(w.emitted("join")).toEqual([[volunteers.channel_id]]);
         expect(w.emitted("open")).toBeUndefined();
     });
 
-    test("says Joined with its check for a room the person is in, without the pop", () => {
-        const w = mountDirectory();
+    test("says the room previewed is joined, with Open channel, for a room the person is in, without the row's pop", () => {
+        const w = mountDirectory({ previewId: worship.channel_id });
 
-        const joined = rowOf(w, worship.channel_id).get("[data-testid='directory-joined']");
-        expect(joined.text()).toBe("Joined");
-        expect(joined.classes()).not.toContain("is-fresh");
+        expect(footerOf(w).props("isMember")).toBe(true);
+        expect(footerOf(w).find("[data-testid='join-open']").exists()).toBe(true);
+        expect(rowOf(w, worship.channel_id).get("[data-testid='directory-row-joined']").classes()).not.toContain("is-fresh");
         expect(rowOf(w, worship.channel_id).classes()).toContain("is-member");
-        expect(rowOf(w, worship.channel_id).find("[data-testid='directory-join']").exists()).toBe(false);
     });
 
-    // The approved row draws Join's own box holding only a spinner while the door is out, so the
-    // row never shifts; "Joining" beside the spinner was wider than Join and grew the button.
-    test("shows only a spinner in Join's place, named Joining, busy and not pressable, while the door is out", () => {
+    test("hands the footer the room's Join while the door is out, which holds Join channel busy", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joining" } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        const joining = rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']");
-        expect(joining.text()).toBe("");
-        expect(joining.attributes("aria-label")).toBe("Joining");
-        expect(joining.classes()).toContain("chat-fd-join");
-        expect(joining.find(".chat-spinner").exists()).toBe(true);
-        // held by aria-disabled rather than disabled, since a browser drops focus from a disabled button
-        expect(joining.attributes("aria-disabled")).toBe("true");
-        expect(joining.attributes("aria-busy")).toBe("true");
+        expect(footerOf(w).props("state")).toEqual({ kind: "joining" });
+        expect(footerOf(w).get("[data-testid='join-channel']").attributes("aria-busy")).toBe("true");
     });
 
     test("asks nothing of the door while Joining is pressed again", async () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joining" } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        await rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']").trigger("click");
+        await footerOf(w).get("[data-testid='join-channel']").trigger("click");
 
         expect(w.emitted("join")).toBeUndefined();
     });
 
-    test("pops a fresh Joined in, the row marked member, once the door and the platform agree", () => {
+    test("pops a fresh check in on the row, marked member, once the door and the platform agree", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "joined", isFresh: true } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        const joined = rowOf(w, volunteers.channel_id).get("[data-testid='directory-joined']");
-        expect(joined.text()).toBe("Joined");
-        expect(joined.classes()).toContain("is-fresh");
+        expect(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-joined']").classes()).toContain("is-fresh");
         expect(rowOf(w, volunteers.channel_id).classes()).toContain("is-member");
+        expect(footerOf(w).props("isMember")).toBe(true);
     });
 
-    test("says Finishing up with a spinner, and Setting up under the name, while the platform catches up", () => {
+    test("says Setting up in the footer while the platform catches up, with no check yet", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "pending" } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        const row = rowOf(w, volunteers.channel_id);
-        expect(row.get("[data-testid='directory-pending']").text()).toBe("Finishing up");
-        expect(row.get("[data-testid='directory-pending']").find(".chat-spinner").exists()).toBe(true);
-        expect(row.get("[data-testid='directory-row-wait']").text()).toBe("Setting up, a few seconds");
-        expect(row.find("[data-testid='directory-join']").exists()).toBe(false);
+        expect(footerOf(w).get("[data-testid='join-bar']").attributes("data-state")).toBe("pending");
+        expect(rowOf(w, volunteers.channel_id).find("[data-testid='directory-row-joined']").exists()).toBe(false);
     });
 
-    test("holds Join disabled and shows the door's own sentence under the name when refused", () => {
+    test("shows the door's own sentence in the footer when refused", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "refused", text: "Volunteers is full right now. Ask Nathan Hughes about joining." } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        const row = rowOf(w, volunteers.channel_id);
-        expect(row.get("[data-testid='directory-join']").attributes("disabled")).toBeDefined();
-        expect(row.get("[data-testid='directory-row-refused']").text()).toBe("Volunteers is full right now. Ask Nathan Hughes about joining.");
+        expect(footerOf(w).get("[data-testid='join-bar-text']").text()).toBe("Volunteers is full right now. Ask Nathan Hughes about joining.");
     });
 
-    test("moves focus from a Join turned refused to the row's own button, rather than to the page", async () => {
+    test("keeps focus in the footer, on the footer itself, when a Join turns refused", async () => {
         const joins = reactive<Record<string, JoinState>>({ [volunteers.channel_id]: { kind: "joining" } });
-        const w = mountDirectory({ joins });
-        (rowOf(w, volunteers.channel_id).get("[data-testid='directory-joining']").element as HTMLElement).focus();
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
+        (footerOf(w).get("[data-testid='join-channel']").element as HTMLElement).focus();
 
         joins[volunteers.channel_id] = { kind: "refused", text: "You can't join this channel." };
         await nextTick();
         await nextTick();
 
-        expect(document.activeElement).toBe(rowOf(w, volunteers.channel_id).get("[data-testid='directory-row-open']").element);
+        expect(document.activeElement).toBe(footerOf(w).get("[data-testid='join-bar']").element);
     });
 
-    test("says why under the name when the door could not be reached, and offers Join again", () => {
+    test("says why in the footer when the door could not be reached, and offers Join channel again", () => {
         const joins: Record<string, JoinState> = { [volunteers.channel_id]: { kind: "failed", text: "You're offline. Try again when you're back." } };
-        const w = mountDirectory({ joins });
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
 
-        const row = rowOf(w, volunteers.channel_id);
-        const join = row.get("[data-testid='directory-join']");
-        expect(join.attributes("disabled")).toBeUndefined();
-        expect(join.attributes("aria-disabled")).toBeUndefined();
-        expect(row.find("[data-testid='directory-row-refused']").exists()).toBe(false);
-        const line = row.get("[data-testid='directory-row-failed']");
-        expect(line.text()).toBe("You're offline. Try again when you're back.");
-        expect(line.classes()).toContain("chat-fd-err");
-        expect(row.get("[data-testid='directory-row-open']").element.contains(line.element)).toBe(true);
+        expect(footerOf(w).get("[data-testid='join-bar-text']").text()).toBe("You're offline. Try again when you're back.");
+        expect(footerOf(w).get("[data-testid='join-channel']").attributes("aria-disabled")).toBeUndefined();
     });
 
-    test("keeps focus in a row whose Join turns to Joining, on the row's own button", async () => {
+    test("keeps focus on Join channel as it turns to Joining", async () => {
         const joins = reactive<Record<string, JoinState>>({});
-        const w = mountDirectory({ joins });
-        (rowOf(w, volunteers.channel_id).get("[data-testid='directory-join']").element as HTMLElement).focus();
+        const w = mountDirectory({ joins, previewId: volunteers.channel_id });
+        (footerOf(w).get("[data-testid='join-channel']").element as HTMLElement).focus();
 
         joins[volunteers.channel_id] = { kind: "joining" };
         await nextTick();
         await nextTick();
 
-        expect(rowOf(w, volunteers.channel_id).element.contains(document.activeElement)).toBe(true);
+        expect(document.activeElement).toBe(footerOf(w).get("[data-testid='join-channel']").element);
+    });
+
+    test("opens the room previewed from Open channel, and leaves it from Leave once asked", async () => {
+        const leaves: Record<string, LeaveState> = { [worship.channel_id]: { kind: "idle" } };
+        const w = mountDirectory({ leaves, previewId: worship.channel_id });
+
+        await footerOf(w).get("[data-testid='join-open']").trigger("click");
+        expect(w.emitted("open")).toEqual([[worship.channel_id]]);
+
+        await footerOf(w).get("[data-testid='join-leave']").trigger("click");
+        await footerOf(w).get("[data-testid='leave-go']").trigger("click");
+        expect(w.emitted("leave")).toEqual([[worship.channel_id]]);
+        expect(footerOf(w).props("leave")).toEqual({ kind: "idle" });
+    });
+});
+
+// The approved Browse: the list with the chosen channel's preview beside it. The preview is the
+// channel's own feed, read only, under its summary, which stays pinned while only the feed
+// scrolls; the feed is the shell's, drawn into the preview's slot.
+describe("the preview", () => {
+    test("draws the room previewed: its mark, name, campus and member count, and description, pinned over the feed", () => {
+        const pictured = { ...volunteers, icon_url: "https://church.example/volunteers.jpg" };
+        const w = mountDirectory({
+            directory: directory({ rows: [pictured, outreach, worship] }),
+            previewId: volunteers.channel_id,
+            slots: { feed: "<div data-testid='the-feed'>messages</div>" }
+        });
+
+        const preview = w.get("[data-testid='directory-preview']");
+        const summary = preview.get("[data-testid='directory-preview-summary']");
+        expect(summary.getComponent(ChannelMark).props("imageUrl")).toBe("https://church.example/volunteers.jpg");
+        expect(summary.get("[data-testid='directory-preview-name']").text()).toBe("Volunteers");
+        expect(summary.findAll("[data-testid='directory-preview-meta'] > span").map(part => part.text())).toEqual(["Whole church", "1,248 members"]);
+        expect(summary.get("[data-testid='directory-preview-desc']").text()).toBe("Serve teams across the church");
+
+        // the summary stands outside the feed's own scroller, before it, so only the feed scrolls
+        const feed = preview.get("[data-testid='directory-preview-feed']");
+        expect(feed.get("[data-testid='the-feed']").text()).toBe("messages");
+        expect(summary.element.contains(feed.element)).toBe(false);
+        expect(summary.element.compareDocumentPosition(feed.element) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+        expect(preview.attributes("aria-label")).toBe("Preview of Volunteers");
+    });
+
+    test("hands its feed slot the room previewed", () => {
+        const w = mountDirectory({
+            previewId: outreach.channel_id,
+            slots: { feed: "<template #feed=\"{ channelId }\"><b data-testid='slot-room'>{{ channelId }}</b></template>" }
+        });
+
+        expect(w.get("[data-testid='slot-room']").text()).toBe(outreach.channel_id);
+    });
+
+    test("draws no preview without a room chosen, or for a room the list no longer holds", async () => {
+        const w = mountDirectory();
+        expect(w.find("[data-testid='directory-preview']").exists()).toBe(false);
+
+        await w.setProps({ previewId: "c9999999-0000-4000-8000-000000000000" });
+        expect(w.find("[data-testid='directory-preview']").exists()).toBe(false);
+    });
+
+    test("swaps the preview for another row's, keeping the list, its search and its scroller", async () => {
+        const w = mountDirectory({ directory: directory({ query: "e" }), previewId: volunteers.channel_id });
+        const scroller = w.get("[data-testid='directory-scroll']").element;
+        const search = w.get("[data-testid='directory-search']").element as HTMLInputElement;
+        scrollTo(w, 120);
+
+        await rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']").trigger("click");
+        await w.setProps({ previewId: outreach.channel_id });
+
+        expect(w.get("[data-testid='directory-preview-name']").text()).toBe("Local Outreach");
+        expect(w.get("[data-testid='directory-scroll']").element).toBe(scroller);
+        expect(w.get("[data-testid='directory-search']").element).toBe(search);
+        expect(search.value).toBe("e");
+        expect((scroller as HTMLElement).scrollTop).toBe(120);
+        expect(w.findAll("[data-testid='directory-row']")).toHaveLength(3);
+    });
+
+    test("sits beside the list in a wide view, choosing the first row while none is chosen", async () => {
+        const w = mountDirectory();
+
+        await layOut(w, 1200);
+
+        expect(w.get("[data-testid='channel-directory']").classes()).toContain("is-split");
+        expect(w.emitted("preview")).toEqual([[volunteers.channel_id]]);
+    });
+
+    test("chooses the first row again in a wide view when a search or filter leaves the chosen one out", async () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+        await layOut(w, 1200);
+        expect(w.emitted("preview")).toBeUndefined();
+
+        await w.setProps({ directory: directory({ rows: [outreach, worship], total: 2 }) });
+        await nextTick();
+
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id]]);
+    });
+
+    test("in a wide view, previews each row the arrows move to, the list one tab stop", async () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+        await layOut(w, 1200);
+        const rows = rowButtons(w);
+        expect(rows.map(row => row.attributes("tabindex"))).toEqual(["0", "-1", "-1"]);
+
+        (rows[0].element as HTMLElement).focus();
+        await rows[0].trigger("keydown", { key: "ArrowDown" });
+
+        expect(document.activeElement).toBe(rows[1].element);
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id]]);
+    });
+
+    test("previews the row Enter is pressed on", async () => {
+        const w = mountDirectory();
+        const rows = rowButtons(w);
+        (rows[1].element as HTMLElement).focus();
+
+        await rows[1].trigger("keydown", { key: "Enter" });
+
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id]]);
+    });
+
+    test("lies over the list in a narrow view, with Back in its head, which closes it", async () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+        await layOut(w, 800);
+
+        expect(w.get("[data-testid='channel-directory']").classes()).not.toContain("is-split");
+        const preview = w.get("[data-testid='directory-preview']");
+        expect(preview.classes()).toContain("is-over");
+        // the list under it is out of reach while it covers it
+        expect(w.get("[data-testid='directory-list-pane']").attributes("inert")).toBeDefined();
+        expect(w.emitted("preview")).toBeUndefined();
+
+        const back = preview.get("[data-testid='directory-preview-back']");
+        expect(back.attributes("aria-label")).toBe("Back to Browse channels");
+        await back.trigger("click");
+        expect(w.emitted("preview")).toEqual([[null]]);
+    });
+
+    test("is its own screen on a phone, its head the channel's name and Back", async () => {
+        const w = mountDirectory({ isPhone: true, previewId: outreach.channel_id });
+        await layOut(w, 390);
+
+        const preview = w.get("[data-testid='directory-preview']");
+        expect(preview.classes()).toContain("is-over");
+        expect(preview.get("[data-testid='directory-preview-head']").text()).toContain("Local Outreach");
+        expect(w.emitted("preview")).toBeUndefined();
+    });
+
+    // Over the list, the list goes out of reach: focus on the row pressed moves into the preview, to
+    // its Back, and Back or Escape gives it back to that row, rather than leaving it on the page.
+    test.each([["in a narrow view", false, 800], ["on a phone", true, 390]])("%s, moves focus from the row pressed to the preview's Back, and back to the row as Back closes it", async (_, isPhone, width) => {
+        const w = mountDirectory({ isPhone });
+        await layOut(w, width as number);
+        const row = rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id]]);
+
+        await w.setProps({ previewId: outreach.channel_id });
+        await nextTick();
+        const back = w.get("[data-testid='directory-preview-back']");
+        expect(document.activeElement).toBe(back.element);
+
+        await back.trigger("click");
+        expect(w.emitted("preview")).toEqual([[outreach.channel_id], [null]]);
+        await w.setProps({ previewId: null });
+        await nextTick();
+        expect(document.activeElement).toBe(rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']").element);
+    });
+
+    test("gives focus back to the row pressed when Escape closes the preview lying over the list", async () => {
+        const w = mountDirectory();
+        await layOut(w, 800);
+        const row = rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        await w.setProps({ previewId: worship.channel_id });
+        await nextTick();
+
+        await w.get("[data-testid='directory-preview-back']").trigger("keydown", { key: "Escape" });
+        await w.setProps({ previewId: null });
+        await nextTick();
+
+        expect(document.activeElement).toBe(rowOf(w, worship.channel_id).get("[data-testid='directory-row-open']").element);
+    });
+
+    test("leaves focus on the row beside the preview in a wide view, where the list stays in reach", async () => {
+        const w = mountDirectory();
+        await layOut(w, 1200);
+        const row = rowOf(w, outreach.channel_id).get("[data-testid='directory-row-open']");
+        (row.element as HTMLElement).focus();
+        await row.trigger("click");
+        await w.setProps({ previewId: outreach.channel_id });
+        await nextTick();
+
+        expect(document.activeElement).toBe(row.element);
+    });
+
+    test("Escape in a preview lying over the list closes the preview, not the view", async () => {
+        const w = mountDirectory({ previewId: volunteers.channel_id });
+        await layOut(w, 800);
+
+        await w.get("[data-testid='directory-preview-back']").trigger("keydown", { key: "Escape" });
+
+        expect(w.emitted("preview")).toEqual([[null]]);
+        expect(w.emitted("close")).toBeUndefined();
     });
 });
 
@@ -644,8 +904,8 @@ describe("loading", () => {
 });
 
 describe("the next page", () => {
-    // The list's end is watched against the list's own scroller, about four rows ahead of view.
-    test("is asked as the list nears its end, while there is more", async () => {
+    // The list's end is the shared load-more row, watched against the list's own scroller.
+    test("is asked as the list nears its end, while there is more, through the shared load-more row", async () => {
         const w = mountDirectory({ directory: directory({ hasMore: true }) });
         await nextTick();
         expect(w.emitted("loadMore")).toBeUndefined();
@@ -653,9 +913,43 @@ describe("the next page", () => {
         await reachEnd();
 
         expect(w.emitted("loadMore")).toHaveLength(1);
+        expect(w.getComponent(LoadMoreRow).props("name")).toBe("directory");
         const watching = observers.find(observer => observer.watched.length > 0);
         expect(watching?.options?.root).toBe(w.get("[data-testid='directory-scroll']").element);
-        expect(watching?.options?.rootMargin).toBe("360px");
+    });
+
+    // A page that lands short leaves the row in view, which an observer never reports again.
+    test("asks again once a short page lands with the row still in view", async () => {
+        const state = directory({ hasMore: true });
+        const w = mountDirectory({ directory: state });
+        await reachEnd();
+        expect(w.emitted("loadMore")).toHaveLength(1);
+
+        state.isLoadingMore = true;
+        await nextTick();
+        state.isLoadingMore = false;
+        await nextTick();
+        await nextTick();
+
+        expect(w.emitted("loadMore")).toHaveLength(2);
+    });
+
+    test("asks nothing more after a failed page until Try again, which asks for it", async () => {
+        const state = directory({ hasMore: true });
+        const w = mountDirectory({ directory: state });
+        await reachEnd();
+        state.isLoadingMore = true;
+        await nextTick();
+        state.isLoadingMore = false;
+        state.moreError = { code: "rpc.transport", severity: "failed" };
+        await nextTick();
+        await reachEnd();
+        expect(w.emitted("loadMore")).toHaveLength(1);
+
+        await w.get("[data-testid='directory-more']").trigger("click");
+
+        expect(w.emitted("loadMore")).toHaveLength(2);
+        expect(w.emitted("retry")).toBeUndefined();
     });
 
     test("is never asked once the list has ended", async () => {
@@ -672,12 +966,14 @@ describe("the next page", () => {
         expect(w.get("[data-testid='directory-more']").find(".chat-spinner").exists()).toBe(true);
     });
 
-    test("keeps the rows and offers Try again when it did not come", async () => {
+    test("keeps the rows and offers Try again, saying why, when it did not come", async () => {
         const w = mountDirectory({ directory: directory({ hasMore: true, moreError: { code: "rpc.transport", severity: "failed" } }) });
 
         expect(w.findAll("[data-testid='directory-row']")).toHaveLength(3);
-        await w.get("[data-testid='directory-more-error'] button").trigger("click");
-        expect(w.emitted("retry")).toHaveLength(1);
+        expect(w.get("[data-testid='directory-more-error']").text()).toContain("Couldn't load more channels.");
+        expect(w.get("[data-testid='directory-more']").text()).toBe("Try again");
+        await w.get("[data-testid='directory-more']").trigger("click");
+        expect(w.emitted("loadMore")).toHaveLength(1);
     });
 });
 
@@ -880,14 +1176,16 @@ describe("under reduced motion", () => {
         expect(rules()).toEqual([]);
     });
 
-    test("a row's refusal or failure only fades in", () => {
+    // A refusal or a failure is said in the preview's footer now, which the join bar's cells hold;
+    // what enters here is the preview laid over the list in a narrow view.
+    test("a preview laid over the list only fades in", () => {
         // It rises by the sheet's rise, which is nothing under reduced motion, so the one
-        // enter motion is a fade there and the row's note keeps no reduced rule of its own.
+        // enter motion is a fade there and the preview keeps no reduced rule of its own.
         const source = readFileSync(join(__dirname, "../../../../../src/Communication/Chat/ChatShell/components/channelDirectory.partial.obs"), "utf8");
-        const rule = /\n\.chat-fd-err\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
+        const rule = /\n\.chat-fd-preview\.is-over\s*\{([^}]*)\}/.exec(source)?.[1] ?? "";
 
         expect(rule).not.toMatch(/--chat-rise:/);
         expect(rule).toMatch(/animation:\s*chat-enter /);
-        expect(rules().some(r => /\.chat-fd-err/.test(r.selector))).toBe(false);
+        expect(rules().some(r => /\.chat-fd-preview/.test(r.selector))).toBe(false);
     });
 });

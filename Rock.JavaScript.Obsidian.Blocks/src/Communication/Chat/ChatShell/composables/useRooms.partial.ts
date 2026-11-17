@@ -297,7 +297,7 @@ export type Rooms = {
 
     joinOf: (channelId: string) => JoinState;
 
-    /** Leaves a room through Rock's door, from its details. */
+    /** Leaves a room through Rock's door, from its details or the footer of its Browse preview. */
     leave: (channelId: string) => Promise<void>;
 
     leaveOf: (channelId: string) => LeaveState;
@@ -703,8 +703,15 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             ?? "this channel";
     }
 
-    /** Whether the person is in a room as far as this client knows. */
+    /**
+     * Whether the person is in a room as far as this client knows. A leave that landed ends it
+     * though the sidebar still holds the row its sync has not taken out yet.
+     */
     function isMember(channelId: string): boolean {
+        if (state.leaves[channelId]?.kind === "left") {
+            return false;
+        }
+
         return state.facts[channelId]?.is_member === true || channels.rowOf(channelId)?.is_member === true;
     }
 
@@ -741,6 +748,29 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
         const name = nameOf(channelId);
         // The notice is said as it is drawn, by the notices' host, so nothing is said beside it.
         dependencies.notify({ code: "room.joined", text: `Joined ${name}`, icon: "check" });
+    }
+
+    /**
+     * The room is left: every copy of it that a join marked member says it is not, so a join and a
+     * leave in one Browse visit end where they started, and Join may be pressed again.
+     */
+    function endMembership(channelId: string): void {
+        delete state.joins[channelId];
+
+        const row = state.directory.rows.find(r => r.channel_id === channelId);
+        if (row) {
+            row.is_member = false;
+        }
+        const facts = state.facts[channelId];
+        if (facts) {
+            facts.is_member = false;
+        }
+
+        // The stand-in turns not joined, so the join bar takes the composer's place again.
+        const preview = channels.previewChannelId === channelId ? channels.rowOf(channelId) : undefined;
+        if (preview) {
+            channels.setPreview({ ...preview, is_member: false });
+        }
     }
 
     // #endregion Join
@@ -941,7 +971,9 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
                 return;
             }
             // Not reached, the person may press Join again; only a code the door answered itself is a refusal.
+            // A leave from before is over, so nothing reads this join as a room still left.
             const door = dependencies.joinChannel;
+            delete state.leaves[channelId];
             state.joins[channelId] = { kind: "joining" };
             const answer = await askDoor(() => door(channelId), kind => failJoin(channelId, kind));
             if (!answer) {
@@ -1003,6 +1035,7 @@ export function createRooms(dependencies: RoomsDependencies): Rooms {
             // Pending is left as well: Rock has removed the membership, and the platform's
             // signal takes the room out of the sidebar when it follows.
             state.leaves[channelId] = { kind: "left" };
+            endMembership(channelId);
             dependencies.notify({ code: "room.left", text: `You left ${title}`, icon: "door" });
 
             // Unless the person has gone to another conversation meanwhile.
