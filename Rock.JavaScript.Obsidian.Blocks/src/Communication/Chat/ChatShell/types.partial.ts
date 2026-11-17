@@ -39,6 +39,7 @@ export type FocusStop =
     | "members-button"
     | "threads-button"
     | "sidebar-me"
+    | "activity-button"
     | "member"
     | "more"
     | "panel-close"

@@ -238,6 +238,14 @@
     /* An upload's progress bar gliding to its share, which under reduced motion steps. */
     --chat-d-progress: var(--chat-t-fast);
 
+    /*
+        The frame's columns: the sidebar, the panel and the least the conversation keeps beside
+        them. Below their sum an open panel folds the sidebar away, which the frame reads too.
+    */
+    --chat-w-side: 296px;
+    --chat-w-panel: 392px;
+    --chat-w-main-min: 480px;
+
     /* Every other timing the design writes once. Timers in script read these too. */
     --chat-d-flash: 2.2s;
     --chat-d-roll: 220ms;
@@ -257,6 +265,8 @@
     --chat-d-stagger: 26ms;
     /* The whole of an entrance's cascade: however many rows are in sight, the last starts by then. */
     --chat-d-cascade: 180ms;
+    /* One panel giving way to the next in the column; a fade, so it stays under reduced motion. */
+    --chat-d-swap: 180ms;
     --chat-d-row-collapse: 200ms;
     --chat-d-move: 220ms;
     --chat-d-sent-hold: 2.2s;

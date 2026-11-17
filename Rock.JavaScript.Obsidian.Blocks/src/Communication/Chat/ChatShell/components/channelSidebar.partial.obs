@@ -18,6 +18,7 @@
                             :label="hasMentionDot ? 'Activity, new mentions' : 'Activity'"
                             tooltip="Activity"
                             data-testid="sidebar-activity"
+                            data-focus-stop="activity-button"
                             :aria-expanded="isActivityOpen ? 'true' : 'false'"
                             @click="emit('activity')">
                     <Dot v-if="hasMentionDot" class="chat-side-dot" ringed data-testid="sidebar-activity-dot" />
@@ -676,12 +677,6 @@
         activeChannelId: {
             type: String as PropType<string | null>,
             default: null
-        },
-
-        /** How many fresh sidebars the rows have come from. The frame still binds it; no row is washed for news, so nothing here reads it. */
-        sidebarReads: {
-            type: Number as PropType<number>,
-            default: 0
         },
 
         isNewMessageShown: {

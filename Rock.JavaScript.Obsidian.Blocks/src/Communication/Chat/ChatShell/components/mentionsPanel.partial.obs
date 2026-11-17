@@ -17,6 +17,11 @@
                :bodyAttrs="{ 'data-testid': 'mentions-panel' }"
                @refresh="emit('refresh')"
                @close="emit('close')">
+        <!-- What the panel holding the inbox puts over it, as Activity's two lists. -->
+        <template v-if="$slots.top" #top>
+            <slot name="top"></slot>
+        </template>
+
         <span :id="`${uid}-hint`" class="chat-sr-only">Up and down arrows move between mentions.</span>
         <div ref="listElement">
             <section v-for="day in days" :key="day.label" :aria-label="day.label">

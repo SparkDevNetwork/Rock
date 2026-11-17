@@ -1641,6 +1641,9 @@ describe("the panel column", () => {
     test("in a 1100px window, an open panel folds the sidebar, which the header's sidebar button opens over the conversation", async () => {
         const w = await mountBlock(1100);
         await openRow(w, team.channel_id);
+        // the room's facts, from which the header draws its members button
+        roomsOf().state.facts[team.channel_id] = roomFacts({ channel_id: team.channel_id, name: "Worship Team", member_count: 12 });
+        await settle();
         expect(w.get("[data-testid='chat-frame']").attributes("data-sidebar")).toBeUndefined();
         expect(w.find("[data-testid='header-sidebar']").exists()).toBe(false);
 

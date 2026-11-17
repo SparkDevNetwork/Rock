@@ -17,6 +17,10 @@
                @refresh="emit('refresh')"
                @emptyAction="emit('tab', 'all')"
                @close="emit('close')">
+        <!-- What the panel holding the list puts over it, as Activity's two lists. -->
+        <template v-if="$slots.top" #top>
+            <slot name="top"></slot>
+        </template>
 
         <span :id="`${uid}-hint`" class="chat-sr-only">{{ keysHint }}</span>
         <ul ref="listElement"

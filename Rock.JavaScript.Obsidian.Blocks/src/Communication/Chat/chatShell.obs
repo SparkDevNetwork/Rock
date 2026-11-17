@@ -28,6 +28,7 @@
              data-testid="chat-frame"
              :data-pane="pane"
              :data-panel-open="panelKind ? 'true' : 'false'"
+             :data-sidebar="sidebarFold ?? undefined"
              @focusin="onFrameFocusIn"
              @focusout="onFrameFocusOut">
             <div class="chat-frame-side"
@@ -36,7 +37,6 @@
                  :inert="isSidebarHidden || undefined"
                  :style="isSidebarGone ? goneStyle : undefined">
                 <ChannelSidebar :rows="shell.channels.listed"
-                                :sidebarReads="shell.channels.sidebarReads"
                                 :activeChannelId="shell.state.activeChannelId"
                                 :isNewMessageShown="shell.isNewMessageShown"
                                 :isNewMessageInert="shell.state.phase === 'starting'"
@@ -49,6 +49,10 @@
                                 :statusChoice="statusChoice"
                                 :statusClosedReason="statusClosedReason"
                                 :isStatusRetrying="isStatusRetrying"
+                                :isActivityOffered="shell.state.phase === 'ready'"
+                                :isActivityOpen="panelKind === 'activity'"
+                                :hasMentionDot="shell.mentions.state.hasDot"
+                                @activity="onListPanel('activity')"
                                 @select="onSelect"
                                 @status="onStatusChoice"
                                 @newMessage="openMainView('newdm')"
@@ -115,12 +119,10 @@
                                 :isMembersOffered="!!activeChannelId"
                                 :isMembersOpen="panelKind === 'members'"
                                 :isThreadsOpen="panelKind === 'threads'"
-                                :isMentionsOffered="shell.state.phase === 'ready'"
-                                :isMentionsOpen="panelKind === 'mentions'"
-                                :hasMentionDot="shell.mentions.state.hasDot"
+                                :isSidebarFolded="sidebarFold === 'folded'"
                                 @threads="onListPanel('threads')"
-                                @mentions="onListPanel('mentions')"
                                 @members="onListPanel('members')"
+                                @sidebar="onSidebarOver"
                                 @membersIntent="activeChannelId && shell.members.readAhead(activeChannelId)"
                                 @turnOnPush="onTurnOnPush"
                                 @notify="onRoomChoice({ kind: 'notify', mode: $event })"
@@ -289,120 +291,139 @@
                    :aria-hidden="isPanelHidden ? 'true' : undefined"
                    :inert="isPanelHidden || undefined"
                    :style="isPanelGone ? goneStyle : undefined">
+                <!--
+                    One panel gives way to the next in one crossfade, the old laid over the new. Activity's
+                    Segmented, Mentions and Threads across conversations, fills its shown list's top.
+                -->
                 <div class="chat-frame-panel-inner">
-                    <ThreadsPanel v-if="shownPanel === 'threads'"
-                                  :tab="threadList.tab"
-                                  :rows="threadList.rows"
-                                  :hasMore="threadList.hasMore"
-                                  :isLoading="threadList.isLoading"
-                                  :isRefreshing="threadList.isRefreshing"
-                                  :error="threadList.error"
-                                  :followError="listFollowError"
-                                  :channelId="threadList.channelId ?? activeChannelId ?? ''"
-                                  :kind="activeKind ?? 'channel'"
-                                  :roomTitles="roomTitles"
-                                  :roomKinds="roomKinds"
-                                  :publicRooms="publicRooms"
-                                  :loadMore="loadMoreThreads"
-                                  @open="openThreadFromList"
-                                  @tab="onThreadsTab"
-                                  @refresh="onThreadsRefresh"
-                                  @follow="onFollowFromList"
-                                  @close="closePanel" />
+                    <Transition name="chat-panel-swap">
+                        <ThreadsPanel v-if="shownList === 'threads'"
+                                      :key="shownPanel ?? undefined"
+                                      :tab="threadList.tab"
+                                      :rows="threadList.rows"
+                                      :hasMore="threadList.hasMore"
+                                      :isLoading="threadList.isLoading"
+                                      :isRefreshing="threadList.isRefreshing"
+                                      :error="threadList.error"
+                                      :followError="listFollowError"
+                                      :channelId="threadList.channelId ?? activeChannelId ?? ''"
+                                      :kind="activeKind ?? 'channel'"
+                                      :roomTitles="roomTitles"
+                                      :roomKinds="roomKinds"
+                                      :publicRooms="publicRooms"
+                                      :loadMore="loadMoreThreads"
+                                      @open="openThreadFromList"
+                                      @tab="onThreadsTab"
+                                      @refresh="onThreadsRefresh"
+                                      @follow="onFollowFromList"
+                                      @close="closePanel">
+                            <template v-if="shownPanel === 'activity'" #top>
+                                <div class="chat-frame-activity">
+                                    <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
+                                </div>
+                            </template>
+                        </ThreadsPanel>
 
-                    <MentionsPanel v-else-if="shownPanel === 'mentions'"
-                                   v-bind="shell.mentions.state.inbox"
-                                   :roomTitles="roomTitles"
-                                   :roomKinds="roomKinds"
-                                   :publicRooms="publicRooms"
-                                   @jump="onMentionOpen"
-                                   @openThread="(_rootId, _channelId, messageId) => onMentionOpen(messageId)"
-                                   @refresh="shell.mentions.refreshInbox"
-                                   @loadOlder="shell.mentions.loadOlder"
-                                   @close="closePanel" />
+                        <MentionsPanel v-else-if="shownList === 'mentions'"
+                                       v-bind="shell.mentions.state.inbox"
+                                       :roomTitles="roomTitles"
+                                       :roomKinds="roomKinds"
+                                       :publicRooms="publicRooms"
+                                       @jump="onMentionOpen"
+                                       @openThread="(_rootId, _channelId, messageId) => onMentionOpen(messageId)"
+                                       @refresh="shell.mentions.refreshInbox"
+                                       @loadOlder="shell.mentions.loadOlder"
+                                       @close="closePanel">
+                            <template #top>
+                                <div class="chat-frame-activity">
+                                    <Segmented :options="activityTabs" :modelValue="activityTab" optionTestId="activity-tab" hasAutofocus aria-label="Activity" @update:modelValue="onActivityTab($event as ActivityTab)" />
+                                </div>
+                            </template>
+                        </MentionsPanel>
 
-                    <MembersPanel v-else-if="shownPanel === 'members'"
-                                  v-bind="membersView"
-                                  @query="shell.members.setQuery"
-                                  @loadMore="shell.members.loadMore"
-                                  @retry="shell.members.retry"
-                                  @retrySearch="shell.members.retrySearch"
-                                  @message="onMemberMessage"
-                                  @person="onMemberPerson"
-                                  @addPeople="openAddPeople(shell.members.state.channelId ?? '')"
-                                  @remove="shell.members.askRemove"
-                                  @dismissRemoval="shell.members.dismissRemoval"
-                                  @close="closePanel" />
+                        <MembersPanel v-else-if="shownList === 'members'"
+                                      v-bind="membersView"
+                                      @query="shell.members.setQuery"
+                                      @loadMore="shell.members.loadMore"
+                                      @retry="shell.members.retry"
+                                      @retrySearch="shell.members.retrySearch"
+                                      @message="onMemberMessage"
+                                      @person="onMemberPerson"
+                                      @addPeople="openAddPeople(shell.members.state.channelId ?? '')"
+                                      @remove="shell.members.askRemove"
+                                      @dismissRemoval="shell.members.dismissRemoval"
+                                      @close="closePanel" />
 
-                    <ThreadDrawer v-else-if="shownPanel === 'thread' && drawnThread"
-                                  :key="drawnThread.rootId"
-                                  :root="drawnThread.root"
-                                  :replies="drawnThread.replies"
-                                  :pending="shell.sender.pending(drawnThread.channelId)"
-                                  :isFollowing="drawnThread.following"
-                                  :followError="drawerFollowError"
-                                  :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
-                                  :isChannel="threadKind === 'channel'"
-                                  :isDirectMessage="threadKind === 'person'"
-                                  :isFromList="threadOrigin !== null"
-                                  :listTitle="threadOrigin === 'mentions' ? 'Mentions' : 'Threads'"
-                                  :hasMore="drawnThread.hasMore"
-                                  :isLoading="drawnThread.isLoading"
-                                  :error="drawnThread.error"
-                                  :olderError="drawnThread.olderError"
-                                  :landOnId="landingReplyId"
-                                  :isPersonLeader="threadRow?.is_leader ?? false"
-                                  :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
-                                  :editingId="editingIdIn(drawnThread.channelId)"
-                                  :editError="editErrorIn(drawnThread.channelId)"
-                                  :isEditSaving="isEditSavingIn(drawnThread.channelId)"
-                                  :reactionHost="reactionHost"
-                                  :typing="threadTyping"
-                                  :typingPlace="threadQuoteKey"
-                                  @close="closeThreadDrawer"
-                                  @back="onThreadBack"
-                                  @follow="onFollowThread"
-                                  @seen="shell.threads.seen"
-                                  @loadOlder="onLoadOlderReplies"
-                                  @retry="onRetry"
-                                  @discard="shell.sender.discard"
-                                  @jump="onJump($event, true)"
-                                  @messageAction="onMessageAction($event, drawnThread.rootId)">
-                        <template #composer>
-                            <Composer isThread
-                                      :title="roomTitles[drawnThread.channelId] ?? ''"
+                        <ThreadDrawer v-else-if="shownList === 'thread' && drawnThread"
+                                      :key="drawnThread.rootId"
+                                      :root="drawnThread.root"
+                                      :replies="drawnThread.replies"
+                                      :pending="shell.sender.pending(drawnThread.channelId)"
+                                      :isFollowing="drawnThread.following"
+                                      :followError="drawerFollowError"
+                                      :conversationTitle="roomTitles[drawnThread.channelId] ?? ''"
                                       :isChannel="threadKind === 'channel'"
-                                      :isLocked="!shell.state.isComposerOpen"
-                                      :lockedReason="lockedReason(threadRow, shell.state.service)"
-                                      :maxLength="threadRow?.max_length ?? 0"
-                                      :text="threadDraft?.text ?? ''"
-                                      :mentions="threadDraft?.mentions ?? []"
-                                      :isAlsoSent="threadDraft?.isAlsoSent ?? false"
-                                      :quote="threadQuote"
-                                      :isQuoteOwn="isOwnQuote(threadQuote)"
-                                      :emojiSource="emojiSource"
-                                      :mentionSource="mentionSourceFor(threadRow)"
-                                      :conversationKey="threadComposerKey"
-                                      :sendFailure="threadFailure"
-                                      :lastFailure="shell.sender.lastFailure()"
-                                      :tray="trayOf(drawnThread.channelId, drawnThread.rootId)"
-                                      :busyPerson="threadPair"
-                                      @send="onSendReply"
-                                      @retryFailed="onRetryFailed(threadSends)"
-                                      @discardFailed="onDiscardFailed(threadSends)"
-                                      @update:text="onDraftText(threadQuoteKey, $event)"
-                                      @update:isAlsoSent="onDraftAlsoSent(threadQuoteKey, $event)"
-                                      @mention="onDraftMention(threadQuoteKey, $event)"
-                                      @editLast="onEditLastReply"
-                                      @cancelQuote="onCancelQuote(threadQuoteKey)"
-                                      @emojiPickerOpen="onEmojiPickerOpen"
-                                      @emojiChosen="onEmojiChosen"
-                                      @mentionQuery="onMentionQuery(threadRow, $event)"
-                                      @focus="onComposerFocus(threadRow, 'thread')"
-                                      @blur="onComposerBlur"
-                                      @overLimit="onOverLimit" />
-                        </template>
-                    </ThreadDrawer>
+                                      :isDirectMessage="threadKind === 'person'"
+                                      :isFromList="threadOrigin !== null"
+                                      :listTitle="threadOrigin === 'activity' && activityTab === 'mentions' ? 'Mentions' : 'Threads'"
+                                      :hasMore="drawnThread.hasMore"
+                                      :isLoading="drawnThread.isLoading"
+                                      :error="drawnThread.error"
+                                      :olderError="drawnThread.olderError"
+                                      :landOnId="landingReplyId"
+                                      :isPersonLeader="threadRow?.is_leader ?? false"
+                                      :isPreviewing="isPreviewingRoom(drawnThread.channelId)"
+                                      :editingId="editingIdIn(drawnThread.channelId)"
+                                      :editError="editErrorIn(drawnThread.channelId)"
+                                      :isEditSaving="isEditSavingIn(drawnThread.channelId)"
+                                      :reactionHost="reactionHost"
+                                      :typing="threadTyping"
+                                      :typingPlace="threadQuoteKey"
+                                      @close="closeThreadDrawer"
+                                      @back="onThreadBack"
+                                      @follow="onFollowThread"
+                                      @seen="shell.threads.seen"
+                                      @loadOlder="onLoadOlderReplies"
+                                      @retry="onRetry"
+                                      @discard="shell.sender.discard"
+                                      @jump="onJump($event, true)"
+                                      @messageAction="onMessageAction($event, drawnThread.rootId)">
+                            <template #composer>
+                                <Composer isThread
+                                          :title="roomTitles[drawnThread.channelId] ?? ''"
+                                          :isChannel="threadKind === 'channel'"
+                                          :isLocked="!shell.state.isComposerOpen"
+                                          :lockedReason="lockedReason(threadRow, shell.state.service)"
+                                          :maxLength="threadRow?.max_length ?? 0"
+                                          :text="threadDraft?.text ?? ''"
+                                          :mentions="threadDraft?.mentions ?? []"
+                                          :isAlsoSent="threadDraft?.isAlsoSent ?? false"
+                                          :quote="threadQuote"
+                                          :isQuoteOwn="isOwnQuote(threadQuote)"
+                                          :emojiSource="emojiSource"
+                                          :mentionSource="mentionSourceFor(threadRow)"
+                                          :conversationKey="threadComposerKey"
+                                          :sendFailure="threadFailure"
+                                          :lastFailure="shell.sender.lastFailure()"
+                                          :tray="trayOf(drawnThread.channelId, drawnThread.rootId)"
+                                          :busyPerson="threadPair"
+                                          @send="onSendReply"
+                                          @retryFailed="onRetryFailed(threadSends)"
+                                          @discardFailed="onDiscardFailed(threadSends)"
+                                          @update:text="onDraftText(threadQuoteKey, $event)"
+                                          @update:isAlsoSent="onDraftAlsoSent(threadQuoteKey, $event)"
+                                          @mention="onDraftMention(threadQuoteKey, $event)"
+                                          @editLast="onEditLastReply"
+                                          @cancelQuote="onCancelQuote(threadQuoteKey)"
+                                          @emojiPickerOpen="onEmojiPickerOpen"
+                                          @emojiChosen="onEmojiChosen"
+                                          @mentionQuery="onMentionQuery(threadRow, $event)"
+                                          @focus="onComposerFocus(threadRow, 'thread')"
+                                          @blur="onComposerBlur"
+                                          @overLimit="onOverLimit" />
+                            </template>
+                        </ThreadDrawer>
+                    </Transition>
                 </div>
             </aside>
 
@@ -538,7 +559,7 @@
     display: grid;
     flex: 1;
     grid-template-rows: minmax(0, 1fr);
-    grid-template-columns: 296px minmax(0, 1fr) 0px;
+    grid-template-columns: var(--chat-w-side) minmax(0, 1fr) 0px;
     min-height: 0;
     overflow: hidden;
     background: var(--chat-surface);
@@ -569,7 +590,55 @@
 }
 
 .chat-frame[data-panel-open="true"] {
-    grid-template-columns: 296px minmax(0, 1fr) 392px;
+    grid-template-columns: var(--chat-w-side) minmax(0, 1fr) var(--chat-w-panel);
+}
+
+/*
+    A window too narrow for three columns folds the sidebar away while a panel is open: its column
+    closes and the sidebar waits off to the left, laid over the conversation when the header's
+    sidebar button opens it.
+*/
+.chat-frame[data-sidebar] {
+    grid-template-columns: 0px minmax(0, 1fr) var(--chat-w-panel);
+}
+
+.chat-frame[data-sidebar] .chat-frame-side {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: var(--chat-z-panel);
+    width: var(--chat-w-side);
+    background: var(--chat-sidebar);
+    transform: translateX(-100%);
+    transition: transform var(--chat-t-panel) var(--chat-ease-in);
+}
+
+.chat-frame[data-sidebar="over"] .chat-frame-side {
+    box-shadow: var(--chat-shadow-pop);
+    transform: none;
+}
+
+/* Activity's two lists under its title, as a list's own tabs sat. */
+.chat-frame-activity {
+    flex: none;
+    padding: 10px 14px 4px;
+}
+
+/* One panel gives way to the next: the old fades out laid over the new as it fades in. */
+.chat-panel-swap-enter-active,
+.chat-panel-swap-leave-active {
+    transition: opacity var(--chat-d-swap) var(--chat-ease-state);
+}
+
+.chat-panel-swap-leave-active {
+    position: absolute;
+    inset: 0;
+}
+
+.chat-panel-swap-enter-from,
+.chat-panel-swap-leave-to {
+    opacity: 0;
 }
 
 .chat-frame-panel {
@@ -593,7 +662,8 @@
 
 /* The content keeps its full width while the column opens around it, fading in as it slides home. */
 .chat-frame-panel-inner {
-    width: 392px;
+    position: relative;
+    width: var(--chat-w-panel);
     height: 100%;
     opacity: 0;
     transform: translateX(var(--chat-rise));
@@ -741,7 +811,7 @@
     import { problemReportKey } from "./ChatShell/problemReport.partial";
     import { messageMotionKey } from "./ChatShell/messageMotion.partial";
     import { pageRevealKey } from "./ChatShell/pageLoad.partial";
-    import { useFrameView } from "./ChatShell/composables/useFrameView.partial";
+    import { ActivityTab, useFrameView } from "./ChatShell/composables/useFrameView.partial";
     import { useReactionPicker } from "./ChatShell/composables/useReactionPicker.partial";
     import { useComposers } from "./ChatShell/composables/useComposers.partial";
     import { useOverlaysView } from "./ChatShell/composables/useOverlaysView.partial";
@@ -753,6 +823,7 @@
     import { provideChatSession } from "./ChatShell/chatSession.partial";
     import { Announcer, provideAnnouncer } from "./ChatShell/ui/announcer.partial";
     import Dialog from "./ChatShell/ui/dialog.partial.obs";
+    import Segmented, { SegmentedOption } from "./ChatShell/ui/segmented.partial.obs";
 
     // #region Types
 
@@ -916,14 +987,17 @@
 
     const {
         isPhone, isPaneMotionOn, pane, isSidebarHidden, isConversationHidden, isPanelHidden, isSidebarGone, isConversationGone, isPanelGone, goneStyle,
-        panelKind, shownPanel, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
-        onResize, onSelect, onBack, onListPanel, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
+        panelKind, shownPanel, shownList, activityTab, sidebarFold, panelElement, mainElement, mainViewElement, drawnThread, threadOrigin, focusStop,
+        onResize, onSelect, onBack, onListPanel, onActivityTab, onSidebarOver, onThreadsTab, openThreadFromList, onOpenThread, onThreadBack, onMentionOpen,
         openThreadFromMentions, openFromTap, closeThreadDrawer, closePanel,
         mainView, openMainView, closeMainView, openFromMainView, openAddPeople,
         landingReplyId, landingMessageId, onJump, landInConversation,
         membersView, removeView, addView,
-        threadList, drawerFollowError, listFollowError, onThreadsTab, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
+        threadList, drawerFollowError, listFollowError, onThreadsRefresh, loadMoreThreads, onFollowFromList, onFollowThread, onLoadOlderReplies
     } = frame;
+
+    /** Activity's two lists, in the Segmented over whichever is shown. */
+    const activityTabs: SegmentedOption[] = [{ value: "mentions", label: "Mentions" }, { value: "threads", label: "Threads" }];
 
     // One computed per fact of the open room, handed to every composable below that reads it.
     const {

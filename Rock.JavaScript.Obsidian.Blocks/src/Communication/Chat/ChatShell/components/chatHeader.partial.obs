@@ -490,7 +490,6 @@ button.chat-header-name-row:hover .chat-header-chev {
         (e: "back"): void,
         (e: "backOnline"): void,
         (e: "threads"): void,
-        (e: "mentions"): void,
         (e: "members"): void,
         /** The person is reaching for the members button, so what the panel needs can be read first. */
         (e: "membersIntent"): void,
@@ -621,15 +620,6 @@ button.chat-header-name-row:hover .chat-header-chev {
         },
 
         /**
-         * Whether the mentions inbox is offered. The frame still binds this and the two below; the
-         * header draws no Mentions of its own, since the inbox spans every conversation.
-         */
-        isMentionsOffered: {
-            type: Boolean,
-            default: false
-        },
-
-        /**
          * Whether to offer the members panel, which needs a conversation that exists; a channel's
          * facepile, a group's Members button, never in a conversation of two.
          */
@@ -640,18 +630,6 @@ button.chat-header-name-row:hover .chat-header-chev {
 
         /** Whether the members panel is open, which its button shows as expanded. */
         isMembersOpen: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether the mentions inbox is open, which its button shows as expanded. */
-        isMentionsOpen: {
-            type: Boolean,
-            default: false
-        },
-
-        /** Whether a mention, by name or with @all, is newer than the person's last look at the inbox. */
-        hasMentionDot: {
             type: Boolean,
             default: false
         },
