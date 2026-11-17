@@ -587,13 +587,13 @@ describe("a row's text", () => {
     });
 });
 
-// The list waterfalls in when the panel opens with its first page: each row carries the panel's
-// one entrance and its place in the list, and the host enters from the first page alone.
+// The list waterfalls in when the panel opens with its first page, and again after a refresh:
+// each row carries the panel's one entrance, and the host places the rows in sight in order.
 describe("the list's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll("[data-testid='thread-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+            order: w.findAll("[data-testid='thread-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-at") : "none")
         };
     }
 
@@ -605,12 +605,24 @@ describe("the list's entrance", () => {
         expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
     });
 
-    test("a thread that moves in live, or a refresh's new row, does not rise in, and the first page's rows go on rising", async () => {
+    test("a thread that moves in live does not rise in, and the first page's rows go on rising", async () => {
         const w = draw({ rows: [row(40), row(41)] });
 
         await w.setProps({ rows: [row(43), row(40), row(41)] });
         expect(entered(w).isEntering).toBe(true);
         expect(w.findAll("[data-testid='thread-row']").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([true, false, false]);
+    });
+
+    // A refresh asks the list again, so it lands as a first page: every row in sight rises again.
+    test("a refresh replays the entrance over every row it brings", async () => {
+        const w = draw({ rows: [row(40), row(41)] });
+
+        await w.setProps({ isRefreshing: true });
+        expect(entered(w).isEntering).toBe(false);
+        await w.setProps({ isRefreshing: false, rows: [row(43), row(40), row(41)] });
+
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+        expect(w.findAll("[data-testid='thread-row']").some(r => r.attributes("data-chat-settled") !== undefined)).toBe(false);
     });
 
     test("the other tab's first page rises in as the list's own", async () => {

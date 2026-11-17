@@ -644,7 +644,7 @@ describe("the roster's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll("[data-testid='member-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+            order: w.findAll("[data-testid='member-row']").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-at") : "none")
         };
     }
 

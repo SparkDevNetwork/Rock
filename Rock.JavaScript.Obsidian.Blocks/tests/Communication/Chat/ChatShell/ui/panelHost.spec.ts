@@ -21,7 +21,9 @@
 // rows are drawn. A row drawn after that, a live arrival, a later page or a filter cleared, is
 // marked settled and does not rise, while the first page's rows keep rising; the entrance ends
 // once every first-page row has risen or gone. A list that loads again from nothing, as a tab
-// switch or a retry does, enters again.
+// switch, a retry or a refresh does, enters again. Only the rows in sight take part: the host
+// places each among them and counts them, so the cascade fits its budget however long the list,
+// and a row below the fold is simply there.
 import { mount, VueWrapper } from "@vue/test-utils";
 import { defineComponent, h, PropType } from "vue";
 import PanelHost from "../../../../../src/Communication/Chat/ChatShell/ui/panelHost.partial.obs";
@@ -178,6 +180,65 @@ describe("the panel's entrance", () => {
 
 // On a phone the panel fills the frame and leaves by its back chevron, with no X. The host reads
 // the phone flag from the session, so no screen between the shell and the host carries it.
+// The cascade's budget: the host reads which first-page rows are in the body's sight as they are
+// drawn, gives each its place among them (--chat-enter-at) and the body their count
+// (--chat-enter-n), from which the sheet spaces them; a row out of sight is marked settled.
+describe("the cascade over the rows in sight", () => {
+    const original = Element.prototype.getBoundingClientRect;
+
+    /** Lays the body out 100px tall and each row 40px under the one before it. */
+    function layOut(): void {
+        Element.prototype.getBoundingClientRect = function getBoundingClientRect(this: Element): DOMRect {
+            const index = this.parentElement ? Array.from(this.parentElement.children).indexOf(this) : 0;
+            const top = this.matches("li") ? index * 40 : 0;
+            const height = this.matches("li") ? 40 : 100;
+            return { top, bottom: top + height, left: 0, right: 300, width: 300, height, x: 0, y: top, toJSON: () => ({}) } as DOMRect;
+        };
+    }
+
+    afterEach(() => {
+        Element.prototype.getBoundingClientRect = original;
+    });
+
+    test("only the rows in sight rise, each placed among them, the body holding their count", async () => {
+        layOut();
+        const w = draw(["a", "b", "c", "d"]);
+        await w.vm.$nextTick();
+
+        // a at 0, b at 40 and c at 80 start inside the 100px body; d at 120 is below the fold
+        expect(risingKeys(w)).toEqual(["a", "b", "c"]);
+        expect(w.findAll(".chat-panel-body li").map(li => (li.element as HTMLElement).style.getPropertyValue("--chat-enter-at"))).toEqual(["0", "1", "2", ""]);
+        expect((w.get(".chat-panel-body").element as HTMLElement).style.getPropertyValue("--chat-enter-n")).toBe("3");
+    });
+
+    test("the entrance ends once the rows in sight have risen, the rows below never holding it", async () => {
+        layOut();
+        const w = draw(["a", "b", "c", "d"]);
+        await w.vm.$nextTick();
+
+        riseEnds(w, "a");
+        riseEnds(w, "b");
+        riseEnds(w, "c");
+        await w.vm.$nextTick();
+        expect(isEntering(w)).toBe(false);
+    });
+
+    test("a refresh, which loads the list again from nothing, replays the cascade over the rows in sight", async () => {
+        layOut();
+        const w = draw(["a", "b"]);
+        await w.vm.$nextTick();
+        riseEnds(w, "a");
+        riseEnds(w, "b");
+        await w.vm.$nextTick();
+        expect(isEntering(w)).toBe(false);
+
+        await show(w, null);
+        await show(w, ["a", "b"]);
+        expect(isEntering(w)).toBe(true);
+        expect(risingKeys(w)).toEqual(["a", "b"]);
+    });
+});
+
 describe("the panel's way out", () => {
     test("on a phone, as the session says, is the back chevron alone", async () => {
         wrapper = mount(PanelHost, { props: { title: "Mentions" }, global: { provide: providedSession({ isPhone: true }) }, attachTo: document.body });

@@ -415,13 +415,13 @@ describe("loading, empty and failed", () => {
     });
 });
 
-// The inbox waterfalls in when the panel opens with its first page, one row after another across
-// its day headings; an older page and a live mention are simply there.
+// The inbox waterfalls in when the panel opens with its first page, and again after a refresh,
+// one row after another across its day headings; an older page and a live mention are simply there.
 describe("the inbox's entrance", () => {
     function entered(w: VueWrapper): { isEntering: boolean, order: string[] } {
         return {
             isEntering: w.get(".chat-panel-body").classes().includes("is-entering"),
-            order: w.findAll(".chat-ls-row").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-i") : "none")
+            order: w.findAll(".chat-ls-row").map(r => r.classes().includes("chat-enter") ? (r.element as HTMLElement).style.getPropertyValue("--chat-enter-at") : "none")
         };
     }
 
@@ -440,6 +440,18 @@ describe("the inbox's entrance", () => {
         await w.setProps({ isLoadingOlder: false, rows: [row(52), row(51), row(50, { created_at: at(9, 0, 1) })] });
         expect(entered(w).isEntering).toBe(true);
         expect(w.findAll(".chat-ls-row").map(r => r.attributes("data-chat-settled") !== undefined)).toEqual([false, false, true]);
+    });
+
+    // A refresh asks the inbox again, so it lands as a first page: every row in sight rises again.
+    test("a refresh replays the entrance over every row it brings", async () => {
+        const w = draw({ rows: [row(52), row(51)] });
+
+        await w.setProps({ isRefreshing: true });
+        expect(entered(w).isEntering).toBe(false);
+        await w.setProps({ isRefreshing: false, rows: [row(53), row(52), row(51)] });
+
+        expect(entered(w)).toEqual({ isEntering: true, order: ["0", "1", "2"] });
+        expect(w.findAll(".chat-ls-row").some(r => r.attributes("data-chat-settled") !== undefined)).toBe(false);
     });
 });
 

@@ -370,6 +370,7 @@ const namedLiterals: Named[] = [
     { name: "d-view", value: "220ms", reduced: "0ms" },
     { name: "d-tab-thumb", value: "240ms", reduced: "0ms" },
     { name: "d-stagger", value: "26ms", reduced: "0ms" },
+    { name: "d-cascade", value: "180ms", reduced: "0ms" },
     { name: "d-row-collapse", value: "200ms", reduced: "0ms" },
     { name: "d-sent-hold", value: "2.2s" },
     { name: "d-read-fade", value: "400ms" },
@@ -981,11 +982,15 @@ describe("the components' own styles", () => {
         expect(declarationOf(resolve(components, "conversationDetails.partial.obs"), ".chat-leave-box", "--chat-enter-from")).toBe(normalize("var(--chat-rise-sm)"));
     });
 
+    // The cascade has a budget, not a cap: each row in sight waits its place among them times
+    // 26ms, or less where many are in sight, so the last starts by 180ms however long the list;
+    // the panel host counts them and places each.
     test("panel rows rise in by the sheet's one staggered entrance, and by nothing else", () => {
         const selector = ".chat-shell .chat-panel-body.is-entering .chat-enter:not([data-chat-settled])";
         expect(declarationOf(sheetPath, selector, "animation")).toBe(normalize("chat-enter var(--chat-t-msg) var(--chat-ease-in) both"));
-        expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(min(var(--chat-enter-i, 0), var(--chat-enter-cap)) * var(--chat-d-stagger))"));
-        expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("8");
+        expect(declarationOf(sheetPath, selector, "animation-delay")).toBe(normalize("calc(var(--chat-enter-at, 0) * min(var(--chat-d-stagger), var(--chat-d-cascade) / var(--chat-enter-n, 1)))"));
+        expect(declarationOf(sheetPath, ".chat-shell", "--chat-enter-cap")).toBe("");
+        expect(readFileSync(sheetPath, "utf8")).not.toMatch(/chat-enter-cap/);
 
         const frames = normalize(keyframesBody(sheetPath, "chat-enter") ?? "");
         expect(frames).toContain("opacity:0");
