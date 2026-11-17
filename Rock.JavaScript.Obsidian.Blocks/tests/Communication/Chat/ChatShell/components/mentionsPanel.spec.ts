@@ -20,7 +20,8 @@
 // leading mention of the reader, and on a reply "Reply in a thread" in quiet words. A row newer than the last visit is New with
 // a dot, until it is opened; the row just opened is marked current. A channel row jumps to the
 // message and a reply opens its thread. Paging is "Load older mentions", "Loading" while busy,
-// then "That's every mention"; a failed page and a failed refresh each say so in place.
+// and the list simply ends, with no end line (the clean bar); a failed page and a failed refresh
+// each say so in place.
 //
 // The component these tests are written to, mentionsPanel.partial.obs, in the shared panel host:
 //
@@ -34,7 +35,7 @@
 //   marks: mentions-panel (the panel), mention-row (each row, class is-new and is-current),
 //          mention-row-open (the row's button, labelled), mention-row-new (a New row's dot),
 //          mention-row-thread (the reply tag), mentions-day (each day heading), mentions-more
-//          (Load older mentions), mentions-end (the end note), mentions-error (a refresh's
+//          (Load older mentions), mentions-end (an end note, never drawn), mentions-error (a refresh's
 //          failure, with Try again), mentions-more-error (an older page's failure), mentions-empty, mentions-refresh,
 //          mention-skeleton. The panel host's marks are threadDrawer.spec's.
 import { mount, VueWrapper } from "@vue/test-utils";
@@ -315,10 +316,12 @@ describe("paging", () => {
         expect(w.emitted("loadOlder")).toBeUndefined();
     });
 
-    test("ends with That's every mention", () => {
+    // The clean bar (F8-A): a list that has no more simply ends, as Members and Threads do.
+    test("simply ends, with no end line, once there is no more", () => {
         const w = draw({ hasMore: false });
 
-        expect(plain(w.get("[data-testid='mentions-end']").text())).toBe("That's every mention");
+        expect(w.find("[data-testid='mentions-end']").exists()).toBe(false);
+        expect(w.text()).not.toContain("That's every mention");
         expect(w.find("[data-testid='mentions-more']").exists()).toBe(false);
     });
 
